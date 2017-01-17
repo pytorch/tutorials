@@ -98,7 +98,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from modules.add import MyAddModule
 
-class MyNetwork(nn.Container):
+class MyNetwork(nn.Module):
     def __init__(self):
         super(MyNetwork, self).__init__(
             add=MyAddModule(),
