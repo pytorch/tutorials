@@ -47,10 +47,10 @@ Now, you'll need a super short file, that will build your custom extension:
 
 ```python
 # build.py
-from torch.utils.ffi import compile_extension
-compile_extension(
+from torch.utils.ffi import create_extension
+create_extension(
 name='_ext.my_lib',
-header='src/my_lib.h',
+headers='src/my_lib.h',
 sources=['src/my_lib.c'],
 with_cuda=False
 )
