@@ -9,3 +9,5 @@ PyTorch Tutorials
    - [Write your own C code that interfaces into PyTorch via FFI](Creating%20Extensions%20using%20FFI.md)
 3. [Writing your own neural network module that uses numpy and scipy](Creating extensions using numpy and scipy.ipynb)
 4. [Reinforcement (Q-)Learning with PyTorch](Reinforcement (Q-)Learning with PyTorch.ipynb)
+5. [Neural Style with PyTorch](Neural_Style.ipynb)
+   - Learn how to implement the Neural-Style algorithm (https://arxiv.org/abs/1508.06576) developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
