@@ -20,7 +20,7 @@ THFloatTensor *output)
     if (!THFloatTensor_isSameSizeAs(input1, input2))
         return 0;
     THFloatTensor_resizeAs(output, input1);
-    THFloatTensor_add(output, input1, input2);
+    THFloatTensor_cadd(output, input1, 1, input2);
     return 1;
 }
 
@@ -101,9 +101,8 @@ from modules.add import MyAddModule
 
 class MyNetwork(nn.Module):
     def __init__(self):
-        super(MyNetwork, self).__init__(
-            add=MyAddModule(),
-        )
+        super(MyNetwork, self).__init__()
+        self.add=MyAddModule()
 
     def forward(self, input1, input2):
         return self.add(input1, input2)
