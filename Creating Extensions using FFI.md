@@ -95,6 +95,7 @@ class MyAddModule(Module):
 
 ```python
 # main.py
+import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from modules.add import MyAddModule
