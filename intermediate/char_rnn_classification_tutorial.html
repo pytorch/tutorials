@@ -1,0 +1,1017 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Classifying Names with a Character-Level RNN &mdash; PyTorch Tutorials  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PyTorch Tutorials  documentation" href="../index.html"/>
+        <link rel="next" title="Generating Names with a Character-Level RNN" href="char_rnn_generation_tutorial.html"/>
+        <link rel="prev" title="Deep Learning for Natural Language Processing with Pytorch" href="../beginner/deep_learning_nlp.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> PyTorch Tutorials
+          
+
+          
+            
+            <img src="../_static/pytorch-logo-dark.svg" class="logo" />
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Beginner Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html">What is PyTorch?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#getting-started">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#tensors">Tensors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#operations">Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#numpy-bridge">Numpy Bridge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#converting-torch-tensor-to-numpy-array">Converting torch Tensor to numpy Array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#converting-numpy-array-to-torch-tensor">Converting numpy Array to torch Tensor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/tensor_tutorial.html#cuda-tensors">CUDA Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/blitz/autograd_tutorial.html">Autograd: automatic differentiation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/autograd_tutorial.html#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/autograd_tutorial.html#gradients">Gradients</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/blitz/neural_networks_tutorial.html">Neural Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/neural_networks_tutorial.html#define-the-network">Define the network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/neural_networks_tutorial.html#loss-function">Loss Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/neural_networks_tutorial.html#backprop">Backprop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/neural_networks_tutorial.html#update-the-weights">Update the weights</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html">Training a classifier</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#what-about-data">What about data?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#training-an-image-classifier">Training an image classifier</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#loading-and-normalizing-cifar10">1. Loading and normalizing CIFAR10</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#define-a-convolution-neural-network">2. Define a Convolution Neural Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#define-a-loss-function-and-optimizer">3. Define a Loss function and optimizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#train-the-network">4. Train the network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#test-the-network-on-the-test-data">5. Test the network on the test data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#training-on-gpu">Training on GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/blitz/cifar10_tutorial.html#where-do-i-go-next">Where do I go next?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/former_torchies_tutorial.html">PyTorch for former Torch users</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#inplace-out-of-place">Inplace / Out-of-place</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#zero-indexing">Zero Indexing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#no-camel-casing">No camel casing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#numpy-bridge">Numpy Bridge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#converting-torch-tensor-to-numpy-array">Converting torch Tensor to numpy Array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#converting-numpy-array-to-torch-tensor">Converting numpy Array to torch Tensor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/tensor_tutorial.html#cuda-tensors">CUDA Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/former_torchies/autograd_tutorial.html">Autograd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/autograd_tutorial.html#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/autograd_tutorial.html#gradients">Gradients</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/former_torchies/nn_tutorial.html">nn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/nn_tutorial.html#example-1-convnet">Example 1: ConvNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/nn_tutorial.html#forward-and-backward-function-hooks">Forward and Backward Function Hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/nn_tutorial.html#example-2-recurrent-net">Example 2: Recurrent Net</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/former_torchies/parallelism_tutorial.html">Multi-GPU examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/parallelism_tutorial.html#dataparallel">DataParallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/former_torchies/parallelism_tutorial.html#part-of-the-model-on-cpu-and-part-on-the-gpu">Part of the model on CPU and part on the GPU</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/pytorch_with_examples.html#tensors">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#warm-up-numpy">Warm-up: numpy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-tensors">PyTorch: Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/pytorch_with_examples.html#autograd">Autograd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-variables-and-autograd">PyTorch: Variables and autograd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-defining-new-autograd-functions">PyTorch: Defining new autograd functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#tensorflow-static-graphs">TensorFlow: Static Graphs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/pytorch_with_examples.html#nn-module"><cite>nn</cite> module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-nn">PyTorch: nn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-optim">PyTorch: optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-custom-nn-modules">PyTorch: Custom nn Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#pytorch-control-flow-weight-sharing">PyTorch: Control Flow + Weight Sharing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/pytorch_with_examples.html#examples">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#id1">Tensors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#id2">Autograd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/pytorch_with_examples.html#id3"><cite>nn</cite> module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#load-data">Load Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#visualize-a-few-images">Visualize a few images</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#training-the-model">Training the model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#visualizing-the-model-predictions">Visualizing the model predictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#finetuning-the-convnet">Finetuning the convnet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#train-and-evaluate">Train and evaluate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#convnet-as-fixed-feature-extractor">ConvNet as fixed feature extractor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html#id1">Train and evaluate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_nlp.html">Deep Learning for Natural Language Processing with Pytorch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#introduction-to-torch-s-tensor-library">1. Introduction to Torch&#8217;s tensor library</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#creating-tensors">Creating Tensors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#operations-with-tensors">Operations with Tensors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#reshaping-tensors">Reshaping Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#computation-graphs-and-automatic-differentiation">2. Computation Graphs and Automatic Differentiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#deep-learning-building-blocks-affine-maps-non-linearities-and-objectives">3. Deep Learning Building Blocks: Affine maps, non-linearities and objectives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#affine-maps">Affine Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#non-linearities">Non-Linearities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#softmax-and-probabilities">Softmax and Probabilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#objective-functions">Objective Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#optimization-and-training">4. Optimization and Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#creating-network-components-in-pytorch">5. Creating Network Components in Pytorch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#example-logistic-regression-bag-of-words-classifier">Example: Logistic Regression Bag-of-Words classifier</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#word-embeddings-encoding-lexical-semantics">6. Word Embeddings: Encoding Lexical Semantics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#getting-dense-word-embeddings">Getting Dense Word Embeddings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#word-embeddings-in-pytorch">Word Embeddings in Pytorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#an-example-n-gram-language-modeling">An Example: N-Gram Language Modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#exercise-computing-word-embeddings-continuous-bag-of-words">Exercise: Computing Word Embeddings: Continuous Bag-of-Words</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#sequence-models-and-long-short-term-memory-networks">7. Sequence Models and Long-Short Term Memory Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#lstm-s-in-pytorch">LSTM&#8217;s in Pytorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#example-an-lstm-for-part-of-speech-tagging">Example: An LSTM for Part-of-Speech Tagging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#exercise-augmenting-the-lstm-part-of-speech-tagger-with-character-level-features">Exercise: Augmenting the LSTM part-of-speech tagger with character-level features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../beginner/deep_learning_nlp.html#advanced-making-dynamic-decisions-and-the-bi-lstm-crf">8. Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#implementation-notes">Implementation Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/deep_learning_nlp.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Intermediate Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Classifying Names with a Character-Level RNN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#preparing-the-data">Preparing the Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#turning-names-into-tensors">Turning Names into Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-network">Creating the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#preparing-for-training">Preparing for Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-the-network">Training the Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluating-the-results">Evaluating the Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-on-user-input">Running on User Input</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">Generating Names with a Character-Level RNN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="char_rnn_generation_tutorial.html#preparing-the-data">Preparing the Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="char_rnn_generation_tutorial.html#creating-the-network">Creating the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="char_rnn_generation_tutorial.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="char_rnn_generation_tutorial.html#preparing-for-training">Preparing for Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="char_rnn_generation_tutorial.html#training-the-network">Training the Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="char_rnn_generation_tutorial.html#plotting-the-losses">Plotting the Losses</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="char_rnn_generation_tutorial.html#sampling-the-network">Sampling the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="char_rnn_generation_tutorial.html#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#loading-data-files">Loading data files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#the-seq2seq-model">The Seq2Seq Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#the-encoder">The Encoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#the-decoder">The Decoder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="seq2seq_translation_tutorial.html#simple-decoder">Simple Decoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="seq2seq_translation_tutorial.html#attention-decoder">Attention Decoder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#preparing-training-data">Preparing Training Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#training-the-model">Training the Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#plotting-results">Plotting results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#evaluation">Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#training-and-evaluating">Training and Evaluating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="seq2seq_translation_tutorial.html#visualizing-attention">Visualizing Attention</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="seq2seq_translation_tutorial.html#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reinforcement_q_learning.html#replay-memory">Replay Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reinforcement_q_learning.html#dqn-algorithm">DQN algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reinforcement_q_learning.html#q-network">Q-network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reinforcement_q_learning.html#input-extraction">Input extraction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="reinforcement_q_learning.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reinforcement_q_learning.html#hyperparameters-and-utilities">Hyperparameters and utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reinforcement_q_learning.html#training-loop">Training loop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html">Creating extensions using numpy and scipy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html#parameter-less-example">Parameter-less example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html#parametrized-example">Parametrized example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/c_extension.html">Custom C extensions for pytorch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/c_extension.html#step-1-prepare-your-c-code">Step 1. prepare your C code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../advanced/c_extension.html#step-2-include-it-in-your-python-code">Step 2: Include it in your Python code</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">PyTorch Tutorials</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Classifying Names with a Character-Level RNN</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/intermediate/char_rnn_classification_tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="classifying-names-with-a-character-level-rnn">
+<span id="sphx-glr-intermediate-char-rnn-classification-tutorial-py"></span><h1>Classifying Names with a Character-Level RNN<a class="headerlink" href="#classifying-names-with-a-character-level-rnn" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/spro/practical-pytorch">Sean Robertson</a></p>
+<p>We will be building and training a basic character-level RNN to classify
+words. A character-level RNN reads words as a series of characters -
+outputting a prediction and &#8220;hidden state&#8221; at each step, feeding its
+previous hidden state into each next step. We take the final prediction
+to be the output, i.e. which class the word belongs to.</p>
+<p>Specifically, we&#8217;ll train on a few thousand surnames from 18 languages
+of origin, and predict which language a name is from based on the
+spelling:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python predict.py Hinton
+(-0.47) Scottish
+(-1.52) English
+(-3.57) Irish
+
+$ python predict.py Schmidhuber
+(-0.19) German
+(-2.48) Czech
+(-2.68) Dutch
+</pre></div>
+</div>
+<p><strong>Recommended Reading:</strong></p>
+<p>I assume you have at least installed PyTorch, know Python, and
+understand Tensors:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://pytorch.org/">http://pytorch.org/</a> For installation instructions</li>
+<li><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a> to get started with PyTorch in general</li>
+<li><a class="reference internal" href="../beginner/pytorch_with_examples.html"><span class="doc">Learning PyTorch with Examples</span></a> for a wide and deep overview</li>
+<li><a class="reference internal" href="../beginner/former_torchies_tutorial.html"><span class="doc">PyTorch for former Torch users</span></a> if you are former Lua Torch user</li>
+</ul>
+<p>It would also be useful to know about RNNs and how they work:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/">The Unreasonable Effectiveness of Recurrent Neural
+Networks</a>
+shows a bunch of real life examples</li>
+<li><a class="reference external" href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTM
+Networks</a>
+is about LSTMs specifically but also informative about RNNs in
+general</li>
+</ul>
+<div class="section" id="preparing-the-data">
+<h2>Preparing the Data<a class="headerlink" href="#preparing-the-data" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Download the data from
+<a class="reference external" href="https://download.pytorch.org/tutorial/data.zip">here</a>
+and extract it to the current directory.</p>
+</div>
+<p>Included in the <code class="docutils literal"><span class="pre">data/names</span></code> directory are 18 text files named as
+&#8220;[Language].txt&#8221;. Each file contains a bunch of names, one name per
+line, mostly romanized (but we still need to convert from Unicode to
+ASCII).</p>
+<p>We&#8217;ll end up with a dictionary of lists of names per language,
+<code class="docutils literal"><span class="pre">{language:</span> <span class="pre">[names</span> <span class="pre">...]}</span></code>. The generic variables &#8220;category&#8221; and &#8220;line&#8221;
+(for language and name in our case) are used for later extensibility.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="k">def</span> <span class="nf">findFiles</span><span class="p">(</span><span class="n">path</span><span class="p">):</span> <span class="k">return</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">findFiles</span><span class="p">(</span><span class="s1">&#39;data/names/*.txt&#39;</span><span class="p">))</span>
+
+<span class="kn">import</span> <span class="nn">unicodedata</span>
+<span class="kn">import</span> <span class="nn">string</span>
+
+<span class="n">all_letters</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">ascii_letters</span> <span class="o">+</span> <span class="s2">&quot; .,;&#39;&quot;</span>
+<span class="n">n_letters</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_letters</span><span class="p">)</span>
+
+<span class="c1"># Turn a Unicode string to plain ASCII, thanks to http://stackoverflow.com/a/518232/2809427</span>
+<span class="k">def</span> <span class="nf">unicodeToAscii</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s1">&#39;NFD&#39;</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">category</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">&#39;Mn&#39;</span>
+        <span class="ow">and</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">all_letters</span>
+    <span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">unicodeToAscii</span><span class="p">(</span><span class="s1">&#39;Ślusàrski&#39;</span><span class="p">))</span>
+
+<span class="c1"># Build the category_lines dictionary, a list of names per language</span>
+<span class="n">category_lines</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">all_categories</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Read a file and split into lines</span>
+<span class="k">def</span> <span class="nf">readLines</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">unicodeToAscii</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">findFiles</span><span class="p">(</span><span class="s1">&#39;data/names/*.txt&#39;</span><span class="p">):</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">all_categories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">readLines</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">category_lines</span><span class="p">[</span><span class="n">category</span><span class="p">]</span> <span class="o">=</span> <span class="n">lines</span>
+
+<span class="n">n_categories</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_categories</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;data/names/Arabic.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Chinese.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Czech.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Dutch.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/English.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/French.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/German.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Greek.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Irish.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Italian.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Japanese.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Korean.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Polish.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Portuguese.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Russian.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Scottish.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Spanish.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;data/names/Vietnamese.txt&#39;</span><span class="p">]</span>
+<span class="n">Slusarski</span>
+</pre></div>
+</div>
+<p>Now we have <code class="docutils literal"><span class="pre">category_lines</span></code>, a dictionary mapping each category
+(language) to a list of lines (names). We also kept track of
+<code class="docutils literal"><span class="pre">all_categories</span></code> (just a list of languages) and <code class="docutils literal"><span class="pre">n_categories</span></code> for
+later reference.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">category_lines</span><span class="p">[</span><span class="s1">&#39;Italian&#39;</span><span class="p">][:</span><span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;Abandonato&#39;</span><span class="p">,</span> <span class="s1">&#39;Abatangelo&#39;</span><span class="p">,</span> <span class="s1">&#39;Abatantuono&#39;</span><span class="p">,</span> <span class="s1">&#39;Abate&#39;</span><span class="p">,</span> <span class="s1">&#39;Abategiovanni&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="section" id="turning-names-into-tensors">
+<h3>Turning Names into Tensors<a class="headerlink" href="#turning-names-into-tensors" title="Permalink to this headline">¶</a></h3>
+<p>Now that we have all the names organized, we need to turn them into
+Tensors to make any use of them.</p>
+<p>To represent a single letter, we use a &#8220;one-hot vector&#8221; of size
+<code class="docutils literal"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_letters&gt;</span></code>. A one-hot vector is filled with 0s except for a 1
+at index of the current letter, e.g. <code class="docutils literal"><span class="pre">&quot;b&quot;</span> <span class="pre">=</span> <span class="pre">&lt;0</span> <span class="pre">1</span> <span class="pre">0</span> <span class="pre">0</span> <span class="pre">0</span> <span class="pre">...&gt;</span></code>.</p>
+<p>To make a word we join a bunch of those into a 2D matrix
+<code class="docutils literal"><span class="pre">&lt;line_length</span> <span class="pre">x</span> <span class="pre">1</span> <span class="pre">x</span> <span class="pre">n_letters&gt;</span></code>.</p>
+<p>That extra 1 dimension is because PyTorch assumes everything is in
+batches - we&#8217;re just using a batch size of 1 here.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="c1"># Find letter index from all_letters, e.g. &quot;a&quot; = 0</span>
+<span class="k">def</span> <span class="nf">letterToIndex</span><span class="p">(</span><span class="n">letter</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">all_letters</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
+
+<span class="c1"># Just for demonstration, turn a letter into a &lt;1 x n_letters&gt; Tensor</span>
+<span class="k">def</span> <span class="nf">letterToTensor</span><span class="p">(</span><span class="n">letter</span><span class="p">):</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_letters</span><span class="p">)</span>
+    <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">letterToIndex</span><span class="p">(</span><span class="n">letter</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">tensor</span>
+
+<span class="c1"># Turn a line into a &lt;line_length x 1 x n_letters&gt;,</span>
+<span class="c1"># or an array of one-hot letter vectors</span>
+<span class="k">def</span> <span class="nf">lineToTensor</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_letters</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">li</span><span class="p">,</span> <span class="n">letter</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+        <span class="n">tensor</span><span class="p">[</span><span class="n">li</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">letterToIndex</span><span class="p">(</span><span class="n">letter</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">tensor</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">letterToTensor</span><span class="p">(</span><span class="s1">&#39;J&#39;</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">lineToTensor</span><span class="p">(</span><span class="s1">&#39;Jones&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Columns</span> <span class="mi">0</span> <span class="n">to</span> <span class="mi">12</span>
+    <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+
+<span class="n">Columns</span> <span class="mi">13</span> <span class="n">to</span> <span class="mi">25</span>
+    <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+
+<span class="n">Columns</span> <span class="mi">26</span> <span class="n">to</span> <span class="mi">38</span>
+    <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">1</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+
+<span class="n">Columns</span> <span class="mi">39</span> <span class="n">to</span> <span class="mi">51</span>
+    <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+
+<span class="n">Columns</span> <span class="mi">52</span> <span class="n">to</span> <span class="mi">56</span>
+    <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+<span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="n">x57</span><span class="p">]</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">57</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="creating-the-network">
+<h2>Creating the Network<a class="headerlink" href="#creating-the-network" title="Permalink to this headline">¶</a></h2>
+<p>Before autograd, creating a recurrent neural network in Torch involved
+cloning the parameters of a layer over several timesteps. The layers
+held hidden state and gradients which are now entirely handled by the
+graph itself. This means you can implement a RNN in a very &#8220;pure&#8221; way,
+as regular feed-forward layers.</p>
+<p>This RNN module (mostly copied from <a class="reference external" href="https://github.com/pytorch/tutorials/blob/master/Introduction%20to%20PyTorch%20for%20former%20Torchies.ipynb">the PyTorch for Torch users
+tutorial</a>)
+is just 2 linear layers which operate on an input and hidden state, with
+a LogSoftmax layer after the output.</p>
+<div class="figure">
+<img alt="" src="https://i.imgur.com/Z2xbySO.png" />
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
+
+<span class="k">class</span> <span class="nc">RNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2h</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_size</span> <span class="o">+</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2o</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_size</span> <span class="o">+</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softmax</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LogSoftmax</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">hidden</span><span class="p">):</span>
+        <span class="n">combined</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="nb">input</span><span class="p">,</span> <span class="n">hidden</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2h</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2o</span><span class="p">(</span><span class="n">combined</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span>
+
+    <span class="k">def</span> <span class="nf">initHidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">))</span>
+
+<span class="n">n_hidden</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">rnn</span> <span class="o">=</span> <span class="n">RNN</span><span class="p">(</span><span class="n">n_letters</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">,</span> <span class="n">n_categories</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To run a step of this network we need to pass an input (in our case, the
+Tensor for the current letter) and a previous hidden state (which we
+initialize as zeros at first). We&#8217;ll get back the output (probability of
+each language) and a next hidden state (which we keep for the next
+step).</p>
+<p>Remember that PyTorch modules operate on Variables rather than straight
+up Tensors.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">letterToTensor</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">))</span>
+<span class="n">hidden</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">))</span>
+
+<span class="n">output</span><span class="p">,</span> <span class="n">next_hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For the sake of efficiency we don&#8217;t want to be creating a new Tensor for
+every step, so we will use <code class="docutils literal"><span class="pre">lineToTensor</span></code> instead of
+<code class="docutils literal"><span class="pre">letterToTensor</span></code> and use slices. This could be further optimized by
+pre-computing batches of Tensors.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lineToTensor</span><span class="p">(</span><span class="s1">&#39;Albert&#39;</span><span class="p">))</span>
+<span class="n">hidden</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">))</span>
+
+<span class="n">output</span><span class="p">,</span> <span class="n">next_hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hidden</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+
+<span class="n">Columns</span> <span class="mi">0</span> <span class="n">to</span> <span class="mi">9</span>
+<span class="o">-</span><span class="mf">2.8271</span> <span class="o">-</span><span class="mf">2.9137</span> <span class="o">-</span><span class="mf">2.8518</span> <span class="o">-</span><span class="mf">2.8818</span> <span class="o">-</span><span class="mf">2.9471</span> <span class="o">-</span><span class="mf">2.9289</span> <span class="o">-</span><span class="mf">2.8583</span> <span class="o">-</span><span class="mf">2.8858</span> <span class="o">-</span><span class="mf">2.8464</span> <span class="o">-</span><span class="mf">2.9367</span>
+
+<span class="n">Columns</span> <span class="mi">10</span> <span class="n">to</span> <span class="mi">17</span>
+<span class="o">-</span><span class="mf">2.9135</span> <span class="o">-</span><span class="mf">2.9482</span> <span class="o">-</span><span class="mf">2.8657</span> <span class="o">-</span><span class="mf">2.9044</span> <span class="o">-</span><span class="mf">2.8973</span> <span class="o">-</span><span class="mf">2.9076</span> <span class="o">-</span><span class="mf">2.9352</span> <span class="o">-</span><span class="mf">2.7937</span>
+<span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="n">x18</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>As you can see the output is a <code class="docutils literal"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_categories&gt;</span></code> Tensor, where
+every item is the likelihood of that category (higher is more likely).</p>
+</div>
+<div class="section" id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="preparing-for-training">
+<h3>Preparing for Training<a class="headerlink" href="#preparing-for-training" title="Permalink to this headline">¶</a></h3>
+<p>Before going into training we should make a few helper functions. The
+first is to interpret the output of the network, which we know to be a
+likelihood of each category. We can use <code class="docutils literal"><span class="pre">Tensor.topk</span></code> to get the index
+of the greatest value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
+    <span class="n">top_n</span><span class="p">,</span> <span class="n">top_i</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Tensor out of Variable with .data</span>
+    <span class="n">category_i</span> <span class="o">=</span> <span class="n">top_i</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">all_categories</span><span class="p">[</span><span class="n">category_i</span><span class="p">],</span> <span class="n">category_i</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;Vietnamese&#39;</span><span class="p">,</span> <span class="mi">17</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We will also want a quick way to get a training example (a name and its
+language):</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+
+<span class="k">def</span> <span class="nf">randomChoice</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">l</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+
+<span class="k">def</span> <span class="nf">randomTrainingPair</span><span class="p">():</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">randomChoice</span><span class="p">(</span><span class="n">all_categories</span><span class="p">)</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">randomChoice</span><span class="p">(</span><span class="n">category_lines</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
+    <span class="n">category_tensor</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">all_categories</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">category</span><span class="p">)]))</span>
+    <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lineToTensor</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;category =&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="s1">&#39;/ line =&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">category</span> <span class="o">=</span> <span class="n">Italian</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Ongaro</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Vietnamese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Ho</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Vietnamese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Pham</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">German</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Hofer</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Polish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Slazak</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Russian</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Hihich</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">English</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Rhoades</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Spanish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Solo</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Italian</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Naggi</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Korean</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Chong</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="training-the-network">
+<h3>Training the Network<a class="headerlink" href="#training-the-network" title="Permalink to this headline">¶</a></h3>
+<p>Now all it takes to train this network is show it a bunch of examples,
+have it make guesses, and tell it if it&#8217;s wrong.</p>
+<p>For the loss function <code class="docutils literal"><span class="pre">nn.NLLLoss</span></code> is appropriate, since the last
+layer of the RNN is <code class="docutils literal"><span class="pre">nn.LogSoftmax</span></code>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Each loop of training will:</p>
+<ul class="simple">
+<li>Create input and target tensors</li>
+<li>Create a zeroed initial hidden state</li>
+<li>Read each letter in and<ul>
+<li>Keep hidden state for next letter</li>
+</ul>
+</li>
+<li>Compare final output to target</li>
+<li>Back-propagate</li>
+<li>Return the output and loss</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.005</span> <span class="c1"># If you set this too high, it might explode. If too low, it might not learn</span>
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span><span class="p">):</span>
+    <span class="n">hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="o">.</span><span class="n">initHidden</span><span class="p">()</span>
+
+    <span class="n">rnn</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">line_tensor</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="p">(</span><span class="n">line_tensor</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hidden</span><span class="p">)</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+    <span class="c1"># Add parameters&#39; gradients to their values, multiplied by learning rate</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">rnn</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="o">-</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Now we just have to run that with a bunch of examples. Since the
+<code class="docutils literal"><span class="pre">train</span></code> function returns both the output and loss we can print its
+guesses and also keep track of loss for plotting. Since there are 1000s
+of examples we print only every <code class="docutils literal"><span class="pre">print_every</span></code> time steps, and take an
+average of the loss.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">print_every</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">plot_every</span> <span class="o">=</span> <span class="mi">1000</span>
+
+<span class="n">rnn</span> <span class="o">=</span> <span class="n">RNN</span><span class="p">(</span><span class="n">n_letters</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">,</span> <span class="n">n_categories</span><span class="p">)</span>
+
+<span class="c1"># Keep track of losses for plotting</span>
+<span class="n">current_loss</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">all_losses</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">def</span> <span class="nf">timeSince</span><span class="p">(</span><span class="n">since</span><span class="p">):</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="n">since</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">s</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">-=</span> <span class="n">m</span> <span class="o">*</span> <span class="mi">60</span>
+    <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1">m </span><span class="si">%d</span><span class="s1">s&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span><span class="p">)</span>
+    <span class="n">current_loss</span> <span class="o">+=</span> <span class="n">loss</span>
+
+    <span class="c1"># Print epoch number, loss, name and guess</span>
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">guess</span><span class="p">,</span> <span class="n">guess_i</span> <span class="o">=</span> <span class="n">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">correct</span> <span class="o">=</span> <span class="s1">&#39;✓&#39;</span> <span class="k">if</span> <span class="n">guess</span> <span class="o">==</span> <span class="n">category</span> <span class="k">else</span> <span class="s1">&#39;✗ (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">category</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> / </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epoch</span> <span class="o">/</span> <span class="n">n_epochs</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">loss</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">correct</span><span class="p">))</span>
+
+    <span class="c1"># Add current loss avg to list of losses</span>
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">all_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_loss</span> <span class="o">/</span> <span class="n">plot_every</span><span class="p">)</span>
+        <span class="n">current_loss</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span>5000 5% (0m 5s) 2.8572 Crofts / Portuguese ✗ (English)
+10000 10% (0m 10s) 1.5368 Doan / Chinese ✗ (Vietnamese)
+15000 15% (0m 15s) 1.7873 Luong / Chinese ✗ (Vietnamese)
+20000 20% (0m 21s) 1.4564 Lieu / Vietnamese ✓
+25000 25% (0m 26s) 1.3052 Sokolof / Russian ✗ (Polish)
+30000 30% (0m 31s) 0.5712 Sheng / Chinese ✓
+35000 35% (0m 37s) 2.4396 Reay / Scottish ✗ (English)
+40000 40% (0m 43s) 0.1844 Flanagan / Irish ✓
+45000 45% (0m 48s) 0.2779 Ying / Chinese ✓
+50000 50% (0m 53s) 4.2066 Deeb / Dutch ✗ (Arabic)
+55000 55% (0m 59s) 0.5179 Zajicek / Czech ✓
+60000 60% (1m 4s) 0.9530 Smith / Scottish ✓
+65000 65% (1m 10s) 3.4966 Samuel / Arabic ✗ (German)
+70000 70% (1m 16s) 0.2419 Sklavenitis / Greek ✓
+75000 75% (1m 21s) 0.7718 Quraishi / Arabic ✓
+80000 80% (1m 27s) 1.7323 Tiedeman / Czech ✗ (German)
+85000 85% (1m 32s) 0.0399 Stawski / Polish ✓
+90000 90% (1m 38s) 0.9628 Tahan / Vietnamese ✗ (Arabic)
+95000 95% (1m 43s) 2.1825 Kim / Korean ✗ (Vietnamese)
+100000 100% (1m 49s) 1.8837 Duncan / French ✗ (Scottish)
+</pre></div>
+</div>
+</div>
+<div class="section" id="plotting-the-results">
+<h3>Plotting the Results<a class="headerlink" href="#plotting-the-results" title="Permalink to this headline">¶</a></h3>
+<p>Plotting the historical loss from <code class="docutils literal"><span class="pre">all_losses</span></code> shows the network
+learning:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">ticker</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">all_losses</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_char_rnn_classification_tutorial_001.png" class="align-center" src="../_images/sphx_glr_char_rnn_classification_tutorial_001.png" />
+</div>
+</div>
+<div class="section" id="evaluating-the-results">
+<h2>Evaluating the Results<a class="headerlink" href="#evaluating-the-results" title="Permalink to this headline">¶</a></h2>
+<p>To see how well the network performs on different categories, we will
+create a confusion matrix, indicating for every actual language (rows)
+which language the network guesses (columns). To calculate the confusion
+matrix a bunch of samples are run through the network with
+<code class="docutils literal"><span class="pre">evaluate()</span></code>, which is the same as <code class="docutils literal"><span class="pre">train()</span></code> minus the backprop.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Keep track of correct guesses in a confusion matrix</span>
+<span class="n">confusion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_categories</span><span class="p">,</span> <span class="n">n_categories</span><span class="p">)</span>
+<span class="n">n_confusion</span> <span class="o">=</span> <span class="mi">10000</span>
+
+<span class="c1"># Just return an output given a line</span>
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">line_tensor</span><span class="p">):</span>
+    <span class="n">hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="o">.</span><span class="n">initHidden</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">line_tensor</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">rnn</span><span class="p">(</span><span class="n">line_tensor</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">hidden</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span>
+
+<span class="c1"># Go through a bunch of examples and record which are correctly guessed</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_confusion</span><span class="p">):</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">line_tensor</span><span class="p">)</span>
+    <span class="n">guess</span><span class="p">,</span> <span class="n">guess_i</span> <span class="o">=</span> <span class="n">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">category_i</span> <span class="o">=</span> <span class="n">all_categories</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
+    <span class="n">confusion</span><span class="p">[</span><span class="n">category_i</span><span class="p">][</span><span class="n">guess_i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="c1"># Normalize by dividing every row by its sum</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_categories</span><span class="p">):</span>
+    <span class="n">confusion</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">confusion</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">confusion</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+<span class="c1"># Set up plot</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">cax</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">confusion</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cax</span><span class="p">)</span>
+
+<span class="c1"># Set up axes</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">all_categories</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">all_categories</span><span class="p">)</span>
+
+<span class="c1"># Force label at every tick</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="c1"># sphinx_gallery_thumbnail_number = 2</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_char_rnn_classification_tutorial_002.png" class="align-center" src="../_images/sphx_glr_char_rnn_classification_tutorial_002.png" />
+<p>You can pick out bright spots off the main axis that show which
+languages it guesses incorrectly, e.g. Chinese for Korean, and Spanish
+for Italian. It seems to do very well with Greek, and very poorly with
+English (perhaps because of overlap with other languages).</p>
+<div class="section" id="running-on-user-input">
+<h3>Running on User Input<a class="headerlink" href="#running-on-user-input" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">input_line</span><span class="p">,</span> <span class="n">n_predictions</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&gt; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">input_line</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">Variable</span><span class="p">(</span><span class="n">lineToTensor</span><span class="p">(</span><span class="n">input_line</span><span class="p">)))</span>
+
+    <span class="c1"># Get top N categories</span>
+    <span class="n">topv</span><span class="p">,</span> <span class="n">topi</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">n_predictions</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">predictions</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_predictions</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">topv</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">category_index</span> <span class="o">=</span> <span class="n">topi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;(</span><span class="si">%.2f</span><span class="s1">) </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">all_categories</span><span class="p">[</span><span class="n">category_index</span><span class="p">]))</span>
+        <span class="n">predictions</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">value</span><span class="p">,</span> <span class="n">all_categories</span><span class="p">[</span><span class="n">category_index</span><span class="p">]])</span>
+
+<span class="n">predict</span><span class="p">(</span><span class="s1">&#39;Dovesky&#39;</span><span class="p">)</span>
+<span class="n">predict</span><span class="p">(</span><span class="s1">&#39;Jackson&#39;</span><span class="p">)</span>
+<span class="n">predict</span><span class="p">(</span><span class="s1">&#39;Satoshi&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">Dovesky</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.34</span><span class="p">)</span> <span class="n">Russian</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.64</span><span class="p">)</span> <span class="n">Czech</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">3.35</span><span class="p">)</span> <span class="n">English</span>
+
+<span class="o">&gt;</span> <span class="n">Jackson</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.19</span><span class="p">)</span> <span class="n">Scottish</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">2.53</span><span class="p">)</span> <span class="n">Russian</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">2.88</span><span class="p">)</span> <span class="n">English</span>
+
+<span class="o">&gt;</span> <span class="n">Satoshi</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.73</span><span class="p">)</span> <span class="n">Arabic</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.97</span><span class="p">)</span> <span class="n">Japanese</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">3.08</span><span class="p">)</span> <span class="n">Polish</span>
+</pre></div>
+</div>
+<p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
+repo</a>
+split the above code into a few files:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">data.py</span></code> (loads files)</li>
+<li><code class="docutils literal"><span class="pre">model.py</span></code> (defines the RNN)</li>
+<li><code class="docutils literal"><span class="pre">train.py</span></code> (runs training)</li>
+<li><code class="docutils literal"><span class="pre">predict.py</span></code> (runs <code class="docutils literal"><span class="pre">predict()</span></code> with command line arguments)</li>
+<li><code class="docutils literal"><span class="pre">server.py</span></code> (serve prediction as a JSON API with bottle.py)</li>
+</ul>
+<p>Run <code class="docutils literal"><span class="pre">train.py</span></code> to train and save the network.</p>
+<p>Run <code class="docutils literal"><span class="pre">predict.py</span></code> with a name to view predictions:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python predict.py Hazaki
+(-0.42) Japanese
+(-1.39) Polish
+(-3.51) Czech
+</pre></div>
+</div>
+<p>Run <code class="docutils literal"><span class="pre">server.py</span></code> and visit <a class="reference external" href="http://localhost:5533/Yourname">http://localhost:5533/Yourname</a> to get JSON
+output of predictions.</p>
+</div>
+</div>
+<div class="section" id="exercises">
+<h2>Exercises<a class="headerlink" href="#exercises" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Try with a different dataset of line -&gt; category, for example:<ul>
+<li>Any word -&gt; language</li>
+<li>First name -&gt; gender</li>
+<li>Character name -&gt; writer</li>
+<li>Page title -&gt; blog or subreddit</li>
+</ul>
+</li>
+<li>Get better results with a bigger and/or better shaped network<ul>
+<li>Add more linear layers</li>
+<li>Try the <code class="docutils literal"><span class="pre">nn.LSTM</span></code> and <code class="docutils literal"><span class="pre">nn.GRU</span></code> layers</li>
+<li>Combine multiple of these RNNs as a higher level network</li>
+</ul>
+</li>
+</ul>
+<p><strong>Total running time of the script:</strong> ( 1 minutes  56.546 seconds)</p>
+<div class="sphx-glr-footer docutils container">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../_downloads/char_rnn_classification_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../_downloads/char_rnn_classification_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="http://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="char_rnn_generation_tutorial.html" class="btn btn-neutral float-right" title="Generating Names with a Character-Level RNN" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../beginner/deep_learning_nlp.html" class="btn btn-neutral" title="Deep Learning for Natural Language Processing with Pytorch" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, PyTorch.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

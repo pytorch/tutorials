@@ -1,0 +1,416 @@
+
+
+.. _sphx_glr_beginner_blitz_tensor_tutorial.py:
+
+
+What is PyTorch?
+================
+
+It’s a Python based scientific computing package targeted at two sets of
+audiences:
+
+-  A replacement for numpy to use the power of GPUs
+-  a deep learning research platform that provides maximum flexibility
+   and speed
+
+Getting Started
+---------------
+
+Tensors
+^^^^^^^
+
+Tensors are similar to numpy’s ndarrays, with the addition being that
+Tensors can also be used on a GPU to accelerate computing.
+
+
+
+.. code-block:: python
+
+
+    from __future__ import print_function
+    import torch
+
+
+
+
+
+
+
+Construct a 5x3 matrix, uninitialized:
+
+
+
+.. code-block:: python
+
+
+    x = torch.Tensor(5, 3)
+    print(x)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    9.6388e+36  4.5616e-41  9.6388e+36
+     4.5616e-41  2.9921e-33  4.5616e-41
+     2.9921e-33  4.5616e-41  3.0412e-33
+     4.5616e-41  2.9922e-33  4.5616e-41
+     2.9934e-33  4.5616e-41  2.9924e-33
+    [torch.FloatTensor of size 5x3]
+
+
+Construct a randomly initialized matrix
+
+
+
+.. code-block:: python
+
+
+    x = torch.rand(5, 3)
+    print(x)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.6577  0.8956  0.2573
+     0.8712  0.5180  0.0601
+     0.4902  0.3375  0.7562
+     0.8532  0.4341  0.6814
+     0.0993  0.4596  0.0889
+    [torch.FloatTensor of size 5x3]
+
+
+Get its size
+
+
+
+.. code-block:: python
+
+
+    print(x.size())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    torch.Size([5, 3])
+
+
+.. note::
+    ``torch.Size`` is in fact a tuple, so it supports the same operations
+Operations
+^^^^^^^^^^
+There are multiple syntaxes for operations. Let's see addition as an example
+
+Addition: syntax 1
+
+
+
+.. code-block:: python
+
+    y = torch.rand(5, 3)
+    print(x + y)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.6683  1.6515  0.9819
+     1.5197  0.7717  0.5473
+     1.4203  0.4628  0.7811
+     1.8423  1.3549  1.1402
+     0.8042  0.7300  0.2411
+    [torch.FloatTensor of size 5x3]
+
+
+Addition: syntax 2
+
+
+
+.. code-block:: python
+
+
+    print(torch.add(x, y))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.6683  1.6515  0.9819
+     1.5197  0.7717  0.5473
+     1.4203  0.4628  0.7811
+     1.8423  1.3549  1.1402
+     0.8042  0.7300  0.2411
+    [torch.FloatTensor of size 5x3]
+
+
+Addition: giving an output tensor
+
+
+
+.. code-block:: python
+
+    result = torch.Tensor(5, 3)
+    torch.add(x, y, out=result)
+    print(result)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.6683  1.6515  0.9819
+     1.5197  0.7717  0.5473
+     1.4203  0.4628  0.7811
+     1.8423  1.3549  1.1402
+     0.8042  0.7300  0.2411
+    [torch.FloatTensor of size 5x3]
+
+
+Addition: in-place
+
+
+
+.. code-block:: python
+
+
+    # adds x to y
+    y.add_(x)
+    print(y)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.6683  1.6515  0.9819
+     1.5197  0.7717  0.5473
+     1.4203  0.4628  0.7811
+     1.8423  1.3549  1.1402
+     0.8042  0.7300  0.2411
+    [torch.FloatTensor of size 5x3]
+
+
+.. note::
+    Any operation that mutates a tensor in-place is post-fixed with an ``_``
+    For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
+
+You can use standard numpy-like indexing with all bells and whistles!
+
+
+
+.. code-block:: python
+
+
+    print(x[:, 1])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.8956
+     0.5180
+     0.3375
+     0.4341
+     0.4596
+    [torch.FloatTensor of size 5]
+
+
+**Read later:**
+
+
+  100+ Tensor operations, including transposing, indexing, slicing,
+  mathematical operations, linear algebra, random numbers, etc are described
+  `here <http://pytorch.org/docs/torch>`_
+
+Numpy Bridge
+------------
+
+Converting a torch Tensor to a numpy array and vice versa is a breeze.
+
+The torch Tensor and numpy array will share their underlying memory
+locations, and changing one will change the other.
+
+Converting torch Tensor to numpy Array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+.. code-block:: python
+
+
+    a = torch.ones(5)
+    print(a)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    1
+     1
+     1
+     1
+     1
+    [torch.FloatTensor of size 5]
+
+
+
+.. code-block:: python
+
+
+
+    b = a.numpy()
+    print(b)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [ 1.  1.  1.  1.  1.]
+
+
+See how the numpy array changed in value.
+
+
+
+.. code-block:: python
+
+
+    a.add_(1)
+    print(a)
+    print(b)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    2
+     2
+     2
+     2
+     2
+    [torch.FloatTensor of size 5]
+
+    [ 2.  2.  2.  2.  2.]
+
+
+Converting numpy Array to torch Tensor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+See how changing the np array changed the torch Tensor automatically
+
+
+
+.. code-block:: python
+
+
+    import numpy as np
+    a = np.ones(5)
+    b = torch.from_numpy(a)
+    np.add(a, 1, out=a)
+    print(a)
+    print(b)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [ 2.  2.  2.  2.  2.]
+
+     2
+     2
+     2
+     2
+     2
+    [torch.DoubleTensor of size 5]
+
+
+All the Tensors on the CPU except a CharTensor support converting to
+NumPy and back.
+
+CUDA Tensors
+------------
+
+Tensors can be moved onto GPU using the ``.cuda`` function.
+
+
+
+.. code-block:: python
+
+
+    # let us run this cell only if CUDA is available
+    if torch.cuda.is_available():
+        x = x.cuda()
+        y = y.cuda()
+        x + y
+
+
+
+
+
+
+**Total running time of the script:** ( 0 minutes  0.009 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: tensor_tutorial.py <tensor_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: tensor_tutorial.ipynb <tensor_tutorial.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_

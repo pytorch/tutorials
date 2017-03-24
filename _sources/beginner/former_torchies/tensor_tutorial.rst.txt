@@ -1,0 +1,387 @@
+
+
+.. _sphx_glr_beginner_former_torchies_tensor_tutorial.py:
+
+
+Tensors
+=======
+
+Tensors behave almost exactly the same way in PyTorch as they do in
+Torch.
+
+Create a tensor of size (5 x 7) with uninitialized memory:
+
+
+
+
+.. code-block:: python
+
+
+    import torch
+    a = torch.FloatTensor(5, 7)
+
+
+
+
+
+
+
+Initialize a tensor randomized with a normal distribution with mean=0, var=1:
+
+
+
+.. code-block:: python
+
+
+    a = torch.randn(5, 7)
+    print(a)
+    print(a.size())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    0.0586  0.5703 -0.0985  1.3186  0.0911  0.1221 -0.9686
+     0.5378 -0.0577  1.3188 -1.6998 -0.2400  0.9080  1.0341
+    -0.1237  0.8646 -0.1934  1.4014  1.8801  0.6506  0.2125
+     1.2028  1.5350  0.5066  1.7654 -0.2194  0.3642  0.1345
+    -0.9915 -1.0556  0.6476  0.5228  0.7364 -0.6577  1.0949
+    [torch.FloatTensor of size 5x7]
+
+    torch.Size([5, 7])
+
+
+.. note::
+    ``torch.Size`` is in fact a tuple, so it supports the same operations
+
+Inplace / Out-of-place
+----------------------
+
+The first difference is that ALL operations on the tensor that operate
+in-place on it will have an ``_`` postfix. For example, ``add`` is the
+out-of-place version, and ``add_`` is the in-place version.
+
+
+
+.. code-block:: python
+
+
+    a.fill_(3.5)
+    # a has now been filled with the value 3.5
+
+    b = a.add(4.0)
+    # a is still filled with 3.5
+    # new tensor b is returned with values 3.5 + 4.0 = 7.5
+
+    print(a, b)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
+     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
+     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
+     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
+     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
+    [torch.FloatTensor of size 5x7]
+ 
+     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
+     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
+     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
+     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
+     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
+    [torch.FloatTensor of size 5x7]
+
+
+Some operations like ``narrow`` do not have in-place versions, and
+hence, ``.narrow_`` does not exist. Similarly, some operations like
+``fill_`` do not have an out-of-place version, so ``.fill`` does not
+exist.
+
+Zero Indexing
+-------------
+
+Another difference is that Tensors are zero-indexed. (In lua, tensors are
+one-indexed)
+
+
+
+.. code-block:: python
+
+
+    b = a[0, 3]  # select 1st row, 4th column from a
+
+
+
+
+
+
+
+Tensors can be also indexed with Python's slicing
+
+
+
+.. code-block:: python
+
+
+    b = a[:, 3:5]  # selects all rows, 4th column and  5th column from a
+
+
+
+
+
+
+
+No camel casing
+---------------
+
+The next small difference is that all functions are now NOT camelCase
+anymore. For example ``indexAdd`` is now called ``index_add_``
+
+
+
+.. code-block:: python
+
+
+
+    x = torch.ones(5, 5)
+    print(x)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    1  1  1  1  1
+     1  1  1  1  1
+     1  1  1  1  1
+     1  1  1  1  1
+     1  1  1  1  1
+    [torch.FloatTensor of size 5x5]
+
+
+
+.. code-block:: python
+
+
+    z = torch.Tensor(5, 2)
+    z[:, 0] = 10
+    z[:, 1] = 100
+    print(z)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    10  100
+      10  100
+      10  100
+      10  100
+      10  100
+    [torch.FloatTensor of size 5x2]
+
+
+
+.. code-block:: python
+
+    x.index_add_(1, torch.LongTensor([4, 0]), z)
+    print(x)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    101    1    1    1   11
+     101    1    1    1   11
+     101    1    1    1   11
+     101    1    1    1   11
+     101    1    1    1   11
+    [torch.FloatTensor of size 5x5]
+
+
+Numpy Bridge
+------------
+
+Converting a torch Tensor to a numpy array and vice versa is a breeze.
+The torch Tensor and numpy array will share their underlying memory
+locations, and changing one will change the other.
+
+Converting torch Tensor to numpy Array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+.. code-block:: python
+
+
+    a = torch.ones(5)
+    print(a)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    1
+     1
+     1
+     1
+     1
+    [torch.FloatTensor of size 5]
+
+
+
+.. code-block:: python
+
+
+    b = a.numpy()
+    print(b)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [ 1.  1.  1.  1.  1.]
+
+
+
+.. code-block:: python
+
+    a.add_(1)
+    print(a)
+    print(b) 	# see how the numpy array changed in value
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    2
+     2
+     2
+     2
+     2
+    [torch.FloatTensor of size 5]
+
+    [ 2.  2.  2.  2.  2.]
+
+
+Converting numpy Array to torch Tensor
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+.. code-block:: python
+
+
+    import numpy as np
+    a = np.ones(5)
+    b = torch.from_numpy(a)
+    np.add(a, 1, out=a)
+    print(a)
+    print(b)  # see how changing the np array changed the torch Tensor automatically
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    [ 2.  2.  2.  2.  2.]
+
+     2
+     2
+     2
+     2
+     2
+    [torch.DoubleTensor of size 5]
+
+
+All the Tensors on the CPU except a CharTensor support converting to
+NumPy and back.
+
+CUDA Tensors
+------------
+
+CUDA Tensors are nice and easy in pytorch, and they are much more
+consistent as well. Transfering a CUDA tensor from the CPU to GPU will
+retain it’s type.
+
+
+
+.. code-block:: python
+
+
+    # let us run this cell only if CUDA is available
+    if torch.cuda.is_available():
+        # creates a LongTensor and transfers it
+        # to GPU as torch.cuda.LongTensor
+        a = torch.LongTensor(10).fill_(3).cuda()
+        print(type(a))
+        b = a.cpu()
+        # transfers it to CPU, back to
+        # being a torch.LongTensor
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    <class 'torch.cuda.LongTensor'>
+
+
+**Total running time of the script:** ( 0 minutes  0.003 seconds)
+
+
+
+.. container:: sphx-glr-footer
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: tensor_tutorial.py <tensor_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: tensor_tutorial.ipynb <tensor_tutorial.ipynb>`
+
+.. rst-class:: sphx-glr-signature
+
+    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
