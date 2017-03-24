@@ -142,7 +142,7 @@ todo_include_todos = False
 # # Add any paths that contain custom static files (such as style sheets) here,
 # # relative to this directory. They are copied after the builtin static files,
 # # so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ['_static']
+html_static_path = ['_static']
 
 # # Custom sidebar templates, maps document names to template names.
 # html_sidebars = {
@@ -219,6 +219,10 @@ texinfo_documents = [
 
 
 def setup(app):
+    # Custom CSS
+    app.add_stylesheet('css/pytorch_theme.css')
+    app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
+    # Custom directives
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
     app.add_directive('customgalleryitem', CustomGalleryItemDirective)
