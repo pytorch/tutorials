@@ -18,3 +18,9 @@ Here's how to create a new tutorial:
 3. Create a thumbnail in the index file using a command like `.. galleryitem:: beginner/your_tutorial.py`. (This is a custom directive. Argument should be a full path to the python file without a slash at the beginning.) 
 
 In case you prefer to write your tutorial in jupyter, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to python file. After conversion and addition to the project, please make sure the sections headings etc are in logical order.
+
+## Building
+
+- Start with installing torch and torchvision. Install other requirements using `pip install -r requirements.txt`
+- Then you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. However, this will take about 30-60 min based on your system. 
+- You can skip the execution by running `make html-noplot` to build html documentation to `_build/html`. This way, you can quickly preview your tutorial.
