@@ -1,0 +1,51 @@
+digraph G {
+
+    // Main styles
+    nodesep=0.3; ranksep=0.15;
+
+    node [shape=rect, fillcolor=darkorange, color=white, style=filled, fontsize=11, fontname="arial", height=0.2];
+    edge [color=gray, arrowsize=0.5];
+
+    // Layout
+    {rank=same;input;prev_hidden;encoder_outputs}
+
+
+    input -> embedding;
+    embedding -> dropout;
+    dropout -> embedded;
+
+    embedded -> attn;
+    prev_hidden -> attn;
+    attn -> attn_softmax;
+    attn_softmax -> attn_weights;
+    attn_weights -> bmm;
+    encoder_outputs -> bmm;
+    bmm -> attn_applied;
+    attn_applied -> attn_combine;
+    embedded -> attn_combine;
+
+    attn_combine -> relu -> gru;
+    prev_hidden -> gru;
+    gru -> out;
+    gru -> hidden;
+
+    out -> softmax;
+    softmax -> output;
+
+    {rank=same;output;hidden}
+
+    // Layer nodes
+    embedding [fillcolor=dodgerblue, fontcolor=white];
+    attn [fillcolor=dodgerblue, fontcolor=white];
+    attn_combine [fillcolor=dodgerblue, fontcolor=white];
+    bmm [fillcolor=dodgerblue, fontcolor=white];
+    gru [fillcolor=dodgerblue, fontcolor=white];
+    out [fillcolor=dodgerblue, fontcolor=white];
+
+    // Function nodes
+    dropout [fillcolor=palegreen];
+    relu [fillcolor=palegreen];
+    softmax [fillcolor=palegreen];
+    attn_softmax [fillcolor=palegreen];
+
+}
