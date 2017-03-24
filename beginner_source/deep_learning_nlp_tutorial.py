@@ -1438,7 +1438,7 @@ class BiLSTM_CRF(nn.Module):
         self.tagset_size = len(tag_to_ix)
 
         self.word_embeds = nn.Embedding(vocab_size, embedding_dim)
-        self.lstm = nn.LSTM(embedding_dim, hidden_dim / 2,
+        self.lstm = nn.LSTM(embedding_dim, hidden_dim // 2,
                             num_layers=1, bidirectional=True)
 
         # Maps the output of the LSTM into tag space.
