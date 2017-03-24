@@ -41,6 +41,8 @@ Beginner Tutorials
 
 .. galleryitem:: beginner/transfer_learning_tutorial.py
 
+.. galleryitem:: beginner/deep_learning_nlp_tutorial.py
+    :figure: /_static/img/thumbnails/babel.jpg
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -56,7 +58,7 @@ Beginner Tutorials
    beginner/former_torchies_tutorial
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
-   beginner/deep_learning_nlp
+   beginner/deep_learning_nlp_tutorial
 
 Intermediate Tutorials
 ----------------------
