@@ -46,16 +46,12 @@ for t in range(500):
   # Tensors, but we do not need to keep references to intermediate values since
   # we are not implementing the backward pass by hand.
   y_pred = x.mm(w1).clamp(min=0).mm(w2)
-  
+
   # Compute and print loss using operations on Variables.
   # Now loss is a Variable of shape (1,) and loss.data is a Tensor of shape
   # (1,); loss.data[0] is a scalar value holding the loss.
   loss = (y_pred - y).pow(2).sum()
   print(t, loss.data[0])
-  
-  # Manually zero the gradients before running the backward pass
-  w1.grad.data.zero_()
-  w2.grad.data.zero_()
 
   # Use autograd to compute the backward pass. This call will compute the
   # gradient of loss with respect to all Variables with requires_grad=True.
@@ -68,3 +64,8 @@ for t in range(500):
   # Tensors.
   w1.data -= learning_rate * w1.grad.data
   w2.data -= learning_rate * w2.grad.data
+
+  # Manually zero the gradients after updating weights
+  w1.grad.data.zero_()
+  w2.grad.data.zero_()
+

@@ -603,16 +603,12 @@ through the network:</p>
   <span class="c1"># Tensors, but we do not need to keep references to intermediate values since</span>
   <span class="c1"># we are not implementing the backward pass by hand.</span>
   <span class="n">y_pred</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w1</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
-  
+
   <span class="c1"># Compute and print loss using operations on Variables.</span>
   <span class="c1"># Now loss is a Variable of shape (1,) and loss.data is a Tensor of shape</span>
   <span class="c1"># (1,); loss.data[0] is a scalar value holding the loss.</span>
   <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
   <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-  
-  <span class="c1"># Manually zero the gradients before running the backward pass</span>
-  <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-  <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
 
   <span class="c1"># Use autograd to compute the backward pass. This call will compute the</span>
   <span class="c1"># gradient of loss with respect to all Variables with requires_grad=True.</span>
@@ -625,6 +621,11 @@ through the network:</p>
   <span class="c1"># Tensors.</span>
   <span class="n">w1</span><span class="o">.</span><span class="n">data</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span>
   <span class="n">w2</span><span class="o">.</span><span class="n">data</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span>
+
+  <span class="c1"># Manually zero the gradients after updating weights</span>
+  <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+  <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+
 </pre></div>
 </div>
 </div>
@@ -678,18 +679,14 @@ network:</p>
 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
   <span class="c1"># Construct an instance of our MyReLU class to use in our network</span>
   <span class="n">relu</span> <span class="o">=</span> <span class="n">MyReLU</span><span class="p">()</span>
-  
+
   <span class="c1"># Forward pass: compute predicted y using operations on Variables; we compute</span>
   <span class="c1"># ReLU using our custom autograd operation.</span>
   <span class="n">y_pred</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w1</span><span class="p">))</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
-  
+
   <span class="c1"># Compute and print loss</span>
   <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
   <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-  
-  <span class="c1"># Manually zero the gradients before running the backward pass</span>
-  <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-  <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
 
   <span class="c1"># Use autograd to compute the backward pass.</span>
   <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
@@ -697,6 +694,11 @@ network:</p>
   <span class="c1"># Update weights using gradient descent</span>
   <span class="n">w1</span><span class="o">.</span><span class="n">data</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span>
   <span class="n">w2</span><span class="o">.</span><span class="n">data</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span>
+
+  <span class="c1"># Manually zero the gradients after updating weights</span>
+  <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+  <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+
 </pre></div>
 </div>
 </div>
