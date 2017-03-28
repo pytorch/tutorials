@@ -60,18 +60,14 @@ learning_rate = 1e-6
 for t in range(500):
   # Construct an instance of our MyReLU class to use in our network
   relu = MyReLU()
-  
+
   # Forward pass: compute predicted y using operations on Variables; we compute
   # ReLU using our custom autograd operation.
   y_pred = relu(x.mm(w1)).mm(w2)
-  
+
   # Compute and print loss
   loss = (y_pred - y).pow(2).sum()
   print(t, loss.data[0])
-  
-  # Manually zero the gradients before running the backward pass
-  w1.grad.data.zero_()
-  w2.grad.data.zero_()
 
   # Use autograd to compute the backward pass.
   loss.backward()
@@ -79,3 +75,8 @@ for t in range(500):
   # Update weights using gradient descent
   w1.data -= learning_rate * w1.grad.data
   w2.data -= learning_rate * w2.grad.data
+
+  # Manually zero the gradients after updating weights
+  w1.grad.data.zero_()
+  w2.grad.data.zero_()
+
