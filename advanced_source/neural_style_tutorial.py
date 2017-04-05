@@ -176,11 +176,12 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 # availablity) and transform them into torch tensors, ready to feed
 # a neural network:
 #
-# Here are links to download the images required to run the notebook:
-# `picasso.jpg </_static/img/neural-style/picasso.jpg>`__ and
-# `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these two
-# images and add them to a directory with name ``images``
-#
+# .. Note::
+#     Here are links to download the images required to run the tutorial:
+#     `picasso.jpg </_static/img/neural-style/picasso.jpg>`__ and
+#     `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these
+#     two images and add them to a directory with name ``images``
+
 
 # desired size of the output image
 imsize = 512 if use_cuda else 128  # use small size if no gpu
@@ -595,5 +596,6 @@ output = run_style_transfer(cnn, content_img, style_img, input_img)
 plt.figure()
 imshow(output, title='Output Image')
 
+# sphinx_gallery_thumbnail_number = 4
 plt.ioff()
 plt.show()
