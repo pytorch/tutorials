@@ -223,21 +223,22 @@ assert style_img.size() == content_img.size(), \
 
 unloader = transforms.ToPILImage()  # reconvert into PIL image
 
+plt.ion()
 
-def imshow(tensor):
+def imshow(tensor, title=None):
     image = tensor.clone().cpu()  # we clone the tensor to not do changes on it
     image = image.view(3, imsize, imsize)  # remove the fake batch dimension
     image = unloader(image)
     plt.imshow(image)
+    if title is not None:
+        plt.title(title)
 
 
-fig = plt.figure()
+plt.figure()
+imshow(style_img.data, title='Style Image')
 
-plt.subplot(221)
-imshow(style_img.data)
-
-plt.subplot(222)
-imshow(content_img.data)
+plt.figure()
+imshow(content_img.data, title='Content Image')
 
 
 ######################################################################
@@ -497,8 +498,8 @@ input_img = content_img.clone()
 # input_img = Variable(torch.randn(content_img.data.size())).type(dtype)
 
 # add the original input image to the figure:
-plt.subplot(223)
-imshow(input_img.data)
+plt.figure()
+imshow(input_img.data, title='Input Image')
 
 
 ######################################################################
@@ -547,10 +548,12 @@ def get_input_param_optimizer(input_img):
 def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
                        style_weight=1000, content_weight=1):
     """Run the style transfer."""
+    print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
         style_img, content_img, style_weight, content_weight)
     input_param, optimizer = get_input_param_optimizer(input_img)
 
+    print('Optimizing..')
     run = [0]
     while run[0] <= num_steps:
 
@@ -589,6 +592,8 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
 
 output = run_style_transfer(cnn, content_img, style_img, input_img)
 
-plt.subplot(224)
-imshow(output)
+plt.figure()
+imshow(output, title='Output Image')
+
+plt.ioff()
 plt.show()
