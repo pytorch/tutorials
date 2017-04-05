@@ -150,7 +150,7 @@ import copy
 ######################################################################
 # Cuda
 # ~~~~
-# 
+#
 # If you have a GPU on your computer, it is preferable to run the
 # algorithm on it, especially if you want to try larger networks (like
 # VGG). For this, we have ``torch.cuda.is_available()`` that returns
@@ -160,7 +160,7 @@ import copy
 # CPU (e.g. to use numpy), we use the ``.cpu()`` method. Finally,
 # ``.type(dtype)`` will be use to convert a ``torch.FloatTensor`` into
 # ``torch.cuda.FloatTensor`` to feed GPU processes.
-# 
+#
 
 use_cuda = torch.cuda.is_available()
 dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
@@ -169,21 +169,21 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 ######################################################################
 # Load images
 # ~~~~~~~~~~~
-# 
+#
 # In order to simplify the implementation, let's start by importing a
 # style and a content image of the same dimentions. We then scale them to
 # the desired output image size (128 or 512 in the example, depending on gpu
-# availablity) and transform them into torch tensors, ready to feed 
+# availablity) and transform them into torch tensors, ready to feed
 # a neural network:
-# 
+#
 # Here are links to download the images required to run the notebook:
 # `picasso.jpg </_static/img/neural-style/picasso.jpg>`__ and
-# `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these images and add to a
-# directory with name ``images``
-# 
+# `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these two
+# images and add them to a directory with name ``images``
+#
 
 # desired size of the output image
-imsize = 512 if use_cuda else 128 # use small size if no gpu
+imsize = 512 if use_cuda else 128  # use small size if no gpu
 
 loader = transforms.Compose([
     transforms.Scale(imsize),  # scale imported image
@@ -201,8 +201,8 @@ def image_loader(image_name):
 style_img = image_loader("images/picasso.jpg").type(dtype)
 content_img = image_loader("images/dancing.jpg").type(dtype)
 
-assert style_img.size() == content_img.size(
-),"we need to import style and content images of the same size"
+assert style_img.size() == content_img.size(), \
+    "we need to import style and content images of the same size"
 
 
 ######################################################################
@@ -213,13 +213,13 @@ assert style_img.size() == content_img.size(
 # feature maps will have no sense. This is not the case with pre-trained
 # networks from the Caffe library: they are trained with 0-255 tensor
 # images.
-# 
+#
 # Display images
 # ~~~~~~~~~~~~~~
-# 
+#
 # We will use ``plt.imshow`` to display images. So we need to first
 # reconvert them into PIL images:
-# 
+#
 
 unloader = transforms.ToPILImage()  # reconvert into PIL image
 
@@ -243,7 +243,7 @@ imshow(content_img.data)
 ######################################################################
 # Content loss
 # ~~~~~~~~~~~~
-# 
+#
 # The content loss is a function that takes as input the feature maps
 # :math:`F_{XL}` at a layer :math:`L` in a network fed by :math:`X` and
 # return the weigthed content distance :math:`w_{CL}.D_C^L(X,C)` between
@@ -253,7 +253,7 @@ imshow(content_img.data)
 # these parameters as input. The distance :math:`\|F_{XL} - F_{YL}\|^2` is
 # the Mean Square Error between the two sets of feature maps, that can be
 # computed using a criterion ``nn.MSELoss`` stated as a third parameter.
-# 
+#
 # We will add our content losses at each desired layer as additive modules
 # of the neural network. That way, each time we will feed the network with
 # an input image :math:`X`, all the content losses will be computed at the
@@ -262,15 +262,16 @@ imshow(content_img.data)
 # module returning the input: the module becomes a ''transparent layer''
 # of the neural network. The computed loss is saved as a parameter of the
 # module.
-# 
+#
 # Finally, we define a fake ``backward`` method, that just call the
 # backward method of ``nn.MSELoss`` in order to reconstruct the gradient.
 # This method returns the computed loss: this will be usefull when running
 # the gradien descent in order to display the evolution of style and
 # content losses.
-# 
+#
 
 class ContentLoss(nn.Module):
+
     def __init__(self, target, weight):
         super(ContentLoss, self).__init__()
         # we 'detach' the target content from the tree used
@@ -298,10 +299,10 @@ class ContentLoss(nn.Module):
 #    loss as a PyTorch Loss, you have to create a PyTorch autograd Function
 #    and to recompute/implement the gradient by the hand in the ``backward``
 #    method.
-# 
+#
 # Style loss
 # ~~~~~~~~~~
-# 
+#
 # For the style loss, we need first to define a module that compute the
 # gram produce :math:`G_{XL}` given the feature maps :math:`F_{XL}` of the
 # neural network fed by :math:`X`, at layer :math:`L`. Let
@@ -312,9 +313,10 @@ class ContentLoss(nn.Module):
 # :math:`\hat{F}_{XL}` is :math:`F_{XL}^k`. We let you check that
 # :math:`\hat{F}_{XL} \cdot \hat{F}_{XL}^T = G_{XL}`. Given that, it
 # becomes easy to implement our module:
-# 
+#
 
 class GramMatrix(nn.Module):
+
     def forward(self, input):
         a, b, c, d = input.size()  # a=batch size(=1)
         # b=number of feature maps
@@ -335,13 +337,14 @@ class GramMatrix(nn.Module):
 # the loss computed at the first layers (before pooling layers) will have
 # much more importance during the gradient descent. We dont want that,
 # since the most interesting style features are in the deepest layers!
-# 
+#
 # Then, the style loss module is implemented exactly the same way than the
 # content loss module, but we have to add the ``gramMatrix`` as a
 # parameter:
-# 
+#
 
 class StyleLoss(nn.Module):
+
     def __init__(self, target, weight):
         super(StyleLoss, self).__init__()
         self.target = target.detach() * weight
@@ -364,15 +367,15 @@ class StyleLoss(nn.Module):
 ######################################################################
 # Load the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Now, we have to import a pre-trained neural network. As in the paper, we
 # are going to use a pretrained VGG network with 19 layers (VGG19).
-# 
+#
 # PyTorch's implementation of VGG is a module divided in two child
 # ``Sequential`` modules: ``features`` (containing convolution and pooling
 # layers) and ``classifier`` (containing fully connected layers). We are
 # just interested by ``features``:
-# 
+#
 
 cnn = models.vgg19(pretrained=True).features
 
@@ -390,19 +393,21 @@ if use_cuda:
 # depths. For that, we construct a new ``Sequential`` module, in wich we
 # are going to add modules from ``vgg19`` and our loss modules in the
 # right order:
-# 
+#
 
 # desired depth layers to compute style/content losses :
 content_layers_default = ['conv_4']
 style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
+
 def get_style_model_and_losses(cnn, style_img, content_img,
-                               style_weight= 1000, content_weight = 1,
-                               content_layers=content_layers_default, 
+                               style_weight=1000, content_weight=1,
+                               content_layers=content_layers_default,
                                style_layers=style_layers_default):
     cnn = copy.deepcopy(cnn)
-    
-    # just in order to have an iterable access to or list of content/syle losses
+
+    # just in order to have an iterable access to or list of content/syle
+    # losses
     content_losses = []
     style_losses = []
 
@@ -412,8 +417,7 @@ def get_style_model_and_losses(cnn, style_img, content_img,
     # move these modules to the GPU if possible:
     if use_cuda:
         model = model.cuda()
-        gram = gram.cuda()    
-    
+        gram = gram.cuda()
 
     i = 1
     for layer in list(cnn):
@@ -460,12 +464,12 @@ def get_style_model_and_losses(cnn, style_img, content_img,
         if isinstance(layer, nn.MaxPool2d):
             name = "pool_" + str(i)
             model.add_module(name, layer)  # ***
-            
+
     return model, style_losses, content_losses
 
 
 ######################################################################
-# .. Note:: 
+# .. Note::
 #    In the paper they recommend to change max pooling layers into
 #    average pooling. With AlexNet, that is a small network compared to VGG19
 #    used in the paper, we are not going to see any difference of quality in
@@ -474,20 +478,19 @@ def get_style_model_and_losses(cnn, style_img, content_img,
 #
 #    ::
 #
-#        # avgpool = nn.AvgPool2d(kernel_size=layer.kernel_size, 
-                                  stride=layer.stride, padding = layer.padding)
+#        # avgpool = nn.AvgPool2d(kernel_size=layer.kernel_size,
+#        #                         stride=layer.stride, padding = layer.padding)
 #        # model.add_module(name,avgpool)
-
 
 
 ######################################################################
 # Input image
 # ~~~~~~~~~~~
-# 
+#
 # Again, in order to simplify the code, we take an image of the same
 # dimensions than content and style images. This image can be a white
 # noise, or it can also be a copy of the content-image.
-# 
+#
 
 input_img = content_img.clone()
 # if you want to use a white noise instead uncomment the below line:
@@ -501,7 +504,7 @@ imshow(input_img.data)
 ######################################################################
 # Gradient descent
 # ~~~~~~~~~~~~~~~~
-# 
+#
 # As Leon Gatys, the author of the algorithm, suggested
 # `here <https://discuss.pytorch.org/t/pytorch-tutorial-for-neural-transfert-of-artistic-style/336/20?u=alexis-jacq>`__,
 # we will use L-BFGS algorithm to run our gradient descent. Unlike
@@ -515,7 +518,7 @@ imshow(input_img.data)
 # to construct a ``Parameter`` object from the input image. Then, we just
 # give a list containing this ``Parameter`` to the optimizer's
 # constructor:
-# 
+#
 
 def get_input_param_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
@@ -531,7 +534,7 @@ def get_input_param_optimizer(input_img):
 # their gradients and perform the step of gradient descent. The optimizer
 # requires as argument a "closure": a function that reevaluates the model
 # and returns the loss.
-# 
+#
 # However, there's a small catch. The optimized image may take its values
 # between :math:`-\infty` and :math:`+\infty` instead of staying between 0
 # and 1. In other words, the image might be well optimized and have absurd
@@ -539,22 +542,22 @@ def get_input_param_optimizer(input_img):
 # order to keep having right vaues into our input image. There is a simple
 # solution: at each step, to correct the image to maintain its values into
 # the 0-1 interval.
-# 
+#
 
-def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300, 
-                       style_weight = 1000, content_weight = 1):
+def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
+                       style_weight=1000, content_weight=1):
     """Run the style transfer."""
-    model, style_losses, content_losses = get_style_model_and_losses(cnn, style_img, content_img,
-                                                                     style_weight, content_weight)
+    model, style_losses, content_losses = get_style_model_and_losses(cnn,
+        style_img, content_img, style_weight, content_weight)
     input_param, optimizer = get_input_param_optimizer(input_img)
-    
+
     run = [0]
     while run[0] <= num_steps:
 
         def closure():
             # correct the values of updated input image
             input_param.data.clamp_(0, 1)
-            
+
             optimizer.zero_grad()
             model.forward(input_param)
             style_score = 0
@@ -565,21 +568,24 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
             for cl in content_losses:
                 content_score += cl.backward()
 
-            run[0]+=1
+            run[0] += 1
             if run[0] % 50 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
-                        style_score.data[0], content_score.data[0]))
+                    style_score.data[0], content_score.data[0]))
                 print()
 
-            return style_score+style_score
+            return style_score + style_score
 
         optimizer.step(closure)
-    
+
     # a last correction...
     input_param.data.clamp_(0, 1)
-    
+
     return input_param.data
+
+######################################################################
+# Finally, run the algorithm
 
 output = run_style_transfer(cnn, content_img, style_img, input_img)
 
