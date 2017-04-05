@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Creating extensions using numpy and scipy
 =========================================

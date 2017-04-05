@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PyTorch: Defining new autograd functions
 ----------------------------------------

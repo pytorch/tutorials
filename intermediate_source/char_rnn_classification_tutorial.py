@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Classifying Names with a Character-Level RNN
 *********************************************
