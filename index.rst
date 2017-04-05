@@ -111,6 +111,8 @@ Advanced Tutorials
    :tooltip: Implement custom extensions in C.
    :description: :doc:`/advanced/c_extension`
 
+.. galleryitem:: advanced/neural_style_tutorial.py
+
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -124,4 +126,5 @@ Advanced Tutorials
    
    advanced/numpy_extensions_tutorial
    advanced/c_extension
+   advanced/neural_style_tutorial
 

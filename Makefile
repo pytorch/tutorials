@@ -26,6 +26,8 @@ docs:
 	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip
 	unzip -o hymenoptera_data.zip -d beginner_source
 	unzip -o data.zip -d intermediate_source
+	rm -rf advanced_source/images/
+	cp -r _static/img/neural-style/ advanced_source/images/
 	rm -rf docs
 	make html
 	cp -r $(BUILDDIR)/html docs
