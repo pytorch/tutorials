@@ -105,11 +105,15 @@ Reinforcement Learning
 Advanced Tutorials
 ------------------
 
+.. galleryitem:: advanced/neural_style_tutorial.py
+    :intro: This tutorial explains how to impletment the Neural-Style algorithm developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
+
 .. galleryitem:: advanced/numpy_extensions_tutorial.py
 
 .. customgalleryitem::
    :tooltip: Implement custom extensions in C.
    :description: :doc:`/advanced/c_extension`
+
 
 .. raw:: html
 
@@ -121,7 +125,8 @@ Advanced Tutorials
    :includehidden:
    :hidden:
    :caption: Advanced Tutorials
-   
+
+   advanced/neural_style_tutorial
    advanced/numpy_extensions_tutorial
    advanced/c_extension
 
