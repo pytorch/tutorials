@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PyTorch: Custom nn Modules
 --------------------------

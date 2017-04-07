@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Deep Learning for Natural Language Processing with Pytorch
 **********************************************************
