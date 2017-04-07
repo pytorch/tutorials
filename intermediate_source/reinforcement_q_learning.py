@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Reinforcement Learning (DQN) tutorial
 =====================================

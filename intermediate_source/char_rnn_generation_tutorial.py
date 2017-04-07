@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generating Names with a Character-Level RNN
 *******************************************
