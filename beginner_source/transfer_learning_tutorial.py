@@ -297,7 +297,7 @@ for param in model.parameters():
     param.requires_grad = False
 
 # Parameters of newly constructed modules have requires_grad=True by default
-model.fc = nn.Linear(512, 100)
+model.fc = nn.Linear(512, 2)
 
 if use_gpu:
     model = model.cuda()
