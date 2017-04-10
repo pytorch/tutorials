@@ -1,5 +1,5 @@
-Deep Learning for Natural Language Processing with Pytorch
-**********************************************************
+Deep Learning for NLP with Pytorch
+**********************************
 **Author**: `Robert Guthrie <https://github.com/rguthrie3/DeepLearningForNLPInPytorch>`_
 
 This tutorial will walk you through the key ideas of deep learning
