@@ -661,7 +661,7 @@ content losses.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="nb">input</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
 
@@ -726,9 +726,9 @@ parameter:</p>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gram</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">G</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gram</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">criterion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">G</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span>
 
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">retain_variables</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
@@ -792,15 +792,15 @@ right order:</p>
 
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">content_layers</span><span class="p">:</span>
                 <span class="c1"># add content loss:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">content_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">content_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
                 <span class="n">content_loss</span> <span class="o">=</span> <span class="n">ContentLoss</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">content_weight</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s2">&quot;content_loss_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">content_loss</span><span class="p">)</span>
                 <span class="n">content_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">content_loss</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">style_layers</span><span class="p">:</span>
                 <span class="c1"># add style loss:</span>
-                <span class="n">target_feature</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">style_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-                <span class="n">target_feature_gram</span> <span class="o">=</span> <span class="n">gram</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">target_feature</span><span class="p">)</span>
+                <span class="n">target_feature</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">style_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="n">target_feature_gram</span> <span class="o">=</span> <span class="n">gram</span><span class="p">(</span><span class="n">target_feature</span><span class="p">)</span>
                 <span class="n">style_loss</span> <span class="o">=</span> <span class="n">StyleLoss</span><span class="p">(</span><span class="n">target_feature_gram</span><span class="p">,</span> <span class="n">style_weight</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s2">&quot;style_loss_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">style_loss</span><span class="p">)</span>
                 <span class="n">style_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">style_loss</span><span class="p">)</span>
@@ -811,15 +811,15 @@ right order:</p>
 
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">content_layers</span><span class="p">:</span>
                 <span class="c1"># add content loss:</span>
-                <span class="n">target</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">content_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">content_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
                 <span class="n">content_loss</span> <span class="o">=</span> <span class="n">ContentLoss</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">content_weight</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s2">&quot;content_loss_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">content_loss</span><span class="p">)</span>
                 <span class="n">content_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">content_loss</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">style_layers</span><span class="p">:</span>
                 <span class="c1"># add style loss:</span>
-                <span class="n">target_feature</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">style_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-                <span class="n">target_feature_gram</span> <span class="o">=</span> <span class="n">gram</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">target_feature</span><span class="p">)</span>
+                <span class="n">target_feature</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">style_img</span><span class="p">)</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="n">target_feature_gram</span> <span class="o">=</span> <span class="n">gram</span><span class="p">(</span><span class="n">target_feature</span><span class="p">)</span>
                 <span class="n">style_loss</span> <span class="o">=</span> <span class="n">StyleLoss</span><span class="p">(</span><span class="n">target_feature_gram</span><span class="p">,</span> <span class="n">style_weight</span><span class="p">)</span>
                 <span class="n">model</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s2">&quot;style_loss_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">style_loss</span><span class="p">)</span>
                 <span class="n">style_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">style_loss</span><span class="p">)</span>
@@ -915,7 +915,7 @@ the 0-1 interval.</p>
             <span class="n">input_param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">input_param</span><span class="p">)</span>
+            <span class="n">model</span><span class="p">(</span><span class="n">input_param</span><span class="p">)</span>
             <span class="n">style_score</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">content_score</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -975,7 +975,7 @@ the 0-1 interval.</p>
 <span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.030384</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.299963</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  59.977 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 2 minutes  17.102 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/neural_style_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></div>

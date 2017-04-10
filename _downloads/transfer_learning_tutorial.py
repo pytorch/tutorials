@@ -45,6 +45,8 @@ import time
 import copy
 import os
 
+plt.ion()   # interactive mode
+
 ######################################################################
 # Load Data
 # ---------
@@ -101,13 +103,16 @@ use_gpu = torch.cuda.is_available()
 # Let's visualize a few training images so as to understand the data
 # augmentations.
 
-def imshow(inp):
+def imshow(inp, title=None):
     """Imshow for Tensor."""
     inp = inp.numpy().transpose((1, 2, 0))
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
     inp = std * inp + mean
     plt.imshow(inp)
+    if title is not None:
+        plt.title(title)
+    plt.pause(0.001)  # pause a bit so that plots are updated
 
 
 # Get a batch of training data
@@ -116,9 +121,7 @@ inputs, classes = next(iter(dset_loaders['train']))
 # Make a grid from batch
 out = torchvision.utils.make_grid(inputs)
 
-imshow(out)
-plt.title([dset_classes[x] for x in classes])
-plt.show()
+imshow(out, title=[dset_classes[x] for x in classes])
 
 
 ######################################################################
@@ -151,6 +154,9 @@ def train_model(model, criterion, optim_scheduler, num_epochs=25):
         for phase in ['train', 'val']:
             if phase == 'train':
                 optimizer = optim_scheduler(model, epoch)
+                model.train(True)  # Set model to training mode
+            else:
+                model.train(False)  # Set model to evaluate mode
 
             running_loss = 0.0
             running_corrects = 0
@@ -219,14 +225,12 @@ def visualize_model(model, num_images=5):
         else:
             inputs, labels = Variable(inputs), Variable(labels)
 
-        
         outputs = model(inputs)
         _, preds = torch.max(outputs.data, 1)
-        
+
         plt.figure()
-        imshow(inputs.cpu().data[0])
-        plt.title('pred: {}'.format(dset_classes[labels.data[0]]))
-        plt.show()
+        imshow(inputs.cpu().data[0],
+               title='pred: {}'.format(dset_classes[labels.data[0]]))
 
         if i == num_images - 1:
             break
@@ -334,3 +338,6 @@ model = train_model(model, criterion, optim_scheduler_conv)
 #
 
 visualize_model(model)
+
+plt.ioff()
+plt.show()

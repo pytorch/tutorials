@@ -444,6 +444,8 @@ with random weights and only this layer is trained.</li>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>   <span class="c1"># interactive mode</span>
 </pre></div>
 </div>
 <div class="section" id="load-data">
@@ -496,13 +498,16 @@ and extract it to the current directory.</p>
 <h3>Visualize a few images<a class="headerlink" href="#visualize-a-few-images" title="Permalink to this headline">¶</a></h3>
 <p>Let&#8217;s visualize a few training images so as to understand the data
 augmentations.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">imshow</span><span class="p">(</span><span class="n">inp</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">imshow</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Imshow for Tensor.&quot;&quot;&quot;</span>
     <span class="n">inp</span> <span class="o">=</span> <span class="n">inp</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
     <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">])</span>
     <span class="n">std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
     <span class="n">inp</span> <span class="o">=</span> <span class="n">std</span> <span class="o">*</span> <span class="n">inp</span> <span class="o">+</span> <span class="n">mean</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">0.001</span><span class="p">)</span>  <span class="c1"># pause a bit so that plots are updated</span>
 
 
 <span class="c1"># Get a batch of training data</span>
@@ -511,9 +516,7 @@ augmentations.</p>
 <span class="c1"># Make a grid from batch</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
-<span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">([</span><span class="n">dset_classes</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="p">[</span><span class="n">dset_classes</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">])</span>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_transfer_learning_tutorial_001.png" class="align-center" src="../_images/sphx_glr_transfer_learning_tutorial_001.png" />
@@ -545,6 +548,9 @@ want to optimize.</p>
         <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;val&#39;</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">phase</span> <span class="o">==</span> <span class="s1">&#39;train&#39;</span><span class="p">:</span>
                 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim_scheduler</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># Set model to training mode</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>  <span class="c1"># Set model to evaluate mode</span>
 
             <span class="n">running_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="n">running_corrects</span> <span class="o">=</span> <span class="mi">0</span>
@@ -609,14 +615,12 @@ want to optimize.</p>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">inputs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span> <span class="n">Variable</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
 
-
         <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-        <span class="n">imshow</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;pred: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_classes</span><span class="p">[</span><span class="n">labels</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">imshow</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+               <span class="n">title</span><span class="o">=</span><span class="s1">&#39;pred: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_classes</span><span class="p">[</span><span class="n">labels</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
 
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">num_images</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">break</span>
@@ -660,134 +664,134 @@ minute.</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">0</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">0.001</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1687</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.6230</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1475</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7320</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1410</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.6844</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0721</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8824</span>
 
 <span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1241</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7869</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1253</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7908</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0912</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0544</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9346</span>
 
 <span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1377</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7910</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1737</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7647</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1833</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7254</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0793</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8824</span>
 
 <span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1059</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8115</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1224</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8170</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1447</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7377</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0738</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9085</span>
 
 <span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1439</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8033</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1235</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7974</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1039</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7828</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1182</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
 
 <span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1041</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1719</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7647</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1250</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7951</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0652</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9085</span>
 
 <span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0809</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8730</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1627</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7974</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1021</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8197</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1238</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
 
 <span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">0.0001</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0900</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8361</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1269</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8235</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0796</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8770</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0827</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1131</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8238</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1246</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8235</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0958</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0970</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8758</span>
 
 <span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0799</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8770</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1017</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8235</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0595</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9057</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0721</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0886</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8484</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1378</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7778</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0647</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8811</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0731</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">11</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0848</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8607</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1027</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8170</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0791</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0784</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9085</span>
 
 <span class="n">Epoch</span> <span class="mi">12</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0730</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8852</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1023</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8170</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0572</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9139</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0690</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9281</span>
 
 <span class="n">Epoch</span> <span class="mi">13</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0834</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8607</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1119</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8039</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0944</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0699</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">14</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">1.0000000000000003e-05</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0906</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8484</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1225</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8039</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0513</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9139</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0883</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">15</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0919</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8197</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1075</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8301</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0624</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9098</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0639</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">16</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0863</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0946</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8105</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0716</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0793</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9020</span>
 
 <span class="n">Epoch</span> <span class="mi">17</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0865</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1230</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8170</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0919</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8402</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0692</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">18</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0714</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8811</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1125</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8235</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0538</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9221</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0861</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">19</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0689</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8811</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0894</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8431</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0686</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8811</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0701</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">20</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0786</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8730</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1018</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8758</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0437</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9262</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0667</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9216</span>
 
 <span class="n">Epoch</span> <span class="mi">21</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">1.0000000000000002e-06</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0672</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8893</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0851</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0849</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8402</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0650</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">22</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0689</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8852</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0828</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8758</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0492</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9139</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0707</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">23</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0792</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0927</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8627</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0570</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9221</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0741</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9150</span>
 
 <span class="n">Epoch</span> <span class="mi">24</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0669</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8975</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1140</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8105</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0623</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8975</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0687</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9085</span>
 
-<span class="n">Training</span> <span class="n">complete</span> <span class="ow">in</span> <span class="mi">1</span><span class="n">m</span> <span class="mi">7</span><span class="n">s</span>
-<span class="n">Best</span> <span class="n">val</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.875817</span>
+<span class="n">Training</span> <span class="n">complete</span> <span class="ow">in</span> <span class="mi">1</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span>
+<span class="n">Best</span> <span class="n">val</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.941176</span>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">visualize_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
@@ -852,137 +856,140 @@ network. However, forward does need to be computed.</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">0</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">0.001</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1918</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.6189</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1302</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7386</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1461</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.6721</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0634</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8954</span>
 
 <span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1158</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7992</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1115</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8039</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1238</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7828</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0479</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1154</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7623</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1388</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7320</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0920</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8033</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0491</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0993</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8238</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1100</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7908</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1403</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7418</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0668</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8824</span>
 
 <span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1132</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7787</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1446</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7582</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0907</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8484</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0495</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9346</span>
 
 <span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0899</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8443</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0872</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8562</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0818</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0432</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9542</span>
 
 <span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0806</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8484</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0875</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8562</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0732</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8770</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0485</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9346</span>
 
 <span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">0.0001</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0951</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8074</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0848</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8431</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1202</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7828</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0429</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9542</span>
 
 <span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0984</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8279</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0861</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8562</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0743</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8689</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0421</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9542</span>
 
 <span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0948</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8443</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0928</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8105</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0902</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8402</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0445</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1036</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7992</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0949</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8366</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0905</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8156</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0430</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">11</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0919</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8320</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0868</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8366</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1037</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7992</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0461</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">12</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1181</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7869</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0931</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0993</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8402</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0453</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">13</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0754</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8443</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0990</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8366</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0990</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0467</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9346</span>
 
 <span class="n">Epoch</span> <span class="mi">14</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">1.0000000000000003e-05</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0906</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1084</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8301</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0732</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8770</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0434</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">15</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0646</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8975</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1057</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8431</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0657</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8607</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0454</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">16</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0851</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0781</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8693</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1033</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8238</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0475</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">17</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0772</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0995</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8301</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0918</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8525</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0479</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9281</span>
 
 <span class="n">Epoch</span> <span class="mi">18</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0925</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8320</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0908</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0778</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0447</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Epoch</span> <span class="mi">19</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0970</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8402</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0987</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8366</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0785</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8648</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0461</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">20</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.1088</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.7910</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0805</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8889</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0735</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8934</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0461</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">21</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
 <span class="n">LR</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="mf">1.0000000000000002e-06</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0734</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8770</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0889</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0760</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8730</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0440</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">22</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0832</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8566</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0956</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8497</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0736</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8730</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0443</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9477</span>
 
 <span class="n">Epoch</span> <span class="mi">23</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0952</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8361</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0907</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8693</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0707</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9057</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0504</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9346</span>
 
 <span class="n">Epoch</span> <span class="mi">24</span><span class="o">/</span><span class="mi">24</span>
 <span class="o">----------</span>
-<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0753</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8443</span>
-<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0772</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8758</span>
+<span class="n">train</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0861</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.8443</span>
+<span class="n">val</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0463</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.9412</span>
 
 <span class="n">Training</span> <span class="n">complete</span> <span class="ow">in</span> <span class="mi">0</span><span class="n">m</span> <span class="mi">33</span><span class="n">s</span>
-<span class="n">Best</span> <span class="n">val</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.888889</span>
+<span class="n">Best</span> <span class="n">val</span> <span class="n">Acc</span><span class="p">:</span> <span class="mf">0.954248</span>
 </pre></div>
 </div>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">visualize_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -997,7 +1004,7 @@ network. However, forward does need to be computed.</p>
 <li><a class="first reference internal image-reference" href="../_images/sphx_glr_transfer_learning_tutorial_011.png"><img alt="../_images/sphx_glr_transfer_learning_tutorial_011.png" src="../_images/sphx_glr_transfer_learning_tutorial_011.png" style="width: 376.0px; height: 282.0px;" /></a>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 1 minutes  43.462 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 1 minutes  46.580 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/transfer_learning_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transfer_learning_tutorial.py</span></code></a></div>
