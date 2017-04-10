@@ -151,6 +151,9 @@ def train_model(model, criterion, optim_scheduler, num_epochs=25):
         for phase in ['train', 'val']:
             if phase == 'train':
                 optimizer = optim_scheduler(model, epoch)
+                model.train(True)  # Set model to training mode
+            else:
+                model.train(False)  # Set model to evaluate mode
 
             running_loss = 0.0
             running_corrects = 0
