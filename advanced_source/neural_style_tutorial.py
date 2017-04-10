@@ -286,7 +286,7 @@ class ContentLoss(nn.Module):
         self.criterion = nn.MSELoss()
 
     def forward(self, input):
-        self.loss = self.criterion.forward(input * self.weight, self.target)
+        self.loss = self.criterion(input * self.weight, self.target)
         self.output = input
         return self.output
 
@@ -357,9 +357,9 @@ class StyleLoss(nn.Module):
 
     def forward(self, input):
         self.output = input.clone()
-        self.G = self.gram.forward(input)
+        self.G = self.gram(input)
         self.G.mul_(self.weight)
-        self.loss = self.criterion.forward(self.G, self.target)
+        self.loss = self.criterion(self.G, self.target)
         return self.output
 
     def backward(self, retain_variables=True):
@@ -430,15 +430,15 @@ def get_style_model_and_losses(cnn, style_img, content_img,
 
             if name in content_layers:
                 # add content loss:
-                target = model.forward(content_img).clone()
+                target = model(content_img).clone()
                 content_loss = ContentLoss(target, content_weight)
                 model.add_module("content_loss_" + str(i), content_loss)
                 content_losses.append(content_loss)
 
             if name in style_layers:
                 # add style loss:
-                target_feature = model.forward(style_img).clone()
-                target_feature_gram = gram.forward(target_feature)
+                target_feature = model(style_img).clone()
+                target_feature_gram = gram(target_feature)
                 style_loss = StyleLoss(target_feature_gram, style_weight)
                 model.add_module("style_loss_" + str(i), style_loss)
                 style_losses.append(style_loss)
@@ -449,15 +449,15 @@ def get_style_model_and_losses(cnn, style_img, content_img,
 
             if name in content_layers:
                 # add content loss:
-                target = model.forward(content_img).clone()
+                target = model(content_img).clone()
                 content_loss = ContentLoss(target, content_weight)
                 model.add_module("content_loss_" + str(i), content_loss)
                 content_losses.append(content_loss)
 
             if name in style_layers:
                 # add style loss:
-                target_feature = model.forward(style_img).clone()
-                target_feature_gram = gram.forward(target_feature)
+                target_feature = model(style_img).clone()
+                target_feature_gram = gram(target_feature)
                 style_loss = StyleLoss(target_feature_gram, style_weight)
                 model.add_module("style_loss_" + str(i), style_loss)
                 style_losses.append(style_loss)
@@ -564,7 +564,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
             input_param.data.clamp_(0, 1)
 
             optimizer.zero_grad()
-            model.forward(input_param)
+            model(input_param)
             style_score = 0
             content_score = 0
 
