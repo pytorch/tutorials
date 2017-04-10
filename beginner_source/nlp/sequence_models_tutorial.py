@@ -121,6 +121,8 @@ print(hidden)
 # vector. Note this implies immediately that the dimensionality of the
 # target space of :math:`A` is :math:`|T|`.
 #
+#
+# Prepare data:
 
 def prepare_sequence(seq, to_ix):
     idxs = [to_ix[w] for w in seq]
@@ -144,6 +146,8 @@ tag_to_ix = {"DET": 0, "NN": 1, "V": 2}
 EMBEDDING_DIM = 6
 HIDDEN_DIM = 6
 
+######################################################################
+# Create the model:
 
 class LSTMTagger(nn.Module):
 
@@ -175,6 +179,9 @@ class LSTMTagger(nn.Module):
         tag_space = self.hidden2tag(lstm_out.view(len(sentence), -1))
         tag_scores = F.log_softmax(tag_space)
         return tag_scores
+
+######################################################################
+# Train the model:
 
 model = LSTMTagger(EMBEDDING_DIM, HIDDEN_DIM, len(word_to_ix), len(tag_to_ix))
 loss_function = nn.NLLLoss()
@@ -241,7 +248,8 @@ print(tag_scores)
 #
 # To get the character level representation, do an LSTM over the
 # characters of a word, and let :math:`c_w` be the final hidden state of
-# this LSTM. Hints: 
+# this LSTM. Hints:
+#
 # * There are going to be two LSTM's in your new model.
 #   The original one that outputs POS tag scores, and the new one that
 #   outputs a character-level representation of each word.
