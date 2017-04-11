@@ -41,8 +41,11 @@ Beginner Tutorials
 
 .. galleryitem:: beginner/transfer_learning_tutorial.py
 
-.. galleryitem:: beginner/deep_learning_nlp_tutorial.py
+.. customgalleryitem::
+    :tooltip: I am writing this tutorial to focus specifically on NLP for people who have never written code in any deep learning framework
     :figure: /_static/img/thumbnails/babel.jpg
+    :description: :doc:`/beginner/deep_learning_nlp_tutorial`
+
 .. raw:: html
 
     <div style='clear:both'></div>
