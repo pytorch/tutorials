@@ -33,6 +33,8 @@ These two major transfer learning scenarios looks as follows:
 # License: BSD
 # Author: Sasank Chilamkurthy
 
+from __future__ import print_function, division
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -134,13 +136,11 @@ imshow(out, title=[dset_classes[x] for x in classes])
 # -  Scheduling the learning rate
 # -  Saving (deep copying) the best model
 #
-# In the following, ``optim_scheduler`` is a function which returns an ``optim.SGD``
-# object when called as ``optim_scheduler(model, epoch)``. This is useful
-# when we want to change the learning rate or restrict the parameters we
-# want to optimize.
-#
+# In the following, parameter ``lr_scheduler(optimizer, epoch)``
+# is a function  which modifies ``optimizer`` so that the learning
+# rate is changed according to desired schedule.
 
-def train_model(model, criterion, optim_scheduler, num_epochs=25):
+def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
     since = time.time()
 
     best_model = model
@@ -153,7 +153,7 @@ def train_model(model, criterion, optim_scheduler, num_epochs=25):
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
-                optimizer = optim_scheduler(model, epoch)
+                optimizer = lr_scheduler(optimizer, epoch)
                 model.train(True)  # Set model to training mode
             else:
                 model.train(False)  # Set model to evaluate mode
@@ -209,6 +209,24 @@ def train_model(model, criterion, optim_scheduler, num_epochs=25):
     print('Best val Acc: {:4f}'.format(best_acc))
     return best_model
 
+######################################################################
+# Learning rate scheduler
+# ^^^^^^^^^^^^^^^^^^^^^^^
+# Let's create our learning rate scheduler. We will exponentially
+# decrease the learning rate once every few epochs.
+
+def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
+    """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
+    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
+
+    if epoch % lr_decay_epoch == 0:
+        print('LR is set to {}'.format(lr))
+
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
+    return optimizer
+
 
 ######################################################################
 # Visualizing the model predictions
@@ -240,33 +258,20 @@ def visualize_model(model, num_images=5):
 # Finetuning the convnet
 # ----------------------
 #
-# First, let's create our learning rate scheduler. We will exponentially
-# decrease the learning rate once every few epochs.
-#
-
-def optim_scheduler_ft(model, epoch, init_lr=0.001, lr_decay_epoch=7):
-    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
-
-    if epoch % lr_decay_epoch == 0:
-        print('LR is set to {}'.format(lr))
-
-    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-    return optimizer
-
-
-######################################################################
 # Load a pretrained model and reset final fully connected layer.
 #
 
-model = models.resnet18(pretrained=True)
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 2)
+model_ft = models.resnet18(pretrained=True)
+num_ftrs = model_ft.fc.in_features
+model_ft.fc = nn.Linear(num_ftrs, 2)
 
 if use_gpu:
-    model = model.cuda()
+    model_ft = model_ft.cuda()
 
 criterion = nn.CrossEntropyLoss()
 
+# Observe that all parameters are being optimized
+optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
 ######################################################################
 # Train and evaluate
@@ -276,12 +281,13 @@ criterion = nn.CrossEntropyLoss()
 # minute.
 #
 
-model = train_model(model, criterion, optim_scheduler_ft, num_epochs=25)
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
+                       num_epochs=25)
 
 ######################################################################
 #
 
-visualize_model(model)
+visualize_model(model_ft)
 
 
 ######################################################################
@@ -296,31 +302,22 @@ visualize_model(model)
 # `here <http://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
 #
 
-model = torchvision.models.resnet18(pretrained=True)
-for param in model.parameters():
+model_conv = torchvision.models.resnet18(pretrained=True)
+for param in model_conv.parameters():
     param.requires_grad = False
 
 # Parameters of newly constructed modules have requires_grad=True by default
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 2)
+num_ftrs = model_conv.fc.in_features
+model_conv.fc = nn.Linear(num_ftrs, 2)
 
 if use_gpu:
-    model = model.cuda()
+    model_conv = model_conv.cuda()
 
 criterion = nn.CrossEntropyLoss()
-######################################################################
-# Let's write ``optim_scheduler``. We will use previous lr scheduler. Also
-# we need to optimize only the parameters of final FC layer.
-#
 
-def optim_scheduler_conv(model, epoch, init_lr=0.001, lr_decay_epoch=7):
-    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
-
-    if epoch % lr_decay_epoch == 0:
-        print('LR is set to {}'.format(lr))
-
-    optimizer = optim.SGD(model.fc.parameters(), lr=lr, momentum=0.9)
-    return optimizer
+# Observe that only parameters of final layer are being optimized as
+# opoosed to before.
+optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
 
 ######################################################################
@@ -332,12 +329,13 @@ def optim_scheduler_conv(model, epoch, init_lr=0.001, lr_decay_epoch=7):
 # network. However, forward does need to be computed.
 #
 
-model = train_model(model, criterion, optim_scheduler_conv)
+model_conv = train_model(model_conv, criterion, optimizer_conv,
+                         exp_lr_scheduler, num_epochs=25)
 
 ######################################################################
 #
 
-visualize_model(model)
+visualize_model(model_conv)
 
 plt.ioff()
 plt.show()
