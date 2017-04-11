@@ -124,7 +124,6 @@ import torch
 import torch.autograd as autograd
 import torch.nn as nn
 import torch.optim as optim
-from sequence_models_tutorial import prepare_sequence
 
 torch.manual_seed(1)
 
@@ -140,6 +139,13 @@ def argmax(vec):
     # return the argmax as a python int
     _, idx = torch.max(vec, 1)
     return to_scalar(idx)
+
+
+def prepare_sequence(seq, to_ix):
+    idxs = [to_ix[w] for w in seq]
+    tensor = torch.LongTensor(idxs)
+    return autograd.Variable(tensor)
+
 
 # Compute log sum exp in a numerically stable way for the forward algorithm
 
