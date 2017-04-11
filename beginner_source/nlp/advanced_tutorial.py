@@ -26,14 +26,13 @@ steps:
 * We build the tree bottom up 
 * Tag the root nodes (the words of the sentence) 
 * From there, use a neural network and the embeddings
-
-of the words to find combinations that form constituents. Whenever you
-form a new constituent, use some sort of technique to get an embedding
-of the constituent. In this case, our network architecture will depend
-completely on the input sentence. In the sentence "The green cat
-scratched the wall", at some point in the model, we will want to combine
-the span :math:`(i,j,r) = (1, 3, \text{NP})` (that is, an NP constituent
-spans word 1 to word 3, in this case "The green cat").
+  of the words to find combinations that form constituents. Whenever you
+  form a new constituent, use some sort of technique to get an embedding
+  of the constituent. In this case, our network architecture will depend
+  completely on the input sentence. In the sentence "The green cat
+  scratched the wall", at some point in the model, we will want to combine
+  the span :math:`(i,j,r) = (1, 3, \text{NP})` (that is, an NP constituent
+  spans word 1 to word 3, in this case "The green cat").
 
 However, another sentence might be "Somewhere, the big fat cat scratched
 the wall". In this sentence, we will want to form the constituent
@@ -68,7 +67,7 @@ Theano).
 # -  Write the recurrence for the viterbi variable at step i for tag k.
 # -  Modify the above recurrence to compute the forward variables instead.
 # -  Modify again the above recurrence to compute the forward variables in
-   # log-space (hint: log-sum-exp)
+#    log-space (hint: log-sum-exp)
 # 
 # If you can do those three things, you should be able to understand the
 # code below. Recall that the CRF computes a conditional probability. Let
@@ -128,8 +127,8 @@ import torch.optim as optim
 torch.manual_seed(1)
 
 #####################################################################
-
 # Helper functions to make the code more readable.
+
 def to_scalar(var):
     # returns a python float
     return var.view(-1).data.tolist()[0]
@@ -148,13 +147,13 @@ def prepare_sequence(seq, to_ix):
 
 
 # Compute log sum exp in a numerically stable way for the forward algorithm
-
-
 def log_sum_exp(vec):
     max_score = vec[0, argmax(vec)]
     max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
     return max_score + torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
 
+#####################################################################
+# Create model
 
 class BiLSTM_CRF(nn.Module):
 
@@ -293,6 +292,8 @@ class BiLSTM_CRF(nn.Module):
         score, tag_seq = self._viterbi_decode(lstm_feats)
         return score, tag_seq
 
+#####################################################################
+# Run training
 
 START_TAG = "<START>"
 STOP_TAG = "<STOP>"
