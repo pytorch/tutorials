@@ -235,7 +235,10 @@ def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
 # Generic function to display predictions for a few images
 #
 
-def visualize_model(model, num_images=5):
+def visualize_model(model, num_images=6):
+    images_so_far = 0
+    fig = plt.figure()
+
     for i, data in enumerate(dset_loaders['val']):
         inputs, labels = data
         if use_gpu:
@@ -246,13 +249,15 @@ def visualize_model(model, num_images=5):
         outputs = model(inputs)
         _, preds = torch.max(outputs.data, 1)
 
-        plt.figure()
-        imshow(inputs.cpu().data[0],
-               title='pred: {}'.format(dset_classes[labels.data[0]]))
+        for j in range(inputs.size()[0]):
+            images_so_far += 1
+            ax = plt.subplot(num_images//2, 2, images_so_far)
+            ax.axis('off')
+            ax.set_title('predicted: {}'.format(dset_classes[labels.data[j]]))
+            imshow(inputs.cpu().data[j])
 
-        if i == num_images - 1:
-            break
-
+            if images_so_far == num_images:
+                return
 
 ######################################################################
 # Finetuning the convnet
