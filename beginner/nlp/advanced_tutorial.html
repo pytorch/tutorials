@@ -1,0 +1,851 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Advanced: Making Dynamic Decisions and the Bi-LSTM CRF &mdash; PyTorch Tutorials  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../_static/css/pytorch_theme.css" type="text/css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="PyTorch Tutorials  documentation" href="../../index.html"/>
+        <link rel="up" title="Deep Learning for NLP with Pytorch" href="../deep_learning_nlp_tutorial.html"/>
+        <link rel="next" title="Classifying Names with a Character-Level RNN" href="../../intermediate/char_rnn_classification_tutorial.html"/>
+        <link rel="prev" title="Sequence Models and Long-Short Term Memory Networks" href="sequence_models_tutorial.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> PyTorch Tutorials
+          
+
+          
+            
+            <img src="../../_static/pytorch-logo-dark.svg" class="logo" />
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Beginner Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../blitz/tensor_tutorial.html">What is PyTorch?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/tensor_tutorial.html#getting-started">Getting Started</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/tensor_tutorial.html#tensors">Tensors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/tensor_tutorial.html#operations">Operations</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/tensor_tutorial.html#numpy-bridge">Numpy Bridge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/tensor_tutorial.html#converting-torch-tensor-to-numpy-array">Converting torch Tensor to numpy Array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/tensor_tutorial.html#converting-numpy-array-to-torch-tensor">Converting numpy Array to torch Tensor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/tensor_tutorial.html#cuda-tensors">CUDA Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../blitz/autograd_tutorial.html">Autograd: automatic differentiation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/autograd_tutorial.html#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/autograd_tutorial.html#gradients">Gradients</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../blitz/neural_networks_tutorial.html">Neural Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/neural_networks_tutorial.html#define-the-network">Define the network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/neural_networks_tutorial.html#loss-function">Loss Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/neural_networks_tutorial.html#backprop">Backprop</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/neural_networks_tutorial.html#update-the-weights">Update the weights</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../blitz/cifar10_tutorial.html">Training a classifier</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/cifar10_tutorial.html#what-about-data">What about data?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/cifar10_tutorial.html#training-an-image-classifier">Training an image classifier</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/cifar10_tutorial.html#loading-and-normalizing-cifar10">1. Loading and normalizing CIFAR10</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/cifar10_tutorial.html#define-a-convolution-neural-network">2. Define a Convolution Neural Network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/cifar10_tutorial.html#define-a-loss-function-and-optimizer">3. Define a Loss function and optimizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/cifar10_tutorial.html#train-the-network">4. Train the network</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../blitz/cifar10_tutorial.html#test-the-network-on-the-test-data">5. Test the network on the test data</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/cifar10_tutorial.html#training-on-gpu">Training on GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../blitz/cifar10_tutorial.html#where-do-i-go-next">Where do I go next?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../former_torchies_tutorial.html">PyTorch for former Torch users</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../former_torchies/tensor_tutorial.html">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#inplace-out-of-place">Inplace / Out-of-place</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#zero-indexing">Zero Indexing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#no-camel-casing">No camel casing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#numpy-bridge">Numpy Bridge</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#converting-torch-tensor-to-numpy-array">Converting torch Tensor to numpy Array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#converting-numpy-array-to-torch-tensor">Converting numpy Array to torch Tensor</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/tensor_tutorial.html#cuda-tensors">CUDA Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../former_torchies/autograd_tutorial.html">Autograd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/autograd_tutorial.html#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/autograd_tutorial.html#gradients">Gradients</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../former_torchies/nn_tutorial.html">nn package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/nn_tutorial.html#example-1-convnet">Example 1: ConvNet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/nn_tutorial.html#forward-and-backward-function-hooks">Forward and Backward Function Hooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/nn_tutorial.html#example-2-recurrent-net">Example 2: Recurrent Net</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../former_torchies/parallelism_tutorial.html">Multi-GPU examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/parallelism_tutorial.html#dataparallel">DataParallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../former_torchies/parallelism_tutorial.html#part-of-the-model-on-cpu-and-part-on-the-gpu">Part of the model on CPU and part on the GPU</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch_with_examples.html">Learning PyTorch with Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch_with_examples.html#tensors">Tensors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#warm-up-numpy">Warm-up: numpy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-tensors">PyTorch: Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch_with_examples.html#autograd">Autograd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-variables-and-autograd">PyTorch: Variables and autograd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-defining-new-autograd-functions">PyTorch: Defining new autograd functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#tensorflow-static-graphs">TensorFlow: Static Graphs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch_with_examples.html#nn-module"><cite>nn</cite> module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-nn">PyTorch: nn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-optim">PyTorch: optim</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-custom-nn-modules">PyTorch: Custom nn Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#pytorch-control-flow-weight-sharing">PyTorch: Control Flow + Weight Sharing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../pytorch_with_examples.html#examples">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id1">Tensors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id2">Autograd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id3"><cite>nn</cite> module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../transfer_learning_tutorial.html">Transfer Learning tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../transfer_learning_tutorial.html#load-data">Load Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../transfer_learning_tutorial.html#visualize-a-few-images">Visualize a few images</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../transfer_learning_tutorial.html#training-the-model">Training the model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../transfer_learning_tutorial.html#learning-rate-scheduler">Learning rate scheduler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../transfer_learning_tutorial.html#visualizing-the-model-predictions">Visualizing the model predictions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../transfer_learning_tutorial.html#finetuning-the-convnet">Finetuning the convnet</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../transfer_learning_tutorial.html#train-and-evaluate">Train and evaluate</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../transfer_learning_tutorial.html#convnet-as-fixed-feature-extractor">ConvNet as fixed feature extractor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../transfer_learning_tutorial.html#id1">Train and evaluate</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pytorch_tutorial.html">Introduction to PyTorch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pytorch_tutorial.html#introduction-to-torch-s-tensor-library">Introduction to Torch&#8217;s tensor library</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#creating-tensors">Creating Tensors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#operations-with-tensors">Operations with Tensors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#reshaping-tensors">Reshaping Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="pytorch_tutorial.html#computation-graphs-and-automatic-differentiation">Computation Graphs and Automatic Differentiation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="deep_learning_tutorial.html">Deep Learning with PyTorch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="deep_learning_tutorial.html#deep-learning-building-blocks-affine-maps-non-linearities-and-objectives">Deep Learning Building Blocks: Affine maps, non-linearities and objectives</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="deep_learning_tutorial.html#affine-maps">Affine Maps</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deep_learning_tutorial.html#non-linearities">Non-Linearities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deep_learning_tutorial.html#softmax-and-probabilities">Softmax and Probabilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="deep_learning_tutorial.html#objective-functions">Objective Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="deep_learning_tutorial.html#optimization-and-training">Optimization and Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deep_learning_tutorial.html#creating-network-components-in-pytorch">Creating Network Components in Pytorch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="deep_learning_tutorial.html#example-logistic-regression-bag-of-words-classifier">Example: Logistic Regression Bag-of-Words classifier</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="word_embeddings_tutorial.html">Word Embeddings: Encoding Lexical Semantics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="word_embeddings_tutorial.html#getting-dense-word-embeddings">Getting Dense Word Embeddings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="word_embeddings_tutorial.html#word-embeddings-in-pytorch">Word Embeddings in Pytorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="word_embeddings_tutorial.html#an-example-n-gram-language-modeling">An Example: N-Gram Language Modeling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="word_embeddings_tutorial.html#exercise-computing-word-embeddings-continuous-bag-of-words">Exercise: Computing Word Embeddings: Continuous Bag-of-Words</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sequence_models_tutorial.html">Sequence Models and Long-Short Term Memory Networks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sequence_models_tutorial.html#lstm-s-in-pytorch">LSTM&#8217;s in Pytorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sequence_models_tutorial.html#example-an-lstm-for-part-of-speech-tagging">Example: An LSTM for Part-of-Speech Tagging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sequence_models_tutorial.html#exercise-augmenting-the-lstm-part-of-speech-tagger-with-character-level-features">Exercise: Augmenting the LSTM part-of-speech tagger with character-level features</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Intermediate Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html">Classifying Names with a Character-Level RNN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#preparing-the-data">Preparing the Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#turning-names-into-tensors">Turning Names into Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#creating-the-network">Creating the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#preparing-for-training">Preparing for Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#training-the-network">Training the Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#plotting-the-results">Plotting the Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#evaluating-the-results">Evaluating the Results</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#running-on-user-input">Running on User Input</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html">Generating Names with a Character-Level RNN</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#preparing-the-data">Preparing the Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#creating-the-network">Creating the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#preparing-for-training">Preparing for Training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#training-the-network">Training the Network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#plotting-the-losses">Plotting the Losses</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#sampling-the-network">Sampling the Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#loading-data-files">Loading data files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#the-seq2seq-model">The Seq2Seq Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#the-encoder">The Encoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#the-decoder">The Decoder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#simple-decoder">Simple Decoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#attention-decoder">Attention Decoder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#preparing-training-data">Preparing Training Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#training-the-model">Training the Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#plotting-results">Plotting results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#evaluation">Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#training-and-evaluating">Training and Evaluating</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#visualizing-attention">Visualizing Attention</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html#exercises">Exercises</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#replay-memory">Replay Memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#dqn-algorithm">DQN algorithm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#q-network">Q-network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#input-extraction">Input extraction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#training">Training</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#hyperparameters-and-utilities">Hyperparameters and utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html#training-loop">Training loop</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">Advanced Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/neural_style_tutorial.html">Neural Transfer with PyTorch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#introduction">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#neural-what">Neural what?</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#how-does-it-work">How does it work?</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#ok-how-does-it-work">OK. How does it work?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#pytorch-implementation">PyTorch implementation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#packages">Packages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#cuda">Cuda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#load-images">Load images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#display-images">Display images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#content-loss">Content loss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#style-loss">Style loss</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#load-the-neural-network">Load the neural network</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#input-image">Input image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/neural_style_tutorial.html#gradient-descent">Gradient descent</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/numpy_extensions_tutorial.html">Creating extensions using numpy and scipy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/numpy_extensions_tutorial.html#parameter-less-example">Parameter-less example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/numpy_extensions_tutorial.html#parametrized-example">Parametrized example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/c_extension.html">Custom C extensions for pytorch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/c_extension.html#step-1-prepare-your-c-code">Step 1. prepare your C code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/c_extension.html#step-2-include-it-in-your-python-code">Step 2: Include it in your Python code</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">PyTorch Tutorials</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a> &raquo;</li>
+      
+    <li>Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../../_sources/beginner/nlp/advanced_tutorial.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="advanced-making-dynamic-decisions-and-the-bi-lstm-crf">
+<span id="sphx-glr-beginner-nlp-advanced-tutorial-py"></span><h1>Advanced: Making Dynamic Decisions and the Bi-LSTM CRF<a class="headerlink" href="#advanced-making-dynamic-decisions-and-the-bi-lstm-crf" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dyanmic-versus-static-deep-learning-toolkits">
+<h2>Dyanmic versus Static Deep Learning Toolkits<a class="headerlink" href="#dyanmic-versus-static-deep-learning-toolkits" title="Permalink to this headline">¶</a></h2>
+<p>Pytorch is a <em>dynamic</em> neural network kit. Another example of a dynamic
+kit is <a class="reference external" href="https://github.com/clab/dynet">Dynet</a> (I mention this because
+working with Pytorch and Dynet is similar. If you see an example in
+Dynet, it will probably help you implement it in Pytorch). The opposite
+is the <em>static</em> tool kit, which includes Theano, Keras, TensorFlow, etc.
+The core difference is the following:</p>
+<ul class="simple">
+<li>In a static toolkit, you define
+a computation graph once, compile it, and then stream instances to it.</li>
+<li>In a dynamic toolkit, you define a computation graph <em>for each
+instance</em>. It is never compiled and is executed on-the-fly</li>
+</ul>
+<p>Without a lot of experience, it is difficult to appreciate the
+difference. One example is to suppose we want to build a deep
+constituent parser. Suppose our model involves roughly the following
+steps:</p>
+<ul class="simple">
+<li>We build the tree bottom up</li>
+<li>Tag the root nodes (the words of the sentence)</li>
+<li>From there, use a neural network and the embeddings
+of the words to find combinations that form constituents. Whenever you
+form a new constituent, use some sort of technique to get an embedding
+of the constituent. In this case, our network architecture will depend
+completely on the input sentence. In the sentence &#8220;The green cat
+scratched the wall&#8221;, at some point in the model, we will want to combine
+the span <span class="math">\((i,j,r) = (1, 3, \text{NP})\)</span> (that is, an NP constituent
+spans word 1 to word 3, in this case &#8220;The green cat&#8221;).</li>
+</ul>
+<p>However, another sentence might be &#8220;Somewhere, the big fat cat scratched
+the wall&#8221;. In this sentence, we will want to form the constituent
+<span class="math">\((2, 4, NP)\)</span> at some point. The constituents we will want to form
+will depend on the instance. If we just compile the computation graph
+once, as in a static toolkit, it will be exceptionally difficult or
+impossible to program this logic. In a dynamic toolkit though, there
+isn&#8217;t just 1 pre-defined computation graph. There can be a new
+computation graph for each instance, so this problem goes away.</p>
+<p>Dynamic toolkits also have the advantage of being easier to debug and
+the code more closely resembling the host language (by that I mean that
+Pytorch and Dynet look more like actual Python code than Keras or
+Theano).</p>
+<dl class="docutils">
+<dt>Bi-LSTM Conditional Random Field Discussion</dt>
+<dd><p class="first">For this section, we will see a full, complicated example of a Bi-LSTM
+Conditional Random Field for named-entity recognition. The LSTM tagger
+above is typically sufficient for part-of-speech tagging, but a sequence
+model like the CRF is really essential for strong performance on NER.
+Familiarity with CRF&#8217;s is assumed. Although this name sounds scary, all
+the model is is a CRF but where an LSTM provides the features. This is
+an advanced model though, far more complicated than any earlier model in
+this tutorial. If you want to skip it, that is fine. To see if you&#8217;re
+ready, see if you can:</p>
+<ul class="simple">
+<li>Write the recurrence for the viterbi variable at step i for tag k.</li>
+<li>Modify the above recurrence to compute the forward variables instead.</li>
+<li>Modify again the above recurrence to compute the forward variables in
+log-space (hint: log-sum-exp)</li>
+</ul>
+<p>If you can do those three things, you should be able to understand the
+code below. Recall that the CRF computes a conditional probability. Let
+<span class="math">\(y\)</span> be a tag sequence and <span class="math">\(x\)</span> an input sequence of words.
+Then we compute</p>
+<div class="math">
+\[P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}\]</div>
+<p>Where the score is determined by defining some log potentials
+<span class="math">\(\log \psi_i(x,y)\)</span> such that</p>
+<div class="math">
+\[\text{Score}(x,y) = \sum_i \log \psi_i(x,y)\]</div>
+<p>To make the partition function tractable, the potentials must look only
+at local features.</p>
+<p>In the Bi-LSTM CRF, we define two kinds of potentials: emission and
+transition. The emission potential for the word at index <span class="math">\(i\)</span> comes
+from the hidden state of the Bi-LSTM at timestep <span class="math">\(i\)</span>. The
+transition scores are stored in a <span class="math">\(|T|x|T|\)</span> matrix
+<span class="math">\(\textbf{P}\)</span>, where <span class="math">\(T\)</span> is the tag set. In my
+implementation, <span class="math">\(\textbf{P}_{j,k}\)</span> is the score of transitioning
+to tag <span class="math">\(j\)</span> from tag <span class="math">\(k\)</span>. So:</p>
+<div class="math">
+\[\text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)\]</div>
+<div class="math">
+\[= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}\]</div>
+<p>where in this second expression, we think of the tags as being assigned
+unique non-negative indices.</p>
+<p>If the above discussion was too brief, you can check out
+<a class="reference external" href="http://www.cs.columbia.edu/%7Emcollins/crf.pdf">this</a> write up from
+Michael Collins on CRFs.</p>
+<p>The example below implements the forward algorithm in log space to
+compute the partition function, and the viterbi algorithm to decode.
+Backpropagation will compute the gradients automatically for us. We
+don&#8217;t have to do anything by hand.</p>
+<p class="last">The implementation is not optimized. If you understand what is going on,
+you&#8217;ll probably quickly see that iterating over the next tag in the
+forward algorithm could probably be done in one big operation. I wanted
+to code to be more readable. If you want to make the relevant change,
+you could probably use this tagger for real tasks.</p>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.autograd</span> <span class="kn">as</span> <span class="nn">autograd</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="kn">as</span> <span class="nn">optim</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Helper functions to make the code more readable.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">to_scalar</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+    <span class="c1"># returns a python float</span>
+    <span class="k">return</span> <span class="n">var</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="c1"># return the argmax as a python int</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">to_scalar</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">prepare_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">to_ix</span><span class="p">):</span>
+    <span class="n">idxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_ix</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">]</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+
+
+<span class="c1"># Compute log sum exp in a numerically stable way for the forward algorithm</span>
+<span class="k">def</span> <span class="nf">log_sum_exp</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
+    <span class="n">max_score</span> <span class="o">=</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">argmax</span><span class="p">(</span><span class="n">vec</span><span class="p">)]</span>
+    <span class="n">max_score_broadcast</span> <span class="o">=</span> <span class="n">max_score</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vec</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">max_score</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">vec</span> <span class="o">-</span> <span class="n">max_score_broadcast</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>Create model</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BiLSTM_CRF</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">tag_to_ix</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BiLSTM_CRF</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dim</span> <span class="o">=</span> <span class="n">embedding_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vocab_size</span> <span class="o">=</span> <span class="n">vocab_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span> <span class="o">=</span> <span class="n">tag_to_ix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_to_ix</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_embeds</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                            <span class="n">num_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bidirectional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c1"># Maps the output of the LSTM into tag space.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">)</span>
+
+        <span class="c1"># Matrix of transition parameters.  Entry i,j is the score of</span>
+        <span class="c1"># transitioning *to* i *from* j.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">init_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)),</span>
+                <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">_forward_alg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+        <span class="c1"># Do the forward algorithm to compute the partition function</span>
+        <span class="n">init_alphas</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">10000.</span><span class="p">)</span>
+        <span class="c1"># START_TAG has all of the score.</span>
+        <span class="n">init_alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">START_TAG</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="c1"># Wrap in a variable so that we will get automatic backprop</span>
+        <span class="n">forward_var</span> <span class="o">=</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">init_alphas</span><span class="p">)</span>
+
+        <span class="c1"># Iterate through the sentence</span>
+        <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">:</span>
+            <span class="n">alphas_t</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># The forward variables at this timestep</span>
+            <span class="k">for</span> <span class="n">next_tag</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">):</span>
+                <span class="c1"># broadcast the emission score: it is the same regardless of</span>
+                <span class="c1"># the previous tag</span>
+                <span class="n">emit_score</span> <span class="o">=</span> <span class="n">feat</span><span class="p">[</span><span class="n">next_tag</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span>
+                    <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">)</span>
+                <span class="c1"># the ith entry of trans_score is the score of transitioning to</span>
+                <span class="c1"># next_tag from i</span>
+                <span class="n">trans_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">next_tag</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># The ith entry of next_tag_var is the value for the</span>
+                <span class="c1"># edge (i -&gt; next_tag) before we do log-sum-exp</span>
+                <span class="n">next_tag_var</span> <span class="o">=</span> <span class="n">forward_var</span> <span class="o">+</span> <span class="n">trans_score</span> <span class="o">+</span> <span class="n">emit_score</span>
+                <span class="c1"># The forward variable for this tag is log-sum-exp of all the</span>
+                <span class="c1"># scores.</span>
+                <span class="n">alphas_t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_sum_exp</span><span class="p">(</span><span class="n">next_tag_var</span><span class="p">))</span>
+            <span class="n">forward_var</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">alphas_t</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">terminal_var</span> <span class="o">=</span> <span class="n">forward_var</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">STOP_TAG</span><span class="p">]]</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">log_sum_exp</span><span class="p">(</span><span class="n">terminal_var</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">alpha</span>
+
+    <span class="k">def</span> <span class="nf">_get_lstm_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
+        <span class="n">embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embeds</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">embeds</span><span class="p">)</span>
+        <span class="n">lstm_out</span> <span class="o">=</span> <span class="n">lstm_out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+        <span class="n">lstm_feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lstm_feats</span>
+
+    <span class="k">def</span> <span class="nf">_score_sentence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+        <span class="c1"># Gives the score of a provided tag sequence</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">START_TAG</span><span class="p">]]),</span> <span class="n">tags</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">feats</span><span class="p">):</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">score</span> <span class="o">+</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">tags</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">tags</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">+</span> <span class="n">feat</span><span class="p">[</span><span class="n">tags</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">score</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">STOP_TAG</span><span class="p">],</span> <span class="n">tags</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">score</span>
+
+    <span class="k">def</span> <span class="nf">_viterbi_decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feats</span><span class="p">):</span>
+        <span class="n">backpointers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Initialize the viterbi variables in log space</span>
+        <span class="n">init_vvars</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">10000.</span><span class="p">)</span>
+        <span class="n">init_vvars</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">START_TAG</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># forward_var at step i holds the viterbi variables for step i-1</span>
+        <span class="n">forward_var</span> <span class="o">=</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">init_vvars</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">feat</span> <span class="ow">in</span> <span class="n">feats</span><span class="p">:</span>
+            <span class="n">bptrs_t</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># holds the backpointers for this step</span>
+            <span class="n">viterbivars_t</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># holds the viterbi variables for this step</span>
+
+            <span class="k">for</span> <span class="n">next_tag</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tagset_size</span><span class="p">):</span>
+                <span class="c1"># next_tag_var[i] holds the viterbi variable for tag i at the</span>
+                <span class="c1"># previous step, plus the score of transitioning</span>
+                <span class="c1"># from tag i to next_tag.</span>
+                <span class="c1"># We don&#39;t include the emission scores here because the max</span>
+                <span class="c1"># does not depend on them (we add them in below)</span>
+                <span class="n">next_tag_var</span> <span class="o">=</span> <span class="n">forward_var</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="n">next_tag</span><span class="p">]</span>
+                <span class="n">best_tag_id</span> <span class="o">=</span> <span class="n">argmax</span><span class="p">(</span><span class="n">next_tag_var</span><span class="p">)</span>
+                <span class="n">bptrs_t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_tag_id</span><span class="p">)</span>
+                <span class="n">viterbivars_t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">next_tag_var</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">best_tag_id</span><span class="p">])</span>
+            <span class="c1"># Now add in the emission scores, and assign forward_var to the set</span>
+            <span class="c1"># of viterbi variables we just computed</span>
+            <span class="n">forward_var</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">viterbivars_t</span><span class="p">)</span> <span class="o">+</span> <span class="n">feat</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">backpointers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bptrs_t</span><span class="p">)</span>
+
+        <span class="c1"># Transition to STOP_TAG</span>
+        <span class="n">terminal_var</span> <span class="o">=</span> <span class="n">forward_var</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">transitions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">STOP_TAG</span><span class="p">]]</span>
+        <span class="n">best_tag_id</span> <span class="o">=</span> <span class="n">argmax</span><span class="p">(</span><span class="n">terminal_var</span><span class="p">)</span>
+        <span class="n">path_score</span> <span class="o">=</span> <span class="n">terminal_var</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">best_tag_id</span><span class="p">]</span>
+
+        <span class="c1"># Follow the back pointers to decode the best path.</span>
+        <span class="n">best_path</span> <span class="o">=</span> <span class="p">[</span><span class="n">best_tag_id</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">bptrs_t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">backpointers</span><span class="p">):</span>
+            <span class="n">best_tag_id</span> <span class="o">=</span> <span class="n">bptrs_t</span><span class="p">[</span><span class="n">best_tag_id</span><span class="p">]</span>
+            <span class="n">best_path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">best_tag_id</span><span class="p">)</span>
+        <span class="c1"># Pop off the start tag (we dont want to return that to the caller)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">best_path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">start</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">START_TAG</span><span class="p">]</span>  <span class="c1"># Sanity check</span>
+        <span class="n">best_path</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">path_score</span><span class="p">,</span> <span class="n">best_path</span>
+
+    <span class="k">def</span> <span class="nf">neg_log_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lstm_features</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+        <span class="n">forward_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forward_alg</span><span class="p">(</span><span class="n">feats</span><span class="p">)</span>
+        <span class="n">gold_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score_sentence</span><span class="p">(</span><span class="n">feats</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">forward_score</span> <span class="o">-</span> <span class="n">gold_score</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>  <span class="c1"># dont confuse this with _forward_alg above.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
+        <span class="c1"># Get the emission scores from the BiLSTM</span>
+        <span class="n">lstm_feats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lstm_features</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+
+        <span class="c1"># Find the best path, given the features.</span>
+        <span class="n">score</span><span class="p">,</span> <span class="n">tag_seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_viterbi_decode</span><span class="p">(</span><span class="n">lstm_feats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">score</span><span class="p">,</span> <span class="n">tag_seq</span>
+</pre></div>
+</div>
+<p>Run training</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">START_TAG</span> <span class="o">=</span> <span class="s2">&quot;&lt;START&gt;&quot;</span>
+<span class="n">STOP_TAG</span> <span class="o">=</span> <span class="s2">&quot;&lt;STOP&gt;&quot;</span>
+<span class="n">EMBEDDING_DIM</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">HIDDEN_DIM</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1"># Make up some training data</span>
+<span class="n">training_data</span> <span class="o">=</span> <span class="p">[(</span>
+    <span class="s2">&quot;the wall street journal reported today that apple corporation made money&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span>
+    <span class="s2">&quot;B I I I O O O B I O O&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="p">),</span> <span class="p">(</span>
+    <span class="s2">&quot;georgia tech is a university in georgia&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span>
+    <span class="s2">&quot;B I O O O O B&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<span class="p">)]</span>
+
+<span class="n">word_to_ix</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">tags</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">sentence</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">word_to_ix</span><span class="p">:</span>
+            <span class="n">word_to_ix</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">)</span>
+
+<span class="n">tag_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;B&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;O&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">START_TAG</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">STOP_TAG</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">BiLSTM_CRF</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">),</span> <span class="n">tag_to_ix</span><span class="p">,</span> <span class="n">EMBEDDING_DIM</span><span class="p">,</span> <span class="n">HIDDEN_DIM</span><span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+
+<span class="c1"># Check predictions before training</span>
+<span class="n">precheck_sent</span> <span class="o">=</span> <span class="n">prepare_sequence</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">word_to_ix</span><span class="p">)</span>
+<span class="n">precheck_tags</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">precheck_sent</span><span class="p">))</span>
+
+<span class="c1"># Make sure prepare_sequence from earlier in the LSTM section is loaded</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">300</span><span class="p">):</span>  <span class="c1"># again, normally you would NOT do 300 epochs, it is toy data</span>
+    <span class="k">for</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">tags</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">:</span>
+        <span class="c1"># Step 1. Remember that Pytorch accumulates gradients.</span>
+        <span class="c1"># We need to clear them out before each instance</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+        <span class="c1"># Step 2. Get our inputs ready for the network, that is,</span>
+        <span class="c1"># turn them into Variables of word indices.</span>
+        <span class="n">sentence_in</span> <span class="o">=</span> <span class="n">prepare_sequence</span><span class="p">(</span><span class="n">sentence</span><span class="p">,</span> <span class="n">word_to_ix</span><span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">tag_to_ix</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">])</span>
+
+        <span class="c1"># Step 3. Run our forward pass.</span>
+        <span class="n">neg_log_likelihood</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">neg_log_likelihood</span><span class="p">(</span><span class="n">sentence_in</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+        <span class="c1"># Step 4. Compute the loss, gradients, and update the parameters by</span>
+        <span class="c1"># calling optimizer.step()</span>
+        <span class="n">neg_log_likelihood</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="c1"># Check predictions after training</span>
+<span class="n">precheck_sent</span> <span class="o">=</span> <span class="n">prepare_sequence</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">word_to_ix</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">precheck_sent</span><span class="p">))</span>
+<span class="c1"># We got it!</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+ <span class="mf">12.7272</span>
+<span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="p">(</span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+ <span class="mf">36.6214</span>
+<span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exercise-a-new-loss-function-for-discriminative-tagging">
+<h2>Exercise: A new loss function for discriminative tagging<a class="headerlink" href="#exercise-a-new-loss-function-for-discriminative-tagging" title="Permalink to this headline">¶</a></h2>
+<p>It wasn&#8217;t really necessary for us to create a computation graph when
+doing decoding, since we do not backpropagate from the viterbi path
+score. Since we have it anyway, try training the tagger where the loss
+function is the difference between the Viterbi path score and the score
+of the gold-standard path. It should be clear that this function is
+non-negative and 0 when the predicted tag sequence is the correct tag
+sequence. This is essentially <em>structured perceptron</em>.</p>
+<p>This modification should be short, since Viterbi and score_sentence are
+already implemented. This is an example of the shape of the computation
+graph <em>depending on the training instance</em>. Although I haven&#8217;t tried
+implementing this in a static toolkit, I imagine that it is possible but
+much less straightforward.</p>
+<p>Pick up some real data and do a comparison!</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  8.574 seconds)</p>
+<div class="sphx-glr-footer docutils container">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../../_downloads/advanced_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">advanced_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" href="../../_downloads/advanced_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">advanced_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="http://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../intermediate/char_rnn_classification_tutorial.html" class="btn btn-neutral float-right" title="Classifying Names with a Character-Level RNN" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="sequence_models_tutorial.html" class="btn btn-neutral" title="Sequence Models and Long-Short Term Memory Networks" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, PyTorch.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
