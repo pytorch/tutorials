@@ -78,7 +78,7 @@ is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
     from IPython import display
 
-
+plt.ion()
 ######################################################################
 # Replay Memory
 # -------------
@@ -263,8 +263,10 @@ def get_screen():
     return resize(screen).unsqueeze(0)
 
 env.reset()
+plt.figure()
 plt.imshow(get_screen().squeeze(0).permute(
     1, 2, 0).numpy(), interpolation='none')
+plt.title('Example extracted screen')
 plt.show()
 
 
@@ -335,9 +337,10 @@ episode_durations = []
 
 
 def plot_durations():
-    plt.figure(1)
+    plt.figure(2)
     plt.clf()
     durations_t = torch.Tensor(episode_durations)
+    plt.title('Training...')
     plt.xlabel('Episode')
     plt.ylabel('Duration')
     plt.plot(durations_t.numpy())
@@ -366,7 +369,6 @@ def plot_durations():
 
 
 last_sync = 0
-
 
 def optimize_model():
     global last_sync
@@ -456,8 +458,11 @@ for i_episode in range(num_episodes):
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
-
         if done:
             episode_durations.append(t + 1)
             plot_durations()
             break
+
+env.close()
+plt.ioff()
+plt.show()
