@@ -79,13 +79,13 @@ We'll also use the following from PyTorch:
     import torch.nn.functional as F
     import torchvision.transforms as T
 
-    env = gym.make('CartPole-v0')
+    env = gym.make('CartPole-v0').unwrapped
 
     is_ipython = 'inline' in matplotlib.get_backend()
     if is_ipython:
         from IPython import display
 
-
+    plt.ion()
 
 Replay Memory
 -------------
@@ -285,8 +285,10 @@ display an example patch that it extracted.
         return resize(screen).unsqueeze(0)
 
     env.reset()
+    plt.figure()
     plt.imshow(get_screen().squeeze(0).permute(
         1, 2, 0).numpy(), interpolation='none')
+    plt.title('Example extracted screen')
     plt.show()
 
 
@@ -362,9 +364,10 @@ utilities:
 
 
     def plot_durations():
-        plt.figure(1)
+        plt.figure(2)
         plt.clf()
         durations_t = torch.Tensor(episode_durations)
+        plt.title('Training...')
         plt.xlabel('Episode')
         plt.ylabel('Duration')
         plt.plot(durations_t.numpy())
@@ -398,7 +401,6 @@ state.
 
 
     last_sync = 0
-
 
     def optimize_model():
         global last_sync
@@ -492,12 +494,14 @@ the notebook and run lot more epsiodes.
 
             # Perform one step of the optimization (on the target network)
             optimize_model()
-
             if done:
                 episode_durations.append(t + 1)
                 plot_durations()
                 break
 
+    env.close()
+    plt.ioff()
+    plt.show()
 **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
