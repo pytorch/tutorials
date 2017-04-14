@@ -72,7 +72,7 @@ import torch.autograd as autograd
 import torch.nn.functional as F
 import torchvision.transforms as T
 
-env = gym.make('CartPole-v0')
+env = gym.make('CartPole-v0').unwrapped
 
 is_ipython = 'inline' in matplotlib.get_backend()
 if is_ipython:
