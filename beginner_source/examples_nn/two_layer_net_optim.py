@@ -26,10 +26,10 @@ y = Variable(torch.randn(N, D_out), requires_grad=False)
 
 # Use the nn package to define our model and loss function.
 model = torch.nn.Sequential(
-          torch.nn.Linear(D_in, H),
-          torch.nn.ReLU(),
-          torch.nn.Linear(H, D_out),
-        )
+    torch.nn.Linear(D_in, H),
+    torch.nn.ReLU(),
+    torch.nn.Linear(H, D_out),
+)
 loss_fn = torch.nn.MSELoss(size_average=False)
 
 # Use the optim package to define an Optimizer that will update the weights of
@@ -39,20 +39,22 @@ loss_fn = torch.nn.MSELoss(size_average=False)
 learning_rate = 1e-4
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 for t in range(500):
-  # Forward pass: compute predicted y by passing x to the model.
-  y_pred = model(x)
+    # Forward pass: compute predicted y by passing x to the model.
+    y_pred = model(x)
 
-  # Compute and print loss.
-  loss = loss_fn(y_pred, y)
-  print(t, loss.data[0])
-  
-  # Before the backward pass, use the optimizer object to zero all of the
-  # gradients for the variables it will update (which are the learnable weights
-  # of the model)
-  optimizer.zero_grad()
+    # Compute and print loss.
+    loss = loss_fn(y_pred, y)
+    print(t, loss.data[0])
 
-  # Backward pass: compute gradient of the loss with respect to model parameters
-  loss.backward()
+    # Before the backward pass, use the optimizer object to zero all of the
+    # gradients for the variables it will update (which are the learnable weights
+    # of the model)
+    optimizer.zero_grad()
 
-  # Calling the step function on an Optimizer makes an update to its parameters
-  optimizer.step()
+    # Backward pass: compute gradient of the loss with respect to model
+    # parameters
+    loss.backward()
+
+    # Calling the step function on an Optimizer makes an update to its
+    # parameters
+    optimizer.step()

@@ -257,10 +257,10 @@ new_var_z = autograd.Variable(var_z_data)
 # ... does new_var_z have information to backprop to x and y?
 # NO!
 print(new_var_z.creator)
-# And how could it?  We yanked the tensor out of var_z (that is 
+# And how could it?  We yanked the tensor out of var_z (that is
 # what var_z.data is).  This tensor doesn't know anything about
 # how it was computed.  We pass it into new_var_z, and this is all the
-# information new_var_z gets.  If var_z_data doesn't know how it was 
+# information new_var_z gets.  If var_z_data doesn't know how it was
 # computed, theres no way new_var_z will.
 # In essence, we have broken the variable away from its past history
 

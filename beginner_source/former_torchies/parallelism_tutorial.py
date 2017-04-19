@@ -38,7 +38,7 @@ class DataParallelModel(nn.Module):
 ########################################################################
 # The code does not need to be changed in CPU-mode.
 #
-# The documentation for DataParallel is 
+# The documentation for DataParallel is
 # `here <http://pytorch.org/docs/nn.html#torch.nn.DataParallel>`_.
 #
 # **Primitives on which DataParallel is implemented upon:**

@@ -60,18 +60,19 @@ new_w2 = w2.assign(w2 - learning_rate * grad_w2)
 # Now we have built our computational graph, so we enter a TensorFlow session to
 # actually execute the graph.
 with tf.Session() as sess:
-  # Run the graph once to initialize the Variables w1 and w2.
-  sess.run(tf.global_variables_initializer())
+    # Run the graph once to initialize the Variables w1 and w2.
+    sess.run(tf.global_variables_initializer())
 
-  # Create numpy arrays holding the actual data for the inputs x and targets y
-  x_value = np.random.randn(N, D_in)
-  y_value = np.random.randn(N, D_out)
-  for _ in range(500):
-    # Execute the graph many times. Each time it executes we want to bind
-    # x_value to x and y_value to y, specified with the feed_dict argument.
-    # Each time we execute the graph we want to compute the values for loss,
-    # new_w1, and new_w2; the values of these Tensors are returned as numpy
-    # arrays.
-    loss_value, _, _ = sess.run([loss, new_w1, new_w2],
-                                feed_dict={x: x_value, y: y_value})
-    print(loss_value)
+    # Create numpy arrays holding the actual data for the inputs x and targets
+    # y
+    x_value = np.random.randn(N, D_in)
+    y_value = np.random.randn(N, D_out)
+    for _ in range(500):
+        # Execute the graph many times. Each time it executes we want to bind
+        # x_value to x and y_value to y, specified with the feed_dict argument.
+        # Each time we execute the graph we want to compute the values for loss,
+        # new_w1, and new_w2; the values of these Tensors are returned as numpy
+        # arrays.
+        loss_value, _, _ = sess.run([loss, new_w1, new_w2],
+                                    feed_dict={x: x_value, y: y_value})
+        print(loss_value)

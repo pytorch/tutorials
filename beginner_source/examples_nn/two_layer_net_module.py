@@ -13,25 +13,26 @@ need to define your model this way.
 import torch
 from torch.autograd import Variable
 
-class TwoLayerNet(torch.nn.Module):
-  def __init__(self, D_in, H, D_out):
-    """
-    In the constructor we instantiate two nn.Linear modules and assign them as
-    member variables.
-    """
-    super(TwoLayerNet, self).__init__()
-    self.linear1 = torch.nn.Linear(D_in, H)
-    self.linear2 = torch.nn.Linear(H, D_out)
 
-  def forward(self, x):
-    """
-    In the forward function we accept a Variable of input data and we must return
-    a Variable of output data. We can use Modules defined in the constructor as
-    well as arbitrary operators on Variables.
-    """
-    h_relu = self.linear1(x).clamp(min=0)
-    y_pred = self.linear2(h_relu)
-    return y_pred
+class TwoLayerNet(torch.nn.Module):
+    def __init__(self, D_in, H, D_out):
+        """
+        In the constructor we instantiate two nn.Linear modules and assign them as
+        member variables.
+        """
+        super(TwoLayerNet, self).__init__()
+        self.linear1 = torch.nn.Linear(D_in, H)
+        self.linear2 = torch.nn.Linear(H, D_out)
+
+    def forward(self, x):
+        """
+        In the forward function we accept a Variable of input data and we must return
+        a Variable of output data. We can use Modules defined in the constructor as
+        well as arbitrary operators on Variables.
+        """
+        h_relu = self.linear1(x).clamp(min=0)
+        y_pred = self.linear2(h_relu)
+        return y_pred
 
 
 # N is batch size; D_in is input dimension;
@@ -51,15 +52,14 @@ model = TwoLayerNet(D_in, H, D_out)
 criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 for t in range(500):
-  # Forward pass: Compute predicted y by passing x to the model
-  y_pred = model(x)
+    # Forward pass: Compute predicted y by passing x to the model
+    y_pred = model(x)
 
-  # Compute and print loss
-  loss = criterion(y_pred, y)
-  print(t, loss.data[0])
+    # Compute and print loss
+    loss = criterion(y_pred, y)
+    print(t, loss.data[0])
 
-  # Zero gradients, perform a backward pass, and update the weights.
-  optimizer.zero_grad()
-  loss.backward()
-  optimizer.step()
-
+    # Zero gradients, perform a backward pass, and update the weights.
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
