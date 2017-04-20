@@ -25,7 +25,7 @@ class IncludeDirective(Directive):
 
         try:
             text = open(filename).read()
-            text_no_docstring = self.docstring_regex.sub('', text)
+            text_no_docstring = self.docstring_regex.sub('', text, count=1)
 
             code_block = nodes.literal_block(text=text_no_docstring)
             return [code_block]
