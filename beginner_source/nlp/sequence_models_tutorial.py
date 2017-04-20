@@ -197,8 +197,7 @@ inputs = prepare_sequence(training_data[0][0], word_to_ix)
 tag_scores = model(inputs)
 print(tag_scores)
 
-for epoch in range(
-        300):  # again, normally you would NOT do 300 epochs, it is toy data
+for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
     for sentence, tags in training_data:
         # Step 1. Remember that Pytorch accumulates gradients.
         # We need to clear them out before each instance
