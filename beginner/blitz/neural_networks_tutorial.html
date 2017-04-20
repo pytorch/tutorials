@@ -451,16 +451,20 @@ weights)</li>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="c1"># 1 input image channel, 6 output channels, 5x5 square convolution kernel</span>
+        <span class="c1"># 1 input image channel, 6 output channels, 5x5 square convolution</span>
+        <span class="c1"># kernel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span>   <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>  <span class="c1"># an affine operation: y = Wx + b</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span>   <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span>   <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="c1"># an affine operation: y = Wx + b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># Max pooling over a (2, 2) window</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># If the size is a square you can only specify a single number</span>
+        <span class="c1"># Max pooling over a (2, 2) window</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="c1"># If the size is a square you can only specify a single number</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_flat_features</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
@@ -473,6 +477,7 @@ weights)</li>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
             <span class="n">num_features</span> <span class="o">*=</span> <span class="n">s</span>
         <span class="k">return</span> <span class="n">num_features</span>
+
 
 <span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
 <span class="k">print</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
@@ -511,11 +516,12 @@ You can use any of the Tensor operations in the <code class="docutils literal"><
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
-<span class="o">-</span><span class="mf">0.1620</span>  <span class="mf">0.0938</span> <span class="o">-</span><span class="mf">0.1115</span>  <span class="mf">0.0759</span>  <span class="mf">0.0198</span>  <span class="mf">0.0247</span>  <span class="mf">0.0665</span> <span class="o">-</span><span class="mf">0.1548</span> <span class="o">-</span><span class="mf">0.0823</span> <span class="o">-</span><span class="mf">0.0152</span>
+ <span class="mf">0.0155</span>  <span class="mf">0.1107</span>  <span class="mf">0.0759</span> <span class="o">-</span><span class="mf">0.0685</span>  <span class="mf">0.0056</span> <span class="o">-</span><span class="mf">0.1105</span>  <span class="mf">0.0546</span>  <span class="mf">0.0828</span> <span class="o">-</span><span class="mf">0.0309</span> <span class="o">-</span><span class="mf">0.0636</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="n">x10</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Zero the gradient buffers of all parameters and backprops with random gradients:</p>
+<p>Zero the gradient buffers of all parameters and backprops with random
+gradients:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">net</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 <span class="n">out</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 </pre></div>
@@ -585,7 +591,7 @@ between the input and the target.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">38.7938</span>
+ <span class="mf">38.5676</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -608,9 +614,9 @@ w.r.t. the loss, and all Variables in the graph will have their
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">MSELoss</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fe6000a2828</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">Linear</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fe6000a2908</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">Threshold</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fe6000cb4a8</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">MSELoss</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec94050588</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">Linear</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec940504a8</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">Threshold</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec94050048</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -645,12 +651,12 @@ gradients before and after the backward.</p>
 
 <span class="n">conv1</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="n">after</span> <span class="n">backward</span>
 <span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">0.0708</span>
- <span class="mf">0.2079</span>
- <span class="mf">0.0270</span>
-<span class="o">-</span><span class="mf">0.1019</span>
- <span class="mf">0.1171</span>
- <span class="mf">0.0639</span>
+ <span class="mf">0.0137</span>
+<span class="o">-</span><span class="mf">0.0740</span>
+ <span class="mf">0.0331</span>
+<span class="o">-</span><span class="mf">0.1002</span>
+ <span class="mf">0.0283</span>
+<span class="o">-</span><span class="mf">0.0112</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">6</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -696,7 +702,7 @@ implements all these methods. Using it is very simple:</p>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>    <span class="c1"># Does the update</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.011 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.021 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/neural_networks_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_networks_tutorial.py</span></code></a></div>

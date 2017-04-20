@@ -11,7 +11,7 @@ kit is `Dynet <https://github.com/clab/dynet>`__ (I mention this because
 working with Pytorch and Dynet is similar. If you see an example in
 Dynet, it will probably help you implement it in Pytorch). The opposite
 is the *static* tool kit, which includes Theano, Keras, TensorFlow, etc.
-The core difference is the following: 
+The core difference is the following:
 
 * In a static toolkit, you define
   a computation graph once, compile it, and then stream instances to it.
@@ -21,10 +21,10 @@ The core difference is the following:
 Without a lot of experience, it is difficult to appreciate the
 difference. One example is to suppose we want to build a deep
 constituent parser. Suppose our model involves roughly the following
-steps: 
+steps:
 
-* We build the tree bottom up 
-* Tag the root nodes (the words of the sentence) 
+* We build the tree bottom up
+* Tag the root nodes (the words of the sentence)
 * From there, use a neural network and the embeddings
   of the words to find combinations that form constituents. Whenever you
   form a new constituent, use some sort of technique to get an embedding
@@ -53,7 +53,7 @@ Theano).
 #####################################################################
 # Bi-LSTM Conditional Random Field Discussion
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # For this section, we will see a full, complicated example of a Bi-LSTM
 # Conditional Random Field for named-entity recognition. The LSTM tagger
 # above is typically sufficient for part-of-speech tagging, but a sequence
@@ -63,27 +63,27 @@ Theano).
 # an advanced model though, far more complicated than any earlier model in
 # this tutorial. If you want to skip it, that is fine. To see if you're
 # ready, see if you can:
-# 
+#
 # -  Write the recurrence for the viterbi variable at step i for tag k.
 # -  Modify the above recurrence to compute the forward variables instead.
 # -  Modify again the above recurrence to compute the forward variables in
 #    log-space (hint: log-sum-exp)
-# 
+#
 # If you can do those three things, you should be able to understand the
 # code below. Recall that the CRF computes a conditional probability. Let
 # :math:`y` be a tag sequence and :math:`x` an input sequence of words.
 # Then we compute
-# 
+#
 # .. math::  P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}
-# 
+#
 # Where the score is determined by defining some log potentials
 # :math:`\log \psi_i(x,y)` such that
-# 
+#
 # .. math::  \text{Score}(x,y) = \sum_i \log \psi_i(x,y)
-# 
+#
 # To make the partition function tractable, the potentials must look only
 # at local features.
-# 
+#
 # In the Bi-LSTM CRF, we define two kinds of potentials: emission and
 # transition. The emission potential for the word at index :math:`i` comes
 # from the hidden state of the Bi-LSTM at timestep :math:`i`. The
@@ -91,26 +91,26 @@ Theano).
 # :math:`\textbf{P}`, where :math:`T` is the tag set. In my
 # implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
 # to tag :math:`j` from tag :math:`k`. So:
-# 
+#
 # .. math::  \text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
-# 
+#
 # .. math::  = \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
-# 
+#
 # where in this second expression, we think of the tags as being assigned
 # unique non-negative indices.
-# 
+#
 # If the above discussion was too brief, you can check out
 # `this <http://www.cs.columbia.edu/%7Emcollins/crf.pdf>`__ write up from
 # Michael Collins on CRFs.
-# 
+#
 # Implementation Notes
 # ~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # The example below implements the forward algorithm in log space to
 # compute the partition function, and the viterbi algorithm to decode.
 # Backpropagation will compute the gradients automatically for us. We
 # don't have to do anything by hand.
-# 
+#
 # The implementation is not optimized. If you understand what is going on,
 # you'll probably quickly see that iterating over the next tag in the
 # forward algorithm could probably be done in one big operation. I wanted
@@ -128,6 +128,7 @@ torch.manual_seed(1)
 
 #####################################################################
 # Helper functions to make the code more readable.
+
 
 def to_scalar(var):
     # returns a python float
@@ -150,10 +151,12 @@ def prepare_sequence(seq, to_ix):
 def log_sum_exp(vec):
     max_score = vec[0, argmax(vec)]
     max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
-    return max_score + torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
+    return max_score + \
+        torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
 
 #####################################################################
 # Create model
+
 
 class BiLSTM_CRF(nn.Module):
 
@@ -246,8 +249,8 @@ class BiLSTM_CRF(nn.Module):
             viterbivars_t = []  # holds the viterbi variables for this step
 
             for next_tag in range(self.tagset_size):
-                # next_tag_var[i] holds the viterbi variable for tag i at the 
-                # previous step, plus the score of transitioning 
+                # next_tag_var[i] holds the viterbi variable for tag i at the
+                # previous step, plus the score of transitioning
                 # from tag i to next_tag.
                 # We don't include the emission scores here because the max
                 # does not depend on them (we add them in below)
@@ -295,6 +298,7 @@ class BiLSTM_CRF(nn.Module):
 #####################################################################
 # Run training
 
+
 START_TAG = "<START>"
 STOP_TAG = "<STOP>"
 EMBEDDING_DIM = 5
@@ -326,13 +330,14 @@ precheck_tags = torch.LongTensor([tag_to_ix[t] for t in training_data[0][1]])
 print(model(precheck_sent))
 
 # Make sure prepare_sequence from earlier in the LSTM section is loaded
-for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
+for epoch in range(
+        300):  # again, normally you would NOT do 300 epochs, it is toy data
     for sentence, tags in training_data:
         # Step 1. Remember that Pytorch accumulates gradients.
         # We need to clear them out before each instance
         model.zero_grad()
 
-        # Step 2. Get our inputs ready for the network, that is, 
+        # Step 2. Get our inputs ready for the network, that is,
         # turn them into Variables of word indices.
         sentence_in = prepare_sequence(sentence, word_to_ix)
         targets = torch.LongTensor([tag_to_ix[t] for t in tags])
@@ -340,7 +345,7 @@ for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is t
         # Step 3. Run our forward pass.
         neg_log_likelihood = model.neg_log_likelihood(sentence_in, targets)
 
-        # Step 4. Compute the loss, gradients, and update the parameters by 
+        # Step 4. Compute the loss, gradients, and update the parameters by
         # calling optimizer.step()
         neg_log_likelihood.backward()
         optimizer.step()

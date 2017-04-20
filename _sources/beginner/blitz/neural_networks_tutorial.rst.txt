@@ -54,16 +54,20 @@ Let’s define this network:
 
         def __init__(self):
             super(Net, self).__init__()
-            # 1 input image channel, 6 output channels, 5x5 square convolution kernel
+            # 1 input image channel, 6 output channels, 5x5 square convolution
+            # kernel
             self.conv1 = nn.Conv2d(1, 6, 5)
             self.conv2 = nn.Conv2d(6, 16, 5)
-            self.fc1   = nn.Linear(16 * 5 * 5, 120)  # an affine operation: y = Wx + b
-            self.fc2   = nn.Linear(120, 84)
-            self.fc3   = nn.Linear(84, 10)
+            # an affine operation: y = Wx + b
+            self.fc1 = nn.Linear(16 * 5 * 5, 120)
+            self.fc2 = nn.Linear(120, 84)
+            self.fc3 = nn.Linear(84, 10)
 
         def forward(self, x):
-            x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))  # Max pooling over a (2, 2) window
-            x = F.max_pool2d(F.relu(self.conv2(x)), 2)  # If the size is a square you can only specify a single number
+            # Max pooling over a (2, 2) window
+            x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
+            # If the size is a square you can only specify a single number
+            x = F.max_pool2d(F.relu(self.conv2(x)), 2)
             x = x.view(-1, self.num_flat_features(x))
             x = F.relu(self.fc1(x))
             x = F.relu(self.fc2(x))
@@ -76,6 +80,7 @@ Let’s define this network:
             for s in size:
                 num_features *= s
             return num_features
+
 
     net = Net()
     print(net)
@@ -145,11 +150,12 @@ The input to the forward is an ``autograd.Variable``, and so is the output.
  Out::
 
     Variable containing:
-    -0.1620  0.0938 -0.1115  0.0759  0.0198  0.0247  0.0665 -0.1548 -0.0823 -0.0152
+     0.0155  0.1107  0.0759 -0.0685  0.0056 -0.1105  0.0546  0.0828 -0.0309 -0.0636
     [torch.FloatTensor of size 1x10]
 
 
-Zero the gradient buffers of all parameters and backprops with random gradients:
+Zero the gradient buffers of all parameters and backprops with random
+gradients:
 
 
 
@@ -211,7 +217,7 @@ value that estimates how far away the output is from the target.
 There are several different
 `loss functions <http://pytorch.org/docs/nn.html#loss-functions>`_ under the
 nn package .
-A simple loss is: ``nn.MSELoss`` which computes the mean-squared error 
+A simple loss is: ``nn.MSELoss`` which computes the mean-squared error
 between the input and the target.
 
 For example:
@@ -237,7 +243,7 @@ For example:
  Out::
 
     Variable containing:
-     38.7938
+     38.5676
     [torch.FloatTensor of size 1]
 
 
@@ -275,9 +281,9 @@ For illustration, let us follow a few steps backward:
 
  Out::
 
-    <torch.nn._functions.thnn.auto.MSELoss object at 0x7fe6000a2828>
-    <torch.nn._functions.linear.Linear object at 0x7fe6000a2908>
-    <torch.nn._functions.thnn.auto.Threshold object at 0x7fe6000cb4a8>
+    <torch.nn._functions.thnn.auto.MSELoss object at 0x7fec94050588>
+    <torch.nn._functions.linear.Linear object at 0x7fec940504a8>
+    <torch.nn._functions.thnn.auto.Threshold object at 0x7fec94050048>
 
 
 Backprop
@@ -326,12 +332,12 @@ gradients before and after the backward.
 
     conv1.bias.grad after backward
     Variable containing:
-     0.0708
-     0.2079
-     0.0270
-    -0.1019
-     0.1171
-     0.0639
+     0.0137
+    -0.0740
+     0.0331
+    -0.1002
+     0.0283
+    -0.0112
     [torch.FloatTensor of size 6]
 
 
@@ -389,7 +395,7 @@ implements all these methods. Using it is very simple:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.011 seconds)
+**Total running time of the script:** ( 0 minutes  0.021 seconds)
 
 
 

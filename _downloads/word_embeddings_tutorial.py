@@ -31,23 +31,23 @@ no relation to each other. What we really want is some notion of
 *similarity* between words. Why? Let's see an example.
 
 Suppose we are building a language model. Suppose we have seen the
-sentences 
+sentences
 
-* The mathematician ran to the store. 
-* The physicist ran to the store. 
+* The mathematician ran to the store.
+* The physicist ran to the store.
 * The mathematician solved the open problem.
 
 in our training data. Now suppose we get a new sentence never before
-seen in our training data: 
+seen in our training data:
 
 * The physicist solved the open problem.
 
 Our language model might do OK on this sentence, but wouldn't it be much
-better if we could use the following two facts: 
+better if we could use the following two facts:
 
 * We have seen  mathematician and physicist in the same role in a sentence. Somehow they
-  have a semantic relation. 
-* We have seen mathematician in the same role  in this new unseen sentence 
+  have a semantic relation.
+* We have seen mathematician in the same role  in this new unseen sentence
   as we are now seeing physicist.
 
 and then infer that physicist is actually a good fit in the new unseen
@@ -233,6 +233,7 @@ class NGramLanguageModeler(nn.Module):
         log_probs = F.log_softmax(out)
         return log_probs
 
+
 losses = []
 loss_function = nn.NLLLoss()
 model = NGramLanguageModeler(len(vocab), EMBEDDING_DIM, CONTEXT_SIZE)
@@ -248,7 +249,8 @@ for epoch in range(10):
         context_var = autograd.Variable(torch.LongTensor(context_idxs))
 
         # Step 2. Recall that torch *accumulates* gradients. Before passing in a
-        # new instance, you need to zero out the gradients from the old instance
+        # new instance, you need to zero out the gradients from the old
+        # instance
         model.zero_grad()
 
         # Step 3. Run the forward pass, getting log probabilities over next
@@ -293,9 +295,9 @@ print(losses)  # The loss decreased every iteration over the training data!
 # where :math:`q_w` is the embedding for word :math:`w`.
 #
 # Implement this model in Pytorch by filling in the class below. Some
-# tips: 
-# 
-# * Think about which parameters you need to define. 
+# tips:
+#
+# * Think about which parameters you need to define.
 # * Make sure you know what shape each operation expects. Use .view() if you need to
 #   reshape.
 #
@@ -334,5 +336,5 @@ def make_context_vector(context, word_to_ix):
     tensor = torch.LongTensor(idxs)
     return autograd.Variable(tensor)
 
-make_context_vector(data[0][0], word_to_ix)  # example
 
+make_context_vector(data[0][0], word_to_ix)  # example

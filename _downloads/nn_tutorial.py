@@ -56,7 +56,8 @@ class MNISTConvNet(nn.Module):
 
     def __init__(self):
         # this is the place where you instantiate all your modules
-        # you can later access them using the same names you've given them in here
+        # you can later access them using the same names you've given them in
+        # here
         super(MNISTConvNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 10, 5)
         self.pool1 = nn.MaxPool2d(2, 2)
@@ -93,6 +94,7 @@ class MNISTConvNet(nn.Module):
 ###############################################################
 # Let's use the defined ConvNet now.
 # You create an instance of the class first.
+
 
 net = MNISTConvNet()
 print(net)
@@ -172,6 +174,7 @@ def printnorm(self, input, output):
     print('output size:', output.data.size())
     print('output norm:', output.data.norm())
 
+
 net.conv2.register_forward_hook(printnorm)
 
 out = net(input)
@@ -193,6 +196,7 @@ def printgradnorm(self, grad_input, grad_output):
     print('grad_input size:', grad_input[0].size())
     print('grad_output size:', grad_output[0].size())
     print('grad_input norm:', grad_input[0].data.norm())
+
 
 net.conv2.register_backward_hook(printgradnorm)
 
@@ -231,6 +235,7 @@ class RNN(nn.Module):
         hidden = self.i2h(input)
         output = self.h2o(hidden)
         return hidden, output
+
 
 rnn = RNN(50, 20, 10)
 

@@ -14,7 +14,7 @@ kit is `Dynet <https://github.com/clab/dynet>`__ (I mention this because
 working with Pytorch and Dynet is similar. If you see an example in
 Dynet, it will probably help you implement it in Pytorch). The opposite
 is the *static* tool kit, which includes Theano, Keras, TensorFlow, etc.
-The core difference is the following: 
+The core difference is the following:
 
 * In a static toolkit, you define
   a computation graph once, compile it, and then stream instances to it.
@@ -24,10 +24,10 @@ The core difference is the following:
 Without a lot of experience, it is difficult to appreciate the
 difference. One example is to suppose we want to build a deep
 constituent parser. Suppose our model involves roughly the following
-steps: 
+steps:
 
-* We build the tree bottom up 
-* Tag the root nodes (the words of the sentence) 
+* We build the tree bottom up
+* Tag the root nodes (the words of the sentence)
 * From there, use a neural network and the embeddings
   of the words to find combinations that form constituents. Whenever you
   form a new constituent, use some sort of technique to get an embedding
@@ -145,6 +145,7 @@ Helper functions to make the code more readable.
 .. code-block:: python
 
 
+
     def to_scalar(var):
         # returns a python float
         return var.view(-1).data.tolist()[0]
@@ -166,7 +167,8 @@ Helper functions to make the code more readable.
     def log_sum_exp(vec):
         max_score = vec[0, argmax(vec)]
         max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
-        return max_score + torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
+        return max_score + \
+            torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
 
 
 
@@ -179,6 +181,7 @@ Create model
 
 
 .. code-block:: python
+
 
 
     class BiLSTM_CRF(nn.Module):
@@ -272,8 +275,8 @@ Create model
                 viterbivars_t = []  # holds the viterbi variables for this step
 
                 for next_tag in range(self.tagset_size):
-                    # next_tag_var[i] holds the viterbi variable for tag i at the 
-                    # previous step, plus the score of transitioning 
+                    # next_tag_var[i] holds the viterbi variable for tag i at the
+                    # previous step, plus the score of transitioning
                     # from tag i to next_tag.
                     # We don't include the emission scores here because the max
                     # does not depend on them (we add them in below)
@@ -331,6 +334,7 @@ Run training
 .. code-block:: python
 
 
+
     START_TAG = "<START>"
     STOP_TAG = "<STOP>"
     EMBEDDING_DIM = 5
@@ -362,13 +366,14 @@ Run training
     print(model(precheck_sent))
 
     # Make sure prepare_sequence from earlier in the LSTM section is loaded
-    for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
+    for epoch in range(
+            300):  # again, normally you would NOT do 300 epochs, it is toy data
         for sentence, tags in training_data:
             # Step 1. Remember that Pytorch accumulates gradients.
             # We need to clear them out before each instance
             model.zero_grad()
 
-            # Step 2. Get our inputs ready for the network, that is, 
+            # Step 2. Get our inputs ready for the network, that is,
             # turn them into Variables of word indices.
             sentence_in = prepare_sequence(sentence, word_to_ix)
             targets = torch.LongTensor([tag_to_ix[t] for t in tags])
@@ -376,7 +381,7 @@ Run training
             # Step 3. Run our forward pass.
             neg_log_likelihood = model.neg_log_likelihood(sentence_in, targets)
 
-            # Step 4. Compute the loss, gradients, and update the parameters by 
+            # Step 4. Compute the loss, gradients, and update the parameters by
             # calling optimizer.step()
             neg_log_likelihood.backward()
             optimizer.step()
@@ -426,7 +431,7 @@ Pick up some real data and do a comparison!
 
 
 
-**Total running time of the script:** ( 0 minutes  8.524 seconds)
+**Total running time of the script:** ( 0 minutes  7.964 seconds)
 
 
 

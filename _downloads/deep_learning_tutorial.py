@@ -290,6 +290,7 @@ def make_bow_vector(sentence, word_to_ix):
 def make_target(label, label_to_ix):
     return torch.LongTensor([label_to_ix[label]])
 
+
 model = BoWClassifier(NUM_LABELS, VOCAB_SIZE)
 
 # the model knows its parameters.  The first output below is A, the second is b.
@@ -364,7 +365,7 @@ for epoch in range(100):
         # Step 3. Run our forward pass.
         log_probs = model(bow_vec)
 
-        # Step 4. Compute the loss, gradients, and update the parameters by 
+        # Step 4. Compute the loss, gradients, and update the parameters by
         # calling optimizer.step()
         loss = loss_function(log_probs, target)
         loss.backward()
