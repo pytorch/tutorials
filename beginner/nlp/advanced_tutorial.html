@@ -183,9 +183,24 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../pytorch_with_examples.html#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id1">Tensors</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id2">Autograd</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id3"><cite>nn</cite> module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id1">Tensors</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../examples_tensor/two_layer_net_numpy.html">Warm-up: numpy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_tensor/two_layer_net_tensor.html">PyTorch: Tensors</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id2">Autograd</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../examples_autograd/two_layer_net_autograd.html">PyTorch: Variables and autograd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_autograd/two_layer_net_custom_function.html">PyTorch: Defining new autograd functions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_autograd/tf_two_layer_net.html">TensorFlow: Static Graphs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../pytorch_with_examples.html#id3"><cite>nn</cite> module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../examples_nn/two_layer_net_nn.html">PyTorch: nn</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_nn/two_layer_net_optim.html">PyTorch: optim</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_nn/two_layer_net_module.html">PyTorch: Custom nn Modules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../examples_nn/dynamic_net.html">PyTorch: Control Flow + Weight Sharing</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -251,6 +266,8 @@
 </li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
 </ul>
 </li>
@@ -456,9 +473,10 @@ computation graph for each instance, so this problem goes away.</p>
 the code more closely resembling the host language (by that I mean that
 Pytorch and Dynet look more like actual Python code than Keras or
 Theano).</p>
-<dl class="docutils">
-<dt>Bi-LSTM Conditional Random Field Discussion</dt>
-<dd><p class="first">For this section, we will see a full, complicated example of a Bi-LSTM
+</div>
+<div class="section" id="bi-lstm-conditional-random-field-discussion">
+<h2>Bi-LSTM Conditional Random Field Discussion<a class="headerlink" href="#bi-lstm-conditional-random-field-discussion" title="Permalink to this headline">¶</a></h2>
+<p>For this section, we will see a full, complicated example of a Bi-LSTM
 Conditional Random Field for named-entity recognition. The LSTM tagger
 above is typically sufficient for part-of-speech tagging, but a sequence
 model like the CRF is really essential for strong performance on NER.
@@ -501,18 +519,21 @@ unique non-negative indices.</p>
 <p>If the above discussion was too brief, you can check out
 <a class="reference external" href="http://www.cs.columbia.edu/%7Emcollins/crf.pdf">this</a> write up from
 Michael Collins on CRFs.</p>
+</div>
+<div class="section" id="implementation-notes">
+<h2>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this headline">¶</a></h2>
 <p>The example below implements the forward algorithm in log space to
 compute the partition function, and the viterbi algorithm to decode.
 Backpropagation will compute the gradients automatically for us. We
 don&#8217;t have to do anything by hand.</p>
-<p class="last">The implementation is not optimized. If you understand what is going on,
+<p>The implementation is not optimized. If you understand what is going on,
 you&#8217;ll probably quickly see that iterating over the next tag in the
 forward algorithm could probably be done in one big operation. I wanted
 to code to be more readable. If you want to make the relevant change,
 you could probably use this tagger for real tasks.</p>
-</dd>
-</dl>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.autograd</span> <span class="kn">as</span> <span class="nn">autograd</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="kn">as</span> <span class="nn">optim</span>
@@ -770,7 +791,7 @@ graph <em>depending on the training instance</em>. Although I haven&#8217;t trie
 implementing this in a static toolkit, I imagine that it is possible but
 much less straightforward.</p>
 <p>Pick up some real data and do a comparison!</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  7.964 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  7.915 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/advanced_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">advanced_tutorial.py</span></code></a></div>

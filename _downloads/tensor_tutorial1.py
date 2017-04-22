@@ -127,9 +127,8 @@ print(b)  # see how changing the np array changed the torch Tensor automatically
 # CUDA Tensors
 # ------------
 #
-# CUDA Tensors are nice and easy in pytorch, and they are much more
-# consistent as well. Transfering a CUDA tensor from the CPU to GPU will
-# retain it’s type.
+# CUDA Tensors are nice and easy in pytorch, and transfering a CUDA tensor
+# from the CPU to GPU will retain its underlying type.
 
 # let us run this cell only if CUDA is available
 if torch.cuda.is_available():

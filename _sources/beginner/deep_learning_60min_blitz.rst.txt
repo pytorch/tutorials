@@ -25,16 +25,16 @@ Goal of this tutorial:
    /beginner/blitz/neural_networks_tutorial
    /beginner/blitz/cifar10_tutorial
 
-.. galleryitem:: beginner/blitz/tensor_tutorial.py
+.. galleryitem:: /beginner/blitz/tensor_tutorial.py
     :figure: /_static/img/tensor_illustration_flat.png
 
-.. galleryitem:: beginner/blitz/autograd_tutorial.py
+.. galleryitem:: /beginner/blitz/autograd_tutorial.py
     :figure: /_static/img/Variable.png
 
-.. galleryitem:: beginner/blitz/neural_networks_tutorial.py
+.. galleryitem:: /beginner/blitz/neural_networks_tutorial.py
     :figure: /_static/img/mnist.png
 
-.. galleryitem:: beginner/blitz/cifar10_tutorial.py
+.. galleryitem:: /beginner/blitz/cifar10_tutorial.py
     :figure: /_static/img/cifar10.png
 
 .. raw:: html
