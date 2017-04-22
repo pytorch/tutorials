@@ -262,6 +262,13 @@ You can browse the above examples here.
 Tensors
 -------
 
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   /beginner/examples_tensor/two_layer_net_numpy
+   /beginner/examples_tensor/two_layer_net_tensor
+
 .. galleryitem:: /beginner/examples_tensor/two_layer_net_numpy.py
 
 .. galleryitem:: /beginner/examples_tensor/two_layer_net_tensor.py
@@ -272,6 +279,15 @@ Tensors
 
 Autograd
 --------
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   /beginner/examples_autograd/two_layer_net_autograd
+   /beginner/examples_autograd/two_layer_net_custom_function
+   /beginner/examples_autograd/tf_two_layer_net
+
 
 .. galleryitem:: /beginner/examples_autograd/two_layer_net_autograd.py
 
@@ -285,6 +301,16 @@ Autograd
 
 `nn` module
 -----------
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   /beginner/examples_nn/two_layer_net_nn
+   /beginner/examples_nn/two_layer_net_optim
+   /beginner/examples_nn/two_layer_net_module
+   /beginner/examples_nn/dynamic_net
+
 
 .. galleryitem:: /beginner/examples_nn/two_layer_net_nn.py
 
