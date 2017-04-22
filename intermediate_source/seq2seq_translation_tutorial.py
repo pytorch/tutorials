@@ -83,7 +83,8 @@ And for more, read the papers that introduced these topics:
 
 **Requirements**
 """
-
+from __future__ import unicode_literals, print_function, division
+from io import open
 import unicodedata
 import string
 import re
@@ -208,7 +209,8 @@ def readLangs(lang1, lang2, reverse=False):
     print("Reading lines...")
 
     # Read the file and split into lines
-    lines = open('data/%s-%s.txt' % (lang1, lang2)).read().strip().split('\n')
+    lines = open('data/%s-%s.txt' % (lang1, lang2), encoding='utf-8').\
+        read().strip().split('\n')
 
     # Split every line into pairs and normalize
     pairs = [[normalizeString(s) for s in l.split('\t')] for l in lines]
