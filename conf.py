@@ -63,7 +63,7 @@ for i in range(len(sphinx_gallery_conf['examples_dirs'])):
     # Create gallery dirs if it doesn't exist
     try:
         os.mkdir(gallery_dir)
-    except FileExistsError:
+    except OSError:
         pass
 
     # Copy rst files from source dir to gallery dir
