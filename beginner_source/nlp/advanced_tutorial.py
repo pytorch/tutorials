@@ -4,7 +4,7 @@ Advanced: Making Dynamic Decisions and the Bi-LSTM CRF
 ======================================================
 
 Dyanmic versus Static Deep Learning Toolkits
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------
 
 Pytorch is a *dynamic* neural network kit. Another example of a dynamic
 kit is `Dynet <https://github.com/clab/dynet>`__ (I mention this because
@@ -47,76 +47,73 @@ Dynamic toolkits also have the advantage of being easier to debug and
 the code more closely resembling the host language (by that I mean that
 Pytorch and Dynet look more like actual Python code than Keras or
 Theano).
+
+Bi-LSTM Conditional Random Field Discussion
+-------------------------------------------
+
+For this section, we will see a full, complicated example of a Bi-LSTM
+Conditional Random Field for named-entity recognition. The LSTM tagger
+above is typically sufficient for part-of-speech tagging, but a sequence
+model like the CRF is really essential for strong performance on NER.
+Familiarity with CRF's is assumed. Although this name sounds scary, all
+the model is is a CRF but where an LSTM provides the features. This is
+an advanced model though, far more complicated than any earlier model in
+this tutorial. If you want to skip it, that is fine. To see if you're
+ready, see if you can:
+
+-  Write the recurrence for the viterbi variable at step i for tag k.
+-  Modify the above recurrence to compute the forward variables instead.
+-  Modify again the above recurrence to compute the forward variables in
+   log-space (hint: log-sum-exp)
+
+If you can do those three things, you should be able to understand the
+code below. Recall that the CRF computes a conditional probability. Let
+:math:`y` be a tag sequence and :math:`x` an input sequence of words.
+Then we compute
+
+.. math::  P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}
+
+Where the score is determined by defining some log potentials
+:math:`\log \psi_i(x,y)` such that
+
+.. math::  \text{Score}(x,y) = \sum_i \log \psi_i(x,y)
+
+To make the partition function tractable, the potentials must look only
+at local features.
+
+In the Bi-LSTM CRF, we define two kinds of potentials: emission and
+transition. The emission potential for the word at index :math:`i` comes
+from the hidden state of the Bi-LSTM at timestep :math:`i`. The
+transition scores are stored in a :math:`|T|x|T|` matrix
+:math:`\textbf{P}`, where :math:`T` is the tag set. In my
+implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
+to tag :math:`j` from tag :math:`k`. So:
+
+.. math::  \text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
+
+.. math::  = \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
+
+where in this second expression, we think of the tags as being assigned
+unique non-negative indices.
+
+If the above discussion was too brief, you can check out
+`this <http://www.cs.columbia.edu/%7Emcollins/crf.pdf>`__ write up from
+Michael Collins on CRFs.
+
+Implementation Notes
+--------------------
+
+The example below implements the forward algorithm in log space to
+compute the partition function, and the viterbi algorithm to decode.
+Backpropagation will compute the gradients automatically for us. We
+don't have to do anything by hand.
+
+The implementation is not optimized. If you understand what is going on,
+you'll probably quickly see that iterating over the next tag in the
+forward algorithm could probably be done in one big operation. I wanted
+to code to be more readable. If you want to make the relevant change,
+you could probably use this tagger for real tasks.
 """
-
-
-#####################################################################
-# Bi-LSTM Conditional Random Field Discussion
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# For this section, we will see a full, complicated example of a Bi-LSTM
-# Conditional Random Field for named-entity recognition. The LSTM tagger
-# above is typically sufficient for part-of-speech tagging, but a sequence
-# model like the CRF is really essential for strong performance on NER.
-# Familiarity with CRF's is assumed. Although this name sounds scary, all
-# the model is is a CRF but where an LSTM provides the features. This is
-# an advanced model though, far more complicated than any earlier model in
-# this tutorial. If you want to skip it, that is fine. To see if you're
-# ready, see if you can:
-#
-# -  Write the recurrence for the viterbi variable at step i for tag k.
-# -  Modify the above recurrence to compute the forward variables instead.
-# -  Modify again the above recurrence to compute the forward variables in
-#    log-space (hint: log-sum-exp)
-#
-# If you can do those three things, you should be able to understand the
-# code below. Recall that the CRF computes a conditional probability. Let
-# :math:`y` be a tag sequence and :math:`x` an input sequence of words.
-# Then we compute
-#
-# .. math::  P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}
-#
-# Where the score is determined by defining some log potentials
-# :math:`\log \psi_i(x,y)` such that
-#
-# .. math::  \text{Score}(x,y) = \sum_i \log \psi_i(x,y)
-#
-# To make the partition function tractable, the potentials must look only
-# at local features.
-#
-# In the Bi-LSTM CRF, we define two kinds of potentials: emission and
-# transition. The emission potential for the word at index :math:`i` comes
-# from the hidden state of the Bi-LSTM at timestep :math:`i`. The
-# transition scores are stored in a :math:`|T|x|T|` matrix
-# :math:`\textbf{P}`, where :math:`T` is the tag set. In my
-# implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
-# to tag :math:`j` from tag :math:`k`. So:
-#
-# .. math::  \text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
-#
-# .. math::  = \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
-#
-# where in this second expression, we think of the tags as being assigned
-# unique non-negative indices.
-#
-# If the above discussion was too brief, you can check out
-# `this <http://www.cs.columbia.edu/%7Emcollins/crf.pdf>`__ write up from
-# Michael Collins on CRFs.
-#
-# Implementation Notes
-# ~~~~~~~~~~~~~~~~~~~~
-#
-# The example below implements the forward algorithm in log space to
-# compute the partition function, and the viterbi algorithm to decode.
-# Backpropagation will compute the gradients automatically for us. We
-# don't have to do anything by hand.
-#
-# The implementation is not optimized. If you understand what is going on,
-# you'll probably quickly see that iterating over the next tag in the
-# forward algorithm could probably be done in one big operation. I wanted
-# to code to be more readable. If you want to make the relevant change,
-# you could probably use this tagger for real tasks.
-#####################################################################
 # Author: Robert Guthrie
 
 import torch
@@ -358,7 +355,7 @@ print(model(precheck_sent))
 
 ######################################################################
 # Exercise: A new loss function for discriminative tagging
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# --------------------------------------------------------
 #
 # It wasn't really necessary for us to create a computation graph when
 # doing decoding, since we do not backpropagate from the viterbi path

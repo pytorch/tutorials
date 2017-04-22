@@ -43,6 +43,7 @@ print(x.size())
 ###############################################################
 # .. note::
 #     ``torch.Size`` is in fact a tuple, so it supports the same operations
+#
 # Operations
 # ^^^^^^^^^^
 # There are multiple syntaxes for operations. Let's see addition as an example
