@@ -5,7 +5,23 @@ import re
 import os
 import sphinx_gallery
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
 class IncludeDirective(Directive):
+    """Include source file without docstring at the top of file.
+
+    Implementation just replaces the first docstring found in file
+    with '' once.
+
+    Example usage:
+
+    .. includenodoc:: /beginner/examples_tensor/two_layer_net_tensor.py
+
+    """
 
     # defines the parameter the directive expects
     # directives.unchanged means you get the raw value from RST
@@ -35,6 +51,22 @@ class IncludeDirective(Directive):
 
 
 class GalleryItemDirective(Directive):
+    """
+    Create a sphinx gallery thumbnail for insertion anywhere in docs.
+
+    Optionally, you can specify the custom figure and intro/tooltip for the
+    thumbnail.
+
+    Example usage:
+
+    .. galleryitem:: intermediate/char_rnn_generation_tutorial.py
+        :figure: _static/img/char_rnn_generation.png
+        :intro: Put your custom intro here.
+
+    If figure is specified, a thumbnail will be made out of it and stored in
+    _static/thumbs. Therefore, consider _static/thumbs as a 'built' directory.
+    """
+
     required_arguments = 1
     optional_arguments = 0
     final_argument_whitespace = True
@@ -46,6 +78,9 @@ class GalleryItemDirective(Directive):
     def run(self):
         args = self.arguments
         fname = args[-1]
+
+        env = self.state.document.settings.env
+        fname, abs_fname = env.relfn2path(fname)
         basename = os.path.basename(fname)
         dirname = os.path.dirname(fname)
 
@@ -53,21 +88,24 @@ class GalleryItemDirective(Directive):
             if 'intro' in self.options:
                 intro = self.options['intro'][:195] + '...'
             else:
-                intro = sphinx_gallery.gen_rst.extract_intro(fname)
+                intro = sphinx_gallery.gen_rst.extract_intro(abs_fname)
 
-            thumbnail_rst = sphinx_gallery.backreferences._thumbnail_div(dirname, basename, intro)
+            thumbnail_rst = sphinx_gallery.backreferences._thumbnail_div(
+                dirname, basename, intro)
 
             if 'figure' in self.options:
-                env = self.state.document.settings.env
                 rel_figname, figname = env.relfn2path(self.options['figure'])
-                save_figname = os.path.join('_static/thumbs/', os.path.basename(figname))
+                save_figname = os.path.join('_static/thumbs/',
+                                            os.path.basename(figname))
 
                 try:
                     os.makedirs('_static/thumbs')
-                except FileExistsError:
+                except OSError:
                     pass
 
-                sphinx_gallery.gen_rst.scale_image(figname, save_figname, 400, 280)
+                sphinx_gallery.gen_rst.scale_image(figname, save_figname,
+                                                   400, 280)
+                # replace figure in rst with simple regex
                 thumbnail_rst = re.sub(r'..\sfigure::\s.*\.png',
                                        '.. figure:: /{}'.format(save_figname),
                                        thumbnail_rst)
@@ -80,7 +118,6 @@ class GalleryItemDirective(Directive):
         except FileNotFoundError as e:
             print(e)
             return []
-
 
 
 GALLERY_TEMPLATE = """
@@ -99,7 +136,24 @@ GALLERY_TEMPLATE = """
     </div>
 """
 
+
 class CustomGalleryItemDirective(Directive):
+    """Create a sphinx gallery style thumbnail.
+
+    tooltip and figure are self explanatory. Description could be a link to
+    a document like in below example. 
+
+    Example usage:
+
+    .. customgalleryitem::
+        :tooltip: I am writing this tutorial to focus specifically on NLP for people who have never written code in any deep learning framework
+        :figure: /_static/img/thumbnails/babel.jpg
+        :description: :doc:`/beginner/deep_learning_nlp_tutorial`
+
+    If figure is specified, a thumbnail will be made out of it and stored in
+    _static/thumbs. Therefore, consider _static/thumbs as a 'built' directory.
+    """
+
     required_arguments = 0
     optional_arguments = 0
     final_argument_whitespace = True
