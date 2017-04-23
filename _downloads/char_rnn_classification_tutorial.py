@@ -64,7 +64,8 @@ We'll end up with a dictionary of lists of names per language,
 ``{language: [names ...]}``. The generic variables "category" and "line"
 (for language and name in our case) are used for later extensibility.
 """
-
+from __future__ import unicode_literals, print_function, division
+from io import open
 import glob
 
 def findFiles(path): return glob.glob(path)
@@ -93,7 +94,7 @@ all_categories = []
 
 # Read a file and split into lines
 def readLines(filename):
-    lines = open(filename).read().strip().split('\n')
+    lines = open(filename, encoding='utf-8').read().strip().split('\n')
     return [unicodeToAscii(line) for line in lines]
 
 for filename in findFiles('data/names/*.txt'):

@@ -74,6 +74,8 @@ name per line. We split lines into an array, convert Unicode to ASCII,
 and end up with a dictionary ``{language: [names ...]}``.
 
 """
+from __future__ import unicode_literals, print_function, division
+from io import open
 import glob
 import unicodedata
 import string
@@ -93,7 +95,7 @@ def unicodeToAscii(s):
 
 # Read a file and split into lines
 def readLines(filename):
-    lines = open(filename).read().strip().split('\n')
+    lines = open(filename, encoding='utf-8').read().strip().split('\n')
     return [unicodeToAscii(line) for line in lines]
 
 # Build the category_lines dictionary, a list of lines per category
