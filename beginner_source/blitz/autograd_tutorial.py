@@ -36,9 +36,9 @@ implementation - a ``Function``.
 
 ``Variable`` and ``Function`` are interconnected and build up an acyclic
 graph, that encodes a complete history of computation. Each variable has
-a ``.creator`` attribute that references a ``Function`` that has created
+a ``.grad_fn`` attribute that references a ``Function`` that has created
 the ``Variable`` (except for Variables created by the user - their
-``creator is None``).
+``grad_fn is None``).
 
 If you want to compute the derivatives, you can call ``.backward()`` on
 a ``Variable``. If ``Variable`` is a scalar (i.e. it holds a one element
@@ -61,8 +61,8 @@ y = x + 2
 print(y)
 
 ###############################################################
-# ``y`` was created as a result of an operation, so it has a creator.
-print(y.creator)
+# ``y`` was created as a result of an operation, so it has a ``grad_fn``.
+print(y.grad_fn)
 
 ###############################################################
 # Do more operations on y
