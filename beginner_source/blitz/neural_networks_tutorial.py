@@ -157,7 +157,7 @@ out.backward(torch.randn(1, 10))
 # For example:
 
 output = net(input)
-target = Variable(torch.range(1, 10))  # a dummy target, for example
+target = Variable(torch.arange(1, 11))  # a dummy target, for example
 criterion = nn.MSELoss()
 
 loss = criterion(output, target)
