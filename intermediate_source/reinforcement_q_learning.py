@@ -385,8 +385,7 @@ def optimize_model():
     if USE_CUDA:
         non_final_mask = non_final_mask.cuda()
     # We don't want to backprop through the expected action values and volatile
-    # will save us on temporarily changing the model parameters'
-    # requires_grad to False!
+    # will make the forward pass more memory efficient
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
                                                 if s is not None]),
                                      volatile=True)
@@ -402,9 +401,8 @@ def optimize_model():
     next_state_values = Variable(torch.zeros(BATCH_SIZE))
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
     # Now, we don't want to mess up the loss with a volatile flag, so let's
-    # clear it. After this, we'll just end up with a Variable that has
-    # requires_grad=False
-    next_state_values.volatile = False
+    # extract the data and wrap it in a new (non-volatile) Variable
+    next_state_values = Variable(next_state_values.data)
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
