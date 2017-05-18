@@ -290,7 +290,7 @@ print(losses)  # The loss decreased every iteration over the training data!
 # and :math:`w_{i+1}, \dots, w_{i+N}`, referring to all context words
 # collectively as :math:`C`, CBOW tries to minimize
 #
-# .. math::  -\log p(w_i | C) = \log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+# .. math::  -\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
 #
 # where :math:`q_w` is the embedding for word :math:`w`.
 #
