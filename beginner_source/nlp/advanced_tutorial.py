@@ -3,7 +3,7 @@ r"""
 Advanced: Making Dynamic Decisions and the Bi-LSTM CRF
 ======================================================
 
-Dyanmic versus Static Deep Learning Toolkits
+Dynamic versus Static Deep Learning Toolkits
 --------------------------------------------
 
 Pytorch is a *dynamic* neural network kit. Another example of a dynamic
