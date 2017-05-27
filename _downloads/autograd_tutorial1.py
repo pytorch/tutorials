@@ -25,9 +25,9 @@ w.r.t. this variable is accumulated into ``.grad`` attribute.
 There’s one more class which is very important for autograd
 implementation - a ``Function``. ``Variable`` and ``Function`` are
 interconnected and build up an acyclic graph, that encodes a complete
-history of computation. Each variable has a ``.creator`` attribute that
+history of computation. Each variable has a ``.grad_fn`` attribute that
 references a function that has created a function (except for Variables
-created by the user - these have ``None`` as ``.creator``).
+created by the user - these have ``None`` as ``.grad_fn``).
 
 If you want to compute the derivatives, you can call ``.backward()`` on
 a ``Variable``. If ``Variable`` is a scalar (i.e. it holds a one element
@@ -52,7 +52,7 @@ print(x.grad)
 ###############################################################
 #
 
-print(x.creator)  # we've created x ourselves
+print(x.grad_fn)  # we've created x ourselves
 
 ###############################################################
 # Do an operation of x:
@@ -62,8 +62,8 @@ print(y)
 
 ###############################################################
 # y was created as a result of an operation,
-# so it has a creator
-print(y.creator)
+# so it has a grad_fn
+print(y.grad_fn)
 
 ###############################################################
 # More operations on y:
@@ -91,7 +91,7 @@ print(x.grad)
 
 x = Variable(torch.ones(2, 2), requires_grad=True)
 y = x + 2
-y.backward(torch.ones(2, 2), retain_variables=True)
+y.backward(torch.ones(2, 2), retain_graph=True)
 # the retain_variables flag will prevent the internal buffers from being freed
 print(x.grad)
 

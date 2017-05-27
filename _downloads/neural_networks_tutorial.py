@@ -157,7 +157,7 @@ out.backward(torch.randn(1, 10))
 # For example:
 
 output = net(input)
-target = Variable(torch.range(1, 10))  # a dummy target, for example
+target = Variable(torch.arange(1, 11))  # a dummy target, for example
 criterion = nn.MSELoss()
 
 loss = criterion(output, target)
@@ -165,7 +165,7 @@ print(loss)
 
 ########################################################################
 # Now, if you follow ``loss`` in the backward direction, using it’s
-# ``.creator`` attribute, you will see a graph of computations that looks
+# ``.grad_fn`` attribute, you will see a graph of computations that looks
 # like this:
 #
 # ::
@@ -181,9 +181,9 @@ print(loss)
 #
 # For illustration, let us follow a few steps backward:
 
-print(loss.creator)  # MSELoss
-print(loss.creator.previous_functions[0][0])  # Linear
-print(loss.creator.previous_functions[0][0].previous_functions[0][0])  # ReLU
+print(loss.grad_fn)  # MSELoss
+print(loss.grad_fn.next_functions[0][0])  # Linear
+print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 
 ########################################################################
 # Backprop

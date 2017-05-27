@@ -264,7 +264,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#dynamic-versus-static-deep-learning-toolkits">Dynamic versus Static Deep Learning Toolkits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
@@ -667,10 +667,10 @@ pre-computing batches of Tensors.</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
 
 <span class="n">Columns</span> <span class="mi">0</span> <span class="n">to</span> <span class="mi">9</span>
-<span class="o">-</span><span class="mf">2.9407</span> <span class="o">-</span><span class="mf">3.0152</span> <span class="o">-</span><span class="mf">2.7955</span> <span class="o">-</span><span class="mf">2.8986</span> <span class="o">-</span><span class="mf">2.9942</span> <span class="o">-</span><span class="mf">2.8066</span> <span class="o">-</span><span class="mf">2.7735</span> <span class="o">-</span><span class="mf">2.8927</span> <span class="o">-</span><span class="mf">2.8127</span> <span class="o">-</span><span class="mf">2.9285</span>
+<span class="o">-</span><span class="mf">2.9427</span> <span class="o">-</span><span class="mf">2.8834</span> <span class="o">-</span><span class="mf">2.8105</span> <span class="o">-</span><span class="mf">2.9505</span> <span class="o">-</span><span class="mf">2.9144</span> <span class="o">-</span><span class="mf">3.0235</span> <span class="o">-</span><span class="mf">2.8622</span> <span class="o">-</span><span class="mf">2.9749</span> <span class="o">-</span><span class="mf">2.9168</span> <span class="o">-</span><span class="mf">2.8478</span>
 
 <span class="n">Columns</span> <span class="mi">10</span> <span class="n">to</span> <span class="mi">17</span>
-<span class="o">-</span><span class="mf">2.9342</span> <span class="o">-</span><span class="mf">2.9568</span> <span class="o">-</span><span class="mf">2.9258</span> <span class="o">-</span><span class="mf">2.8479</span> <span class="o">-</span><span class="mf">2.9587</span> <span class="o">-</span><span class="mf">2.8280</span> <span class="o">-</span><span class="mf">2.8510</span> <span class="o">-</span><span class="mf">2.9090</span>
+<span class="o">-</span><span class="mf">2.8252</span> <span class="o">-</span><span class="mf">2.9027</span> <span class="o">-</span><span class="mf">2.8036</span> <span class="o">-</span><span class="mf">2.8963</span> <span class="o">-</span><span class="mf">2.8294</span> <span class="o">-</span><span class="mf">2.9595</span> <span class="o">-</span><span class="mf">2.8678</span> <span class="o">-</span><span class="mf">2.8471</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="n">x18</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -694,7 +694,7 @@ of the greatest value:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;German&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;Polish&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We will also want a quick way to get a training example (a name and its
@@ -704,7 +704,7 @@ language):</p>
 <span class="k">def</span> <span class="nf">randomChoice</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">l</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
 
-<span class="k">def</span> <span class="nf">randomTrainingPair</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">randomTrainingExample</span><span class="p">():</span>
     <span class="n">category</span> <span class="o">=</span> <span class="n">randomChoice</span><span class="p">(</span><span class="n">all_categories</span><span class="p">)</span>
     <span class="n">line</span> <span class="o">=</span> <span class="n">randomChoice</span><span class="p">(</span><span class="n">category_lines</span><span class="p">[</span><span class="n">category</span><span class="p">])</span>
     <span class="n">category_tensor</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">all_categories</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">category</span><span class="p">)]))</span>
@@ -712,21 +712,21 @@ language):</p>
     <span class="k">return</span> <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span>
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingExample</span><span class="p">()</span>
     <span class="k">print</span><span class="p">(</span><span class="s1">&#39;category =&#39;</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="s1">&#39;/ line =&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">category</span> <span class="o">=</span> <span class="n">Dutch</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Oomen</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Arabic</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Kassis</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Irish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Mclain</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Czech</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Kerner</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Chinese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">She</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Scottish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Anderson</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Polish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Sokolof</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Irish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Daly</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Vietnamese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">An</span>
-<span class="n">category</span> <span class="o">=</span> <span class="n">Russian</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Tsagareli</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">category</span> <span class="o">=</span> <span class="n">Russian</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Zavodskoi</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">French</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Moreau</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Scottish</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">King</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Japanese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Toyotomi</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Vietnamese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Thao</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Arabic</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Amari</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Japanese</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Toshitala</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Arabic</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Attia</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Dutch</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Silje</span>
+<span class="n">category</span> <span class="o">=</span> <span class="n">Korean</span> <span class="o">/</span> <span class="n">line</span> <span class="o">=</span> <span class="n">Li</span>
 </pre></div>
 </div>
 </div>
@@ -774,16 +774,16 @@ layer of the RNN is <code class="docutils literal"><span class="pre">nn.LogSoftm
 <p>Now we just have to run that with a bunch of examples. Since the
 <code class="docutils literal"><span class="pre">train</span></code> function returns both the output and loss we can print its
 guesses and also keep track of loss for plotting. Since there are 1000s
-of examples we print only every <code class="docutils literal"><span class="pre">print_every</span></code> time steps, and take an
+of examples we print only every <code class="docutils literal"><span class="pre">print_every</span></code> examples, and take an
 average of the loss.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
-<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">n_iters</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">print_every</span> <span class="o">=</span> <span class="mi">5000</span>
 <span class="n">plot_every</span> <span class="o">=</span> <span class="mi">1000</span>
 
-<span class="n">rnn</span> <span class="o">=</span> <span class="n">RNN</span><span class="p">(</span><span class="n">n_letters</span><span class="p">,</span> <span class="n">n_hidden</span><span class="p">,</span> <span class="n">n_categories</span><span class="p">)</span>
+
 
 <span class="c1"># Keep track of losses for plotting</span>
 <span class="n">current_loss</span> <span class="o">=</span> <span class="mi">0</span>
@@ -798,44 +798,44 @@ average of the loss.</p>
 
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+<span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingExample</span><span class="p">()</span>
     <span class="n">output</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span><span class="p">)</span>
     <span class="n">current_loss</span> <span class="o">+=</span> <span class="n">loss</span>
 
-    <span class="c1"># Print epoch number, loss, name and guess</span>
-    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="c1"># Print iter number, loss, name and guess</span>
+    <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">guess</span><span class="p">,</span> <span class="n">guess_i</span> <span class="o">=</span> <span class="n">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
         <span class="n">correct</span> <span class="o">=</span> <span class="s1">&#39;✓&#39;</span> <span class="k">if</span> <span class="n">guess</span> <span class="o">==</span> <span class="n">category</span> <span class="k">else</span> <span class="s1">&#39;✗ (</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="n">category</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> / </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">epoch</span> <span class="o">/</span> <span class="n">n_epochs</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">loss</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">correct</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1"> (</span><span class="si">%s</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> / </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">/</span> <span class="n">n_iters</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">loss</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">guess</span><span class="p">,</span> <span class="n">correct</span><span class="p">))</span>
 
     <span class="c1"># Add current loss avg to list of losses</span>
-    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">all_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_loss</span> <span class="o">/</span> <span class="n">plot_every</span><span class="p">)</span>
         <span class="n">current_loss</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span>5000 5% (0m 5s) 2.8818 Aodh / Vietnamese ✗ (Irish)
-10000 10% (0m 10s) 2.5445 Radford / Japanese ✗ (English)
-15000 15% (0m 15s) 2.6274 Viteri / Italian ✗ (Spanish)
-20000 20% (0m 20s) 3.4456 Molloy / Scottish ✗ (Irish)
-25000 25% (0m 25s) 0.3957 Demakis / Greek ✓
-30000 30% (0m 30s) 3.5076 Jez / Chinese ✗ (Polish)
-35000 35% (0m 35s) 2.1709 Docherty / English ✗ (Scottish)
-40000 40% (0m 40s) 0.9810 Paszek / Polish ✓
-45000 45% (0m 45s) 0.7359 Ryu / Korean ✓
-50000 50% (0m 50s) 2.6953 Delaney / Spanish ✗ (Irish)
-55000 55% (0m 55s) 1.4272 Lieu / Vietnamese ✓
-60000 60% (1m 0s) 1.8603 Holzer / Polish ✗ (German)
-65000 65% (1m 5s) 2.6793 Costa / Czech ✗ (Portuguese)
-70000 70% (1m 10s) 0.6097 Dalach / Irish ✓
-75000 75% (1m 15s) 0.1429 Kowalczyk / Polish ✓
-80000 80% (1m 20s) 0.8101 Cha / Korean ✓
-85000 85% (1m 25s) 0.2391 Travert / French ✓
-90000 90% (1m 30s) 1.8437 Nuremberg / Dutch ✗ (German)
-95000 95% (1m 35s) 1.2834 Faucher / French ✓
-100000 100% (1m 40s) 0.5508 Urogataya / Japanese ✓
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span>5000 5% (0m 13s) 1.9382 Adelardi / Italian ✓
+10000 10% (0m 26s) 2.2294 Hanzlik / Russian ✗ (Czech)
+15000 15% (0m 38s) 1.3864 Hanari / Japanese ✓
+20000 20% (0m 51s) 2.8817 Sedmikova / Italian ✗ (Czech)
+25000 25% (1m 6s) 2.6150 Ryan / Irish ✗ (English)
+30000 30% (1m 20s) 2.7960 Abascal / Irish ✗ (Spanish)
+35000 35% (1m 33s) 1.1576 Bilinsky / Polish ✗ (Russian)
+40000 40% (1m 47s) 1.4279 Larenz / German ✓
+45000 45% (2m 0s) 0.8948 Chavez / Spanish ✓
+50000 50% (2m 13s) 1.2643 Bian / Vietnamese ✗ (Chinese)
+55000 55% (2m 26s) 0.2171 Hentov / Russian ✓
+60000 60% (2m 39s) 1.6691 Santos / Greek ✗ (Portuguese)
+65000 65% (2m 51s) 2.1761 Richelieu / Scottish ✗ (French)
+70000 70% (3m 4s) 1.3368 Chang / Chinese ✗ (Korean)
+75000 75% (3m 18s) 1.7949 Zambrano / Vietnamese ✗ (Italian)
+80000 80% (3m 31s) 1.7938 Felton / Scottish ✗ (English)
+85000 85% (3m 46s) 1.1180 Klimek / Czech ✗ (Polish)
+90000 90% (4m 0s) 3.0799 Kudrna / Italian ✗ (Czech)
+95000 95% (4m 15s) 0.3723 Nowak / Polish ✓
+100000 100% (4m 28s) 0.4955 Macdonald / Scottish ✓
 </pre></div>
 </div>
 </div>
@@ -875,7 +875,7 @@ matrix a bunch of samples are run through the network with
 
 <span class="c1"># Go through a bunch of examples and record which are correctly guessed</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_confusion</span><span class="p">):</span>
-    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
+    <span class="n">category</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">category_tensor</span><span class="p">,</span> <span class="n">line_tensor</span> <span class="o">=</span> <span class="n">randomTrainingExample</span><span class="p">()</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">line_tensor</span><span class="p">)</span>
     <span class="n">guess</span><span class="p">,</span> <span class="n">guess_i</span> <span class="o">=</span> <span class="n">categoryFromOutput</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
     <span class="n">category_i</span> <span class="o">=</span> <span class="n">all_categories</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">category</span><span class="p">)</span>
@@ -931,19 +931,19 @@ English (perhaps because of overlap with other languages).</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">Dovesky</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">0.46</span><span class="p">)</span> <span class="n">Russian</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">1.51</span><span class="p">)</span> <span class="n">Czech</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">2.63</span><span class="p">)</span> <span class="n">English</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.62</span><span class="p">)</span> <span class="n">Russian</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.20</span><span class="p">)</span> <span class="n">Czech</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">2.80</span><span class="p">)</span> <span class="n">Polish</span>
 
 <span class="o">&gt;</span> <span class="n">Jackson</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">0.83</span><span class="p">)</span> <span class="n">Scottish</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">1.10</span><span class="p">)</span> <span class="n">English</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">2.34</span><span class="p">)</span> <span class="n">Russian</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">0.77</span><span class="p">)</span> <span class="n">Scottish</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.09</span><span class="p">)</span> <span class="n">English</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">2.33</span><span class="p">)</span> <span class="n">Russian</span>
 
 <span class="o">&gt;</span> <span class="n">Satoshi</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">0.96</span><span class="p">)</span> <span class="n">Italian</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">1.61</span><span class="p">)</span> <span class="n">Arabic</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">1.90</span><span class="p">)</span> <span class="n">Japanese</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.28</span><span class="p">)</span> <span class="n">Italian</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.58</span><span class="p">)</span> <span class="n">Japanese</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">1.98</span><span class="p">)</span> <span class="n">Arabic</span>
 </pre></div>
 </div>
 <p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
@@ -985,7 +985,7 @@ output of predictions.</p>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 1 minutes  47.194 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 4 minutes  36.384 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/char_rnn_classification_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>

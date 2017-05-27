@@ -265,7 +265,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../nlp/advanced_tutorial.html">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#dynamic-versus-static-deep-learning-toolkits">Dynamic versus Static Deep Learning Toolkits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
@@ -448,9 +448,9 @@ w.r.t. this variable is accumulated into <code class="docutils literal"><span cl
 <p>There’s one more class which is very important for autograd
 implementation - a <code class="docutils literal"><span class="pre">Function</span></code>. <code class="docutils literal"><span class="pre">Variable</span></code> and <code class="docutils literal"><span class="pre">Function</span></code> are
 interconnected and build up an acyclic graph, that encodes a complete
-history of computation. Each variable has a <code class="docutils literal"><span class="pre">.creator</span></code> attribute that
+history of computation. Each variable has a <code class="docutils literal"><span class="pre">.grad_fn</span></code> attribute that
 references a function that has created a function (except for Variables
-created by the user - these have <code class="docutils literal"><span class="pre">None</span></code> as <code class="docutils literal"><span class="pre">.creator</span></code>).</p>
+created by the user - these have <code class="docutils literal"><span class="pre">None</span></code> as <code class="docutils literal"><span class="pre">.grad_fn</span></code>).</p>
 <p>If you want to compute the derivatives, you can call <code class="docutils literal"><span class="pre">.backward()</span></code> on
 a <code class="docutils literal"><span class="pre">Variable</span></code>. If <code class="docutils literal"><span class="pre">Variable</span></code> is a scalar (i.e. it holds a one element
 tensor), you don’t need to specify any arguments to <code class="docutils literal"><span class="pre">backward()</span></code>,
@@ -485,7 +485,7 @@ argument that is a tensor of matching shape.</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="kc">None</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>  <span class="c1"># we&#39;ve created x ourselves</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>  <span class="c1"># we&#39;ve created x ourselves</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -505,12 +505,12 @@ argument that is a tensor of matching shape.</p>
 </pre></div>
 </div>
 <p>y was created as a result of an operation,
-so it has a creator</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>
+so it has a grad_fn</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">basic_ops</span><span class="o">.</span><span class="n">AddConstant</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fe6000cb4a8</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">AddConstantBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f4d2183b618</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>More operations on y:</p>
@@ -551,7 +551,7 @@ part of the graph twice, you need to pass in <code class="docutils literal"><spa
 during the first pass.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">retain_variables</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="c1"># the retain_variables flag will prevent the internal buffers from being freed</span>
 <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
 </pre></div>
@@ -586,12 +586,12 @@ during the first pass.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">0.5231</span> <span class="o">-</span><span class="mf">0.3006</span>
- <span class="mf">2.8558</span>  <span class="mf">1.0188</span>
+ <span class="mf">0.6128</span>  <span class="mf">1.9876</span>
+ <span class="mf">0.1325</span>  <span class="mf">1.3695</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">2</span><span class="n">x2</span><span class="p">]</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.001 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.016 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/autograd_tutorial1.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial.py</span></code></a></div>

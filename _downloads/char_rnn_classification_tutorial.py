@@ -274,7 +274,7 @@ import random
 def randomChoice(l):
     return l[random.randint(0, len(l) - 1)]
 
-def randomTrainingPair():                                                                                                               
+def randomTrainingExample():
     category = randomChoice(all_categories)
     line = randomChoice(category_lines[category])
     category_tensor = Variable(torch.LongTensor([all_categories.index(category)]))
@@ -282,7 +282,7 @@ def randomTrainingPair():
     return category, line, category_tensor, line_tensor
 
 for i in range(10):
-    category, line, category_tensor, line_tensor = randomTrainingPair()
+    category, line, category_tensor, line_tensor = randomTrainingExample()
     print('category =', category, '/ line =', line)
 
 
@@ -338,18 +338,18 @@ def train(category_tensor, line_tensor):
 # Now we just have to run that with a bunch of examples. Since the
 # ``train`` function returns both the output and loss we can print its
 # guesses and also keep track of loss for plotting. Since there are 1000s
-# of examples we print only every ``print_every`` time steps, and take an
+# of examples we print only every ``print_every`` examples, and take an
 # average of the loss.
 # 
 
 import time
 import math
 
-n_epochs = 100000
+n_iters = 100000
 print_every = 5000
 plot_every = 1000
 
-rnn = RNN(n_letters, n_hidden, n_categories)
+
 
 # Keep track of losses for plotting
 current_loss = 0
@@ -364,19 +364,19 @@ def timeSince(since):
 
 start = time.time()
 
-for epoch in range(1, n_epochs + 1):
-    category, line, category_tensor, line_tensor = randomTrainingPair()
+for iter in range(1, n_iters + 1):
+    category, line, category_tensor, line_tensor = randomTrainingExample()
     output, loss = train(category_tensor, line_tensor)
     current_loss += loss
 
-    # Print epoch number, loss, name and guess
-    if epoch % print_every == 0:
+    # Print iter number, loss, name and guess
+    if iter % print_every == 0:
         guess, guess_i = categoryFromOutput(output)
         correct = '✓' if guess == category else '✗ (%s)' % category
-        print('%d %d%% (%s) %.4f %s / %s %s' % (epoch, epoch / n_epochs * 100, timeSince(start), loss, line, guess, correct))
+        print('%d %d%% (%s) %.4f %s / %s %s' % (iter, iter / n_iters * 100, timeSince(start), loss, line, guess, correct))
 
     # Add current loss avg to list of losses
-    if epoch % plot_every == 0:
+    if iter % plot_every == 0:
         all_losses.append(current_loss / plot_every)
         current_loss = 0
 
@@ -422,7 +422,7 @@ def evaluate(line_tensor):
 
 # Go through a bunch of examples and record which are correctly guessed
 for i in range(n_confusion):
-    category, line, category_tensor, line_tensor = randomTrainingPair()
+    category, line, category_tensor, line_tensor = randomTrainingExample()
     output = evaluate(line_tensor)
     guess, guess_i = categoryFromOutput(output)
     category_i = all_categories.index(category)

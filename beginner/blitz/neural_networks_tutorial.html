@@ -265,7 +265,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../nlp/advanced_tutorial.html">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#dynamic-versus-static-deep-learning-toolkits">Dynamic versus Static Deep Learning Toolkits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../nlp/advanced_tutorial.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
@@ -533,7 +533,7 @@ You can use any of the Tensor operations in the <code class="docutils literal"><
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">0.0155</span>  <span class="mf">0.1107</span>  <span class="mf">0.0759</span> <span class="o">-</span><span class="mf">0.0685</span>  <span class="mf">0.0056</span> <span class="o">-</span><span class="mf">0.1105</span>  <span class="mf">0.0546</span>  <span class="mf">0.0828</span> <span class="o">-</span><span class="mf">0.0309</span> <span class="o">-</span><span class="mf">0.0636</span>
+<span class="o">-</span><span class="mf">0.0042</span> <span class="o">-</span><span class="mf">0.1754</span>  <span class="mf">0.0479</span>  <span class="mf">0.0740</span> <span class="o">-</span><span class="mf">0.0719</span> <span class="o">-</span><span class="mf">0.1126</span>  <span class="mf">0.0614</span> <span class="o">-</span><span class="mf">0.0104</span>  <span class="mf">0.1291</span> <span class="o">-</span><span class="mf">0.0176</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="n">x10</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -599,7 +599,7 @@ A simple loss is: <code class="docutils literal"><span class="pre">nn.MSELoss</s
 between the input and the target.</p>
 <p>For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-<span class="n">target</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>  <span class="c1"># a dummy target, for example</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span>  <span class="c1"># a dummy target, for example</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
 
 <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
@@ -608,12 +608,12 @@ between the input and the target.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">38.5676</span>
+ <span class="mf">38.4313</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>Now, if you follow <code class="docutils literal"><span class="pre">loss</span></code> in the backward direction, using it’s
-<code class="docutils literal"><span class="pre">.creator</span></code> attribute, you will see a graph of computations that looks
+<code class="docutils literal"><span class="pre">.grad_fn</span></code> attribute, you will see a graph of computations that looks
 like this:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span>
       <span class="o">-&gt;</span> <span class="n">view</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span>
@@ -625,15 +625,15 @@ like this:</p>
 w.r.t. the loss, and all Variables in the graph will have their
 <code class="docutils literal"><span class="pre">.grad</span></code> Variable accumulated with the gradient.</p>
 <p>For illustration, let us follow a few steps backward:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>  <span class="c1"># MSELoss</span>
-<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">creator</span><span class="o">.</span><span class="n">previous_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Linear</span>
-<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">creator</span><span class="o">.</span><span class="n">previous_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">previous_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># ReLU</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>  <span class="c1"># MSELoss</span>
+<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">next_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Linear</span>
+<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">next_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">next_functions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># ReLU</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">MSELoss</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec94050588</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">Linear</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec940504a8</span><span class="o">&gt;</span>
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">Threshold</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec94050048</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">thnn</span><span class="o">.</span><span class="n">auto</span><span class="o">.</span><span class="n">MSELoss</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f72815a1710</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">LinearBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f72815a1618</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">ThresholdBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f72815a1520</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -668,12 +668,13 @@ gradients before and after the backward.</p>
 
 <span class="n">conv1</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">grad</span> <span class="n">after</span> <span class="n">backward</span>
 <span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
- <span class="mf">0.0137</span>
-<span class="o">-</span><span class="mf">0.0740</span>
- <span class="mf">0.0331</span>
-<span class="o">-</span><span class="mf">0.1002</span>
- <span class="mf">0.0283</span>
-<span class="o">-</span><span class="mf">0.0112</span>
+<span class="mf">1.00000e-02</span> <span class="o">*</span>
+ <span class="o">-</span><span class="mf">0.0139</span>
+  <span class="mf">2.6429</span>
+ <span class="o">-</span><span class="mf">8.6565</span>
+ <span class="o">-</span><span class="mf">4.1235</span>
+  <span class="mf">4.7980</span>
+  <span class="mf">7.2278</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">6</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -719,7 +720,7 @@ implements all these methods. Using it is very simple:</p>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>    <span class="c1"># Does the update</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.021 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.099 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/neural_networks_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_networks_tutorial.py</span></code></a></div>

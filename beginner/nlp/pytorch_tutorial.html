@@ -265,7 +265,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="advanced_tutorial.html">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="advanced_tutorial.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="advanced_tutorial.html#dynamic-versus-static-deep-learning-toolkits">Dynamic versus Static Deep Learning Toolkits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="advanced_tutorial.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="advanced_tutorial.html#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="advanced_tutorial.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
@@ -688,7 +688,7 @@ action.</p>
 <span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
 <span class="c1"># BUT z knows something extra.</span>
-<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -703,18 +703,18 @@ action.</p>
  <span class="mi">9</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span><span class="p">]</span>
 
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">basic_ops</span><span class="o">.</span><span class="n">Add</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec881ac048</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">AddBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f4d2183b900</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>So Variables know what created them. z knows that it wasn&#8217;t read in from
 a file, it wasn&#8217;t the result of a multiplication or exponential or
-whatever. And if you keep following z.creator, you will find yourself at
+whatever. And if you keep following z.grad_fn, you will find yourself at
 x and y.</p>
 <p>But how does that help us compute a gradient?</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Lets sum up all the entries in z</span>
 <span class="n">s</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -722,7 +722,7 @@ x and y.</p>
  <span class="mi">21</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
 
-<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">reduce</span><span class="o">.</span><span class="n">Sum</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fece41cb048</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">SumBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f4d2183b9f8</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>So now, what is the derivative of this sum with respect to the first
@@ -769,7 +769,7 @@ successful programmer in deep learning.</p>
 <span class="n">var_y</span> <span class="o">=</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 <span class="c1"># var_z contains enough information to compute gradients, as we saw above</span>
 <span class="n">var_z</span> <span class="o">=</span> <span class="n">var_x</span> <span class="o">+</span> <span class="n">var_y</span>
-<span class="k">print</span><span class="p">(</span><span class="n">var_z</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">var_z</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
 
 <span class="n">var_z_data</span> <span class="o">=</span> <span class="n">var_z</span><span class="o">.</span><span class="n">data</span>  <span class="c1"># Get the wrapped Tensor object out of var_z...</span>
 <span class="c1"># Re-wrap the tensor in a new variable</span>
@@ -777,7 +777,7 @@ successful programmer in deep learning.</p>
 
 <span class="c1"># ... does new_var_z have information to backprop to x and y?</span>
 <span class="c1"># NO!</span>
-<span class="k">print</span><span class="p">(</span><span class="n">new_var_z</span><span class="o">.</span><span class="n">creator</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">new_var_z</span><span class="o">.</span><span class="n">grad_fn</span><span class="p">)</span>
 <span class="c1"># And how could it?  We yanked the tensor out of var_z (that is</span>
 <span class="c1"># what var_z.data is).  This tensor doesn&#39;t know anything about</span>
 <span class="c1"># how it was computed.  We pass it into new_var_z, and this is all the</span>
@@ -787,7 +787,7 @@ successful programmer in deep learning.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">_functions</span><span class="o">.</span><span class="n">basic_ops</span><span class="o">.</span><span class="n">Add</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7fec881ac128</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">AddBackward</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f4d2183b808</span><span class="o">&gt;</span>
 <span class="kc">None</span>
 </pre></div>
 </div>

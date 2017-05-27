@@ -356,7 +356,7 @@ The full process for preparing the data is:
     Counted words:
     fra 4489
     eng 2925
-    ['nous sommes faits l un pour l autre .', 'we re meant for each other .']
+    ['elle t attend chez nous .', 'she s waiting for you at home .']
 
 
 The Seq2Seq Model
@@ -780,7 +780,7 @@ The whole training process looks like this:
 -  Start empty losses array for plotting
 
 Then we call ``train`` many times and occasionally print the progress (%
-of epochs, time so far, estimated time) and average loss.
+of examples, time so far, estimated time) and average loss.
 
 
 
@@ -788,7 +788,7 @@ of epochs, time so far, estimated time) and average loss.
 .. code-block:: python
 
 
-    def trainEpochs(encoder, decoder, n_epochs, print_every=1000, plot_every=100, learning_rate=0.01):
+    def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
         start = time.time()
         plot_losses = []
         print_loss_total = 0  # Reset every print_every
@@ -797,11 +797,11 @@ of epochs, time so far, estimated time) and average loss.
         encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
         decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
         training_pairs = [variablesFromPair(random.choice(pairs))
-                          for i in range(n_epochs)]
+                          for i in range(n_iters)]
         criterion = nn.NLLLoss()
 
-        for epoch in range(1, n_epochs + 1):
-            training_pair = training_pairs[epoch - 1]
+        for iter in range(1, n_iters + 1):
+            training_pair = training_pairs[iter - 1]
             input_variable = training_pair[0]
             target_variable = training_pair[1]
  
@@ -810,13 +810,13 @@ of epochs, time so far, estimated time) and average loss.
             print_loss_total += loss
             plot_loss_total += loss
 
-            if epoch % print_every == 0:
+            if iter % print_every == 0:
                 print_loss_avg = print_loss_total / print_every
                 print_loss_total = 0
-                print('%s (%d %d%%) %.4f' % (timeSince(start, epoch / n_epochs),
-                                             epoch, epoch / n_epochs * 100, print_loss_avg))
+                print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
+                                             iter, iter / n_iters * 100, print_loss_avg))
 
-            if epoch % plot_every == 0:
+            if iter % plot_every == 0:
                 plot_loss_avg = plot_loss_total / plot_every
                 plot_losses.append(plot_loss_avg)
                 plot_loss_total = 0
@@ -963,7 +963,7 @@ reasonable results.
 .. Note:: 
    If you run this notebook you can train, interrupt the kernel,
    evaluate, and continue training later. Comment out the lines where the
-   encoder and decoder are initialized and run ``trainEpochs`` again.
+   encoder and decoder are initialized and run ``trainIters`` again.
 
 
 
@@ -980,7 +980,7 @@ reasonable results.
         encoder1 = encoder1.cuda()
         attn_decoder1 = attn_decoder1.cuda()
 
-    trainEpochs(encoder1, attn_decoder1, 75000, print_every=5000)
+    trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
 
 
@@ -1003,21 +1003,21 @@ reasonable results.
 
  Out::
 
-    1m 49s (- 25m 35s) (5000 6%) 2.9102
-    3m 33s (- 23m 9s) (10000 13%) 2.3276
-    5m 18s (- 21m 14s) (15000 20%) 2.0305
-    7m 2s (- 19m 23s) (20000 26%) 1.7443
-    8m 46s (- 17m 33s) (25000 33%) 1.5357
-    10m 29s (- 15m 44s) (30000 40%) 1.3806
-    12m 13s (- 13m 58s) (35000 46%) 1.2429
-    13m 57s (- 12m 13s) (40000 53%) 1.1654
-    15m 41s (- 10m 27s) (45000 60%) 1.0286
-    17m 25s (- 8m 42s) (50000 66%) 0.9044
-    19m 9s (- 6m 57s) (55000 73%) 0.8432
-    20m 53s (- 5m 13s) (60000 80%) 0.7452
-    22m 36s (- 3m 28s) (65000 86%) 0.7195
-    24m 20s (- 1m 44s) (70000 93%) 0.6386
-    26m 3s (- 0m 0s) (75000 100%) 0.5978
+    2m 0s (- 28m 8s) (5000 6%) 2.9225
+    4m 1s (- 26m 6s) (10000 13%) 2.3704
+    6m 2s (- 24m 9s) (15000 20%) 2.0428
+    8m 3s (- 22m 9s) (20000 26%) 1.7782
+    10m 4s (- 20m 9s) (25000 33%) 1.5842
+    12m 6s (- 18m 9s) (30000 40%) 1.3890
+    14m 7s (- 16m 8s) (35000 46%) 1.2558
+    16m 8s (- 14m 7s) (40000 53%) 1.1261
+    18m 11s (- 12m 7s) (45000 60%) 1.0362
+    20m 12s (- 10m 6s) (50000 66%) 0.9029
+    22m 14s (- 8m 5s) (55000 73%) 0.8337
+    24m 15s (- 6m 3s) (60000 80%) 0.7484
+    26m 18s (- 4m 2s) (65000 86%) 0.6954
+    28m 20s (- 2m 1s) (70000 93%) 0.6485
+    30m 22s (- 0m 0s) (75000 100%) 0.5886
 
 
 
@@ -1035,45 +1035,45 @@ reasonable results.
 
  Out::
 
-    > vous etes celle la .
-    = you are the one .
-    < you are the one . <EOS>
+    > je ne suis pas sur de la raison .
+    = i m not sure why .
+    < i m not sure about the . <EOS>
 
-    > nous sommes encore maries .
-    = we re still married .
-    < we re still married . <EOS>
+    > nous sommes surprises .
+    = we re surprised .
+    < we re surprised . <EOS>
 
-    > tu vas mourir .
-    = you re going to die .
-    < you re going to die . <EOS>
+    > je vais avoir besoin de plus d argent .
+    = i m going to need some more money .
+    < i am going to need some more money . <EOS>
 
-    > il est non fumeur .
-    = he s a nonsmoker .
-    < he s a nonsmoker . <EOS>
+    > il ne sait pas jouer en equipe .
+    = he s not a team player .
+    < he s not a team player . <EOS>
 
-    > elle est aussi occupee que tom .
-    = she s as busy as tom .
-    < she s as busy as tom . <EOS>
+    > ils sont tres compatibles .
+    = they are very compatible .
+    < they are very compatible . <EOS>
 
-    > je suis pret si vous l etes .
-    = i m ready if you are .
-    < i m ready you are you . <EOS>
+    > elle cessa d interpreter la chanson .
+    = she stopped singing the song .
+    < she s singing by the song . <EOS>
 
-    > j en suis sure .
-    = i m sure .
-    < i m sure . <EOS>
+    > il a l habitude de realiser des discours .
+    = he is used to making speeches .
+    < he is accustomed to traveling . <EOS>
 
-    > c est mon frere pas mon pere .
-    = he is my brother not father .
-    < he is my not brother father . <EOS>
+    > nous sommes siderees .
+    = we re stunned .
+    < we re old . <EOS>
 
-    > je suis femme au foyer .
-    = i m a housewife .
-    < i m a housewife . <EOS>
+    > il a commence a ecrire un roman .
+    = he s started writing a novel .
+    < he s writing writing a novel . <EOS>
 
-    > je suis tellement fiere de vous .
-    = i m so proud of you .
-    < i m so proud of you . <EOS>
+    > il est devant la porte .
+    = he is in front of the door .
+    < he is in the the . . <EOS>
 
 
 Visualizing Attention
@@ -1185,13 +1185,13 @@ and labels:
  Out::
 
     input = elle a cinq ans de moins que moi .
-    output = she s five years younger than me . <EOS>
+    output = she is five years younger than me . <EOS>
     input = elle est trop petit .
-    output = she is too late . <EOS>
+    output = she is too short . <EOS>
     input = je ne crains pas de mourir .
     output = i m not scared to die . <EOS>
     input = c est un jeune directeur plein de talent .
-    output = he s a talented young guy . <EOS>
+    output = he s a talented young . <EOS>
 
 
 Exercises
@@ -1218,7 +1218,7 @@ Exercises
 
 
 
-**Total running time of the script:** ( 26 minutes  10.020 seconds)
+**Total running time of the script:** ( 30 minutes  27.493 seconds)
 
 
 

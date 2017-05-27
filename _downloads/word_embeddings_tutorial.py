@@ -290,7 +290,7 @@ print(losses)  # The loss decreased every iteration over the training data!
 # and :math:`w_{i+1}, \dots, w_{i+N}`, referring to all context words
 # collectively as :math:`C`, CBOW tries to minimize
 #
-# .. math::  -\log p(w_i | C) = \log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+# .. math::  -\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
 #
 # where :math:`q_w` is the embedding for word :math:`w`.
 #
@@ -309,7 +309,12 @@ As they evolve, processes manipulate other abstract things called data.
 The evolution of a process is directed by a pattern of rules
 called a program. People create programs to direct processes. In effect,
 we conjure the spirits of the computer with our spells.""".split()
-word_to_ix = {word: i for i, word in enumerate(raw_text)}
+
+# By deriving a set from `raw_text`, we deduplicate the array
+vocab = set(raw_text)
+vocab_size = len(vocab)
+
+word_to_ix = {word: i for i, word in enumerate(vocab)}
 data = []
 for i in range(2, len(raw_text) - 2):
     context = [raw_text[i - 2], raw_text[i - 1],

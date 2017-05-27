@@ -177,13 +177,13 @@ z = x + y
 print(z.data)
 
 # BUT z knows something extra.
-print(z.creator)
+print(z.grad_fn)
 
 
 ######################################################################
 # So Variables know what created them. z knows that it wasn't read in from
 # a file, it wasn't the result of a multiplication or exponential or
-# whatever. And if you keep following z.creator, you will find yourself at
+# whatever. And if you keep following z.grad_fn, you will find yourself at
 # x and y.
 #
 # But how does that help us compute a gradient?
@@ -192,7 +192,7 @@ print(z.creator)
 # Lets sum up all the entries in z
 s = z.sum()
 print(s)
-print(s.creator)
+print(s.grad_fn)
 
 
 ######################################################################
@@ -248,7 +248,7 @@ var_x = autograd.Variable(x)
 var_y = autograd.Variable(y)
 # var_z contains enough information to compute gradients, as we saw above
 var_z = var_x + var_y
-print(var_z.creator)
+print(var_z.grad_fn)
 
 var_z_data = var_z.data  # Get the wrapped Tensor object out of var_z...
 # Re-wrap the tensor in a new variable
@@ -256,7 +256,7 @@ new_var_z = autograd.Variable(var_z_data)
 
 # ... does new_var_z have information to backprop to x and y?
 # NO!
-print(new_var_z.creator)
+print(new_var_z.grad_fn)
 # And how could it?  We yanked the tensor out of var_z (that is
 # what var_z.data is).  This tensor doesn't know anything about
 # how it was computed.  We pass it into new_var_z, and this is all the

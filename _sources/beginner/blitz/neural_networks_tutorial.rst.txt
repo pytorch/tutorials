@@ -150,7 +150,7 @@ The input to the forward is an ``autograd.Variable``, and so is the output.
  Out::
 
     Variable containing:
-     0.0155  0.1107  0.0759 -0.0685  0.0056 -0.1105  0.0546  0.0828 -0.0309 -0.0636
+    -0.0042 -0.1754  0.0479  0.0740 -0.0719 -0.1126  0.0614 -0.0104  0.1291 -0.0176
     [torch.FloatTensor of size 1x10]
 
 
@@ -228,7 +228,7 @@ For example:
 
 
     output = net(input)
-    target = Variable(torch.range(1, 10))  # a dummy target, for example
+    target = Variable(torch.arange(1, 11))  # a dummy target, for example
     criterion = nn.MSELoss()
 
     loss = criterion(output, target)
@@ -243,12 +243,12 @@ For example:
  Out::
 
     Variable containing:
-     38.5676
+     38.4313
     [torch.FloatTensor of size 1]
 
 
 Now, if you follow ``loss`` in the backward direction, using it’s
-``.creator`` attribute, you will see a graph of computations that looks
+``.grad_fn`` attribute, you will see a graph of computations that looks
 like this:
 
 ::
@@ -269,9 +269,9 @@ For illustration, let us follow a few steps backward:
 .. code-block:: python
 
 
-    print(loss.creator)  # MSELoss
-    print(loss.creator.previous_functions[0][0])  # Linear
-    print(loss.creator.previous_functions[0][0].previous_functions[0][0])  # ReLU
+    print(loss.grad_fn)  # MSELoss
+    print(loss.grad_fn.next_functions[0][0])  # Linear
+    print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 
 
 
@@ -281,9 +281,9 @@ For illustration, let us follow a few steps backward:
 
  Out::
 
-    <torch.nn._functions.thnn.auto.MSELoss object at 0x7fec94050588>
-    <torch.nn._functions.linear.Linear object at 0x7fec940504a8>
-    <torch.nn._functions.thnn.auto.Threshold object at 0x7fec94050048>
+    <torch.nn._functions.thnn.auto.MSELoss object at 0x7f72815a1710>
+    <torch.autograd.function.LinearBackward object at 0x7f72815a1618>
+    <torch.autograd.function.ThresholdBackward object at 0x7f72815a1520>
 
 
 Backprop
@@ -332,12 +332,13 @@ gradients before and after the backward.
 
     conv1.bias.grad after backward
     Variable containing:
-     0.0137
-    -0.0740
-     0.0331
-    -0.1002
-     0.0283
-    -0.0112
+    1.00000e-02 *
+     -0.0139
+      2.6429
+     -8.6565
+     -4.1235
+      4.7980
+      7.2278
     [torch.FloatTensor of size 6]
 
 
@@ -395,7 +396,7 @@ implements all these methods. Using it is very simple:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.021 seconds)
+**Total running time of the script:** ( 0 minutes  0.099 seconds)
 
 
 

@@ -264,7 +264,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html">Advanced: Making Dynamic Decisions and the Bi-LSTM CRF</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#dyanmic-versus-static-deep-learning-toolkits">Dyanmic versus Static Deep Learning Toolkits</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#dynamic-versus-static-deep-learning-toolkits">Dynamic versus Static Deep Learning Toolkits</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#bi-lstm-conditional-random-field-discussion">Bi-LSTM Conditional Random Field Discussion</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#implementation-notes">Implementation Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../beginner/nlp/advanced_tutorial.html#exercise-a-new-loss-function-for-discriminative-tagging">Exercise: A new loss function for discriminative tagging</a></li>
@@ -643,11 +643,11 @@ of initial hidden state or some other strategy.</p>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">letter_indexes</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For convenience during training we&#8217;ll make a <code class="docutils literal"><span class="pre">randomTrainingSet</span></code>
+<p>For convenience during training we&#8217;ll make a <code class="docutils literal"><span class="pre">randomTrainingExample</span></code>
 function that fetches a random (category, line) pair and turns them into
 the required (category, input, target) tensors.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Make category, input, and target tensors from a random category, line pair</span>
-<span class="k">def</span> <span class="nf">randomTrainingSet</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">randomTrainingExample</span><span class="p">():</span>
     <span class="n">category</span><span class="p">,</span> <span class="n">line</span> <span class="o">=</span> <span class="n">randomTrainingPair</span><span class="p">()</span>
     <span class="n">category_tensor</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">categoryTensor</span><span class="p">(</span><span class="n">category</span><span class="p">))</span>
     <span class="n">input_line_tensor</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">inputTensor</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
@@ -662,8 +662,7 @@ the required (category, input, target) tensors.</p>
 are making a prediction at every step, so we are calculating loss at
 every step.</p>
 <p>The magic of autograd allows you to simply sum these losses at each step
-and call backward at the end. But don&#8217;t ask me why initializing loss
-with 0 works.</p>
+and call backward at the end.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">()</span>
 
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.0005</span>
@@ -702,51 +701,51 @@ with 0 works.</p>
 </div>
 <p>Training is business as usual - call train a bunch of times and wait a
 few minutes, printing the current time and loss every <code class="docutils literal"><span class="pre">print_every</span></code>
-epochs, and keeping store of an average loss per <code class="docutils literal"><span class="pre">plot_every</span></code> epochs
+examples, and keeping store of an average loss per <code class="docutils literal"><span class="pre">plot_every</span></code> examples
 in <code class="docutils literal"><span class="pre">all_losses</span></code> for plotting later.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">rnn</span> <span class="o">=</span> <span class="n">RNN</span><span class="p">(</span><span class="n">n_letters</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">n_letters</span><span class="p">)</span>
 
-<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">n_iters</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">print_every</span> <span class="o">=</span> <span class="mi">5000</span>
 <span class="n">plot_every</span> <span class="o">=</span> <span class="mi">500</span>
 <span class="n">all_losses</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">total_loss</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Reset every plot_every epochs</span>
+<span class="n">total_loss</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># Reset every plot_every iters</span>
 
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-    <span class="n">output</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="o">*</span><span class="n">randomTrainingSet</span><span class="p">())</span>
+<span class="k">for</span> <span class="nb">iter</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iters</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">output</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="o">*</span><span class="n">randomTrainingExample</span><span class="p">())</span>
     <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">loss</span>
 
-    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">epoch</span> <span class="o">/</span> <span class="n">n_epochs</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">loss</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">),</span> <span class="nb">iter</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">/</span> <span class="n">n_iters</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">loss</span><span class="p">))</span>
 
-    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">all_losses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_loss</span> <span class="o">/</span> <span class="n">plot_every</span><span class="p">)</span>
         <span class="n">total_loss</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="n">m</span> <span class="mi">12</span><span class="n">s</span> <span class="p">(</span><span class="mi">5000</span> <span class="mi">5</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3159</span>
-<span class="mi">0</span><span class="n">m</span> <span class="mi">24</span><span class="n">s</span> <span class="p">(</span><span class="mi">10000</span> <span class="mi">10</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6862</span>
-<span class="mi">0</span><span class="n">m</span> <span class="mi">36</span><span class="n">s</span> <span class="p">(</span><span class="mi">15000</span> <span class="mi">15</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.8658</span>
-<span class="mi">0</span><span class="n">m</span> <span class="mi">49</span><span class="n">s</span> <span class="p">(</span><span class="mi">20000</span> <span class="mi">20</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.5288</span>
-<span class="mi">1</span><span class="n">m</span> <span class="mi">1</span><span class="n">s</span> <span class="p">(</span><span class="mi">25000</span> <span class="mi">25</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.2218</span>
-<span class="mi">1</span><span class="n">m</span> <span class="mi">14</span><span class="n">s</span> <span class="p">(</span><span class="mi">30000</span> <span class="mi">30</span><span class="o">%</span><span class="p">)</span> <span class="mf">3.0179</span>
-<span class="mi">1</span><span class="n">m</span> <span class="mi">26</span><span class="n">s</span> <span class="p">(</span><span class="mi">35000</span> <span class="mi">35</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.2104</span>
-<span class="mi">1</span><span class="n">m</span> <span class="mi">39</span><span class="n">s</span> <span class="p">(</span><span class="mi">40000</span> <span class="mi">40</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.2386</span>
-<span class="mi">1</span><span class="n">m</span> <span class="mi">51</span><span class="n">s</span> <span class="p">(</span><span class="mi">45000</span> <span class="mi">45</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.0167</span>
-<span class="mi">2</span><span class="n">m</span> <span class="mi">3</span><span class="n">s</span> <span class="p">(</span><span class="mi">50000</span> <span class="mi">50</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3285</span>
-<span class="mi">2</span><span class="n">m</span> <span class="mi">16</span><span class="n">s</span> <span class="p">(</span><span class="mi">55000</span> <span class="mi">55</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.8585</span>
-<span class="mi">2</span><span class="n">m</span> <span class="mi">28</span><span class="n">s</span> <span class="p">(</span><span class="mi">60000</span> <span class="mi">60</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.2254</span>
-<span class="mi">2</span><span class="n">m</span> <span class="mi">40</span><span class="n">s</span> <span class="p">(</span><span class="mi">65000</span> <span class="mi">65</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6131</span>
-<span class="mi">2</span><span class="n">m</span> <span class="mi">53</span><span class="n">s</span> <span class="p">(</span><span class="mi">70000</span> <span class="mi">70</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.1845</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">5</span><span class="n">s</span> <span class="p">(</span><span class="mi">75000</span> <span class="mi">75</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.9502</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">17</span><span class="n">s</span> <span class="p">(</span><span class="mi">80000</span> <span class="mi">80</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.7935</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">30</span><span class="n">s</span> <span class="p">(</span><span class="mi">85000</span> <span class="mi">85</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.9056</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">42</span><span class="n">s</span> <span class="p">(</span><span class="mi">90000</span> <span class="mi">90</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.4642</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">54</span><span class="n">s</span> <span class="p">(</span><span class="mi">95000</span> <span class="mi">95</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.8065</span>
-<span class="mi">4</span><span class="n">m</span> <span class="mi">7</span><span class="n">s</span> <span class="p">(</span><span class="mi">100000</span> <span class="mi">100</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.0977</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="n">m</span> <span class="mi">32</span><span class="n">s</span> <span class="p">(</span><span class="mi">5000</span> <span class="mi">5</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6438</span>
+<span class="mi">1</span><span class="n">m</span> <span class="mi">3</span><span class="n">s</span> <span class="p">(</span><span class="mi">10000</span> <span class="mi">10</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6677</span>
+<span class="mi">1</span><span class="n">m</span> <span class="mi">36</span><span class="n">s</span> <span class="p">(</span><span class="mi">15000</span> <span class="mi">15</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.8923</span>
+<span class="mi">2</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span> <span class="p">(</span><span class="mi">20000</span> <span class="mi">20</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.1252</span>
+<span class="mi">2</span><span class="n">m</span> <span class="mi">41</span><span class="n">s</span> <span class="p">(</span><span class="mi">25000</span> <span class="mi">25</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.5617</span>
+<span class="mi">3</span><span class="n">m</span> <span class="mi">11</span><span class="n">s</span> <span class="p">(</span><span class="mi">30000</span> <span class="mi">30</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6809</span>
+<span class="mi">3</span><span class="n">m</span> <span class="mi">43</span><span class="n">s</span> <span class="p">(</span><span class="mi">35000</span> <span class="mi">35</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.1847</span>
+<span class="mi">4</span><span class="n">m</span> <span class="mi">14</span><span class="n">s</span> <span class="p">(</span><span class="mi">40000</span> <span class="mi">40</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.8300</span>
+<span class="mi">4</span><span class="n">m</span> <span class="mi">45</span><span class="n">s</span> <span class="p">(</span><span class="mi">45000</span> <span class="mi">45</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.2488</span>
+<span class="mi">5</span><span class="n">m</span> <span class="mi">16</span><span class="n">s</span> <span class="p">(</span><span class="mi">50000</span> <span class="mi">50</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.8388</span>
+<span class="mi">5</span><span class="n">m</span> <span class="mi">47</span><span class="n">s</span> <span class="p">(</span><span class="mi">55000</span> <span class="mi">55</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.6692</span>
+<span class="mi">6</span><span class="n">m</span> <span class="mi">21</span><span class="n">s</span> <span class="p">(</span><span class="mi">60000</span> <span class="mi">60</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.6389</span>
+<span class="mi">6</span><span class="n">m</span> <span class="mi">53</span><span class="n">s</span> <span class="p">(</span><span class="mi">65000</span> <span class="mi">65</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.8467</span>
+<span class="mi">7</span><span class="n">m</span> <span class="mi">26</span><span class="n">s</span> <span class="p">(</span><span class="mi">70000</span> <span class="mi">70</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.2306</span>
+<span class="mi">7</span><span class="n">m</span> <span class="mi">56</span><span class="n">s</span> <span class="p">(</span><span class="mi">75000</span> <span class="mi">75</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.8025</span>
+<span class="mi">8</span><span class="n">m</span> <span class="mi">27</span><span class="n">s</span> <span class="p">(</span><span class="mi">80000</span> <span class="mi">80</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3902</span>
+<span class="mi">8</span><span class="n">m</span> <span class="mi">57</span><span class="n">s</span> <span class="p">(</span><span class="mi">85000</span> <span class="mi">85</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.1619</span>
+<span class="mi">9</span><span class="n">m</span> <span class="mi">31</span><span class="n">s</span> <span class="p">(</span><span class="mi">90000</span> <span class="mi">90</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.4279</span>
+<span class="mi">10</span><span class="n">m</span> <span class="mi">7</span><span class="n">s</span> <span class="p">(</span><span class="mi">95000</span> <span class="mi">95</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3626</span>
+<span class="mi">10</span><span class="n">m</span> <span class="mi">40</span><span class="n">s</span> <span class="p">(</span><span class="mi">100000</span> <span class="mi">100</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.9210</span>
 </pre></div>
 </div>
 </div>
@@ -825,18 +824,18 @@ training and have the network choose its own starting letter.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Rovallov</span>
-<span class="n">Uarinov</span>
-<span class="n">Shavanov</span>
-<span class="n">Garter</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Rovanov</span>
+<span class="n">Uantonovo</span>
+<span class="n">Sharan</span>
+<span class="n">Gerter</span>
 <span class="n">Eren</span>
-<span class="n">Romall</span>
+<span class="n">Ronger</span>
 <span class="n">Sallan</span>
-<span class="n">Perran</span>
+<span class="n">Pore</span>
 <span class="n">Allan</span>
-<span class="n">Chang</span>
+<span class="n">Chan</span>
 <span class="n">Ha</span>
-<span class="n">Iua</span>
+<span class="n">Iun</span>
 </pre></div>
 </div>
 </div>
@@ -857,7 +856,7 @@ choosing a start letter</li>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 4 minutes  7.303 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 10 minutes  40.884 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/char_rnn_generation_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_generation_tutorial.py</span></code></a></div>

@@ -284,7 +284,7 @@ of initial hidden state or some other strategy.
 
 
 
-For convenience during training we'll make a ``randomTrainingSet``
+For convenience during training we'll make a ``randomTrainingExample``
 function that fetches a random (category, line) pair and turns them into
 the required (category, input, target) tensors.
 
@@ -295,7 +295,7 @@ the required (category, input, target) tensors.
 
 
     # Make category, input, and target tensors from a random category, line pair
-    def randomTrainingSet():
+    def randomTrainingExample():
         category, line = randomTrainingPair()
         category_tensor = Variable(categoryTensor(category))
         input_line_tensor = Variable(inputTensor(line))
@@ -317,8 +317,7 @@ are making a prediction at every step, so we are calculating loss at
 every step.
 
 The magic of autograd allows you to simply sum these losses at each step
-and call backward at the end. But don't ask me why initializing loss
-with 0 works.
+and call backward at the end.
 
 
 
@@ -383,7 +382,7 @@ To keep track of how long training takes I am adding a
 
 Training is business as usual - call train a bunch of times and wait a
 few minutes, printing the current time and loss every ``print_every``
-epochs, and keeping store of an average loss per ``plot_every`` epochs
+examples, and keeping store of an average loss per ``plot_every`` examples
 in ``all_losses`` for plotting later.
 
 
@@ -394,22 +393,22 @@ in ``all_losses`` for plotting later.
 
     rnn = RNN(n_letters, 128, n_letters)
 
-    n_epochs = 100000
+    n_iters = 100000
     print_every = 5000
     plot_every = 500
     all_losses = []
-    total_loss = 0 # Reset every plot_every epochs
+    total_loss = 0 # Reset every plot_every iters
 
     start = time.time()
 
-    for epoch in range(1, n_epochs + 1):
-        output, loss = train(*randomTrainingSet())
+    for iter in range(1, n_iters + 1):
+        output, loss = train(*randomTrainingExample())
         total_loss += loss
     
-        if epoch % print_every == 0:
-            print('%s (%d %d%%) %.4f' % (timeSince(start), epoch, epoch / n_epochs * 100, loss))
+        if iter % print_every == 0:
+            print('%s (%d %d%%) %.4f' % (timeSince(start), iter, iter / n_iters * 100, loss))
 
-        if epoch % plot_every == 0:
+        if iter % plot_every == 0:
             all_losses.append(total_loss / plot_every)
             total_loss = 0
 
@@ -422,26 +421,26 @@ in ``all_losses`` for plotting later.
 
  Out::
 
-    0m 12s (5000 5%) 2.3159
-    0m 24s (10000 10%) 2.6862
-    0m 36s (15000 15%) 1.8658
-    0m 49s (20000 20%) 2.5288
-    1m 1s (25000 25%) 2.2218
-    1m 14s (30000 30%) 3.0179
-    1m 26s (35000 35%) 2.2104
-    1m 39s (40000 40%) 2.2386
-    1m 51s (45000 45%) 2.0167
-    2m 3s (50000 50%) 2.3285
-    2m 16s (55000 55%) 1.8585
-    2m 28s (60000 60%) 2.2254
-    2m 40s (65000 65%) 2.6131
-    2m 53s (70000 70%) 2.1845
-    3m 5s (75000 75%) 1.9502
-    3m 17s (80000 80%) 1.7935
-    3m 30s (85000 85%) 1.9056
-    3m 42s (90000 90%) 2.4642
-    3m 54s (95000 95%) 1.8065
-    4m 7s (100000 100%) 2.0977
+    0m 32s (5000 5%) 2.6438
+    1m 3s (10000 10%) 2.6677
+    1m 36s (15000 15%) 2.8923
+    2m 8s (20000 20%) 2.1252
+    2m 41s (25000 25%) 2.5617
+    3m 11s (30000 30%) 2.6809
+    3m 43s (35000 35%) 2.1847
+    4m 14s (40000 40%) 1.8300
+    4m 45s (45000 45%) 2.2488
+    5m 16s (50000 50%) 2.8388
+    5m 47s (55000 55%) 2.6692
+    6m 21s (60000 60%) 1.6389
+    6m 53s (65000 65%) 2.8467
+    7m 26s (70000 70%) 1.2306
+    7m 56s (75000 75%) 2.8025
+    8m 27s (80000 80%) 2.3902
+    8m 57s (85000 85%) 2.1619
+    9m 31s (90000 90%) 2.4279
+    10m 7s (95000 95%) 2.3626
+    10m 40s (100000 100%) 2.9210
 
 
 Plotting the Losses
@@ -546,18 +545,18 @@ feed that in as the next letter, and repeat until the EOS token.
 
  Out::
 
-    Rovallov
-    Uarinov
-    Shavanov
-    Garter
+    Rovanov
+    Uantonovo
+    Sharan
+    Gerter
     Eren
-    Romall
+    Ronger
     Sallan
-    Perran
+    Pore
     Allan
-    Chang
+    Chan
     Ha
-    Iua
+    Iun
 
 
 Exercises
@@ -578,7 +577,7 @@ Exercises
 
 
 
-**Total running time of the script:** ( 4 minutes  7.303 seconds)
+**Total running time of the script:** ( 10 minutes  40.884 seconds)
 
 
 
