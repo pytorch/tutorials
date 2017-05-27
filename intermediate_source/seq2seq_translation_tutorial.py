@@ -650,10 +650,10 @@ def timeSince(since, percent):
 # -  Start empty losses array for plotting
 #
 # Then we call ``train`` many times and occasionally print the progress (%
-# of epochs, time so far, estimated time) and average loss.
+# of examples, time so far, estimated time) and average loss.
 #
 
-def trainEpochs(encoder, decoder, n_epochs, print_every=1000, plot_every=100, learning_rate=0.01):
+def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
@@ -662,11 +662,11 @@ def trainEpochs(encoder, decoder, n_epochs, print_every=1000, plot_every=100, le
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
     training_pairs = [variablesFromPair(random.choice(pairs))
-                      for i in range(n_epochs)]
+                      for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
-    for epoch in range(1, n_epochs + 1):
-        training_pair = training_pairs[epoch - 1]
+    for iter in range(1, n_iters + 1):
+        training_pair = training_pairs[iter - 1]
         input_variable = training_pair[0]
         target_variable = training_pair[1]
  
@@ -675,13 +675,13 @@ def trainEpochs(encoder, decoder, n_epochs, print_every=1000, plot_every=100, le
         print_loss_total += loss
         plot_loss_total += loss
 
-        if epoch % print_every == 0:
+        if iter % print_every == 0:
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
-            print('%s (%d %d%%) %.4f' % (timeSince(start, epoch / n_epochs),
-                                         epoch, epoch / n_epochs * 100, print_loss_avg))
+            print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
+                                         iter, iter / n_iters * 100, print_loss_avg))
 
-        if epoch % plot_every == 0:
+        if iter % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
             plot_loss_total = 0
@@ -793,7 +793,7 @@ def evaluateRandomly(encoder, decoder, n=10):
 # .. Note:: 
 #    If you run this notebook you can train, interrupt the kernel,
 #    evaluate, and continue training later. Comment out the lines where the
-#    encoder and decoder are initialized and run ``trainEpochs`` again.
+#    encoder and decoder are initialized and run ``trainIters`` again.
 #
 
 hidden_size = 256
@@ -805,7 +805,7 @@ if use_cuda:
     encoder1 = encoder1.cuda()
     attn_decoder1 = attn_decoder1.cuda()
 
-trainEpochs(encoder1, attn_decoder1, 75000, print_every=5000)
+trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 
 ######################################################################
 #

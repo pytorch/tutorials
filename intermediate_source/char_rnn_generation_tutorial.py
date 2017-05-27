@@ -236,13 +236,13 @@ def targetTensor(line):
 
 
 ######################################################################
-# For convenience during training we'll make a ``randomTrainingSet``
+# For convenience during training we'll make a ``randomTrainingExample``
 # function that fetches a random (category, line) pair and turns them into
 # the required (category, input, target) tensors.
 # 
 
 # Make category, input, and target tensors from a random category, line pair
-def randomTrainingSet():
+def randomTrainingExample():
     category, line = randomTrainingPair()
     category_tensor = Variable(categoryTensor(category))
     input_line_tensor = Variable(inputTensor(line))
@@ -259,8 +259,7 @@ def randomTrainingSet():
 # every step.
 # 
 # The magic of autograd allows you to simply sum these losses at each step
-# and call backward at the end. But don't ask me why initializing loss
-# with 0 works.
+# and call backward at the end.
 # 
 
 criterion = nn.NLLLoss()
@@ -305,28 +304,28 @@ def timeSince(since):
 ######################################################################
 # Training is business as usual - call train a bunch of times and wait a
 # few minutes, printing the current time and loss every ``print_every``
-# epochs, and keeping store of an average loss per ``plot_every`` epochs
+# examples, and keeping store of an average loss per ``plot_every`` examples
 # in ``all_losses`` for plotting later.
 # 
 
 rnn = RNN(n_letters, 128, n_letters)
 
-n_epochs = 100000
+n_iters = 100000
 print_every = 5000
 plot_every = 500
 all_losses = []
-total_loss = 0 # Reset every plot_every epochs
+total_loss = 0 # Reset every plot_every iters
 
 start = time.time()
 
-for epoch in range(1, n_epochs + 1):
-    output, loss = train(*randomTrainingSet())
+for iter in range(1, n_iters + 1):
+    output, loss = train(*randomTrainingExample())
     total_loss += loss
     
-    if epoch % print_every == 0:
-        print('%s (%d %d%%) %.4f' % (timeSince(start), epoch, epoch / n_epochs * 100, loss))
+    if iter % print_every == 0:
+        print('%s (%d %d%%) %.4f' % (timeSince(start), iter, iter / n_iters * 100, loss))
 
-    if epoch % plot_every == 0:
+    if iter % plot_every == 0:
         all_losses.append(total_loss / plot_every)
         total_loss = 0
 
