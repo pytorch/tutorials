@@ -269,9 +269,9 @@ def get_screen():
     # Convert to float, rescare, convert to torch tensor
     # (this doesn't require a copy)
     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
-    screen = torch.from_numpy(screen).type(Tensor)
+    screen = torch.from_numpy(screen)
     # Resize, and add a batch dimension (BCHW)
-    return resize(screen).unsqueeze(0)
+    return resize(screen).unsqueeze(0).type(Tensor)
 
 env.reset()
 plt.figure()
@@ -353,6 +353,8 @@ def plot_durations():
         means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy())
+
+    plt.pause(0.001)  # pause a bit so that plots are updated
     if is_ipython:
         display.clear_output(wait=True)
         display.display(plt.gcf())
@@ -403,7 +405,7 @@ def optimize_model():
     state_action_values = model(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
-    next_state_values = Variable(torch.zeros(BATCH_SIZE))
+    next_state_values = Variable(torch.zeros(BATCH_SIZE).type(Tensor))
     next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
     # Now, we don't want to mess up the loss with a volatile flag, so let's
     # clear it. After this, we'll just end up with a Variable that has
@@ -468,6 +470,7 @@ for i_episode in range(num_episodes):
             break
 
 print('Complete')
+env.render(close=True)
 env.close()
 plt.ioff()
 plt.show()
