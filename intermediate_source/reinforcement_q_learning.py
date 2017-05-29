@@ -310,12 +310,12 @@ if USE_CUDA:
     model.cuda()
 
 
-class Variable(autograd.Variable):
+def Variable(data, volatile=False):
+    if USE_CUDA:
+        return autograd.Variable(data.cuda(),volatile=volatile)
+    else:
+        return autograd.Variable(data, volatile=volatile)
 
-    def __init__(self, data, *args, **kwargs):
-        if USE_CUDA:
-            data = data.cuda()
-        super(Variable, self).__init__(data, *args, **kwargs)
 
 
 steps_done = 0
