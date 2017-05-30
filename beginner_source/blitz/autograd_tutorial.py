@@ -61,8 +61,8 @@ y = x + 2
 print(y)
 
 ###############################################################
-# ``y`` was created as a result of an operation, so it has a ``grad_fn``.
-print(y.grad_fn)
+# ``y`` was created as a result of an operation, so it had a  ``creator``.
+print(y.creator)
 
 ###############################################################
 # Do more operations on y
