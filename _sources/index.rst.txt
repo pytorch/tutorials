@@ -17,9 +17,8 @@ many other applications at https://github.com/pytorch/examples/
 You can find reference documentation for PyTorch's API and layers at 
 http://docs.pytorch.org or via inline help.
 
-If you would like the tutorials section improved, please 
-send feedback to `sasankchilamkurthy@gmail.com <mailto: sasankchilamkurthy@gmail.com>`_
-or open a github issue here with your feedback: https://github.com/pytorch/tutorials
+If you would like the tutorials section improved, please open a github issue
+here with your feedback: https://github.com/pytorch/tutorials
 
 Beginner Tutorials
 ------------------
