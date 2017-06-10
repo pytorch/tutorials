@@ -207,8 +207,8 @@ Create model
             self.hidden = self.init_hidden()
 
         def init_hidden(self):
-            return (autograd.Variable(torch.randn(2, 1, self.hidden_dim)),
-                    autograd.Variable(torch.randn(2, 1, self.hidden_dim)))
+            return (autograd.Variable(torch.randn(2, 1, self.hidden_dim // 2)),
+                    autograd.Variable(torch.randn(2, 1, self.hidden_dim // 2)))
 
         def _forward_alg(self, feats):
             # Do the forward algorithm to compute the partition function
@@ -244,7 +244,7 @@ Create model
         def _get_lstm_features(self, sentence):
             self.hidden = self.init_hidden()
             embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
-            lstm_out, self.hidden = self.lstm(embeds)
+            lstm_out, self.hidden = self.lstm(embeds, self.hidden)
             lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
             lstm_feats = self.hidden2tag(lstm_out)
             return lstm_feats
@@ -397,11 +397,11 @@ Run training
  Out::
 
     (Variable containing:
-     12.7272
+     12.9934
     [torch.FloatTensor of size 1]
     , [2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 2])
     (Variable containing:
-     36.6214
+     36.1373
     [torch.FloatTensor of size 1]
     , [0, 1, 1, 1, 2, 2, 2, 0, 1, 2, 2])
 
@@ -427,7 +427,7 @@ Pick up some real data and do a comparison!
 
 
 
-**Total running time of the script:** ( 0 minutes  15.840 seconds)
+**Total running time of the script:** ( 0 minutes  18.180 seconds)
 
 
 
