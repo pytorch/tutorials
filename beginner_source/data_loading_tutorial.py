@@ -97,8 +97,8 @@ plt.show()
 #
 # ``torch.utils.data.Dataset`` is an abstract class representing a
 # dataset.
-# Your custom dataset should inherit ``Dataset`` and override following
-# methods
+# Your custom dataset should inherit ``Dataset`` and override the following
+# methods:
 #
 # -  ``__len__`` so that ``len(dataset)`` returns the size of the dataset.
 # -  ``__getitem__`` to support the indexing such that ``dataset[i]`` can
@@ -294,7 +294,7 @@ class ToTensor(object):
 # Let's say we want to rescale the shorter side of the image to 256 and
 # then randomly crop a square of size 224 from it. i.e, we want to compose
 # ``Rescale`` and ``RandomCrop`` transforms.
-# ``torchvision.transforms.Compose`` is a simple function which allows us
+# ``torchvision.transforms.Compose`` is a simple callable class which allows us
 # to do this.
 #
 
@@ -327,7 +327,7 @@ plt.show()
 #
 # -  An image is read from the file on the fly
 # -  Transforms are applied on the read image
-# -  Since, one of the transforms is random, data is augmentated on
+# -  Since one of the transforms is random, data is augmentated on
 #    sampling
 #
 # We can iterate over the created dataset with a ``for i in range``
@@ -406,7 +406,7 @@ for i_batch, sample_batched in enumerate(dataloader):
 # ----------------------
 #
 # In this tutorial, we have seen how to write and use datasets, transforms
-# and dataloader. ``torchvision`` module provides some common datasets and
+# and dataloader. ``torchvision`` package provides some common datasets and
 # transforms. You might not even have to write custom classes. One of the
 # more generic datasets available in torchvision is ``ImageFolder``.
 # It assumes that images are organized in the following way: ::
@@ -432,7 +432,8 @@ for i_batch, sample_batched in enumerate(dataloader):
 #           transforms.RandomSizedCrop(224),
 #           transforms.RandomHorizontalFlip(),
 #           transforms.ToTensor(),
-#           transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+#           transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                std=[0.229, 0.224, 0.225])
 #       ])
 #   hymenoptera_dataset = datasets.ImageFolder(root='hymenoptera_data/train',
 #                                              transform=data_transform)
@@ -440,4 +441,5 @@ for i_batch, sample_batched in enumerate(dataloader):
 #                                                batch_size=4, shuffle=True,
 #                                                num_workers=4)
 #
-# For complete working example, please see :doc:`transfer_learning_tutorial`.
+# For an example with training code, please see
+# :doc:`transfer_learning_tutorial`.

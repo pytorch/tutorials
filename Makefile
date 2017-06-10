@@ -20,16 +20,27 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-
-docs:
-	wget -N https://download.pytorch.org/tutorial/data.zip
+download:
+	# transfer learning tutorial data
 	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip
 	unzip -o hymenoptera_data.zip -d beginner_source
+	
+	# nlp tutorial data
+	wget -N https://download.pytorch.org/tutorial/data.zip
 	unzip -o data.zip -d intermediate_source
+	
+	# data loader tutorial
+	wget -N https://download.pytorch.org/tutorial/faces.zip
+	unzip -o faces.zip -d beginner_source
+	
+	# neural style images
 	rm -rf advanced_source/images/
 	cp -r _static/img/neural-style/ advanced_source/images/
-	rm -rf docs
+
+docs:
+	make download
 	make html
+	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
 
