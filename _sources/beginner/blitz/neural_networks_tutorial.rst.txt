@@ -150,7 +150,7 @@ The input to the forward is an ``autograd.Variable``, and so is the output.
  Out::
 
     Variable containing:
-     0.0023 -0.0140 -0.0344 -0.1183 -0.0167  0.0507  0.0656 -0.0728  0.0522 -0.0107
+    -0.0135  0.0006 -0.0837  0.0813  0.0274  0.0940 -0.1007  0.0339  0.0156  0.0744
     [torch.FloatTensor of size 1x10]
 
 
@@ -243,12 +243,12 @@ For example:
  Out::
 
     Variable containing:
-     38.5315
+     38.2614
     [torch.FloatTensor of size 1]
 
 
 Now, if you follow ``loss`` in the backward direction, using it’s
-``.grad_fn`` attribute, you will see a graph of computations that looks
+``.creator`` attribute, you will see a graph of computations that looks
 like this:
 
 ::
@@ -269,9 +269,9 @@ For illustration, let us follow a few steps backward:
 .. code-block:: python
 
 
-    print(loss.grad_fn)  # MSELoss
-    print(loss.grad_fn.next_functions[0][0])  # Linear
-    print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
+    print(loss.creator)  # MSELoss
+    print(loss.creator.previous_functions[0][0])  # Linear
+    print(loss.creator.previous_functions[0][0].previous_functions[0][0])  # ReLU
 
 
 
@@ -281,9 +281,9 @@ For illustration, let us follow a few steps backward:
 
  Out::
 
-    <torch.nn._functions.thnn.auto.MSELoss object at 0x7f77f86db710>
-    <torch.autograd.function.LinearBackward object at 0x7f77f86db618>
-    <torch.autograd.function.ThresholdBackward object at 0x7f77f86db520>
+    <torch.nn._functions.thnn.auto.MSELoss object at 0x7f2988050668>
+    <torch.nn._functions.linear.Linear object at 0x7f2988050588>
+    <torch.nn._functions.thnn.auto.Threshold object at 0x7f29880504a8>
 
 
 Backprop
@@ -333,12 +333,12 @@ gradients before and after the backward.
     conv1.bias.grad after backward
     Variable containing:
     1.00000e-02 *
-      3.5917
-      2.4379
-     -0.0435
-      5.0025
-     -7.8185
-      5.4441
+      0.4786
+     -4.8119
+     -2.3315
+      9.5668
+      7.1135
+     -3.2001
     [torch.FloatTensor of size 6]
 
 
@@ -396,7 +396,7 @@ implements all these methods. Using it is very simple:
 
 
 
-**Total running time of the script:** ( 0 minutes  0.075 seconds)
+**Total running time of the script:** ( 0 minutes  0.213 seconds)
 
 
 

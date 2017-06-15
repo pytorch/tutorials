@@ -165,7 +165,7 @@ print(loss)
 
 ########################################################################
 # Now, if you follow ``loss`` in the backward direction, using it’s
-# ``.grad_fn`` attribute, you will see a graph of computations that looks
+# ``.creator`` attribute, you will see a graph of computations that looks
 # like this:
 #
 # ::
@@ -181,9 +181,9 @@ print(loss)
 #
 # For illustration, let us follow a few steps backward:
 
-print(loss.grad_fn)  # MSELoss
-print(loss.grad_fn.next_functions[0][0])  # Linear
-print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
+print(loss.creator)  # MSELoss
+print(loss.creator.previous_functions[0][0])  # Linear
+print(loss.creator.previous_functions[0][0].previous_functions[0][0])  # ReLU
 
 ########################################################################
 # Backprop
