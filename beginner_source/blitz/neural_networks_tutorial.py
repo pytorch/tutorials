@@ -30,7 +30,7 @@ A typical training procedure for a neural network is as follows:
 - Compute the loss (how far is the output from being correct)
 - Propagate gradients back into the network’s parameters
 - Update the weights of the network, typically using a simple update rule:
-  ``weight = weight + learning_rate * gradient``
+  ``weight = weight - learning_rate * gradient``
 
 Define the network
 ------------------
