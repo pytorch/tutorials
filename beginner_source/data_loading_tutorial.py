@@ -10,7 +10,7 @@ easy and hopefully, to make your code more readable. In this tutorial,
 we will see how to load and preprocess/augment data from a non trivial
 dataset.
 
-To run this tutorial, please make sure the following pacakges are
+To run this tutorial, please make sure the following packages are
 installed:
 
 -  ``scikit-image``: For image io and transforms
