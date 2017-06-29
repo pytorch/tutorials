@@ -124,4 +124,4 @@ class DistributedModel(nn.Module):
 # .. _More examples: https://github.com/pytorch/examples
 # .. _More tutorials: https://github.com/pytorch/tutorials
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-# .. _Chat with other users on Slack: pytorch.slack.com/messages/beginner/
+# .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
