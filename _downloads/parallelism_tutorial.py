@@ -107,7 +107,7 @@ class DistributedModel(nn.Module):
 #
 # Also look at
 #
-# -  `Train neural nets to play video games`_
+# -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
 # -  `Train a state-of-the-art ResNet network on imagenet`_
 # -  `Train an face generator using Generative Adversarial Networks`_
 # -  `Train a word-level language model using Recurrent LSTM networks`_
@@ -117,11 +117,10 @@ class DistributedModel(nn.Module):
 # -  `Chat with other users on Slack`_
 #
 # .. _`Deep Learning with PyTorch: a 60-minute blitz`: https://github.com/pytorch/tutorials/blob/master/Deep%20Learning%20with%20PyTorch.ipynb
-# .. _Train neural nets to play video games: https://goo.gl/uGOksc
 # .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
 # .. _Train an face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
 # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
 # .. _More examples: https://github.com/pytorch/examples
 # .. _More tutorials: https://github.com/pytorch/tutorials
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-# .. _Chat with other users on Slack: pytorch.slack.com/messages/beginner/
+# .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
