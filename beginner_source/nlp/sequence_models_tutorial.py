@@ -244,7 +244,7 @@ print(tag_scores)
 # affixes have a large bearing on part-of-speech. For example, words with
 # the affix *-ly* are almost always tagged as adverbs in English.
 #
-# Do do this, let :math:`c_w` be the character-level representation of
+# To do this, let :math:`c_w` be the character-level representation of
 # word :math:`w`. Let :math:`x_w` be the word embedding as before. Then
 # the input to our sequence model is the concatenation of :math:`x_w` and
 # :math:`c_w`. So if :math:`x_w` has dimension 5, and :math:`c_w`
