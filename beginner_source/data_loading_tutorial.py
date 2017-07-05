@@ -138,7 +138,7 @@ class FaceLandmarksDataset(Dataset):
     def __getitem__(self, idx):
         img_name = os.path.join(self.root_dir, self.landmarks_frame.ix[idx, 0])
         image = io.imread(img_name)
-        landmarks = landmarks_frame.ix[idx, 1:].as_matrix().astype('float')
+        landmarks = self.landmarks_frame.ix[idx, 1:].as_matrix().astype('float')
         landmarks = landmarks.reshape(-1, 2)
         sample = {'image': image, 'landmarks': landmarks}
 
