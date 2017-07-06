@@ -884,7 +884,7 @@ evaluateAndShowAttention("c est un jeune directeur plein de talent .")
 #    -  Chat → Response
 #    -  Question → Answer
 #
-# -  Replace the embedding pre-trained word embeddings such as word2vec or
+# -  Replace the embeddings with pre-trained word embeddings such as word2vec or
 #    GloVe
 # -  Try with more layers, more hidden units, and more sentences. Compare
 #    the training time and results.
