@@ -538,7 +538,7 @@ def variablesFromPair(pair):
 # To train we run the input sentence through the encoder, and keep track
 # of every output and the latest hidden state. Then the decoder is given
 # the ``<SOS>`` token as its first input, and the last hidden state of the
-# decoder as its first hidden state.
+# encoder as its first hidden state.
 #
 # "Teacher forcing" is the concept of using the real target outputs as
 # each next input, instead of using the decoder's guess as the next input.
