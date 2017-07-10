@@ -14,7 +14,7 @@ by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 Neural what?
 ~~~~~~~~~~~~
 
-The Neural-Style, or Neural-Transfer, is an algorithm that taks as
+The Neural-Style, or Neural-Transfer, is an algorithm that takes as
 input a content-image (e.g. a tortle), a style-image (e.g. artistic
 waves) and return the content of the content-image as if it was
 'painted' using the artistic style of the style-image:
@@ -25,8 +25,8 @@ waves) and return the content of the content-image as if it was
 How does it work?
 ~~~~~~~~~~~~~~~~~
 
-The principe is simple: we define two distances, one for the content
-(:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measues
+The principle is simple: we define two distances, one for the content
+(:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measures
 how different is the content between two images, while :math:`D_S`
 measures how different is the style between two images. Then, we take a
 third image, the input, (e.g. a with noise), and we transform it in
@@ -178,9 +178,10 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 #
 # .. Note::
 #     Here are links to download the images required to run the tutorial:
-#     `picasso.jpg </_static/img/neural-style/picasso.jpg>`__ and
-#     `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these
-#     two images and add them to a directory with name ``images``
+#     `picasso.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
+#     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__.
+#     Download these two images and add them to a directory
+#     with name ``images``
 
 
 # desired size of the output image

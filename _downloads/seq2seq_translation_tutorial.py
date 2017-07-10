@@ -538,7 +538,7 @@ def variablesFromPair(pair):
 # To train we run the input sentence through the encoder, and keep track
 # of every output and the latest hidden state. Then the decoder is given
 # the ``<SOS>`` token as its first input, and the last hidden state of the
-# decoder as its first hidden state.
+# encoder as its first hidden state.
 #
 # "Teacher forcing" is the concept of using the real target outputs as
 # each next input, instead of using the decoder's guess as the next input.
@@ -884,7 +884,7 @@ evaluateAndShowAttention("c est un jeune directeur plein de talent .")
 #    -  Chat → Response
 #    -  Question → Answer
 #
-# -  Replace the embedding pre-trained word embeddings such as word2vec or
+# -  Replace the embeddings with pre-trained word embeddings such as word2vec or
 #    GloVe
 # -  Try with more layers, more hidden units, and more sentences. Compare
 #    the training time and results.
