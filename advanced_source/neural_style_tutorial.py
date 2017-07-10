@@ -178,9 +178,10 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 #
 # .. Note::
 #     Here are links to download the images required to run the tutorial:
-#     `picasso.jpg </_static/img/neural-style/picasso.jpg>`__ and
-#     `dancing.jpg </_static/img/neural-style/dancing.jpg>`__. Download these
-#     two images and add them to a directory with name ``images``
+#     `picasso.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
+#     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__.
+#     Download these two images and add them to a directory
+#     with name ``images``
 
 
 # desired size of the output image
