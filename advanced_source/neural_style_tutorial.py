@@ -581,7 +581,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
                     style_score.data[0], content_score.data[0]))
                 print()
 
-            return style_score + style_score
+            return style_score + content_score
 
         optimizer.step(closure)
 
