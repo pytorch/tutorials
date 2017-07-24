@@ -179,7 +179,7 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 # .. Note::
 #     Here are links to download the images required to run the tutorial:
 #     `picasso.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
-#     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__.
+#     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
 #     Download these two images and add them to a directory
 #     with name ``images``
 
@@ -269,8 +269,8 @@ imshow(content_img.data, title='Content Image')
 #
 # Finally, we define a fake ``backward`` method, that just call the
 # backward method of ``nn.MSELoss`` in order to reconstruct the gradient.
-# This method returns the computed loss: this will be usefull when running
-# the gradien descent in order to display the evolution of style and
+# This method returns the computed loss: this will be useful when running
+# the gradient descent in order to display the evolution of style and
 # content losses.
 #
 
@@ -581,7 +581,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
                     style_score.data[0], content_score.data[0]))
                 print()
 
-            return style_score + style_score
+            return style_score + content_score
 
         optimizer.step(closure)
 
