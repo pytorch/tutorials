@@ -177,6 +177,11 @@ class BiLSTM_CRF(nn.Module):
         self.transitions = nn.Parameter(
             torch.randn(self.tagset_size, self.tagset_size))
 
+        # These two statements enforce the constraint that we never transfer
+        # to the start tag and we never transfer from the stop tag 
+        self.transitions.data[tag_to_ix[START_TAG], :] = -10000
+        self.transitions.data[:, tag_to_ix[STOP_TAG]] = -10000
+
         self.hidden = self.init_hidden()
 
     def init_hidden(self):
