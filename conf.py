@@ -54,7 +54,8 @@ sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced'],
-    'filename_pattern': 'tutorial.py'
+    'filename_pattern': 'tutorial.py',
+    'backreferences_dir': False
 }
 
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
