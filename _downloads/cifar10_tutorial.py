@@ -216,7 +216,7 @@ outputs = net(Variable(images))
 # So, let's get the index of the highest energy:
 _, predicted = torch.max(outputs.data, 1)
 
-print('Predicted: ', ' '.join('%5s' % classes[predicted[j][0]]
+print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
                               for j in range(4)))
 
 ########################################################################
