@@ -27,8 +27,8 @@ How does it work?
 
 The principle is simple: we define two distances, one for the content
 (:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measures
-how different is the content between two images, while :math:`D_S`
-measures how different is the style between two images. Then, we take a
+how different the content is between two images, while :math:`D_S`
+measures how different the style is between two images. Then, we take a
 third image, the input, (e.g. a with noise), and we transform it in
 order to both minimize its content-distance with the content-image and
 its style-distance with the style-image.
@@ -74,7 +74,7 @@ distance of style at layer :math:`L` as follow:
 
 .. math:: 
 
-    D_S^L(X,Y) = \|G_{XL} - G_{YL}\|^2 = \sum_{k,l} (F_{XL}(k,l) - F_{YL}(k,l))^2
+    D_S^L(X,Y) = \|G_{XL} - G_{YL}\|^2 = \sum_{k,l} (G_{XL}(k,l) - G_{YL}(k,l))^2
 
 In order to minimize in one shot :math:`D_C(X,C)` between a variable
 image :math:`X` and target content-image :math:`C` and :math:`D_S(X,S)`
