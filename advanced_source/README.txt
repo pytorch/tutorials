@@ -12,3 +12,7 @@ Advanced Tutorials
 3. c_extension.rst
 	Custom C extensions for pytorch
 	http://pytorch.org/tutorials/advanced/c_extension.html
+
+4. super_resolution_with_caffe2.py
+	Transfering a model from PyTorch to Caffe2 and Mobile using ONNX
+	http://pytorch.org/tutorials/advanced/super_resolution_with_caffe2.html
