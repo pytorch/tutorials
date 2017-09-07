@@ -1,27 +1,27 @@
 Welcome to PyTorch Tutorials
 ============================
 
-To get started with learning PyTorch, start with our Beginner Tutorials. 
-The :doc:`60-minute blitz </beginner/deep_learning_60min_blitz>` is the most common 
+To get started with learning PyTorch, start with our Beginner Tutorials.
+The :doc:`60-minute blitz </beginner/deep_learning_60min_blitz>` is the most common
 starting point, and gives you a quick introduction to PyTorch.
-If you like learning by examples, you will like the tutorial 
+If you like learning by examples, you will like the tutorial
 :doc:`/beginner/pytorch_with_examples`
 
-If you would like to do the tutorials interactively via IPython / Jupyter, 
+If you would like to do the tutorials interactively via IPython / Jupyter,
 each tutorial has a download link for a Jupyter Notebook and Python source code.
 
-We also provide a lot of high-quality examples covering image classification, 
-unsupervised learning, reinforcement learning, machine translation and 
+We also provide a lot of high-quality examples covering image classification,
+unsupervised learning, reinforcement learning, machine translation and
 many other applications at https://github.com/pytorch/examples/
 
-You can find reference documentation for PyTorch's API and layers at 
+You can find reference documentation for PyTorch's API and layers at
 http://docs.pytorch.org or via inline help.
 If you would like the tutorials section improved, please open a github issue
 here with your feedback: https://github.com/pytorch/tutorials
 
 Beginner Tutorials
 ------------------
-   
+
 .. customgalleryitem::
    :figure: /_static/img/thumbnails/pytorch-logo-flat.png
    :tooltip: Understand PyTorch’s Tensor library and neural networks at a high level.
@@ -100,7 +100,7 @@ Reinforcement Learning
    :includehidden:
    :hidden:
    :caption: Intermediate Tutorials
-   
+
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
@@ -113,6 +113,8 @@ Advanced Tutorials
     :intro: This tutorial explains how to impletment the Neural-Style algorithm developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 
 .. galleryitem:: advanced/numpy_extensions_tutorial.py
+
+.. galleryitem:: advanced/super_resolution_with_caffe2.py
 
 .. customgalleryitem::
    :tooltip: Implement custom extensions in C.
@@ -132,5 +134,5 @@ Advanced Tutorials
 
    advanced/neural_style_tutorial
    advanced/numpy_extensions_tutorial
+   advanced/super_resolution_with_caffe2
    advanced/c_extension
-
