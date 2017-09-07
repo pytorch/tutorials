@@ -100,6 +100,9 @@ torch_model.train(False)
 # ``x``. The values in this tensor are not important; it can be an image
 # or a random tensor as long as it is the right size.
 #
+# To learn more details about PyTorch's export interface, check out the
+# `torch.onnx documentation <http://pytorch.org/docs/master/onnx.html>`__.
+#
 
 # Input to the model
 x = Variable(torch.randn(batch_size, 1, 224, 224), requires_grad=True)
