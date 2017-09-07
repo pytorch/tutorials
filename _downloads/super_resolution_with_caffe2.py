@@ -10,8 +10,15 @@ Transfering a model from PyTorch to Caffe2 and Mobile using ONNX
 # in PyTorch into the ONNX format and then load it into Caffe2. Once in
 # Caffe2, we can run the model to double-check it was exported correctly,
 # and we then show how to use Caffe2 features such as mobile exporter for
-# executing the model on mobile devices. For this tutorial, you will need to
-# install ONNX by following the instructions `here <https://github.com/onnx/onnx>`__
+# executing the model on mobile devices.
+#
+# For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__,
+# `onnx-caffe2 <https://github.com/onnx/onnx-caffe2>`__ and `Caffe2 <https://caffe2.ai/>`__.
+# You can get binary builds of onnx and onnx-caffe2 with
+# ``conda install -c ezyang onnx onnx-caffe2``.
+#
+# ``NOTE``: This tutorial needs PyTorch master branch which can installed by following
+# the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
 #
 
 # Some standard imports
@@ -22,9 +29,6 @@ from torch import nn
 from torch.autograd import Variable
 import torch.utils.model_zoo as model_zoo
 import torch.onnx
-
-import onnx
-import onnx_caffe2.backend
 
 
 ######################################################################
@@ -99,6 +103,9 @@ torch_model.train(False)
 # ``x``. The values in this tensor are not important; it can be an image
 # or a random tensor as long as it is the right size.
 #
+# To learn more details about PyTorch's export interface, check out the
+# `torch.onnx documentation <http://pytorch.org/docs/master/onnx.html>`__.
+#
 
 # Input to the model
 x = Variable(torch.randn(batch_size, 1, 224, 224), requires_grad=True)
@@ -120,6 +127,9 @@ torch_out = torch.onnx._export(torch_model,             # model being run
 # will continue in the same process so that we can verify that Caffe2 and
 # PyTorch are computing the same value for the network:
 #
+
+import onnx
+import onnx_caffe2.backend
 
 # Load the ONNX GraphProto object. Graph is a standard Python protobuf object
 graph = onnx.load("super_resolution.onnx")
