@@ -38,6 +38,9 @@ import torch.onnx
 # model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py>`__
 # comes directly from PyTorch's examples without modification:
 #
+# ``NOTE``: This tutorial needs PyTorch master branch which can installed by following
+# the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
+#
 
 # Super Resolution model definition in PyTorch
 import torch.nn as nn
