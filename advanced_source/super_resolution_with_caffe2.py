@@ -17,6 +17,9 @@ Transfering a model from PyTorch to Caffe2 and Mobile using ONNX
 # You can get binary builds of onnx and onnx-caffe2 with
 # ``conda install -c ezyang onnx onnx-caffe2``.
 #
+# ``NOTE``: This tutorial needs PyTorch master branch which can installed by following
+# the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
+#
 
 # Some standard imports
 import io
@@ -37,9 +40,6 @@ import torch.onnx
 # First, let's create a SuperResolution model in PyTorch. `This
 # model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py>`__
 # comes directly from PyTorch's examples without modification:
-#
-# ``NOTE``: This tutorial needs PyTorch master branch which can installed by following
-# the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
 #
 
 # Super Resolution model definition in PyTorch
