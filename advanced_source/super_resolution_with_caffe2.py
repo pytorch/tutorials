@@ -99,7 +99,7 @@ torch_model.train(False)
 # Exporting a model in PyTorch works via tracing. To export a model, you
 # call the ``torch.onnx._export()`` function. This will execute the model,
 # recording a trace of what operators are used to compute the outputs.
-# Because ``export`` runs the model, we need provide an input tensor
+# Because ``_export`` runs the model, we need provide an input tensor
 # ``x``. The values in this tensor are not important; it can be an image
 # or a random tensor as long as it is the right size.
 #
