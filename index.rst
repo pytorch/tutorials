@@ -110,7 +110,7 @@ Advanced Tutorials
 ------------------
 
 .. galleryitem:: advanced/neural_style_tutorial.py
-    :intro: This tutorial explains how to impletment the Neural-Style algorithm developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
+    :intro: This tutorial explains how to implement the Neural-Style algorithm developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 
 .. galleryitem:: advanced/numpy_extensions_tutorial.py
 
