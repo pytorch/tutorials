@@ -207,7 +207,7 @@ Up to this point we have updated the weights of our models by manually
 mutating the ``.data`` member for Variables holding learnable
 parameters. This is not a huge burden for simple optimization algorithms
 like stochastic gradient descent, but in practice we often train neural
-networks using more sophisiticated optimizers like AdaGrad, RMSProp,
+networks using more sophisticated optimizers like AdaGrad, RMSProp,
 Adam, etc.
 
 The ``optim`` package in PyTorch abstracts the idea of an optimization
