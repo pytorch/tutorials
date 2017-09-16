@@ -2,24 +2,21 @@
 Transfering a model from PyTorch to Caffe2 and Mobile using ONNX
 ================================================================
 
+In this tutorial, we describe how to use ONNX to convert a model defined
+in PyTorch into the ONNX format and then load it into Caffe2. Once in
+Caffe2, we can run the model to double-check it was exported correctly,
+and we then show how to use Caffe2 features such as mobile exporter for
+executing the model on mobile devices.
+
+For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__,
+`onnx-caffe2 <https://github.com/onnx/onnx-caffe2>`__ and `Caffe2 <https://caffe2.ai/>`__.
+You can get binary builds of onnx and onnx-caffe2 with
+``conda install -c ezyang onnx onnx-caffe2``.
+
+``NOTE``: This tutorial needs PyTorch master branch which can installed by following
+the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
+
 """
-
-
-######################################################################
-# In this tutorial, we describe how to use ONNX to convert a model defined
-# in PyTorch into the ONNX format and then load it into Caffe2. Once in
-# Caffe2, we can run the model to double-check it was exported correctly,
-# and we then show how to use Caffe2 features such as mobile exporter for
-# executing the model on mobile devices.
-#
-# For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__,
-# `onnx-caffe2 <https://github.com/onnx/onnx-caffe2>`__ and `Caffe2 <https://caffe2.ai/>`__.
-# You can get binary builds of onnx and onnx-caffe2 with
-# ``conda install -c ezyang onnx onnx-caffe2``.
-#
-# ``NOTE``: This tutorial needs PyTorch master branch which can installed by following
-# the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
-#
 
 # Some standard imports
 import io
