@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Sequence Models and Long-Short Term Memory Networks &mdash; PyTorch Tutorials 0.2.0_2 documentation</title>
+  <title>Sequence Models and Long-Short Term Memory Networks &mdash; PyTorch Tutorials 0.2.0_4 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.2.0_2 documentation" href="../../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.2.0_4 documentation" href="../../index.html"/>
         <link rel="up" title="Deep Learning for NLP with Pytorch" href="../deep_learning_nlp_tutorial.html"/>
         <link rel="next" title="Advanced: Making Dynamic Decisions and the Bi-LSTM CRF" href="advanced_tutorial.html"/>
         <link rel="prev" title="Word Embeddings: Encoding Lexical Semantics" href="word_embeddings_tutorial.html"/> 
@@ -76,7 +76,7 @@
             
             
               <div class="version">
-                0.2.0_2
+                0.2.0_4
               </div>
             
           
@@ -250,7 +250,7 @@
 </li>
 <li class="toctree-l1 current"><a class="reference internal" href="../deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="pytorch_tutorial.html">Introduction to PyTorch</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pytorch_tutorial.html#introduction-to-torch-s-tensor-library">Introduction to Torch’s tensor library</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pytorch_tutorial.html#introduction-to-torch-s-tensor-library">Introduction to Torch&#8217;s tensor library</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#creating-tensors">Creating Tensors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#operations-with-tensors">Operations with Tensors</a></li>
 <li class="toctree-l4"><a class="reference internal" href="pytorch_tutorial.html#reshaping-tensors">Reshaping Tensors</a></li>
@@ -282,7 +282,7 @@
 </ul>
 </li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Sequence Models and Long-Short Term Memory Networks</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#lstm-s-in-pytorch">LSTM’s in Pytorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lstm-s-in-pytorch">LSTM&#8217;s in Pytorch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#example-an-lstm-for-part-of-speech-tagging">Example: An LSTM for Part-of-Speech Tagging</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#exercise-augmenting-the-lstm-part-of-speech-tagger-with-character-level-features">Exercise: Augmenting the LSTM part-of-speech tagger with character-level features</a></li>
 </ul>
@@ -401,6 +401,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../../advanced/numpy_extensions_tutorial.html#parametrized-example">Parametrized example</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_caffe2.html">Transfering a model from PyTorch to Caffe2 and Mobile using ONNX</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/super_resolution_with_caffe2.html#transfering-srresnet-using-onnx">Transfering SRResNet using ONNX</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../advanced/super_resolution_with_caffe2.html#running-the-model-on-mobile-devices">Running the model on mobile devices</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/c_extension.html">Custom C extensions for pytorch</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../advanced/c_extension.html#step-1-prepare-your-c-code">Step 1. prepare your C code</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../advanced/c_extension.html#step-2-include-it-in-your-python-code">Step 2: Include it in your Python code</a></li>
@@ -489,14 +494,14 @@ can contain information from arbitrary points earlier in the sequence.
 We can use the hidden state to predict words in a language model,
 part-of-speech tags, and a myriad of other things.</p>
 <div class="section" id="lstm-s-in-pytorch">
-<h2>LSTM’s in Pytorch<a class="headerlink" href="#lstm-s-in-pytorch" title="Permalink to this headline">¶</a></h2>
-<p>Before getting to the example, note a few things. Pytorch’s LSTM expects
+<h2>LSTM&#8217;s in Pytorch<a class="headerlink" href="#lstm-s-in-pytorch" title="Permalink to this headline">¶</a></h2>
+<p>Before getting to the example, note a few things. Pytorch&#8217;s LSTM expects
 all of its inputs to be 3D tensors. The semantics of the axes of these
 tensors is important. The first axis is the sequence itself, the second
 indexes instances in the mini-batch, and the third indexes elements of
-the input. We haven’t discussed mini-batching, so lets just ignore that
+the input. We haven&#8217;t discussed mini-batching, so lets just ignore that
 and assume we will always have just 1 dimension on the second axis. If
-we want to run the sequence model over the sentence “The cow jumped”,
+we want to run the sequence model over the sentence &#8220;The cow jumped&#8221;,
 our input should look like</p>
 <div class="math">
 \[\begin{split}\begin{bmatrix}
@@ -507,7 +512,7 @@ q_\text{jumped}
 <p>Except remember there is an additional 2nd dimension with size 1.</p>
 <p>In addition, you could go through the sequence one at a time, in which
 case the 1st axis will have size 1 also.</p>
-<p>Let’s see a quick example.</p>
+<p>Let&#8217;s see a quick example.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -627,7 +632,7 @@ target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;The&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;dog&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ate&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;Everybody&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;that&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;book&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">}</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;dog&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;that&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;The&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;ate&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;Everybody&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;book&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Create the model:</p>
@@ -733,7 +738,7 @@ target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</s
 <div class="section" id="exercise-augmenting-the-lstm-part-of-speech-tagger-with-character-level-features">
 <h2>Exercise: Augmenting the LSTM part-of-speech tagger with character-level features<a class="headerlink" href="#exercise-augmenting-the-lstm-part-of-speech-tagger-with-character-level-features" title="Permalink to this headline">¶</a></h2>
 <p>In the example above, each word had an embedding, which served as the
-inputs to our sequence model. Let’s augment the word embeddings with a
+inputs to our sequence model. Let&#8217;s augment the word embeddings with a
 representation derived from the characters of the word. We expect that
 this should help significantly, since character-level information like
 affixes have a large bearing on part-of-speech. For example, words with
@@ -747,20 +752,20 @@ dimension 3, then our LSTM should accept an input of dimension 8.</p>
 characters of a word, and let <span class="math">\(c_w\)</span> be the final hidden state of
 this LSTM. Hints:</p>
 <ul class="simple">
-<li>There are going to be two LSTM’s in your new model.
+<li>There are going to be two LSTM&#8217;s in your new model.
 The original one that outputs POS tag scores, and the new one that
 outputs a character-level representation of each word.</li>
 <li>To do a sequence model over characters, you will have to embed characters.
 The character embeddings will be the input to the character LSTM.</li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  4.934 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  2.953 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/sequence_models_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/sequence_models_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">sequence_models_tutorial.ipynb</span></code></a></div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="http://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 
@@ -808,7 +813,8 @@ The character embeddings will be the input to the character LSTM.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.2.0_2',
+            VERSION:'0.2.0_4',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -818,7 +824,7 @@ The character embeddings will be the input to the character LSTM.</li>
       <script type="text/javascript" src="../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
