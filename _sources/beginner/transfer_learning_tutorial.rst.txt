@@ -45,13 +45,13 @@ These two major transfer learning scenarios looks as follows:
     import torch
     import torch.nn as nn
     import torch.optim as optim
+    from torch.optim import lr_scheduler
     from torch.autograd import Variable
     import numpy as np
     import torchvision
     from torchvision import datasets, models, transforms
     import matplotlib.pyplot as plt
     import time
-    import copy
     import os
 
     plt.ion()   # interactive mode
@@ -87,7 +87,7 @@ This dataset is a very small subset of imagenet.
 .. code-block:: python
 
 
-    # Data augmentation and normalization for training 
+    # Data augmentation and normalization for training
     # Just normalization for validation
     data_transforms = {
         'train': transforms.Compose([
@@ -105,16 +105,16 @@ This dataset is a very small subset of imagenet.
     }
 
     data_dir = 'hymenoptera_data'
-    dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
-             for x in ['train', 'val']}
-    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
-                                                   shuffle=True, num_workers=4)
-                    for x in ['train', 'val']}
-    dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
-    dset_classes = dsets['train'].classes
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+                                              data_transforms[x])
+                      for x in ['train', 'val']}
+    dataloders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+                                                 shuffle=True, num_workers=4)
+                  for x in ['train', 'val']}
+    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    class_names = image_datasets['train'].classes
 
     use_gpu = torch.cuda.is_available()
-
 
 
 
@@ -145,12 +145,12 @@ augmentations.
 
 
     # Get a batch of training data
-    inputs, classes = next(iter(dset_loaders['train']))
+    inputs, classes = next(iter(dataloders['train']))
 
     # Make a grid from batch
     out = torchvision.utils.make_grid(inputs)
 
-    imshow(out, title=[dset_classes[x] for x in classes])
+    imshow(out, title=[class_names[x] for x in classes])
 
 
 
@@ -169,21 +169,21 @@ Now, let's write a general function to train a model. Here, we will
 illustrate:
 
 -  Scheduling the learning rate
--  Saving (deep copying) the best model
+-  Saving the best model
 
-In the following, parameter ``lr_scheduler(optimizer, epoch)``
-is a function  which modifies ``optimizer`` so that the learning
-rate is changed according to desired schedule.
+In the following, parameter ``scheduler`` is an LR scheduler object from
+``torch.optim.lr_scheduler``.
 
 
 
 .. code-block:: python
 
 
-    def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
+
+    def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         since = time.time()
 
-        best_model = model
+        best_model_wts = model.state_dict()
         best_acc = 0.0
 
         for epoch in range(num_epochs):
@@ -193,7 +193,7 @@ rate is changed according to desired schedule.
             # Each epoch has a training and validation phase
             for phase in ['train', 'val']:
                 if phase == 'train':
-                    optimizer = lr_scheduler(optimizer, epoch)
+                    scheduler.step()
                     model.train(True)  # Set model to training mode
                 else:
                     model.train(False)  # Set model to evaluate mode
@@ -202,14 +202,14 @@ rate is changed according to desired schedule.
                 running_corrects = 0
 
                 # Iterate over data.
-                for data in dset_loaders[phase]:
+                for data in dataloders[phase]:
                     # get the inputs
                     inputs, labels = data
 
                     # wrap them in Variable
                     if use_gpu:
-                        inputs, labels = Variable(inputs.cuda()), \
-                            Variable(labels.cuda())
+                        inputs = Variable(inputs.cuda())
+                        labels = Variable(labels.cuda())
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
 
@@ -230,8 +230,8 @@ rate is changed according to desired schedule.
                     running_loss += loss.data[0]
                     running_corrects += torch.sum(preds == labels.data)
 
-                epoch_loss = running_loss / dset_sizes[phase]
-                epoch_acc = running_corrects / dset_sizes[phase]
+                epoch_loss = running_loss / dataset_sizes[phase]
+                epoch_acc = running_corrects / dataset_sizes[phase]
 
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
@@ -239,7 +239,7 @@ rate is changed according to desired schedule.
                 # deep copy the model
                 if phase == 'val' and epoch_acc > best_acc:
                     best_acc = epoch_acc
-                    best_model = copy.deepcopy(model)
+                    best_model_wts = model.state_dict()
 
             print()
 
@@ -247,35 +247,10 @@ rate is changed according to desired schedule.
         print('Training complete in {:.0f}m {:.0f}s'.format(
             time_elapsed // 60, time_elapsed % 60))
         print('Best val Acc: {:4f}'.format(best_acc))
-        return best_model
 
-
-
-
-
-
-
-Learning rate scheduler
-^^^^^^^^^^^^^^^^^^^^^^^
-Let's create our learning rate scheduler. We will exponentially
-decrease the learning rate once every few epochs.
-
-
-
-.. code-block:: python
-
-
-    def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
-        """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
-        lr = init_lr * (0.1**(epoch // lr_decay_epoch))
-
-        if epoch % lr_decay_epoch == 0:
-            print('LR is set to {}'.format(lr))
-
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
-
-        return optimizer
+        # load best model weights
+        model.load_state_dict(best_model_wts)
+        return model
 
 
 
@@ -299,7 +274,7 @@ Generic function to display predictions for a few images
         images_so_far = 0
         fig = plt.figure()
 
-        for i, data in enumerate(dset_loaders['val']):
+        for i, data in enumerate(dataloders['val']):
             inputs, labels = data
             if use_gpu:
                 inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
@@ -313,7 +288,7 @@ Generic function to display predictions for a few images
                 images_so_far += 1
                 ax = plt.subplot(num_images//2, 2, images_so_far)
                 ax.axis('off')
-                ax.set_title('predicted: {}'.format(dset_classes[preds[j]]))
+                ax.set_title('predicted: {}'.format(class_names[preds[j]]))
                 imshow(inputs.cpu().data[j])
 
                 if images_so_far == num_images:
@@ -348,6 +323,9 @@ Load a pretrained model and reset final fully connected layer.
     # Observe that all parameters are being optimized
     optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
 
+    # Decay LR by a factor of 0.1 every 7 epochs
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+
 
 
 
@@ -379,135 +357,131 @@ minute.
 
     Epoch 0/24
     ----------
-    LR is set to 0.001
-    train Loss: 0.1432 Acc: 0.7008
-    val Loss: 0.0434 Acc: 0.9412
+    train Loss: 0.1487 Acc: 0.7254
+    val Loss: 0.0760 Acc: 0.8758
 
     Epoch 1/24
     ----------
-    train Loss: 0.1085 Acc: 0.8156
-    val Loss: 0.0521 Acc: 0.9216
+    train Loss: 0.1251 Acc: 0.7910
+    val Loss: 0.1226 Acc: 0.8562
 
     Epoch 2/24
     ----------
-    train Loss: 0.0947 Acc: 0.8566
-    val Loss: 0.0688 Acc: 0.9085
+    train Loss: 0.1536 Acc: 0.7295
+    val Loss: 0.0781 Acc: 0.8758
 
     Epoch 3/24
     ----------
-    train Loss: 0.2068 Acc: 0.7213
-    val Loss: 0.1239 Acc: 0.8562
+    train Loss: 0.1493 Acc: 0.7541
+    val Loss: 0.0763 Acc: 0.8824
 
     Epoch 4/24
     ----------
-    train Loss: 0.1790 Acc: 0.7828
-    val Loss: 0.0573 Acc: 0.9020
+    train Loss: 0.1529 Acc: 0.7418
+    val Loss: 0.0667 Acc: 0.8758
 
     Epoch 5/24
     ----------
-    train Loss: 0.1659 Acc: 0.7664
-    val Loss: 0.0700 Acc: 0.8889
+    train Loss: 0.1610 Acc: 0.7623
+    val Loss: 0.0673 Acc: 0.8889
 
     Epoch 6/24
     ----------
-    train Loss: 0.1418 Acc: 0.8033
-    val Loss: 0.1326 Acc: 0.8235
+    train Loss: 0.0947 Acc: 0.8402
+    val Loss: 0.0745 Acc: 0.8889
 
     Epoch 7/24
     ----------
-    LR is set to 0.0001
-    train Loss: 0.1530 Acc: 0.7869
-    val Loss: 0.0419 Acc: 0.9346
+    train Loss: 0.0934 Acc: 0.8279
+    val Loss: 0.0683 Acc: 0.9085
 
     Epoch 8/24
     ----------
-    train Loss: 0.0961 Acc: 0.8566
-    val Loss: 0.0451 Acc: 0.9346
+    train Loss: 0.0902 Acc: 0.8238
+    val Loss: 0.0984 Acc: 0.9150
 
     Epoch 9/24
     ----------
-    train Loss: 0.0797 Acc: 0.8689
-    val Loss: 0.0442 Acc: 0.9412
+    train Loss: 0.0713 Acc: 0.8689
+    val Loss: 0.0612 Acc: 0.9216
 
     Epoch 10/24
     ----------
-    train Loss: 0.0872 Acc: 0.8689
-    val Loss: 0.0436 Acc: 0.9346
+    train Loss: 0.0651 Acc: 0.8852
+    val Loss: 0.0642 Acc: 0.9216
 
     Epoch 11/24
     ----------
-    train Loss: 0.0883 Acc: 0.8607
-    val Loss: 0.0444 Acc: 0.9477
+    train Loss: 0.0576 Acc: 0.9098
+    val Loss: 0.0614 Acc: 0.9216
 
     Epoch 12/24
     ----------
-    train Loss: 0.0572 Acc: 0.9098
-    val Loss: 0.0462 Acc: 0.9281
+    train Loss: 0.0751 Acc: 0.8607
+    val Loss: 0.0649 Acc: 0.8954
 
     Epoch 13/24
     ----------
-    train Loss: 0.0783 Acc: 0.8607
-    val Loss: 0.0629 Acc: 0.9020
+    train Loss: 0.0697 Acc: 0.8852
+    val Loss: 0.0684 Acc: 0.9150
 
     Epoch 14/24
     ----------
-    LR is set to 1.0000000000000003e-05
-    train Loss: 0.0586 Acc: 0.8975
-    val Loss: 0.0482 Acc: 0.9412
+    train Loss: 0.0791 Acc: 0.8607
+    val Loss: 0.0632 Acc: 0.9085
 
     Epoch 15/24
     ----------
-    train Loss: 0.0478 Acc: 0.9180
-    val Loss: 0.0448 Acc: 0.9477
+    train Loss: 0.0879 Acc: 0.8566
+    val Loss: 0.0675 Acc: 0.9020
 
     Epoch 16/24
     ----------
-    train Loss: 0.0707 Acc: 0.8484
-    val Loss: 0.0459 Acc: 0.9346
+    train Loss: 0.0845 Acc: 0.8238
+    val Loss: 0.0657 Acc: 0.9020
 
     Epoch 17/24
     ----------
-    train Loss: 0.0660 Acc: 0.8934
-    val Loss: 0.0443 Acc: 0.9346
+    train Loss: 0.0652 Acc: 0.9016
+    val Loss: 0.0660 Acc: 0.8954
 
     Epoch 18/24
     ----------
-    train Loss: 0.0646 Acc: 0.9098
-    val Loss: 0.0575 Acc: 0.9281
+    train Loss: 0.0669 Acc: 0.8975
+    val Loss: 0.0626 Acc: 0.9150
 
     Epoch 19/24
     ----------
-    train Loss: 0.0414 Acc: 0.9467
-    val Loss: 0.0527 Acc: 0.9346
+    train Loss: 0.0588 Acc: 0.9057
+    val Loss: 0.0663 Acc: 0.9150
 
     Epoch 20/24
     ----------
-    train Loss: 0.0762 Acc: 0.8607
-    val Loss: 0.0471 Acc: 0.9281
+    train Loss: 0.0580 Acc: 0.9098
+    val Loss: 0.0644 Acc: 0.9150
 
     Epoch 21/24
     ----------
-    LR is set to 1.0000000000000002e-06
-    train Loss: 0.0639 Acc: 0.8893
-    val Loss: 0.0518 Acc: 0.9346
+    train Loss: 0.0799 Acc: 0.8443
+    val Loss: 0.0599 Acc: 0.9020
 
     Epoch 22/24
     ----------
-    train Loss: 0.0847 Acc: 0.8525
-    val Loss: 0.0616 Acc: 0.9412
+    train Loss: 0.0793 Acc: 0.8402
+    val Loss: 0.0904 Acc: 0.9020
 
     Epoch 23/24
     ----------
-    train Loss: 0.0519 Acc: 0.9098
-    val Loss: 0.0527 Acc: 0.9412
+    train Loss: 0.0748 Acc: 0.8607
+    val Loss: 0.0688 Acc: 0.8824
 
     Epoch 24/24
     ----------
-    train Loss: 0.0918 Acc: 0.8443
-    val Loss: 0.0450 Acc: 0.9281
+    train Loss: 0.0686 Acc: 0.8689
+    val Loss: 0.0606 Acc: 0.9281
 
-    Training complete in 1m 54s
-    Best val Acc: 0.947712
+    Training complete in 0m 49s
+    Best val Acc: 0.928105
 
 
 
@@ -559,6 +533,9 @@ You can read more about this in the documentation
     # opoosed to before.
     optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
+    # Decay LR by a factor of 0.1 every 7 epochs
+    exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
+
 
 
 
@@ -592,135 +569,131 @@ network. However, forward does need to be computed.
 
     Epoch 0/24
     ----------
-    LR is set to 0.001
-    train Loss: 0.1626 Acc: 0.6844
-    val Loss: 0.2722 Acc: 0.5556
+    train Loss: 0.1490 Acc: 0.7131
+    val Loss: 0.0566 Acc: 0.9346
 
     Epoch 1/24
     ----------
-    train Loss: 0.1334 Acc: 0.7541
-    val Loss: 0.0481 Acc: 0.9346
+    train Loss: 0.1456 Acc: 0.7500
+    val Loss: 0.1370 Acc: 0.7255
 
     Epoch 2/24
     ----------
-    train Loss: 0.0892 Acc: 0.8361
-    val Loss: 0.0439 Acc: 0.9608
+    train Loss: 0.1836 Acc: 0.6762
+    val Loss: 0.0497 Acc: 0.9346
 
     Epoch 3/24
     ----------
-    train Loss: 0.0968 Acc: 0.8279
-    val Loss: 0.0478 Acc: 0.9477
+    train Loss: 0.1030 Acc: 0.8156
+    val Loss: 0.0614 Acc: 0.9346
 
     Epoch 4/24
     ----------
-    train Loss: 0.1016 Acc: 0.8238
-    val Loss: 0.0492 Acc: 0.9412
+    train Loss: 0.1124 Acc: 0.8402
+    val Loss: 0.0622 Acc: 0.9150
 
     Epoch 5/24
     ----------
-    train Loss: 0.1201 Acc: 0.7459
-    val Loss: 0.0876 Acc: 0.8627
+    train Loss: 0.0866 Acc: 0.8279
+    val Loss: 0.0519 Acc: 0.9477
 
     Epoch 6/24
     ----------
-    train Loss: 0.1115 Acc: 0.8115
-    val Loss: 0.0393 Acc: 0.9608
+    train Loss: 0.1040 Acc: 0.8279
+    val Loss: 0.0600 Acc: 0.8954
 
     Epoch 7/24
     ----------
-    LR is set to 0.0001
-    train Loss: 0.0991 Acc: 0.8033
-    val Loss: 0.0420 Acc: 0.9542
+    train Loss: 0.0780 Acc: 0.8525
+    val Loss: 0.0603 Acc: 0.9020
 
     Epoch 8/24
     ----------
-    train Loss: 0.0883 Acc: 0.8402
-    val Loss: 0.0549 Acc: 0.9412
+    train Loss: 0.0892 Acc: 0.8402
+    val Loss: 0.0562 Acc: 0.9150
 
     Epoch 9/24
     ----------
-    train Loss: 0.0903 Acc: 0.8361
-    val Loss: 0.0412 Acc: 0.9542
+    train Loss: 0.0884 Acc: 0.8443
+    val Loss: 0.0516 Acc: 0.9281
 
     Epoch 10/24
     ----------
-    train Loss: 0.0912 Acc: 0.8443
-    val Loss: 0.0421 Acc: 0.9477
+    train Loss: 0.0835 Acc: 0.8689
+    val Loss: 0.0524 Acc: 0.9216
 
     Epoch 11/24
     ----------
-    train Loss: 0.1074 Acc: 0.7869
-    val Loss: 0.0418 Acc: 0.9542
+    train Loss: 0.0913 Acc: 0.8484
+    val Loss: 0.0545 Acc: 0.9150
 
     Epoch 12/24
     ----------
-    train Loss: 0.0930 Acc: 0.8238
-    val Loss: 0.0395 Acc: 0.9542
+    train Loss: 0.0907 Acc: 0.8279
+    val Loss: 0.0647 Acc: 0.9216
 
     Epoch 13/24
     ----------
-    train Loss: 0.0707 Acc: 0.8811
-    val Loss: 0.0495 Acc: 0.9542
+    train Loss: 0.0738 Acc: 0.8975
+    val Loss: 0.0569 Acc: 0.9150
 
     Epoch 14/24
     ----------
-    LR is set to 1.0000000000000003e-05
-    train Loss: 0.1066 Acc: 0.7951
-    val Loss: 0.0534 Acc: 0.9477
+    train Loss: 0.0874 Acc: 0.8730
+    val Loss: 0.0495 Acc: 0.9216
 
     Epoch 15/24
     ----------
-    train Loss: 0.0730 Acc: 0.8811
-    val Loss: 0.0403 Acc: 0.9477
+    train Loss: 0.0930 Acc: 0.8361
+    val Loss: 0.0609 Acc: 0.9216
 
     Epoch 16/24
     ----------
-    train Loss: 0.0736 Acc: 0.8648
-    val Loss: 0.0414 Acc: 0.9542
+    train Loss: 0.0867 Acc: 0.8525
+    val Loss: 0.0634 Acc: 0.9085
 
     Epoch 17/24
     ----------
-    train Loss: 0.0815 Acc: 0.8484
-    val Loss: 0.0411 Acc: 0.9608
+    train Loss: 0.0875 Acc: 0.8443
+    val Loss: 0.0503 Acc: 0.9216
 
     Epoch 18/24
     ----------
-    train Loss: 0.0940 Acc: 0.8238
-    val Loss: 0.0358 Acc: 0.9542
+    train Loss: 0.0957 Acc: 0.8156
+    val Loss: 0.0527 Acc: 0.9346
 
     Epoch 19/24
     ----------
-    train Loss: 0.0709 Acc: 0.8730
-    val Loss: 0.0415 Acc: 0.9608
+    train Loss: 0.1084 Acc: 0.7869
+    val Loss: 0.0572 Acc: 0.9150
 
     Epoch 20/24
     ----------
-    train Loss: 0.0867 Acc: 0.8320
-    val Loss: 0.0383 Acc: 0.9608
+    train Loss: 0.0678 Acc: 0.8893
+    val Loss: 0.0504 Acc: 0.9216
 
     Epoch 21/24
     ----------
-    LR is set to 1.0000000000000002e-06
-    train Loss: 0.0875 Acc: 0.8525
-    val Loss: 0.0397 Acc: 0.9542
+    train Loss: 0.0933 Acc: 0.8566
+    val Loss: 0.0609 Acc: 0.9281
 
     Epoch 22/24
     ----------
-    train Loss: 0.0771 Acc: 0.8730
-    val Loss: 0.0377 Acc: 0.9542
+    train Loss: 0.0883 Acc: 0.8197
+    val Loss: 0.0501 Acc: 0.9281
 
     Epoch 23/24
     ----------
-    train Loss: 0.0990 Acc: 0.8074
-    val Loss: 0.0406 Acc: 0.9608
+    train Loss: 0.0756 Acc: 0.8770
+    val Loss: 0.0494 Acc: 0.9412
 
     Epoch 24/24
     ----------
-    train Loss: 0.0676 Acc: 0.8893
-    val Loss: 0.0396 Acc: 0.9608
+    train Loss: 0.0823 Acc: 0.8484
+    val Loss: 0.0547 Acc: 0.9281
 
-    Training complete in 0m 41s
-    Best val Acc: 0.960784
+    Training complete in 0m 24s
+    Best val Acc: 0.947712
 
 
 
@@ -740,7 +713,7 @@ network. However, forward does need to be computed.
 
 
 
-**Total running time of the script:** ( 2 minutes  41.944 seconds)
+**Total running time of the script:** ( 1 minutes  17.484 seconds)
 
 
 

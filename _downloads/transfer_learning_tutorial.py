@@ -38,13 +38,13 @@ from __future__ import print_function, division
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import lr_scheduler
 from torch.autograd import Variable
 import numpy as np
 import torchvision
 from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
-import copy
 import os
 
 plt.ion()   # interactive mode
@@ -64,13 +64,13 @@ plt.ion()   # interactive mode
 # well.
 #
 # This dataset is a very small subset of imagenet.
-# 
+#
 # .. Note ::
 #    Download the data from
 #    `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
 #    and extract it to the current directory.
 
-# Data augmentation and normalization for training 
+# Data augmentation and normalization for training
 # Just normalization for validation
 data_transforms = {
     'train': transforms.Compose([
@@ -88,16 +88,16 @@ data_transforms = {
 }
 
 data_dir = 'hymenoptera_data'
-dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
-         for x in ['train', 'val']}
-dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=4,
-                                               shuffle=True, num_workers=4)
-                for x in ['train', 'val']}
-dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
-dset_classes = dsets['train'].classes
+image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+                                          data_transforms[x])
+                  for x in ['train', 'val']}
+dataloders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+                                             shuffle=True, num_workers=4)
+              for x in ['train', 'val']}
+dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+class_names = image_datasets['train'].classes
 
 use_gpu = torch.cuda.is_available()
-
 
 ######################################################################
 # Visualize a few images
@@ -118,12 +118,12 @@ def imshow(inp, title=None):
 
 
 # Get a batch of training data
-inputs, classes = next(iter(dset_loaders['train']))
+inputs, classes = next(iter(dataloders['train']))
 
 # Make a grid from batch
 out = torchvision.utils.make_grid(inputs)
 
-imshow(out, title=[dset_classes[x] for x in classes])
+imshow(out, title=[class_names[x] for x in classes])
 
 
 ######################################################################
@@ -134,16 +134,16 @@ imshow(out, title=[dset_classes[x] for x in classes])
 # illustrate:
 #
 # -  Scheduling the learning rate
-# -  Saving (deep copying) the best model
+# -  Saving the best model
 #
-# In the following, parameter ``lr_scheduler(optimizer, epoch)``
-# is a function  which modifies ``optimizer`` so that the learning
-# rate is changed according to desired schedule.
+# In the following, parameter ``scheduler`` is an LR scheduler object from
+# ``torch.optim.lr_scheduler``.
 
-def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
+
+def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
-    best_model = model
+    best_model_wts = model.state_dict()
     best_acc = 0.0
 
     for epoch in range(num_epochs):
@@ -153,7 +153,7 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
-                optimizer = lr_scheduler(optimizer, epoch)
+                scheduler.step()
                 model.train(True)  # Set model to training mode
             else:
                 model.train(False)  # Set model to evaluate mode
@@ -162,14 +162,14 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
             running_corrects = 0
 
             # Iterate over data.
-            for data in dset_loaders[phase]:
+            for data in dataloders[phase]:
                 # get the inputs
                 inputs, labels = data
 
                 # wrap them in Variable
                 if use_gpu:
-                    inputs, labels = Variable(inputs.cuda()), \
-                        Variable(labels.cuda())
+                    inputs = Variable(inputs.cuda())
+                    labels = Variable(labels.cuda())
                 else:
                     inputs, labels = Variable(inputs), Variable(labels)
 
@@ -190,8 +190,8 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
                 running_loss += loss.data[0]
                 running_corrects += torch.sum(preds == labels.data)
 
-            epoch_loss = running_loss / dset_sizes[phase]
-            epoch_acc = running_corrects / dset_sizes[phase]
+            epoch_loss = running_loss / dataset_sizes[phase]
+            epoch_acc = running_corrects / dataset_sizes[phase]
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
@@ -199,7 +199,7 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_model = copy.deepcopy(model)
+                best_model_wts = model.state_dict()
 
         print()
 
@@ -207,25 +207,10 @@ def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=25):
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
     print('Best val Acc: {:4f}'.format(best_acc))
-    return best_model
 
-######################################################################
-# Learning rate scheduler
-# ^^^^^^^^^^^^^^^^^^^^^^^
-# Let's create our learning rate scheduler. We will exponentially
-# decrease the learning rate once every few epochs.
-
-def exp_lr_scheduler(optimizer, epoch, init_lr=0.001, lr_decay_epoch=7):
-    """Decay learning rate by a factor of 0.1 every lr_decay_epoch epochs."""
-    lr = init_lr * (0.1**(epoch // lr_decay_epoch))
-
-    if epoch % lr_decay_epoch == 0:
-        print('LR is set to {}'.format(lr))
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
-
-    return optimizer
+    # load best model weights
+    model.load_state_dict(best_model_wts)
+    return model
 
 
 ######################################################################
@@ -239,7 +224,7 @@ def visualize_model(model, num_images=6):
     images_so_far = 0
     fig = plt.figure()
 
-    for i, data in enumerate(dset_loaders['val']):
+    for i, data in enumerate(dataloders['val']):
         inputs, labels = data
         if use_gpu:
             inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
@@ -253,7 +238,7 @@ def visualize_model(model, num_images=6):
             images_so_far += 1
             ax = plt.subplot(num_images//2, 2, images_so_far)
             ax.axis('off')
-            ax.set_title('predicted: {}'.format(dset_classes[preds[j]]))
+            ax.set_title('predicted: {}'.format(class_names[preds[j]]))
             imshow(inputs.cpu().data[j])
 
             if images_so_far == num_images:
@@ -277,6 +262,9 @@ criterion = nn.CrossEntropyLoss()
 
 # Observe that all parameters are being optimized
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 ######################################################################
 # Train and evaluate
@@ -323,6 +311,9 @@ criterion = nn.CrossEntropyLoss()
 # Observe that only parameters of final layer are being optimized as
 # opoosed to before.
 optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
 
 
 ######################################################################
