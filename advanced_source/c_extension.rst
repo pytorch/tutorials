@@ -27,7 +27,7 @@ ffi utils will make sure a compiler can find them during the build.
         if (!THFloatTensor_isSameSizeAs(input1, input2))
             return 0;
         THFloatTensor_resizeAs(output, input1);
-        THFloatTensor_add(output, input1, input2);
+        THFloatTensor_cadd(output, input1, 1.0, input2);
         return 1;
     }
 
