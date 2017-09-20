@@ -109,15 +109,15 @@ import your extension just like a regular python file.
 .. code:: python
 
     # main.py
+    import torch
     import torch.nn as nn
     from torch.autograd import Variable
     from modules.add import MyAddModule
 
     class MyNetwork(nn.Module):
         def __init__(self):
-            super(MyNetwork, self).__init__(
-                add=MyAddModule(),
-            )
+            super(MyNetwork, self).__init__()
+            self.add = MyAddModule()
 
         def forward(self, input1, input2):
             return self.add(input1, input2)
