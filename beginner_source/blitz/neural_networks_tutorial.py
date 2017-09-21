@@ -133,7 +133,7 @@ out.backward(torch.randn(1, 10))
 #   -  ``autograd.Function`` - Implements *forward and backward definitions
 #      of an autograd operation*. Every ``Variable`` operation, creates at
 #      least a single ``Function`` node, that connects to functions that
-#      created a ``Variable`` and *encodes its history**.
+#      created a ``Variable`` and *encodes its history*.
 #
 # **At this point, we covered:**
 #   -  Defining a neural network
