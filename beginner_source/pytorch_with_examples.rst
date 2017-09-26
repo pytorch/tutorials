@@ -243,7 +243,7 @@ chooses a random number between 1 and 4 and uses that many hidden
 layers, reusing the same weights multiple times to compute the innermost
 hidden layers.
 
-For this model can use normal Python flow control to implement the loop,
+For this model we can use normal Python flow control to implement the loop,
 and we can implement weight sharing among the innermost layers by simply
 reusing the same Module multiple times when defining the forward pass.
 
