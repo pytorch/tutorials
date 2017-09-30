@@ -120,7 +120,7 @@ print(F.relu(data))
 # then dividing by the normalization constant.
 #
 
-# Softmax is also in torch.functional
+# Softmax is also in torch.nn.functional
 data = autograd.Variable(torch.randn(5))
 print(data)
 print(F.softmax(data))
