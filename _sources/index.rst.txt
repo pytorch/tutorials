@@ -94,6 +94,17 @@ Reinforcement Learning
 
     <div style='clear:both'></div>
 
+Distributed Learning
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. customgalleryitem::
+   :tooltip: Writing Distributed Applications with PyTorch.
+   :description: :doc:`/intermediate/dist_tuto`
+   :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 .. toctree::
    :maxdepth: 2
@@ -105,6 +116,8 @@ Reinforcement Learning
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    intermediate/reinforcement_q_learning
+   intermediate/dist_tuto
+
 
 Advanced Tutorials
 ------------------
