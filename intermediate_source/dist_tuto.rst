@@ -138,12 +138,15 @@ return a ``DistributedRequest`` object upon which we can choose to
             # Receive tensor from process 0
             req = dist.irecv(tensor=tensor, src=0)
             print('Rank 1 started receiving')
-            print('Rank 1 has data ', tensor[0])
         req.wait()
         print('Rank ', rank, ' has data ', tensor[0])
 
-Running the above function might result in process 1 still having 0.0
-while having already started receiving. However, after ``req.wait()``
+When using immediates we have to be careful about with our usage of the sent and received tensors. Since we do not know when the data will be communicated to the other process, we should not modify the sent tensor nor access the received tensor before ``req.wait()`` has completed. In other words, 
+
+-  writing to ``tensor`` after ``dist.isend()`` will result in undefined behaviour.
+-  reading from ``tensor`` after ``dist.irecv()`` will result in undefined behaviour. 
+
+However, after ``req.wait()``
 has been executed we are guaranteed that the communication took place,
 and that the value stored in ``tensor[0]`` is 1.0.
 
