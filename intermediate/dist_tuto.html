@@ -605,13 +605,19 @@ return a <code class="docutils literal"><span class="pre">DistributedRequest</sp
         <span class="c1"># Receive tensor from process 0</span>
         <span class="n">req</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">irecv</span><span class="p">(</span><span class="n">tensor</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">src</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rank 1 started receiving&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rank 1 has data &#39;</span><span class="p">,</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">req</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Rank &#39;</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="s1">&#39; has data &#39;</span><span class="p">,</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Running the above function might result in process 1 still having 0.0
-while having already started receiving. However, after <code class="docutils literal"><span class="pre">req.wait()</span></code>
+<p>When using immediates we have to be careful about with our usage of the sent and received tensors.
+Since we do not know when the data will be communicated to the other process,
+we should not modify the sent tensor nor access the received tensor before <code class="docutils literal"><span class="pre">req.wait()</span></code> has completed.
+In other words,</p>
+<ul class="simple">
+<li>writing to <code class="docutils literal"><span class="pre">tensor</span></code> after <code class="docutils literal"><span class="pre">dist.isend()</span></code> will result in undefined behaviour.</li>
+<li>reading from <code class="docutils literal"><span class="pre">tensor</span></code> after <code class="docutils literal"><span class="pre">dist.irecv()</span></code> will result in undefined behaviour.</li>
+</ul>
+<p>However, after <code class="docutils literal"><span class="pre">req.wait()</span></code>
 has been executed we are guaranteed that the communication took place,
 and that the value stored in <code class="docutils literal"><span class="pre">tensor[0]</span></code> is 1.0.</p>
 <p>Point-to-point communication is useful when we want a fine-grained
