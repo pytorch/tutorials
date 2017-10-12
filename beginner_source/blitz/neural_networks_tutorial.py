@@ -92,6 +92,8 @@ print(params[0].size())  # conv1's .weight
 
 ########################################################################
 # The input to the forward is an ``autograd.Variable``, and so is the output.
+# Note: Expected input size to this net(LeNet) is 32x32. To use this net on
+# MNIST dataset,please resize the images from the dataset to 32x32.
 
 input = Variable(torch.randn(1, 1, 32, 32))
 out = net(input)
