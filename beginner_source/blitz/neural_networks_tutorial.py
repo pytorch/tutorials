@@ -190,7 +190,7 @@ print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 ########################################################################
 # Backprop
 # --------
-# To backpropogate the error all we have to do is to ``loss.backward()``.
+# To backpropagate the error all we have to do is to ``loss.backward()``.
 # You need to clear the existing gradients though, else gradients will be
 # accumulated to existing gradients
 #
