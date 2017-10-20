@@ -80,7 +80,7 @@ for i in inputs:
 # (compare the last slice of "out" with "hidden" below, they are the same)
 # The reason for this is that:
 # "out" will give you access to all hidden states in the sequence
-# "hidden" will allow you to continue the sequence and backpropogate,
+# "hidden" will allow you to continue the sequence and backpropagate,
 # by passing it as an argument  to the lstm at a later time
 # Add the extra 2nd dimension
 inputs = torch.cat(inputs).view(len(inputs), 1, -1)
