@@ -291,8 +291,8 @@ class ContentLoss(nn.Module):
         self.output = input
         return self.output
 
-    def backward(self, retain_variables=True):
-        self.loss.backward(retain_variables=retain_variables)
+    def backward(self, retain_graph=True):
+        self.loss.backward(retain_graph=retain_graph)
         return self.loss
 
 
@@ -363,8 +363,8 @@ class StyleLoss(nn.Module):
         self.loss = self.criterion(self.G, self.target)
         return self.output
 
-    def backward(self, retain_variables=True):
-        self.loss.backward(retain_variables=retain_variables)
+    def backward(self, retain_graph=True):
+        self.loss.backward(retain_graph=retain_graph)
         return self.loss
 
 
