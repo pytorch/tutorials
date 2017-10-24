@@ -270,7 +270,7 @@ print(new_var_z.grad_fn)
 # autograd.Variables (note this is more general than Pytorch. There is an
 # equivalent object in every major deep learning toolkit):
 #
-# **If you want the error from your loss function to backpropogate to a
+# **If you want the error from your loss function to backpropagate to a
 # component of your network, you MUST NOT break the Variable chain from
 # that component to your loss Variable. If you do, the loss will have no
 # idea your component exists, and its parameters can't be updated.**
