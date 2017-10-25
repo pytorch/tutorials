@@ -53,7 +53,7 @@ criterion = torch.nn.MSELoss(size_average=False)
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
 for t in range(500):
     # Forward pass: Compute predicted y by passing x to the model
-    y_pred = model(x)
+    y_pred = model.forward(x)
 
     # Compute and print loss
     loss = criterion(y_pred, y)
