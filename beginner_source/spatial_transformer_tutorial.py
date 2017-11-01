@@ -12,20 +12,19 @@ networks at `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
 
 Spatial transformer networks are a generalisation of differentiable
 attention to any spatial transformation. Spatial transformer networks (STN for short)
-allows a neural network to learn how to do geometric transformations
-to the input image.
+allows a neural network to learn how to do spatial transformations
+to the input image in order to enhance the geometric invariance of the model.
 For example it can crop a region of interest, scale and correct
-the orientation of an image. It can be a useful mechanism because CNN are not 
-invariant to rotation and scale and more generally : affine transformation. 
-One of the best things about them is that we can plug an STN into any 
-existing network with very little effort. We have used them for classification 
-tasks as well as in auto-encoders. 
+the orientation of an image. It can be a useful mechanism because CNN are not
+invariant to rotation and scale and more generally : affine transformations.
+
+One of the best things about STN is the the ability to simply plug it into any
+existing CNN with very little modifications.
 """
 # License: BSD
 # Author: Ghassen Hamrouni
 
 from __future__ import print_function
-import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -48,14 +47,14 @@ plt.ion()   # interactive mode
 
 use_cuda = torch.cuda.is_available()
 
-
+# Training dataset
 train_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data', train=True, download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),
                        transforms.Normalize((0.1307,), (0.3081,))
                    ])), batch_size=64, shuffle=True, num_workers=4)
-
+# Test dataset
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data', train=False, transform=transforms.Compose([
         transforms.ToTensor(),
@@ -91,7 +90,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 10)
 
-        # Spatial transformer network
+        # Spatial transformer localization-network
         self.localization = nn.Sequential(
             nn.Conv2d(1, 8, kernel_size=7),
             nn.MaxPool2d(2, stride=2),
@@ -101,16 +100,18 @@ class Net(nn.Module):
             nn.ReLU(True)
         )
 
-        # Regress the 3 * 2 affine matrix
+        # Regressor for the 3 * 2 affine matrix
         self.fc_loc = nn.Sequential(
             nn.Linear(10 * 3 * 3, 32),
             nn.ReLU(True),
             nn.Linear(32, 3 * 2)
         )
 
+        # Initialize the weights/bias with identity transformation
         self.fc_loc[2].weight.data.fill_(0)
         self.fc_loc[2].bias.data = torch.FloatTensor([1, 0, 0, 0, 1, 0])
 
+    # Spatial transformer network forward function
     def stn(self, x):
         xs = self.localization(x)
         xs = xs.view(-1, 10 * 3 * 3)
@@ -123,8 +124,10 @@ class Net(nn.Module):
         return x
 
     def forward(self, x):
+        # transforn the input
         x = self.stn(x)
 
+        # Perform the usual froward pass
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         x = x.view(-1, 320)
@@ -194,7 +197,8 @@ def test():
 # Visualizing the STN results
 # ---------------------------
 #
-# Now, we will inspect the learned visual attention mechanism.
+# Now, we will inspect the results of our learned visual attention
+# mechanism.
 #
 # We define a small helper function in order to visualize the
 # transfromations while training.
@@ -209,8 +213,8 @@ def convert_image_np(inp):
     return inp
 
 # We want to visualize the output of the spatial transformers layer
-# after the training, we visualize a batch of input images and the coresponding 
-# transformed batch.
+# after the training, we visualize a batch of input images and 
+# the coresponding transformed batch using STN.
 
 def visualize_stn():
     # Get a batch of training data
@@ -220,22 +224,26 @@ def visualize_stn():
     if use_cuda:
         data = data.cuda()
 
-    inGrid = convert_image_np(torchvision.utils.make_grid(data.cpu().data))
-    outGrid = convert_image_np(torchvision.utils.make_grid(model.stn(data).cpu().data))
+    input_tensor = data.cpu().data    
+    transformed_input_tensor = model.stn(data).cpu().data
 
+    in_grid = convert_image_np(torchvision.utils.make_grid(input_tensor))
+    out_grid = convert_image_np(torchvision.utils.make_grid(transformed_input_tensor))
+
+    # Plot the results side-by-side
     f, axarr = plt.subplots(1, 2)
-    axarr[0].imshow(inGrid)
+    axarr[0].imshow(in_grid)
     axarr[0].set_title('Dataset Images')
 
-    axarr[1].imshow(outGrid)
+    axarr[1].imshow(out_grid)
     axarr[1].set_title('Transformed Images')
-
 
 
 for epoch in range(1, 60 + 1):
     train(epoch)
     test()
 
+# Visualize the STN transformation on some input batch
 visualize_stn()
 
 plt.ioff()
