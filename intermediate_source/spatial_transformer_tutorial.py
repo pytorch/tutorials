@@ -18,7 +18,7 @@ For example it can crop a region of interest, scale and correct
 the orientation of an image. It can be a useful mechanism because CNN are not
 invariant to rotation and scale and more generally : affine transformations.
 
-One of the best things about STN is the the ability to simply plug it into any
+One of the best things about STN is the ability to simply plug it into any
 existing CNN with very little modifications.
 """
 # License: BSD
@@ -49,14 +49,14 @@ use_cuda = torch.cuda.is_available()
 
 # Training dataset
 train_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('../data', train=True, download=True,
+    datasets.MNIST(root='.', train=True, download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),
                        transforms.Normalize((0.1307,), (0.3081,))
                    ])), batch_size=64, shuffle=True, num_workers=4)
 # Test dataset
 test_loader = torch.utils.data.DataLoader(
-    datasets.MNIST('../data', train=False, transform=transforms.Compose([
+    datasets.MNIST(root='.', train=False, transform=transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])), batch_size=64, shuffle=True, num_workers=4)

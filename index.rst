@@ -39,8 +39,6 @@ Beginner Tutorials
 
 .. galleryitem:: beginner/transfer_learning_tutorial.py
 
-.. galleryitem:: beginner/spatial_transformer_tutorial.py
-
 .. galleryitem:: beginner/data_loading_tutorial.py
 
 .. customgalleryitem::
@@ -69,6 +67,8 @@ Beginner Tutorials
 
 Intermediate Tutorials
 ----------------------
+
+.. galleryitem:: intermediate/spatial_transformer_tutorial.py
 
 RNNs for NLP
 ^^^^^^^^^^^^
@@ -115,6 +115,7 @@ Distributed Learning
    :hidden:
    :caption: Intermediate Tutorials
 
+   intermediate/spatial_transformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
