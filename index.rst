@@ -61,7 +61,6 @@ Beginner Tutorials
    beginner/former_torchies_tutorial
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
-   beginner/spatial_transformer_tutorial
    beginner/data_loading_tutorial
    beginner/deep_learning_nlp_tutorial
 
