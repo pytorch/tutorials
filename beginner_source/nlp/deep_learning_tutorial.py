@@ -172,7 +172,7 @@ print(F.log_softmax(data))  # theres also log_softmax
 # attempting to do something more than just this vanilla gradient update.
 # Many attempt to vary the learning rate based on what is happening at
 # train time. You don't need to worry about what specifically these
-# algorithms are doing unless you are really interested. Torch provies
+# algorithms are doing unless you are really interested. Torch provides
 # many in the torch.optim package, and they are all completely
 # transparent. Using the simplest gradient update is the same as the more
 # complicated algorithms. Trying different update algorithms and different
