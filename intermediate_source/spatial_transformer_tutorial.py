@@ -6,11 +6,12 @@ Spatial Transformer Networks Tutorial
 
 .. figure:: /_static/img/stn/FSeq.png
 
-In this tutorial, you will learn how to augument your network using
-a visual attention mechanism. You can read more about the spatial transformer 
-networks at `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
+In this tutorial, you will learn how to augment your network using
+a visual attention mechanism called spatial transformer 
+networks. You can read more about the spatial transformer 
+networks in `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
 
-Spatial transformer networks are a generalisation of differentiable
+Spatial transformer networks are a generalization of differentiable
 attention to any spatial transformation. Spatial transformer networks (STN for short)
 allows a neural network to learn how to do spatial transformations
 to the input image in order to enhance the geometric invariance of the model.
@@ -146,7 +147,7 @@ if use_cuda:
 # ------------------
 #
 # Now, let's use the SGD algorithm to train the model. The network is 
-# learning the classifcation task in a supervised way. In the same time 
+# learning the classification task in a supervised way. In the same time 
 # the model is learning STN automatically in an end-to-end fashion.
 
 optimizer = optim.SGD(model.parameters(), lr=0.01)
@@ -201,7 +202,7 @@ def test():
 # mechanism.
 #
 # We define a small helper function in order to visualize the
-# transfromations while training.
+# transformations while training.
 
 def convert_image_np(inp):
     """Convert a Tensor to numpy image."""
@@ -214,7 +215,7 @@ def convert_image_np(inp):
 
 # We want to visualize the output of the spatial transformers layer
 # after the training, we visualize a batch of input images and 
-# the coresponding transformed batch using STN.
+# the corresponding transformed batch using STN.
 
 def visualize_stn():
     # Get a batch of training data
