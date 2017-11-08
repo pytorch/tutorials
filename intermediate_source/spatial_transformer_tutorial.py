@@ -71,19 +71,20 @@ test_loader = torch.utils.data.DataLoader(
 # Spatial transformer networks boils down to three main components :
 #
 # -  The localization network is a regular CNN which regresses the
-# transformation parameters. The transformation is never learned
-# explicitly from this dataset, instead the network learns automatically
-# the spatial transformations that enhances the global accuracy.
+#    transformation parameters. The transformation is never learned
+#    explicitly from this dataset, instead the network learns automatically
+#    the spatial transformations that enhances the global accuracy.
 # -  The grid generator generates a grid of coordinates in the input
-# image corresponding to each pixel from the output image.
+#    image corresponding to each pixel from the output image.
 # -  The sampler uses the parameters of the transformation and apply
-# it to the input image.
+#    it to the input image.
 #
 # .. figure:: /_static/img/stn/stn-arch.png
 #
 # .. Note::
 #    We need the latest version of PyTorch that contains
 #    affine_grid and grid_sample modules.
+#
 
 
 class Net(nn.Module):
