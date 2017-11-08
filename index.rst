@@ -67,6 +67,15 @@ Beginner Tutorials
 Intermediate Tutorials
 ----------------------
 
+Visual Attention for CNN
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. galleryitem:: intermediate/spatial_transformer_tutorial.py
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 RNNs for NLP
 ^^^^^^^^^^^^
 
@@ -112,6 +121,7 @@ Distributed Learning
    :hidden:
    :caption: Intermediate Tutorials
 
+   intermediate/spatial_transformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
