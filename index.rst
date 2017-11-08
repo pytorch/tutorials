@@ -67,49 +67,25 @@ Beginner Tutorials
 Intermediate Tutorials
 ----------------------
 
-Visual Attention for CNN
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. galleryitem:: intermediate/spatial_transformer_tutorial.py
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-RNNs for NLP
-^^^^^^^^^^^^
-
-Applying recurrent neural networks to natural language tasks, from
-classification to generation.
-
-
 .. galleryitem:: intermediate/char_rnn_classification_tutorial.py
+
 .. galleryitem:: intermediate/char_rnn_generation_tutorial.py
   :figure: _static/img/char_rnn_generation.png
+
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
 
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-Reinforcement Learning
-^^^^^^^^^^^^^^^^^^^^^^
-
 .. galleryitem:: intermediate/reinforcement_q_learning.py
     :figure: _static/img/cartpole.gif
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-Distributed Learning
-^^^^^^^^^^^^^^^^^^^^^^
 
 .. customgalleryitem::
    :tooltip: Writing Distributed Applications with PyTorch.
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
+
+
+.. galleryitem:: intermediate/spatial_transformer_tutorial.py
+
 
 .. raw:: html
 
@@ -121,12 +97,12 @@ Distributed Learning
    :hidden:
    :caption: Intermediate Tutorials
 
-   intermediate/spatial_transformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    intermediate/reinforcement_q_learning
    intermediate/dist_tuto
+   intermediate/spatial_transformer_tutorial
 
 
 Advanced Tutorials
