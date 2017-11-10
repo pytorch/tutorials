@@ -24,6 +24,7 @@ Goal of this tutorial:
    /beginner/blitz/autograd_tutorial
    /beginner/blitz/neural_networks_tutorial
    /beginner/blitz/cifar10_tutorial
+   /beginner/blitz/data_parallel_tutorial
 
 .. galleryitem:: /beginner/blitz/tensor_tutorial.py
     :figure: /_static/img/tensor_illustration_flat.png
@@ -36,6 +37,9 @@ Goal of this tutorial:
 
 .. galleryitem:: /beginner/blitz/cifar10_tutorial.py
     :figure: /_static/img/cifar10.png
+
+.. galleryitem:: /beginner/blitz/data_parallel_tutorial.py
+    :figure: /_static/img/data_parallel.png
 
 .. raw:: html
 
