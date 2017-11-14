@@ -43,7 +43,7 @@
         <link rel="search" title="Search" href="../../search.html"/>
     <link rel="top" title="PyTorch Tutorials 0.2.0_4 documentation" href="../../index.html"/>
         <link rel="up" title="Deep Learning with PyTorch: A 60 Minute Blitz" href="../deep_learning_60min_blitz.html"/>
-        <link rel="next" title="PyTorch for former Torch users" href="../former_torchies_tutorial.html"/>
+        <link rel="next" title="Optional: Data Parallelism" href="data_parallel_tutorial.html"/>
         <link rel="prev" title="Neural Networks" href="neural_networks_tutorial.html"/> 
 
   
@@ -140,7 +140,23 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#training-on-gpu">Training on GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-on-multiple-gpus">Training on multiple GPUs</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#where-do-i-go-next">Where do I go next?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="data_parallel_tutorial.html">Optional: Data Parallelism</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#imports-and-parameters">Imports and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#dummy-dataset">Dummy DataSet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#simple-model">Simple Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#create-model-and-dataparallel">Create Model and DataParallel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#run-the-model">Run the Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#results">Results</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data_parallel_tutorial.html#gpus">2 GPUs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data_parallel_tutorial.html#id1">3 GPUs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="data_parallel_tutorial.html#id2">8 GPUs</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data_parallel_tutorial.html#summary">Summary</a></li>
 </ul>
 </li>
 </ul>
@@ -567,7 +583,7 @@ We transform them to Tensors of normalized range [-1, 1]</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Downloading</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">www</span><span class="o">.</span><span class="n">cs</span><span class="o">.</span><span class="n">toronto</span><span class="o">.</span><span class="n">edu</span><span class="o">/~</span><span class="n">kriz</span><span class="o">/</span><span class="n">cifar</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="n">python</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span> <span class="n">to</span> <span class="o">./</span><span class="n">data</span><span class="o">/</span><span class="n">cifar</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="n">python</span><span class="o">.</span><span class="n">tar</span><span class="o">.</span><span class="n">gz</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Files</span> <span class="n">already</span> <span class="n">downloaded</span> <span class="ow">and</span> <span class="n">verified</span>
 <span class="n">Files</span> <span class="n">already</span> <span class="n">downloaded</span> <span class="ow">and</span> <span class="n">verified</span>
 </pre></div>
 </div>
@@ -596,7 +612,7 @@ We transform them to Tensors of normalized range [-1, 1]</p>
 </div>
 <img alt="../../_images/sphx_glr_cifar10_tutorial_001.png" class="align-center" src="../../_images/sphx_glr_cifar10_tutorial_001.png" />
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">car</span> <span class="n">truck</span>   <span class="n">car</span>   <span class="n">car</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">truck</span>   <span class="n">cat</span>   <span class="n">car</span> <span class="n">plane</span>
 </pre></div>
 </div>
 </div>
@@ -678,18 +694,18 @@ network and optimize</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.252</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">4000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.894</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">6000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.677</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">8000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.597</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.507</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.471</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">2000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.390</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">4000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.361</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">6000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.329</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">8000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.310</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.304</span>
-<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">12000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.280</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">2000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.191</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">4000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.866</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">6000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.696</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span>  <span class="mi">8000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.596</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.502</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">12000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.496</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">2000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.422</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">4000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.370</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">6000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.359</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span>  <span class="mi">8000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.321</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.311</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">12000</span><span class="p">]</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.275</span>
 <span class="n">Finished</span> <span class="n">Training</span>
 </pre></div>
 </div>
@@ -730,7 +746,7 @@ So, let’s get the index of the highest energy:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Predicted</span><span class="p">:</span>    <span class="n">cat</span>   <span class="n">car</span>  <span class="n">ship</span> <span class="n">plane</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Predicted</span><span class="p">:</span>    <span class="n">cat</span>  <span class="n">ship</span>   <span class="n">car</span> <span class="n">plane</span>
 </pre></div>
 </div>
 <p>The results seem pretty good.</p>
@@ -749,7 +765,7 @@ So, let’s get the index of the highest energy:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Accuracy</span> <span class="n">of</span> <span class="n">the</span> <span class="n">network</span> <span class="n">on</span> <span class="n">the</span> <span class="mi">10000</span> <span class="n">test</span> <span class="n">images</span><span class="p">:</span> <span class="mi">56</span> <span class="o">%</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Accuracy</span> <span class="n">of</span> <span class="n">the</span> <span class="n">network</span> <span class="n">on</span> <span class="n">the</span> <span class="mi">10000</span> <span class="n">test</span> <span class="n">images</span><span class="p">:</span> <span class="mi">54</span> <span class="o">%</span>
 </pre></div>
 </div>
 <p>That looks waaay better than chance, which is 10% accuracy (randomly picking
@@ -776,16 +792,16 @@ not perform well:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Accuracy</span> <span class="n">of</span> <span class="n">plane</span> <span class="p">:</span> <span class="mi">70</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">car</span> <span class="p">:</span> <span class="mi">61</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">bird</span> <span class="p">:</span> <span class="mi">45</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">cat</span> <span class="p">:</span> <span class="mi">26</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">deer</span> <span class="p">:</span> <span class="mi">55</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">dog</span> <span class="p">:</span> <span class="mi">39</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">frog</span> <span class="p">:</span> <span class="mi">66</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span> <span class="n">horse</span> <span class="p">:</span> <span class="mi">64</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">ship</span> <span class="p">:</span> <span class="mi">59</span> <span class="o">%</span>
-<span class="n">Accuracy</span> <span class="n">of</span> <span class="n">truck</span> <span class="p">:</span> <span class="mi">73</span> <span class="o">%</span>
+<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Accuracy</span> <span class="n">of</span> <span class="n">plane</span> <span class="p">:</span> <span class="mi">60</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">car</span> <span class="p">:</span> <span class="mi">46</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">bird</span> <span class="p">:</span> <span class="mi">44</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">cat</span> <span class="p">:</span> <span class="mi">35</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">deer</span> <span class="p">:</span> <span class="mi">38</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>   <span class="n">dog</span> <span class="p">:</span> <span class="mi">43</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">frog</span> <span class="p">:</span> <span class="mi">57</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span> <span class="n">horse</span> <span class="p">:</span> <span class="mi">76</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span>  <span class="n">ship</span> <span class="p">:</span> <span class="mi">71</span> <span class="o">%</span>
+<span class="n">Accuracy</span> <span class="n">of</span> <span class="n">truck</span> <span class="p">:</span> <span class="mi">74</span> <span class="o">%</span>
 </pre></div>
 </div>
 <p>Okay, so what next?</p>
@@ -817,6 +833,11 @@ they need to be the same number), see what kind of speedup you get.</p>
 <li>Train a small neural network to classify images</li>
 </ul>
 </div>
+<div class="section" id="training-on-multiple-gpus">
+<h2>Training on multiple GPUs<a class="headerlink" href="#training-on-multiple-gpus" title="Permalink to this headline">¶</a></h2>
+<p>If you want to see even more MASSIVE speedup using all of your GPUs,
+please check out <a class="reference internal" href="data_parallel_tutorial.html"><span class="doc">Optional: Data Parallelism</span></a>.</p>
+</div>
 <div class="section" id="where-do-i-go-next">
 <h2>Where do I go next?<a class="headerlink" href="#where-do-i-go-next" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -829,14 +850,14 @@ they need to be the same number), see what kind of speedup you get.</p>
 <li><a class="reference external" href="https://discuss.pytorch.org/">Discuss PyTorch on the Forums</a></li>
 <li><a class="reference external" href="http://pytorch.slack.com/messages/beginner/">Chat with other users on Slack</a></li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 3 minutes  25.471 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 3 minutes  24.484 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/cifar10_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">cifar10_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../../_downloads/cifar10_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">cifar10_tutorial.ipynb</span></code></a></div>
 </div>
-<p class="sphx-glr-signature"><a class="reference external" href="http://sphinx-gallery.readthedocs.io">Generated by Sphinx-Gallery</a></p>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
 </div>
 
@@ -850,7 +871,7 @@ they need to be the same number), see what kind of speedup you get.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../former_torchies_tutorial.html" class="btn btn-neutral float-right" title="PyTorch for former Torch users" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="data_parallel_tutorial.html" class="btn btn-neutral float-right" title="Optional: Data Parallelism" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="neural_networks_tutorial.html" class="btn btn-neutral" title="Neural Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

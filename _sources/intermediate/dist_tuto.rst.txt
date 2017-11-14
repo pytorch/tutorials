@@ -1,5 +1,5 @@
 Writing Distributed Applications with PyTorch
-===============================
+=============================================
 **Author**: `Séb Arnold <http://seba1511.com>`_
 
 In this short tutorial, we will be going over the distributed package of PyTorch. We'll see how to set up the distributed setting, use the different communication strategies, and go over some the internals of the package.
@@ -373,7 +373,7 @@ world.
             dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM)
             param.grad.data /= size 
 
-*Et voilà *! We successfully implemented distributed synchronous SGD and
+*Et voilà*! We successfully implemented distributed synchronous SGD and
 could train any model on a large computer cluster.
 
 **Note:** While the last sentence is *technically* true, there are `a
