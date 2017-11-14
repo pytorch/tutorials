@@ -1,6 +1,6 @@
 """
 Optional: Data Parallelism
-============
+==========================
 **Authors**: `Sung Kim <https://github.com/hunkim>`_ and `Jenny Kang <https://github.com/jennykang>`_
 
 In this tutorial, we will learn how to use multiple GPUs using ``DataParallel``.
@@ -247,7 +247,7 @@ for data in rand_loader:
 # 
 # DataParallel splits your data automatically and sends job orders to multiple
 # models on several GPUs. After each model finishes their job, DataParallel
-# collects and merges the results before returning it to you. It's really awesome!
+# collects and merges the results before returning it to you.
 # 
 # For more information, please check out
 # http://pytorch.org/tutorials/beginner/former\_torchies/parallelism\_tutorial.html.

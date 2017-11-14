@@ -298,7 +298,7 @@ for i in range(10):
 # - Train a small neural network to classify images
 #
 # Training on multiple GPUs
-# ----------------
+# -------------------------
 # If you want to see even more MASSIVE speedup using all of your GPUs,
 # please check out :doc:`data_parallel_tutorial`.
 #
