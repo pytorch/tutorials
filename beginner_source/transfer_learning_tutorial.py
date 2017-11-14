@@ -91,7 +91,7 @@ data_dir = 'hymenoptera_data'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
-dataloders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
                                              shuffle=True, num_workers=4)
               for x in ['train', 'val']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
@@ -119,7 +119,7 @@ def imshow(inp, title=None):
 
 
 # Get a batch of training data
-inputs, classes = next(iter(dataloders['train']))
+inputs, classes = next(iter(dataloaders['train']))
 
 # Make a grid from batch
 out = torchvision.utils.make_grid(inputs)
@@ -163,7 +163,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             running_corrects = 0
 
             # Iterate over data.
-            for data in dataloders[phase]:
+            for data in dataloaders[phase]:
                 # get the inputs
                 inputs, labels = data
 
@@ -225,7 +225,7 @@ def visualize_model(model, num_images=6):
     images_so_far = 0
     fig = plt.figure()
 
-    for i, data in enumerate(dataloders['val']):
+    for i, data in enumerate(dataloaders['val']):
         inputs, labels = data
         if use_gpu:
             inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
