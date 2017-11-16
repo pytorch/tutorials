@@ -9,20 +9,20 @@ Spatial Transformer Networks Tutorial
 In this tutorial, you will learn how to augment your network using
 a visual attention mechanism called spatial transformer
 networks. You can read more about the spatial transformer
-networks in `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
+networks in the `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
 
 Spatial transformer networks are a generalization of differentiable
 attention to any spatial transformation. Spatial transformer networks
-(STN for short) allows a neural network to learn how to do spatial
-transformations to the input image in order to enhance the geometric
+(STN for short) allow a neural network to learn how to perform spatial
+transformations on the input image in order to enhance the geometric
 invariance of the model.
-For example it can crop a region of interest, scale and correct
-the orientation of an image. It can be a useful mechanism because CNN
-are not invariant to rotation and scale and more generally : affine
+For example, it can crop a region of interest, scale and correct
+the orientation of an image. It can be a useful mechanism because CNNs
+are not invariant to rotation and scale and more general affine
 transformations.
 
 One of the best things about STN is the ability to simply plug it into
-any existing CNN with very little modifications.
+any existing CNN with very little modification.
 """
 # License: BSD
 # Author: Ghassen Hamrouni
@@ -76,7 +76,7 @@ test_loader = torch.utils.data.DataLoader(
 #    the spatial transformations that enhances the global accuracy.
 # -  The grid generator generates a grid of coordinates in the input
 #    image corresponding to each pixel from the output image.
-# -  The sampler uses the parameters of the transformation and apply
+# -  The sampler uses the parameters of the transformation and applies
 #    it to the input image.
 #
 # .. figure:: /_static/img/stn/stn-arch.png
@@ -133,7 +133,7 @@ class Net(nn.Module):
         # transform the input
         x = self.stn(x)
 
-        # Perform the usual froward pass
+        # Perform the usual forward pass
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         x = x.view(-1, 320)
