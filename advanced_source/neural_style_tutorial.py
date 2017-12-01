@@ -103,7 +103,7 @@ For our implementation in PyTorch, we already have everything
 we need: indeed, with PyTorch, all the gradients are automatically and
 dynamically computed for you (while you use functions from the library).
 This is why the implementation of this algorithm becomes very
-confortable with PyTorch.
+comfortable with PyTorch.
 
 PyTorch implementation
 ----------------------
