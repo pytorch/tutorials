@@ -207,7 +207,7 @@ class Rescale(object):
     """Rescale the image in a sample to a given size.
 
     Args:
-        output_size (tuple or tuple): Desired output size. If tuple, output is
+        output_size (tuple or int): Desired output size. If tuple, output is
             matched to output_size. If int, smaller of image edges is matched
             to output_size keeping aspect ratio the same.
     """
