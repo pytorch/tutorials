@@ -230,7 +230,7 @@ class NGramLanguageModeler(nn.Module):
         embeds = self.embeddings(inputs).view((1, -1))
         out = F.relu(self.linear1(embeds))
         out = self.linear2(out)
-        log_probs = F.log_softmax(out)
+        log_probs = F.log_softmax(out, dim=1)
         return log_probs
 
 

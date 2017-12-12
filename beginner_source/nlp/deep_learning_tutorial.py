@@ -123,9 +123,9 @@ print(F.relu(data))
 # Softmax is also in torch.nn.functional
 data = autograd.Variable(torch.randn(5))
 print(data)
-print(F.softmax(data))
-print(F.softmax(data).sum())  # Sums to 1 because it is a distribution!
-print(F.log_softmax(data))  # theres also log_softmax
+print(F.softmax(data, dim=0))
+print(F.softmax(data, dim=0).sum())  # Sums to 1 because it is a distribution!
+print(F.log_softmax(data, dim=0))  # theres also log_softmax
 
 
 ######################################################################
@@ -277,7 +277,7 @@ class BoWClassifier(nn.Module):  # inheriting from nn.Module!
         # Pass the input through the linear layer,
         # then pass that through log_softmax.
         # Many non-linearities and other functions are in torch.nn.functional
-        return F.log_softmax(self.linear(bow_vec))
+        return F.log_softmax(self.linear(bow_vec), dim=1)
 
 
 def make_bow_vector(sentence, word_to_ix):

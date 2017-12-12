@@ -111,7 +111,7 @@ n_categories = len(all_categories)
 # (language) to a list of lines (names). We also kept track of
 # ``all_categories`` (just a list of languages) and ``n_categories`` for
 # later reference.
-# 
+#
 
 print(category_lines['Italian'][:5])
 
@@ -119,20 +119,20 @@ print(category_lines['Italian'][:5])
 ######################################################################
 # Turning Names into Tensors
 # --------------------------
-# 
+#
 # Now that we have all the names organized, we need to turn them into
 # Tensors to make any use of them.
-# 
+#
 # To represent a single letter, we use a "one-hot vector" of size
 # ``<1 x n_letters>``. A one-hot vector is filled with 0s except for a 1
 # at index of the current letter, e.g. ``"b" = <0 1 0 0 0 ...>``.
-# 
+#
 # To make a word we join a bunch of those into a 2D matrix
 # ``<line_length x 1 x n_letters>``.
-# 
+#
 # That extra 1 dimension is because PyTorch assumes everything is in
 # batches - we're just using a batch size of 1 here.
-# 
+#
 
 import torch
 
@@ -162,22 +162,22 @@ print(lineToTensor('Jones').size())
 ######################################################################
 # Creating the Network
 # ====================
-# 
+#
 # Before autograd, creating a recurrent neural network in Torch involved
 # cloning the parameters of a layer over several timesteps. The layers
 # held hidden state and gradients which are now entirely handled by the
 # graph itself. This means you can implement a RNN in a very "pure" way,
 # as regular feed-forward layers.
-# 
+#
 # This RNN module (mostly copied from `the PyTorch for Torch users
 # tutorial <https://github.com/pytorch/tutorials/blob/master/Introduction%20to%20PyTorch%20for%20former%20Torchies.ipynb>`__)
 # is just 2 linear layers which operate on an input and hidden state, with
 # a LogSoftmax layer after the output.
-# 
+#
 # .. figure:: https://i.imgur.com/Z2xbySO.png
-#    :alt: 
-# 
-# 
+#    :alt:
+#
+#
 
 import torch.nn as nn
 from torch.autograd import Variable
@@ -185,13 +185,13 @@ from torch.autograd import Variable
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super(RNN, self).__init__()
-        
+
         self.hidden_size = hidden_size
-        
+
         self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
         self.i2o = nn.Linear(input_size + hidden_size, output_size)
-        self.softmax = nn.LogSoftmax()
-    
+        self.softmax = nn.LogSoftmax(dim=1)
+
     def forward(self, input, hidden):
         combined = torch.cat((input, hidden), 1)
         hidden = self.i2h(combined)
@@ -212,10 +212,10 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 # initialize as zeros at first). We'll get back the output (probability of
 # each language) and a next hidden state (which we keep for the next
 # step).
-# 
+#
 # Remember that PyTorch modules operate on Variables rather than straight
 # up Tensors.
-# 
+#
 
 input = Variable(letterToTensor('A'))
 hidden = Variable(torch.zeros(1, n_hidden))
@@ -228,7 +228,7 @@ output, next_hidden = rnn(input, hidden)
 # every step, so we will use ``lineToTensor`` instead of
 # ``letterToTensor`` and use slices. This could be further optimized by
 # pre-computing batches of Tensors.
-# 
+#
 
 input = Variable(lineToTensor('Albert'))
 hidden = Variable(torch.zeros(1, n_hidden))
@@ -240,21 +240,21 @@ print(output)
 ######################################################################
 # As you can see the output is a ``<1 x n_categories>`` Tensor, where
 # every item is the likelihood of that category (higher is more likely).
-# 
+#
 
 
 ######################################################################
-# 
+#
 # Training
 # ========
 # Preparing for Training
 # ----------------------
-# 
+#
 # Before going into training we should make a few helper functions. The
 # first is to interpret the output of the network, which we know to be a
 # likelihood of each category. We can use ``Tensor.topk`` to get the index
 # of the greatest value:
-# 
+#
 
 def categoryFromOutput(output):
     top_n, top_i = output.data.topk(1) # Tensor out of Variable with .data
@@ -267,7 +267,7 @@ print(categoryFromOutput(output))
 ######################################################################
 # We will also want a quick way to get a training example (a name and its
 # language):
-# 
+#
 
 import random
 
@@ -289,30 +289,30 @@ for i in range(10):
 ######################################################################
 # Training the Network
 # --------------------
-# 
+#
 # Now all it takes to train this network is show it a bunch of examples,
 # have it make guesses, and tell it if it's wrong.
-# 
+#
 # For the loss function ``nn.NLLLoss`` is appropriate, since the last
 # layer of the RNN is ``nn.LogSoftmax``.
-# 
+#
 
 criterion = nn.NLLLoss()
 
 
 ######################################################################
 # Each loop of training will:
-# 
+#
 # -  Create input and target tensors
 # -  Create a zeroed initial hidden state
 # -  Read each letter in and
-# 
+#
 #    -  Keep hidden state for next letter
-# 
+#
 # -  Compare final output to target
 # -  Back-propagate
 # -  Return the output and loss
-# 
+#
 
 learning_rate = 0.005 # If you set this too high, it might explode. If too low, it might not learn
 
@@ -340,7 +340,7 @@ def train(category_tensor, line_tensor):
 # guesses and also keep track of loss for plotting. Since there are 1000s
 # of examples we print only every ``print_every`` examples, and take an
 # average of the loss.
-# 
+#
 
 import time
 import math
@@ -384,10 +384,10 @@ for iter in range(1, n_iters + 1):
 ######################################################################
 # Plotting the Results
 # --------------------
-# 
+#
 # Plotting the historical loss from ``all_losses`` shows the network
 # learning:
-# 
+#
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -399,13 +399,13 @@ plt.plot(all_losses)
 ######################################################################
 # Evaluating the Results
 # ======================
-# 
+#
 # To see how well the network performs on different categories, we will
 # create a confusion matrix, indicating for every actual language (rows)
 # which language the network guesses (columns). To calculate the confusion
 # matrix a bunch of samples are run through the network with
 # ``evaluate()``, which is the same as ``train()`` minus the backprop.
-# 
+#
 
 # Keep track of correct guesses in a confusion matrix
 confusion = torch.zeros(n_categories, n_categories)
@@ -414,10 +414,10 @@ n_confusion = 10000
 # Just return an output given a line
 def evaluate(line_tensor):
     hidden = rnn.initHidden()
-    
+
     for i in range(line_tensor.size()[0]):
         output, hidden = rnn(line_tensor[i], hidden)
-    
+
     return output
 
 # Go through a bunch of examples and record which are correctly guessed
@@ -455,13 +455,13 @@ plt.show()
 # languages it guesses incorrectly, e.g. Chinese for Korean, and Spanish
 # for Italian. It seems to do very well with Greek, and very poorly with
 # English (perhaps because of overlap with other languages).
-# 
+#
 
 
 ######################################################################
 # Running on User Input
 # ---------------------
-# 
+#
 
 def predict(input_line, n_predictions=3):
     print('\n> %s' % input_line)
@@ -486,43 +486,43 @@ predict('Satoshi')
 # The final versions of the scripts `in the Practical PyTorch
 # repo <https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification>`__
 # split the above code into a few files:
-# 
+#
 # -  ``data.py`` (loads files)
 # -  ``model.py`` (defines the RNN)
 # -  ``train.py`` (runs training)
 # -  ``predict.py`` (runs ``predict()`` with command line arguments)
 # -  ``server.py`` (serve prediction as a JSON API with bottle.py)
-# 
+#
 # Run ``train.py`` to train and save the network.
-# 
+#
 # Run ``predict.py`` with a name to view predictions:
-# 
+#
 # ::
-# 
+#
 #     $ python predict.py Hazaki
 #     (-0.42) Japanese
 #     (-1.39) Polish
 #     (-3.51) Czech
-# 
+#
 # Run ``server.py`` and visit http://localhost:5533/Yourname to get JSON
 # output of predictions.
-# 
+#
 
 
 ######################################################################
 # Exercises
 # =========
-# 
+#
 # -  Try with a different dataset of line -> category, for example:
-# 
+#
 #    -  Any word -> language
 #    -  First name -> gender
 #    -  Character name -> writer
 #    -  Page title -> blog or subreddit
-# 
+#
 # -  Get better results with a bigger and/or better shaped network
-# 
+#
 #    -  Add more linear layers
 #    -  Try the ``nn.LSTM`` and ``nn.GRU`` layers
 #    -  Combine multiple of these RNNs as a higher level network
-# 
+#
