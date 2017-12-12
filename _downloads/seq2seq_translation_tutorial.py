@@ -36,7 +36,7 @@ another. An encoder network condenses an input sequence into a vector,
 and a decoder network unfolds that vector into a new sequence.
 
 .. figure:: /_static/img/seq-seq-images/seq2seq.png
-   :alt: 
+   :alt:
 
 To improve upon this model we'll use an `attention
 mechanism <https://arxiv.org/abs/1409.0473>`__, which lets the decoder
@@ -395,7 +395,7 @@ class DecoderRNN(nn.Module):
         self.embedding = nn.Embedding(output_size, hidden_size)
         self.gru = nn.GRU(hidden_size, hidden_size)
         self.out = nn.Linear(hidden_size, output_size)
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax(dim=1)
 
     def forward(self, input, hidden):
         output = self.embedding(input).view(1, 1, -1)
@@ -466,12 +466,12 @@ class AttnDecoderRNN(nn.Module):
         self.gru = nn.GRU(self.hidden_size, self.hidden_size)
         self.out = nn.Linear(self.hidden_size, self.output_size)
 
-    def forward(self, input, hidden, encoder_output, encoder_outputs):
+    def forward(self, input, hidden, encoder_outputs):
         embedded = self.embedding(input).view(1, 1, -1)
         embedded = self.dropout(embedded)
 
         attn_weights = F.softmax(
-            self.attn(torch.cat((embedded[0], hidden[0]), 1)))
+            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
         attn_applied = torch.bmm(attn_weights.unsqueeze(0),
                                  encoder_outputs.unsqueeze(0))
 
@@ -482,7 +482,7 @@ class AttnDecoderRNN(nn.Module):
             output = F.relu(output)
             output, hidden = self.gru(output, hidden)
 
-        output = F.log_softmax(self.out(output[0]))
+        output = F.log_softmax(self.out(output[0]), dim=1)
         return output, hidden, attn_weights
 
     def initHidden(self):
@@ -569,10 +569,10 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
 
     input_length = input_variable.size()[0]
     target_length = target_variable.size()[0]
-    
+
     encoder_outputs = Variable(torch.zeros(max_length, encoder.hidden_size))
     encoder_outputs = encoder_outputs.cuda() if use_cuda else encoder_outputs
-   
+
     loss = 0
 
     for ei in range(input_length):
@@ -582,7 +582,7 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
 
     decoder_input = Variable(torch.LongTensor([[SOS_token]]))
     decoder_input = decoder_input.cuda() if use_cuda else decoder_input
-    
+
     decoder_hidden = encoder_hidden
 
     use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
@@ -591,7 +591,7 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
         # Teacher forcing: Feed the target as the next input
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+                decoder_input, decoder_hidden, encoder_outputs)
             loss += criterion(decoder_output, target_variable[di])
             decoder_input = target_variable[di]  # Teacher forcing
 
@@ -599,13 +599,13 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
         # Without teacher forcing: use its own predictions as the next input
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+                decoder_input, decoder_hidden, encoder_outputs)
             topv, topi = decoder_output.data.topk(1)
             ni = topi[0][0]
-            
+
             decoder_input = Variable(torch.LongTensor([[ni]]))
             decoder_input = decoder_input.cuda() if use_cuda else decoder_input
-            
+
             loss += criterion(decoder_output, target_variable[di])
             if ni == EOS_token:
                 break
@@ -669,7 +669,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
         training_pair = training_pairs[iter - 1]
         input_variable = training_pair[0]
         target_variable = training_pair[1]
- 
+
         loss = train(input_variable, target_variable, encoder,
                      decoder, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
@@ -745,7 +745,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
 
     for di in range(max_length):
         decoder_output, decoder_hidden, decoder_attention = decoder(
-            decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+            decoder_input, decoder_hidden, encoder_outputs)
         decoder_attentions[di] = decoder_attention.data
         topv, topi = decoder_output.data.topk(1)
         ni = topi[0][0]
@@ -754,7 +754,7 @@ def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
             break
         else:
             decoded_words.append(output_lang.index2word[ni])
-        
+
         decoder_input = Variable(torch.LongTensor([[ni]]))
         decoder_input = decoder_input.cuda() if use_cuda else decoder_input
 
@@ -790,7 +790,7 @@ def evaluateRandomly(encoder, decoder, n=10):
 # single GRU layer. After about 40 minutes on a MacBook CPU we'll get some
 # reasonable results.
 #
-# .. Note:: 
+# .. Note::
 #    If you run this notebook you can train, interrupt the kernel,
 #    evaluate, and continue training later. Comment out the lines where the
 #    encoder and decoder are initialized and run ``trainIters`` again.

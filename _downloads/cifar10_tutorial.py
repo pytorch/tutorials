@@ -307,7 +307,7 @@ for i in range(10):
 #
 # -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
 # -  `Train a state-of-the-art ResNet network on imagenet`_
-# -  `Train an face generator using Generative Adversarial Networks`_
+# -  `Train a face generator using Generative Adversarial Networks`_
 # -  `Train a word-level language model using Recurrent LSTM networks`_
 # -  `More examples`_
 # -  `More tutorials`_
@@ -315,7 +315,7 @@ for i in range(10):
 # -  `Chat with other users on Slack`_
 #
 # .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
-# .. _Train an face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
+# .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
 # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
 # .. _More examples: https://github.com/pytorch/examples
 # .. _More tutorials: https://github.com/pytorch/tutorials

@@ -128,7 +128,7 @@ and end up with a dictionary ``{language: [names ...]}``.
 
  Out::
 
-    # categories: 18 ['Spanish', 'Dutch', 'Chinese', 'Polish', 'Korean', 'Vietnamese', 'German', 'Russian', 'Irish', 'Scottish', 'Czech', 'English', 'French', 'Japanese', 'Greek', 'Italian', 'Portuguese', 'Arabic']
+    # categories: 18 ['Arabic', 'Chinese', 'Czech', 'Dutch', 'English', 'French', 'German', 'Greek', 'Irish', 'Italian', 'Japanese', 'Korean', 'Polish', 'Portuguese', 'Russian', 'Scottish', 'Spanish', 'Vietnamese']
     O'Neal
 
 
@@ -153,7 +153,7 @@ Here we're using it towards the end of the network to purposely add some
 chaos and increase sampling variety.
 
 .. figure:: https://i.imgur.com/jzVrf7f.png
-   :alt: 
+   :alt:
 
 
 
@@ -170,13 +170,13 @@ chaos and increase sampling variety.
         def __init__(self, input_size, hidden_size, output_size):
             super(RNN, self).__init__()
             self.hidden_size = hidden_size
-        
+
             self.i2h = nn.Linear(n_categories + input_size + hidden_size, hidden_size)
             self.i2o = nn.Linear(n_categories + input_size + hidden_size, output_size)
             self.o2o = nn.Linear(hidden_size + output_size, output_size)
             self.dropout = nn.Dropout(0.1)
-            self.softmax = nn.LogSoftmax()
-    
+            self.softmax = nn.LogSoftmax(dim=1)
+
         def forward(self, category, input, hidden):
             input_combined = torch.cat((category, input, hidden), 1)
             hidden = self.i2h(input_combined)
@@ -242,7 +242,7 @@ line - e.g. for ``"ABCD<EOS>"`` we would create ("A", "B"), ("B", "C"),
 ("C", "D"), ("D", "EOS").
 
 .. figure:: https://i.imgur.com/JH58tXY.png
-   :alt: 
+   :alt:
 
 The category tensor is a `one-hot
 tensor <https://en.wikipedia.org/wiki/One-hot>`__ of size
@@ -333,9 +333,9 @@ and call backward at the end.
         hidden = rnn.initHidden()
 
         rnn.zero_grad()
-    
+
         loss = 0
-    
+
         for i in range(input_line_tensor.size()[0]):
             output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
             loss += criterion(output, target_line_tensor[i])
@@ -404,7 +404,7 @@ in ``all_losses`` for plotting later.
     for iter in range(1, n_iters + 1):
         output, loss = train(*randomTrainingExample())
         total_loss += loss
-    
+
         if iter % print_every == 0:
             print('%s (%d %d%%) %.4f' % (timeSince(start), iter, iter / n_iters * 100, loss))
 
@@ -421,26 +421,26 @@ in ``all_losses`` for plotting later.
 
  Out::
 
-    0m 34s (5000 5%) 3.6227
-    1m 7s (10000 10%) 3.2054
-    1m 43s (15000 15%) 2.3508
-    2m 17s (20000 20%) 2.7754
-    2m 52s (25000 25%) 2.1644
-    3m 27s (30000 30%) 2.0891
-    4m 0s (35000 35%) 2.6005
-    4m 37s (40000 40%) 1.6786
-    5m 9s (45000 45%) 2.9800
-    5m 46s (50000 50%) 1.7013
-    6m 22s (55000 55%) 3.2479
-    6m 56s (60000 60%) 1.9537
-    7m 31s (65000 65%) 1.9197
-    8m 5s (70000 70%) 2.1823
-    8m 38s (75000 75%) 1.2950
-    9m 13s (80000 80%) 1.4690
-    9m 47s (85000 85%) 1.8585
-    10m 22s (90000 90%) 2.7705
-    10m 56s (95000 95%) 2.8283
-    11m 31s (100000 100%) 2.3413
+    0m 11s (5000 5%) 3.3192
+    0m 25s (10000 10%) 2.3401
+    0m 37s (15000 15%) 2.5665
+    0m 50s (20000 20%) 2.3012
+    1m 3s (25000 25%) 2.4575
+    1m 14s (30000 30%) 2.7030
+    1m 28s (35000 35%) 2.8747
+    1m 40s (40000 40%) 2.5695
+    1m 53s (45000 45%) 2.8154
+    2m 6s (50000 50%) 2.8333
+    2m 17s (55000 55%) 2.9960
+    2m 30s (60000 60%) 2.1999
+    2m 43s (65000 65%) 2.6222
+    2m 56s (70000 70%) 1.8971
+    3m 8s (75000 75%) 2.3754
+    3m 21s (80000 80%) 2.0381
+    3m 33s (85000 85%) 2.4307
+    3m 46s (90000 90%) 1.9488
+    3m 58s (95000 95%) 2.6502
+    4m 10s (100000 100%) 2.6203
 
 
 Plotting the Losses
@@ -489,7 +489,7 @@ feed that in as the next letter, and repeat until the EOS token.
 
 -  Return the final name
 
-.. Note::  
+.. Note::
    Rather than having to give it a starting letter, another
    strategy would have been to include a "start of string" token in
    training and have the network choose its own starting letter.
@@ -509,14 +509,14 @@ feed that in as the next letter, and repeat until the EOS token.
         hidden = rnn.initHidden()
 
         output_name = start_letter
-    
+
         for i in range(max_length):
             output, hidden = rnn(category_tensor, input[0], hidden)
             topv, topi = output.data.topk(1)
             topi = topi[0][0]
             if topi == n_letters - 1:
                 break
-            else:    
+            else:
                 letter = all_letters[topi]
                 output_name += letter
             input = Variable(inputTensor(letter))
@@ -545,16 +545,16 @@ feed that in as the next letter, and repeat until the EOS token.
 
  Out::
 
-    Rovano
-    Uakonov
-    Santonov
-    Gerter
-    Eres
-    Rour
-    Sala
-    Para
-    Aller
-    Chan
+    Roukov
+    Uarinov
+    Sharan
+    Gerterrin
+    Erengen
+    Rouran
+    Sallan
+    Perra
+    Allanase
+    Cha
     Han
     Iun
 
@@ -577,11 +577,13 @@ Exercises
 
 
 
-**Total running time of the script:** ( 11 minutes  31.564 seconds)
+**Total running time of the script:** ( 4 minutes  10.872 seconds)
 
 
 
-.. container:: sphx-glr-footer
+.. only :: html
+
+ .. container:: sphx-glr-footer
 
 
   .. container:: sphx-glr-download
@@ -594,6 +596,9 @@ Exercises
 
      :download:`Download Jupyter notebook: char_rnn_generation_tutorial.ipynb <char_rnn_generation_tutorial.ipynb>`
 
-.. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_

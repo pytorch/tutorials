@@ -39,7 +39,7 @@ another. An encoder network condenses an input sequence into a vector,
 and a decoder network unfolds that vector into a new sequence.
 
 .. figure:: /_static/img/seq-seq-images/seq2seq.png
-   :alt: 
+   :alt:
 
 To improve upon this model we'll use an `attention
 mechanism <https://arxiv.org/abs/1409.0473>`__, which lets the decoder
@@ -356,7 +356,7 @@ The full process for preparing the data is:
     Counted words:
     fra 4489
     eng 2925
-    ['il a environ trente ans .', 'he is about thirty .']
+    ['vous etes arrogant .', 'you re arrogant .']
 
 
 The Seq2Seq Model
@@ -481,7 +481,7 @@ last hidden state).
             self.embedding = nn.Embedding(output_size, hidden_size)
             self.gru = nn.GRU(hidden_size, hidden_size)
             self.out = nn.Linear(hidden_size, output_size)
-            self.softmax = nn.LogSoftmax()
+            self.softmax = nn.LogSoftmax(dim=1)
 
         def forward(self, input, hidden):
             output = self.embedding(input).view(1, 1, -1)
@@ -561,12 +561,12 @@ while shorter sentences will only use the first few.
             self.gru = nn.GRU(self.hidden_size, self.hidden_size)
             self.out = nn.Linear(self.hidden_size, self.output_size)
 
-        def forward(self, input, hidden, encoder_output, encoder_outputs):
+        def forward(self, input, hidden, encoder_outputs):
             embedded = self.embedding(input).view(1, 1, -1)
             embedded = self.dropout(embedded)
 
             attn_weights = F.softmax(
-                self.attn(torch.cat((embedded[0], hidden[0]), 1)))
+                self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
             attn_applied = torch.bmm(attn_weights.unsqueeze(0),
                                      encoder_outputs.unsqueeze(0))
 
@@ -577,7 +577,7 @@ while shorter sentences will only use the first few.
                 output = F.relu(output)
                 output, hidden = self.gru(output, hidden)
 
-            output = F.log_softmax(self.out(output[0]))
+            output = F.log_softmax(self.out(output[0]), dim=1)
             return output, hidden, attn_weights
 
         def initHidden(self):
@@ -684,10 +684,10 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
         input_length = input_variable.size()[0]
         target_length = target_variable.size()[0]
-    
+
         encoder_outputs = Variable(torch.zeros(max_length, encoder.hidden_size))
         encoder_outputs = encoder_outputs.cuda() if use_cuda else encoder_outputs
-   
+
         loss = 0
 
         for ei in range(input_length):
@@ -697,7 +697,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
         decoder_input = Variable(torch.LongTensor([[SOS_token]]))
         decoder_input = decoder_input.cuda() if use_cuda else decoder_input
-    
+
         decoder_hidden = encoder_hidden
 
         use_teacher_forcing = True if random.random() < teacher_forcing_ratio else False
@@ -706,7 +706,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
             # Teacher forcing: Feed the target as the next input
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
-                    decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+                    decoder_input, decoder_hidden, encoder_outputs)
                 loss += criterion(decoder_output, target_variable[di])
                 decoder_input = target_variable[di]  # Teacher forcing
 
@@ -714,13 +714,13 @@ choose to use teacher forcing or not with a simple if statement. Turn
             # Without teacher forcing: use its own predictions as the next input
             for di in range(target_length):
                 decoder_output, decoder_hidden, decoder_attention = decoder(
-                    decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+                    decoder_input, decoder_hidden, encoder_outputs)
                 topv, topi = decoder_output.data.topk(1)
                 ni = topi[0][0]
-            
+
                 decoder_input = Variable(torch.LongTensor([[ni]]))
                 decoder_input = decoder_input.cuda() if use_cuda else decoder_input
-            
+
                 loss += criterion(decoder_output, target_variable[di])
                 if ni == EOS_token:
                     break
@@ -804,7 +804,7 @@ of examples, time so far, estimated time) and average loss.
             training_pair = training_pairs[iter - 1]
             input_variable = training_pair[0]
             target_variable = training_pair[1]
- 
+
             loss = train(input_variable, target_variable, encoder,
                          decoder, encoder_optimizer, decoder_optimizer, criterion)
             print_loss_total += loss
@@ -900,7 +900,7 @@ attention outputs for display later.
 
         for di in range(max_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
-                decoder_input, decoder_hidden, encoder_output, encoder_outputs)
+                decoder_input, decoder_hidden, encoder_outputs)
             decoder_attentions[di] = decoder_attention.data
             topv, topi = decoder_output.data.topk(1)
             ni = topi[0][0]
@@ -909,7 +909,7 @@ attention outputs for display later.
                 break
             else:
                 decoded_words.append(output_lang.index2word[ni])
-        
+
             decoder_input = Variable(torch.LongTensor([[ni]]))
             decoder_input = decoder_input.cuda() if use_cuda else decoder_input
 
@@ -960,7 +960,7 @@ dataset we can use relatively small networks of 256 hidden nodes and a
 single GRU layer. After about 40 minutes on a MacBook CPU we'll get some
 reasonable results.
 
-.. Note:: 
+.. Note::
    If you run this notebook you can train, interrupt the kernel,
    evaluate, and continue training later. Comment out the lines where the
    encoder and decoder are initialized and run ``trainIters`` again.
@@ -1003,21 +1003,21 @@ reasonable results.
 
  Out::
 
-    3m 48s (- 53m 16s) (5000 6%) 2.8845
-    6m 19s (- 41m 4s) (10000 13%) 2.3247
-    8m 54s (- 35m 38s) (15000 20%) 2.0045
-    11m 30s (- 31m 39s) (20000 26%) 1.7451
-    14m 6s (- 28m 13s) (25000 33%) 1.5862
-    16m 43s (- 25m 5s) (30000 40%) 1.4182
-    19m 21s (- 22m 7s) (35000 46%) 1.2685
-    21m 57s (- 19m 12s) (40000 53%) 1.1267
-    24m 33s (- 16m 22s) (45000 60%) 1.0257
-    27m 4s (- 13m 32s) (50000 66%) 0.9344
-    29m 40s (- 10m 47s) (55000 73%) 0.8550
-    32m 16s (- 8m 4s) (60000 80%) 0.7688
-    34m 53s (- 5m 22s) (65000 86%) 0.7051
-    37m 29s (- 2m 40s) (70000 93%) 0.6536
-    40m 4s (- 0m 0s) (75000 100%) 0.5912
+    1m 35s (- 22m 17s) (5000 6%) 2.8940
+    3m 7s (- 20m 21s) (10000 13%) 2.3590
+    4m 40s (- 18m 43s) (15000 20%) 2.0273
+    6m 14s (- 17m 10s) (20000 26%) 1.8096
+    7m 48s (- 15m 36s) (25000 33%) 1.5893
+    9m 21s (- 14m 2s) (30000 40%) 1.4345
+    10m 55s (- 12m 28s) (35000 46%) 1.2635
+    12m 28s (- 10m 55s) (40000 53%) 1.1544
+    14m 2s (- 9m 21s) (45000 60%) 1.0362
+    15m 35s (- 7m 47s) (50000 66%) 0.9439
+    17m 9s (- 6m 14s) (55000 73%) 0.8612
+    18m 44s (- 4m 41s) (60000 80%) 0.7582
+    20m 18s (- 3m 7s) (65000 86%) 0.7147
+    21m 51s (- 1m 33s) (70000 93%) 0.6659
+    23m 26s (- 0m 0s) (75000 100%) 0.6180
 
 
 
@@ -1035,45 +1035,45 @@ reasonable results.
 
  Out::
 
-    > il est force de remarquer votre erreur .
-    = he s bound to notice your mistake .
-    < he s bound to notice your mistake . <EOS>
+    > c est une sorte de peintre .
+    = he is a sort of painter .
+    < he is a sort of a painter . <EOS>
 
-    > je te vire .
-    = i m firing you .
-    < i m letting you go . <EOS>
+    > je suis pret a y aller maintenant .
+    = i m ready to go now .
+    < i m ready to go now . <EOS>
 
-    > elle ecrit constamment des lettres .
-    = she is constantly writing letters .
-    < she is making making mistakes . <EOS>
+    > nous sommes tous decus .
+    = we re all disappointed .
+    < we re all devastated . <EOS>
 
-    > tu n y es pas bonne .
-    = you re not good at this .
-    < you re not good at this . <EOS>
+    > il est accro a l hero .
+    = he s addicted to heroin .
+    < he is addicted to heroin . <EOS>
 
-    > je suis desole a propos d hier .
-    = i m sorry about yesterday .
-    < i m sorry about last . <EOS>
+    > je ne compare pas tom a mary .
+    = i m not comparing tom to mary .
+    < i m not comparing tom . . <EOS>
 
-    > je suis affame !
-    = i m famished .
-    < i m sleepy . <EOS>
+    > il n est pas de tres bonne compagnie .
+    = he is not very good company .
+    < he is not very good company . <EOS>
 
-    > il est irrealiste .
-    = he is unrealistic .
-    < he is a . <EOS>
+    > il est avec ses parents .
+    = he s with his parents .
+    < he is engaged with his parents . <EOS>
 
-    > c est une gentille fille .
-    = she is a kind girl .
-    < she s a sweet girl . <EOS>
+    > je suis desolee de t avoir derange .
+    = i m sorry to have disturbed you .
+    < i m sorry to have disturbed you . <EOS>
 
-    > il a honte de son attitude .
-    = he is ashamed of his behavior .
-    < he s ashamed of his failure . <EOS>
+    > il manque de pratique .
+    = he s out of practice .
+    < he s out of practice . <EOS>
 
-    > c est toi qui me le dis .
-    = you re telling me .
-    < you re the one who trained me . <EOS>
+    > j ai une faim de loup .
+    = i m as hungry as a bear .
+    < i m very hungry . <EOS>
 
 
 Visualizing Attention
@@ -1185,13 +1185,13 @@ and labels:
  Out::
 
     input = elle a cinq ans de moins que moi .
-    output = she s five years younger than me . <EOS>
+    output = she is five years younger than me . <EOS>
     input = elle est trop petit .
-    output = she is too busy . <EOS>
+    output = she s too hard . <EOS>
     input = je ne crains pas de mourir .
-    output = i m not dying . <EOS>
+    output = i m not afraid . <EOS>
     input = c est un jeune directeur plein de talent .
-    output = he s a talented young talented . <EOS>
+    output = he s a lovely young of . <EOS>
 
 
 Exercises
@@ -1218,11 +1218,13 @@ Exercises
 
 
 
-**Total running time of the script:** ( 40 minutes  10.679 seconds)
+**Total running time of the script:** ( 23 minutes  31.650 seconds)
 
 
 
-.. container:: sphx-glr-footer
+.. only :: html
+
+ .. container:: sphx-glr-footer
 
 
   .. container:: sphx-glr-download
@@ -1235,6 +1237,9 @@ Exercises
 
      :download:`Download Jupyter notebook: seq2seq_translation_tutorial.ipynb <seq2seq_translation_tutorial.ipynb>`
 
-.. rst-class:: sphx-glr-signature
 
-    `Generated by Sphinx-Gallery <http://sphinx-gallery.readthedocs.io>`_
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_

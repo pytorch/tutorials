@@ -12,20 +12,20 @@ Spatial Transformer Networks Tutorial
 In this tutorial, you will learn how to augment your network using
 a visual attention mechanism called spatial transformer
 networks. You can read more about the spatial transformer
-networks in `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
+networks in the `DeepMind paper <https://arxiv.org/abs/1506.02025>`__
 
 Spatial transformer networks are a generalization of differentiable
 attention to any spatial transformation. Spatial transformer networks
-(STN for short) allows a neural network to learn how to do spatial
-transformations to the input image in order to enhance the geometric
+(STN for short) allow a neural network to learn how to perform spatial
+transformations on the input image in order to enhance the geometric
 invariance of the model.
-For example it can crop a region of interest, scale and correct
-the orientation of an image. It can be a useful mechanism because CNN
-are not invariant to rotation and scale and more generally : affine
+For example, it can crop a region of interest, scale and correct
+the orientation of an image. It can be a useful mechanism because CNNs
+are not invariant to rotation and scale and more general affine
 transformations.
 
 One of the best things about STN is the ability to simply plug it into
-any existing CNN with very little modifications.
+any existing CNN with very little modification.
 
 
 
@@ -85,16 +85,6 @@ network.
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-    Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
-    Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
-    Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
-    Processing...
-    Done!
 
 
 Depicting spatial transformer networks
@@ -108,7 +98,7 @@ Spatial transformer networks boils down to three main components :
    the spatial transformations that enhances the global accuracy.
 -  The grid generator generates a grid of coordinates in the input
    image corresponding to each pixel from the output image.
--  The sampler uses the parameters of the transformation and apply
+-  The sampler uses the parameters of the transformation and applies
    it to the input image.
 
 .. figure:: /_static/img/stn/stn-arch.png
@@ -170,14 +160,14 @@ Spatial transformer networks boils down to three main components :
             # transform the input
             x = self.stn(x)
 
-            # Perform the usual froward pass
+            # Perform the usual forward pass
             x = F.relu(F.max_pool2d(self.conv1(x), 2))
             x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
             x = x.view(-1, 320)
             x = F.relu(self.fc1(x))
             x = F.dropout(x, training=self.training)
             x = self.fc2(x)
-            return F.log_softmax(x)
+            return F.log_softmax(x, dim=1)
 
 
     model = Net()
@@ -329,108 +319,108 @@ transformations while training.
 
  Out::
 
-    Train Epoch: 1 [0/60000 (0%)]   Loss: 2.316680
-    Train Epoch: 1 [32000/60000 (53%)]      Loss: 0.915944
+    Train Epoch: 1 [0/60000 (0%)]   Loss: 2.300508
+    Train Epoch: 1 [32000/60000 (53%)]      Loss: 0.767615
 
-    Test set: Average loss: 0.2849, Accuracy: 9174/10000 (92%)
+    Test set: Average loss: 0.2152, Accuracy: 9371/10000 (94%)
 
-    Train Epoch: 2 [0/60000 (0%)]   Loss: 0.494003
-    Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.307739
+    Train Epoch: 2 [0/60000 (0%)]   Loss: 0.700020
+    Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.425037
 
-    Test set: Average loss: 0.1113, Accuracy: 9669/10000 (97%)
+    Test set: Average loss: 0.1289, Accuracy: 9608/10000 (96%)
 
-    Train Epoch: 3 [0/60000 (0%)]   Loss: 0.324201
-    Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.415912
+    Train Epoch: 3 [0/60000 (0%)]   Loss: 0.434035
+    Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.499640
 
-    Test set: Average loss: 0.0964, Accuracy: 9700/10000 (97%)
+    Test set: Average loss: 0.1010, Accuracy: 9695/10000 (97%)
 
-    Train Epoch: 4 [0/60000 (0%)]   Loss: 0.244328
-    Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.143516
+    Train Epoch: 4 [0/60000 (0%)]   Loss: 0.188138
+    Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.146955
 
-    Test set: Average loss: 0.0757, Accuracy: 9763/10000 (98%)
+    Test set: Average loss: 0.0812, Accuracy: 9757/10000 (98%)
 
-    Train Epoch: 5 [0/60000 (0%)]   Loss: 0.371837
-    Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.264903
+    Train Epoch: 5 [0/60000 (0%)]   Loss: 0.235111
+    Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.300617
 
-    Test set: Average loss: 0.0772, Accuracy: 9758/10000 (98%)
+    Test set: Average loss: 0.0642, Accuracy: 9792/10000 (98%)
 
-    Train Epoch: 6 [0/60000 (0%)]   Loss: 0.235697
-    Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.198383
+    Train Epoch: 6 [0/60000 (0%)]   Loss: 0.090833
+    Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.185160
 
-    Test set: Average loss: 0.0655, Accuracy: 9794/10000 (98%)
+    Test set: Average loss: 0.0626, Accuracy: 9815/10000 (98%)
 
-    Train Epoch: 7 [0/60000 (0%)]   Loss: 0.141787
-    Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.095184
+    Train Epoch: 7 [0/60000 (0%)]   Loss: 0.159247
+    Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.206846
 
-    Test set: Average loss: 0.0598, Accuracy: 9809/10000 (98%)
+    Test set: Average loss: 0.0612, Accuracy: 9807/10000 (98%)
 
-    Train Epoch: 8 [0/60000 (0%)]   Loss: 0.221511
-    Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.149709
+    Train Epoch: 8 [0/60000 (0%)]   Loss: 0.149214
+    Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.160094
 
-    Test set: Average loss: 0.0469, Accuracy: 9857/10000 (99%)
+    Test set: Average loss: 0.0495, Accuracy: 9846/10000 (98%)
 
-    Train Epoch: 9 [0/60000 (0%)]   Loss: 0.396147
-    Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.188054
+    Train Epoch: 9 [0/60000 (0%)]   Loss: 0.251865
+    Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.170374
 
-    Test set: Average loss: 0.0574, Accuracy: 9825/10000 (98%)
+    Test set: Average loss: 0.0535, Accuracy: 9842/10000 (98%)
 
-    Train Epoch: 10 [0/60000 (0%)]  Loss: 0.134353
-    Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.053522
+    Train Epoch: 10 [0/60000 (0%)]  Loss: 0.232803
+    Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.098657
 
-    Test set: Average loss: 0.0615, Accuracy: 9805/10000 (98%)
+    Test set: Average loss: 0.0608, Accuracy: 9813/10000 (98%)
 
-    Train Epoch: 11 [0/60000 (0%)]  Loss: 0.091511
-    Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.077700
+    Train Epoch: 11 [0/60000 (0%)]  Loss: 0.176311
+    Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.112458
 
-    Test set: Average loss: 0.0404, Accuracy: 9876/10000 (99%)
+    Test set: Average loss: 0.0466, Accuracy: 9854/10000 (99%)
 
-    Train Epoch: 12 [0/60000 (0%)]  Loss: 0.045463
-    Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.020756
+    Train Epoch: 12 [0/60000 (0%)]  Loss: 0.083404
+    Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.050387
 
-    Test set: Average loss: 0.0403, Accuracy: 9868/10000 (99%)
+    Test set: Average loss: 0.0410, Accuracy: 9862/10000 (99%)
 
-    Train Epoch: 13 [0/60000 (0%)]  Loss: 0.019118
-    Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.021535
+    Train Epoch: 13 [0/60000 (0%)]  Loss: 0.065958
+    Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.079510
 
-    Test set: Average loss: 0.0601, Accuracy: 9816/10000 (98%)
+    Test set: Average loss: 0.0662, Accuracy: 9805/10000 (98%)
 
-    Train Epoch: 14 [0/60000 (0%)]  Loss: 0.117381
-    Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.049683
+    Train Epoch: 14 [0/60000 (0%)]  Loss: 0.135779
+    Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.136293
 
-    Test set: Average loss: 0.0464, Accuracy: 9862/10000 (99%)
+    Test set: Average loss: 0.0467, Accuracy: 9872/10000 (99%)
 
-    Train Epoch: 15 [0/60000 (0%)]  Loss: 0.030192
-    Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.087893
+    Train Epoch: 15 [0/60000 (0%)]  Loss: 0.074792
+    Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.051823
 
-    Test set: Average loss: 0.0416, Accuracy: 9876/10000 (99%)
+    Test set: Average loss: 0.0389, Accuracy: 9885/10000 (99%)
 
-    Train Epoch: 16 [0/60000 (0%)]  Loss: 0.029896
-    Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.047947
+    Train Epoch: 16 [0/60000 (0%)]  Loss: 0.051395
+    Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.164310
 
-    Test set: Average loss: 0.0470, Accuracy: 9855/10000 (99%)
+    Test set: Average loss: 0.0362, Accuracy: 9885/10000 (99%)
 
-    Train Epoch: 17 [0/60000 (0%)]  Loss: 0.146504
-    Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.063095
+    Train Epoch: 17 [0/60000 (0%)]  Loss: 0.163138
+    Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.120963
 
-    Test set: Average loss: 0.0362, Accuracy: 9894/10000 (99%)
+    Test set: Average loss: 0.0360, Accuracy: 9882/10000 (99%)
 
-    Train Epoch: 18 [0/60000 (0%)]  Loss: 0.229595
-    Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.065047
+    Train Epoch: 18 [0/60000 (0%)]  Loss: 0.049020
+    Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.178151
 
-    Test set: Average loss: 0.0468, Accuracy: 9867/10000 (99%)
+    Test set: Average loss: 0.0412, Accuracy: 9872/10000 (99%)
 
-    Train Epoch: 19 [0/60000 (0%)]  Loss: 0.117012
-    Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.038908
+    Train Epoch: 19 [0/60000 (0%)]  Loss: 0.017047
+    Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.078375
 
-    Test set: Average loss: 0.1120, Accuracy: 9681/10000 (97%)
+    Test set: Average loss: 0.0348, Accuracy: 9886/10000 (99%)
 
-    Train Epoch: 20 [0/60000 (0%)]  Loss: 0.312182
-    Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.171513
+    Train Epoch: 20 [0/60000 (0%)]  Loss: 0.176063
+    Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.184113
 
-    Test set: Average loss: 0.0440, Accuracy: 9882/10000 (99%)
+    Test set: Average loss: 0.0381, Accuracy: 9888/10000 (99%)
 
 
-**Total running time of the script:** ( 2 minutes  54.559 seconds)
+**Total running time of the script:** ( 1 minutes  2.354 seconds)
 
 
 
