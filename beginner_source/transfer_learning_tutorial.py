@@ -259,7 +259,7 @@ model_ft.fc = nn.Linear(num_ftrs, 2)
 if use_gpu:
     model_ft = model_ft.cuda()
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(size_average=False)
 
 # Observe that all parameters are being optimized
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
@@ -307,7 +307,7 @@ model_conv.fc = nn.Linear(num_ftrs, 2)
 if use_gpu:
     model_conv = model_conv.cuda()
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.CrossEntropyLoss(size_average=False)
 
 # Observe that only parameters of final layer are being optimized as
 # opoosed to before.
