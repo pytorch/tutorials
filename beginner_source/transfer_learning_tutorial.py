@@ -46,6 +46,7 @@ from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
 import time
 import os
+import copy
 
 plt.ion()   # interactive mode
 
@@ -144,7 +145,7 @@ imshow(out, title=[class_names[x] for x in classes])
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
     since = time.time()
 
-    best_model_wts = model.state_dict()
+    best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
 
     for epoch in range(num_epochs):
@@ -200,7 +201,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
             # deep copy the model
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
-                best_model_wts = model.state_dict()
+                best_model_wts = copy.deepcopy(model.state_dict())
 
         print()
 
