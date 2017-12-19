@@ -188,7 +188,7 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                     optimizer.step()
 
                 # statistics
-                running_loss += loss.data[0]
+                running_loss += loss.data[0] * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
             epoch_loss = running_loss / dataset_sizes[phase]
@@ -259,7 +259,7 @@ model_ft.fc = nn.Linear(num_ftrs, 2)
 if use_gpu:
     model_ft = model_ft.cuda()
 
-criterion = nn.CrossEntropyLoss(size_average=False)
+criterion = nn.CrossEntropyLoss()
 
 # Observe that all parameters are being optimized
 optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
@@ -307,7 +307,7 @@ model_conv.fc = nn.Linear(num_ftrs, 2)
 if use_gpu:
     model_conv = model_conv.cuda()
 
-criterion = nn.CrossEntropyLoss(size_average=False)
+criterion = nn.CrossEntropyLoss()
 
 # Observe that only parameters of final layer are being optimized as
 # opoosed to before.
