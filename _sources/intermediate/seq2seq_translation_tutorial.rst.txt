@@ -356,7 +356,7 @@ The full process for preparing the data is:
     Counted words:
     fra 4489
     eng 2925
-    ['vous etes arrogant .', 'you re arrogant .']
+    ['vous etes plus grande que moi .', 'you re taller than me .']
 
 
 The Seq2Seq Model
@@ -413,9 +413,8 @@ next input word.
 
 
     class EncoderRNN(nn.Module):
-        def __init__(self, input_size, hidden_size, n_layers=1):
+        def __init__(self, input_size, hidden_size):
             super(EncoderRNN, self).__init__()
-            self.n_layers = n_layers
             self.hidden_size = hidden_size
 
             self.embedding = nn.Embedding(input_size, hidden_size)
@@ -424,8 +423,7 @@ next input word.
         def forward(self, input, hidden):
             embedded = self.embedding(input).view(1, 1, -1)
             output = embedded
-            for i in range(self.n_layers):
-                output, hidden = self.gru(output, hidden)
+            output, hidden = self.gru(output, hidden)
             return output, hidden
 
         def initHidden(self):
@@ -473,9 +471,8 @@ last hidden state).
 
 
     class DecoderRNN(nn.Module):
-        def __init__(self, hidden_size, output_size, n_layers=1):
+        def __init__(self, hidden_size, output_size):
             super(DecoderRNN, self).__init__()
-            self.n_layers = n_layers
             self.hidden_size = hidden_size
 
             self.embedding = nn.Embedding(output_size, hidden_size)
@@ -485,9 +482,8 @@ last hidden state).
 
         def forward(self, input, hidden):
             output = self.embedding(input).view(1, 1, -1)
-            for i in range(self.n_layers):
-                output = F.relu(output)
-                output, hidden = self.gru(output, hidden)
+            output = F.relu(output)
+            output, hidden = self.gru(output, hidden)
             output = self.softmax(self.out(output[0]))
             return output, hidden
 
@@ -546,11 +542,10 @@ while shorter sentences will only use the first few.
 
 
     class AttnDecoderRNN(nn.Module):
-        def __init__(self, hidden_size, output_size, n_layers=1, dropout_p=0.1, max_length=MAX_LENGTH):
+        def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
             super(AttnDecoderRNN, self).__init__()
             self.hidden_size = hidden_size
             self.output_size = output_size
-            self.n_layers = n_layers
             self.dropout_p = dropout_p
             self.max_length = max_length
 
@@ -573,9 +568,8 @@ while shorter sentences will only use the first few.
             output = torch.cat((embedded[0], attn_applied[0]), 1)
             output = self.attn_combine(output).unsqueeze(0)
 
-            for i in range(self.n_layers):
-                output = F.relu(output)
-                output, hidden = self.gru(output, hidden)
+            output = F.relu(output)
+            output, hidden = self.gru(output, hidden)
 
             output = F.log_softmax(self.out(output[0]), dim=1)
             return output, hidden, attn_weights
@@ -973,8 +967,8 @@ reasonable results.
 
     hidden_size = 256
     encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
-    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words,
-                                   1, dropout_p=0.1)
+    attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
+
 
     if use_cuda:
         encoder1 = encoder1.cuda()
@@ -1003,21 +997,21 @@ reasonable results.
 
  Out::
 
-    1m 35s (- 22m 17s) (5000 6%) 2.8940
-    3m 7s (- 20m 21s) (10000 13%) 2.3590
-    4m 40s (- 18m 43s) (15000 20%) 2.0273
-    6m 14s (- 17m 10s) (20000 26%) 1.8096
-    7m 48s (- 15m 36s) (25000 33%) 1.5893
-    9m 21s (- 14m 2s) (30000 40%) 1.4345
-    10m 55s (- 12m 28s) (35000 46%) 1.2635
-    12m 28s (- 10m 55s) (40000 53%) 1.1544
-    14m 2s (- 9m 21s) (45000 60%) 1.0362
-    15m 35s (- 7m 47s) (50000 66%) 0.9439
-    17m 9s (- 6m 14s) (55000 73%) 0.8612
-    18m 44s (- 4m 41s) (60000 80%) 0.7582
-    20m 18s (- 3m 7s) (65000 86%) 0.7147
-    21m 51s (- 1m 33s) (70000 93%) 0.6659
-    23m 26s (- 0m 0s) (75000 100%) 0.6180
+    1m 35s (- 22m 13s) (5000 6%) 2.8985
+    3m 6s (- 20m 14s) (10000 13%) 2.3102
+    4m 39s (- 18m 37s) (15000 20%) 2.0017
+    6m 11s (- 17m 0s) (20000 26%) 1.7803
+    7m 43s (- 15m 27s) (25000 33%) 1.5747
+    9m 16s (- 13m 55s) (30000 40%) 1.3817
+    10m 49s (- 12m 22s) (35000 46%) 1.2719
+    12m 22s (- 10m 49s) (40000 53%) 1.1499
+    13m 56s (- 9m 17s) (45000 60%) 1.0252
+    15m 29s (- 7m 44s) (50000 66%) 0.9216
+    17m 3s (- 6m 12s) (55000 73%) 0.8592
+    18m 37s (- 4m 39s) (60000 80%) 0.7582
+    20m 11s (- 3m 6s) (65000 86%) 0.6967
+    21m 44s (- 1m 33s) (70000 93%) 0.6212
+    23m 18s (- 0m 0s) (75000 100%) 0.5942
 
 
 
@@ -1035,45 +1029,45 @@ reasonable results.
 
  Out::
 
-    > c est une sorte de peintre .
-    = he is a sort of painter .
-    < he is a sort of a painter . <EOS>
+    > je suis heureux que vous aimiez mes amis .
+    = i m glad you liked my friends .
+    < i m glad that you re happy . <EOS>
 
-    > je suis pret a y aller maintenant .
-    = i m ready to go now .
-    < i m ready to go now . <EOS>
+    > je suis fascinee par les chats .
+    = i m fascinated by cats .
+    < i m fascinated by cats . <EOS>
 
-    > nous sommes tous decus .
-    = we re all disappointed .
-    < we re all devastated . <EOS>
+    > je suis tres fiere de mon pere .
+    = i m very proud of my father .
+    < i m very proud of my father . <EOS>
 
-    > il est accro a l hero .
-    = he s addicted to heroin .
-    < he is addicted to heroin . <EOS>
+    > je suis vraiment occupee .
+    = i m really busy .
+    < i m really busy . <EOS>
 
-    > je ne compare pas tom a mary .
-    = i m not comparing tom to mary .
-    < i m not comparing tom . . <EOS>
+    > elles mentent toutes .
+    = they re all lying .
+    < they re all watching . <EOS>
 
-    > il n est pas de tres bonne compagnie .
-    = he is not very good company .
-    < he is not very good company . <EOS>
+    > je vais vous enseigner des rudiments de karate .
+    = i m going to teach you some karate .
+    < i m going to teach you some karate . <EOS>
 
-    > il est avec ses parents .
-    = he s with his parents .
-    < he is engaged with his parents . <EOS>
+    > ils sont en dessous .
+    = they re downstairs .
+    < they re downstairs . <EOS>
 
-    > je suis desolee de t avoir derange .
-    = i m sorry to have disturbed you .
-    < i m sorry to have disturbed you . <EOS>
+    > ils sont cousins .
+    = they re cousins .
+    < they re cousins . <EOS>
 
-    > il manque de pratique .
-    = he s out of practice .
-    < he s out of practice . <EOS>
+    > il est doue pour prendre des photos .
+    = he is good at taking photos .
+    < he s good at taking business . <EOS>
 
-    > j ai une faim de loup .
-    = i m as hungry as a bear .
-    < i m very hungry . <EOS>
+    > il n est pas marie .
+    = he is unmarried .
+    < he is not married . <EOS>
 
 
 Visualizing Attention
@@ -1185,13 +1179,13 @@ and labels:
  Out::
 
     input = elle a cinq ans de moins que moi .
-    output = she is five years younger than me . <EOS>
+    output = she s two years younger than i am . <EOS>
     input = elle est trop petit .
-    output = she s too hard . <EOS>
+    output = she is too hard . <EOS>
     input = je ne crains pas de mourir .
-    output = i m not afraid . <EOS>
+    output = i m not scared to die . <EOS>
     input = c est un jeune directeur plein de talent .
-    output = he s a lovely young of . <EOS>
+    output = he s a very young man . <EOS>
 
 
 Exercises
@@ -1218,7 +1212,7 @@ Exercises
 
 
 
-**Total running time of the script:** ( 23 minutes  31.650 seconds)
+**Total running time of the script:** ( 23 minutes  26.410 seconds)
 
 
 

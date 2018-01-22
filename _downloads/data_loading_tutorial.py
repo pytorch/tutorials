@@ -66,9 +66,9 @@ plt.ion()   # interactive mode
 landmarks_frame = pd.read_csv('faces/face_landmarks.csv')
 
 n = 65
-img_name = landmarks_frame.ix[n, 0]
-landmarks = landmarks_frame.ix[n, 1:].as_matrix().astype('float')
-landmarks = landmarks.reshape(-1, 2)
+img_name = landmarks_frame.iloc[n, 0]
+landmarks = landmarks_frame.iloc[n, 1:].as_matrix()
+landmarks = landmarks.astype('float').reshape(-1, 2)
 
 print('Image name: {}'.format(img_name))
 print('Landmarks shape: {}'.format(landmarks.shape))
@@ -136,10 +136,11 @@ class FaceLandmarksDataset(Dataset):
         return len(self.landmarks_frame)
 
     def __getitem__(self, idx):
-        img_name = os.path.join(self.root_dir, self.landmarks_frame.ix[idx, 0])
+        img_name = os.path.join(self.root_dir,
+                                self.landmarks_frame.iloc[idx, 0])
         image = io.imread(img_name)
-        landmarks = self.landmarks_frame.ix[idx, 1:].as_matrix().astype('float')
-        landmarks = landmarks.reshape(-1, 2)
+        landmarks = self.landmarks_frame.iloc[idx, 1:].as_matrix()
+        landmarks = landmarks.astype('float').reshape(-1, 2)
         sample = {'image': image, 'landmarks': landmarks}
 
         if self.transform:

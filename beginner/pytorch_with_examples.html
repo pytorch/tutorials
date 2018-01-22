@@ -788,22 +788,25 @@ network:</p>
 <span class="sd">    which operate on Tensors.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        In the forward pass we receive a Tensor containing the input and return a</span>
-<span class="sd">        Tensor containing the output. You can cache arbitrary Tensors for use in the</span>
-<span class="sd">        backward pass using the save_for_backward method.</span>
+<span class="sd">        In the forward pass we receive a Tensor containing the input and return</span>
+<span class="sd">        a Tensor containing the output. ctx is a context object that can be used</span>
+<span class="sd">        to stash information for backward computation. You can cache arbitrary</span>
+<span class="sd">        objects for use in the backward pass using the ctx.save_for_backward method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        In the backward pass we receive a Tensor containing the gradient of the loss</span>
 <span class="sd">        with respect to the output, and we need to compute the gradient of the loss</span>
 <span class="sd">        with respect to the input.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">input</span><span class="p">,</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="nb">input</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
         <span class="n">grad_input</span><span class="p">[</span><span class="nb">input</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">grad_input</span>
@@ -826,8 +829,8 @@ network:</p>
 
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
 <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
-    <span class="c1"># Construct an instance of our MyReLU class to use in our network</span>
-    <span class="n">relu</span> <span class="o">=</span> <span class="n">MyReLU</span><span class="p">()</span>
+    <span class="c1"># To apply our Function, we use Function.apply method. We alias this as &#39;relu&#39;.</span>
+    <span class="n">relu</span> <span class="o">=</span> <span class="n">MyReLU</span><span class="o">.</span><span class="n">apply</span>
 
     <span class="c1"># Forward pass: compute predicted y using operations on Variables; we compute</span>
     <span class="c1"># ReLU using our custom autograd operation.</span>
@@ -1074,8 +1077,10 @@ by the <code class="docutils literal"><span class="pre">optim</span></code> pack
     <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="c1"># Before the backward pass, use the optimizer object to zero all of the</span>
-    <span class="c1"># gradients for the variables it will update (which are the learnable weights</span>
-    <span class="c1"># of the model)</span>
+    <span class="c1"># gradients for the variables it will update (which are the learnable</span>
+    <span class="c1"># weights of the model). This is because by default, gradients are</span>
+    <span class="c1"># accumulated in buffers( i.e, not overwritten) whenever .backward()</span>
+    <span class="c1"># is called. Checkout docs of torch.autograd.backward for more details.</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
     <span class="c1"># Backward pass: compute gradient of the loss with respect to model</span>
