@@ -253,3 +253,11 @@ output = net(input)
 loss = criterion(output, target)
 loss.backward()
 optimizer.step()    # Does the update
+
+
+###############################################################
+# .. Note::
+#
+#       Observe how gradient buffers had to be manually set to zero using
+#       ``optimizer.zero_grad()``. This is because gradients are accumulated
+#       as explained in `Backprop`_ section.
