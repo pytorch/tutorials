@@ -244,8 +244,8 @@ x = torch.randn((2, 2))
 y = torch.randn((2, 2))
 z = x + y  # These are Tensor types, and backprop would not be possible
 
-var_x = autograd.Variable(x)
-var_y = autograd.Variable(y)
+var_x = autograd.Variable(x, requires_grad=True)
+var_y = autograd.Variable(y, requires_grad=True)
 # var_z contains enough information to compute gradients, as we saw above
 var_z = var_x + var_y
 print(var_z.grad_fn)
