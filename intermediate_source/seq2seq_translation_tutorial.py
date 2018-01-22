@@ -336,9 +336,8 @@ print(random.choice(pairs))
 #
 
 class EncoderRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, n_layers=1):
+    def __init__(self, input_size, hidden_size):
         super(EncoderRNN, self).__init__()
-        self.n_layers = n_layers
         self.hidden_size = hidden_size
 
         self.embedding = nn.Embedding(input_size, hidden_size)
@@ -347,8 +346,7 @@ class EncoderRNN(nn.Module):
     def forward(self, input, hidden):
         embedded = self.embedding(input).view(1, 1, -1)
         output = embedded
-        for i in range(self.n_layers):
-            output, hidden = self.gru(output, hidden)
+        output, hidden = self.gru(output, hidden)
         return output, hidden
 
     def initHidden(self):
@@ -387,9 +385,8 @@ class EncoderRNN(nn.Module):
 #
 
 class DecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size, n_layers=1):
+    def __init__(self, hidden_size, output_size):
         super(DecoderRNN, self).__init__()
-        self.n_layers = n_layers
         self.hidden_size = hidden_size
 
         self.embedding = nn.Embedding(output_size, hidden_size)
@@ -399,9 +396,8 @@ class DecoderRNN(nn.Module):
 
     def forward(self, input, hidden):
         output = self.embedding(input).view(1, 1, -1)
-        for i in range(self.n_layers):
-            output = F.relu(output)
-            output, hidden = self.gru(output, hidden)
+        output = F.relu(output)
+        output, hidden = self.gru(output, hidden)
         output = self.softmax(self.out(output[0]))
         return output, hidden
 
@@ -451,11 +447,10 @@ class DecoderRNN(nn.Module):
 #
 
 class AttnDecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size, n_layers=1, dropout_p=0.1, max_length=MAX_LENGTH):
+    def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
         super(AttnDecoderRNN, self).__init__()
         self.hidden_size = hidden_size
         self.output_size = output_size
-        self.n_layers = n_layers
         self.dropout_p = dropout_p
         self.max_length = max_length
 
@@ -478,9 +473,8 @@ class AttnDecoderRNN(nn.Module):
         output = torch.cat((embedded[0], attn_applied[0]), 1)
         output = self.attn_combine(output).unsqueeze(0)
 
-        for i in range(self.n_layers):
-            output = F.relu(output)
-            output, hidden = self.gru(output, hidden)
+        output = F.relu(output)
+        output, hidden = self.gru(output, hidden)
 
         output = F.log_softmax(self.out(output[0]), dim=1)
         return output, hidden, attn_weights
@@ -798,8 +792,8 @@ def evaluateRandomly(encoder, decoder, n=10):
 
 hidden_size = 256
 encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
-attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words,
-                               1, dropout_p=0.1)
+attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
+
 
 if use_cuda:
     encoder1 = encoder1.cuda()
