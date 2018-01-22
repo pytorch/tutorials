@@ -47,8 +47,10 @@ for t in range(500):
     print(t, loss.data[0])
 
     # Before the backward pass, use the optimizer object to zero all of the
-    # gradients for the variables it will update (which are the learnable weights
-    # of the model)
+    # gradients for the variables it will update (which are the learnable
+    # weights of the model). This is because by default, gradients are
+    # accumulated in buffers( i.e, not overwritten) whenever .backward()
+    # is called. Checkout docs of torch.autograd.backward for more details.
     optimizer.zero_grad()
 
     # Backward pass: compute gradient of the loss with respect to model
