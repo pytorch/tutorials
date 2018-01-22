@@ -170,7 +170,8 @@ print(lineToTensor('Jones').size())
 # as regular feed-forward layers.
 #
 # This RNN module (mostly copied from `the PyTorch for Torch users
-# tutorial <https://github.com/pytorch/tutorials/blob/master/Introduction%20to%20PyTorch%20for%20former%20Torchies.ipynb>`__)
+# tutorial <http://pytorch.org/tutorials/beginner/former_torchies/
+# nn_tutorial.html#example-2-recurrent-net>`__)
 # is just 2 linear layers which operate on an input and hidden state, with
 # a LogSoftmax layer after the output.
 #
