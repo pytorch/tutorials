@@ -776,7 +776,7 @@ def evaluateRandomly(encoder, decoder, n=10):
 # =======================
 #
 # With all these helper functions in place (it looks like extra work, but
-# it's easier to run multiple experiments easier) we can actually
+# it makes it easier to run multiple experiments) we can actually
 # initialize a network and start training.
 #
 # Remember that the input sentences were heavily filtered. For this small
