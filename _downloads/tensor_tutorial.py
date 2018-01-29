@@ -6,7 +6,7 @@ What is PyTorch?
 It’s a Python based scientific computing package targeted at two sets of
 audiences:
 
--  A replacement for numpy to use the power of GPUs
+-  A replacement for NumPy to use the power of GPUs
 -  a deep learning research platform that provides maximum flexibility
    and speed
 
@@ -16,7 +16,7 @@ Getting Started
 Tensors
 ^^^^^^^
 
-Tensors are similar to numpy’s ndarrays, with the addition being that
+Tensors are similar to NumPy’s ndarrays, with the addition being that
 Tensors can also be used on a GPU to accelerate computing.
 """
 
@@ -30,23 +30,24 @@ x = torch.Tensor(5, 3)
 print(x)
 
 ###############################################################
-# Construct a randomly initialized matrix
+# Construct a randomly initialized matrix:
 
 x = torch.rand(5, 3)
 print(x)
 
 ###############################################################
-# Get its size
+# Get its size:
 
 print(x.size())
 
 ###############################################################
 # .. note::
-#     ``torch.Size`` is in fact a tuple, so it supports the same operations
+#     ``torch.Size`` is in fact a tuple, so it supports all tuple operations.
 #
 # Operations
 # ^^^^^^^^^^
-# There are multiple syntaxes for operations. Let's see addition as an example
+# There are multiple syntaxes for operations. In the following
+# example, we will take a look at the addition operation.
 #
 # Addition: syntax 1
 y = torch.rand(5, 3)
@@ -58,7 +59,7 @@ print(x + y)
 print(torch.add(x, y))
 
 ###############################################################
-# Addition: giving an output tensor
+# Addition: providing an output tensor as argument
 result = torch.Tensor(5, 3)
 torch.add(x, y, out=result)
 print(result)
@@ -72,10 +73,10 @@ print(y)
 
 ###############################################################
 # .. note::
-#     Any operation that mutates a tensor in-place is post-fixed with an ``_``
+#     Any operation that mutates a tensor in-place is post-fixed with an ``_``.
 #     For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
 #
-# You can use standard numpy-like indexing with all bells and whistles!
+# You can use standard NumPy-like indexing with all bells and whistles!
 
 print(x[:, 1])
 
@@ -91,19 +92,20 @@ print(x.size(), y.size(), z.size())
 #
 #
 #   100+ Tensor operations, including transposing, indexing, slicing,
-#   mathematical operations, linear algebra, random numbers, etc are described
-#   `here <http://pytorch.org/docs/torch>`_
+#   mathematical operations, linear algebra, random numbers, etc.,
+#   are described
+#   `here <http://pytorch.org/docs/torch>`_.
 #
-# Numpy Bridge
+# NumPy Bridge
 # ------------
 #
-# Converting a torch Tensor to a numpy array and vice versa is a breeze.
+# Converting a Torch Tensor to a NumPy array and vice versa is a breeze.
 #
-# The torch Tensor and numpy array will share their underlying memory
+# The Torch Tensor and NumPy array will share their underlying memory
 # locations, and changing one will change the other.
 #
-# Converting torch Tensor to numpy Array
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Converting a Torch Tensor to a NumPy Array
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 a = torch.ones(5)
 print(a)
@@ -123,9 +125,9 @@ print(a)
 print(b)
 
 ###############################################################
-# Converting numpy Array to torch Tensor
+# Converting NumPy Array to Torch Tensor
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# See how changing the np array changed the torch Tensor automatically
+# See how changing the np array changed the Torch Tensor automatically
 
 import numpy as np
 a = np.ones(5)
@@ -141,7 +143,7 @@ print(b)
 # CUDA Tensors
 # ------------
 #
-# Tensors can be moved onto GPU using the ``.cuda`` function.
+# Tensors can be moved onto GPU using the ``.cuda`` method.
 
 # let us run this cell only if CUDA is available
 if torch.cuda.is_available():
