@@ -222,6 +222,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 #
 
 def visualize_model(model, num_images=6):
+    was_training = model.training
+    model.eval()
     images_so_far = 0
     fig = plt.figure()
 
@@ -243,7 +245,9 @@ def visualize_model(model, num_images=6):
             imshow(inputs.cpu().data[j])
 
             if images_so_far == num_images:
+                model.train(mode=was_training)
                 return
+    model.train(mode=was_training)
 
 ######################################################################
 # Finetuning the convnet
