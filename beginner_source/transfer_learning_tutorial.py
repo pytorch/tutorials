@@ -8,7 +8,7 @@ In this tutorial, you will learn how to train your network using
 transfer learning. You can read more about the transfer learning at `cs231n
 notes <http://cs231n.github.io/transfer-learning/>`__
 
-Quoting this notes,
+Quoting these notes,
 
     In practice, very few people train an entire Convolutional Network
     from scratch (with random initialization), because it is relatively
@@ -18,7 +18,7 @@ Quoting this notes,
     ConvNet either as an initialization or a fixed feature extractor for
     the task of interest.
 
-These two major transfer learning scenarios looks as follows:
+These two major transfer learning scenarios look as follows:
 
 -  **Finetuning the convnet**: Instead of random initializaion, we
    initialize the network with a pretrained network, like the one that is
@@ -75,13 +75,13 @@ plt.ion()   # interactive mode
 # Just normalization for validation
 data_transforms = {
     'train': transforms.Compose([
-        transforms.RandomSizedCrop(224),
+        transforms.RandomResizedCrop(224),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ]),
     'val': transforms.Compose([
-        transforms.Scale(256),
+        transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
