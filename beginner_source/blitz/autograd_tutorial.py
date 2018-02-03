@@ -43,7 +43,7 @@ the ``Variable`` (except for Variables created by the user - their
 If you want to compute the derivatives, you can call ``.backward()`` on
 a ``Variable``. If ``Variable`` is a scalar (i.e. it holds a one element
 data), you don’t need to specify any arguments to ``backward()``,
-however if it has more elements, you need to specify a ``grad_output``
+however if it has more elements, you need to specify a ``gradient``
 argument that is a tensor of matching shape.
 """
 
