@@ -236,7 +236,7 @@ class DQN(nn.Module):
 #
 
 resize = T.Compose([T.ToPILImage(),
-                    T.Scale(40, interpolation=Image.CUBIC),
+                    T.Resize(40, interpolation=Image.CUBIC),
                     T.ToTensor()])
 
 # This is based on the code from gym.
@@ -311,14 +311,12 @@ GAMMA = 0.999
 EPS_START = 0.9
 EPS_END = 0.05
 EPS_DECAY = 200
-TARGET_UPDATE = 50
+TARGET_UPDATE = 10
 
 policy_net = DQN()
 target_net = DQN()
-target_net.eval()
 target_net.load_state_dict(policy_net.state_dict())
-for param in target_net.parameters():
-    param.requires_grad = False
+target_net.eval()
 
 if use_cuda:
     policy_net.cuda()
@@ -397,7 +395,8 @@ def optimize_model():
     non_final_mask = ByteTensor(tuple(map(lambda s: s is not None,
                                           batch.next_state)))
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
-                                                if s is not None]))
+                                                if s is not None]),
+                                     volatile=True)
     state_batch = Variable(torch.cat(batch.state))
     action_batch = Variable(torch.cat(batch.action))
     reward_batch = Variable(torch.cat(batch.reward))
@@ -411,6 +410,8 @@ def optimize_model():
     next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    # Undo volatility (which was used to prevent unnecessary gradients)
+    expected_state_action_values = Variable(expected_state_action_values.data)
 
     # Compute Huber loss
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
@@ -435,7 +436,7 @@ def optimize_model():
 # the notebook and run lot more epsiodes.
 #
 
-num_episodes = 10
+num_episodes = 50
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
@@ -469,7 +470,7 @@ for i_episode in range(num_episodes):
             plot_durations()
             break
     # Update the target network
-    if i_episode % 5 == 0:
+    if i_episode % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
 print('Complete')
