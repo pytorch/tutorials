@@ -15,12 +15,12 @@ Generally, when you have to deal with image, text, audio or video data,
 you can use standard python packages that load data into a numpy array.
 Then you can convert this array into a ``torch.*Tensor``.
 
--  For images, packages such as Pillow, OpenCV are useful.
+-  For images, packages such as Pillow, OpenCV are useful
 -  For audio, packages such as scipy and librosa
 -  For text, either raw Python or Cython based loading, or NLTK and
-   SpaCy are useful.
+   SpaCy are useful
 
-Specifically for ``vision``, we have created a package called
+Specifically for vision, we have created a package called
 ``torchvision``, that has data loaders for common datasets such as
 Imagenet, CIFAR10, MNIST, etc. and data transformers for images, viz.,
 ``torchvision.datasets`` and ``torch.utils.data.DataLoader``.
@@ -61,7 +61,7 @@ import torchvision.transforms as transforms
 
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
-# We transform them to Tensors of normalized range [-1, 1]
+# We transform them to Tensors of normalized range [-1, 1].
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -141,7 +141,7 @@ net = Net()
 ########################################################################
 # 3. Define a Loss function and optimizer
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Let's use a Classification Cross-Entropy loss and SGD with momentum
+# Let's use a Classification Cross-Entropy loss and SGD with momentum.
 
 import torch.optim as optim
 
@@ -154,7 +154,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 #
 # This is when things start to get interesting.
 # We simply have to loop over our data iterator, and feed the inputs to the
-# network and optimize
+# network and optimize.
 
 for epoch in range(2):  # loop over the dataset multiple times
 
