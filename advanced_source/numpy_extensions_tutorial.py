@@ -38,12 +38,12 @@ class BadFFTFunction(Function):
     def forward(self, input):
         numpy_input = input.numpy()
         result = abs(rfft2(numpy_input))
-        return torch.FloatTensor(result)
+        return input.new(result)
 
     def backward(self, grad_output):
         numpy_go = grad_output.numpy()
         result = irfft2(numpy_go)
-        return torch.FloatTensor(result)
+        return grad_output.new(result)
 
 # since this layer does not have any parameters, we can
 # simply declare this as a function, rather than as an nn.Module class
@@ -90,7 +90,7 @@ class ScipyConv2dFunction(Function):
     def forward(ctx, input, filter):
         result = correlate2d(input.numpy(), filter.numpy(), mode='valid')
         ctx.save_for_backward(input, filter)
-        return torch.FloatTensor(result)
+        return input.new(result)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -99,8 +99,8 @@ class ScipyConv2dFunction(Function):
         grad_input = convolve2d(grad_output.numpy(), filter.t().numpy(), mode='full')
         grad_filter = convolve2d(input.numpy(), grad_output.numpy(), mode='valid')
 
-        return Variable(torch.FloatTensor(grad_input)), \
-            Variable(torch.FloatTensor(grad_filter))
+        return Variable(grad_output.new(grad_input)), \
+            Variable(grad_output.new(grad_filter))
 
 
 class ScipyConv2d(Module):
