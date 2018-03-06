@@ -116,8 +116,9 @@ Advanced Tutorials
 .. galleryitem:: advanced/super_resolution_with_caffe2.py
 
 .. customgalleryitem::
-   :tooltip: Implement custom extensions in C.
-   :description: :doc:`/advanced/c_extension`
+   :tooltip: Implement custom extensions in C++ or CUDA.
+   :description: :doc:`/advanced/cpp_extension`
+   :figure: _static/img/cpp_logo.png
 
 
 .. raw:: html
@@ -134,4 +135,4 @@ Advanced Tutorials
    advanced/neural_style_tutorial
    advanced/numpy_extensions_tutorial
    advanced/super_resolution_with_caffe2
-   advanced/c_extension
+   advanced/cpp_extension
