@@ -10,7 +10,7 @@ Now that you had a glimpse of ``autograd``, ``nn`` depends on
 An ``nn.Module`` contains layers, and a method ``forward(input)``\ that
 returns the ``output``.
 
-For example, look at this network that classfies digit images:
+For example, look at this network that classifies digit images:
 
 .. figure:: /_static/img/mnist.png
    :alt: convnet
@@ -93,7 +93,7 @@ print(params[0].size())  # conv1's .weight
 ########################################################################
 # The input to the forward is an ``autograd.Variable``, and so is the output.
 # Note: Expected input size to this net(LeNet) is 32x32. To use this net on
-# MNIST dataset,please resize the images from the dataset to 32x32.
+# MNIST dataset, please resize the images from the dataset to 32x32.
 
 input = Variable(torch.randn(1, 1, 32, 32))
 out = net(input)
@@ -108,7 +108,7 @@ out.backward(torch.randn(1, 10))
 ########################################################################
 # .. note::
 #
-#     ``torch.nn`` only supports mini-batches The entire ``torch.nn``
+#     ``torch.nn`` only supports mini-batches. The entire ``torch.nn``
 #     package only supports inputs that are a mini-batch of samples, and not
 #     a single sample.
 #
@@ -139,7 +139,7 @@ out.backward(torch.randn(1, 10))
 #
 # **At this point, we covered:**
 #   -  Defining a neural network
-#   -  Processing inputs and calling backward.
+#   -  Processing inputs and calling backward
 #
 # **Still Left:**
 #   -  Computing the loss
@@ -166,7 +166,7 @@ loss = criterion(output, target)
 print(loss)
 
 ########################################################################
-# Now, if you follow ``loss`` in the backward direction, using it’s
+# Now, if you follow ``loss`` in the backward direction, using its
 # ``.grad_fn`` attribute, you will see a graph of computations that looks
 # like this:
 #
@@ -192,7 +192,7 @@ print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 # --------
 # To backpropagate the error all we have to do is to ``loss.backward()``.
 # You need to clear the existing gradients though, else gradients will be
-# accumulated to existing gradients
+# accumulated to existing gradients.
 #
 #
 # Now we shall call ``loss.backward()``, and have a look at conv1's bias
@@ -216,11 +216,11 @@ print(net.conv1.bias.grad)
 #
 #   The neural network package contains various modules and loss functions
 #   that form the building blocks of deep neural networks. A full list with
-#   documentation is `here <http://pytorch.org/docs/nn>`_
+#   documentation is `here <http://pytorch.org/docs/nn>`_.
 #
 # **The only thing left to learn is:**
 #
-#   - updating the weights of the network
+#   - Updating the weights of the network
 #
 # Update the weights
 # ------------------
