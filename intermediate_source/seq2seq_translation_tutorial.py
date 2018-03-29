@@ -118,7 +118,7 @@ use_cuda = torch.cuda.is_available()
 #
 # ::
 #
-#     I am cold.    Je suis froid.
+#     I am cold.    J'ai froid.
 #
 # .. Note::
 #    Download the data from
