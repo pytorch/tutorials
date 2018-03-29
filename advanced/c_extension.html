@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Custom C extensions for pytorch &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Custom C extensions for pytorch &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../index.html"/>
         <link rel="prev" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html"/> 
 
   
@@ -74,7 +74,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -517,10 +517,10 @@
 <p>First, you have to write your C functions.</p>
 <p>Below you can find an example implementation of forward and backward
 functions of a module that adds its both inputs.</p>
-<p>In your <code class="docutils literal"><span class="pre">.c</span></code> files you can include TH using an <code class="docutils literal"><span class="pre">#include</span> <span class="pre">&lt;TH/TH.h&gt;</span></code>
-directive, and THC using <code class="docutils literal"><span class="pre">#include</span> <span class="pre">&lt;THC/THC.h&gt;</span></code>.</p>
+<p>In your <code class="docutils literal notranslate"><span class="pre">.c</span></code> files you can include TH using an <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;TH/TH.h&gt;</span></code>
+directive, and THC using <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;THC/THC.h&gt;</span></code>.</p>
 <p>ffi utils will make sure a compiler can find them during the build.</p>
-<div class="code C highlight-default"><div class="highlight"><pre><span></span>/* src/my_lib.c */
+<div class="code C highlight-default notranslate"><div class="highlight"><pre><span></span>/* src/my_lib.c */
 #include &lt;TH/TH.h&gt;
 
 int my_lib_add_forward(THFloatTensor *input1, THFloatTensor *input2,
@@ -545,14 +545,14 @@ int my_lib_add_backward(THFloatTensor *grad_output, THFloatTensor *grad_input)
 prepare a single header, which will list all functions want to call from
 python.</p>
 <p>It will be used by the ffi utils to generate appropriate wrappers.</p>
-<div class="code C highlight-default"><div class="highlight"><pre><span></span><span class="o">/*</span> <span class="n">src</span><span class="o">/</span><span class="n">my_lib</span><span class="o">.</span><span class="n">h</span> <span class="o">*/</span>
+<div class="code C highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/*</span> <span class="n">src</span><span class="o">/</span><span class="n">my_lib</span><span class="o">.</span><span class="n">h</span> <span class="o">*/</span>
 <span class="nb">int</span> <span class="n">my_lib_add_forward</span><span class="p">(</span><span class="n">THFloatTensor</span> <span class="o">*</span><span class="n">input1</span><span class="p">,</span> <span class="n">THFloatTensor</span> <span class="o">*</span><span class="n">input2</span><span class="p">,</span> <span class="n">THFloatTensor</span> <span class="o">*</span><span class="n">output</span><span class="p">);</span>
 <span class="nb">int</span> <span class="n">my_lib_add_backward</span><span class="p">(</span><span class="n">THFloatTensor</span> <span class="o">*</span><span class="n">grad_output</span><span class="p">,</span> <span class="n">THFloatTensor</span> <span class="o">*</span><span class="n">grad_input</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>Now, you’ll need a super short file, that will build your custom
 extension:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># build.py</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># build.py</span>
 <span class="kn">from</span> <span class="nn">torch.utils.ffi</span> <span class="k">import</span> <span class="n">create_extension</span>
 <span class="n">ffi</span> <span class="o">=</span> <span class="n">create_extension</span><span class="p">(</span>
 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;_ext.my_lib&#39;</span><span class="p">,</span>
@@ -566,12 +566,12 @@ extension:</p>
 </div>
 <div class="section" id="step-2-include-it-in-your-python-code">
 <h2>Step 2: Include it in your Python code<a class="headerlink" href="#step-2-include-it-in-your-python-code" title="Permalink to this headline">¶</a></h2>
-<p>After you run it, pytorch will create an <code class="docutils literal"><span class="pre">_ext</span></code> directory and put
-<code class="docutils literal"><span class="pre">my_lib</span></code> inside.</p>
+<p>After you run it, pytorch will create an <code class="docutils literal notranslate"><span class="pre">_ext</span></code> directory and put
+<code class="docutils literal notranslate"><span class="pre">my_lib</span></code> inside.</p>
 <p>Package name can have an arbitrary number of packages preceding the
 final module name (including none). If the build succeeded you can
 import your extension just like a regular python file.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># functions/add.py</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># functions/add.py</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Function</span>
 <span class="kn">from</span> <span class="nn">_ext</span> <span class="k">import</span> <span class="n">my_lib</span>
@@ -589,7 +589,7 @@ import your extension just like a regular python file.</p>
         <span class="k">return</span> <span class="n">grad_input</span>
 </pre></div>
 </div>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># modules/add.py</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># modules/add.py</span>
 <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="k">import</span> <span class="n">Module</span>
 <span class="kn">from</span> <span class="nn">functions.add</span> <span class="k">import</span> <span class="n">MyAddFunction</span>
 
@@ -598,7 +598,7 @@ import your extension just like a regular python file.</p>
         <span class="k">return</span> <span class="n">MyAddFunction</span><span class="p">()(</span><span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="k">import</span> <span class="n">Variable</span>
@@ -663,7 +663,7 @@ import your extension just like a regular python file.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

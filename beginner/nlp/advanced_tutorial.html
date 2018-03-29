@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Advanced: Making Dynamic Decisions and the Bi-LSTM CRF &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Advanced: Making Dynamic Decisions and the Bi-LSTM CRF &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../../index.html"/>
         <link rel="up" title="Deep Learning for NLP with Pytorch" href="../deep_learning_nlp_tutorial.html"/>
         <link rel="next" title="Classifying Names with a Character-Level RNN" href="../../intermediate/char_rnn_classification_tutorial.html"/>
         <link rel="prev" title="Sequence Models and Long-Short Term Memory Networks" href="sequence_models_tutorial.html"/> 
@@ -76,7 +76,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -542,12 +542,12 @@ form a new constituent, use some sort of technique to get an embedding
 of the constituent. In this case, our network architecture will depend
 completely on the input sentence. In the sentence “The green cat
 scratched the wall”, at some point in the model, we will want to combine
-the span <span class="math">\((i,j,r) = (1, 3, \text{NP})\)</span> (that is, an NP constituent
+the span <span class="math notranslate">\((i,j,r) = (1, 3, \text{NP})\)</span> (that is, an NP constituent
 spans word 1 to word 3, in this case “The green cat”).</li>
 </ul>
 <p>However, another sentence might be “Somewhere, the big fat cat scratched
 the wall”. In this sentence, we will want to form the constituent
-<span class="math">\((2, 4, NP)\)</span> at some point. The constituents we will want to form
+<span class="math notranslate">\((2, 4, NP)\)</span> at some point. The constituents we will want to form
 will depend on the instance. If we just compile the computation graph
 once, as in a static toolkit, it will be exceptionally difficult or
 impossible to program this logic. In a dynamic toolkit though, there
@@ -577,26 +577,26 @@ log-space (hint: log-sum-exp)</li>
 </ul>
 <p>If you can do those three things, you should be able to understand the
 code below. Recall that the CRF computes a conditional probability. Let
-<span class="math">\(y\)</span> be a tag sequence and <span class="math">\(x\)</span> an input sequence of words.
+<span class="math notranslate">\(y\)</span> be a tag sequence and <span class="math notranslate">\(x\)</span> an input sequence of words.
 Then we compute</p>
-<div class="math">
+<div class="math notranslate">
 \[P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}\]</div>
 <p>Where the score is determined by defining some log potentials
-<span class="math">\(\log \psi_i(x,y)\)</span> such that</p>
-<div class="math">
+<span class="math notranslate">\(\log \psi_i(x,y)\)</span> such that</p>
+<div class="math notranslate">
 \[\text{Score}(x,y) = \sum_i \log \psi_i(x,y)\]</div>
 <p>To make the partition function tractable, the potentials must look only
 at local features.</p>
 <p>In the Bi-LSTM CRF, we define two kinds of potentials: emission and
-transition. The emission potential for the word at index <span class="math">\(i\)</span> comes
-from the hidden state of the Bi-LSTM at timestep <span class="math">\(i\)</span>. The
-transition scores are stored in a <span class="math">\(|T|x|T|\)</span> matrix
-<span class="math">\(\textbf{P}\)</span>, where <span class="math">\(T\)</span> is the tag set. In my
-implementation, <span class="math">\(\textbf{P}_{j,k}\)</span> is the score of transitioning
-to tag <span class="math">\(j\)</span> from tag <span class="math">\(k\)</span>. So:</p>
-<div class="math">
+transition. The emission potential for the word at index <span class="math notranslate">\(i\)</span> comes
+from the hidden state of the Bi-LSTM at timestep <span class="math notranslate">\(i\)</span>. The
+transition scores are stored in a <span class="math notranslate">\(|T|x|T|\)</span> matrix
+<span class="math notranslate">\(\textbf{P}\)</span>, where <span class="math notranslate">\(T\)</span> is the tag set. In my
+implementation, <span class="math notranslate">\(\textbf{P}_{j,k}\)</span> is the score of transitioning
+to tag <span class="math notranslate">\(j\)</span> from tag <span class="math notranslate">\(k\)</span>. So:</p>
+<div class="math notranslate">
 \[\text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)\]</div>
-<div class="math">
+<div class="math notranslate">
 \[= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}\]</div>
 <p>where in this second expression, we think of the tags as being assigned
 unique non-negative indices.</p>
@@ -615,7 +615,7 @@ you’ll probably quickly see that iterating over the next tag in the
 forward algorithm could probably be done in one big operation. I wanted
 to code to be more readable. If you want to make the relevant change,
 you could probably use this tagger for real tasks.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.autograd</span> <span class="kn">as</span> <span class="nn">autograd</span>
@@ -626,7 +626,7 @@ you could probably use this tagger for real tasks.</p>
 </pre></div>
 </div>
 <p>Helper functions to make the code more readable.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">to_scalar</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">to_scalar</span><span class="p">(</span><span class="n">var</span><span class="p">):</span>
     <span class="c1"># returns a python float</span>
     <span class="k">return</span> <span class="n">var</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -652,7 +652,7 @@ you could probably use this tagger for real tasks.</p>
 </pre></div>
 </div>
 <p>Create model</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BiLSTM_CRF</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BiLSTM_CRF</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">tag_to_ix</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">BiLSTM_CRF</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -794,7 +794,7 @@ you could probably use this tagger for real tasks.</p>
 </pre></div>
 </div>
 <p>Run training</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">START_TAG</span> <span class="o">=</span> <span class="s2">&quot;&lt;START&gt;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">START_TAG</span> <span class="o">=</span> <span class="s2">&quot;&lt;START&gt;&quot;</span>
 <span class="n">STOP_TAG</span> <span class="o">=</span> <span class="s2">&quot;&lt;STOP&gt;&quot;</span>
 <span class="n">EMBEDDING_DIM</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">HIDDEN_DIM</span> <span class="o">=</span> <span class="mi">4</span>
@@ -852,7 +852,7 @@ you could probably use this tagger for real tasks.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
  <span class="mf">18.0485</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">1</span><span class="p">]</span>
 <span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -878,12 +878,12 @@ graph <em>depending on the training instance</em>. Although I haven’t tried
 implementing this in a static toolkit, I imagine that it is possible but
 much less straightforward.</p>
 <p>Pick up some real data and do a comparison!</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  6.098 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  6.632 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/advanced_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">advanced_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/advanced_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">advanced_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/advanced_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">advanced_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/advanced_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">advanced_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -933,7 +933,7 @@ much less straightforward.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

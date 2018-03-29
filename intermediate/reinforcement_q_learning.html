@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Reinforcement Learning (DQN) tutorial &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Reinforcement Learning (DQN) tutorial &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../index.html"/>
         <link rel="next" title="Writing Distributed Applications with PyTorch" href="dist_tuto.html"/>
         <link rel="prev" title="Translation with a Sequence to Sequence Network and Attention" href="seq2seq_translation_tutorial.html"/> 
 
@@ -75,7 +75,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -545,13 +545,13 @@ to take the velocity of the pole into account from one image.</p>
 (Install using <cite>pip install gym</cite>).
 We’ll also use the following from PyTorch:</p>
 <ul class="simple">
-<li>neural networks (<code class="docutils literal"><span class="pre">torch.nn</span></code>)</li>
-<li>optimization (<code class="docutils literal"><span class="pre">torch.optim</span></code>)</li>
-<li>automatic differentiation (<code class="docutils literal"><span class="pre">torch.autograd</span></code>)</li>
-<li>utilities for vision tasks (<code class="docutils literal"><span class="pre">torchvision</span></code> - <a class="reference external" href="https://github.com/pytorch/vision">a separate
+<li>neural networks (<code class="docutils literal notranslate"><span class="pre">torch.nn</span></code>)</li>
+<li>optimization (<code class="docutils literal notranslate"><span class="pre">torch.optim</span></code>)</li>
+<li>automatic differentiation (<code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code>)</li>
+<li>utilities for vision tasks (<code class="docutils literal notranslate"><span class="pre">torchvision</span></code> - <a class="reference external" href="https://github.com/pytorch/vision">a separate
 package</a>).</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gym</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -559,7 +559,6 @@ package</a>).</li>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">count</span>
-<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -596,13 +595,13 @@ batch are decorrelated. It has been shown that this greatly stabilizes
 and improves the DQN training procedure.</p>
 <p>For this, we’re going to need two classses:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Transition</span></code> - a named tuple representing a single transition in
+<li><code class="docutils literal notranslate"><span class="pre">Transition</span></code> - a named tuple representing a single transition in
 our environment</li>
-<li><code class="docutils literal"><span class="pre">ReplayMemory</span></code> - a cyclic buffer of bounded size that holds the
-transitions observed recently. It also implements a <code class="docutils literal"><span class="pre">.sample()</span></code>
+<li><code class="docutils literal notranslate"><span class="pre">ReplayMemory</span></code> - a cyclic buffer of bounded size that holds the
+transitions observed recently. It also implements a <code class="docutils literal notranslate"><span class="pre">.sample()</span></code>
 method for selecting a random batch of transitions for training.</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Transition</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Transition&#39;</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Transition</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;Transition&#39;</span><span class="p">,</span>
                         <span class="p">(</span><span class="s1">&#39;state&#39;</span><span class="p">,</span> <span class="s1">&#39;action&#39;</span><span class="p">,</span> <span class="s1">&#39;next_state&#39;</span><span class="p">,</span> <span class="s1">&#39;reward&#39;</span><span class="p">))</span>
 
 
@@ -637,41 +636,41 @@ reinforcement learning literature, they would also contain expectations
 over stochastic transitions in the environment.</p>
 <p>Our aim will be to train a policy that tries to maximize the discounted,
 cumulative reward
-<span class="math">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
-<span class="math">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
-<span class="math">\(\gamma\)</span>, should be a constant between <span class="math">\(0\)</span> and <span class="math">\(1\)</span>
+<span class="math notranslate">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
+<span class="math notranslate">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
+<span class="math notranslate">\(\gamma\)</span>, should be a constant between <span class="math notranslate">\(0\)</span> and <span class="math notranslate">\(1\)</span>
 that ensures the sum converges. It makes rewards from the uncertain far
 future less important for our agent than the ones in the near future
 that it can be fairly confident about.</p>
 <p>The main idea behind Q-learning is that if we had a function
-<span class="math">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
+<span class="math notranslate">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
 us what our return would be, if we were to take an action in a given
 state, then we could easily construct a policy that maximizes our
 rewards:</p>
-<div class="math">
+<div class="math notranslate">
 \[\pi^*(s) = \arg\!\max_a \ Q^*(s, a)\]</div>
 <p>However, we don’t know everything about the world, so we don’t have
-access to <span class="math">\(Q^*\)</span>. But, since neural networks are universal function
+access to <span class="math notranslate">\(Q^*\)</span>. But, since neural networks are universal function
 approximators, we can simply create one and train it to resemble
-<span class="math">\(Q^*\)</span>.</p>
-<p>For our training update rule, we’ll use a fact that every <span class="math">\(Q\)</span>
+<span class="math notranslate">\(Q^*\)</span>.</p>
+<p>For our training update rule, we’ll use a fact that every <span class="math notranslate">\(Q\)</span>
 function for some policy obeys the Bellman equation:</p>
-<div class="math">
+<div class="math notranslate">
 \[Q^{\pi}(s, a) = r + \gamma Q^{\pi}(s', \pi(s'))\]</div>
 <p>The difference between the two sides of the equality is known as the
-temporal difference error, <span class="math">\(\delta\)</span>:</p>
-<div class="math">
+temporal difference error, <span class="math notranslate">\(\delta\)</span>:</p>
+<div class="math notranslate">
 \[\delta = Q(s, a) - (r + \gamma \max_a Q(s', a))\]</div>
 <p>To minimise this error, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Huber_loss">Huber
 loss</a>. The Huber loss acts
 like the mean squared error when the error is small, but like the mean
 absolute error when the error is large - this makes it more robust to
-outliers when the estimates of <span class="math">\(Q\)</span> are very noisy. We calculate
-this over a batch of transitions, <span class="math">\(B\)</span>, sampled from the replay
+outliers when the estimates of <span class="math notranslate">\(Q\)</span> are very noisy. We calculate
+this over a batch of transitions, <span class="math notranslate">\(B\)</span>, sampled from the replay
 memory:</p>
-<div class="math">
+<div class="math notranslate">
 \[\mathcal{L} = \frac{1}{|B|}\sum_{(s, a, s', r) \ \in \ B} \mathcal{L}(\delta)\]</div>
-<div class="math">
+<div class="math notranslate">
 \[\begin{split}\text{where} \quad \mathcal{L}(\delta) = \begin{cases}
   \frac{1}{2}{\delta^2}  &amp; \text{for } |\delta| \le 1, \\
   |\delta| - \frac{1}{2} &amp; \text{otherwise.}
@@ -680,11 +679,11 @@ memory:</p>
 <h3>Q-network<a class="headerlink" href="#q-network" title="Permalink to this headline">¶</a></h3>
 <p>Our model will be a convolutional neural network that takes in the
 difference between the current and previous screen patches. It has two
-outputs, representing <span class="math">\(Q(s, \mathrm{left})\)</span> and
-<span class="math">\(Q(s, \mathrm{right})\)</span> (where <span class="math">\(s\)</span> is the input to the
+outputs, representing <span class="math notranslate">\(Q(s, \mathrm{left})\)</span> and
+<span class="math notranslate">\(Q(s, \mathrm{right})\)</span> (where <span class="math notranslate">\(s\)</span> is the input to the
 network). In effect, the network is trying to predict the <em>quality</em> of
 taking each action given the current input.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DQN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DQN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DQN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -707,11 +706,11 @@ taking each action given the current input.</p>
 <div class="section" id="input-extraction">
 <h3>Input extraction<a class="headerlink" href="#input-extraction" title="Permalink to this headline">¶</a></h3>
 <p>The code below are utilities for extracting and processing rendered
-images from the environment. It uses the <code class="docutils literal"><span class="pre">torchvision</span></code> package, which
+images from the environment. It uses the <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> package, which
 makes it easy to compose image transforms. Once you run the cell it will
 display an example patch that it extracted.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">resize</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">ToPILImage</span><span class="p">(),</span>
-                    <span class="n">T</span><span class="o">.</span><span class="n">Scale</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">CUBIC</span><span class="p">),</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">resize</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">T</span><span class="o">.</span><span class="n">ToPILImage</span><span class="p">(),</span>
+                    <span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">Image</span><span class="o">.</span><span class="n">CUBIC</span><span class="p">),</span>
                     <span class="n">T</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()])</span>
 
 <span class="c1"># This is based on the code from gym.</span>
@@ -747,6 +746,7 @@ display an example patch that it extracted.</p>
     <span class="c1"># Resize, and add a batch dimension (BCHW)</span>
     <span class="k">return</span> <span class="n">resize</span><span class="p">(</span><span class="n">screen</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">Tensor</span><span class="p">)</span>
 
+
 <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">get_screen</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
@@ -764,33 +764,38 @@ display an example patch that it extracted.</p>
 <p>This cell instantiates our model and its optimizer, and defines some
 utilities:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Variable</span></code> - this is a simple wrapper around
-<code class="docutils literal"><span class="pre">torch.autograd.Variable</span></code> that will automatically send the data to
+<li><code class="docutils literal notranslate"><span class="pre">Variable</span></code> - this is a simple wrapper around
+<code class="docutils literal notranslate"><span class="pre">torch.autograd.Variable</span></code> that will automatically send the data to
 the GPU every time we construct a Variable.</li>
-<li><code class="docutils literal"><span class="pre">select_action</span></code> - will select an action accordingly to an epsilon
+<li><code class="docutils literal notranslate"><span class="pre">select_action</span></code> - will select an action accordingly to an epsilon
 greedy policy. Simply put, we’ll sometimes use our model for choosing
 the action, and sometimes we’ll just sample one uniformly. The
-probability of choosing a random action will start at <code class="docutils literal"><span class="pre">EPS_START</span></code>
-and will decay exponentially towards <code class="docutils literal"><span class="pre">EPS_END</span></code>. <code class="docutils literal"><span class="pre">EPS_DECAY</span></code>
+probability of choosing a random action will start at <code class="docutils literal notranslate"><span class="pre">EPS_START</span></code>
+and will decay exponentially towards <code class="docutils literal notranslate"><span class="pre">EPS_END</span></code>. <code class="docutils literal notranslate"><span class="pre">EPS_DECAY</span></code>
 controls the rate of the decay.</li>
-<li><code class="docutils literal"><span class="pre">plot_durations</span></code> - a helper for plotting the durations of episodes,
+<li><code class="docutils literal notranslate"><span class="pre">plot_durations</span></code> - a helper for plotting the durations of episodes,
 along with an average over the last 100 episodes (the measure used in
 the official evaluations). The plot will be underneath the cell
 containing the main training loop, and will update after every
 episode.</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">GAMMA</span> <span class="o">=</span> <span class="mf">0.999</span>
 <span class="n">EPS_START</span> <span class="o">=</span> <span class="mf">0.9</span>
 <span class="n">EPS_END</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="n">EPS_DECAY</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">TARGET_UPDATE</span> <span class="o">=</span> <span class="mi">10</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">DQN</span><span class="p">()</span>
+<span class="n">policy_net</span> <span class="o">=</span> <span class="n">DQN</span><span class="p">()</span>
+<span class="n">target_net</span> <span class="o">=</span> <span class="n">DQN</span><span class="p">()</span>
+<span class="n">target_net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">policy_net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+<span class="n">target_net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
 <span class="k">if</span> <span class="n">use_cuda</span><span class="p">:</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">policy_net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="n">target_net</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
 
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">policy_net</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 <span class="n">memory</span> <span class="o">=</span> <span class="n">ReplayMemory</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
 
 
@@ -804,7 +809,7 @@ episode.</li>
         <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span> <span class="o">*</span> <span class="n">steps_done</span> <span class="o">/</span> <span class="n">EPS_DECAY</span><span class="p">)</span>
     <span class="n">steps_done</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">sample</span> <span class="o">&gt;</span> <span class="n">eps_threshold</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">model</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">policy_net</span><span class="p">(</span>
             <span class="n">Variable</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">volatile</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">FloatTensor</span><span class="p">))</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">LongTensor</span><span class="p">([[</span><span class="n">random</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">2</span><span class="p">)]])</span>
@@ -837,17 +842,17 @@ episode.</li>
 <div class="section" id="training-loop">
 <h3>Training loop<a class="headerlink" href="#training-loop" title="Permalink to this headline">¶</a></h3>
 <p>Finally, the code for training our model.</p>
-<p>Here, you can find an <code class="docutils literal"><span class="pre">optimize_model</span></code> function that performs a
+<p>Here, you can find an <code class="docutils literal notranslate"><span class="pre">optimize_model</span></code> function that performs a
 single step of the optimization. It first samples a batch, concatenates
-all the tensors into a single one, computes <span class="math">\(Q(s_t, a_t)\)</span> and
-<span class="math">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
-loss. By defition we set <span class="math">\(V(s) = 0\)</span> if <span class="math">\(s\)</span> is a terminal
-state.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">last_sync</span> <span class="o">=</span> <span class="mi">0</span>
-
-
-<span class="k">def</span> <span class="nf">optimize_model</span><span class="p">():</span>
-    <span class="k">global</span> <span class="n">last_sync</span>
+all the tensors into a single one, computes <span class="math notranslate">\(Q(s_t, a_t)\)</span> and
+<span class="math notranslate">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
+loss. By defition we set <span class="math notranslate">\(V(s) = 0\)</span> if <span class="math notranslate">\(s\)</span> is a terminal
+state. We also use a target network to compute <span class="math notranslate">\(V(s_{t+1})\)</span> for
+added stability. The target network has its weights kept frozen most of
+the time, but is updated with the policy network’s weights every so often.
+This is usually a set number of steps but we shall use episodes for
+simplicity.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">optimize_model</span><span class="p">():</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">memory</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">BATCH_SIZE</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">transitions</span> <span class="o">=</span> <span class="n">memory</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
@@ -858,10 +863,6 @@ state.</p>
     <span class="c1"># Compute a mask of non-final states and concatenate the batch elements</span>
     <span class="n">non_final_mask</span> <span class="o">=</span> <span class="n">ByteTensor</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">,</span>
                                           <span class="n">batch</span><span class="o">.</span><span class="n">next_state</span><span class="p">)))</span>
-
-    <span class="c1"># We don&#39;t want to backprop through the expected action values and volatile</span>
-    <span class="c1"># will save us on temporarily changing the model parameters&#39;</span>
-    <span class="c1"># requires_grad to False!</span>
     <span class="n">non_final_next_states</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">next_state</span>
                                                 <span class="k">if</span> <span class="n">s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">]),</span>
                                      <span class="n">volatile</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -871,17 +872,15 @@ state.</p>
 
     <span class="c1"># Compute Q(s_t, a) - the model computes Q(s_t), then we select the</span>
     <span class="c1"># columns of actions taken</span>
-    <span class="n">state_action_values</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">state_batch</span><span class="p">)</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">action_batch</span><span class="p">)</span>
+    <span class="n">state_action_values</span> <span class="o">=</span> <span class="n">policy_net</span><span class="p">(</span><span class="n">state_batch</span><span class="p">)</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">action_batch</span><span class="p">)</span>
 
     <span class="c1"># Compute V(s_{t+1}) for all next states.</span>
     <span class="n">next_state_values</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">Tensor</span><span class="p">))</span>
-    <span class="n">next_state_values</span><span class="p">[</span><span class="n">non_final_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">non_final_next_states</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c1"># Now, we don&#39;t want to mess up the loss with a volatile flag, so let&#39;s</span>
-    <span class="c1"># clear it. After this, we&#39;ll just end up with a Variable that has</span>
-    <span class="c1"># requires_grad=False</span>
-    <span class="n">next_state_values</span><span class="o">.</span><span class="n">volatile</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">next_state_values</span><span class="p">[</span><span class="n">non_final_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">target_net</span><span class="p">(</span><span class="n">non_final_next_states</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="c1"># Compute the expected Q values</span>
     <span class="n">expected_state_action_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">next_state_values</span> <span class="o">*</span> <span class="n">GAMMA</span><span class="p">)</span> <span class="o">+</span> <span class="n">reward_batch</span>
+    <span class="c1"># Undo volatility (which was used to prevent unnecessary gradients)</span>
+    <span class="n">expected_state_action_values</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">expected_state_action_values</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
     <span class="c1"># Compute Huber loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">smooth_l1_loss</span><span class="p">(</span><span class="n">state_action_values</span><span class="p">,</span> <span class="n">expected_state_action_values</span><span class="p">)</span>
@@ -889,19 +888,19 @@ state.</p>
     <span class="c1"># Optimize the model</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">policy_net</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
         <span class="n">param</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Below, you can find the main training loop. At the beginning we reset
-the environment and initialize the <code class="docutils literal"><span class="pre">state</span></code> variable. Then, we sample
+the environment and initialize the <code class="docutils literal notranslate"><span class="pre">state</span></code> variable. Then, we sample
 an action, execute it, observe the next screen and the reward (always
 1), and optimize our model once. When the episode ends (our model
 fails), we restart the loop.</p>
 <p>Below, <cite>num_episodes</cite> is set small. You should download
 the notebook and run lot more epsiodes.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">num_episodes</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_episodes</span> <span class="o">=</span> <span class="mi">50</span>
 <span class="k">for</span> <span class="n">i_episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_episodes</span><span class="p">):</span>
     <span class="c1"># Initialize the environment and state</span>
     <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -934,6 +933,9 @@ the notebook and run lot more epsiodes.</p>
             <span class="n">episode_durations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">plot_durations</span><span class="p">()</span>
             <span class="k">break</span>
+    <span class="c1"># Update the target network</span>
+    <span class="k">if</span> <span class="n">i_episode</span> <span class="o">%</span> <span class="n">TARGET_UPDATE</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">target_net</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">policy_net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
 
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Complete&#39;</span><span class="p">)</span>
 <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">close</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -945,9 +947,9 @@ the notebook and run lot more epsiodes.</p>
 <p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/reinforcement_q_learning.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">reinforcement_q_learning.py</span></code></a></div>
+<a class="reference download internal" href="../_downloads/reinforcement_q_learning.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">reinforcement_q_learning.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/reinforcement_q_learning.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">reinforcement_q_learning.ipynb</span></code></a></div>
+<a class="reference download internal" href="../_downloads/reinforcement_q_learning.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">reinforcement_q_learning.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -998,7 +1000,7 @@ the notebook and run lot more epsiodes.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

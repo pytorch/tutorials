@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Sequence Models and Long-Short Term Memory Networks &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Sequence Models and Long-Short Term Memory Networks &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../../index.html"/>
         <link rel="up" title="Deep Learning for NLP with Pytorch" href="../deep_learning_nlp_tutorial.html"/>
         <link rel="next" title="Advanced: Making Dynamic Decisions and the Bi-LSTM CRF" href="advanced_tutorial.html"/>
         <link rel="prev" title="Word Embeddings: Encoding Lexical Semantics" href="word_embeddings_tutorial.html"/> 
@@ -76,7 +76,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -526,7 +526,7 @@ random field.</p>
 state. For example, its output could be used as part of the next input,
 so that information can propogate along as the network passes over the
 sequence. In the case of an LSTM, for each element in the sequence,
-there is a corresponding <em>hidden state</em> <span class="math">\(h_t\)</span>, which in principle
+there is a corresponding <em>hidden state</em> <span class="math notranslate">\(h_t\)</span>, which in principle
 can contain information from arbitrary points earlier in the sequence.
 We can use the hidden state to predict words in a language model,
 part-of-speech tags, and a myriad of other things.</p>
@@ -540,7 +540,7 @@ the input. We haven’t discussed mini-batching, so lets just ignore that
 and assume we will always have just 1 dimension on the second axis. If
 we want to run the sequence model over the sentence “The cow jumped”,
 our input should look like</p>
-<div class="math">
+<div class="math notranslate">
 \[\begin{split}\begin{bmatrix}
 \overbrace{q_\text{The}}^\text{row vector} \\
 q_\text{cow} \\
@@ -550,7 +550,7 @@ q_\text{jumped}
 <p>In addition, you could go through the sequence one at a time, in which
 case the 1st axis will have size 1 also.</p>
 <p>Let’s see a quick example.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.autograd</span> <span class="kn">as</span> <span class="nn">autograd</span>
@@ -561,7 +561,7 @@ case the 1st axis will have size 1 also.</p>
 <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># Input dim is 3, output dim is 3</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># Input dim is 3, output dim is 3</span>
 <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
           <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>  <span class="c1"># make a sequence of length 5</span>
 
@@ -591,7 +591,7 @@ case the 1st axis will have size 1 also.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
 <span class="p">(</span><span class="mi">0</span> <span class="p">,</span><span class="o">.</span><span class="p">,</span><span class="o">.</span><span class="p">)</span> <span class="o">=</span>
  <span class="o">-</span><span class="mf">0.0187</span>  <span class="mf">0.1713</span> <span class="o">-</span><span class="mf">0.2944</span>
 
@@ -627,24 +627,24 @@ not use Viterbi or Forward-Backward or anything like that, but as a
 (challenging) exercise to the reader, think about how Viterbi could be
 used after you have seen what is going on.</p>
 <p>The model is as follows: let our input sentence be
-<span class="math">\(w_1, \dots, w_M\)</span>, where <span class="math">\(w_i \in V\)</span>, our vocab. Also, let
-<span class="math">\(T\)</span> be our tag set, and <span class="math">\(y_i\)</span> the tag of word <span class="math">\(w_i\)</span>.
-Denote our prediction of the tag of word <span class="math">\(w_i\)</span> by
-<span class="math">\(\hat{y}_i\)</span>.</p>
+<span class="math notranslate">\(w_1, \dots, w_M\)</span>, where <span class="math notranslate">\(w_i \in V\)</span>, our vocab. Also, let
+<span class="math notranslate">\(T\)</span> be our tag set, and <span class="math notranslate">\(y_i\)</span> the tag of word <span class="math notranslate">\(w_i\)</span>.
+Denote our prediction of the tag of word <span class="math notranslate">\(w_i\)</span> by
+<span class="math notranslate">\(\hat{y}_i\)</span>.</p>
 <p>This is a structure prediction, model, where our output is a sequence
-<span class="math">\(\hat{y}_1, \dots, \hat{y}_M\)</span>, where <span class="math">\(\hat{y}_i \in T\)</span>.</p>
+<span class="math notranslate">\(\hat{y}_1, \dots, \hat{y}_M\)</span>, where <span class="math notranslate">\(\hat{y}_i \in T\)</span>.</p>
 <p>To do the prediction, pass an LSTM over the sentence. Denote the hidden
-state at timestep <span class="math">\(i\)</span> as <span class="math">\(h_i\)</span>. Also, assign each tag a
+state at timestep <span class="math notranslate">\(i\)</span> as <span class="math notranslate">\(h_i\)</span>. Also, assign each tag a
 unique index (like how we had word_to_ix in the word embeddings
-section). Then our prediction rule for <span class="math">\(\hat{y}_i\)</span> is</p>
-<div class="math">
+section). Then our prediction rule for <span class="math notranslate">\(\hat{y}_i\)</span> is</p>
+<div class="math notranslate">
 \[\hat{y}_i = \text{argmax}_j \  (\log \text{Softmax}(Ah_i + b))_j\]</div>
 <p>That is, take the log softmax of the affine map of the hidden state,
 and the predicted tag is the tag that has the maximum value in this
 vector. Note this implies immediately that the dimensionality of the
-target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</span>.</p>
+target space of <span class="math notranslate">\(A\)</span> is <span class="math notranslate">\(|T|\)</span>.</p>
 <p>Prepare data:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">to_ix</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">to_ix</span><span class="p">):</span>
     <span class="n">idxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_ix</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">]</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
@@ -669,11 +669,11 @@ target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;book&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;dog&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;that&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;ate&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;Everybody&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;The&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s1">&#39;ate&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Everybody&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;dog&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;apple&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;that&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;book&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;The&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;read&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>Create the model:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LSTMTagger</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LSTMTagger</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">tagset_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LSTMTagger</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -707,7 +707,7 @@ target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</s
 </pre></div>
 </div>
 <p>Train the model:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">LSTMTagger</span><span class="p">(</span><span class="n">EMBEDDING_DIM</span><span class="p">,</span> <span class="n">HIDDEN_DIM</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_to_ix</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">LSTMTagger</span><span class="p">(</span><span class="n">EMBEDDING_DIM</span><span class="p">,</span> <span class="n">HIDDEN_DIM</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_to_ix</span><span class="p">))</span>
 <span class="n">loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">NLLLoss</span><span class="p">()</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
@@ -754,7 +754,7 @@ target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
 <span class="o">-</span><span class="mf">1.1989</span> <span class="o">-</span><span class="mf">0.9630</span> <span class="o">-</span><span class="mf">1.1497</span>
 <span class="o">-</span><span class="mf">1.2522</span> <span class="o">-</span><span class="mf">0.9158</span> <span class="o">-</span><span class="mf">1.1586</span>
 <span class="o">-</span><span class="mf">1.2563</span> <span class="o">-</span><span class="mf">1.0022</span> <span class="o">-</span><span class="mf">1.0550</span>
@@ -780,13 +780,13 @@ representation derived from the characters of the word. We expect that
 this should help significantly, since character-level information like
 affixes have a large bearing on part-of-speech. For example, words with
 the affix <em>-ly</em> are almost always tagged as adverbs in English.</p>
-<p>To do this, let <span class="math">\(c_w\)</span> be the character-level representation of
-word <span class="math">\(w\)</span>. Let <span class="math">\(x_w\)</span> be the word embedding as before. Then
-the input to our sequence model is the concatenation of <span class="math">\(x_w\)</span> and
-<span class="math">\(c_w\)</span>. So if <span class="math">\(x_w\)</span> has dimension 5, and <span class="math">\(c_w\)</span>
+<p>To do this, let <span class="math notranslate">\(c_w\)</span> be the character-level representation of
+word <span class="math notranslate">\(w\)</span>. Let <span class="math notranslate">\(x_w\)</span> be the word embedding as before. Then
+the input to our sequence model is the concatenation of <span class="math notranslate">\(x_w\)</span> and
+<span class="math notranslate">\(c_w\)</span>. So if <span class="math notranslate">\(x_w\)</span> has dimension 5, and <span class="math notranslate">\(c_w\)</span>
 dimension 3, then our LSTM should accept an input of dimension 8.</p>
 <p>To get the character level representation, do an LSTM over the
-characters of a word, and let <span class="math">\(c_w\)</span> be the final hidden state of
+characters of a word, and let <span class="math notranslate">\(c_w\)</span> be the final hidden state of
 this LSTM. Hints:</p>
 <ul class="simple">
 <li>There are going to be two LSTM’s in your new model.
@@ -795,12 +795,12 @@ outputs a character-level representation of each word.</li>
 <li>To do a sequence model over characters, you will have to embed characters.
 The character embeddings will be the input to the character LSTM.</li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.845 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.741 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/sequence_models_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/sequence_models_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/sequence_models_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">sequence_models_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/sequence_models_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">sequence_models_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -850,7 +850,7 @@ The character embeddings will be the input to the character LSTM.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

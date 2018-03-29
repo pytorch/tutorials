@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Creating extensions using numpy and scipy &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Creating extensions using numpy and scipy &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../index.html"/>
         <link rel="next" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html"/>
         <link rel="prev" title="Neural Transfer with PyTorch" href="neural_style_tutorial.html"/> 
 
@@ -75,7 +75,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -530,7 +530,7 @@
 </div></blockquote>
 </li>
 </ol>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Function</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
 </pre></div>
@@ -541,7 +541,7 @@
 correct.</p>
 <p>It is aptly named BadFFTFunction</p>
 <p><strong>Layer Implementation</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.fft</span> <span class="kn">import</span> <span class="n">rfft2</span><span class="p">,</span> <span class="n">irfft2</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">numpy.fft</span> <span class="kn">import</span> <span class="n">rfft2</span><span class="p">,</span> <span class="n">irfft2</span>
 
 
 <span class="k">class</span> <span class="nc">BadFFTFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
@@ -549,12 +549,12 @@ correct.</p>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="n">numpy_input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rfft2</span><span class="p">(</span><span class="n">numpy_input</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
         <span class="n">numpy_go</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">irfft2</span><span class="p">(</span><span class="n">numpy_go</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
 <span class="c1"># since this layer does not have any parameters, we can</span>
 <span class="c1"># simply declare this as a function, rather than as an nn.Module class</span>
@@ -565,7 +565,7 @@ correct.</p>
 </pre></div>
 </div>
 <p><strong>Example usage of the created layer:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">incorrect_fft</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 <span class="n">result</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
@@ -573,25 +573,25 @@ correct.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mf">11.0598</span>  <span class="mf">10.8397</span>   <span class="mf">7.7748</span>   <span class="mf">1.3809</span>   <span class="mf">8.2040</span>
-  <span class="mf">3.6309</span>  <span class="mf">15.7710</span>   <span class="mf">6.0033</span>   <span class="mf">6.1237</span>   <span class="mf">7.4903</span>
-  <span class="mf">8.9816</span>   <span class="mf">3.0133</span>   <span class="mf">4.0838</span>  <span class="mf">10.3010</span>   <span class="mf">1.0924</span>
-  <span class="mf">7.9300</span>   <span class="mf">7.1046</span>  <span class="mf">11.5952</span>   <span class="mf">2.7757</span>  <span class="mf">16.4836</span>
-  <span class="mf">7.1614</span>  <span class="mf">11.9024</span>  <span class="mf">14.3691</span>   <span class="mf">6.2482</span>   <span class="mf">3.2664</span>
-  <span class="mf">7.9300</span>   <span class="mf">8.8192</span>   <span class="mf">3.6235</span>   <span class="mf">9.1872</span>  <span class="mf">16.4836</span>
-  <span class="mf">8.9816</span>  <span class="mf">16.4221</span>   <span class="mf">6.5526</span>  <span class="mf">21.0738</span>   <span class="mf">1.0924</span>
-  <span class="mf">3.6309</span>   <span class="mf">4.3839</span>   <span class="mf">3.1680</span>   <span class="mf">8.4162</span>   <span class="mf">7.4903</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">6.9459</span>   <span class="mf">3.4581</span>   <span class="mf">4.6766</span>   <span class="mf">0.4686</span>   <span class="mf">6.5389</span>
+ <span class="mf">10.8245</span>   <span class="mf">3.7885</span>   <span class="mf">1.6736</span>   <span class="mf">8.6222</span>   <span class="mf">6.7211</span>
+  <span class="mf">5.1874</span>   <span class="mf">6.7855</span>   <span class="mf">7.4119</span>   <span class="mf">9.5140</span>  <span class="mf">12.4209</span>
+  <span class="mf">6.6348</span>  <span class="mf">10.1983</span>   <span class="mf">2.3288</span>  <span class="mf">10.7623</span>   <span class="mf">7.5794</span>
+  <span class="mf">3.6570</span>   <span class="mf">2.2497</span>   <span class="mf">8.3797</span>  <span class="mf">10.1616</span>   <span class="mf">4.3526</span>
+  <span class="mf">6.6348</span>   <span class="mf">4.1459</span>   <span class="mf">6.9720</span>  <span class="mf">23.9565</span>   <span class="mf">7.5794</span>
+  <span class="mf">5.1874</span>   <span class="mf">9.6118</span>   <span class="mf">9.5390</span>   <span class="mf">8.1721</span>  <span class="mf">12.4209</span>
+ <span class="mf">10.8245</span>   <span class="mf">9.4980</span>   <span class="mf">2.0711</span>   <span class="mf">5.0849</span>   <span class="mf">6.7211</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">8</span><span class="n">x5</span><span class="p">]</span>
 
 <span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
-<span class="o">-</span><span class="mf">0.0200</span> <span class="o">-</span><span class="mf">0.0138</span> <span class="o">-</span><span class="mf">0.0517</span>  <span class="mf">0.0011</span> <span class="o">-</span><span class="mf">0.2626</span>  <span class="mf">0.0011</span> <span class="o">-</span><span class="mf">0.0517</span> <span class="o">-</span><span class="mf">0.0138</span>
- <span class="mf">0.3066</span> <span class="o">-</span><span class="mf">0.0273</span> <span class="o">-</span><span class="mf">0.0768</span>  <span class="mf">0.1633</span>  <span class="mf">0.1029</span>  <span class="mf">0.0119</span> <span class="o">-</span><span class="mf">0.0341</span> <span class="o">-</span><span class="mf">0.0286</span>
- <span class="mf">0.2402</span>  <span class="mf">0.1999</span> <span class="o">-</span><span class="mf">0.0514</span>  <span class="mf">0.0524</span> <span class="o">-</span><span class="mf">0.0317</span> <span class="o">-</span><span class="mf">0.0548</span>  <span class="mf">0.0258</span> <span class="o">-</span><span class="mf">0.0027</span>
- <span class="mf">0.1350</span> <span class="o">-</span><span class="mf">0.0304</span> <span class="o">-</span><span class="mf">0.1659</span> <span class="o">-</span><span class="mf">0.0730</span> <span class="o">-</span><span class="mf">0.0405</span> <span class="o">-</span><span class="mf">0.0207</span>  <span class="mf">0.0513</span>  <span class="mf">0.2066</span>
- <span class="mf">0.1267</span>  <span class="mf">0.2289</span> <span class="o">-</span><span class="mf">0.0425</span> <span class="o">-</span><span class="mf">0.1210</span> <span class="o">-</span><span class="mf">0.2992</span> <span class="o">-</span><span class="mf">0.1210</span> <span class="o">-</span><span class="mf">0.0425</span>  <span class="mf">0.2289</span>
- <span class="mf">0.1350</span>  <span class="mf">0.2066</span>  <span class="mf">0.0513</span> <span class="o">-</span><span class="mf">0.0207</span> <span class="o">-</span><span class="mf">0.0405</span> <span class="o">-</span><span class="mf">0.0730</span> <span class="o">-</span><span class="mf">0.1659</span> <span class="o">-</span><span class="mf">0.0304</span>
- <span class="mf">0.2402</span> <span class="o">-</span><span class="mf">0.0027</span>  <span class="mf">0.0258</span> <span class="o">-</span><span class="mf">0.0548</span> <span class="o">-</span><span class="mf">0.0317</span>  <span class="mf">0.0524</span> <span class="o">-</span><span class="mf">0.0514</span>  <span class="mf">0.1999</span>
- <span class="mf">0.3066</span> <span class="o">-</span><span class="mf">0.0286</span> <span class="o">-</span><span class="mf">0.0341</span>  <span class="mf">0.0119</span>  <span class="mf">0.1029</span>  <span class="mf">0.1633</span> <span class="o">-</span><span class="mf">0.0768</span> <span class="o">-</span><span class="mf">0.0273</span>
+ <span class="mf">0.1981</span>  <span class="mf">0.1934</span> <span class="o">-</span><span class="mf">0.1629</span>  <span class="mf">0.0793</span> <span class="o">-</span><span class="mf">0.0047</span>  <span class="mf">0.0793</span> <span class="o">-</span><span class="mf">0.1629</span>  <span class="mf">0.1934</span>
+<span class="o">-</span><span class="mf">0.0621</span> <span class="o">-</span><span class="mf">0.0079</span>  <span class="mf">0.0194</span>  <span class="mf">0.2352</span> <span class="o">-</span><span class="mf">0.0491</span> <span class="o">-</span><span class="mf">0.0581</span>  <span class="mf">0.1086</span> <span class="o">-</span><span class="mf">0.3258</span>
+<span class="o">-</span><span class="mf">0.0547</span> <span class="o">-</span><span class="mf">0.0460</span>  <span class="mf">0.0610</span> <span class="o">-</span><span class="mf">0.1543</span> <span class="o">-</span><span class="mf">0.1811</span>  <span class="mf">0.0359</span>  <span class="mf">0.1161</span>  <span class="mf">0.1369</span>
+<span class="o">-</span><span class="mf">0.3287</span>  <span class="mf">0.1030</span>  <span class="mf">0.1182</span>  <span class="mf">0.0021</span> <span class="o">-</span><span class="mf">0.0509</span> <span class="o">-</span><span class="mf">0.1169</span> <span class="o">-</span><span class="mf">0.1005</span>  <span class="mf">0.0815</span>
+<span class="o">-</span><span class="mf">0.0509</span> <span class="o">-</span><span class="mf">0.0689</span> <span class="o">-</span><span class="mf">0.0560</span>  <span class="mf">0.0668</span> <span class="o">-</span><span class="mf">0.2230</span>  <span class="mf">0.0668</span> <span class="o">-</span><span class="mf">0.0560</span> <span class="o">-</span><span class="mf">0.0689</span>
+<span class="o">-</span><span class="mf">0.3287</span>  <span class="mf">0.0815</span> <span class="o">-</span><span class="mf">0.1005</span> <span class="o">-</span><span class="mf">0.1169</span> <span class="o">-</span><span class="mf">0.0509</span>  <span class="mf">0.0021</span>  <span class="mf">0.1182</span>  <span class="mf">0.1030</span>
+<span class="o">-</span><span class="mf">0.0547</span>  <span class="mf">0.1369</span>  <span class="mf">0.1161</span>  <span class="mf">0.0359</span> <span class="o">-</span><span class="mf">0.1811</span> <span class="o">-</span><span class="mf">0.1543</span>  <span class="mf">0.0610</span> <span class="o">-</span><span class="mf">0.0460</span>
+<span class="o">-</span><span class="mf">0.0621</span> <span class="o">-</span><span class="mf">0.3258</span>  <span class="mf">0.1086</span> <span class="o">-</span><span class="mf">0.0581</span> <span class="o">-</span><span class="mf">0.0491</span>  <span class="mf">0.2352</span>  <span class="mf">0.0194</span> <span class="o">-</span><span class="mf">0.0079</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">8</span><span class="n">x8</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -607,7 +607,7 @@ filter.</p>
 <p><strong>Implementation:</strong></p>
 <p><em>Please Note that the implementation serves as an illustration, and we
 did not verify it’s correctness</em></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">convolve2d</span><span class="p">,</span> <span class="n">correlate2d</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">convolve2d</span><span class="p">,</span> <span class="n">correlate2d</span>
 <span class="kn">from</span> <span class="nn">torch.nn.modules.module</span> <span class="kn">import</span> <span class="n">Module</span>
 <span class="kn">from</span> <span class="nn">torch.nn.parameter</span> <span class="kn">import</span> <span class="n">Parameter</span>
 
@@ -617,7 +617,7 @@ did not verify it’s correctness</em></p>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="nb">filter</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">correlate2d</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="nb">filter</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">)</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="nb">filter</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
@@ -626,8 +626,8 @@ did not verify it’s correctness</em></p>
         <span class="n">grad_input</span> <span class="o">=</span> <span class="n">convolve2d</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="nb">filter</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span>
         <span class="n">grad_filter</span> <span class="o">=</span> <span class="n">convolve2d</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">grad_input</span><span class="p">)),</span> \
-            <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">grad_filter</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Variable</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">grad_input</span><span class="p">)),</span> \
+            <span class="n">Variable</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">grad_filter</span><span class="p">))</span>
 
 
 <span class="k">class</span> <span class="nc">ScipyConv2d</span><span class="p">(</span><span class="n">Module</span><span class="p">):</span>
@@ -641,7 +641,7 @@ did not verify it’s correctness</em></p>
 </pre></div>
 </div>
 <p><strong>Example usage:</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">ScipyConv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">module</span> <span class="o">=</span> <span class="n">ScipyConv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">parameters</span><span class="p">()))</span>
 <span class="nb">input</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
@@ -651,43 +651,43 @@ did not verify it’s correctness</em></p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Parameter</span> <span class="n">containing</span><span class="p">:</span>
-<span class="o">-</span><span class="mf">0.0130</span>  <span class="mf">1.2956</span>  <span class="mf">0.1126</span>
- <span class="mf">0.2135</span> <span class="o">-</span><span class="mf">0.1948</span>  <span class="mf">0.2713</span>
- <span class="mf">0.8329</span> <span class="o">-</span><span class="mf">0.2229</span> <span class="o">-</span><span class="mf">0.6840</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Parameter</span> <span class="n">containing</span><span class="p">:</span>
+<span class="o">-</span><span class="mf">0.6564</span> <span class="o">-</span><span class="mf">0.3029</span> <span class="o">-</span><span class="mf">1.0349</span>
+<span class="o">-</span><span class="mf">0.9106</span> <span class="o">-</span><span class="mf">0.4218</span>  <span class="mf">2.2911</span>
+ <span class="mf">0.4136</span> <span class="o">-</span><span class="mf">1.0284</span>  <span class="mf">0.0007</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">3</span><span class="n">x3</span><span class="p">]</span>
 <span class="p">]</span>
 <span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
-<span class="o">-</span><span class="mf">0.4545</span> <span class="o">-</span><span class="mf">0.6784</span> <span class="o">-</span><span class="mf">0.3497</span>  <span class="mf">0.0143</span>  <span class="mf">2.4868</span> <span class="o">-</span><span class="mf">0.5146</span> <span class="o">-</span><span class="mf">2.7057</span>  <span class="mf">2.7398</span>
-<span class="o">-</span><span class="mf">1.2426</span> <span class="o">-</span><span class="mf">0.4883</span> <span class="o">-</span><span class="mf">0.9379</span>  <span class="mf">1.0114</span>  <span class="mf">1.5793</span> <span class="o">-</span><span class="mf">2.7874</span>  <span class="mf">1.6691</span>  <span class="mf">1.0881</span>
-<span class="o">-</span><span class="mf">3.3021</span>  <span class="mf">0.4382</span>  <span class="mf">2.6584</span> <span class="o">-</span><span class="mf">0.4628</span> <span class="o">-</span><span class="mf">2.0121</span> <span class="o">-</span><span class="mf">0.9175</span>  <span class="mf">0.1969</span>  <span class="mf">1.9960</span>
- <span class="mf">0.1950</span>  <span class="mf">1.7578</span> <span class="o">-</span><span class="mf">0.2701</span>  <span class="mf">3.2506</span> <span class="o">-</span><span class="mf">0.3003</span>  <span class="mf">1.0714</span>  <span class="mf">1.4350</span>  <span class="mf">0.3301</span>
-<span class="o">-</span><span class="mf">0.0445</span>  <span class="mf">1.7896</span> <span class="o">-</span><span class="mf">2.4048</span> <span class="o">-</span><span class="mf">0.7058</span>  <span class="mf">0.5427</span>  <span class="mf">1.9141</span>  <span class="mf">1.0307</span> <span class="o">-</span><span class="mf">0.0444</span>
- <span class="mf">3.9496</span> <span class="o">-</span><span class="mf">1.3037</span>  <span class="mf">1.0311</span>  <span class="mf">0.0832</span> <span class="o">-</span><span class="mf">2.7702</span>  <span class="mf">1.7433</span>  <span class="mf">1.6467</span> <span class="o">-</span><span class="mf">0.5777</span>
-<span class="o">-</span><span class="mf">0.8909</span> <span class="o">-</span><span class="mf">0.7398</span> <span class="o">-</span><span class="mf">0.0868</span>  <span class="mf">0.5259</span> <span class="o">-</span><span class="mf">0.7669</span>  <span class="mf">0.1229</span> <span class="o">-</span><span class="mf">1.4596</span> <span class="o">-</span><span class="mf">0.1612</span>
-<span class="o">-</span><span class="mf">3.1666</span> <span class="o">-</span><span class="mf">1.9142</span>  <span class="mf">2.8550</span> <span class="o">-</span><span class="mf">1.2741</span>  <span class="mf">2.1313</span>  <span class="mf">3.0058</span> <span class="o">-</span><span class="mf">2.0854</span> <span class="o">-</span><span class="mf">1.3588</span>
+ <span class="mf">1.4764</span> <span class="o">-</span><span class="mf">0.3741</span> <span class="o">-</span><span class="mf">1.1287</span> <span class="o">-</span><span class="mf">3.1632</span>  <span class="mf">1.0703</span> <span class="o">-</span><span class="mf">0.7127</span>  <span class="mf">1.1286</span>  <span class="mf">1.4903</span>
+ <span class="mf">0.6379</span>  <span class="mf">4.5509</span>  <span class="mf">0.0620</span>  <span class="mf">1.3448</span>  <span class="mf">0.6657</span> <span class="o">-</span><span class="mf">0.3458</span> <span class="o">-</span><span class="mf">1.0090</span> <span class="o">-</span><span class="mf">2.8121</span>
+<span class="o">-</span><span class="mf">4.1423</span>  <span class="mf">0.5284</span> <span class="o">-</span><span class="mf">2.6284</span> <span class="o">-</span><span class="mf">5.1020</span> <span class="o">-</span><span class="mf">2.4626</span>  <span class="mf">4.3569</span>  <span class="mf">0.2454</span> <span class="o">-</span><span class="mf">1.5257</span>
+ <span class="mf">2.6980</span> <span class="o">-</span><span class="mf">0.2542</span> <span class="o">-</span><span class="mf">0.3166</span>  <span class="mf">4.2060</span>  <span class="mf">0.0156</span>  <span class="mf">0.7949</span>  <span class="mf">4.0229</span> <span class="o">-</span><span class="mf">3.9827</span>
+<span class="o">-</span><span class="mf">1.6887</span>  <span class="mf">0.3985</span> <span class="o">-</span><span class="mf">1.3981</span> <span class="o">-</span><span class="mf">4.2095</span>  <span class="mf">0.6883</span> <span class="o">-</span><span class="mf">1.8512</span>  <span class="mf">1.1311</span>  <span class="mf">2.6494</span>
+ <span class="mf">0.3621</span>  <span class="mf">0.0349</span>  <span class="mf">2.1463</span> <span class="o">-</span><span class="mf">0.3721</span>  <span class="mf">2.0332</span>  <span class="mf">2.8129</span>  <span class="mf">2.2638</span>  <span class="mf">0.9475</span>
+ <span class="mf">3.2486</span>  <span class="mf">2.3941</span> <span class="o">-</span><span class="mf">3.7429</span> <span class="o">-</span><span class="mf">0.0190</span> <span class="o">-</span><span class="mf">0.9870</span> <span class="o">-</span><span class="mf">1.5489</span> <span class="o">-</span><span class="mf">1.2908</span> <span class="o">-</span><span class="mf">0.6381</span>
+ <span class="mf">3.3481</span> <span class="o">-</span><span class="mf">3.1060</span> <span class="o">-</span><span class="mf">6.6821</span> <span class="o">-</span><span class="mf">2.7916</span>  <span class="mf">2.6294</span> <span class="o">-</span><span class="mf">5.3366</span>  <span class="mf">2.5514</span>  <span class="mf">3.4600</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">8</span><span class="n">x8</span><span class="p">]</span>
 
 <span class="n">Variable</span> <span class="n">containing</span><span class="p">:</span>
-<span class="o">-</span><span class="mf">0.0031</span>  <span class="mf">0.0634</span>  <span class="mf">0.0164</span> <span class="o">-</span><span class="mf">0.8762</span> <span class="o">-</span><span class="mf">0.3654</span>  <span class="mf">0.5707</span>  <span class="mf">0.9064</span>  <span class="mf">0.5659</span> <span class="o">-</span><span class="mf">1.6957</span> <span class="o">-</span><span class="mf">0.9779</span>
- <span class="mf">0.3174</span> <span class="o">-</span><span class="mf">1.2691</span> <span class="o">-</span><span class="mf">0.9207</span>  <span class="mf">0.5417</span>  <span class="mf">1.1130</span>  <span class="mf">1.3187</span> <span class="o">-</span><span class="mf">5.1117</span> <span class="o">-</span><span class="mf">1.2303</span>  <span class="mf">1.0396</span>  <span class="mf">1.0150</span>
-<span class="o">-</span><span class="mf">0.3172</span> <span class="o">-</span><span class="mf">0.8263</span> <span class="o">-</span><span class="mf">1.3171</span>  <span class="mf">3.3479</span> <span class="o">-</span><span class="mf">2.0939</span>  <span class="mf">0.7415</span> <span class="o">-</span><span class="mf">0.6938</span> <span class="o">-</span><span class="mf">0.8640</span>  <span class="mf">1.2094</span>  <span class="mf">0.1618</span>
-<span class="o">-</span><span class="mf">1.5917</span>  <span class="mf">1.6780</span>  <span class="mf">1.4187</span>  <span class="mf">1.1051</span> <span class="o">-</span><span class="mf">2.5157</span> <span class="o">-</span><span class="mf">2.5165</span>  <span class="mf">4.5397</span>  <span class="mf">0.6987</span>  <span class="mf">0.9513</span>  <span class="mf">1.7781</span>
-<span class="o">-</span><span class="mf">1.3305</span>  <span class="mf">1.2405</span> <span class="o">-</span><span class="mf">0.1718</span> <span class="o">-</span><span class="mf">2.6359</span> <span class="o">-</span><span class="mf">0.9248</span> <span class="o">-</span><span class="mf">0.8981</span> <span class="o">-</span><span class="mf">0.0272</span>  <span class="mf">2.4336</span> <span class="o">-</span><span class="mf">3.1280</span>  <span class="mf">0.6005</span>
-<span class="o">-</span><span class="mf">0.6821</span> <span class="o">-</span><span class="mf">3.3565</span> <span class="o">-</span><span class="mf">1.7923</span> <span class="o">-</span><span class="mf">2.9415</span> <span class="o">-</span><span class="mf">0.2876</span> <span class="o">-</span><span class="mf">1.0246</span> <span class="o">-</span><span class="mf">2.9142</span>  <span class="mf">1.2342</span>  <span class="mf">2.6241</span> <span class="o">-</span><span class="mf">1.3533</span>
-<span class="o">-</span><span class="mf">3.8350</span>  <span class="mf">0.3536</span>  <span class="mf">0.2814</span>  <span class="mf">0.1404</span>  <span class="mf">1.5458</span> <span class="o">-</span><span class="mf">0.6268</span>  <span class="mf">2.1790</span> <span class="o">-</span><span class="mf">0.0419</span>  <span class="mf">0.6701</span> <span class="o">-</span><span class="mf">1.7186</span>
-<span class="o">-</span><span class="mf">0.2320</span> <span class="o">-</span><span class="mf">1.4082</span>  <span class="mf">4.8192</span> <span class="o">-</span><span class="mf">2.4635</span> <span class="o">-</span><span class="mf">0.8159</span> <span class="o">-</span><span class="mf">1.1974</span> <span class="o">-</span><span class="mf">0.1831</span> <span class="o">-</span><span class="mf">1.1052</span> <span class="o">-</span><span class="mf">1.1687</span> <span class="o">-</span><span class="mf">2.6283</span>
-<span class="o">-</span><span class="mf">0.0874</span> <span class="o">-</span><span class="mf">1.2564</span>  <span class="mf">0.6950</span>  <span class="mf">0.5953</span> <span class="o">-</span><span class="mf">1.1585</span> <span class="o">-</span><span class="mf">1.9990</span>  <span class="mf">0.4133</span> <span class="o">-</span><span class="mf">2.4274</span>  <span class="mf">0.5297</span>  <span class="mf">1.2729</span>
-<span class="o">-</span><span class="mf">0.0083</span> <span class="o">-</span><span class="mf">0.1276</span> <span class="o">-</span><span class="mf">0.1730</span>  <span class="mf">0.7052</span> <span class="o">-</span><span class="mf">0.2360</span>  <span class="mf">0.1567</span> <span class="o">-</span><span class="mf">0.8495</span>  <span class="mf">1.0229</span> <span class="o">-</span><span class="mf">0.9234</span>  <span class="mf">1.8361</span>
+<span class="o">-</span><span class="mf">0.1016</span> <span class="o">-</span><span class="mf">0.9003</span>  <span class="mf">0.1452</span>  <span class="mf">1.8145</span> <span class="o">-</span><span class="mf">0.9783</span> <span class="o">-</span><span class="mf">0.7459</span> <span class="o">-</span><span class="mf">0.0174</span>  <span class="mf">1.2910</span> <span class="o">-</span><span class="mf">2.6348</span>  <span class="mf">0.7976</span>
+<span class="o">-</span><span class="mf">0.7341</span> <span class="o">-</span><span class="mf">0.5658</span>  <span class="mf">1.4868</span> <span class="o">-</span><span class="mf">0.8583</span>  <span class="mf">1.4165</span> <span class="o">-</span><span class="mf">1.1700</span> <span class="o">-</span><span class="mf">0.3888</span> <span class="o">-</span><span class="mf">2.5315</span>  <span class="mf">2.4590</span> <span class="o">-</span><span class="mf">2.1760</span>
+<span class="o">-</span><span class="mf">0.9342</span> <span class="o">-</span><span class="mf">2.0429</span>  <span class="mf">4.8819</span> <span class="o">-</span><span class="mf">0.5701</span>  <span class="mf">0.0578</span> <span class="o">-</span><span class="mf">1.9886</span>  <span class="mf">6.2657</span> <span class="o">-</span><span class="mf">4.7217</span>  <span class="mf">3.7186</span> <span class="o">-</span><span class="mf">0.1621</span>
+<span class="o">-</span><span class="mf">1.1707</span>  <span class="mf">2.9564</span> <span class="o">-</span><span class="mf">3.0950</span>  <span class="mf">1.3047</span>  <span class="mf">1.1907</span>  <span class="mf">2.4033</span> <span class="o">-</span><span class="mf">1.4147</span>  <span class="mf">6.4871</span>  <span class="mf">0.1271</span>  <span class="mf">1.8404</span>
+<span class="o">-</span><span class="mf">0.9694</span>  <span class="mf">0.5291</span>  <span class="mf">4.3857</span> <span class="o">-</span><span class="mf">4.4992</span>  <span class="mf">2.4832</span>  <span class="mf">3.9441</span>  <span class="mf">1.7698</span> <span class="o">-</span><span class="mf">1.1396</span> <span class="o">-</span><span class="mf">1.3193</span> <span class="o">-</span><span class="mf">1.0876</span>
+ <span class="mf">0.6434</span> <span class="o">-</span><span class="mf">0.3472</span>  <span class="mf">0.9116</span> <span class="o">-</span><span class="mf">2.2157</span>  <span class="mf">0.9210</span>  <span class="mf">2.0308</span>  <span class="mf">3.7293</span> <span class="o">-</span><span class="mf">2.3394</span>  <span class="mf">1.1593</span>  <span class="mf">1.4100</span>
+<span class="o">-</span><span class="mf">1.6169</span>  <span class="mf">0.7466</span>  <span class="mf">1.5074</span>  <span class="mf">0.5020</span>  <span class="mf">0.6296</span> <span class="o">-</span><span class="mf">2.5518</span>  <span class="mf">0.0207</span>  <span class="mf">2.0205</span> <span class="o">-</span><span class="mf">4.1593</span> <span class="o">-</span><span class="mf">0.0798</span>
+ <span class="mf">0.3138</span> <span class="o">-</span><span class="mf">4.0341</span> <span class="o">-</span><span class="mf">5.2514</span>  <span class="mf">0.6812</span>  <span class="mf">2.3160</span> <span class="o">-</span><span class="mf">2.7475</span>  <span class="mf">1.6144</span> <span class="o">-</span><span class="mf">0.1323</span>  <span class="mf">1.0135</span> <span class="o">-</span><span class="mf">0.4099</span>
+<span class="o">-</span><span class="mf">2.2022</span>  <span class="mf">5.7402</span> <span class="o">-</span><span class="mf">5.0497</span> <span class="o">-</span><span class="mf">2.3505</span> <span class="o">-</span><span class="mf">1.0957</span> <span class="o">-</span><span class="mf">3.8781</span> <span class="o">-</span><span class="mf">1.4619</span> <span class="o">-</span><span class="mf">8.0846</span>  <span class="mf">2.1727</span> <span class="o">-</span><span class="mf">1.6959</span>
+ <span class="mf">0.0518</span> <span class="o">-</span><span class="mf">2.3562</span>  <span class="mf">2.8809</span>  <span class="mf">4.3172</span> <span class="o">-</span><span class="mf">0.2523</span> <span class="o">-</span><span class="mf">0.2604</span>  <span class="mf">5.4354</span> <span class="o">-</span><span class="mf">2.6768</span>  <span class="mf">3.7796</span>  <span class="mf">0.0011</span>
 <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span> <span class="n">of</span> <span class="n">size</span> <span class="mi">10</span><span class="n">x10</span><span class="p">]</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.009 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.002 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/numpy_extensions_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numpy_extensions_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../_downloads/numpy_extensions_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numpy_extensions_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/numpy_extensions_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">numpy_extensions_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../_downloads/numpy_extensions_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">numpy_extensions_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -737,7 +737,7 @@ did not verify it’s correctness</em></p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

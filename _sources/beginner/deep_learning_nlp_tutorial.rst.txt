@@ -5,7 +5,7 @@ Deep Learning for NLP with Pytorch
 This tutorial will walk you through the key ideas of deep learning
 programming using Pytorch. Many of the concepts (such as the computation
 graph abstraction and autograd) are not unique to Pytorch and are
-relevant to any deep learning tool kit out there.
+relevant to any deep learning toolkit out there.
 
 I am writing this tutorial to focus specifically on NLP for people who
 have never written code in any deep learning framework (e.g, TensorFlow,
@@ -48,7 +48,7 @@ and use them on it.
     :intro: At this point, we have seen various feed-forward networks. That is, there is no state maintained by the network at all. 
 
 .. galleryitem:: /beginner/nlp/advanced_tutorial.py
-    :intro: Dyanmic versus Static Deep Learning Toolkits. Pytorch is a *dynamic* neural network kit. 
+    :intro: Dynamic versus Static Deep Learning Toolkits. Pytorch is a *dynamic* neural network kit. 
 
 
 .. raw:: html

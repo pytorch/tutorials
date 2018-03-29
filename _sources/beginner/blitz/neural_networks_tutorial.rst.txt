@@ -94,11 +94,11 @@ Let’s define this network:
  Out::
 
     Net(
-      (conv1): Conv2d (1, 6, kernel_size=(5, 5), stride=(1, 1))
-      (conv2): Conv2d (6, 16, kernel_size=(5, 5), stride=(1, 1))
-      (fc1): Linear(in_features=400, out_features=120)
-      (fc2): Linear(in_features=120, out_features=84)
-      (fc3): Linear(in_features=84, out_features=10)
+      (conv1): Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1))
+      (conv2): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
+      (fc1): Linear(in_features=400, out_features=120, bias=True)
+      (fc2): Linear(in_features=120, out_features=84, bias=True)
+      (fc3): Linear(in_features=84, out_features=10, bias=True)
     )
 
 
@@ -152,7 +152,7 @@ MNIST dataset, please resize the images from the dataset to 32x32.
  Out::
 
     Variable containing:
-    -0.0573 -0.0559 -0.1204  0.1070 -0.0275 -0.0118  0.0264  0.0515 -0.0257  0.0483
+    -0.0317 -0.0173  0.0242  0.0273  0.0097 -0.1078  0.0296 -0.1399 -0.0066  0.0212
     [torch.FloatTensor of size 1x10]
 
 
@@ -231,6 +231,7 @@ For example:
 
     output = net(input)
     target = Variable(torch.arange(1, 11))  # a dummy target, for example
+    target = target.view(1, -1)  # make it the same shape as output
     criterion = nn.MSELoss()
 
     loss = criterion(output, target)
@@ -245,7 +246,7 @@ For example:
  Out::
 
     Variable containing:
-     38.3962
+     38.7519
     [torch.FloatTensor of size 1]
 
 
@@ -283,9 +284,9 @@ For illustration, let us follow a few steps backward:
 
  Out::
 
-    <MseLossBackward object at 0x7f95e0a148d0>
-    <AddmmBackward object at 0x7f95e0a14c18>
-    <ExpandBackward object at 0x7f95e0a14c18>
+    <MseLossBackward object at 0x7f8e6cadde10>
+    <AddmmBackward object at 0x7f8e6caddf60>
+    <ExpandBackward object at 0x7f8e6caddf60>
 
 
 Backprop
@@ -335,12 +336,12 @@ gradients before and after the backward.
     conv1.bias.grad after backward
     Variable containing:
     1.00000e-02 *
-     -6.1643
-     -2.5201
-     -4.5238
-      6.8188
-     -0.2024
-      3.4750
+      2.0878
+      4.9268
+     -4.0705
+      6.8125
+     -4.8631
+      6.1257
     [torch.FloatTensor of size 6]
 
 
@@ -407,7 +408,7 @@ implements all these methods. Using it is very simple:
       as explained in `Backprop`_ section.
 
 
-**Total running time of the script:** ( 0 minutes  0.592 seconds)
+**Total running time of the script:** ( 0 minutes  0.020 seconds)
 
 
 

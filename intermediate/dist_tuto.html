@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Writing Distributed Applications with PyTorch &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Writing Distributed Applications with PyTorch &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../index.html"/>
         <link rel="next" title="Spatial Transformer Networks Tutorial" href="spatial_transformer_tutorial.html"/>
         <link rel="prev" title="Reinforcement Learning (DQN) tutorial" href="reinforcement_q_learning.html"/> 
 
@@ -75,7 +75,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -520,11 +520,11 @@
 * Processes & machines
 * variables and init_process_group
 --><p>The distributed package included in PyTorch (i.e.,
-<code class="docutils literal"><span class="pre">torch.distributed</span></code>) enables researchers and practitioners to easily
+<code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code>) enables researchers and practitioners to easily
 parallelize their computations across processes and clusters of
 machines. To do so, it leverages the messaging passing semantics
 allowing each process to communicate data to any of the other processes.
-As opposed to the multiprocessing (<code class="docutils literal"><span class="pre">torch.multiprocessing</span></code>) package,
+As opposed to the multiprocessing (<code class="docutils literal notranslate"><span class="pre">torch.multiprocessing</span></code>) package,
 processes can use different communication backends and are not
 restricted to being executed on the same machine.</p>
 <p>In order to get started we need the ability to run multiple processes
@@ -535,7 +535,7 @@ with your local sysadmin or use your favorite coordination tool. (e.g.,
 <a class="reference external" href="https://slurm.schedmd.com/">others</a>) For the purpose of this
 tutorial, we will use a single machine and fork multiple processes using
 the following template.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;run.py:&quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;run.py:&quot;&quot;&quot;</span>
 <span class="c1">#!/usr/bin/env python</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -568,16 +568,16 @@ the following template.</p>
 </div>
 <p>The above script spawns two processes who will each setup the
 distributed environment, initialize the process group
-(<code class="docutils literal"><span class="pre">dist.init_process_group</span></code>), and finally execute the given <code class="docutils literal"><span class="pre">run</span></code>
+(<code class="docutils literal notranslate"><span class="pre">dist.init_process_group</span></code>), and finally execute the given <code class="docutils literal notranslate"><span class="pre">run</span></code>
 function.</p>
-<p>Let’s have a look at the <code class="docutils literal"><span class="pre">init_processes</span></code> function. It ensures that
+<p>Let’s have a look at the <code class="docutils literal notranslate"><span class="pre">init_processes</span></code> function. It ensures that
 every process will be able to coordinate through a master, using the
 same ip address and port. Note that we used the TCP backend, but we
 could have used
 <a class="reference external" href="https://en.wikipedia.org/wiki/Message_Passing_Interface">MPI</a> or
 <a class="reference external" href="http://github.com/facebookincubator/gloo">Gloo</a> instead. (c.f.
 <a class="reference external" href="#communication-backends">Section 5.1</a>) We will go over the magic
-happening in <code class="docutils literal"><span class="pre">dist.init_process_group</span></code> at the end of this tutorial,
+happening in <code class="docutils literal notranslate"><span class="pre">dist.init_process_group</span></code> at the end of this tutorial,
 but it essentially allows processes to communicate with each other by
 sharing their locations.</p>
 </div>
@@ -588,10 +588,10 @@ sharing their locations.</p>
 <p class="caption"><span class="caption-text">Send and Recv</span></p>
 </div>
 <p>A transfer of data from one process to another is called a
-point-to-point communication. These are achieved through the <code class="docutils literal"><span class="pre">send</span></code>
-and <code class="docutils literal"><span class="pre">recv</span></code> functions or their <em>immediate</em> counter-parts, <code class="docutils literal"><span class="pre">isend</span></code> and
-<code class="docutils literal"><span class="pre">irecv</span></code>.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Blocking point-to-point communication.&quot;&quot;&quot;</span>
+point-to-point communication. These are achieved through the <code class="docutils literal notranslate"><span class="pre">send</span></code>
+and <code class="docutils literal notranslate"><span class="pre">recv</span></code> functions or their <em>immediate</em> counter-parts, <code class="docutils literal notranslate"><span class="pre">isend</span></code> and
+<code class="docutils literal notranslate"><span class="pre">irecv</span></code>.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Blocking point-to-point communication.&quot;&quot;&quot;</span>
 
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -609,12 +609,12 @@ and <code class="docutils literal"><span class="pre">recv</span></code> function
 process 0 increments the tensor and sends it to process 1 so that they
 both end up with 1.0. Notice that process 1 needs to allocate memory in
 order to store the data it will receive.</p>
-<p>Also notice that <code class="docutils literal"><span class="pre">send</span></code>/<code class="docutils literal"><span class="pre">recv</span></code> are <strong>blocking</strong>: both processes stop
+<p>Also notice that <code class="docutils literal notranslate"><span class="pre">send</span></code>/<code class="docutils literal notranslate"><span class="pre">recv</span></code> are <strong>blocking</strong>: both processes stop
 until the communication is completed. On the other hand immediates are
 <strong>non-blocking</strong>; the script continues its execution and the methods
-return a <code class="docutils literal"><span class="pre">DistributedRequest</span></code> object upon which we can choose to
-<code class="docutils literal"><span class="pre">wait()</span></code>.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Non-blocking point-to-point communication.&quot;&quot;&quot;</span>
+return a <code class="docutils literal notranslate"><span class="pre">DistributedRequest</span></code> object upon which we can choose to
+<code class="docutils literal notranslate"><span class="pre">wait()</span></code>.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;Non-blocking point-to-point communication.&quot;&quot;&quot;</span>
 
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -634,15 +634,15 @@ return a <code class="docutils literal"><span class="pre">DistributedRequest</sp
 </div>
 <p>When using immediates we have to be careful about with our usage of the sent and received tensors.
 Since we do not know when the data will be communicated to the other process,
-we should not modify the sent tensor nor access the received tensor before <code class="docutils literal"><span class="pre">req.wait()</span></code> has completed.
+we should not modify the sent tensor nor access the received tensor before <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code> has completed.
 In other words,</p>
 <ul class="simple">
-<li>writing to <code class="docutils literal"><span class="pre">tensor</span></code> after <code class="docutils literal"><span class="pre">dist.isend()</span></code> will result in undefined behaviour.</li>
-<li>reading from <code class="docutils literal"><span class="pre">tensor</span></code> after <code class="docutils literal"><span class="pre">dist.irecv()</span></code> will result in undefined behaviour.</li>
+<li>writing to <code class="docutils literal notranslate"><span class="pre">tensor</span></code> after <code class="docutils literal notranslate"><span class="pre">dist.isend()</span></code> will result in undefined behaviour.</li>
+<li>reading from <code class="docutils literal notranslate"><span class="pre">tensor</span></code> after <code class="docutils literal notranslate"><span class="pre">dist.irecv()</span></code> will result in undefined behaviour.</li>
 </ul>
-<p>However, after <code class="docutils literal"><span class="pre">req.wait()</span></code>
+<p>However, after <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code>
 has been executed we are guaranteed that the communication took place,
-and that the value stored in <code class="docutils literal"><span class="pre">tensor[0]</span></code> is 1.0.</p>
+and that the value stored in <code class="docutils literal notranslate"><span class="pre">tensor[0]</span></code> is 1.0.</p>
 <p>Point-to-point communication is useful when we want a fine-grained
 control over the communication of our processes. They can be used to
 implement fancy algorithms, such as the one used in <a class="reference external" href="https://github.com/baidu-research/baidu-allreduce">Baidu’s
@@ -697,11 +697,11 @@ experiments</a>.(c.f.
 <p>As opposed to point-to-point communcation, collectives allow for
 communication patterns across all processes in a <strong>group</strong>. A group is a
 subset of all our processes. To create a group, we can pass a list of
-ranks to <code class="docutils literal"><span class="pre">dist.new_group(group)</span></code>. By default, collectives are executed
+ranks to <code class="docutils literal notranslate"><span class="pre">dist.new_group(group)</span></code>. By default, collectives are executed
 on the all processes, also known as the <strong>world</strong>. For example, in order
 to obtain the sum of all tensors at all processes, we can use the
-<code class="docutils literal"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code> collective.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; All-Reduce example.&quot;&quot;&quot;</span>
+<code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code> collective.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; All-Reduce example.&quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Simple point-to-point communication. &quot;&quot;&quot;</span>
     <span class="n">group</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">new_group</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
@@ -711,32 +711,32 @@ to obtain the sum of all tensors at all processes, we can use the
 </pre></div>
 </div>
 <p>Since we want the sum of all tensors in the group, we use
-<code class="docutils literal"><span class="pre">dist.reduce_op.SUM</span></code> as the reduce operator. Generally speaking, any
+<code class="docutils literal notranslate"><span class="pre">dist.reduce_op.SUM</span></code> as the reduce operator. Generally speaking, any
 commutative mathematical operation can be used as an operator.
 Out-of-the-box, PyTorch comes with 4 such operators, all working at the
 element-wise level:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">dist.reduce_op.SUM</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">dist.reduce_op.PRODUCT</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">dist.reduce_op.MAX</span></code>,</li>
-<li><code class="docutils literal"><span class="pre">dist.reduce_op.MIN</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.SUM</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.PRODUCT</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.MAX</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.MIN</span></code>.</li>
 </ul>
-<p>In addition to <code class="docutils literal"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>, there are a total
+<p>In addition to <code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>, there are a total
 of 6 collectives currently implemented in PyTorch.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">dist.broadcast(tensor,</span> <span class="pre">src,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal"><span class="pre">tensor</span></code> from
-<code class="docutils literal"><span class="pre">src</span></code> to all other processes.</li>
-<li><code class="docutils literal"><span class="pre">dist.reduce(tensor,</span> <span class="pre">dst,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Applies <code class="docutils literal"><span class="pre">op</span></code> to all
-<code class="docutils literal"><span class="pre">tensor</span></code> and stores the result in <code class="docutils literal"><span class="pre">dst</span></code>.</li>
-<li><code class="docutils literal"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Same as reduce, but the
+<li><code class="docutils literal notranslate"><span class="pre">dist.broadcast(tensor,</span> <span class="pre">src,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code> from
+<code class="docutils literal notranslate"><span class="pre">src</span></code> to all other processes.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce(tensor,</span> <span class="pre">dst,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Applies <code class="docutils literal notranslate"><span class="pre">op</span></code> to all
+<code class="docutils literal notranslate"><span class="pre">tensor</span></code> and stores the result in <code class="docutils literal notranslate"><span class="pre">dst</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Same as reduce, but the
 result is stored in all processes.</li>
-<li><code class="docutils literal"><span class="pre">dist.scatter(tensor,</span> <span class="pre">src,</span> <span class="pre">scatter_list,</span> <span class="pre">group)</span></code>: Copies the
-<span class="math">\(i^{\text{th}}\)</span> tensor <code class="docutils literal"><span class="pre">scatter_list[i]</span></code> to the
-<span class="math">\(i^{\text{th}}\)</span> process.</li>
-<li><code class="docutils literal"><span class="pre">dist.gather(tensor,</span> <span class="pre">dst,</span> <span class="pre">gather_list,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal"><span class="pre">tensor</span></code>
-from all processes in <code class="docutils literal"><span class="pre">dst</span></code>.</li>
-<li><code class="docutils literal"><span class="pre">dist.all_gather(tensor_list,</span> <span class="pre">tensor,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal"><span class="pre">tensor</span></code>
-from all processes to <code class="docutils literal"><span class="pre">tensor_list</span></code>, on all processes.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.scatter(tensor,</span> <span class="pre">src,</span> <span class="pre">scatter_list,</span> <span class="pre">group)</span></code>: Copies the
+<span class="math notranslate">\(i^{\text{th}}\)</span> tensor <code class="docutils literal notranslate"><span class="pre">scatter_list[i]</span></code> to the
+<span class="math notranslate">\(i^{\text{th}}\)</span> process.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.gather(tensor,</span> <span class="pre">dst,</span> <span class="pre">gather_list,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code>
+from all processes in <code class="docutils literal notranslate"><span class="pre">dst</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.all_gather(tensor_list,</span> <span class="pre">tensor,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code>
+from all processes to <code class="docutils literal notranslate"><span class="pre">tensor_list</span></code>, on all processes.</li>
 </ul>
 </div>
 <div class="section" id="distributed-training">
@@ -764,7 +764,7 @@ the number of processes, we will first have to partition our dataset.
 (You could also use
 <a class="reference external" href="https://github.com/pytorch/tnt/blob/master/torchnet/dataset/splitdataset.py#L4">tnt.dataset.SplitDataset</a>,
 instead of the snippet below.)</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Dataset partitioning helper &quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Dataset partitioning helper &quot;&quot;&quot;</span>
 <span class="k">class</span> <span class="nc">Partition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
@@ -801,7 +801,7 @@ instead of the snippet below.)</p>
 </div>
 <p>With the above snippet, we can now simply partition any dataset using
 the following few lines:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Partitioning MNIST &quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Partitioning MNIST &quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">partition_dataset</span><span class="p">():</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./data&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                              <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
@@ -819,14 +819,14 @@ the following few lines:</p>
     <span class="k">return</span> <span class="n">train_set</span><span class="p">,</span> <span class="n">bsz</span>
 </pre></div>
 </div>
-<p>Assuming we have 2 replicas, then each process will have a <code class="docutils literal"><span class="pre">train_set</span></code>
+<p>Assuming we have 2 replicas, then each process will have a <code class="docutils literal notranslate"><span class="pre">train_set</span></code>
 of 60000 / 2 = 30000 samples. We also divide the batch size by the
 number of replicas in order to maintain the <em>overall</em> batch size of 128.</p>
 <p>We can now write our usual forward-backward-optimize training code, and
 add a function call to average the gradients of our models. (The
 following is largely inspired from the official <a class="reference external" href="https://github.com/pytorch/examples/blob/master/mnist/main.py">PyTorch MNIST
 example</a>.)</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Distributed Synchronous SGD Example &quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Distributed Synchronous SGD Example &quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">1234</span><span class="p">)</span>
         <span class="n">train_set</span><span class="p">,</span> <span class="n">bsz</span> <span class="o">=</span> <span class="n">partition_dataset</span><span class="p">()</span>
@@ -850,10 +850,10 @@ example</a>.)</p>
                   <span class="n">epoch</span><span class="p">,</span> <span class="s1">&#39;: &#39;</span><span class="p">,</span> <span class="n">epoch_loss</span> <span class="o">/</span> <span class="n">num_batches</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>It remains to implement the <code class="docutils literal"><span class="pre">average_gradients(model)</span></code> function, which
+<p>It remains to implement the <code class="docutils literal notranslate"><span class="pre">average_gradients(model)</span></code> function, which
 simply takes in a model and averages its gradients across the whole
 world.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Gradient averaging. &quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Gradient averaging. &quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">average_gradients</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
@@ -873,7 +873,7 @@ optimized</a>.</p>
 <p>As an additional challenge, imagine that we wanted to implement
 DeepSpeech’s efficient ring allreduce. This is fairly easily implemented
 using point-to-point collectives.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Implementation of a ring-reduce with addition. &quot;&quot;&quot;</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot; Implementation of a ring-reduce with addition. &quot;&quot;&quot;</span>
 <span class="k">def</span> <span class="nf">allreduce</span><span class="p">(</span><span class="n">send</span><span class="p">,</span> <span class="n">recv</span><span class="p">):</span>
     <span class="n">rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
@@ -900,9 +900,9 @@ using point-to-point collectives.</p>
     <span class="n">recv</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">accum</span><span class="p">[:]</span>
 </pre></div>
 </div>
-<p>In the above script, the <code class="docutils literal"><span class="pre">allreduce(send,</span> <span class="pre">recv)</span></code> function has a
+<p>In the above script, the <code class="docutils literal notranslate"><span class="pre">allreduce(send,</span> <span class="pre">recv)</span></code> function has a
 slightly different signature than the ones in PyTorch. It takes a
-<code class="docutils literal"><span class="pre">recv</span></code> tensor and will store the sum of all <code class="docutils literal"><span class="pre">send</span></code> tensors in it. As
+<code class="docutils literal notranslate"><span class="pre">recv</span></code> tensor and will store the sum of all <code class="docutils literal notranslate"><span class="pre">send</span></code> tensors in it. As
 an exercise left to the reader, there is still one difference between
 our version and the one in DeepSpeech: their implementation divide the
 gradient tensor into <em>chunks</em>, so as to optimially utilize the
@@ -913,17 +913,17 @@ communication bandwidth. (Hint:
 <div class="section" id="advanced-topics">
 <h2>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this headline">¶</a></h2>
 <p>We are now ready to discover some of the more advanced functionalities
-of <code class="docutils literal"><span class="pre">torch.distributed</span></code>. Since there is a lot to cover, this section is
+of <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code>. Since there is a lot to cover, this section is
 divided into two subsections:</p>
 <ol class="arabic simple">
 <li>Communication Backends: where we learn how to use MPI and Gloo for
 GPU-GPU communication.</li>
 <li>Initialization Methods: where we understand how to best setup the
-initial coordination phase in <code class="docutils literal"><span class="pre">dist.init_process_group()</span></code>.</li>
+initial coordination phase in <code class="docutils literal notranslate"><span class="pre">dist.init_process_group()</span></code>.</li>
 </ol>
 <div class="section" id="communication-backends">
 <h3>Communication Backends<a class="headerlink" href="#communication-backends" title="Permalink to this headline">¶</a></h3>
-<p>One of the most elegant aspects of <code class="docutils literal"><span class="pre">torch.distributed</span></code> is its ability
+<p>One of the most elegant aspects of <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> is its ability
 to abstract and build on top of different backends. As mentioned before,
 there are currently three backends implemented in PyTorch: TCP, MPI, and
 Gloo. They each have different specifications and tradeoffs, depending
@@ -948,27 +948,27 @@ algorithms</a>
 for inter-node routines.</p>
 <p>Since version 0.2.0, the Gloo backend is automatically included with the
 pre-compiled binaries of PyTorch. As you have surely noticed, our
-distributed SGD example does not work if you put <code class="docutils literal"><span class="pre">model</span></code> on the GPU.
-Let’s fix it by first replacing <code class="docutils literal"><span class="pre">backend='gloo'</span></code> in
-<code class="docutils literal"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='tcp')</span></code>. At this point, the
+distributed SGD example does not work if you put <code class="docutils literal notranslate"><span class="pre">model</span></code> on the GPU.
+Let’s fix it by first replacing <code class="docutils literal notranslate"><span class="pre">backend='gloo'</span></code> in
+<code class="docutils literal notranslate"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='tcp')</span></code>. At this point, the
 script will still run on CPU but uses the Gloo backend behind the
 scenes. In order to use multiple GPUs, let us also do the following
 modifications:</p>
 <ol class="arabic simple" start="0">
-<li><code class="docutils literal"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='tcp')</span></code> <span class="math">\(\rightarrow\)</span>
-<code class="docutils literal"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='gloo')</span></code></li>
-<li><code class="docutils literal"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net()</span></code> <span class="math">\(\rightarrow\)</span> <code class="docutils literal"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net().cuda(rank)</span></code></li>
-<li><code class="docutils literal"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">Variable(data),</span> <span class="pre">Variable(target)</span></code>
-<span class="math">\(\rightarrow\)</span>
-<code class="docutils literal"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">Variable(data.cuda(rank)),</span> <span class="pre">Variable(target.cuda(rank))</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='tcp')</span></code> <span class="math notranslate">\(\rightarrow\)</span>
+<code class="docutils literal notranslate"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='gloo')</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net()</span></code> <span class="math notranslate">\(\rightarrow\)</span> <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net().cuda(rank)</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">Variable(data),</span> <span class="pre">Variable(target)</span></code>
+<span class="math notranslate">\(\rightarrow\)</span>
+<code class="docutils literal notranslate"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">Variable(data.cuda(rank)),</span> <span class="pre">Variable(target.cuda(rank))</span></code></li>
 </ol>
 <p>With the above modifications, our model is now training on two GPUs and
-you can monitor their utilization with <code class="docutils literal"><span class="pre">watch</span> <span class="pre">nvidia-smi</span></code>.</p>
+you can monitor their utilization with <code class="docutils literal notranslate"><span class="pre">watch</span> <span class="pre">nvidia-smi</span></code>.</p>
 <p><strong>MPI Backend</strong></p>
 <p>The Message Passing Interface (MPI) is a standardized tool from the
 field of high-performance computing. It allows to do point-to-point and
 collective communications and was the main inspiration for the API of
-<code class="docutils literal"><span class="pre">torch.distributed</span></code>. Several implementations of MPI exist (e.g.
+<code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code>. Several implementations of MPI exist (e.g.
 <a class="reference external" href="https://www.open-mpi.org/">Open-MPI</a>,
 <a class="reference external" href="http://mvapich.cse.ohio-state.edu/">MVAPICH2</a>, <a class="reference external" href="https://software.intel.com/en-us/intel-mpi-library">Intel
 MPI</a>) each
@@ -989,27 +989,27 @@ sources</a>.</p>
 <li>Create and activate your Anaconda environment, install all the
 pre-requisites following <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">the
 guide</a>, but do
-<strong>not</strong> run <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> yet.</li>
+<strong>not</strong> run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> yet.</li>
 <li>Choose and install your favorite MPI implementation. Note that
 enabling CUDA-aware MPI might require some additional steps. In our
 case, we’ll stick to Open-MPI <em>without</em> GPU support:
-<code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">openmpi</span></code></li>
+<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">openmpi</span></code></li>
 <li>Now, go to your cloned PyTorch repo and execute
-<code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>.</li>
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code>.</li>
 </ol>
 <p>In order to test our newly installed backend, a few modifications are
 required.</p>
 <ol class="arabic simple">
-<li>Replace the content under <code class="docutils literal"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">'__main__':</span></code> with
-<code class="docutils literal"><span class="pre">init_processes(0,</span> <span class="pre">0,</span> <span class="pre">run,</span> <span class="pre">backend='mpi')</span></code>.</li>
-<li>Run <code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">-n</span> <span class="pre">4</span> <span class="pre">python</span> <span class="pre">myscript.py</span></code>.</li>
+<li>Replace the content under <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">'__main__':</span></code> with
+<code class="docutils literal notranslate"><span class="pre">init_processes(0,</span> <span class="pre">0,</span> <span class="pre">run,</span> <span class="pre">backend='mpi')</span></code>.</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-n</span> <span class="pre">4</span> <span class="pre">python</span> <span class="pre">myscript.py</span></code>.</li>
 </ol>
 <p>The reason for these changes is that MPI needs to create its own
 environment before spawning the processes. MPI will also spawn its own
 processes and perform the handshake described in <a class="reference external" href="#initialization-methods">Initialization
-Methods</a>, making the <code class="docutils literal"><span class="pre">rank</span></code>and <code class="docutils literal"><span class="pre">size</span></code>
-arguments of <code class="docutils literal"><span class="pre">init_process_group</span></code> superfluous. This is actually quite
-powerful as you can pass additional arguments to <code class="docutils literal"><span class="pre">mpirun</span></code> in order to
+Methods</a>, making the <code class="docutils literal notranslate"><span class="pre">rank</span></code>and <code class="docutils literal notranslate"><span class="pre">size</span></code>
+arguments of <code class="docutils literal notranslate"><span class="pre">init_process_group</span></code> superfluous. This is actually quite
+powerful as you can pass additional arguments to <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> in order to
 tailor computational resources for each process. (Things like number of
 cores per process, hand-assigning machines to specific ranks, and <a class="reference external" href="https://www.open-mpi.org/faq/?category=running#mpirun-hostfile">some
 more</a>)
@@ -1019,7 +1019,7 @@ communication backends.</p>
 <div class="section" id="initialization-methods">
 <h3>Initialization Methods<a class="headerlink" href="#initialization-methods" title="Permalink to this headline">¶</a></h3>
 <p>To finish this tutorial, let’s talk about the very first function we
-called: <code class="docutils literal"><span class="pre">dist.init_process_group(backend,</span> <span class="pre">init_method)</span></code>. In
+called: <code class="docutils literal notranslate"><span class="pre">dist.init_process_group(backend,</span> <span class="pre">init_method)</span></code>. In
 particular, we will go over the different initialization methods which
 are responsible for the initial coordination step between each process.
 Those methods allow you to define how this coordination is done.
@@ -1028,17 +1028,17 @@ naturally more suitable than the others. In addition to the following
 sections, you should also have a look at the <a class="reference external" href="http://pytorch.org/docs/master/distributed.html#initialization">official
 documentation</a>.</p>
 <p>Before diving into the initialization methods, let’s have a quick look
-at what happens behind <code class="docutils literal"><span class="pre">init_process_group</span></code> from the C/C++
+at what happens behind <code class="docutils literal notranslate"><span class="pre">init_process_group</span></code> from the C/C++
 perspective.</p>
 <ol class="arabic simple">
 <li>First, the arguments are parsed and validated.</li>
-<li>The backend is resolved via the <code class="docutils literal"><span class="pre">name2channel.at()</span></code> function. A
-<code class="docutils literal"><span class="pre">Channel</span></code> class is returned, and will be used to perform the data
+<li>The backend is resolved via the <code class="docutils literal notranslate"><span class="pre">name2channel.at()</span></code> function. A
+<code class="docutils literal notranslate"><span class="pre">Channel</span></code> class is returned, and will be used to perform the data
 transmission.</li>
-<li>The GIL is dropped, and <code class="docutils literal"><span class="pre">THDProcessGroupInit()</span></code> is called. This
+<li>The GIL is dropped, and <code class="docutils literal notranslate"><span class="pre">THDProcessGroupInit()</span></code> is called. This
 instantiates the channel and adds the address of the master node.</li>
-<li>The process with rank 0 will execute the <code class="docutils literal"><span class="pre">master</span></code> procedure, while
-all other ranks will be <code class="docutils literal"><span class="pre">workers</span></code>.</li>
+<li>The process with rank 0 will execute the <code class="docutils literal notranslate"><span class="pre">master</span></code> procedure, while
+all other ranks will be <code class="docutils literal notranslate"><span class="pre">workers</span></code>.</li>
 <li>The master<ol class="loweralpha">
 <li>Creates sockets for all workers.</li>
 <li>Waits for all workers to connect.</li>
@@ -1061,13 +1061,13 @@ variables on all machines, all processes will be able to properly
 connect to the master, obtain information about the other processes, and
 finally handshake with them.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">MASTER_PORT</span></code>: A free port on the machine that will host the
+<li><code class="docutils literal notranslate"><span class="pre">MASTER_PORT</span></code>: A free port on the machine that will host the
 process with rank 0.</li>
-<li><code class="docutils literal"><span class="pre">MASTER_ADDR</span></code>: IP address of the machine that will host the process
+<li><code class="docutils literal notranslate"><span class="pre">MASTER_ADDR</span></code>: IP address of the machine that will host the process
 with rank 0.</li>
-<li><code class="docutils literal"><span class="pre">WORLD_SIZE</span></code>: The total number of processes, so that the master
+<li><code class="docutils literal notranslate"><span class="pre">WORLD_SIZE</span></code>: The total number of processes, so that the master
 knows how many workers to wait for.</li>
-<li><code class="docutils literal"><span class="pre">RANK</span></code>: Rank of each process, so they will know whether it is the
+<li><code class="docutils literal notranslate"><span class="pre">RANK</span></code>: Rank of each process, so they will know whether it is the
 master of a worker.</li>
 </ul>
 <p><strong>Shared File System</strong></p>
@@ -1079,9 +1079,9 @@ readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
 <a class="reference external" href="http://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl</a>. Note that
 you can specify ranks manually or let the processes figure it out by
-themselves. Be defining a unique <code class="docutils literal"><span class="pre">groupname</span></code> per job you can use the
+themselves. Be defining a unique <code class="docutils literal notranslate"><span class="pre">groupname</span></code> per job you can use the
 same file path for multiple jobs and safely avoid collision.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;file:///mnt/nfs/sharedfile&#39;</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;file:///mnt/nfs/sharedfile&#39;</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
                         <span class="n">group_name</span><span class="o">=</span><span class="s1">&#39;mygroup&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1096,16 +1096,16 @@ world size.</li>
 </ol>
 <p>In the first case, all workers will be able to connect to the process
 with rank 0 and follow the procedure described above.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;tcp://10.1.1.20:23456&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;tcp://10.1.1.20:23456&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In the second case, the multicast address specifies the group of nodes
 who might potentially be active and the coordination can be handled by
 allowing each process to have an initial handshake before following the
 above procedure. In addition TCP multicast initialization also supports
-a <code class="docutils literal"><span class="pre">group_name</span></code> argument (as with the shared file method) allowing
+a <code class="docutils literal notranslate"><span class="pre">group_name</span></code> argument (as with the shared file method) allowing
 multiple jobs to be scheduled on the same cluster.</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;tcp://[ff15:1e18:5d4c:4cf0:d02d:b659:53ba:b0a7]:23456&#39;</span><span class="p">,</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;tcp://[ff15:1e18:5d4c:4cf0:d02d:b659:53ba:b0a7]:23456&#39;</span><span class="p">,</span>
                         <span class="n">world_size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1177,7 +1177,7 @@ and answering questions on early drafts.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

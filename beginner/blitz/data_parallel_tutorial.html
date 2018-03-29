@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Optional: Data Parallelism &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Optional: Data Parallelism &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../../index.html"/>
         <link rel="up" title="Deep Learning with PyTorch: A 60 Minute Blitz" href="../deep_learning_60min_blitz.html"/>
         <link rel="next" title="PyTorch for former Torch users" href="../former_torchies_tutorial.html"/>
         <link rel="prev" title="Training a classifier" href="cifar10_tutorial.html"/> 
@@ -76,7 +76,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -516,29 +516,29 @@
   <div class="section" id="optional-data-parallelism">
 <span id="sphx-glr-beginner-blitz-data-parallel-tutorial-py"></span><h1>Optional: Data Parallelism<a class="headerlink" href="#optional-data-parallelism" title="Permalink to this headline">¶</a></h1>
 <p><strong>Authors</strong>: <a class="reference external" href="https://github.com/hunkim">Sung Kim</a> and <a class="reference external" href="https://github.com/jennykang">Jenny Kang</a></p>
-<p>In this tutorial, we will learn how to use multiple GPUs using <code class="docutils literal"><span class="pre">DataParallel</span></code>.</p>
+<p>In this tutorial, we will learn how to use multiple GPUs using <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>.</p>
 <p>It’s very easy to use GPUs with PyTorch. You can put the model on a GPU:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Then, you can copy all your tensors to the GPU:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">mytensor</span> <span class="o">=</span> <span class="n">my_tensor</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mytensor</span> <span class="o">=</span> <span class="n">my_tensor</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Please note that just calling <code class="docutils literal"><span class="pre">mytensor.gpu()</span></code> won’t copy the tensor
+<p>Please note that just calling <code class="docutils literal notranslate"><span class="pre">mytensor.gpu()</span></code> won’t copy the tensor
 to the GPU. You need to assign it to a new tensor and use that tensor on the GPU.</p>
 <p>It’s natural to execute your forward, backward propagations on multiple GPUs.
 However, Pytorch will only use one GPU by default. You can easily run your
 operations on multiple GPUs by making your model run parallelly using
-<code class="docutils literal"><span class="pre">DataParallel</span></code>:</p>
-<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">DataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>That’s the core behind this tutorial. We will explore it in more detail below.</p>
 <div class="section" id="imports-and-parameters">
 <h2>Imports and parameters<a class="headerlink" href="#imports-and-parameters" title="Permalink to this headline">¶</a></h2>
 <p>Import PyTorch modules and define parameters.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
@@ -556,7 +556,7 @@ operations on multiple GPUs by making your model run parallelly using
 <h2>Dummy DataSet<a class="headerlink" href="#dummy-dataset" title="Permalink to this headline">¶</a></h2>
 <p>Make a dummy (random) dataset. You just need to implement the
 getitem</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RandomDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">RandomDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">len</span> <span class="o">=</span> <span class="n">length</span>
@@ -576,12 +576,12 @@ getitem</p>
 <div class="section" id="simple-model">
 <h2>Simple Model<a class="headerlink" href="#simple-model" title="Permalink to this headline">¶</a></h2>
 <p>For the demo, our model just gets an input, performs a linear operation, and
-gives an output. However, you can use <code class="docutils literal"><span class="pre">DataParallel</span></code> on any model (CNN, RNN,
+gives an output. However, you can use <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> on any model (CNN, RNN,
 Capsule Net etc.)</p>
 <p>We’ve placed a print statement inside the model to monitor the size of input
 and output tensors.
 Please pay attention to what is printed at batch rank 0.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="c1"># Our model</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
@@ -601,9 +601,9 @@ Please pay attention to what is printed at batch rank 0.</p>
 <h2>Create Model and DataParallel<a class="headerlink" href="#create-model-and-dataparallel" title="Permalink to this headline">¶</a></h2>
 <p>This is the core part of the tutorial. First, we need to make a model instance
 and check if we have multiple GPUs. If we have multiple GPUs, we can wrap
-our model using <code class="docutils literal"><span class="pre">nn.DataParallel</span></code>. Then we can put our model on GPUs by
-<code class="docutils literal"><span class="pre">model.gpu()</span></code></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
+our model using <code class="docutils literal notranslate"><span class="pre">nn.DataParallel</span></code>. Then we can put our model on GPUs by
+<code class="docutils literal notranslate"><span class="pre">model.gpu()</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
   <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Let&#39;s use&quot;</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">(),</span> <span class="s2">&quot;GPUs!&quot;</span><span class="p">)</span>
   <span class="c1"># dim = 0 [30, xxx] -&gt; [10, ...], [10, ...], [10, ...] on 3 GPUs</span>
@@ -617,7 +617,7 @@ our model using <code class="docutils literal"><span class="pre">nn.DataParallel
 <div class="section" id="run-the-model">
 <h2>Run the Model<a class="headerlink" href="#run-the-model" title="Permalink to this headline">¶</a></h2>
 <p>Now we can see the sizes of input and output tensors.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">rand_loader</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">rand_loader</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
         <span class="n">input_var</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">cuda</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
@@ -629,7 +629,7 @@ our model using <code class="docutils literal"><span class="pre">nn.DataParallel
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="n">Outside</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output_size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
   <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="n">Outside</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output_size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">30</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
@@ -647,7 +647,7 @@ expected. But if you have GPUs, then you can get results like this.</p>
 <div class="section" id="gpus">
 <h3>2 GPUs<a class="headerlink" href="#gpus" title="Permalink to this headline">¶</a></h3>
 <p>If you have 2, you will see:</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="c1"># on 2 GPUs</span>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># on 2 GPUs</span>
 <span class="n">Let</span><span class="s1">&#39;s use 2 GPUs!</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">15</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">15</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
@@ -667,7 +667,7 @@ expected. But if you have GPUs, then you can get results like this.</p>
 <div class="section" id="id1">
 <h3>3 GPUs<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>If you have 3 GPUs, you will see:</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">Let</span><span class="s1">&#39;s use 3 GPUs!</span>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Let</span><span class="s1">&#39;s use 3 GPUs!</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
@@ -690,7 +690,7 @@ expected. But if you have GPUs, then you can get results like this.</p>
 <div class="section" id="id2">
 <h3>8 GPUs<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>If you have 8, you will see:</p>
-<div class="code bash highlight-default"><div class="highlight"><pre><span></span><span class="n">Let</span><span class="s1">&#39;s use 8 GPUs!</span>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Let</span><span class="s1">&#39;s use 8 GPUs!</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
     <span class="n">In</span> <span class="n">Model</span><span class="p">:</span> <span class="nb">input</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="n">output</span> <span class="n">size</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
@@ -735,12 +735,12 @@ models on several GPUs. After each model finishes their job, DataParallel
 collects and merges the results before returning it to you.</p>
 <p>For more information, please check out
 <a class="reference external" href="http://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html">http://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html</a>.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.001 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.003 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/data_parallel_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_parallel_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/data_parallel_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_parallel_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/data_parallel_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">data_parallel_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/data_parallel_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">data_parallel_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -790,7 +790,7 @@ collects and merges the results before returning it to you.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

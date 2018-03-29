@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Translation with a Sequence to Sequence Network and Attention &mdash; PyTorch Tutorials 0.3.0.post4 documentation</title>
+  <title>Translation with a Sequence to Sequence Network and Attention &mdash; PyTorch Tutorials 0.3.1.post2 documentation</title>
   
 
   
@@ -41,7 +41,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.3.0.post4 documentation" href="../index.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.3.1.post2 documentation" href="../index.html"/>
         <link rel="next" title="Reinforcement Learning (DQN) tutorial" href="reinforcement_q_learning.html"/>
         <link rel="prev" title="Generating Names with a Character-Level RNN" href="char_rnn_generation_tutorial.html"/> 
 
@@ -75,7 +75,7 @@
             
             
               <div class="version">
-                0.3.0.post4
+                0.3.1.post2
               </div>
             
           
@@ -515,7 +515,7 @@
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/spro/practical-pytorch">Sean Robertson</a></p>
 <p>In this project we will be teaching a neural network to translate from
 French to English.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>[KEY: &gt; input, = target, &lt; output]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[KEY: &gt; input, = target, &lt; output]
 
 &gt; il est en train de peindre un tableau .
 = he is painting a picture .
@@ -582,7 +582,7 @@ Translate</a></li>
 <li><a class="reference external" href="http://arxiv.org/abs/1506.05869">A Neural Conversational Model</a></li>
 </ul>
 <p><strong>Requirements</strong></p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="nb">open</span>
 <span class="kn">import</span> <span class="nn">unicodedata</span>
 <span class="kn">import</span> <span class="nn">string</span>
@@ -609,9 +609,9 @@ downloads available at <a class="reference external" href="http://tatoeba.org/en
 yet, someone did the extra work of splitting language pairs into
 individual text files here: <a class="reference external" href="http://www.manythings.org/anki/">http://www.manythings.org/anki/</a></p>
 <p>The English to French pairs are too big to include in the repo, so
-download to <code class="docutils literal"><span class="pre">data/eng-fra.txt</span></code> before continuing. The file is a tab
+download to <code class="docutils literal notranslate"><span class="pre">data/eng-fra.txt</span></code> before continuing. The file is a tab
 separated list of translation pairs:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="n">am</span> <span class="n">cold</span><span class="o">.</span>    <span class="n">Je</span> <span class="n">suis</span> <span class="n">froid</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">I</span> <span class="n">am</span> <span class="n">cold</span><span class="o">.</span>    <span class="n">J</span><span class="s1">&#39;ai froid.</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -632,10 +632,10 @@ thousand words per language.</p>
 </div>
 <p>We’ll need a unique index per word to use as the inputs and targets of
 the networks later. To keep track of all this we will use a helper class
-called <code class="docutils literal"><span class="pre">Lang</span></code> which has word → index (<code class="docutils literal"><span class="pre">word2index</span></code>) and index → word
-(<code class="docutils literal"><span class="pre">index2word</span></code>) dictionaries, as well as a count of each word
-<code class="docutils literal"><span class="pre">word2count</span></code> to use to later replace rare words.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">SOS_token</span> <span class="o">=</span> <span class="mi">0</span>
+called <code class="docutils literal notranslate"><span class="pre">Lang</span></code> which has word → index (<code class="docutils literal notranslate"><span class="pre">word2index</span></code>) and index → word
+(<code class="docutils literal notranslate"><span class="pre">index2word</span></code>) dictionaries, as well as a count of each word
+<code class="docutils literal notranslate"><span class="pre">word2count</span></code> to use to later replace rare words.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SOS_token</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">EOS_token</span> <span class="o">=</span> <span class="mi">1</span>
 
 
@@ -664,7 +664,7 @@ called <code class="docutils literal"><span class="pre">Lang</span></code> which
 <p>The files are all in Unicode, to simplify we will turn Unicode
 characters to ASCII, make everything lowercase, and trim most
 punctuation.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Turn a Unicode string to plain ASCII, thanks to</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn a Unicode string to plain ASCII, thanks to</span>
 <span class="c1"># http://stackoverflow.com/a/518232/2809427</span>
 <span class="k">def</span> <span class="nf">unicodeToAscii</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -684,9 +684,9 @@ punctuation.</p>
 </div>
 <p>To read the data file we will split the file into lines, and then split
 lines into pairs. The files are all English → Other Language, so if we
-want to translate from Other Language → English I added the <code class="docutils literal"><span class="pre">reverse</span></code>
+want to translate from Other Language → English I added the <code class="docutils literal notranslate"><span class="pre">reverse</span></code>
 flag to reverse the pairs.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reading lines...&quot;</span><span class="p">)</span>
 
     <span class="c1"># Read the file and split into lines</span>
@@ -714,7 +714,7 @@ simple sentences. Here the maximum length is 10 words (that includes
 ending punctuation) and we’re filtering to sentences that translate to
 the form “I am” or “He is” etc. (accounting for apostrophes replaced
 earlier).</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">MAX_LENGTH</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MAX_LENGTH</span> <span class="o">=</span> <span class="mi">10</span>
 
 <span class="n">eng_prefixes</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">&quot;i am &quot;</span><span class="p">,</span> <span class="s2">&quot;i m &quot;</span><span class="p">,</span>
@@ -742,7 +742,7 @@ earlier).</p>
 <li>Normalize text, filter by length and content</li>
 <li>Make word lists from sentences in pairs</li>
 </ul>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepareData</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepareData</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="n">input_lang</span><span class="p">,</span> <span class="n">output_lang</span><span class="p">,</span> <span class="n">pairs</span> <span class="o">=</span> <span class="n">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
     <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Read </span><span class="si">%s</span><span class="s2"> sentence pairs&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="n">filterPairs</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
@@ -762,14 +762,14 @@ earlier).</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="n">Reading</span> <span class="n">lines</span><span class="o">...</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Reading</span> <span class="n">lines</span><span class="o">...</span>
 <span class="n">Read</span> <span class="mi">135842</span> <span class="n">sentence</span> <span class="n">pairs</span>
 <span class="n">Trimmed</span> <span class="n">to</span> <span class="mi">10853</span> <span class="n">sentence</span> <span class="n">pairs</span>
 <span class="n">Counting</span> <span class="n">words</span><span class="o">...</span>
 <span class="n">Counted</span> <span class="n">words</span><span class="p">:</span>
 <span class="n">fra</span> <span class="mi">4489</span>
 <span class="n">eng</span> <span class="mi">2925</span>
-<span class="p">[</span><span class="s1">&#39;il est fort au rugby .&#39;</span><span class="p">,</span> <span class="s1">&#39;he is good at rugby .&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s1">&#39;je suis sienne et elle est mienne .&#39;</span><span class="p">,</span> <span class="s1">&#39;i am hers and she is mine .&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -809,7 +809,7 @@ next input word.</p>
 <div class="figure">
 <img alt="" src="../_images/encoder-network.png" />
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EncoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
@@ -843,13 +843,13 @@ This last output is sometimes called the <em>context vector</em> as it encodes
 context from the entire sequence. This context vector is used as the
 initial hidden state of the decoder.</p>
 <p>At every step of decoding, the decoder is given an input token and
-hidden state. The initial input token is the start-of-string <code class="docutils literal"><span class="pre">&lt;SOS&gt;</span></code>
+hidden state. The initial input token is the start-of-string <code class="docutils literal notranslate"><span class="pre">&lt;SOS&gt;</span></code>
 token, and the first hidden state is the context vector (the encoder’s
 last hidden state).</p>
 <div class="figure">
 <img alt="" src="../_images/decoder-network.png" />
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
@@ -886,14 +886,14 @@ that single vector carries the burden of encoding the entire sentence.</p>
 the encoder’s outputs for every step of the decoder’s own outputs. First
 we calculate a set of <em>attention weights</em>. These will be multiplied by
 the encoder output vectors to create a weighted combination. The result
-(called <code class="docutils literal"><span class="pre">attn_applied</span></code> in the code) should contain information about
+(called <code class="docutils literal notranslate"><span class="pre">attn_applied</span></code> in the code) should contain information about
 that specific part of the input sequence, and thus help the decoder
 choose the right output words.</p>
 <div class="figure">
 <img alt="" src="https://i.imgur.com/1152PYf.png" />
 </div>
 <p>Calculating the attention weights is done with another feed-forward
-layer <code class="docutils literal"><span class="pre">attn</span></code>, using the decoder’s input and hidden state as inputs.
+layer <code class="docutils literal notranslate"><span class="pre">attn</span></code>, using the decoder’s input and hidden state as inputs.
 Because there are sentences of all sizes in the training data, to
 actually create and train this layer we have to choose a maximum
 sentence length (input length, for encoder outputs) that it can apply
@@ -902,7 +902,7 @@ while shorter sentences will only use the first few.</p>
 <div class="figure">
 <img alt="" src="../_images/attention-decoder-network.png" />
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AttnDecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
@@ -961,7 +961,7 @@ Translation</a>.</p>
 words in the input sentence) and target tensor (indexes of the words in
 the target sentence). While creating these vectors we will append the
 EOS token to both sequences.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">indexesFromSentence</span><span class="p">(</span><span class="n">lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">indexesFromSentence</span><span class="p">(</span><span class="n">lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">lang</span><span class="o">.</span><span class="n">word2index</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)]</span>
 
 
@@ -986,7 +986,7 @@ EOS token to both sequences.</p>
 <h3>Training the Model<a class="headerlink" href="#training-the-model" title="Permalink to this headline">¶</a></h3>
 <p>To train we run the input sentence through the encoder, and keep track
 of every output and the latest hidden state. Then the decoder is given
-the <code class="docutils literal"><span class="pre">&lt;SOS&gt;</span></code> token as its first input, and the last hidden state of the
+the <code class="docutils literal notranslate"><span class="pre">&lt;SOS&gt;</span></code> token as its first input, and the last hidden state of the
 encoder as its first hidden state.</p>
 <p>“Teacher forcing” is the concept of using the real target outputs as
 each next input, instead of using the decoder’s guess as the next input.
@@ -1001,8 +1001,8 @@ has not properly learned how to create the sentence from the translation
 in the first place.</p>
 <p>Because of the freedom PyTorch’s autograd gives us, we can randomly
 choose to use teacher forcing or not with a simple if statement. Turn
-<code class="docutils literal"><span class="pre">teacher_forcing_ratio</span></code> up to use more of it.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">teacher_forcing_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
+<code class="docutils literal notranslate"><span class="pre">teacher_forcing_ratio</span></code> up to use more of it.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">teacher_forcing_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 
 <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">input_variable</span><span class="p">,</span> <span class="n">target_variable</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">encoder_optimizer</span><span class="p">,</span> <span class="n">decoder_optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
@@ -1064,7 +1064,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 </div>
 <p>This is a helper function to print time elapsed and estimated time
 remaining given the current time and progress %.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
 
@@ -1089,9 +1089,9 @@ remaining given the current time and progress %.</p>
 <li>Create set of training pairs</li>
 <li>Start empty losses array for plotting</li>
 </ul>
-<p>Then we call <code class="docutils literal"><span class="pre">train</span></code> many times and occasionally print the progress (%
+<p>Then we call <code class="docutils literal notranslate"><span class="pre">train</span></code> many times and occasionally print the progress (%
 of examples, time so far, estimated time) and average loss.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">trainIters</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n_iters</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot_every</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">trainIters</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n_iters</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot_every</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">plot_losses</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">print_loss_total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Reset every print_every</span>
@@ -1131,8 +1131,8 @@ of examples, time so far, estimated time) and average loss.</p>
 <div class="section" id="plotting-results">
 <h3>Plotting results<a class="headerlink" href="#plotting-results" title="Permalink to this headline">¶</a></h3>
 <p>Plotting is done with matplotlib, using the array of loss values
-<code class="docutils literal"><span class="pre">plot_losses</span></code> saved while training.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<code class="docutils literal notranslate"><span class="pre">plot_losses</span></code> saved while training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">ticker</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
@@ -1155,7 +1155,7 @@ we simply feed the decoder’s predictions back to itself for each step.
 Every time it predicts a word we add it to the output string, and if it
 predicts the EOS token we stop there. We also store the decoder’s
 attention outputs for display later.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
     <span class="n">input_variable</span> <span class="o">=</span> <span class="n">variableFromSentence</span><span class="p">(</span><span class="n">input_lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
     <span class="n">input_length</span> <span class="o">=</span> <span class="n">input_variable</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">encoder_hidden</span> <span class="o">=</span> <span class="n">encoder</span><span class="o">.</span><span class="n">initHidden</span><span class="p">()</span>
@@ -1196,7 +1196,7 @@ attention outputs for display later.</p>
 </div>
 <p>We can evaluate random sentences from the training set and print out the
 input, target, and output to make some subjective quality judgements:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluateRandomly</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluateRandomly</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">pair</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
         <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -1221,9 +1221,9 @@ reasonable results.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">If you run this notebook you can train, interrupt the kernel,
 evaluate, and continue training later. Comment out the lines where the
-encoder and decoder are initialized and run <code class="docutils literal"><span class="pre">trainIters</span></code> again.</p>
+encoder and decoder are initialized and run <code class="docutils literal notranslate"><span class="pre">trainIters</span></code> again.</p>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">hidden_size</span> <span class="o">=</span> <span class="mi">256</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hidden_size</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">encoder1</span> <span class="o">=</span> <span class="n">EncoderRNN</span><span class="p">(</span><span class="n">input_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
 <span class="n">attn_decoder1</span> <span class="o">=</span> <span class="n">AttnDecoderRNN</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
 
@@ -1242,66 +1242,66 @@ encoder and decoder are initialized and run <code class="docutils literal"><span
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="n">m</span> <span class="mi">35</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">22</span><span class="n">m</span> <span class="mi">20</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">5000</span> <span class="mi">6</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.8772</span>
-<span class="mi">3</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">20</span><span class="n">m</span> <span class="mi">22</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">10000</span> <span class="mi">13</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3215</span>
-<span class="mi">4</span><span class="n">m</span> <span class="mi">41</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">18</span><span class="n">m</span> <span class="mi">44</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">15000</span> <span class="mi">20</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.9822</span>
-<span class="mi">6</span><span class="n">m</span> <span class="mi">14</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">17</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">20000</span> <span class="mi">26</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.7501</span>
-<span class="mi">7</span><span class="n">m</span> <span class="mi">46</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">15</span><span class="n">m</span> <span class="mi">33</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">25000</span> <span class="mi">33</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.5509</span>
-<span class="mi">9</span><span class="n">m</span> <span class="mi">20</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">14</span><span class="n">m</span> <span class="mi">0</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">30000</span> <span class="mi">40</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.4105</span>
-<span class="mi">10</span><span class="n">m</span> <span class="mi">53</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">12</span><span class="n">m</span> <span class="mi">26</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">35000</span> <span class="mi">46</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.2387</span>
-<span class="mi">12</span><span class="n">m</span> <span class="mi">27</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">10</span><span class="n">m</span> <span class="mi">53</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">40000</span> <span class="mi">53</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.1227</span>
-<span class="mi">14</span><span class="n">m</span> <span class="mi">1</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">9</span><span class="n">m</span> <span class="mi">20</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">45000</span> <span class="mi">60</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.9899</span>
-<span class="mi">15</span><span class="n">m</span> <span class="mi">34</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">7</span><span class="n">m</span> <span class="mi">47</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">50000</span> <span class="mi">66</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.9209</span>
-<span class="mi">17</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">6</span><span class="n">m</span> <span class="mi">13</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">55000</span> <span class="mi">73</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.8257</span>
-<span class="mi">18</span><span class="n">m</span> <span class="mi">42</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">4</span><span class="n">m</span> <span class="mi">40</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">60000</span> <span class="mi">80</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.7418</span>
-<span class="mi">20</span><span class="n">m</span> <span class="mi">16</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">3</span><span class="n">m</span> <span class="mi">7</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">65000</span> <span class="mi">86</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.7025</span>
-<span class="mi">21</span><span class="n">m</span> <span class="mi">51</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">1</span><span class="n">m</span> <span class="mi">33</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">70000</span> <span class="mi">93</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.6422</span>
-<span class="mi">23</span><span class="n">m</span> <span class="mi">25</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">0</span><span class="n">m</span> <span class="mi">0</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">75000</span> <span class="mi">100</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.5948</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span><span class="n">m</span> <span class="mi">45</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">24</span><span class="n">m</span> <span class="mi">39</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">5000</span> <span class="mi">6</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.9188</span>
+<span class="mi">3</span><span class="n">m</span> <span class="mi">29</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">22</span><span class="n">m</span> <span class="mi">39</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">10000</span> <span class="mi">13</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.3178</span>
+<span class="mi">5</span><span class="n">m</span> <span class="mi">12</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">20</span><span class="n">m</span> <span class="mi">50</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">15000</span> <span class="mi">20</span><span class="o">%</span><span class="p">)</span> <span class="mf">2.0025</span>
+<span class="mi">6</span><span class="n">m</span> <span class="mi">56</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">19</span><span class="n">m</span> <span class="mi">5</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">20000</span> <span class="mi">26</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.7596</span>
+<span class="mi">8</span><span class="n">m</span> <span class="mi">41</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">17</span><span class="n">m</span> <span class="mi">22</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">25000</span> <span class="mi">33</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.5698</span>
+<span class="mi">10</span><span class="n">m</span> <span class="mi">25</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">15</span><span class="n">m</span> <span class="mi">38</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">30000</span> <span class="mi">40</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.4069</span>
+<span class="mi">12</span><span class="n">m</span> <span class="mi">9</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">13</span><span class="n">m</span> <span class="mi">54</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">35000</span> <span class="mi">46</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.2432</span>
+<span class="mi">13</span><span class="n">m</span> <span class="mi">54</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">12</span><span class="n">m</span> <span class="mi">10</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">40000</span> <span class="mi">53</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.1341</span>
+<span class="mi">15</span><span class="n">m</span> <span class="mi">39</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">10</span><span class="n">m</span> <span class="mi">26</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">45000</span> <span class="mi">60</span><span class="o">%</span><span class="p">)</span> <span class="mf">1.0419</span>
+<span class="mi">17</span><span class="n">m</span> <span class="mi">23</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">8</span><span class="n">m</span> <span class="mi">41</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">50000</span> <span class="mi">66</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.9451</span>
+<span class="mi">19</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">6</span><span class="n">m</span> <span class="mi">57</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">55000</span> <span class="mi">73</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.8505</span>
+<span class="mi">20</span><span class="n">m</span> <span class="mi">53</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">5</span><span class="n">m</span> <span class="mi">13</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">60000</span> <span class="mi">80</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.7717</span>
+<span class="mi">22</span><span class="n">m</span> <span class="mi">37</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">3</span><span class="n">m</span> <span class="mi">28</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">65000</span> <span class="mi">86</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.7114</span>
+<span class="mi">24</span><span class="n">m</span> <span class="mi">22</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">1</span><span class="n">m</span> <span class="mi">44</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">70000</span> <span class="mi">93</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.6487</span>
+<span class="mi">26</span><span class="n">m</span> <span class="mi">8</span><span class="n">s</span> <span class="p">(</span><span class="o">-</span> <span class="mi">0</span><span class="n">m</span> <span class="mi">0</span><span class="n">s</span><span class="p">)</span> <span class="p">(</span><span class="mi">75000</span> <span class="mi">100</span><span class="o">%</span><span class="p">)</span> <span class="mf">0.5968</span>
 </pre></div>
 </div>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">il</span> <span class="n">est</span> <span class="n">heroino</span> <span class="n">dependant</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">he</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">heroin</span> <span class="n">addict</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">he</span> <span class="n">s</span> <span class="n">a</span> <span class="n">slob</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span>&gt; vous etes imprudent .
+= you re foolish .
+&lt; you re foolish . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">je</span> <span class="n">suis</span> <span class="n">actuellement</span> <span class="n">en</span> <span class="n">service</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">i</span> <span class="n">am</span> <span class="n">on</span> <span class="n">duty</span> <span class="n">now</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">i</span> <span class="n">m</span> <span class="n">on</span> <span class="n">now</span> <span class="n">now</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; elle est deux ans plus jeune que moi .
+= she is two years younger than me .
+&lt; she s two years younger than me . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">ils</span> <span class="n">sont</span> <span class="n">tous</span> <span class="n">morts</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">they</span> <span class="n">are</span> <span class="nb">all</span> <span class="n">dead</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">they</span> <span class="n">re</span> <span class="nb">all</span> <span class="n">dead</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; nous sommes plus malins que ca .
+= we re smarter than that .
+&lt; we re smarter than that . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">vous</span> <span class="n">etes</span> <span class="n">bons</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">you</span> <span class="n">are</span> <span class="n">good</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">you</span> <span class="n">re</span> <span class="n">good</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; vous vous amusez n est ce pas ?
+= you re enjoying yourselves aren t you ?
+&lt; you re enjoying aren t you ? &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">nous</span> <span class="n">ne</span> <span class="n">sommes</span> <span class="n">pas</span> <span class="n">encore</span> <span class="n">mortes</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">we</span> <span class="n">re</span> <span class="ow">not</span> <span class="n">dead</span> <span class="n">yet</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">we</span> <span class="n">re</span> <span class="ow">not</span> <span class="n">dead</span> <span class="n">yet</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; tu es pardonnee .
+= you re forgiven .
+&lt; you re forgiven . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">il</span> <span class="n">est</span> <span class="n">a</span> <span class="n">bout</span> <span class="n">de</span> <span class="n">force</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">he</span> <span class="n">s</span> <span class="n">on</span> <span class="n">his</span> <span class="n">last</span> <span class="n">legs</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">he</span> <span class="n">s</span> <span class="n">on</span> <span class="n">his</span> <span class="n">last</span> <span class="n">legs</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; nous ne sortons pas ensemble .
+= we re not on a date .
+&lt; we re not dating together . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">tu</span> <span class="n">es</span> <span class="n">dur</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">you</span> <span class="n">re</span> <span class="n">tough</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">you</span> <span class="n">re</span> <span class="n">tough</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; t es pleine de fric .
+= you re loaded .
+&lt; you re loaded . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">elle</span> <span class="n">est</span> <span class="n">en</span> <span class="n">bons</span> <span class="n">termes</span> <span class="n">avec</span> <span class="n">lui</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">she</span> <span class="ow">is</span> <span class="n">on</span> <span class="n">friendly</span> <span class="n">terms</span> <span class="k">with</span> <span class="n">him</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">she</span> <span class="ow">is</span> <span class="n">on</span> <span class="n">good</span> <span class="n">terms</span> <span class="k">with</span> <span class="n">him</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; tu es trop suspicieux de tout .
+= you re too suspicious about everything .
+&lt; you re too suspicious about everything . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">je</span> <span class="n">suis</span> <span class="n">tatillon</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">i</span> <span class="n">m</span> <span class="n">fussy</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">i</span> <span class="n">m</span> <span class="n">unhappy</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; vous etes un bon client .
+= you are a good customer .
+&lt; you are a good person . &lt;EOS&gt;
 
-<span class="o">&gt;</span> <span class="n">je</span> <span class="n">suis</span> <span class="n">plus</span> <span class="n">belle</span> <span class="n">que</span> <span class="n">vous</span> <span class="o">.</span>
-<span class="o">=</span> <span class="n">i</span> <span class="n">am</span> <span class="n">more</span> <span class="n">beautiful</span> <span class="n">than</span> <span class="n">you</span> <span class="o">.</span>
-<span class="o">&lt;</span> <span class="n">i</span> <span class="n">m</span> <span class="n">more</span> <span class="n">beautiful</span> <span class="n">than</span> <span class="n">you</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+&gt; tout le monde parle de lui en bien .
+= he is well spoken of by everybody .
+&lt; he is well good with by good . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1310,10 +1310,10 @@ encoder and decoder are initialized and run <code class="docutils literal"><span
 outputs. Because it is used to weight specific encoder outputs of the
 input sequence, we can imagine looking where the network is focused most
 at each time step.</p>
-<p>You could simply run <code class="docutils literal"><span class="pre">plt.matshow(attentions)</span></code> to see attention output
+<p>You could simply run <code class="docutils literal notranslate"><span class="pre">plt.matshow(attentions)</span></code> to see attention output
 displayed as a matrix, with the columns being input steps and rows being
 output steps:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span>
     <span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">,</span> <span class="s2">&quot;je suis trop froid .&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">attentions</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
@@ -1321,7 +1321,7 @@ output steps:</p>
 <img alt="../_images/sphx_glr_seq2seq_translation_tutorial_003.png" class="align-center" src="../_images/sphx_glr_seq2seq_translation_tutorial_003.png" />
 <p>For a better viewing experience we will do the extra work of adding axes
 and labels:</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">showAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">,</span> <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">showAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">,</span> <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span><span class="p">):</span>
     <span class="c1"># Set up figure with colorbar</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
@@ -1368,14 +1368,14 @@ and labels:</p>
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-default"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">elle</span> <span class="n">a</span> <span class="n">cinq</span> <span class="n">ans</span> <span class="n">de</span> <span class="n">moins</span> <span class="n">que</span> <span class="n">moi</span> <span class="o">.</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">she</span> <span class="n">s</span> <span class="n">three</span> <span class="n">years</span> <span class="n">younger</span> <span class="n">than</span> <span class="n">i</span> <span class="n">am</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+<div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">elle</span> <span class="n">a</span> <span class="n">cinq</span> <span class="n">ans</span> <span class="n">de</span> <span class="n">moins</span> <span class="n">que</span> <span class="n">moi</span> <span class="o">.</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">she</span> <span class="n">s</span> <span class="n">five</span> <span class="n">years</span> <span class="n">younger</span> <span class="n">than</span> <span class="n">me</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
 <span class="nb">input</span> <span class="o">=</span> <span class="n">elle</span> <span class="n">est</span> <span class="n">trop</span> <span class="n">petit</span> <span class="o">.</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">she</span> <span class="n">s</span> <span class="n">too</span> <span class="n">short</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
 <span class="nb">input</span> <span class="o">=</span> <span class="n">je</span> <span class="n">ne</span> <span class="n">crains</span> <span class="n">pas</span> <span class="n">de</span> <span class="n">mourir</span> <span class="o">.</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">i</span> <span class="n">m</span> <span class="ow">not</span> <span class="n">afraid</span> <span class="n">to</span> <span class="n">die</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">i</span> <span class="n">m</span> <span class="ow">not</span> <span class="n">scared</span> <span class="n">to</span> <span class="n">die</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
 <span class="nb">input</span> <span class="o">=</span> <span class="n">c</span> <span class="n">est</span> <span class="n">un</span> <span class="n">jeune</span> <span class="n">directeur</span> <span class="n">plein</span> <span class="n">de</span> <span class="n">talent</span> <span class="o">.</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">he</span> <span class="n">s</span> <span class="n">a</span> <span class="n">talented</span> <span class="n">young</span> <span class="n">talented</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">he</span> <span class="n">s</span> <span class="n">a</span> <span class="n">talented</span> <span class="n">teenager</span> <span class="o">.</span> <span class="o">&lt;</span><span class="n">EOS</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </div>
@@ -1395,7 +1395,7 @@ GloVe</li>
 <li>Try with more layers, more hidden units, and more sentences. Compare
 the training time and results.</li>
 <li>If you use a translation file where pairs have two of the same phrase
-(<code class="docutils literal"><span class="pre">I</span> <span class="pre">am</span> <span class="pre">test</span> <span class="pre">\t</span> <span class="pre">I</span> <span class="pre">am</span> <span class="pre">test</span></code>), you can use this as an autoencoder. Try
+(<code class="docutils literal notranslate"><span class="pre">I</span> <span class="pre">am</span> <span class="pre">test</span> <span class="pre">\t</span> <span class="pre">I</span> <span class="pre">am</span> <span class="pre">test</span></code>), you can use this as an autoencoder. Try
 this:<ul>
 <li>Train as an autoencoder</li>
 <li>Save only the Encoder network</li>
@@ -1403,12 +1403,12 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 23 minutes  31.690 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 26 minutes  13.770 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/seq2seq_translation_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../_downloads/seq2seq_translation_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/seq2seq_translation_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">seq2seq_translation_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../_downloads/seq2seq_translation_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">seq2seq_translation_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -1458,7 +1458,7 @@ this:<ul>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.3.0.post4',
+            VERSION:'0.3.1.post2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
