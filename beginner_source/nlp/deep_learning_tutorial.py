@@ -211,7 +211,7 @@ print(F.log_softmax(data, dim=0))  # theres also log_softmax
 # Example: Logistic Regression Bag-of-Words classifier
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Our model will map a sparse BOW representation to log probabilities over
+# Our model will map a sparse BoW representation to log probabilities over
 # labels. We assign each word in the vocab an index. For example, say our
 # entire vocab is two words "hello" and "world", with indices 0 and 1
 # respectively. The BoW vector for the sentence "hello hello hello hello"
