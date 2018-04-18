@@ -38,7 +38,6 @@ Define the network
 Let’s define this network:
 """
 import torch
-from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -91,11 +90,11 @@ print(len(params))
 print(params[0].size())  # conv1's .weight
 
 ########################################################################
-# The input to the forward is an ``autograd.Variable``, and so is the output.
+# Let try a random 32x32 input
 # Note: Expected input size to this net(LeNet) is 32x32. To use this net on
 # MNIST dataset, please resize the images from the dataset to 32x32.
 
-input = Variable(torch.randn(1, 1, 32, 32))
+input = torch.randn(1, 1, 32, 32)
 out = net(input)
 print(out)
 
@@ -121,21 +120,19 @@ out.backward(torch.randn(1, 10))
 # Before proceeding further, let's recap all the classes you’ve seen so far.
 #
 # **Recap:**
-#   -  ``torch.Tensor`` - A *multi-dimensional array*.
-#   -  ``autograd.Variable`` - *Wraps a Tensor and records the history of
-#      operations* applied to it. Has the same API as a ``Tensor``, with
-#      some additions like ``backward()``. Also *holds the gradient*
-#      w.r.t. the tensor.
+#   -  ``torch.Tensor`` - A *multi-dimensional array* with support for autograd
+#      operations like ``backward()``. Also *holds the gradient* w.r.t. the
+#      tensor.
 #   -  ``nn.Module`` - Neural network module. *Convenient way of
 #      encapsulating parameters*, with helpers for moving them to GPU,
 #      exporting, loading, etc.
-#   -  ``nn.Parameter`` - A kind of Variable, that is *automatically
+#   -  ``nn.Parameter`` - A kind of Tensor, that is *automatically
 #      registered as a parameter when assigned as an attribute to a*
 #      ``Module``.
 #   -  ``autograd.Function`` - Implements *forward and backward definitions
-#      of an autograd operation*. Every ``Variable`` operation, creates at
+#      of an autograd operation*. Every ``Tensor`` operation, creates at
 #      least a single ``Function`` node, that connects to functions that
-#      created a ``Variable`` and *encodes its history*.
+#      created a ``Tensor`` and *encodes its history*.
 #
 # **At this point, we covered:**
 #   -  Defining a neural network
@@ -159,7 +156,7 @@ out.backward(torch.randn(1, 10))
 # For example:
 
 output = net(input)
-target = Variable(torch.arange(1, 11))  # a dummy target, for example
+target = torch.arange(1, 11)  # a dummy target, for example
 target = target.view(1, -1)  # make it the same shape as output
 criterion = nn.MSELoss()
 
@@ -179,8 +176,8 @@ print(loss)
 #           -> loss
 #
 # So, when we call ``loss.backward()``, the whole graph is differentiated
-# w.r.t. the loss, and all Variables in the graph will have their
-# ``.grad`` Variable accumulated with the gradient.
+# w.r.t. the loss, and all Tensors in the graph that has ``requres_grad=True``
+# will have their ``.grad`` Tensor accumulated with the gradient.
 #
 # For illustration, let us follow a few steps backward:
 

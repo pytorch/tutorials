@@ -10,7 +10,7 @@ Goal of this tutorial:
 
 *This tutorial assumes that you have a basic familiarity of numpy*
 
-.. Note:: 
+.. Note::
     Make sure you have the `torch`_ and `torchvision`_ packages installed.
 
 .. _torch: https://github.com/pytorch/pytorch

@@ -267,6 +267,7 @@ criterion = nn.NLLLoss()
 learning_rate = 0.0005
 
 def train(category_tensor, input_line_tensor, target_line_tensor):
+    target_line_tensor.unsqueeze_(0)
     hidden = rnn.initHidden()
 
     rnn.zero_grad()
@@ -275,7 +276,7 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
 
     for i in range(input_line_tensor.size()[0]):
         output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
-        loss += criterion(output, target_line_tensor[i])
+        loss += criterion(output, target_line_tensor[i, None])
 
     loss.backward()
 

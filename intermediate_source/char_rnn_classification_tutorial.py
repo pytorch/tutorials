@@ -181,7 +181,6 @@ print(lineToTensor('Jones').size())
 #
 
 import torch.nn as nn
-from torch.autograd import Variable
 
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -201,7 +200,7 @@ class RNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        return Variable(torch.zeros(1, self.hidden_size))
+        return torch.zeros(1, self.hidden_size)
 
 n_hidden = 128
 rnn = RNN(n_letters, n_hidden, n_categories)
@@ -214,12 +213,9 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 # each language) and a next hidden state (which we keep for the next
 # step).
 #
-# Remember that PyTorch modules operate on Variables rather than straight
-# up Tensors.
-#
 
-input = Variable(letterToTensor('A'))
-hidden = Variable(torch.zeros(1, n_hidden))
+input = letterToTensor('A')
+hidden =torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(input, hidden)
 
@@ -231,8 +227,8 @@ output, next_hidden = rnn(input, hidden)
 # pre-computing batches of Tensors.
 #
 
-input = Variable(lineToTensor('Albert'))
-hidden = Variable(torch.zeros(1, n_hidden))
+input = lineToTensor('Albert')
+hidden = torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(input[0], hidden)
 print(output)
@@ -258,8 +254,8 @@ print(output)
 #
 
 def categoryFromOutput(output):
-    top_n, top_i = output.data.topk(1) # Tensor out of Variable with .data
-    category_i = top_i[0][0]
+    top_n, top_i = output.topk(1)
+    category_i = top_i[0].item()
     return all_categories[category_i], category_i
 
 print(categoryFromOutput(output))
@@ -278,8 +274,8 @@ def randomChoice(l):
 def randomTrainingExample():
     category = randomChoice(all_categories)
     line = randomChoice(category_lines[category])
-    category_tensor = Variable(torch.LongTensor([all_categories.index(category)]))
-    line_tensor = Variable(lineToTensor(line))
+    category_tensor = torch.tensor([all_categories.index(category)], dtype=torch.long)
+    line_tensor = lineToTensor(line)
     return category, line, category_tensor, line_tensor
 
 for i in range(10):
@@ -466,17 +462,18 @@ plt.show()
 
 def predict(input_line, n_predictions=3):
     print('\n> %s' % input_line)
-    output = evaluate(Variable(lineToTensor(input_line)))
+    with torch.no_grad():
+        output = evaluate(lineToTensor(input_line))
 
-    # Get top N categories
-    topv, topi = output.data.topk(n_predictions, 1, True)
-    predictions = []
+        # Get top N categories
+        topv, topi = output.topk(n_predictions, 1, True)
+        predictions = []
 
-    for i in range(n_predictions):
-        value = topv[0][i]
-        category_index = topi[0][i]
-        print('(%.2f) %s' % (value, all_categories[category_index]))
-        predictions.append([value, all_categories[category_index]])
+        for i in range(n_predictions):
+            value = topv[0][i].item()
+            category_index = topi[0][i].item()
+            print('(%.2f) %s' % (value, all_categories[category_index]))
+            predictions.append([value, all_categories[category_index]])
 
 predict('Dovesky')
 predict('Jackson')

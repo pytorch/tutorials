@@ -30,20 +30,20 @@ torch.manual_seed(1)
 # function.
 #
 
-# Create a torch.Tensor object with the given data.  It is a 1D vector
+# torch.tensor(data) creates a torch.Tensor object with the given data.
 V_data = [1., 2., 3.]
-V = torch.Tensor(V_data)
+V = torch.tensor(V_data)
 print(V)
 
 # Creates a matrix
 M_data = [[1., 2., 3.], [4., 5., 6]]
-M = torch.Tensor(M_data)
+M = torch.tensor(M_data)
 print(M)
 
 # Create a 3D tensor of size 2x2x2.
 T_data = [[[1., 2.], [3., 4.]],
           [[5., 6.], [7., 8.]]]
-T = torch.Tensor(T_data)
+T = torch.tensor(T_data)
 print(T)
 
 
@@ -60,8 +60,10 @@ print(T)
 # talking about 3D tensors, I will explicitly use the term "3D tensor".
 #
 
-# Index into V and get a scalar
+# Index into V and get a scalar (0 dimensional tensor)
 print(V[0])
+# Get a Python number from it
+print(V[0].item())
 
 # Index into M and get a vector
 print(M[0])
@@ -93,8 +95,8 @@ print(x)
 #
 # You can operate on tensors in the ways you would expect.
 
-x = torch.Tensor([1., 2., 3.])
-y = torch.Tensor([4., 5., 6.])
+x = torch.tensor([1., 2., 3.])
+y = torch.tensor([4., 5., 6.])
 z = x + y
 print(z)
 
@@ -151,8 +153,8 @@ print(x.view(2, -1))
 # specification of how your data is combined to give you the output. Since
 # the graph totally specifies what parameters were involved with which
 # operations, it contains enough information to compute derivatives. This
-# probably sounds vague, so lets see what is going on using the
-# fundamental class of Pytorch: autograd.Variable.
+# probably sounds vague, so let's see what is going on using the
+# fundamental flag ``requires_grad``.
 #
 # First, think from a programmers perspective. What is stored in the
 # torch.Tensor objects we were creating above? Obviously the data and the
@@ -162,26 +164,25 @@ print(x.view(2, -1))
 # (it could have been read in from a file, it could be the result of some
 # other operation, etc.)
 #
-# The Variable class keeps track of how it was created. Lets see it in
-# action.
+# If ``requires_grad=True``, the Tensor object keeps track of how it was
+# created. Lets see it in action.
 #
 
-# Variables wrap tensor objects
-x = autograd.Variable(torch.Tensor([1., 2., 3]), requires_grad=True)
-# You can access the data with the .data attribute
-print(x.data)
+# Tensor factory methods have a ``requires_grad`` flag
+x = torch.tensor([1., 2., 3], requires_grad=True)
 
-# You can also do all the same operations you did with tensors with Variables.
-y = autograd.Variable(torch.Tensor([4., 5., 6]), requires_grad=True)
+# With requires_grad=True, you can still do all the operations you previously
+# could
+y = torch.tensor([4., 5., 6], requires_grad=True)
 z = x + y
-print(z.data)
+print(z)
 
 # BUT z knows something extra.
 print(z.grad_fn)
 
 
 ######################################################################
-# So Variables know what created them. z knows that it wasn't read in from
+# So Tensors know what created them. z knows that it wasn't read in from
 # a file, it wasn't the result of a multiplication or exponential or
 # whatever. And if you keep following z.grad_fn, you will find yourself at
 # x and y.
@@ -240,29 +241,34 @@ print(x.grad)
 # successful programmer in deep learning.
 #
 
-x = torch.randn((2, 2))
-y = torch.randn((2, 2))
-z = x + y  # These are Tensor types, and backprop would not be possible
+x = torch.randn(2, 2)
+y = torch.randn(2, 2)
+# By default, user created Tensors have ``requires_grad=False``
+print(x.requires_grad, y.requires_grad)
+z = x + y
+# So you can't backprop through z
+print(z.grad_fn)
 
-var_x = autograd.Variable(x, requires_grad=True)
-var_y = autograd.Variable(y, requires_grad=True)
-# var_z contains enough information to compute gradients, as we saw above
-var_z = var_x + var_y
-print(var_z.grad_fn)
+# .to(requires_grad=True) changes an existing Tensor's ``requires_grad`` to True
+x = x.to(requires_grad=True)
+y = y.to(requires_grad=True)
+# z contains enough information to compute gradients, as we saw above
+z = x + y
+print(z.grad_fn)
+# If any input to an operation has ``requires_grad=True``, so will the output
+print(z.requires_grad)
 
-var_z_data = var_z.data  # Get the wrapped Tensor object out of var_z...
-# Re-wrap the tensor in a new variable
-new_var_z = autograd.Variable(var_z_data)
+# Now z has the computation history that relates itself to x and y
+# Can we just take its values, and **detach** it from its history?
+new_z = z.detach()
 
-# ... does new_var_z have information to backprop to x and y?
+# ... does new_z have information to backprop to x and y?
 # NO!
-print(new_var_z.grad_fn)
-# And how could it?  We yanked the tensor out of var_z (that is
-# what var_z.data is).  This tensor doesn't know anything about
-# how it was computed.  We pass it into new_var_z, and this is all the
-# information new_var_z gets.  If var_z_data doesn't know how it was
-# computed, theres no way new_var_z will.
-# In essence, we have broken the variable away from its past history
+print(new_z.grad_fn)
+# And how could it?  z.detach() returns a tensor that shares the same storage
+# as z, but with the computation history forgotten. It doesn't know anything
+# about how it was computed.
+# In essence, we have broken the Tensor away from its past history
 
 
 ######################################################################

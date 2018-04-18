@@ -36,7 +36,6 @@ output below is the mapping of the :math:`i`'th row of the input under
 # Author: Robert Guthrie
 
 import torch
-import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -48,7 +47,7 @@ torch.manual_seed(1)
 
 lin = nn.Linear(5, 3)  # maps from R^5 to R^3, parameters A, b
 # data is 2x5.  A maps from 5 to 3... can we map "data" under A?
-data = autograd.Variable(torch.randn(2, 5))
+data = torch.randn(2, 5)
 print(lin(data))  # yes
 
 
@@ -93,7 +92,7 @@ print(lin(data))  # yes
 # In pytorch, most non-linearities are in torch.functional (we have it imported as F)
 # Note that non-linearites typically don't have parameters like affine maps do.
 # That is, they don't have weights that are updated during training.
-data = autograd.Variable(torch.randn(2, 2))
+data = torch.randn(2, 2)
 print(data)
 print(F.relu(data))
 
@@ -121,7 +120,7 @@ print(F.relu(data))
 #
 
 # Softmax is also in torch.nn.functional
-data = autograd.Variable(torch.randn(5))
+data = torch.randn(5)
 print(data)
 print(F.softmax(data, dim=0))
 print(F.softmax(data, dim=0).sum())  # Sums to 1 because it is a distribution!
@@ -158,9 +157,9 @@ print(F.log_softmax(data, dim=0))  # theres also log_softmax
 # =========================
 #
 # So what we can compute a loss function for an instance? What do we do
-# with that? We saw earlier that autograd.Variable's know how to compute
-# gradients with respect to the things that were used to compute it. Well,
-# since our loss is an autograd.Variable, we can compute gradients with
+# with that? We saw earlier that Tensors know how to compute gradients
+# with respect to the things that were used to compute it. Well,
+# since our loss is an Tensor, we can compute gradients with
 # respect to all of the parameters used to compute it! Then we can perform
 # standard gradient updates. Let :math:`\theta` be our parameters,
 # :math:`L(\theta)` the loss function, and :math:`\eta` a positive
@@ -302,11 +301,13 @@ model = BoWClassifier(NUM_LABELS, VOCAB_SIZE)
 for param in model.parameters():
     print(param)
 
-# To run the model, pass in a BoW vector, but wrapped in an autograd.Variable
-sample = data[0]
-bow_vector = make_bow_vector(sample[0], word_to_ix)
-log_probs = model(autograd.Variable(bow_vector))
-print(log_probs)
+# To run the model, pass in a BoW vector
+# Here we don't need to train, so the code is wrapped in torch.no_grad()
+with torch.no_grad():
+    sample = data[0]
+    bow_vector = make_bow_vector(sample[0], word_to_ix)
+    log_probs = model(bow_vector)
+    print(log_probs)
 
 
 ######################################################################
@@ -334,10 +335,11 @@ label_to_ix = {"SPANISH": 0, "ENGLISH": 1}
 #
 
 # Run on test data before we train, just to see a before-and-after
-for instance, label in test_data:
-    bow_vec = autograd.Variable(make_bow_vector(instance, word_to_ix))
-    log_probs = model(bow_vec)
-    print(log_probs)
+with torch.no_grad():
+    for instance, label in test_data:
+        bow_vec = make_bow_vector(instance, word_to_ix)
+        log_probs = model(bow_vec)
+        print(log_probs)
 
 # Print the matrix column corresponding to "creo"
 print(next(model.parameters())[:, word_to_ix["creo"]])
@@ -355,12 +357,12 @@ for epoch in range(100):
         model.zero_grad()
 
         # Step 2. Make our BOW vector and also we must wrap the target in a
-        # Variable as an integer. For example, if the target is SPANISH, then
+        # Tensor as an integer. For example, if the target is SPANISH, then
         # we wrap the integer 0. The loss function then knows that the 0th
         # element of the log probabilities is the log probability
         # corresponding to SPANISH
-        bow_vec = autograd.Variable(make_bow_vector(instance, word_to_ix))
-        target = autograd.Variable(make_target(label, label_to_ix))
+        bow_vec = make_bow_vector(instance, word_to_ix)
+        target = make_target(label, label_to_ix)
 
         # Step 3. Run our forward pass.
         log_probs = model(bow_vec)
@@ -371,10 +373,11 @@ for epoch in range(100):
         loss.backward()
         optimizer.step()
 
-for instance, label in test_data:
-    bow_vec = autograd.Variable(make_bow_vector(instance, word_to_ix))
-    log_probs = model(bow_vec)
-    print(log_probs)
+with torch.no_grad():
+    for instance, label in test_data:
+        bow_vec = make_bow_vector(instance, word_to_ix)
+        log_probs = model(bow_vec)
+        print(log_probs)
 
 # Index corresponding to Spanish goes up, English goes down!
 print(next(model.parameters())[:, word_to_ix["creo"]])

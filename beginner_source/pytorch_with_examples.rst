@@ -1,14 +1,14 @@
 Learning PyTorch with Examples
 ******************************
-**Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_ 
+**Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_
 
 This tutorial introduces the fundamental concepts of
 `PyTorch <https://github.com/pytorch/pytorch>`__ through self-contained
 examples.
 
-At its core, PyTorch provides two main features: 
+At its core, PyTorch provides two main features:
 
-- An n-dimensional Tensor, similar to numpy but can run on GPUs 
+- An n-dimensional Tensor, similar to numpy but can run on GPUs
 - Automatic differentiation for building and training neural networks
 
 We will use a fully-connected ReLU network as our running example. The
@@ -17,7 +17,7 @@ gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.
 
 .. Note::
-	You can browse the individual examples at the 
+	You can browse the individual examples at the
 	:ref:`end of this page <examples-download>`.
 
 .. contents:: Table of Contents
