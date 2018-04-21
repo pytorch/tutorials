@@ -265,7 +265,7 @@ def get_screen():
     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
     screen = torch.from_numpy(screen)
     # Resize, and add a batch dimension (BCHW)
-    return resize(screen).unsqueeze(0).type(Tensor)
+    return resize(screen).unsqueeze(0).to(device)
 
 
 env.reset()
@@ -325,7 +325,7 @@ def select_action(state):
     steps_done += 1
     if sample > eps_threshold:
         with torch.no_grad():
-            return policy_net(state).to(torch.float).max(1)[1].view(1, 1)
+            return policy_net(state).max(1)[1].view(1, 1)
     else:
         return torch.tensor([[random.randrange(2)]], device=device, dtype=torch.long)
 
@@ -336,7 +336,7 @@ episode_durations = []
 def plot_durations():
     plt.figure(2)
     plt.clf()
-    durations_t = torch.tensor(episode_durations)
+    durations_t = torch.tensor(episode_durations, dtype=torch.float)
     plt.title('Training...')
     plt.xlabel('Episode')
     plt.ylabel('Duration')
@@ -393,13 +393,13 @@ def optimize_model():
     state_action_values = policy_net(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
-    next_state_values = torch.zeros(BATCH_SIZE, dtype=torch.float, device=device)
-    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
+    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
     # Compute the expected Q values
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
-    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
+    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
 
     # Optimize the model
     optimizer.zero_grad()
@@ -431,8 +431,8 @@ for i_episode in range(num_episodes):
     for t in count():
         # Select and perform an action
         action = select_action(state)
-        _, reward, done, _ = env.step(action[0, 0])
-        reward = Tensor([reward])
+        _, reward, done, _ = env.step(action.item())
+        reward = torch.tensor([reward], device=device)
 
         # Observe new state
         last_screen = current_screen
@@ -459,7 +459,7 @@ for i_episode in range(num_episodes):
         target_net.load_state_dict(policy_net.state_dict())
 
 print('Complete')
-env.render(close=True)
+env.render()
 env.close()
 plt.ioff()
 plt.show()
