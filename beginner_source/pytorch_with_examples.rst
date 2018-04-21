@@ -72,7 +72,7 @@ and backward passes through the network:
 Autograd
 ========
 
-PyTorch: Variables and autograd
+PyTorch: Tensors and autograd
 -------------------------------
 
 In the above examples, we had to manually implement both the forward and
@@ -90,18 +90,12 @@ will be functions that produce output Tensors from input Tensors.
 Backpropagating through this graph then allows you to easily compute
 gradients.
 
-This sounds complicated, it's pretty simple to use in practice. We wrap
-our PyTorch Tensors in **Variable** objects; a Variable represents a
-node in a computational graph. If ``x`` is a Variable then ``x.data`` is
-a Tensor, and ``x.grad`` is another Variable holding the gradient of
-``x`` with respect to some scalar value.
+This sounds complicated, it's pretty simple to use in practice. Each Tensor
+represents a node in a computational graph. If ``x`` is a Tensor that has
+``x.requires_grad=True`` then ``x.grad`` is another Tensor holding the
+gradient of ``x`` with respect to some scalar value.
 
-PyTorch Variables have the same API as PyTorch Tensors: (almost) any
-operation that you can perform on a Tensor also works on Variables; the
-difference is that using Variables defines a computational graph,
-allowing you to automatically compute gradients.
-
-Here we use PyTorch Variables and autograd to implement our two-layer
+Here we use PyTorch Tensors and autograd to implement our two-layer
 network; now we no longer need to manually implement the backward pass
 through the network:
 
@@ -121,7 +115,7 @@ In PyTorch we can easily define our own autograd operator by defining a
 subclass of ``torch.autograd.Function`` and implementing the ``forward``
 and ``backward`` functions. We can then use our new autograd operator by
 constructing an instance and calling it like a function, passing
-Variables containing input data.
+Tensors containing input data.
 
 In this example we define our own custom autograd function for
 performing the ReLU nonlinearity, and use it to implement our two-layer
@@ -189,8 +183,8 @@ networks.
 
 In PyTorch, the ``nn`` package serves this same purpose. The ``nn``
 package defines a set of **Modules**, which are roughly equivalent to
-neural network layers. A Module receives input Variables and computes
-output Variables, but may also hold internal state such as Variables
+neural network layers. A Module receives input Tensors and computes
+output Tensors, but may also hold internal state such as Tensors
 containing learnable parameters. The ``nn`` package also defines a set
 of useful loss functions that are commonly used when training neural
 networks.
@@ -204,11 +198,11 @@ PyTorch: optim
 --------------
 
 Up to this point we have updated the weights of our models by manually
-mutating the ``.data`` member for Variables holding learnable
-parameters. This is not a huge burden for simple optimization algorithms
-like stochastic gradient descent, but in practice we often train neural
-networks using more sophisticated optimizers like AdaGrad, RMSProp,
-Adam, etc.
+mutating the Tensors holding learnable parameters (with ``torch.no_grad()``
+or ``.data`` to avoid tracking history in autograd). This is not a huge
+burden for simple optimization algorithms like stochastic gradient descent,
+but in practice we often train neural networks using more sophisticated
+optimizers like AdaGrad, RMSProp, Adam, etc.
 
 The ``optim`` package in PyTorch abstracts the idea of an optimization
 algorithm and provides implementations of commonly used optimization
@@ -226,8 +220,8 @@ PyTorch: Custom nn Modules
 Sometimes you will want to specify models that are more complex than a
 sequence of existing Modules; for these cases you can define your own
 Modules by subclassing ``nn.Module`` and defining a ``forward`` which
-receives input Variables and produces output Variables using other
-modules or other autograd operations on Variables.
+receives input Tensors and produces output Tensors using other
+modules or other autograd operations on Tensors.
 
 In this example we implement our two-layer network as a custom Module
 subclass:

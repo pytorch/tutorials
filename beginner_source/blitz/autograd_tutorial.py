@@ -52,7 +52,7 @@ argument that is a tensor of matching shape.
 import torch
 
 ###############################################################
-# Create a tensor:
+# Create a tensor and set requires_grad=True to track computation with it
 x = torch.ones(2, 2, requires_grad=True)
 print(x)
 
@@ -72,12 +72,13 @@ out = z.mean()
 
 print(z, out)
 
-###############################################################
-# ``.to(requires_grad= ... )`` method also lets you change this flag
+################################################################
+# ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
+# flag in-place. The input flag defaults to ``True`` if not given.
 a = torch.randn(2, 2)
 a = ((a * 3) / (a - 1))
 print(a.requires_grad)
-a = a.to(requires_grad=True)
+a.requires_grad_(True)
 print(a.requires_grad)
 b = (a * a).sum()
 print(b.grad_fn)

@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-PyTorch: Variables and autograd
+PyTorch: Tensors and autograd
 -------------------------------
 
 A fully-connected ReLU network with one hidden layer and no biases, trained to
 predict y from x by minimizing squared Euclidean distance.
 
 This implementation computes the forward pass using operations on PyTorch
-Variables, and uses PyTorch autograd to compute gradients.
+Tensors, and uses PyTorch autograd to compute gradients.
 
-A PyTorch Variable is a wrapper around a PyTorch Tensor, and represents a node
-in a computational graph. If x is a Variable then x.data is a Tensor giving its
-value, and x.grad is another Variable holding the gradient of x with respect to
-some scalar value.
 
-PyTorch Variables have the same API as PyTorch tensors: (almost) any operation
-you can do on a Tensor you can also do on a Variable; the difference is that
-autograd allows you to automatically compute gradients.
+A PyTorch Tensor represents a node in a computational graph. If ``x`` is a
+Tensor that has ``x.requires_grad=True`` then ``x.grad`` is another Tensor
+holding the gradient of ``x`` with respect to some scalar value.
 """
 import torch
 

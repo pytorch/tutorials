@@ -25,7 +25,7 @@ learned here are :math:`A` and :math:`b`. Often, :math:`b` is refered to
 as the *bias* term.
 
 
-Pytorch and most other deep learning frameworks do things a little
+PyTorch and most other deep learning frameworks do things a little
 differently than traditional linear algebra. It maps the rows of the
 input instead of the columns. That is, the :math:`i`'th row of the
 output below is the mapping of the :math:`i`'th row of the input under
@@ -183,21 +183,22 @@ print(F.log_softmax(data, dim=0))  # theres also log_softmax
 
 
 ######################################################################
-# Creating Network Components in Pytorch
+# Creating Network Components in PyTorch
 # ======================================
 #
 # Before we move on to our focus on NLP, lets do an annotated example of
-# building a network in Pytorch using only affine maps and
+# building a network in PyTorch using only affine maps and
 # non-linearities. We will also see how to compute a loss function, using
-# Pytorch's built in negative log likelihood, and update parameters by
+# PyTorch's built in negative log likelihood, and update parameters by
 # backpropagation.
 #
 # All network components should inherit from nn.Module and override the
 # forward() method. That is about it, as far as the boilerplate is
 # concerned. Inheriting from nn.Module provides functionality to your
 # component. For example, it makes it keep track of its trainable
-# parameters, you can swap it between CPU and GPU with the .cuda() or
-# .cpu() functions, etc.
+# parameters, you can swap it between CPU and GPU with the ``.to(device)``
+# method, where device can be a CPU device ``torch.device("cpu")`` or CUDA
+# device ``torch.device("cuda:0")``.
 #
 # Let's write an annotated example of a network that takes in a sparse
 # bag-of-words representation and outputs a probability distribution over
@@ -296,7 +297,7 @@ model = BoWClassifier(NUM_LABELS, VOCAB_SIZE)
 # Whenever you assign a component to a class variable in the __init__ function
 # of a module, which was done with the line
 # self.linear = nn.Linear(...)
-# Then through some Python magic from the Pytorch devs, your module
+# Then through some Python magic from the PyTorch devs, your module
 # (in this case, BoWClassifier) will store knowledge of the nn.Linear's parameters
 for param in model.parameters():
     print(param)
@@ -352,7 +353,7 @@ optimizer = optim.SGD(model.parameters(), lr=0.1)
 # two instances.  Usually, somewhere between 5 and 30 epochs is reasonable.
 for epoch in range(100):
     for instance, label in data:
-        # Step 1. Remember that Pytorch accumulates gradients.
+        # Step 1. Remember that PyTorch accumulates gradients.
         # We need to clear them out before each instance
         model.zero_grad()
 
@@ -388,7 +389,7 @@ print(next(model.parameters())[:, word_to_ix["creo"]])
 # Spanish is much higher in the first example, and the log probability for
 # English is much higher in the second for the test data, as it should be.
 #
-# Now you see how to make a Pytorch component, pass some data through it
+# Now you see how to make a PyTorch component, pass some data through it
 # and do gradient updates. We are ready to dig deeper into what deep NLP
 # has to offer.
 #

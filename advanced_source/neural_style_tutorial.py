@@ -72,7 +72,7 @@ depends on the number of feature maps, not on the size of :math:`X`.
 Then, if :math:`Y` is another image *of any size*, we define the
 distance of style at layer :math:`L` as follow:
 
-.. math:: 
+.. math::
 
     D_S^L(X,Y) = \|G_{XL} - G_{YL}\|^2 = \sum_{k,l} (G_{XL}(k,l) - G_{YL}(k,l))^2
 
@@ -97,7 +97,7 @@ descent over :math:`X`:
 Ok. That's enough with maths. If you want to go deeper (how to compute
 the gradients) **we encourage you to read the original paper** by Leon
 A. Gatys and AL, where everything is much better and much clearer
-explained. 
+explained.
 
 For our implementation in PyTorch, we already have everything
 we need: indeed, with PyTorch, all the gradients are automatically and
@@ -120,8 +120,6 @@ We will have recourse to the following packages:
 
 -  ``torch``, ``torch.nn``, ``numpy`` (indispensables packages for
    neural networks with PyTorch)
--  ``torch.autograd.Variable`` (dynamic computation of the gradient wrt
-   a variable)
 -  ``torch.optim`` (efficient gradient descents)
 -  ``PIL``, ``PIL.Image``, ``matplotlib.pyplot`` (load and display
    images)
@@ -135,7 +133,6 @@ from __future__ import print_function
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 import torch.optim as optim
 
 from PIL import Image
@@ -154,16 +151,13 @@ import copy
 # If you have a GPU on your computer, it is preferable to run the
 # algorithm on it, especially if you want to try larger networks (like
 # VGG). For this, we have ``torch.cuda.is_available()`` that returns
-# ``True`` if you computer has an available GPU. Then, we can use method
-# ``.cuda()`` that moves allocated proccesses associated with a module
-# from the CPU to the GPU. When we want to move back this module to the
-# CPU (e.g. to use numpy), we use the ``.cpu()`` method. Finally,
-# ``.type(dtype)`` will be use to convert a ``torch.FloatTensor`` into
-# ``torch.cuda.FloatTensor`` to feed GPU processes.
-#
+# ``True`` if you computer has an available GPU. Then, we can set the
+# ``torch.device`` that will be used in this script. Then, we will use
+# the method ``.to(device)`` that a tensor or a module to the desired
+# device. When we want to move back this tensor or module to the
+# CPU (e.g. to use numpy), we can use the ``.cpu()`` method.
 
-use_cuda = torch.cuda.is_available()
-dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 ######################################################################
@@ -185,23 +179,22 @@ dtype = torch.cuda.FloatTensor if use_cuda else torch.FloatTensor
 
 
 # desired size of the output image
-imsize = 512 if use_cuda else 128  # use small size if no gpu
+imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
 
 loader = transforms.Compose([
-    transforms.Scale(imsize),  # scale imported image
+    transforms.Resize(imsize),  # scale imported image
     transforms.ToTensor()])  # transform it into a torch tensor
 
 
 def image_loader(image_name):
     image = Image.open(image_name)
-    image = Variable(loader(image))
     # fake batch dimension required to fit network's input dimensions
-    image = image.unsqueeze(0)
-    return image
+    image = loader(image).unsqueeze(0)
+    return image.to(device, torch.float)
 
 
-style_img = image_loader("images/picasso.jpg").type(dtype)
-content_img = image_loader("images/dancing.jpg").type(dtype)
+style_img = image_loader("images/picasso.jpg")
+content_img = image_loader("images/dancing.jpg")
 
 assert style_img.size() == content_img.size(), \
     "we need to import style and content images of the same size"
@@ -228,8 +221,8 @@ unloader = transforms.ToPILImage()  # reconvert into PIL image
 plt.ion()
 
 def imshow(tensor, title=None):
-    image = tensor.clone().cpu()  # we clone the tensor to not do changes on it
-    image = image.view(3, imsize, imsize)  # remove the fake batch dimension
+    image = tensor.cpu().clone()  # we clone the tensor to not do changes on it
+    image = image.squeeze(0)      # remove the fake batch dimension
     image = unloader(image)
     plt.imshow(image)
     if title is not None:
@@ -238,10 +231,10 @@ def imshow(tensor, title=None):
 
 
 plt.figure()
-imshow(style_img.data, title='Style Image')
+imshow(style_img, title='Style Image')
 
 plt.figure()
-imshow(content_img.data, title='Content Image')
+imshow(content_img, title='Content Image')
 
 
 ######################################################################
@@ -381,11 +374,7 @@ class StyleLoss(nn.Module):
 # just interested by ``features``:
 #
 
-cnn = models.vgg19(pretrained=True).features
-
-# move it to the GPU if possible:
-if use_cuda:
-    cnn = cnn.cuda()
+cnn = models.vgg19(pretrained=True).features.to(device)
 
 
 ######################################################################
@@ -415,13 +404,8 @@ def get_style_model_and_losses(cnn, style_img, content_img,
     content_losses = []
     style_losses = []
 
-    model = nn.Sequential()  # the new Sequential module network
-    gram = GramMatrix()  # we need a gram module in order to compute style targets
-
-    # move these modules to the GPU if possible:
-    if use_cuda:
-        model = model.cuda()
-        gram = gram.cuda()
+    model = nn.Sequential().to(device)  # the new Sequential module network
+    gram = GramMatrix().to(device)  # we need a gram module in order to compute style targets
 
     i = 1
     for layer in list(cnn):
@@ -498,11 +482,11 @@ def get_style_model_and_losses(cnn, style_img, content_img,
 
 input_img = content_img.clone()
 # if you want to use a white noise instead uncomment the below line:
-# input_img = Variable(torch.randn(content_img.data.size())).type(dtype)
+# input_img = torch.randn(content_img.data.size(), device=device)
 
 # add the original input image to the figure:
 plt.figure()
-imshow(input_img.data, title='Input Image')
+imshow(input_img, title='Input Image')
 
 
 ######################################################################
@@ -514,21 +498,15 @@ imshow(input_img.data, title='Input Image')
 # we will use L-BFGS algorithm to run our gradient descent. Unlike
 # training a network, we want to train the input image in order to
 # minimise the content/style losses. We would like to simply create a
-# PyTorch  L-BFGS optimizer, passing our image as the variable to optimize.
-# But ``optim.LBFGS`` takes as first argument a list of PyTorch
-# ``Variable`` that require gradient. Our input image is a ``Variable``
-# but is not a leaf of the tree that requires computation of gradients. In
-# order to show that this variable requires a gradient, a possibility is
-# to construct a ``Parameter`` object from the input image. Then, we just
-# give a list containing this ``Parameter`` to the optimizer's
-# constructor:
+# PyTorch  L-BFGS optimizer ``optim.LBFGS``, passing our image as the
+# Tensor to optimize. We use ``.requires_grad_()`` to make sure that this
+# image requires gradient.
 #
 
-def get_input_param_optimizer(input_img):
+def get_input_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
-    input_param = nn.Parameter(input_img.data)
-    optimizer = optim.LBFGS([input_param])
-    return input_param, optimizer
+    optimizer = optim.LBFGS([input_img.requires_grad_()])
+    return optimizer
 
 
 ######################################################################
@@ -554,7 +532,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
         style_img, content_img, style_weight, content_weight)
-    input_param, optimizer = get_input_param_optimizer(input_img)
+    optimizer = get_input_optimizer(input_img)
 
     print('Optimizing..')
     run = [0]
@@ -562,10 +540,10 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
 
         def closure():
             # correct the values of updated input image
-            input_param.data.clamp_(0, 1)
+            input_img.data.clamp_(0, 1)
 
             optimizer.zero_grad()
-            model(input_param)
+            model(input_img)
             style_score = 0
             content_score = 0
 
@@ -578,7 +556,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
             if run[0] % 50 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
-                    style_score.data[0], content_score.data[0]))
+                    style_score.item(), content_score.item()))
                 print()
 
             return style_score + content_score
@@ -586,9 +564,9 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
         optimizer.step(closure)
 
     # a last correction...
-    input_param.data.clamp_(0, 1)
+    input_img.data.clamp_(0, 1)
 
-    return input_param.data
+    return input_img
 
 ######################################################################
 # Finally, run the algorithm

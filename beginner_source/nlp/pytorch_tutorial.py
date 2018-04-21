@@ -249,9 +249,10 @@ z = x + y
 # So you can't backprop through z
 print(z.grad_fn)
 
-# .to(requires_grad=True) changes an existing Tensor's ``requires_grad`` to True
-x = x.to(requires_grad=True)
-y = y.to(requires_grad=True)
+# ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
+# flag in-place. The input flag defaults to ``True`` if not given.
+x = x.requires_grad_()
+y = y.requires_grad_()
 # z contains enough information to compute gradients, as we saw above
 z = x + y
 print(z.grad_fn)
@@ -265,23 +266,19 @@ new_z = z.detach()
 # ... does new_z have information to backprop to x and y?
 # NO!
 print(new_z.grad_fn)
-# And how could it?  z.detach() returns a tensor that shares the same storage
-# as z, but with the computation history forgotten. It doesn't know anything
+# And how could it? ``z.detach()`` returns a tensor that shares the same storage
+# as ``z``, but with the computation history forgotten. It doesn't know anything
 # about how it was computed.
 # In essence, we have broken the Tensor away from its past history
 
+###############################################################
+# You can also stops autograd from tracking history on Tensors
+# with requires_grad=True by wrapping the code block in
+# ``with torch.no_grad():``
+print(x.requires_grad)
+print((x ** 2).requires_grad)
 
-######################################################################
-# Here is the basic, extremely important rule for computing with
-# autograd.Variables (note this is more general than Pytorch. There is an
-# equivalent object in every major deep learning toolkit):
-#
-# **If you want the error from your loss function to backpropagate to a
-# component of your network, you MUST NOT break the Variable chain from
-# that component to your loss Variable. If you do, the loss will have no
-# idea your component exists, and its parameters can't be updated.**
-#
-# I say this in bold, because this error can creep up on you in very
-# subtle ways (I will show some such ways below), and it will not cause
-# your code to crash or complain, so you must be careful.
-#
+with torch.no_grad():
+	print((x ** 2).requires_grad)
+
+

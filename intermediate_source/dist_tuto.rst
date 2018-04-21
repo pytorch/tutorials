@@ -144,10 +144,10 @@ return a ``DistributedRequest`` object upon which we can choose to
 When using immediates we have to be careful about with our usage of the sent and received tensors.
 Since we do not know when the data will be communicated to the other process,
 we should not modify the sent tensor nor access the received tensor before ``req.wait()`` has completed.
-In other words, 
+In other words,
 
 -  writing to ``tensor`` after ``dist.isend()`` will result in undefined behaviour.
--  reading from ``tensor`` after ``dist.irecv()`` will result in undefined behaviour. 
+-  reading from ``tensor`` after ``dist.irecv()`` will result in undefined behaviour.
 
 However, after ``req.wait()``
 has been executed we are guaranteed that the communication took place,
@@ -202,7 +202,7 @@ to obtain the sum of all tensors at all processes, we can use the
     """ All-Reduce example."""
     def run(rank, size):
         """ Simple point-to-point communication. """
-        group = dist.new_group([0, 1]) 
+        group = dist.new_group([0, 1])
         tensor = torch.ones(1)
         dist.all_reduce(tensor, op=dist.reduce_op.SUM, group=group)
         print('Rank ', rank, ' has data ', tensor[0])
@@ -339,26 +339,25 @@ example <https://github.com/pytorch/examples/blob/master/mnist/main.py>`__.)
 
     """ Distributed Synchronous SGD Example """
     def run(rank, size):
-            torch.manual_seed(1234)
-            train_set, bsz = partition_dataset()
-            model = Net()
-            optimizer = optim.SGD(model.parameters(),
-                                  lr=0.01, momentum=0.5)
+        torch.manual_seed(1234)
+        train_set, bsz = partition_dataset()
+        model = Net()
+        optimizer = optim.SGD(model.parameters(),
+                              lr=0.01, momentum=0.5)
 
-            num_batches = ceil(len(train_set.dataset) / float(bsz)) 
-            for epoch in range(10):
-                epoch_loss = 0.0
-                for data, target in train_set:
-                    data, target = Variable(data), Variable(target)
-                    optimizer.zero_grad()
-                    output = model(data)
-                    loss = F.nll_loss(output, target)
-                    epoch_loss += loss.data[0]
-                    loss.backward()
-                    average_gradients(model)
-                    optimizer.step()
-                print('Rank ', dist.get_rank(), ', epoch ',
-                      epoch, ': ', epoch_loss / num_batches) 
+        num_batches = ceil(len(train_set.dataset) / float(bsz))
+        for epoch in range(10):
+            epoch_loss = 0.0
+            for data, target in train_set:
+                optimizer.zero_grad()
+                output = model(data)
+                loss = F.nll_loss(output, target)
+                epoch_loss += loss.item()
+                loss.backward()
+                average_gradients(model)
+                optimizer.step()
+            print('Rank ', dist.get_rank(), ', epoch ',
+                  epoch, ': ', epoch_loss / num_batches)
 
 It remains to implement the ``average_gradients(model)`` function, which
 simply takes in a model and averages its gradients across the whole
@@ -371,7 +370,7 @@ world.
         size = float(dist.get_world_size())
         for param in model.parameters():
             dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM)
-            param.grad.data /= size 
+            param.grad.data /= size
 
 *Et voilà*! We successfully implemented distributed synchronous SGD and
 could train any model on a large computer cluster.
@@ -480,10 +479,9 @@ modifications:
 
 0. ``init_processes(rank, size, fn, backend='tcp')`` :math:`\rightarrow`
    ``init_processes(rank, size, fn, backend='gloo')``
-1. ``model = Net()`` :math:`\rightarrow` ``model = Net().cuda(rank)``
-2. ``data, target = Variable(data), Variable(target)``
-   :math:`\rightarrow`
-   ``data, target = Variable(data.cuda(rank)), Variable(target.cuda(rank))``
+1.  Use ``device = torch.device("cuda:{}".format(rank))
+1. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
+2.  Use ``data, target = data.to(device), target.to(device)``
 
 With the above modifications, our model is now training on two GPUs and
 you can monitor their utilization with ``watch nvidia-smi``.

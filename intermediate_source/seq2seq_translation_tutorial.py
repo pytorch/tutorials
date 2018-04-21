@@ -92,11 +92,10 @@ import random
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 from torch import optim
 import torch.nn.functional as F
 
-use_cuda = torch.cuda.is_available()
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ######################################################################
 # Loading data files
@@ -350,11 +349,7 @@ class EncoderRNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        result = Variable(torch.zeros(1, 1, self.hidden_size))
-        if use_cuda:
-            return result.cuda()
-        else:
-            return result
+        return torch.zeros(1, 1, self.hidden_size, device=device)
 
 ######################################################################
 # The Decoder
@@ -402,11 +397,7 @@ class DecoderRNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        result = Variable(torch.zeros(1, 1, self.hidden_size))
-        if use_cuda:
-            return result.cuda()
-        else:
-            return result
+        return torch.zeros(1, 1, self.hidden_size, device=device)
 
 ######################################################################
 # I encourage you to train and observe the results of this model, but to
@@ -480,11 +471,7 @@ class AttnDecoderRNN(nn.Module):
         return output, hidden, attn_weights
 
     def initHidden(self):
-        result = Variable(torch.zeros(1, 1, self.hidden_size))
-        if use_cuda:
-            return result.cuda()
-        else:
-            return result
+        return torch.zeros(1, 1, self.hidden_size, device=device)
 
 
 ######################################################################
@@ -509,20 +496,16 @@ def indexesFromSentence(lang, sentence):
     return [lang.word2index[word] for word in sentence.split(' ')]
 
 
-def variableFromSentence(lang, sentence):
+def tensorFromSentence(lang, sentence):
     indexes = indexesFromSentence(lang, sentence)
     indexes.append(EOS_token)
-    result = Variable(torch.LongTensor(indexes).view(-1, 1))
-    if use_cuda:
-        return result.cuda()
-    else:
-        return result
+    return torch.tensor(indexes, dtype=torch.long, device=device).view(-1, 1)
 
 
-def variablesFromPair(pair):
-    input_variable = variableFromSentence(input_lang, pair[0])
-    target_variable = variableFromSentence(output_lang, pair[1])
-    return (input_variable, target_variable)
+def tensorsFromPair(pair):
+    input_tensor = tensorFromSentence(input_lang, pair[0])
+    target_tensor = tensorFromSentence(output_lang, pair[1])
+    return (input_tensor, target_tensor)
 
 
 ######################################################################
@@ -555,27 +538,25 @@ def variablesFromPair(pair):
 teacher_forcing_ratio = 0.5
 
 
-def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
+def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
 
     encoder_optimizer.zero_grad()
     decoder_optimizer.zero_grad()
 
-    input_length = input_variable.size()[0]
-    target_length = target_variable.size()[0]
+    input_length = input_tensor.size(0)
+    target_length = target_tensor.size(0)
 
-    encoder_outputs = Variable(torch.zeros(max_length, encoder.hidden_size))
-    encoder_outputs = encoder_outputs.cuda() if use_cuda else encoder_outputs
+    encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
     loss = 0
 
     for ei in range(input_length):
         encoder_output, encoder_hidden = encoder(
-            input_variable[ei], encoder_hidden)
-        encoder_outputs[ei] = encoder_output[0][0]
+            input_tensor[ei], encoder_hidden)
+        encoder_outputs[ei] = encoder_output[0, 0]
 
-    decoder_input = Variable(torch.LongTensor([[SOS_token]]))
-    decoder_input = decoder_input.cuda() if use_cuda else decoder_input
+    decoder_input = torch.tensor([[SOS_token]], device=device)
 
     decoder_hidden = encoder_hidden
 
@@ -586,22 +567,19 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-            loss += criterion(decoder_output, target_variable[di])
-            decoder_input = target_variable[di]  # Teacher forcing
+            loss += criterion(decoder_output, target_tensor[di])
+            decoder_input = target_tensor[di]  # Teacher forcing
 
     else:
         # Without teacher forcing: use its own predictions as the next input
         for di in range(target_length):
             decoder_output, decoder_hidden, decoder_attention = decoder(
                 decoder_input, decoder_hidden, encoder_outputs)
-            topv, topi = decoder_output.data.topk(1)
-            ni = topi[0][0]
+            topv, topi = decoder_output.topk(1)
+            decoder_input = topi.squeeze().detach()  # detach from history as input
 
-            decoder_input = Variable(torch.LongTensor([[ni]]))
-            decoder_input = decoder_input.cuda() if use_cuda else decoder_input
-
-            loss += criterion(decoder_output, target_variable[di])
-            if ni == EOS_token:
+            loss += criterion(decoder_output, target_tensor[di])
+            if decoder_input.item() == EOS_token:
                 break
 
     loss.backward()
@@ -609,7 +587,7 @@ def train(input_variable, target_variable, encoder, decoder, encoder_optimizer, 
     encoder_optimizer.step()
     decoder_optimizer.step()
 
-    return loss.data[0] / target_length
+    return loss.item() / target_length
 
 
 ######################################################################
@@ -655,16 +633,16 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
 
     encoder_optimizer = optim.SGD(encoder.parameters(), lr=learning_rate)
     decoder_optimizer = optim.SGD(decoder.parameters(), lr=learning_rate)
-    training_pairs = [variablesFromPair(random.choice(pairs))
+    training_pairs = [tensorsFromPair(random.choice(pairs))
                       for i in range(n_iters)]
     criterion = nn.NLLLoss()
 
     for iter in range(1, n_iters + 1):
         training_pair = training_pairs[iter - 1]
-        input_variable = training_pair[0]
-        target_variable = training_pair[1]
+        input_tensor = training_pair[0]
+        target_tensor = training_pair[1]
 
-        loss = train(input_variable, target_variable, encoder,
+        loss = train(input_tensor, target_tensor, encoder,
                      decoder, encoder_optimizer, decoder_optimizer, criterion)
         print_loss_total += loss
         plot_loss_total += loss
@@ -692,6 +670,7 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
 #
 
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import matplotlib.ticker as ticker
 import numpy as np
 
@@ -717,42 +696,39 @@ def showPlot(points):
 #
 
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
-    input_variable = variableFromSentence(input_lang, sentence)
-    input_length = input_variable.size()[0]
-    encoder_hidden = encoder.initHidden()
+    with torch.no_grad():
+        input_tensor = tensorFromSentence(input_lang, sentence)
+        input_length = input_tensor.size()[0]
+        encoder_hidden = encoder.initHidden()
 
-    encoder_outputs = Variable(torch.zeros(max_length, encoder.hidden_size))
-    encoder_outputs = encoder_outputs.cuda() if use_cuda else encoder_outputs
+        encoder_outputs = torch.zeros(max_length, encoder.hidden_size, device=device)
 
-    for ei in range(input_length):
-        encoder_output, encoder_hidden = encoder(input_variable[ei],
-                                                 encoder_hidden)
-        encoder_outputs[ei] = encoder_outputs[ei] + encoder_output[0][0]
+        for ei in range(input_length):
+            encoder_output, encoder_hidden = encoder(input_tensor[ei],
+                                                     encoder_hidden)
+            encoder_outputs[ei] += encoder_output[0, 0]
 
-    decoder_input = Variable(torch.LongTensor([[SOS_token]]))  # SOS
-    decoder_input = decoder_input.cuda() if use_cuda else decoder_input
+        decoder_input = torch.tensor([[SOS_token]], device=device)  # SOS
 
-    decoder_hidden = encoder_hidden
+        decoder_hidden = encoder_hidden
 
-    decoded_words = []
-    decoder_attentions = torch.zeros(max_length, max_length)
+        decoded_words = []
+        decoder_attentions = torch.zeros(max_length, max_length)
 
-    for di in range(max_length):
-        decoder_output, decoder_hidden, decoder_attention = decoder(
-            decoder_input, decoder_hidden, encoder_outputs)
-        decoder_attentions[di] = decoder_attention.data
-        topv, topi = decoder_output.data.topk(1)
-        ni = topi[0][0]
-        if ni == EOS_token:
-            decoded_words.append('<EOS>')
-            break
-        else:
-            decoded_words.append(output_lang.index2word[ni])
+        for di in range(max_length):
+            decoder_output, decoder_hidden, decoder_attention = decoder(
+                decoder_input, decoder_hidden, encoder_outputs)
+            decoder_attentions[di] = decoder_attention.data
+            topv, topi = decoder_output.data.topk(1)
+            if topi.item() == EOS_token:
+                decoded_words.append('<EOS>')
+                break
+            else:
+                decoded_words.append(output_lang.index2word[topi.item()])
 
-        decoder_input = Variable(torch.LongTensor([[ni]]))
-        decoder_input = decoder_input.cuda() if use_cuda else decoder_input
+            decoder_input = topi.squeeze().detach()
 
-    return decoded_words, decoder_attentions[:di + 1]
+        return decoded_words, decoder_attentions[:di + 1]
 
 
 ######################################################################
@@ -791,13 +767,8 @@ def evaluateRandomly(encoder, decoder, n=10):
 #
 
 hidden_size = 256
-encoder1 = EncoderRNN(input_lang.n_words, hidden_size)
-attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1)
-
-
-if use_cuda:
-    encoder1 = encoder1.cuda()
-    attn_decoder1 = attn_decoder1.cuda()
+encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
+attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
 trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
 

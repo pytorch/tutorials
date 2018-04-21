@@ -328,7 +328,7 @@ def train(category_tensor, line_tensor):
     for p in rnn.parameters():
         p.data.add_(-learning_rate, p.grad.data)
 
-    return output, loss.data[0]
+    return output, loss.item()
 
 
 ######################################################################
