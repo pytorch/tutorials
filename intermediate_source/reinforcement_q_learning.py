@@ -412,7 +412,7 @@ def optimize_model():
 ######################################################################
 #
 # Below, you can find the main training loop. At the beginning we reset
-# the environment and initialize the ``state`` variable. Then, we sample
+# the environment and initialize the ``state`` Tensor. Then, we sample
 # an action, execute it, observe the next screen and the reward (always
 # 1), and optimize our model once. When the episode ends (our model
 # fails), we restart the loop.

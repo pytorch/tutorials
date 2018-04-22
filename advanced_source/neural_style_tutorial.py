@@ -133,6 +133,7 @@ from __future__ import print_function
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 
 from PIL import Image
@@ -272,21 +273,15 @@ class ContentLoss(nn.Module):
     def __init__(self, target, weight):
         super(ContentLoss, self).__init__()
         # we 'detach' the target content from the tree used
-        self.target = target.detach() * weight
         # to dynamically compute the gradient: this is a stated value,
         # not a variable. Otherwise the forward method of the criterion
         # will throw an error.
+        self.target = target.detach()
         self.weight = weight
-        self.criterion = nn.MSELoss()
 
     def forward(self, input):
-        self.loss = self.criterion(input * self.weight, self.target)
-        self.output = input
-        return self.output
-
-    def backward(self, retain_graph=True):
-        self.loss.backward(retain_graph=retain_graph)
-        return self.loss
+        self.loss = F.mse_loss(input, self.target) * self.weight
+        return input
 
 
 ######################################################################
@@ -312,53 +307,43 @@ class ContentLoss(nn.Module):
 # becomes easy to implement our module:
 #
 
-class GramMatrix(nn.Module):
+def gram_matrix(input):
+    a, b, c, d = input.size()  # a=batch size(=1)
+    # b=number of feature maps
+    # (c,d)=dimensions of a f. map (N=c*d)
 
-    def forward(self, input):
-        a, b, c, d = input.size()  # a=batch size(=1)
-        # b=number of feature maps
-        # (c,d)=dimensions of a f. map (N=c*d)
+    features = input.view(a * b, c * d)  # resise F_XL into \hat F_XL
 
-        features = input.view(a * b, c * d)  # resise F_XL into \hat F_XL
+    G = torch.mm(features, features.t())  # compute the gram product
 
-        G = torch.mm(features, features.t())  # compute the gram product
-
-        # we 'normalize' the values of the gram matrix
-        # by dividing by the number of element in each feature maps.
-        return G.div(a * b * c * d)
+    # we 'normalize' the values of the gram matrix
+    # by dividing by the number of element in each feature maps.
+    return G.div(a * b * c * d)
 
 
 ######################################################################
 # The longer is the feature maps dimension :math:`N`, the bigger are the
-# values of the gram matrix. Therefore, if we don't normalize by :math:`N`,
+# values of the Gram matrix. Therefore, if we don't normalize by :math:`N`,
 # the loss computed at the first layers (before pooling layers) will have
 # much more importance during the gradient descent. We dont want that,
 # since the most interesting style features are in the deepest layers!
 #
 # Then, the style loss module is implemented exactly the same way than the
-# content loss module, but we have to add the ``gramMatrix`` as a
-# parameter:
+# content loss module, but it compares the difference in Gram matrices of target
+# and input
 #
 
 class StyleLoss(nn.Module):
 
-    def __init__(self, target, weight):
+    def __init__(self, target_feature, weight):
         super(StyleLoss, self).__init__()
-        self.target = target.detach() * weight
+        self.target = gram_matrix(target_feature).detach()
         self.weight = weight
-        self.gram = GramMatrix()
-        self.criterion = nn.MSELoss()
 
     def forward(self, input):
-        self.output = input.clone()
-        self.G = self.gram(input)
-        self.G.mul_(self.weight)
-        self.loss = self.criterion(self.G, self.target)
-        return self.output
-
-    def backward(self, retain_graph=True):
-        self.loss.backward(retain_graph=retain_graph)
-        return self.loss
+        G = gram_matrix(input)
+        self.loss = F.mse_loss(G, self.target) * self.weight
+        return input
 
 
 ######################################################################
@@ -372,18 +357,45 @@ class StyleLoss(nn.Module):
 # ``Sequential`` modules: ``features`` (containing convolution and pooling
 # layers) and ``classifier`` (containing fully connected layers). We are
 # just interested by ``features``:
+# Some layers have different behavior in training and in evaluation. Since we
+# are using it as a feature extractor. We will use ``.eval()`` to set the
+# network in evaluation mode.
 #
 
-cnn = models.vgg19(pretrained=True).features.to(device)
+cnn = models.vgg19(pretrained=True).features.to(device).eval()
+
+######################################################################
+# Additionally, VGG networks are trained on images with each channel normalized
+# by mean=[0.485, 0.456, 0.406] and std=[0.229, 0.224, 0.225]. We will use them
+# to normalize the image before sending into the network.
+#
+
+normalization_mean_default = torch.tensor([0.485, 0.456, 0.406]).to(device)
+normalization_std_default = torch.tensor([0.229, 0.224, 0.225]).to(device)
+
+# create a module to normalize input image so we can easily put it in a
+# nn.Sequential
+class Normalization(nn.Module):
+    def __init__(self, mean, std):
+        super(Normalization, self).__init__()
+        # .view the mean and std to make them [C x 1 x 1] so that they can
+        # directly work with image Tensor of shape [B x C x H x W].
+        # B is batch size. C is number of channels. H is height and W is width.
+        self.mean = torch.tensor(mean).view(-1, 1, 1)
+        self.std = torch.tensor(std).view(-1, 1, 1)
+
+    def forward(self, img):
+        # normalize img
+        return (img - self.mean) / self.std
 
 
 ######################################################################
 # A ``Sequential`` module contains an ordered list of child modules. For
 # instance, ``vgg19.features`` contains a sequence (Conv2d, ReLU,
-# Maxpool2d, Conv2d, ReLU...) aligned in the right order of depth. As we
+# MaxPool2d, Conv2d, ReLU...) aligned in the right order of depth. As we
 # said in *Content loss* section, we wand to add our style and content
 # loss modules as additive 'transparent' layers in our network, at desired
-# depths. For that, we construct a new ``Sequential`` module, in wich we
+# depths. For that, we construct a new ``Sequential`` module, in which we
 # are going to add modules from ``vgg19`` and our loss modules in the
 # right order:
 #
@@ -392,66 +404,66 @@ cnn = models.vgg19(pretrained=True).features.to(device)
 content_layers_default = ['conv_4']
 style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
-
 def get_style_model_and_losses(cnn, style_img, content_img,
                                style_weight=1000, content_weight=1,
+                               normalization_mean=normalization_mean_default,
+                               normalization_std=normalization_std_default,
                                content_layers=content_layers_default,
                                style_layers=style_layers_default):
     cnn = copy.deepcopy(cnn)
+
+    # normalization module
+    normalization = Normalization(normalization_mean, normalization_std).to(device)
 
     # just in order to have an iterable access to or list of content/syle
     # losses
     content_losses = []
     style_losses = []
 
-    model = nn.Sequential().to(device)  # the new Sequential module network
-    gram = GramMatrix().to(device)  # we need a gram module in order to compute style targets
+    # assuming that cnn is a nn.Sequential, so we make a new nn.Sequential
+    # to put in modules that are supposed to be activated sequentially
+    model = nn.Sequential(normalization)
 
-    i = 1
-    for layer in list(cnn):
+    i = 0  # increment every time we see a conv
+    for layer in cnn.children():
         if isinstance(layer, nn.Conv2d):
-            name = "conv_" + str(i)
-            model.add_module(name, layer)
-
-            if name in content_layers:
-                # add content loss:
-                target = model(content_img).clone()
-                content_loss = ContentLoss(target, content_weight)
-                model.add_module("content_loss_" + str(i), content_loss)
-                content_losses.append(content_loss)
-
-            if name in style_layers:
-                # add style loss:
-                target_feature = model(style_img).clone()
-                target_feature_gram = gram(target_feature)
-                style_loss = StyleLoss(target_feature_gram, style_weight)
-                model.add_module("style_loss_" + str(i), style_loss)
-                style_losses.append(style_loss)
-
-        if isinstance(layer, nn.ReLU):
-            name = "relu_" + str(i)
-            model.add_module(name, layer)
-
-            if name in content_layers:
-                # add content loss:
-                target = model(content_img).clone()
-                content_loss = ContentLoss(target, content_weight)
-                model.add_module("content_loss_" + str(i), content_loss)
-                content_losses.append(content_loss)
-
-            if name in style_layers:
-                # add style loss:
-                target_feature = model(style_img).clone()
-                target_feature_gram = gram(target_feature)
-                style_loss = StyleLoss(target_feature_gram, style_weight)
-                model.add_module("style_loss_" + str(i), style_loss)
-                style_losses.append(style_loss)
-
             i += 1
+            name = 'conv_{}'.format(i)
+        elif isinstance(layer, nn.ReLU):
+            name = 'relu_{}'.format(i)
+            # The in-place version doesn't play very nicely with the ContentLoss
+            # and StyleLoss we insert below. So we replace with out-of-place
+            # ones here.
+            layer = nn.ReLU(inplace=False)
+        elif isinstance(layer, nn.MaxPool2d):
+            name = 'pool_{}'.format(i)
+        elif isinstance(layer, nn.BatchNorm2d):
+            name = 'bn_{}'.format(i)
+        else:
+            raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
 
-        if isinstance(layer, nn.MaxPool2d):
-            name = "pool_" + str(i)
-            model.add_module(name, layer)  # ***
+        model.add_module(name, layer)
+
+        if name in content_layers:
+            # add content loss:
+            target = model(content_img).detach()
+            content_loss = ContentLoss(target, content_weight)
+            model.add_module("content_loss_{}".format(i), content_loss)
+            content_losses.append(content_loss)
+
+        if name in style_layers:
+            # add style loss:
+            target_feature = model(style_img).detach()
+            style_loss = StyleLoss(target_feature, style_weight)
+            model.add_module("style_loss_{}".format(i), style_loss)
+            style_losses.append(style_loss)
+
+    # now we trim off the layers after the last content and style losses
+    for i in range(len(model) - 1, -1, -1):
+        if isinstance(model[i], ContentLoss) or isinstance(model[i], StyleLoss):
+            break
+
+    model = model[:(i + 1)]
 
     return model, style_losses, content_losses
 
@@ -527,7 +539,7 @@ def get_input_optimizer(input_img):
 #
 
 def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
-                       style_weight=1000, content_weight=1):
+                       style_weight=1000000, content_weight=1):
     """Run the style transfer."""
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
@@ -548,9 +560,11 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
             content_score = 0
 
             for sl in style_losses:
-                style_score += sl.backward()
+                style_score += sl.loss
             for cl in content_losses:
-                content_score += cl.backward()
+                content_score += cl.loss
+
+            (style_score + content_score).backward()
 
             run[0] += 1
             if run[0] % 50 == 0:
