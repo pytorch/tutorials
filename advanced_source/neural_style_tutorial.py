@@ -270,17 +270,16 @@ imshow(content_img, title='Content Image')
 
 class ContentLoss(nn.Module):
 
-    def __init__(self, target, weight):
+    def __init__(self, target,):
         super(ContentLoss, self).__init__()
         # we 'detach' the target content from the tree used
         # to dynamically compute the gradient: this is a stated value,
         # not a variable. Otherwise the forward method of the criterion
         # will throw an error.
         self.target = target.detach()
-        self.weight = weight
 
     def forward(self, input):
-        self.loss = F.mse_loss(input, self.target) * self.weight
+        self.loss = F.mse_loss(input, self.target)
         return input
 
 
@@ -335,14 +334,13 @@ def gram_matrix(input):
 
 class StyleLoss(nn.Module):
 
-    def __init__(self, target_feature, weight):
+    def __init__(self, target_feature):
         super(StyleLoss, self).__init__()
         self.target = gram_matrix(target_feature).detach()
-        self.weight = weight
 
     def forward(self, input):
         G = gram_matrix(input)
-        self.loss = F.mse_loss(G, self.target) * self.weight
+        self.loss = F.mse_loss(G, self.target)
         return input
 
 
@@ -370,8 +368,8 @@ cnn = models.vgg19(pretrained=True).features.to(device).eval()
 # to normalize the image before sending into the network.
 #
 
-normalization_mean_default = torch.tensor([0.485, 0.456, 0.406]).to(device)
-normalization_std_default = torch.tensor([0.229, 0.224, 0.225]).to(device)
+cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
+cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
 
 # create a module to normalize input image so we can easily put it in a
 # nn.Sequential
@@ -404,10 +402,8 @@ class Normalization(nn.Module):
 content_layers_default = ['conv_4']
 style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
-def get_style_model_and_losses(cnn, style_img, content_img,
-                               style_weight=1000, content_weight=1,
-                               normalization_mean=normalization_mean_default,
-                               normalization_std=normalization_std_default,
+def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
+                               style_img, content_img,
                                content_layers=content_layers_default,
                                style_layers=style_layers_default):
     cnn = copy.deepcopy(cnn)
@@ -447,14 +443,14 @@ def get_style_model_and_losses(cnn, style_img, content_img,
         if name in content_layers:
             # add content loss:
             target = model(content_img).detach()
-            content_loss = ContentLoss(target, content_weight)
+            content_loss = ContentLoss(target)
             model.add_module("content_loss_{}".format(i), content_loss)
             content_losses.append(content_loss)
 
         if name in style_layers:
             # add style loss:
             target_feature = model(style_img).detach()
-            style_loss = StyleLoss(target_feature, style_weight)
+            style_loss = StyleLoss(target_feature)
             model.add_module("style_loss_{}".format(i), style_loss)
             style_losses.append(style_loss)
 
@@ -538,12 +534,13 @@ def get_input_optimizer(input_img):
 # the 0-1 interval.
 #
 
-def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
+def run_style_transfer(cnn, normalization_mean, normalization_std,
+                       content_img, style_img, input_img, num_steps=300,
                        style_weight=1000000, content_weight=1):
     """Run the style transfer."""
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
-        style_img, content_img, style_weight, content_weight)
+        normalization_mean, normalization_std, style_img, content_img)
     optimizer = get_input_optimizer(input_img)
 
     print('Optimizing..')
@@ -564,7 +561,7 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
             for cl in content_losses:
                 content_score += cl.loss
 
-            (style_score + content_score).backward()
+            (style_score * style_weight + content_score * content_weight).backward()
 
             run[0] += 1
             if run[0] % 50 == 0:
@@ -585,7 +582,8 @@ def run_style_transfer(cnn, content_img, style_img, input_img, num_steps=300,
 ######################################################################
 # Finally, run the algorithm
 
-output = run_style_transfer(cnn, content_img, style_img, input_img)
+output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
+                            content_img, style_img, input_img)
 
 plt.figure()
 imshow(output, title='Output Image')
