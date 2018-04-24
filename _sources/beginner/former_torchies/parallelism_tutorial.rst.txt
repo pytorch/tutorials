@@ -21,6 +21,7 @@ DataParallel
 
 .. code-block:: python
 
+    import torch
     import torch.nn as nn
 
 
@@ -41,11 +42,6 @@ DataParallel
             x = self.block2(x)
             x = self.block3(x)
             return x
-
-
-
-
-
 
 
 The code does not need to be changed in CPU-mode.
@@ -88,11 +84,6 @@ these collectives
         return nn.parallel.gather(outputs, output_device)
 
 
-
-
-
-
-
 Part of the model on CPU and part on the GPU
 --------------------------------------------
 
@@ -104,13 +95,14 @@ is on the CPU and part on the GPU
 .. code-block:: python
 
 
+    device = torch.device("cuda:0")
 
     class DistributedModel(nn.Module):
 
         def __init__(self):
             super().__init__(
                 embedding=nn.Embedding(1000, 10),
-                rnn=nn.Linear(10, 10).cuda(0),
+                rnn=nn.Linear(10, 10).to(device),
             )
 
         def forward(self, x):
@@ -118,16 +110,11 @@ is on the CPU and part on the GPU
             x = self.embedding(x)
 
             # Transfer to GPU
-            x = x.cuda(0)
+            x = x.to(device)
 
             # Compute RNN on GPU
             x = self.rnn(x)
             return x
-
-
-
-
-
 
 
 This was a small introduction to PyTorch for former Torch users.
@@ -157,7 +144,7 @@ Also look at
 .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
 
 
-**Total running time of the script:** ( 0 minutes  0.001 seconds)
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 

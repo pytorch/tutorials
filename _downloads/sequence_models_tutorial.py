@@ -53,7 +53,6 @@ Let's see a quick example.
 # Author: Robert Guthrie
 
 import torch
-import torch.autograd as autograd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -63,12 +62,11 @@ torch.manual_seed(1)
 ######################################################################
 
 lstm = nn.LSTM(3, 3)  # Input dim is 3, output dim is 3
-inputs = [autograd.Variable(torch.randn((1, 3)))
-          for _ in range(5)]  # make a sequence of length 5
+inputs = [torch.randn(1, 3) for _ in range(5)]  # make a sequence of length 5
 
 # initialize the hidden state.
-hidden = (autograd.Variable(torch.randn(1, 1, 3)),
-          autograd.Variable(torch.randn((1, 1, 3))))
+hidden = (torch.randn(1, 1, 3),
+          torch.randn(1, 1, 3))
 for i in inputs:
     # Step through the sequence one element at a time.
     # after each step, hidden contains the hidden state.
@@ -84,8 +82,7 @@ for i in inputs:
 # by passing it as an argument  to the lstm at a later time
 # Add the extra 2nd dimension
 inputs = torch.cat(inputs).view(len(inputs), 1, -1)
-hidden = (autograd.Variable(torch.randn(1, 1, 3)), autograd.Variable(
-    torch.randn((1, 1, 3))))  # clean out hidden state
+hidden = (torch.randn(1, 1, 3), torch.randn(1, 1, 3))  # clean out hidden state
 out, hidden = lstm(inputs, hidden)
 print(out)
 print(hidden)
@@ -126,8 +123,7 @@ print(hidden)
 
 def prepare_sequence(seq, to_ix):
     idxs = [to_ix[w] for w in seq]
-    tensor = torch.LongTensor(idxs)
-    return autograd.Variable(tensor)
+    return torch.tensor(idxs, dtype=torch.long)
 
 
 training_data = [
@@ -172,8 +168,8 @@ class LSTMTagger(nn.Module):
         # Refer to the Pytorch documentation to see exactly
         # why they have this dimensionality.
         # The axes semantics are (num_layers, minibatch_size, hidden_dim)
-        return (autograd.Variable(torch.zeros(1, 1, self.hidden_dim)),
-                autograd.Variable(torch.zeros(1, 1, self.hidden_dim)))
+        return (torch.zeros(1, 1, self.hidden_dim),
+                torch.zeros(1, 1, self.hidden_dim))
 
     def forward(self, sentence):
         embeds = self.word_embeddings(sentence)
@@ -193,9 +189,11 @@ optimizer = optim.SGD(model.parameters(), lr=0.1)
 
 # See what the scores are before training
 # Note that element i,j of the output is the score for tag j for word i.
-inputs = prepare_sequence(training_data[0][0], word_to_ix)
-tag_scores = model(inputs)
-print(tag_scores)
+# Here we don't need to train, so the code is wrapped in torch.no_grad()
+with torch.no_grad():
+    inputs = prepare_sequence(training_data[0][0], word_to_ix)
+    tag_scores = model(inputs)
+    print(tag_scores)
 
 for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is toy data
     for sentence, tags in training_data:
@@ -208,7 +206,7 @@ for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is t
         model.hidden = model.init_hidden()
 
         # Step 2. Get our inputs ready for the network, that is, turn them into
-        # Variables of word indices.
+        # Tensors of word indices.
         sentence_in = prepare_sequence(sentence, word_to_ix)
         targets = prepare_sequence(tags, tag_to_ix)
 
@@ -222,15 +220,17 @@ for epoch in range(300):  # again, normally you would NOT do 300 epochs, it is t
         optimizer.step()
 
 # See what the scores are after training
-inputs = prepare_sequence(training_data[0][0], word_to_ix)
-tag_scores = model(inputs)
-# The sentence is "the dog ate the apple".  i,j corresponds to score for tag j
-#  for word i. The predicted tag is the maximum scoring tag.
-# Here, we can see the predicted sequence below is 0 1 2 0 1
-# since 0 is index of the maximum value of row 1,
-# 1 is the index of maximum value of row 2, etc.
-# Which is DET NOUN VERB DET NOUN, the correct sequence!
-print(tag_scores)
+with torch.no_grad():
+    inputs = prepare_sequence(training_data[0][0], word_to_ix)
+    tag_scores = model(inputs)
+
+    # The sentence is "the dog ate the apple".  i,j corresponds to score for tag j
+    # for word i. The predicted tag is the maximum scoring tag.
+    # Here, we can see the predicted sequence below is 0 1 2 0 1
+    # since 0 is index of the maximum value of row 1,
+    # 1 is the index of maximum value of row 2, etc.
+    # Which is DET NOUN VERB DET NOUN, the correct sequence!
+    print(tag_scores)
 
 
 ######################################################################

@@ -23,7 +23,6 @@ import io
 import numpy as np
 
 from torch import nn
-from torch.autograd import Variable
 import torch.utils.model_zoo as model_zoo
 import torch.onnx
 
@@ -65,10 +64,10 @@ class SuperResolutionNet(nn.Module):
         return x
 
     def _initialize_weights(self):
-        init.orthogonal(self.conv1.weight, init.calculate_gain('relu'))
-        init.orthogonal(self.conv2.weight, init.calculate_gain('relu'))
-        init.orthogonal(self.conv3.weight, init.calculate_gain('relu'))
-        init.orthogonal(self.conv4.weight)
+        init.orthogonal_(self.conv1.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.conv2.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.conv3.weight, init.calculate_gain('relu'))
+        init.orthogonal_(self.conv4.weight)
 
 # Create the super-resolution model by using the above model definition.
 torch_model = SuperResolutionNet(upscale_factor=3)
@@ -108,7 +107,7 @@ torch_model.train(False)
 #
 
 # Input to the model
-x = Variable(torch.randn(batch_size, 1, 224, 224), requires_grad=True)
+x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
 
 # Export the model
 torch_out = torch.onnx._export(torch_model,             # model being run

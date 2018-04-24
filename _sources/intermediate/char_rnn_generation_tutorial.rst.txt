@@ -116,20 +116,14 @@ and end up with a dictionary ``{language: [names ...]}``.
 
     n_categories = len(all_categories)
 
+    if n_categories == 0:
+        raise RuntimeError('Data not found. Make sure that you downloaded data '
+            'from https://download.pytorch.org/tutorial/data.zip and extract it to '
+            'the current directory.')
+
     print('# categories:', n_categories, all_categories)
     print(unicodeToAscii("O'Néàl"))
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    # categories: 18 ['Russian', 'Scottish', 'Spanish', 'Vietnamese', 'Arabic', 'Chinese', 'Czech', 'Dutch', 'English', 'French', 'German', 'Greek', 'Irish', 'Italian', 'Japanese', 'Korean', 'Polish', 'Portuguese']
-    O'Neal
 
 
 Creating the Network
@@ -164,7 +158,6 @@ chaos and increase sampling variety.
 
     import torch
     import torch.nn as nn
-    from torch.autograd import Variable
 
     class RNN(nn.Module):
         def __init__(self, input_size, hidden_size, output_size):
@@ -188,12 +181,7 @@ chaos and increase sampling variety.
             return output, hidden
 
         def initHidden(self):
-            return Variable(torch.zeros(1, self.hidden_size))
-
-
-
-
-
+            return torch.zeros(1, self.hidden_size)
 
 
 
@@ -221,11 +209,6 @@ First of all, helper functions to get random pairs of (category, line):
         category = randomChoice(all_categories)
         line = randomChoice(category_lines[category])
         return category, line
-
-
-
-
-
 
 
 
@@ -279,11 +262,6 @@ of initial hidden state or some other strategy.
 
 
 
-
-
-
-
-
 For convenience during training we'll make a ``randomTrainingExample``
 function that fetches a random (category, line) pair and turns them into
 the required (category, input, target) tensors.
@@ -297,15 +275,10 @@ the required (category, input, target) tensors.
     # Make category, input, and target tensors from a random category, line pair
     def randomTrainingExample():
         category, line = randomTrainingPair()
-        category_tensor = Variable(categoryTensor(category))
-        input_line_tensor = Variable(inputTensor(line))
-        target_line_tensor = Variable(targetTensor(line))
+        category_tensor = categoryTensor(category)
+        input_line_tensor = inputTensor(line)
+        target_line_tensor = targetTensor(line)
         return category_tensor, input_line_tensor, target_line_tensor
-
-
-
-
-
 
 
 
@@ -330,27 +303,24 @@ and call backward at the end.
     learning_rate = 0.0005
 
     def train(category_tensor, input_line_tensor, target_line_tensor):
+        target_line_tensor.unsqueeze_(-1)
         hidden = rnn.initHidden()
 
         rnn.zero_grad()
 
         loss = 0
 
-        for i in range(input_line_tensor.size()[0]):
+        for i in range(input_line_tensor.size(0)):
             output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
-            loss += criterion(output, target_line_tensor[i])
+            l = criterion(output, target_line_tensor[i])
+            loss += l
 
         loss.backward()
 
         for p in rnn.parameters():
             p.data.add_(-learning_rate, p.grad.data)
 
-        return output, loss.data[0] / input_line_tensor.size()[0]
-
-
-
-
-
+        return output, loss.item() / input_line_tensor.size(0)
 
 
 
@@ -372,11 +342,6 @@ To keep track of how long training takes I am adding a
         m = math.floor(s / 60)
         s -= m * 60
         return '%dm %ds' % (m, s)
-
-
-
-
-
 
 
 
@@ -414,35 +379,6 @@ in ``all_losses`` for plotting later.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    0m 27s (5000 5%) 2.4667
-    0m 49s (10000 10%) 3.1503
-    1m 13s (15000 15%) 3.4941
-    1m 29s (20000 20%) 2.8216
-    1m 51s (25000 25%) 2.6015
-    2m 7s (30000 30%) 1.9286
-    2m 35s (35000 35%) 2.8073
-    3m 3s (40000 40%) 2.0419
-    3m 31s (45000 45%) 1.9115
-    3m 55s (50000 50%) 2.7884
-    4m 23s (55000 55%) 3.0593
-    4m 52s (60000 60%) 3.3263
-    5m 16s (65000 65%) 0.8238
-    5m 28s (70000 70%) 2.7059
-    5m 51s (75000 75%) 3.0866
-    6m 10s (80000 80%) 1.8773
-    6m 35s (85000 85%) 3.2440
-    6m 53s (90000 90%) 2.5763
-    7m 7s (95000 95%) 2.3825
-    7m 39s (100000 100%) 2.5745
-
-
 Plotting the Losses
 -------------------
 
@@ -460,14 +396,6 @@ learning:
 
     plt.figure()
     plt.plot(all_losses)
-
-
-
-
-
-.. image:: /intermediate/images/sphx_glr_char_rnn_generation_tutorial_001.png
-    :align: center
-
 
 
 
@@ -504,24 +432,25 @@ feed that in as the next letter, and repeat until the EOS token.
 
     # Sample from a category and starting letter
     def sample(category, start_letter='A'):
-        category_tensor = Variable(categoryTensor(category))
-        input = Variable(inputTensor(start_letter))
-        hidden = rnn.initHidden()
+        with torch.no_grad():  # no need to track history in sampling
+            category_tensor = categoryTensor(category)
+            input = inputTensor(start_letter)
+            hidden = rnn.initHidden()
 
-        output_name = start_letter
+            output_name = start_letter
 
-        for i in range(max_length):
-            output, hidden = rnn(category_tensor, input[0], hidden)
-            topv, topi = output.data.topk(1)
-            topi = topi[0][0]
-            if topi == n_letters - 1:
-                break
-            else:
-                letter = all_letters[topi]
-                output_name += letter
-            input = Variable(inputTensor(letter))
+            for i in range(max_length):
+                output, hidden = rnn(category_tensor, input[0], hidden)
+                topv, topi = output.topk(1)
+                topi = topi[0][0]
+                if topi == n_letters - 1:
+                    break
+                else:
+                    letter = all_letters[topi]
+                    output_name += letter
+                input = inputTensor(letter)
 
-        return output_name
+            return output_name
 
     # Get multiple samples from one category and multiple starting letters
     def samples(category, start_letters='ABC'):
@@ -536,27 +465,6 @@ feed that in as the next letter, and repeat until the EOS token.
 
     samples('Chinese', 'CHI')
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Roulan
-    Uaran
-    Sharan
-    Gerren
-    Eren
-    Roure
-    Sanara
-    Parara
-    Allan
-    Cha
-    Han
-    Iun
 
 
 Exercises
@@ -577,7 +485,7 @@ Exercises
 
 
 
-**Total running time of the script:** ( 7 minutes  39.143 seconds)
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 

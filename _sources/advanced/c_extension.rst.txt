@@ -111,7 +111,6 @@ import your extension just like a regular python file.
     # main.py
     import torch
     import torch.nn as nn
-    from torch.autograd import Variable
     from modules.add import MyAddModule
 
     class MyNetwork(nn.Module):
@@ -123,7 +122,7 @@ import your extension just like a regular python file.
             return self.add(input1, input2)
 
     model = MyNetwork()
-    input1, input2 = Variable(torch.randn(5, 5)), Variable(torch.randn(5, 5))
+    input1, input2 = torch.randn(5, 5), torch.randn(5, 5)
     print(model(input1, input2))
     print(input1 + input2)
 

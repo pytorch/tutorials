@@ -17,7 +17,6 @@ In this tutorial, we shall go through two tasks:
 
 import torch
 from torch.autograd import Function
-from torch.autograd import Variable
 
 ###############################################################
 # Parameter-less example
@@ -36,7 +35,7 @@ from numpy.fft import rfft2, irfft2
 class BadFFTFunction(Function):
 
     def forward(self, input):
-        numpy_input = input.numpy()
+        numpy_input = input.detach().numpy()
         result = abs(rfft2(numpy_input))
         return input.new(result)
 
@@ -55,11 +54,11 @@ def incorrect_fft(input):
 ###############################################################
 # **Example usage of the created layer:**
 
-input = Variable(torch.randn(8, 8), requires_grad=True)
+input = torch.randn(8, 8, requires_grad=True)
 result = incorrect_fft(input)
-print(result.data)
+print(result)
 result.backward(torch.randn(result.size()))
-print(input.grad)
+print(input)
 
 ###############################################################
 # Parametrized example
@@ -88,19 +87,19 @@ from torch.nn.parameter import Parameter
 class ScipyConv2dFunction(Function):
     @staticmethod
     def forward(ctx, input, filter):
-        result = correlate2d(input.numpy(), filter.numpy(), mode='valid')
+        input, filter = input.detach(), filter.detach()  # detach so we can cast to NumPy
+        result = correlate2d(input.numpy(), filter.detach().numpy(), mode='valid')
         ctx.save_for_backward(input, filter)
         return input.new(result)
 
     @staticmethod
     def backward(ctx, grad_output):
+        grad_output = grad_output.detach()
         input, filter = ctx.saved_tensors
-        grad_output = grad_output.data
         grad_input = convolve2d(grad_output.numpy(), filter.t().numpy(), mode='full')
         grad_filter = convolve2d(input.numpy(), grad_output.numpy(), mode='valid')
 
-        return Variable(grad_output.new(grad_input)), \
-            Variable(grad_output.new(grad_filter))
+        return grad_output.new_tensor(grad_input), grad_output.new_tensor(grad_filter)
 
 
 class ScipyConv2d(Module):
@@ -117,7 +116,7 @@ class ScipyConv2d(Module):
 
 module = ScipyConv2d(3, 3)
 print(list(module.parameters()))
-input = Variable(torch.randn(10, 10), requires_grad=True)
+input = torch.randn(10, 10, requires_grad=True)
 output = module(input)
 print(output)
 output.backward(torch.randn(8, 8))

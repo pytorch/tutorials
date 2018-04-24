@@ -47,7 +47,6 @@ All of your networks are derived from the base class ``nn.Module``:
 """
 
 import torch
-from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -115,14 +114,14 @@ print(net)
 # Create a mini-batch containing a single sample of random data and send the
 # sample through the ConvNet.
 
-input = Variable(torch.randn(1, 1, 28, 28))
+input = torch.randn(1, 1, 28, 28)
 out = net(input)
 print(out.size())
 
 ########################################################################
 # Define a dummy target label and compute error using a loss function.
 
-target = Variable(torch.LongTensor([3]))
+target = torch.tensor([3], dtype=torch.long)
 loss_fn = nn.CrossEntropyLoss()  # LogSoftmax + ClassNLL Loss
 err = loss_fn(out, target)
 err.backward()
@@ -130,8 +129,8 @@ err.backward()
 print(err)
 
 ########################################################################
-# The output of the ConvNet ``out`` is a ``Variable``. We compute the loss
-# using that, and that results in ``err`` which is also a ``Variable``.
+# The output of the ConvNet ``out`` is a ``Tensor``. We compute the loss
+# using that, and that results in ``err`` which is also a ``Tensor``.
 # Calling ``.backward`` on ``err`` hence will propagate gradients all the
 # way through the ConvNet to it’s weights
 #
@@ -152,7 +151,7 @@ print(net.conv1.weight.grad.data.norm())  # norm of the gradients
 #
 # We introduce **hooks** for this purpose.
 #
-# You can register a function on a ``Module`` or a ``Variable``.
+# You can register a function on a ``Module`` or a ``Tensor``.
 # The hook can be a forward hook or a backward hook.
 # The forward hook will be executed when a forward call is executed.
 # The backward hook will be executed in the backward phase.
@@ -163,7 +162,7 @@ print(net.conv1.weight.grad.data.norm())  # norm of the gradients
 
 def printnorm(self, input, output):
     # input is a tuple of packed inputs
-    # output is a Variable. output.data is the Tensor we are interested
+    # output is a Tensor. output.data is the Tensor we are interested
     print('Inside ' + self.__class__.__name__ + ' forward')
     print('')
     print('input: ', type(input))
@@ -195,7 +194,7 @@ def printgradnorm(self, grad_input, grad_output):
     print('')
     print('grad_input size:', grad_input[0].size())
     print('grad_output size:', grad_output[0].size())
-    print('grad_input norm:', grad_input[0].data.norm())
+    print('grad_input norm:', grad_input[0].norm())
 
 
 net.conv2.register_backward_hook(printgradnorm)
@@ -254,9 +253,9 @@ batch_size = 10
 TIMESTEPS = 5
 
 # Create some fake data
-batch = Variable(torch.randn(batch_size, 50))
-hidden = Variable(torch.zeros(batch_size, 20))
-target = Variable(torch.zeros(batch_size, 10))
+batch = torch.randn(batch_size, 50)
+hidden = torch.zeros(batch_size, 20)
+target = torch.zeros(batch_size, 10)
 
 loss = 0
 for t in range(TIMESTEPS):

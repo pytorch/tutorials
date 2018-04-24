@@ -18,41 +18,20 @@ Create a tensor of size (5 x 7) with uninitialized memory:
 
 
     import torch
-    a = torch.FloatTensor(5, 7)
+    a = torch.empty(5, 7, dtype=torch.float)
 
 
-
-
-
-
-
-Initialize a tensor randomized with a normal distribution with mean=0, var=1:
+Initialize a double tensor randomized with a normal distribution with mean=0,
+var=1:
 
 
 
 .. code-block:: python
 
 
-    a = torch.randn(5, 7)
+    a = torch.randn(5, 7, dtype=torch.double)
     print(a)
     print(a.size())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    -2.6594  0.2050  0.4786  0.5742  1.3252 -0.2457  0.0447
-     0.2875 -0.1991 -2.0714 -1.3491  2.4984  1.8038  0.7666
-     0.1530  0.1970 -1.4120 -1.0305 -0.5973  1.4723 -0.5861
-    -1.5892 -0.9555 -1.6851  1.6970 -0.4777 -1.5150  0.0830
-    -0.3841  0.6812 -0.5975  2.7000 -2.4858 -0.4386 -0.1659
-    [torch.FloatTensor of size 5x7]
-
-    torch.Size([5, 7])
 
 
 .. note::
@@ -80,28 +59,6 @@ out-of-place version, and ``add_`` is the in-place version.
     print(a, b)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
-     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
-     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
-     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
-     3.5000  3.5000  3.5000  3.5000  3.5000  3.5000  3.5000
-    [torch.FloatTensor of size 5x7]
- 
-     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
-     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
-     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
-     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
-     7.5000  7.5000  7.5000  7.5000  7.5000  7.5000  7.5000
-    [torch.FloatTensor of size 5x7]
-
-
 Some operations like ``narrow`` do not have in-place versions, and
 hence, ``.narrow_`` does not exist. Similarly, some operations like
 ``fill_`` do not have an out-of-place version, so ``.fill`` does not
@@ -121,11 +78,6 @@ one-indexed)
     b = a[0, 3]  # select 1st row, 4th column from a
 
 
-
-
-
-
-
 Tensors can be also indexed with Python's slicing
 
 
@@ -134,11 +86,6 @@ Tensors can be also indexed with Python's slicing
 
 
     b = a[:, 3:5]  # selects all rows, 4th column and  5th column from a
-
-
-
-
-
 
 
 No camel casing
@@ -158,65 +105,20 @@ anymore. For example ``indexAdd`` is now called ``index_add_``
 
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    1  1  1  1  1
-     1  1  1  1  1
-     1  1  1  1  1
-     1  1  1  1  1
-     1  1  1  1  1
-    [torch.FloatTensor of size 5x5]
-
-
-
 .. code-block:: python
 
 
-    z = torch.Tensor(5, 2)
+    z = torch.empty(5, 2)
     z[:, 0] = 10
     z[:, 1] = 100
     print(z)
 
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    10  100
-      10  100
-      10  100
-      10  100
-      10  100
-    [torch.FloatTensor of size 5x2]
-
-
-
 .. code-block:: python
 
-    x.index_add_(1, torch.LongTensor([4, 0]), z)
+    x.index_add_(1, torch.tensor([4, 0], dtype=torch.long), z)
     print(x)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    101    1    1    1   11
-     101    1    1    1   11
-     101    1    1    1   11
-     101    1    1    1   11
-     101    1    1    1   11
-    [torch.FloatTensor of size 5x5]
 
 
 Numpy Bridge
@@ -239,36 +141,11 @@ Converting torch Tensor to numpy Array
 
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    1
-     1
-     1
-     1
-     1
-    [torch.FloatTensor of size 5]
-
-
-
 .. code-block:: python
 
 
     b = a.numpy()
     print(b)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    [1. 1. 1. 1. 1.]
 
 
 
@@ -278,23 +155,6 @@ Converting torch Tensor to numpy Array
     print(a)
     print(b) 	# see how the numpy array changed in value
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    2
-     2
-     2
-     2
-     2
-    [torch.FloatTensor of size 5]
-
-    [2. 2. 2. 2. 2.]
 
 
 Converting numpy Array to torch Tensor
@@ -313,23 +173,6 @@ Converting numpy Array to torch Tensor
     print(b)  # see how changing the np array changed the torch Tensor automatically
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    [2. 2. 2. 2. 2.]
-
-     2
-     2
-     2
-     2
-     2
-    [torch.DoubleTensor of size 5]
-
-
 All the Tensors on the CPU except a CharTensor support converting to
 NumPy and back.
 
@@ -346,25 +189,16 @@ from the CPU to GPU will retain its underlying type.
 
     # let us run this cell only if CUDA is available
     if torch.cuda.is_available():
+
         # creates a LongTensor and transfers it
         # to GPU as torch.cuda.LongTensor
-        a = torch.LongTensor(10).fill_(3).cuda()
+        a = torch.full((10,), 3, device=torch.device("cuda"))
         print(type(a))
-        b = a.cpu()
+        b = a.to(torch.device("cpu"))
         # transfers it to CPU, back to
         # being a torch.LongTensor
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    <class 'torch.cuda.LongTensor'>
-
-
-**Total running time of the script:** ( 0 minutes  0.026 seconds)
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 

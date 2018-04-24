@@ -25,9 +25,6 @@ In this tutorial, you will learn the following:
 .. galleryitem:: /beginner/former_torchies/tensor_tutorial.py
     :figure: /_static/img/tensor_illustration_flat.png
 
-.. galleryitem:: /beginner/former_torchies/autograd_tutorial.py
-    :figure: /_static/img/Variable.png
-
 .. galleryitem:: /beginner/former_torchies/nn_tutorial.py
     :figure: /_static/img/torch-nn-vs-pytorch-nn.png
 

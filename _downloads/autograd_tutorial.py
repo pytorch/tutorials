@@ -15,48 +15,49 @@ different.
 
 Let us see this in more simple terms with some examples.
 
-Variable
+Tensor
 --------
 
-``autograd.Variable`` is the central class of the package. It wraps a
-Tensor, and supports nearly all of operations defined on it. Once you
-finish your computation you can call ``.backward()`` and have all the
-gradients computed automatically.
+``torch.Tensor`` is the central class of the package. If you set its attribute
+``.requires_grad`` as ``True``, it starts to track all operations on it. When
+you finish your computation you can call ``.backward()`` and have all the
+gradients computed automatically. The gradient for this tensor will be
+accumulated into ``.grad`` attribute.
 
-You can access the raw tensor through the ``.data`` attribute, while the
-gradient w.r.t. this variable is accumulated into ``.grad``.
+To stop a tensor from tracking history, you can call ``.detach()`` to detach
+it from the computation history, and to prevent future computation from being
+tracked.
 
-.. figure:: /_static/img/Variable.png
-   :alt: Variable
-
-   Variable
+To prevent tracking history (and using memory), you can also wrap the code block
+in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
+model because the model may have trainable parameters with `requires_grad=True`,
+but we don't need the gradients.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``.
 
-``Variable`` and ``Function`` are interconnected and build up an acyclic
+``Tensor`` and ``Function`` are interconnected and build up an acyclic
 graph, that encodes a complete history of computation. Each variable has
 a ``.grad_fn`` attribute that references a ``Function`` that has created
-the ``Variable`` (except for Variables created by the user - their
+the ``Tensor`` (except for Tensors created by the user - their
 ``grad_fn is None``).
 
 If you want to compute the derivatives, you can call ``.backward()`` on
-a ``Variable``. If ``Variable`` is a scalar (i.e. it holds a one element
+a ``Tensor``. If ``Tensor`` is a scalar (i.e. it holds a one element
 data), you don’t need to specify any arguments to ``backward()``,
 however if it has more elements, you need to specify a ``gradient``
 argument that is a tensor of matching shape.
 """
 
 import torch
-from torch.autograd import Variable
 
 ###############################################################
-# Create a variable:
-x = Variable(torch.ones(2, 2), requires_grad=True)
+# Create a tensor and set requires_grad=True to track computation with it
+x = torch.ones(2, 2, requires_grad=True)
 print(x)
 
 ###############################################################
-# Do an operation of variable:
+# Do an operation of tensor:
 y = x + 2
 print(y)
 
@@ -71,11 +72,23 @@ out = z.mean()
 
 print(z, out)
 
+################################################################
+# ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
+# flag in-place. The input flag defaults to ``True`` if not given.
+a = torch.randn(2, 2)
+a = ((a * 3) / (a - 1))
+print(a.requires_grad)
+a.requires_grad_(True)
+print(a.requires_grad)
+b = (a * a).sum()
+print(b.grad_fn)
+
 ###############################################################
 # Gradients
 # ---------
-# let's backprop now
-# ``out.backward()`` is equivalent to doing ``out.backward(torch.Tensor([1.0]))``
+# Let's backprop now
+# Because ``out`` contains a single scalar, ``out.backward()`` is
+# equivalent to ``out.backward(torch.tensor(1))``.
 
 out.backward()
 
@@ -87,7 +100,7 @@ print(x.grad)
 
 ###############################################################
 # You should have got a matrix of ``4.5``. Let’s call the ``out``
-# *Variable* “:math:`o`”.
+# *Tensor* “:math:`o`”.
 # We have that :math:`o = \frac{1}{4}\sum_i z_i`,
 # :math:`z_i = 3(x_i+2)^2` and :math:`z_i\bigr\rvert_{x_i=1} = 27`.
 # Therefore,
@@ -98,8 +111,7 @@ print(x.grad)
 # You can do many crazy things with autograd!
 
 
-x = torch.randn(3)
-x = Variable(x, requires_grad=True)
+x = torch.randn(3, requires_grad=True)
 
 y = x * 2
 while y.data.norm() < 1000:
@@ -109,13 +121,23 @@ print(y)
 
 ###############################################################
 #
-gradients = torch.FloatTensor([0.1, 1.0, 0.0001])
+gradients = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
 y.backward(gradients)
 
 print(x.grad)
 
 ###############################################################
+# You can also stops autograd from tracking history on Tensors
+# with requires_grad=True by wrapping the code block in
+# ``with torch.no_grad():``
+print(x.requires_grad)
+print((x ** 2).requires_grad)
+
+with torch.no_grad():
+	print((x ** 2).requires_grad)
+
+###############################################################
 # **Read Later:**
 #
-# Documentation of ``Variable`` and ``Function`` is at
+# Documentation of ``autograd`` and ``Function`` is at
 # http://pytorch.org/docs/autograd

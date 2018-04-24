@@ -11,7 +11,6 @@ want a model more complex than a simple sequence of existing Modules you will
 need to define your model this way.
 """
 import torch
-from torch.autograd import Variable
 
 
 class TwoLayerNet(torch.nn.Module):
@@ -26,9 +25,9 @@ class TwoLayerNet(torch.nn.Module):
 
     def forward(self, x):
         """
-        In the forward function we accept a Variable of input data and we must return
-        a Variable of output data. We can use Modules defined in the constructor as
-        well as arbitrary operators on Variables.
+        In the forward function we accept a Tensor of input data and we must return
+        a Tensor of output data. We can use Modules defined in the constructor as
+        well as arbitrary operators on Tensors.
         """
         h_relu = self.linear1(x).clamp(min=0)
         y_pred = self.linear2(h_relu)
@@ -39,9 +38,9 @@ class TwoLayerNet(torch.nn.Module):
 # H is hidden dimension; D_out is output dimension.
 N, D_in, H, D_out = 64, 1000, 100, 10
 
-# Create random Tensors to hold inputs and outputs, and wrap them in Variables
-x = Variable(torch.randn(N, D_in))
-y = Variable(torch.randn(N, D_out), requires_grad=False)
+# Create random Tensors to hold inputs and outputs
+x = torch.randn(N, D_in)
+y = torch.randn(N, D_out)
 
 # Construct our model by instantiating the class defined above
 model = TwoLayerNet(D_in, H, D_out)
@@ -57,7 +56,7 @@ for t in range(500):
 
     # Compute and print loss
     loss = criterion(y_pred, y)
-    print(t, loss.data[0])
+    print(t, loss.item())
 
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()

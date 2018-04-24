@@ -54,7 +54,6 @@ All of your networks are derived from the base class ``nn.Module``:
 
 
     import torch
-    from torch.autograd import Variable
     import torch.nn as nn
     import torch.nn.functional as F
 
@@ -99,11 +98,6 @@ All of your networks are derived from the base class ``nn.Module``:
             return x
 
 
-
-
-
-
-
 Let's use the defined ConvNet now.
 You create an instance of the class first.
 
@@ -115,23 +109,6 @@ You create an instance of the class first.
 
     net = MNISTConvNet()
     print(net)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    MNISTConvNet(
-      (conv1): Conv2d(1, 10, kernel_size=(5, 5), stride=(1, 1))
-      (pool1): MaxPool2d(kernel_size=(2, 2), stride=(2, 2), dilation=(1, 1), ceil_mode=False)
-      (conv2): Conv2d(10, 20, kernel_size=(5, 5), stride=(1, 1))
-      (pool2): MaxPool2d(kernel_size=(2, 2), stride=(2, 2), dilation=(1, 1), ceil_mode=False)
-      (fc1): Linear(in_features=320, out_features=50, bias=True)
-      (fc2): Linear(in_features=50, out_features=10, bias=True)
-    )
 
 
 .. note::
@@ -154,19 +131,9 @@ sample through the ConvNet.
 .. code-block:: python
 
 
-    input = Variable(torch.randn(1, 1, 28, 28))
+    input = torch.randn(1, 1, 28, 28)
     out = net(input)
     print(out.size())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    torch.Size([1, 10])
 
 
 Define a dummy target label and compute error using a loss function.
@@ -176,7 +143,7 @@ Define a dummy target label and compute error using a loss function.
 .. code-block:: python
 
 
-    target = Variable(torch.LongTensor([3]))
+    target = torch.tensor([3], dtype=torch.long)
     loss_fn = nn.CrossEntropyLoss()  # LogSoftmax + ClassNLL Loss
     err = loss_fn(out, target)
     err.backward()
@@ -184,20 +151,8 @@ Define a dummy target label and compute error using a loss function.
     print(err)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Variable containing:
-     2.2737
-    [torch.FloatTensor of size 1]
-
-
-The output of the ConvNet ``out`` is a ``Variable``. We compute the loss
-using that, and that results in ``err`` which is also a ``Variable``.
+The output of the ConvNet ``out`` is a ``Tensor``. We compute the loss
+using that, and that results in ``err`` which is also a ``Tensor``.
 Calling ``.backward`` on ``err`` hence will propagate gradients all the
 way through the ConvNet to it’s weights
 
@@ -212,31 +167,10 @@ Let's access individual layer weights and gradients:
 
 
 
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    torch.Size([10, 1, 5, 5])
-
-
-
 .. code-block:: python
 
     print(net.conv1.weight.data.norm())  # norm of the weight
     print(net.conv1.weight.grad.data.norm())  # norm of the gradients
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    1.7299355486545875
-    0.42085405306033785
 
 
 Forward and Backward Function Hooks
@@ -247,7 +181,7 @@ We’ve inspected the weights and the gradients. But how about inspecting
 
 We introduce **hooks** for this purpose.
 
-You can register a function on a ``Module`` or a ``Variable``.
+You can register a function on a ``Module`` or a ``Tensor``.
 The hook can be a forward hook or a backward hook.
 The forward hook will be executed when a forward call is executed.
 The backward hook will be executed in the backward phase.
@@ -263,7 +197,7 @@ We register a forward hook on conv2 and print some information
 
     def printnorm(self, input, output):
         # input is a tuple of packed inputs
-        # output is a Variable. output.data is the Tensor we are interested
+        # output is a Tensor. output.data is the Tensor we are interested
         print('Inside ' + self.__class__.__name__ + ' forward')
         print('')
         print('input: ', type(input))
@@ -278,24 +212,6 @@ We register a forward hook on conv2 and print some information
     net.conv2.register_forward_hook(printnorm)
 
     out = net(input)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Inside Conv2d forward
-
-    input:  <class 'tuple'>
-    input[0]:  <class 'torch.autograd.variable.Variable'>
-    output:  <class 'torch.autograd.variable.Variable'>
-
-    input size: torch.Size([1, 10, 12, 12])
-    output size: torch.Size([1, 20, 8, 8])
-    output norm: 13.291998799881537
 
 
 We register a backward hook on conv2 and print some information
@@ -317,7 +233,7 @@ We register a backward hook on conv2 and print some information
         print('')
         print('grad_input size:', grad_input[0].size())
         print('grad_output size:', grad_output[0].size())
-        print('grad_input norm:', grad_input[0].data.norm())
+        print('grad_input norm:', grad_input[0].norm())
 
 
     net.conv2.register_backward_hook(printgradnorm)
@@ -325,35 +241,6 @@ We register a backward hook on conv2 and print some information
     out = net(input)
     err = loss_fn(out, target)
     err.backward()
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Inside Conv2d forward
-
-    input:  <class 'tuple'>
-    input[0]:  <class 'torch.autograd.variable.Variable'>
-    output:  <class 'torch.autograd.variable.Variable'>
-
-    input size: torch.Size([1, 10, 12, 12])
-    output size: torch.Size([1, 20, 8, 8])
-    output norm: 13.291998799881537
-    Inside Conv2d backward
-    Inside class:Conv2d
-
-    grad_input:  <class 'tuple'>
-    grad_input[0]:  <class 'torch.autograd.variable.Variable'>
-    grad_output:  <class 'tuple'>
-    grad_output[0]:  <class 'torch.autograd.variable.Variable'>
-
-    grad_input size: torch.Size([1, 10, 12, 12])
-    grad_output size: torch.Size([1, 20, 8, 8])
-    grad_input norm: 0.09411032972381579
 
 
 A full and working MNIST example is located here
@@ -396,11 +283,6 @@ again for the recurrence.
     rnn = RNN(50, 20, 10)
 
 
-
-
-
-
-
 A more complete Language Modeling example using LSTMs and Penn Tree-bank
 is located
 `here <https://github.com/pytorch/examples/tree/master/word\_language\_model>`_
@@ -419,9 +301,9 @@ Recurrent Nets
     TIMESTEPS = 5
 
     # Create some fake data
-    batch = Variable(torch.randn(batch_size, 50))
-    hidden = Variable(torch.zeros(batch_size, 20))
-    target = Variable(torch.zeros(batch_size, 10))
+    batch = torch.randn(batch_size, 50)
+    hidden = torch.zeros(batch_size, 20)
+    target = torch.zeros(batch_size, 10)
 
     loss = 0
     for t in range(TIMESTEPS):
@@ -431,12 +313,7 @@ Recurrent Nets
         loss += loss_fn(output, target)
     loss.backward()
 
-
-
-
-
-
-**Total running time of the script:** ( 0 minutes  0.010 seconds)
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 

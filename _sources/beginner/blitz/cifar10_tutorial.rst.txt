@@ -67,11 +67,6 @@ Using ``torchvision``, it’s extremely easy to load CIFAR10.
     import torchvision.transforms as transforms
 
 
-
-
-
-
-
 The output of torchvision datasets are PILImage images of range [0, 1].
 We transform them to Tensors of normalized range [-1, 1].
 
@@ -96,17 +91,6 @@ We transform them to Tensors of normalized range [-1, 1].
 
     classes = ('plane', 'car', 'bird', 'cat',
                'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Files already downloaded and verified
-    Files already downloaded and verified
 
 
 Let us show some of the training images, for fun.
@@ -139,19 +123,6 @@ Let us show some of the training images, for fun.
 
 
 
-
-
-.. image:: /beginner/blitz/images/sphx_glr_cifar10_tutorial_001.png
-    :align: center
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    plane   car   cat  ship
-
-
 2. Define a Convolution Neural Network
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Copy the neural network from the Neural Networks section before and modify it to
@@ -162,7 +133,6 @@ take 3-channel images (instead of 1-channel images as it was defined).
 .. code-block:: python
 
 
-    from torch.autograd import Variable
     import torch.nn as nn
     import torch.nn.functional as F
 
@@ -190,11 +160,6 @@ take 3-channel images (instead of 1-channel images as it was defined).
     net = Net()
 
 
-
-
-
-
-
 3. Define a Loss function and optimizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Let's use a Classification Cross-Entropy loss and SGD with momentum.
@@ -208,11 +173,6 @@ Let's use a Classification Cross-Entropy loss and SGD with momentum.
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-
-
-
-
 
 
 4. Train the network
@@ -234,9 +194,6 @@ network and optimize.
             # get the inputs
             inputs, labels = data
 
-            # wrap them in Variable
-            inputs, labels = Variable(inputs), Variable(labels)
-
             # zero the parameter gradients
             optimizer.zero_grad()
 
@@ -247,35 +204,13 @@ network and optimize.
             optimizer.step()
 
             # print statistics
-            running_loss += loss.data[0]
+            running_loss += loss.item()
             if i % 2000 == 1999:    # print every 2000 mini-batches
                 print('[%d, %5d] loss: %.3f' %
                       (epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
 
     print('Finished Training')
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    [1,  2000] loss: 2.209
-    [1,  4000] loss: 1.852
-    [1,  6000] loss: 1.656
-    [1,  8000] loss: 1.591
-    [1, 10000] loss: 1.522
-    [1, 12000] loss: 1.484
-    [2,  2000] loss: 1.394
-    [2,  4000] loss: 1.366
-    [2,  6000] loss: 1.343
-    [2,  8000] loss: 1.337
-    [2, 10000] loss: 1.314
-    [2, 12000] loss: 1.302
-    Finished Training
 
 
 5. Test the network on the test data
@@ -303,19 +238,6 @@ Okay, first step. Let us display an image from the test set to get familiar.
     print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 
-
-
-.. image:: /beginner/blitz/images/sphx_glr_cifar10_tutorial_002.png
-    :align: center
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    GroundTruth:    cat  ship  ship plane
-
-
 Okay, now let us see what the neural network thinks these examples above are:
 
 
@@ -323,12 +245,7 @@ Okay, now let us see what the neural network thinks these examples above are:
 .. code-block:: python
 
 
-    outputs = net(Variable(images))
-
-
-
-
-
+    outputs = net(images)
 
 
 The outputs are energies for the 10 classes.
@@ -340,20 +257,10 @@ So, let's get the index of the highest energy:
 
 .. code-block:: python
 
-    _, predicted = torch.max(outputs.data, 1)
+    _, predicted = torch.max(outputs, 1)
 
     print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
                                   for j in range(4)))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Predicted:    cat  ship   car plane
 
 
 The results seem pretty good.
@@ -367,25 +274,16 @@ Let us look at how the network performs on the whole dataset.
 
     correct = 0
     total = 0
-    for data in testloader:
-        images, labels = data
-        outputs = net(Variable(images))
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum()
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
 
     print('Accuracy of the network on the 10000 test images: %d %%' % (
         100 * correct / total))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Accuracy of the network on the 10000 test images: 54 %
 
 
 That looks waaay better than chance, which is 10% accuracy (randomly picking
@@ -402,39 +300,21 @@ not perform well:
 
     class_correct = list(0. for i in range(10))
     class_total = list(0. for i in range(10))
-    for data in testloader:
-        images, labels = data
-        outputs = net(Variable(images))
-        _, predicted = torch.max(outputs.data, 1)
-        c = (predicted == labels).squeeze()
-        for i in range(4):
-            label = labels[i]
-            class_correct[label] += c[i]
-            class_total[label] += 1
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            for i in range(4):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
 
 
     for i in range(10):
         print('Accuracy of %5s : %2d %%' % (
             classes[i], 100 * class_correct[i] / class_total[i]))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out::
-
-    Accuracy of plane : 57 %
-    Accuracy of   car : 71 %
-    Accuracy of  bird : 38 %
-    Accuracy of   cat : 36 %
-    Accuracy of  deer : 42 %
-    Accuracy of   dog : 57 %
-    Accuracy of  frog : 57 %
-    Accuracy of horse : 61 %
-    Accuracy of  ship : 71 %
-    Accuracy of truck : 55 %
 
 
 Okay, so what next?
@@ -445,60 +325,76 @@ Training on GPU
 ----------------
 Just like how you transfer a Tensor on to the GPU, you transfer the neural
 net onto the GPU.
-This will recursively go over all modules and convert their parameters and
-buffers to CUDA tensors:
 
-.. code:: python
-
-    net.cuda()
+Let's first define our device as the first visible cuda device if we have
+CUDA available:
 
 
-Remember that you will have to send the inputs and targets at every step
-to the GPU too:
 
-::
-
-        inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
-
-Why dont I notice MASSIVE speedup compared to CPU? Because your network
-is realllly small.
-
-**Exercise:** Try increasing the width of your network (argument 2 of
-the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
-they need to be the same number), see what kind of speedup you get.
-
-**Goals achieved**:
-
-- Understanding PyTorch's Tensor library and neural networks at a high level.
-- Train a small neural network to classify images
-
-Training on multiple GPUs
--------------------------
-If you want to see even more MASSIVE speedup using all of your GPUs,
-please check out :doc:`data_parallel_tutorial`.
-
-Where do I go next?
--------------------
-
--  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
--  `Train a state-of-the-art ResNet network on imagenet`_
--  `Train a face generator using Generative Adversarial Networks`_
--  `Train a word-level language model using Recurrent LSTM networks`_
--  `More examples`_
--  `More tutorials`_
--  `Discuss PyTorch on the Forums`_
--  `Chat with other users on Slack`_
-
-.. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
-.. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
-.. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
-.. _More examples: https://github.com/pytorch/examples
-.. _More tutorials: https://github.com/pytorch/tutorials
-.. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-.. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
+.. code-block:: python
 
 
-**Total running time of the script:** ( 1 minutes  20.930 seconds)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    # Assume that we are on a CUDA machine, then this should print a CUDA device:
+
+    print(device)
+
+    # The rest of this section assumes that `device` is a CUDA device.
+    #
+    # Then these methods will recursively go over all modules and convert their
+    # parameters and buffers to CUDA tensors:
+    #
+    # .. code:: python
+    #
+    #     net.to(device)
+    #
+    #
+    # Remember that you will have to send the inputs and targets at every step
+    # to the GPU too:
+    #
+    # .. code:: python
+    #
+    #         inputs, labels = inputs.to(device), labels.to(device)
+    #
+    # Why dont I notice MASSIVE speedup compared to CPU? Because your network
+    # is realllly small.
+    #
+    # **Exercise:** Try increasing the width of your network (argument 2 of
+    # the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
+    # they need to be the same number), see what kind of speedup you get.
+    #
+    # **Goals achieved**:
+    #
+    # - Understanding PyTorch's Tensor library and neural networks at a high level.
+    # - Train a small neural network to classify images
+    #
+    # Training on multiple GPUs
+    # -------------------------
+    # If you want to see even more MASSIVE speedup using all of your GPUs,
+    # please check out :doc:`data_parallel_tutorial`.
+    #
+    # Where do I go next?
+    # -------------------
+    #
+    # -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
+    # -  `Train a state-of-the-art ResNet network on imagenet`_
+    # -  `Train a face generator using Generative Adversarial Networks`_
+    # -  `Train a word-level language model using Recurrent LSTM networks`_
+    # -  `More examples`_
+    # -  `More tutorials`_
+    # -  `Discuss PyTorch on the Forums`_
+    # -  `Chat with other users on Slack`_
+    #
+    # .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
+    # .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
+    # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
+    # .. _More examples: https://github.com/pytorch/examples
+    # .. _More tutorials: https://github.com/pytorch/tutorials
+    # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
+    # .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
+
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 
