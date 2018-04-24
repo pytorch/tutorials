@@ -109,6 +109,11 @@ for filename in findFiles('data/names/*.txt'):
 
 n_categories = len(all_categories)
 
+if n_categories == 0:
+    raise RuntimeError('Data not found. Make sure that you downloaded data '
+        'from https://download.pytorch.org/tutorial/data.zip and extract it to '
+        'the current directory.')
+
 print('# categories:', n_categories, all_categories)
 print(unicodeToAscii("O'Néàl"))
 
@@ -141,7 +146,6 @@ print(unicodeToAscii("O'Néàl"))
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 class RNN(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
@@ -165,7 +169,7 @@ class RNN(nn.Module):
         return output, hidden
 
     def initHidden(self):
-        return Variable(torch.zeros(1, self.hidden_size))
+        return torch.zeros(1, self.hidden_size)
 
 
 ######################################################################
@@ -244,9 +248,9 @@ def targetTensor(line):
 # Make category, input, and target tensors from a random category, line pair
 def randomTrainingExample():
     category, line = randomTrainingPair()
-    category_tensor = Variable(categoryTensor(category))
-    input_line_tensor = Variable(inputTensor(line))
-    target_line_tensor = Variable(targetTensor(line))
+    category_tensor = categoryTensor(category)
+    input_line_tensor = inputTensor(line)
+    target_line_tensor = targetTensor(line)
     return category_tensor, input_line_tensor, target_line_tensor
 
 
@@ -267,22 +271,24 @@ criterion = nn.NLLLoss()
 learning_rate = 0.0005
 
 def train(category_tensor, input_line_tensor, target_line_tensor):
+    target_line_tensor.unsqueeze_(-1)
     hidden = rnn.initHidden()
 
     rnn.zero_grad()
 
     loss = 0
 
-    for i in range(input_line_tensor.size()[0]):
+    for i in range(input_line_tensor.size(0)):
         output, hidden = rnn(category_tensor, input_line_tensor[i], hidden)
-        loss += criterion(output, target_line_tensor[i])
+        l = criterion(output, target_line_tensor[i])
+        loss += l
 
     loss.backward()
 
     for p in rnn.parameters():
         p.data.add_(-learning_rate, p.grad.data)
 
-    return output, loss.data[0] / input_line_tensor.size()[0]
+    return output, loss.item() / input_line_tensor.size(0)
 
 
 ######################################################################
@@ -374,24 +380,25 @@ max_length = 20
 
 # Sample from a category and starting letter
 def sample(category, start_letter='A'):
-    category_tensor = Variable(categoryTensor(category))
-    input = Variable(inputTensor(start_letter))
-    hidden = rnn.initHidden()
+    with torch.no_grad():  # no need to track history in sampling
+        category_tensor = categoryTensor(category)
+        input = inputTensor(start_letter)
+        hidden = rnn.initHidden()
 
-    output_name = start_letter
+        output_name = start_letter
 
-    for i in range(max_length):
-        output, hidden = rnn(category_tensor, input[0], hidden)
-        topv, topi = output.data.topk(1)
-        topi = topi[0][0]
-        if topi == n_letters - 1:
-            break
-        else:
-            letter = all_letters[topi]
-            output_name += letter
-        input = Variable(inputTensor(letter))
+        for i in range(max_length):
+            output, hidden = rnn(category_tensor, input[0], hidden)
+            topv, topi = output.topk(1)
+            topi = topi[0][0]
+            if topi == n_letters - 1:
+                break
+            else:
+                letter = all_letters[topi]
+                output_name += letter
+            input = inputTensor(letter)
 
-    return output_name
+        return output_name
 
 # Get multiple samples from one category and multiple starting letters
 def samples(category, start_letters='ABC'):

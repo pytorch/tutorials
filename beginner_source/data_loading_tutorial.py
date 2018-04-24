@@ -179,7 +179,7 @@ for i in range(len(face_dataset)):
 # Transforms
 # ----------
 #
-# One issue we can see from the above is that the samples are not of the 
+# One issue we can see from the above is that the samples are not of the
 # same size. Most neural networks expect the images of a fixed size.
 # Therefore, we will need to write some prepocessing code.
 # Let's create three transforms:
@@ -192,7 +192,7 @@ for i in range(len(face_dataset)):
 #
 # We will write them as callable classes instead of simple functions so
 # that parameters of the transform need not be passed everytime it's
-# called. For this, we just need to implement ``__call__`` method and 
+# called. For this, we just need to implement ``__call__`` method and
 # if required, ``__init__`` method. We can then use a transform like this:
 #
 # ::
@@ -278,7 +278,7 @@ class ToTensor(object):
 
     def __call__(self, sample):
         image, landmarks = sample['image'], sample['landmarks']
- 
+
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
@@ -324,7 +324,7 @@ plt.show()
 # -----------------------------
 #
 # Let's put this all together to create a dataset with composed
-# transforms. 
+# transforms.
 # To summarize, every time this dataset is sampled:
 #
 # -  An image is read from the file on the fly

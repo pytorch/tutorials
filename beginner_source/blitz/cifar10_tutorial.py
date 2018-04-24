@@ -111,7 +111,6 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 # Copy the neural network from the Neural Networks section before and modify it to
 # take 3-channel images (instead of 1-channel images as it was defined).
 
-from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -163,9 +162,6 @@ for epoch in range(2):  # loop over the dataset multiple times
         # get the inputs
         inputs, labels = data
 
-        # wrap them in Variable
-        inputs, labels = Variable(inputs), Variable(labels)
-
         # zero the parameter gradients
         optimizer.zero_grad()
 
@@ -176,7 +172,7 @@ for epoch in range(2):  # loop over the dataset multiple times
         optimizer.step()
 
         # print statistics
-        running_loss += loss.data[0]
+        running_loss += loss.item()
         if i % 2000 == 1999:    # print every 2000 mini-batches
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
@@ -207,14 +203,14 @@ print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:
 
-outputs = net(Variable(images))
+outputs = net(images)
 
 ########################################################################
 # The outputs are energies for the 10 classes.
 # Higher the energy for a class, the more the network
 # thinks that the image is of the particular class.
 # So, let's get the index of the highest energy:
-_, predicted = torch.max(outputs.data, 1)
+_, predicted = torch.max(outputs, 1)
 
 print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
                               for j in range(4)))
@@ -226,12 +222,13 @@ print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
 
 correct = 0
 total = 0
-for data in testloader:
-    images, labels = data
-    outputs = net(Variable(images))
-    _, predicted = torch.max(outputs.data, 1)
-    total += labels.size(0)
-    correct += (predicted == labels).sum()
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
 print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
@@ -246,15 +243,16 @@ print('Accuracy of the network on the 10000 test images: %d %%' % (
 
 class_correct = list(0. for i in range(10))
 class_total = list(0. for i in range(10))
-for data in testloader:
-    images, labels = data
-    outputs = net(Variable(images))
-    _, predicted = torch.max(outputs.data, 1)
-    c = (predicted == labels).squeeze()
-    for i in range(4):
-        label = labels[i]
-        class_correct[label] += c[i]
-        class_total[label] += 1
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predicted = torch.max(outputs, 1)
+        c = (predicted == labels).squeeze()
+        for i in range(4):
+            label = labels[i]
+            class_correct[label] += c[i].item()
+            class_total[label] += 1
 
 
 for i in range(10):
@@ -270,20 +268,32 @@ for i in range(10):
 # ----------------
 # Just like how you transfer a Tensor on to the GPU, you transfer the neural
 # net onto the GPU.
-# This will recursively go over all modules and convert their parameters and
-# buffers to CUDA tensors:
+#
+# Let's first define our device as the first visible cuda device if we have
+# CUDA available:
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+# Assume that we are on a CUDA machine, then this should print a CUDA device:
+
+print(device)
+
+# The rest of this section assumes that `device` is a CUDA device.
+#
+# Then these methods will recursively go over all modules and convert their
+# parameters and buffers to CUDA tensors:
 #
 # .. code:: python
 #
-#     net.cuda()
+#     net.to(device)
 #
 #
 # Remember that you will have to send the inputs and targets at every step
 # to the GPU too:
 #
-# ::
+# .. code:: python
 #
-#         inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+#         inputs, labels = inputs.to(device), labels.to(device)
 #
 # Why dont I notice MASSIVE speedup compared to CPU? Because your network
 # is realllly small.

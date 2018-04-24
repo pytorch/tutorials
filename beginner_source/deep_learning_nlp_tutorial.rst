@@ -36,7 +36,7 @@ and use them on it.
 
 
 .. galleryitem:: /beginner/nlp/pytorch_tutorial.py
-    :intro: All of deep learning is computations on tensors, which are generalizations of a matrix that can be 
+    :intro: All of deep learning is computations on tensors, which are generalizations of a matrix that can be
 
 .. galleryitem:: /beginner/nlp/deep_learning_tutorial.py
     :intro: Deep learning consists of composing linearities with non-linearities in clever ways. The introduction of non-linearities allows
@@ -45,10 +45,10 @@ and use them on it.
     :intro: Word embeddings are dense vectors of real numbers, one per word in your vocabulary. In NLP, it is almost always the case that your features are
 
 .. galleryitem:: /beginner/nlp/sequence_models_tutorial.py
-    :intro: At this point, we have seen various feed-forward networks. That is, there is no state maintained by the network at all. 
+    :intro: At this point, we have seen various feed-forward networks. That is, there is no state maintained by the network at all.
 
 .. galleryitem:: /beginner/nlp/advanced_tutorial.py
-    :intro: Dynamic versus Static Deep Learning Toolkits. Pytorch is a *dynamic* neural network kit. 
+    :intro: Dynamic versus Static Deep Learning Toolkits. Pytorch is a *dynamic* neural network kit.
 
 
 .. raw:: html
