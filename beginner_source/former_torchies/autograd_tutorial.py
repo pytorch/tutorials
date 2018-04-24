@@ -9,37 +9,33 @@ It uses a tape based system for automatic differentiation.
 In the forward phase, the autograd tape will remember all the operations
 it executed, and in the backward phase, it will replay the operations.
 
-Variable
---------
+Tensors that track history
+--------------------------
 
-In autograd, we introduce a ``Variable`` class, which is a very thin
-wrapper around a ``Tensor``. You can access the raw tensor through the
-``.data`` attribute, and after computing the backward pass, a gradient
+In autograd, if any input ``Tensor`` of an operation has ``requires_grad=True``,
+the computation will be tracked. After computing the backward pass, a gradient
 w.r.t. this variable is accumulated into ``.grad`` attribute.
 
-.. figure:: /_static/img/Variable.png
-   :alt: Variable
-
-   Variable
-
 There’s one more class which is very important for autograd
-implementation - a ``Function``. ``Variable`` and ``Function`` are
+implementation - a ``Function``. ``Tensor`` and ``Function`` are
 interconnected and build up an acyclic graph, that encodes a complete
 history of computation. Each variable has a ``.grad_fn`` attribute that
-references a function that has created a function (except for Variables
+references a function that has created a function (except for Tensors
 created by the user - these have ``None`` as ``.grad_fn``).
 
 If you want to compute the derivatives, you can call ``.backward()`` on
-a ``Variable``. If ``Variable`` is a scalar (i.e. it holds a one element
+a ``Tensor``. If ``Tensor`` is a scalar (i.e. it holds a one element
 tensor), you don’t need to specify any arguments to ``backward()``,
 however if it has more elements, you need to specify a ``grad_output``
 argument that is a tensor of matching shape.
 """
 
 import torch
-from torch.autograd import Variable
-x = Variable(torch.ones(2, 2), requires_grad=True)
-print(x)  # notice the "Variable containing" line
+
+###############################################################
+# Create a tensor and set requires_grad=True to track computation with it
+x = torch.ones(2, 2, requires_grad=True)
+print(x)
 
 ###############################################################
 #
@@ -73,6 +69,17 @@ out = z.mean()
 
 print(z, out)
 
+################################################################
+# ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
+# flag in-place. The input flag defaults to ``True`` if not given.
+a = torch.randn(2, 2)
+a = ((a * 3) / (a - 1))
+print(a.requires_grad)
+a.requires_grad_(True)
+print(a.requires_grad)
+b = (a * a).sum()
+print(b.grad_fn)
+
 ###############################################################
 # Gradients
 # ---------
@@ -89,7 +96,7 @@ print(x.grad)
 # part of the graph twice, you need to pass in ``retain_variables = True``
 # during the first pass.
 
-x = Variable(torch.ones(2, 2), requires_grad=True)
+x = torch.ones(2, 2, requires_grad=True)
 y = x + 2
 y.backward(torch.ones(2, 2), retain_graph=True)
 # the retain_variables flag will prevent the internal buffers from being freed
@@ -111,3 +118,13 @@ gradient = torch.randn(2, 2)
 y.backward(gradient)
 
 print(x.grad)
+
+###############################################################
+# You can also stops autograd from tracking history on Tensors
+# with requires_grad=True by wrapping the code block in
+# ``with torch.no_grad():``
+print(x.requires_grad)
+print((x ** 2).requires_grad)
+
+with torch.no_grad():
+	print((x ** 2).requires_grad)

@@ -13,7 +13,6 @@ In this implementation we implement our own custom autograd function to perform
 the ReLU function.
 """
 import torch
-from torch.autograd import Variable
 
 
 class MyReLU(torch.autograd.Function):
@@ -47,41 +46,43 @@ class MyReLU(torch.autograd.Function):
         return grad_input
 
 
-dtype = torch.FloatTensor
-# dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU
+dtype = torch.float
+device = torch.device("cpu")
+# dtype = torch.device("cuda:0") # Uncomment this to run on GPU
 
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.
 N, D_in, H, D_out = 64, 1000, 100, 10
 
-# Create random Tensors to hold input and outputs, and wrap them in Variables.
-x = Variable(torch.randn(N, D_in).type(dtype), requires_grad=False)
-y = Variable(torch.randn(N, D_out).type(dtype), requires_grad=False)
+# Create random Tensors to hold input and outputs.
+x = torch.randn(N, D_in, device=device, dtype=dtype)
+y = torch.randn(N, D_out, device=device, dtype=dtype)
 
-# Create random Tensors for weights, and wrap them in Variables.
-w1 = Variable(torch.randn(D_in, H).type(dtype), requires_grad=True)
-w2 = Variable(torch.randn(H, D_out).type(dtype), requires_grad=True)
+# Create random Tensors for weights.
+w1 = torch.randn(D_in, H, device=device, dtype=dtype, requires_grad=True)
+w2 = torch.randn(H, D_out, device=device, dtype=dtype, requires_grad=True)
 
 learning_rate = 1e-6
 for t in range(500):
     # To apply our Function, we use Function.apply method. We alias this as 'relu'.
     relu = MyReLU.apply
 
-    # Forward pass: compute predicted y using operations on Variables; we compute
+    # Forward pass: compute predicted y using operations; we compute
     # ReLU using our custom autograd operation.
     y_pred = relu(x.mm(w1)).mm(w2)
 
     # Compute and print loss
     loss = (y_pred - y).pow(2).sum()
-    print(t, loss.data[0])
+    print(t, loss.item())
 
     # Use autograd to compute the backward pass.
     loss.backward()
 
     # Update weights using gradient descent
-    w1.data -= learning_rate * w1.grad.data
-    w2.data -= learning_rate * w2.grad.data
+    with torch.no_grad():
+        w1 -= learning_rate * w1.grad
+        w2 -= learning_rate * w2.grad
 
-    # Manually zero the gradients after updating weights
-    w1.grad.data.zero_()
-    w2.grad.data.zero_()
+        # Manually zero the gradients after updating weights
+        w1.grad.zero_()
+        w2.grad.zero_()

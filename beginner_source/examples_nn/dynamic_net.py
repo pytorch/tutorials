@@ -10,7 +10,6 @@ weights multiple times to compute the innermost hidden layers.
 """
 import random
 import torch
-from torch.autograd import Variable
 
 
 class DynamicNet(torch.nn.Module):
@@ -49,9 +48,9 @@ class DynamicNet(torch.nn.Module):
 # H is hidden dimension; D_out is output dimension.
 N, D_in, H, D_out = 64, 1000, 100, 10
 
-# Create random Tensors to hold inputs and outputs, and wrap them in Variables
-x = Variable(torch.randn(N, D_in))
-y = Variable(torch.randn(N, D_out), requires_grad=False)
+# Create random Tensors to hold inputs and outputs
+x = torch.randn(N, D_in)
+y = torch.randn(N, D_out)
 
 # Construct our model by instantiating the class defined above
 model = DynamicNet(D_in, H, D_out)
@@ -66,7 +65,7 @@ for t in range(500):
 
     # Compute and print loss
     loss = criterion(y_pred, y)
-    print(t, loss.data[0])
+    print(t, loss.item())
 
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()

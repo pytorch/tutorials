@@ -14,6 +14,7 @@ over multiple GPUs in the batch dimension.
 DataParallel
 -------------
 """
+import torch
 import torch.nn as nn
 
 
@@ -77,13 +78,14 @@ def data_parallel(module, input, device_ids, output_device=None):
 # Let’s look at a small example of implementing a network where part of it
 # is on the CPU and part on the GPU
 
+device = torch.device("cuda:0")
 
 class DistributedModel(nn.Module):
 
     def __init__(self):
         super().__init__(
             embedding=nn.Embedding(1000, 10),
-            rnn=nn.Linear(10, 10).cuda(0),
+            rnn=nn.Linear(10, 10).to(device),
         )
 
     def forward(self, x):
@@ -91,7 +93,7 @@ class DistributedModel(nn.Module):
         x = self.embedding(x)
 
         # Transfer to GPU
-        x = x.cuda(0)
+        x = x.to(device)
 
         # Compute RNN on GPU
         x = self.rnn(x)

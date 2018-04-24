@@ -10,12 +10,13 @@ Create a tensor of size (5 x 7) with uninitialized memory:
 """
 
 import torch
-a = torch.FloatTensor(5, 7)
+a = torch.empty(5, 7, dtype=torch.float)
 
 ###############################################################
-# Initialize a tensor randomized with a normal distribution with mean=0, var=1:
+# Initialize a double tensor randomized with a normal distribution with mean=0,
+# var=1:
 
-a = torch.randn(5, 7)
+a = torch.randn(5, 7, dtype=torch.double)
 print(a)
 print(a.size())
 
@@ -72,14 +73,14 @@ print(x)
 ###############################################################
 #
 
-z = torch.Tensor(5, 2)
+z = torch.empty(5, 2)
 z[:, 0] = 10
 z[:, 1] = 100
 print(z)
 
 ###############################################################
 #
-x.index_add_(1, torch.LongTensor([4, 0]), z)
+x.index_add_(1, torch.tensor([4, 0], dtype=torch.long), z)
 print(x)
 
 ###############################################################
@@ -132,10 +133,11 @@ print(b)  # see how changing the np array changed the torch Tensor automatically
 
 # let us run this cell only if CUDA is available
 if torch.cuda.is_available():
+
     # creates a LongTensor and transfers it
     # to GPU as torch.cuda.LongTensor
-    a = torch.LongTensor(10).fill_(3).cuda()
+    a = torch.full((10,), 3, device=torch.device("cuda"))
     print(type(a))
-    b = a.cpu()
+    b = a.to(torch.device("cpu"))
     # transfers it to CPU, back to
     # being a torch.LongTensor
