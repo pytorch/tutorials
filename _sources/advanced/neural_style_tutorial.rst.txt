@@ -153,6 +153,11 @@ We will have recourse to the following packages:
 
 
 
+
+
+
+
+
 Cuda
 ~~~~
 
@@ -171,6 +176,11 @@ CPU (e.g. to use numpy), we can use the ``.cpu()`` method.
 
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+
+
+
 
 
 
@@ -219,6 +229,11 @@ a neural network:
 
 
 
+
+
+
+
+
 Imported PIL images has values between 0 and 255. Transformed into torch
 tensors, their values are between 0 and 1. This is an important detail:
 neural networks from torch library are trained with 0-1 tensor image. If
@@ -258,6 +273,24 @@ reconvert them into PIL images:
 
     plt.figure()
     imshow(content_img, title='Content Image')
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /advanced/images/sphx_glr_neural_style_tutorial_001.png
+            :scale: 47
+
+    *
+
+      .. image:: /advanced/images/sphx_glr_neural_style_tutorial_002.png
+            :scale: 47
+
 
 
 
@@ -311,6 +344,11 @@ content losses.
 
 
 
+
+
+
+
+
 .. Note::
    **Important detail**: this module, although it is named ``ContentLoss``,
    is not a true PyTorch Loss function. If you want to define your content
@@ -353,6 +391,11 @@ becomes easy to implement our module:
 
 
 
+
+
+
+
+
 The longer is the feature maps dimension :math:`N`, the bigger are the
 values of the Gram matrix. Therefore, if we don't normalize by :math:`N`,
 the loss computed at the first layers (before pooling layers) will have
@@ -382,6 +425,11 @@ and input
 
 
 
+
+
+
+
+
 Load the neural network
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -403,6 +451,11 @@ network in evaluation mode.
 
 
     cnn = models.vgg19(pretrained=True).features.to(device).eval()
+
+
+
+
+
 
 
 Additionally, VGG networks are trained on images with each channel normalized
@@ -432,6 +485,11 @@ to normalize the image before sending into the network.
         def forward(self, img):
             # normalize img
             return (img - self.mean) / self.std
+
+
+
+
+
 
 
 
@@ -517,6 +575,11 @@ right order:
 
 
 
+
+
+
+
+
 .. Note::
    In the paper they recommend to change max pooling layers into
    average pooling. With AlexNet, that is a small network compared to VGG19
@@ -554,6 +617,14 @@ noise, or it can also be a copy of the content-image.
 
 
 
+
+
+.. image:: /advanced/images/sphx_glr_neural_style_tutorial_003.png
+    :align: center
+
+
+
+
 Gradient descent
 ~~~~~~~~~~~~~~~~
 
@@ -576,6 +647,11 @@ image requires gradient.
         # this line to show that input is a parameter that requires a gradient
         optimizer = optim.LBFGS([input_img.requires_grad_()])
         return optimizer
+
+
+
+
+
 
 
 
@@ -646,6 +722,11 @@ the 0-1 interval.
         return input_img
 
 
+
+
+
+
+
 Finally, run the algorithm
 
 
@@ -663,7 +744,38 @@ Finally, run the algorithm
     plt.ioff()
     plt.show()
 
-**Total running time of the script:** ( 0 minutes  0.000 seconds)
+
+
+.. image:: /advanced/images/sphx_glr_neural_style_tutorial_004.png
+    :align: center
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out::
+
+    Building the style transfer model..
+    Optimizing..
+    run [50]:
+    Style Loss : 0.000004 Content Loss: 4.203481
+
+    run [100]:
+    Style Loss : 0.000001 Content Loss: 3.048572
+
+    run [150]:
+    Style Loss : 0.000001 Content Loss: 2.661886
+
+    run [200]:
+    Style Loss : 0.000000 Content Loss: 2.504978
+
+    run [250]:
+    Style Loss : 0.000000 Content Loss: 2.417836
+
+    run [300]:
+    Style Loss : 0.000000 Content Loss: 2.361237
+
+
+**Total running time of the script:** ( 0 minutes  27.497 seconds)
 
 
 
