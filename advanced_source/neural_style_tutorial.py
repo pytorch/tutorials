@@ -561,7 +561,11 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             for cl in content_losses:
                 content_score += cl.loss
 
-            (style_score * style_weight + content_score * content_weight).backward()
+            style_score *= style_weight
+            content_score *= content_weight
+
+            loss = style_score + content_score
+            loss.backward()
 
             run[0] += 1
             if run[0] % 50 == 0:
