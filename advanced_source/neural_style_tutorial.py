@@ -154,7 +154,7 @@ import copy
 # VGG). For this, we have ``torch.cuda.is_available()`` that returns
 # ``True`` if you computer has an available GPU. Then, we can set the
 # ``torch.device`` that will be used in this script. Then, we will use
-# the method ``.to(device)`` that a tensor or a module to the desired
+# the method ``.to(device)`` that moves a tensor or a module to the desired
 # device. When we want to move back this tensor or module to the
 # CPU (e.g. to use numpy), we can use the ``.cpu()`` method.
 
