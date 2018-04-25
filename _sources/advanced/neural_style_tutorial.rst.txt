@@ -166,7 +166,7 @@ algorithm on it, especially if you want to try larger networks (like
 VGG). For this, we have ``torch.cuda.is_available()`` that returns
 ``True`` if you computer has an available GPU. Then, we can set the
 ``torch.device`` that will be used in this script. Then, we will use
-the method ``.to(device)`` that a tensor or a module to the desired
+the method ``.to(device)`` that moves a tensor or a module to the desired
 device. When we want to move back this tensor or module to the
 CPU (e.g. to use numpy), we can use the ``.cpu()`` method.
 
@@ -703,7 +703,11 @@ the 0-1 interval.
                 for cl in content_losses:
                     content_score += cl.loss
 
-                (style_score * style_weight + content_score * content_weight).backward()
+                style_score *= style_weight
+                content_score *= content_weight
+
+                loss = style_score + content_score
+                loss.backward()
 
                 run[0] += 1
                 if run[0] % 50 == 0:
@@ -757,25 +761,25 @@ Finally, run the algorithm
     Building the style transfer model..
     Optimizing..
     run [50]:
-    Style Loss : 0.000004 Content Loss: 4.203481
+    Style Loss : 4.207877 Content Loss: 4.259570
 
     run [100]:
-    Style Loss : 0.000001 Content Loss: 3.048572
+    Style Loss : 1.124025 Content Loss: 3.015110
 
     run [150]:
-    Style Loss : 0.000001 Content Loss: 2.661886
+    Style Loss : 0.710134 Content Loss: 2.654749
 
     run [200]:
-    Style Loss : 0.000000 Content Loss: 2.504978
+    Style Loss : 0.477972 Content Loss: 2.499090
 
     run [250]:
-    Style Loss : 0.000000 Content Loss: 2.417836
+    Style Loss : 0.345483 Content Loss: 2.413306
 
     run [300]:
-    Style Loss : 0.000000 Content Loss: 2.361237
+    Style Loss : 0.263172 Content Loss: 2.356956
 
 
-**Total running time of the script:** ( 0 minutes  27.497 seconds)
+**Total running time of the script:** ( 1 minutes  1.700 seconds)
 
 
 

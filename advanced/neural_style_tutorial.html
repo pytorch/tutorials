@@ -631,7 +631,7 @@ algorithm on it, especially if you want to try larger networks (like
 VGG). For this, we have <code class="docutils literal notranslate"><span class="pre">torch.cuda.is_available()</span></code> that returns
 <code class="docutils literal notranslate"><span class="pre">True</span></code> if you computer has an available GPU. Then, we can set the
 <code class="docutils literal notranslate"><span class="pre">torch.device</span></code> that will be used in this script. Then, we will use
-the method <code class="docutils literal notranslate"><span class="pre">.to(device)</span></code> that a tensor or a module to the desired
+the method <code class="docutils literal notranslate"><span class="pre">.to(device)</span></code> that moves a tensor or a module to the desired
 device. When we want to move back this tensor or module to the
 CPU (e.g. to use numpy), we can use the <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> method.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -1006,7 +1006,11 @@ the 0-1 interval.</p>
             <span class="k">for</span> <span class="n">cl</span> <span class="ow">in</span> <span class="n">content_losses</span><span class="p">:</span>
                 <span class="n">content_score</span> <span class="o">+=</span> <span class="n">cl</span><span class="o">.</span><span class="n">loss</span>
 
-            <span class="p">(</span><span class="n">style_score</span> <span class="o">*</span> <span class="n">style_weight</span> <span class="o">+</span> <span class="n">content_score</span> <span class="o">*</span> <span class="n">content_weight</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">style_score</span> <span class="o">*=</span> <span class="n">style_weight</span>
+            <span class="n">content_score</span> <span class="o">*=</span> <span class="n">content_weight</span>
+
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">style_score</span> <span class="o">+</span> <span class="n">content_score</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 
             <span class="n">run</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">run</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1042,25 +1046,25 @@ the 0-1 interval.</p>
 <div class="sphx-glr-script-out highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Building</span> <span class="n">the</span> <span class="n">style</span> <span class="n">transfer</span> <span class="n">model</span><span class="o">..</span>
 <span class="n">Optimizing</span><span class="o">..</span>
 <span class="n">run</span> <span class="p">[</span><span class="mi">50</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000004</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">4.203481</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">4.207877</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">4.259570</span>
 
 <span class="n">run</span> <span class="p">[</span><span class="mi">100</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000001</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">3.048572</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">1.124025</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">3.015110</span>
 
 <span class="n">run</span> <span class="p">[</span><span class="mi">150</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000001</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.661886</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.710134</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.654749</span>
 
 <span class="n">run</span> <span class="p">[</span><span class="mi">200</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000000</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.504978</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.477972</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.499090</span>
 
 <span class="n">run</span> <span class="p">[</span><span class="mi">250</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000000</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.417836</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.345483</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.413306</span>
 
 <span class="n">run</span> <span class="p">[</span><span class="mi">300</span><span class="p">]:</span>
-<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.000000</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.361237</span>
+<span class="n">Style</span> <span class="n">Loss</span> <span class="p">:</span> <span class="mf">0.263172</span> <span class="n">Content</span> <span class="n">Loss</span><span class="p">:</span> <span class="mf">2.356956</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  27.497 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 1 minutes  1.700 seconds)</p>
 <div class="sphx-glr-footer docutils container">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" href="../_downloads/neural_style_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></div>
