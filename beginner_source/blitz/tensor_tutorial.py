@@ -21,7 +21,7 @@ Tensors can also be used on a GPU to accelerate computing.
 """
 
 from __future__ import print_function
-import torchI observed the same thing. 
+import torch
 
 ###############################################################
 # Construct a 5x3 matrix, uninitialized:
