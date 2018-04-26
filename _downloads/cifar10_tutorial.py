@@ -278,6 +278,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 print(device)
 
+########################################################################
 # The rest of this section assumes that `device` is a CUDA device.
 #
 # Then these methods will recursively go over all modules and convert their
