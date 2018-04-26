@@ -21,13 +21,13 @@ Tensors can also be used on a GPU to accelerate computing.
 """
 
 from __future__ import print_function
-import torch
+import torchI observed the same thing. 
 
 ###############################################################
 # Construct a 5x3 matrix, uninitialized:
 
 x = torch.empty(5, 3)
-print(x)
+print(x)    # can cause a RuntimeError, depending on initial values.
 
 ###############################################################
 # Construct a randomly initialized matrix:
