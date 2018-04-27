@@ -61,8 +61,8 @@ look something like this::
           # 3 * state_size for input gate, output gate and candidate cell gate.
           # input_features + state_size because we will multiply with [input, h].
           self.weights = torch.nn.Parameter(
-              torch.Tensor(3 * state_size, input_features + state_size))
-          self.bias = torch.nn.Parameter(torch.Tensor(3 * state_size))
+              torch.empty(3 * state_size, input_features + state_size))
+          self.bias = torch.nn.Parameter(torch.empty(3 * state_size))
           self.reset_parameters()
 
       def reset_parameters(self):
@@ -389,10 +389,9 @@ should look something like this::
 
 A small note on compilers: Due to ABI versioning issues, the compiler you use to
 build your C++ extension must be *ABI-compatible* with the compiler PyTorch was
-built with. In practice, this means that you must use GCC version 4.9 and above.
+built with. In practice, this means that you must use GCC version 4.9 and above on Linux.
 For Ubuntu 16.04 and other more-recent Linux distributions, this should be the
-default compiler already. On MacOS, you will have to download GCC (e.g. `brew
-install gcc` will give you GCC 7 at the time of this writing). In the worst
+default compiler already. On MacOS, you must use clang (which does not have any ABI versioning issues). In the worst
 case, you can build PyTorch from source with your compiler and then build the
 extension with that same compiler.
 
@@ -449,8 +448,8 @@ class citizens of PyTorch::
           self.input_features = input_features
           self.state_size = state_size
           self.weights = torch.nn.Parameter(
-              torch.Tensor(3 * state_size, input_features + state_size))
-          self.bias = torch.nn.Parameter(torch.Tensor(3 * state_size))
+              torch.empty(3 * state_size, input_features + state_size))
+          self.bias = torch.nn.Parameter(torch.empty(3 * state_size))
           self.reset_parameters()
 
       def reset_parameters(self):
@@ -543,10 +542,12 @@ memory with ``.cuda()`` from Python::
   for _ in range(100000):
       start = time.time()
       new_h, new_C = rnn(X, (h, C))
+      torch.cuda.synchronize()
       forward += time.time() - start
 
       start = time.time()
       (new_h.sum() + new_C.sum()).backward()
+      torch.cuda.synchronize()
       backward += time.time() - start
 
   print('Forward: {:.3f} us | Backward {:.3f} us'.format(forward * 1e6/1e5, backward * 1e6/1e5))
