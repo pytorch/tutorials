@@ -519,23 +519,25 @@ can *also* run on GPU, and individual operations will correspondingly dispatch
 to GPU-optimized implementations. For certain operations like matrix multiply
 (like ``mm`` or ``admm``), this is a big win. Let's take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
-our implementation are required, we simply need to move our tensors to GPU
-memory with ``.cuda()`` from Python::
+our implementation are required, we simply need to put our tensors in GPU
+memory from Python, with either adding ``device=cuda_device`` argument at
+creation time or using ``.to(cuda_device)`` after creation::
 
   import torch
 
   assert torch.cuda.is_available()
+  cuda_device = torch.device("cuda")  # device object representing GPU
 
   batch_size = 16
   input_features = 32
   state_size = 128
 
-  # Note the .cuda() calls here
-  X = torch.randn(batch_size, input_features).cuda()
-  h = torch.randn(batch_size, state_size).cuda()
-  C = torch.randn(batch_size, state_size).cuda()
+  # Note the device=cuda_device arguments here
+  X = torch.randn(batch_size, input_features, device=cuda_device)
+  h = torch.randn(batch_size, state_size, device=cuda_device)
+  C = torch.randn(batch_size, state_size, device=cuda_device)
 
-  rnn = LLTM(input_features, state_size).cuda()
+  rnn = LLTM(input_features, state_size).to(cuda_device)
 
   forward = 0
   backward = 0
