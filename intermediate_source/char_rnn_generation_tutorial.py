@@ -77,6 +77,7 @@ and end up with a dictionary ``{language: [names ...]}``.
 from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
+import os
 import unicodedata
 import string
 
@@ -102,7 +103,7 @@ def readLines(filename):
 category_lines = {}
 all_categories = []
 for filename in findFiles('data/names/*.txt'):
-    category = filename.split('/')[-1].split('.')[0]
+    category = os.path.splitext(os.path.basename(filename))[0]
     all_categories.append(category)
     lines = readLines(filename)
     category_lines[category] = lines

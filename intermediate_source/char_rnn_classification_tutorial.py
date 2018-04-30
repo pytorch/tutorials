@@ -67,6 +67,7 @@ We'll end up with a dictionary of lists of names per language,
 from __future__ import unicode_literals, print_function, division
 from io import open
 import glob
+import os
 
 def findFiles(path): return glob.glob(path)
 
@@ -98,7 +99,7 @@ def readLines(filename):
     return [unicodeToAscii(line) for line in lines]
 
 for filename in findFiles('data/names/*.txt'):
-    category = filename.split('/')[-1].split('.')[0]
+    category = os.path.splitext(os.path.basename(filename))[0]
     all_categories.append(category)
     lines = readLines(filename)
     category_lines[category] = lines
