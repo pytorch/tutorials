@@ -86,6 +86,9 @@ Intermediate Tutorials
 
 .. galleryitem:: intermediate/spatial_transformer_tutorial.py
 
+.. galleryitem:: intermediate/imbalanced_data_tutorial.py
+   :figure: _static/img/imbalanced_class_dist.png
+
 
 .. raw:: html
 
@@ -103,6 +106,7 @@ Intermediate Tutorials
    intermediate/reinforcement_q_learning
    intermediate/dist_tuto
    intermediate/spatial_transformer_tutorial
+   intermediate/imbalanced_data_tutorial
 
 
 Advanced Tutorials
