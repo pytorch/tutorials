@@ -18,9 +18,9 @@ Then, you can copy all your tensors to the GPU:
 
     mytensor = my_tensor.to(device)
 
-Please note that just calling ``mytensor.to(device)`` returns a new copy of
-``mytensor`` on GPU instead of rewriting ``mytensor``. You need to assign it to
-a new variable and use that tensor on the GPU.
+Please note that just calling ``my_tensor.to(device)`` returns a new copy of
+``my_tensor`` on GPU instead of rewriting ``my_tensor``. You need to assign it to
+a new tensor and use that tensor on the GPU.
 
 It's natural to execute your forward, backward propagations on multiple GPUs.
 However, Pytorch will only use one GPU by default. You can easily run your
