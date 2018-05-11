@@ -176,7 +176,7 @@ print(loss)
 #           -> loss
 #
 # So, when we call ``loss.backward()``, the whole graph is differentiated
-# w.r.t. the loss, and all Tensors in the graph that has ``requres_grad=True``
+# w.r.t. the loss, and all Tensors in the graph that has ``requires_grad=True``
 # will have their ``.grad`` Tensor accumulated with the gradient.
 #
 # For illustration, let us follow a few steps backward:
