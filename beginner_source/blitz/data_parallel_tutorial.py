@@ -148,8 +148,8 @@ for data in rand_loader:
 # Results
 # -------
 #
-# When we batch 30 inputs and 30 outputs, the model gets 30 and outputs 30 as
-# expected. But if you have GPUs, then you can get results like this.
+# If you have no GPU or one GPU, when we batch 30 inputs and 30 outputs, the model gets 30 and outputs 30 as
+# expected. But if you have multiple GPUs, then you can get results like this.
 #
 # 2 GPUs
 # ~~~~~~
