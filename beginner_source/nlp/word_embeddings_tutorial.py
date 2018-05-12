@@ -239,11 +239,11 @@ model = NGramLanguageModeler(len(vocab), EMBEDDING_DIM, CONTEXT_SIZE)
 optimizer = optim.SGD(model.parameters(), lr=0.001)
 
 for epoch in range(10):
-    total_loss = torch.Tensor([0])
+    total_loss = 0
     for context, target in trigrams:
 
         # Step 1. Prepare the inputs to be passed to the model (i.e, turn the words
-        # into integer indices and wrap them in variables)
+        # into integer indices and wrap them in tensors)
         context_idxs = torch.tensor([word_to_ix[w] for w in context], dtype=torch.long)
 
         # Step 2. Recall that torch *accumulates* gradients. Before passing in a
@@ -256,7 +256,7 @@ for epoch in range(10):
         log_probs = model(context_idxs)
 
         # Step 4. Compute your loss function. (Again, Torch wants the target
-        # word wrapped in a variable)
+        # word wrapped in a tensor)
         loss = loss_function(log_probs, torch.tensor([word_to_ix[target]], dtype=torch.long))
 
         # Step 5. Do the backward pass and update the gradient
