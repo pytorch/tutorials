@@ -32,7 +32,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, DataLoader
 
 from torchvision import datasets, transforms
 
@@ -87,11 +87,21 @@ nb_classes = len(class_names)
 ###############################################################################
 # Let's have a look at the class distribution in the datasets.
 
+
+def get_labels_and_class_counts(labels_list):
+    '''
+    Calculates the counts of all unique classes.
+    '''
+    labels = np.array(labels_list)
+    _, class_counts = np.unique(labels, return_counts=True)
+    return labels, class_counts
+
+
 # Get all training targets and count the number of class instances
-train_targets = np.array(train_dataset.train_labels)
-test_targets = np.array(test_dataset.test_labels)
-_, train_class_counts = np.unique(train_targets, return_counts=True)
-_, test_class_counts = np.unique(test_targets, return_counts=True)
+train_targets, train_class_counts = get_labels_and_class_counts(
+    train_dataset.train_labels)
+test_targets, test_class_counts = get_labels_and_class_counts(
+    test_dataset.test_labels)
 
 f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
 ax1.bar(class_names, train_class_counts)
@@ -196,10 +206,10 @@ def evaluate():
     # Print statistics
     print('Accuracy of the model {:.3f}%'.format(accuracy))
     for i in range(nb_classes):
-        print('Accuracy for {}: {:.3f}%'.format(
-            class_names[i], 100 * class_accuracies[i]))
-    print('Mean per class accuracy: {:.3f}%'.format(
-        100 * class_accuracies.mean()))
+        print('Accuracy for {}: {:.3f}%'.format(class_names[i], 100 *
+                                                class_accuracies[i]))
+    print('Mean per class accuracy: {:.3f}%'.format(100 *
+                                                    class_accuracies.mean()))
 
     # Plot confusion matrix
     f = plt.figure()
@@ -232,53 +242,65 @@ evaluate()
 # first 5 classes by 90% leaving only the first 10% in the dataset.
 # The last 5 classes will keep their samples.
 
+
+class ImbalancedCIFAR10(Dataset):
+    def __init__(self, imbal_class_prop, root, train, download, transform):
+        self.dataset = datasets.CIFAR10(
+            root=root, train=train, download=download, transform=transform)
+        self.train = train
+        self.imbal_class_prop = imbal_class_prop
+        self.idxs = self.resample()
+
+    def get_labels_and_class_counts(self):
+        return self.labels, self.imbal_class_counts
+
+    def resample(self):
+        '''
+        Resample the indices to create an artificially imbalanced dataset.
+        '''
+        if self.train:
+            targets, class_counts = get_labels_and_class_counts(
+                self.dataset.train_labels)
+        else:
+            targets, class_counts = get_labels_and_class_counts(
+                self.dataset.test_labels)
+        # Get class indices for resampling
+        class_indices = [np.where(targets == i)[0] for i in range(nb_classes)]
+        # Reduce class count by proportion
+        self.imbal_class_counts = [
+            int(count * prop)
+            for count, prop in zip(class_counts, self.imbal_class_prop)
+        ]
+        # Get class indices for reduced class count
+        idxs = []
+        for c in range(nb_classes):
+            imbal_class_count = self.imbal_class_counts[c]
+            idxs.append(class_indices[c][:imbal_class_count])
+        idxs = np.hstack(idxs)
+        self.labels = targets[idxs]
+        return idxs
+
+    def __getitem__(self, index):
+        img, target = self.dataset[self.idxs[index]]
+        return img, target
+
+    def __len__(self):
+        return len(self.idxs)
+
+
 # Create class proportions
-imbal_class_prop = imbal_class_prop = np.hstack(([0.1] * 5, [1.0] * 5))
+imbal_class_prop = np.hstack(([0.1] * 5, [1.0] * 5))
+train_dataset = ImbalancedCIFAR10(
+    imbal_class_prop, root='.', train=True, download=True, transform=transform)
+test_dataset = ImbalancedCIFAR10(
+    imbal_class_prop,
+    root='.',
+    train=False,
+    download=True,
+    transform=transform)
 
-# Get class indices for resampling
-train_class_indices = [
-    np.where(train_targets == i)[0] for i in range(nb_classes)
-]
-test_class_indices = [
-    np.where(test_targets == i)[0] for i in range(nb_classes)
-]
-
-# Reduce class count py proportion
-train_imbal_class_indices = []
-test_imbal_class_indices = []
-train_class_counts = [
-    int(count * prop)
-    for count, prop in zip(train_class_counts, imbal_class_prop)
-]
-test_class_counts = [
-    int(count * prop)
-    for count, prop in zip(test_class_counts, imbal_class_prop)
-]
-
-# Get class indices for reduced class count
-for i in range(nb_classes):
-    train_class_count = train_class_counts[i]
-    train_imbal_class_indices.append(
-        train_class_indices[i][:train_class_count])
-
-    test_class_count = test_class_counts[i]
-    test_imbal_class_indices.append(test_class_indices[i][:test_class_count])
-
-    print('Class {} reduced to {} training and {} test samples'.format(
-        class_names[i], train_class_count, test_class_count))
-
-train_imbal_class_indices = np.hstack(train_imbal_class_indices)
-test_imbal_class_indices = np.hstack(test_imbal_class_indices)
-
-# Resample datasets
-train_dataset.train_labels = train_targets[train_imbal_class_indices]
-train_dataset.train_data = train_dataset.train_data[train_imbal_class_indices]
-
-test_dataset.test_labels = test_targets[test_imbal_class_indices]
-test_dataset.test_data = test_dataset.test_data[test_imbal_class_indices]
-
-assert len(train_dataset.train_labels) == len(train_dataset.train_data)
-assert len(test_dataset.test_labels) == len(test_dataset.test_data)
+_, train_class_counts = train_dataset.get_labels_and_class_counts()
+_, test_class_counts = test_dataset.get_labels_and_class_counts()
 
 # Visualize imbalanced class distribution
 f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
@@ -313,8 +335,8 @@ test_loader = DataLoader(
 train_iter = iter(train_loader)
 for _ in range(5):
     _, target = train_iter.next()
-    print('Classes {}, counts: {}'.format(
-        *np.unique(target.numpy(), return_counts=True)))
+    print('Classes {}, counts: {}'.format(*np.unique(
+        target.numpy(), return_counts=True)))
 
 ###############################################################################
 # As we can see some (minority) classes are completely missing in some batches.
@@ -353,10 +375,9 @@ evaluate()
 #
 # First, we have to get the current class counts for the imbalanced dataset.
 # Since we usually don't know the targets of the test data, let's just use
-# the train targets.
+# the targets from the training dataset.
 
-train_targets = train_dataset.train_labels
-_, train_class_counts = np.unique(train_targets, return_counts=True)
+train_targets, train_class_counts = train_dataset.get_labels_and_class_counts()
 
 ###############################################################################
 # We will calculate the ``weights`` as the reciprocal of the class counts,
@@ -368,8 +389,8 @@ _, train_class_counts = np.unique(train_targets, return_counts=True)
 # ``[0, ..., len(weights)-1]`` we have to make sure to set the weight for each
 # training sample in our dataset.
 
-weights = 1. / train_class_counts
-samples_weights = torch.from_numpy(weights[train_targets])
+weights = 1. / torch.tensor(train_class_counts, dtype=torch.float)
+samples_weights = weights[train_targets]
 for name, count, weight in zip(class_names, train_class_counts, weights):
     print('Class {}: {} samples, {:.5} weight'.format(name, count, weight))
 
@@ -400,8 +421,8 @@ train_loader = DataLoader(
 train_iter = iter(train_loader)
 for _ in range(5):
     _, target = train_iter.next()
-    print('Classes {}, counts: {}'.format(
-        *np.unique(target.numpy(), return_counts=True)))
+    print('Classes {}, counts: {}'.format(*np.unique(
+        target.numpy(), return_counts=True)))
 
 ###############################################################################
 # Now we can see that the classes seem to be more balanced than before.
@@ -484,3 +505,8 @@ evaluate()
 # weigthed criterion and see, if this method performs any better than the
 # others on its own. Also, you should play around with the ``weights`` for
 # both approaches.
+#
+# A special thanks to `Josiane Rodrigues 
+# <https://discuss.pytorch.org/u/josiane_rodrigues>`_ for the idea to create
+# this tutorial!
+
