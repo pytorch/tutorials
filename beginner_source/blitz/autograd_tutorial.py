@@ -127,8 +127,8 @@ y.backward(gradients)
 print(x.grad)
 
 ###############################################################
-# You can also stops autograd from tracking history on Tensors
-# with requires_grad=True by wrapping the code block in
+# You can also stop autograd from tracking history on Tensors
+# with ``.requires_grad``=True by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
