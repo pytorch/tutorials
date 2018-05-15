@@ -15,7 +15,7 @@ Neural what?
 ~~~~~~~~~~~~
 
 The Neural-Style, or Neural-Transfer, is an algorithm that takes as
-input a content-image (e.g. a tortle), a style-image (e.g. artistic
+input a content-image (e.g. a turtle), a style-image (e.g. artistic
 waves) and return the content of the content-image as if it was
 'painted' using the artistic style of the style-image:
 
@@ -202,7 +202,7 @@ assert style_img.size() == content_img.size(), \
 
 
 ######################################################################
-# Imported PIL images has values between 0 and 255. Transformed into torch
+# Imported PIL images have values between 0 and 255. Transformed into torch
 # tensors, their values are between 0 and 1. This is an important detail:
 # neural networks from torch library are trained with 0-1 tensor image. If
 # you try to feed the networks with 0-255 tensor images the activated
@@ -244,7 +244,7 @@ imshow(content_img, title='Content Image')
 #
 # The content loss is a function that takes as input the feature maps
 # :math:`F_{XL}` at a layer :math:`L` in a network fed by :math:`X` and
-# return the weigthed content distance :math:`w_{CL}.D_C^L(X,C)` between
+# returns the weigthed content distance :math:`w_{CL}.D_C^L(X,C)` between
 # this image and the content image. Hence, the weight :math:`w_{CL}` and
 # the target content :math:`F_{CL}` are parameters of the function. We
 # implement this function as a torch module with a constructor that takes
@@ -261,7 +261,7 @@ imshow(content_img, title='Content Image')
 # of the neural network. The computed loss is saved as a parameter of the
 # module.
 #
-# Finally, we define a fake ``backward`` method, that just call the
+# Finally, we define a fake ``backward`` method that just calls the
 # backward method of ``nn.MSELoss`` in order to reconstruct the gradient.
 # This method returns the computed loss: this will be useful when running
 # the gradient descent in order to display the evolution of style and
