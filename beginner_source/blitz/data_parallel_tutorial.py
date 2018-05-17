@@ -79,7 +79,7 @@ class RandomDataset(Dataset):
     def __len__(self):
         return self.len
 
-rand_loader = DataLoader(dataset=RandomDataset(input_size, 100),
+rand_loader = DataLoader(dataset=RandomDataset(input_size, data_size),
                          batch_size=batch_size, shuffle=True)
 
 
