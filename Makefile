@@ -28,6 +28,10 @@ download:
 	# nlp tutorial data
 	wget -N https://download.pytorch.org/tutorial/data.zip
 	unzip -o data.zip -d intermediate_source
+
+	# customizing data loader tutorial data
+	wget -N https://download.pytorch.org/tutorial/ANI-1-simplified.zip
+	unzip -o data.zip -d intermediate_source
 	
 	# data loader tutorial
 	wget -N https://download.pytorch.org/tutorial/faces.zip

@@ -24,3 +24,7 @@ Intermediate tutorials
 6. spatial_transformer_tutorial
 	Spatial Transformer Networks Tutorial
 	http://pytorch.org/tutorials/intermediate/spatial_transformer_tutorial.html
+
+7. customize_data_loading
+	Customizing Data Loading Tutorial
+	http://pytorch.org/tutorials/intermediate/customize_data_loading.html

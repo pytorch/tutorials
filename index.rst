@@ -103,6 +103,7 @@ Intermediate Tutorials
    intermediate/reinforcement_q_learning
    intermediate/dist_tuto
    intermediate/spatial_transformer_tutorial
+   intermediate/customize_data_loading
 
 
 Advanced Tutorials
