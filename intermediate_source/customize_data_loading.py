@@ -41,7 +41,7 @@ from math import ceil
 # Here in this dataset, each `.xyz.npy` file stores a numpy ndarray of shape
 # (N, atoms, 3). This ndarray stores N different sets of atom coordinates 
 # (each set of atom coordinates is called a conformation) of one molecule.
-# The values of N can be different from molecules to molecule. The energies
+# The values of N can be different from molecule to molecule. The energies
 # of these conformations are stored in a ndarray of shape (N,) in the `.energy.npy`
 # file with the same basename.
 #
@@ -64,9 +64,9 @@ from math import ceil
 # For the simplified ANI-1 dataset, since each `.npy` file already contains
 # data of different conformations of the same molecule, all we need to do is
 # to load the ndarrays for each molecule, convert these ndarrays to tensors,
-# wrap these tensors with `TensorDataset` in order to be able to iterate on
-# different conformations, and finally concat these datasets of different
-# molecules using `ConcatDataset`:
+# wrap these tensors with `TensorDataset <https://pytorch.org/docs/stable/data.html#torch.utils.data.TensorDataset>`_
+# in order to be able to iterate on different conformations, and finally concat
+# these datasets of different molecules using `ConcatDataset <https://pytorch.org/docs/stable/data.html#torch.utils.data.ConcatDataset>`_:
 #
 
 def load_dataset(root_dir):
@@ -100,17 +100,18 @@ for molecule_id, xyz, energy in islice(dataset, 5):
 # and batch samplers is, a batch sampler generates a list of indices, while
 # a sampler should generate a single index.
 #
-# To implement a sampler, you need to extend `torch.utils.data.sampler.Sampler`
+# To implement a sampler, you need to extend `torch.utils.data.sampler.Sampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.Sampler>`_
 # and implement the `__iter__` and `__len__` methods. To implement a batch
 # sampler, you also need to implement these two methods, but you do not
 # need to extend any base class.
 # 
-# Pytorch has many builtin samplers supporting sequential sampling, random
-# sampling, subset sampling, etc. Pytorch also has a builtin batch sampler
-# that wraps a sampler and sample it for batch_size times to get a minibatch.
-# For most use cases, these builtin classes should be enough for use. But
-# for the purpose of this tutorial, we have to implement our own batch
-# sampler for our advanced requirement.
+# Pytorch has many builtin samplers supporting `sequential sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.SequentialSampler>`_,
+# `random sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.RandomSampler>`_,
+# `subset sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.SubsetRandomSampler>`_,
+# etc. Pytorch also has a builtin batch sampler  that wraps a sampler and
+# sample it for batch_size times to get a minibatch. For most use cases,
+# these builtin classes should be enough for use. But for the purpose of this
+# tutorial, we have to implement our own batch sampler for our advanced requirement.
 #
 # The the first minibatch of the below batch sampler is constructed by taking
 # the first 64 conformations of molecule 0-3, and the second minibatch takes
