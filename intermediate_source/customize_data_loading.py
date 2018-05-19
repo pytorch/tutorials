@@ -98,20 +98,17 @@ for molecule_id, xyz, energy in islice(dataset, 5):
 # batch samplers cooperate with dataset by generating indices of data
 # that should be retrieved from dataset. The difference between samplers
 # and batch samplers is, a batch sampler generates a list of indices, while
-# a sampler should generate a single index.
-#
-# To implement a sampler, you need to extend `torch.utils.data.sampler.Sampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.Sampler>`_
-# and implement the `__iter__` and `__len__` methods. To implement a batch
-# sampler, you also need to implement these two methods, but you do not
-# need to extend any base class.
+# a sampler should generate a single index. The are both subclasses of
+# `torch.utils.data.sampler.Sampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.Sampler>`_.
 # 
 # Pytorch has many builtin samplers supporting `sequential sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.SequentialSampler>`_,
 # `random sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.RandomSampler>`_,
 # `subset sampling <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.SubsetRandomSampler>`_,
-# etc. Pytorch also has a builtin batch sampler  that wraps a sampler and
-# sample it for batch_size times to get a minibatch. For most use cases,
-# these builtin classes should be enough for use. But for the purpose of this
-# tutorial, we have to implement our own batch sampler for our advanced requirement.
+# etc. Pytorch also has a `builtin batch sampler <https://pytorch.org/docs/stable/data.html#torch.utils.data.sampler.BatchSampler>`_ 
+# that wraps a sampler and sample it for batch_size times to get a minibatch.
+# For most use cases, these builtin classes should be enough for use. But for
+# the purpose of this tutorial, we have to implement our own batch sampler for
+# our advanced requirement.
 #
 # The the first minibatch of the below batch sampler is constructed by taking
 # the first 64 conformations of molecule 0-3, and the second minibatch takes
