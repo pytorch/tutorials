@@ -163,7 +163,10 @@ class ANIBatchSampler(object):
             yield batch
 
     def __len__(self):
-        return len(self.concat_source)
+        sizes = [len(x) for x in self.concat_source.datasets]
+        chunks = [ceil(x/64) for x in sizes]
+        chunks = sum(chunks)
+        return ceil(chunks / 4)
 
 ######################################################################
 # Now let's take a look at the a few elements of the batch sampler:
