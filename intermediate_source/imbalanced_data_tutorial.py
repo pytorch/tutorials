@@ -53,6 +53,7 @@ np.random.seed(SEED)
 if torch.cuda.is_available():
     torch.cuda.manual_seed(SEED)
 batch_size = 64
+epochs = 25
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -97,21 +98,29 @@ def get_labels_and_class_counts(labels_list):
     return labels, class_counts
 
 
+def plot_class_distributions(class_names, train_class_counts,
+                             test_class_counts):
+    '''
+    Plots the class distributions for the training and test set asa barplot.
+    '''
+    f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
+    ax1.bar(class_names, train_class_counts)
+    ax1.set_title('Training dataset distribution')
+    ax1.set_xlabel('Classes')
+    ax1.set_ylabel('Class counts')
+    ax2.bar(class_names, test_class_counts)
+    ax2.set_title('Test dataset distribution')
+    ax2.set_xlabel('Classes')
+    ax2.set_ylabel('Class counts')
+
+
 # Get all training targets and count the number of class instances
 train_targets, train_class_counts = get_labels_and_class_counts(
     train_dataset.train_labels)
 test_targets, test_class_counts = get_labels_and_class_counts(
     test_dataset.test_labels)
 
-f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
-ax1.bar(class_names, train_class_counts)
-ax1.set_title('Training dataset distribution')
-ax1.set_xlabel('Classes')
-ax1.set_ylabel('Class counts')
-ax2.bar(class_names, test_class_counts)
-ax2.set_title('Test dataset distribution')
-ax2.set_xlabel('Classes')
-ax2.set_ylabel('Class counts')
+plot_class_distributions(class_names, train_class_counts, test_class_counts)
 
 ###############################################################################
 # The classes are balanced in the original CIFAR10 dataset.
@@ -150,7 +159,7 @@ criterion = nn.NLLLoss()
 optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
 
 
-def train(epoch):
+def train(epoch, model, train_loader, optimizer, criterion):
     model.train()
     running_loss = 0.0
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -170,19 +179,22 @@ def train(epoch):
 
         # print statistics
         running_loss += loss.item()
-        if batch_idx % 100 == 0:  # print every 100 mini-batches
+        if (batch_idx + 1) % 100 == 0:  # print every 100 mini-batches
             print('[{}, {}] loss: {:.3f}'.format(epoch + 1, batch_idx + 1,
                                                  running_loss / 100))
             running_loss = 0.0
 
 
-def evaluate():
+def evaluate(model, test_loader, plot_confusion_mat=False):
     model.eval()
     correct = 0
     total = 0
     confusion_matrix = torch.zeros(nb_classes, nb_classes)
     with torch.no_grad():
         for data, target in test_loader:
+            # Push data and target to GPU, if available
+            data = data.to(device)
+            target = target.to(device)
             output = model(data)
             _, preds = torch.max(output, 1)
 
@@ -211,13 +223,14 @@ def evaluate():
     print('Mean per class accuracy: {:.3f}%'.format(100 *
                                                     class_accuracies.mean()))
 
-    # Plot confusion matrix
-    f = plt.figure()
-    ax = f.add_subplot(111)
-    cax = ax.imshow(confusion_matrix.numpy(), interpolation='nearest')
-    f.colorbar(cax)
-    plt.xticks(range(len(class_names)), class_names, rotation=90)
-    plt.yticks(range(len(class_names)), class_names)
+    if plot_confusion_mat:
+        # Plot confusion matrix
+        f = plt.figure()
+        ax = f.add_subplot(111)
+        cax = ax.imshow(confusion_matrix.numpy(), interpolation='nearest')
+        f.colorbar(cax)
+        plt.xticks(range(len(class_names)), class_names, rotation=90)
+        plt.yticks(range(len(class_names)), class_names)
 
 
 ###############################################################################
@@ -225,9 +238,9 @@ def evaluate():
 # It's also interesting to see the confusion matrix, where each row represents
 # the target instances while each column represents the predicted instances.
 
-for epoch in range(25):
-    train(epoch)
-evaluate()
+for epoch in range(epochs):
+    train(epoch, model, train_loader, optimizer, criterion)
+evaluate(model, test_loader, plot_confusion_mat=True)
 
 ###############################################################################
 # As expected the network performs quite good and the accuracies for each class
@@ -290,39 +303,31 @@ class ImbalancedCIFAR10(Dataset):
 
 # Create class proportions
 imbal_class_prop = np.hstack(([0.1] * 5, [1.0] * 5))
-train_dataset = ImbalancedCIFAR10(
+train_dataset_imbalanced = ImbalancedCIFAR10(
     imbal_class_prop, root='.', train=True, download=True, transform=transform)
-test_dataset = ImbalancedCIFAR10(
+test_dataset_imbalanced = ImbalancedCIFAR10(
     imbal_class_prop,
     root='.',
     train=False,
     download=True,
     transform=transform)
 
-_, train_class_counts = train_dataset.get_labels_and_class_counts()
-_, test_class_counts = test_dataset.get_labels_and_class_counts()
+_, train_class_counts = train_dataset_imbalanced.get_labels_and_class_counts()
+_, test_class_counts = test_dataset_imbalanced.get_labels_and_class_counts()
 
 # Visualize imbalanced class distribution
-f, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(15, 6))
-ax1.bar(class_names, train_class_counts)
-ax1.set_title('Training dataset distribution (imbalanced)')
-ax1.set_xlabel('Classes')
-ax1.set_ylabel('Class counts')
-ax2.bar(class_names, test_class_counts)
-ax2.set_title('Test dataset distribution (imbalanced)')
-ax2.set_xlabel('Classes')
-ax2.set_ylabel('Class counts')
+plot_class_distributions(class_names, train_class_counts, test_class_counts)
 
 # Create new DataLoaders, since the datasets have changed
-train_loader = DataLoader(
-    dataset=train_dataset,
+train_loader_imbalanced = DataLoader(
+    dataset=train_dataset_imbalanced,
     batch_size=batch_size,
     shuffle=True,
     num_workers=2,
     pin_memory=torch.cuda.is_available())
 
-test_loader = DataLoader(
-    dataset=test_dataset,
+test_loader_imbalanced = DataLoader(
+    dataset=test_dataset_imbalanced,
     batch_size=batch_size,
     shuffle=False,
     num_workers=2,
@@ -332,9 +337,9 @@ test_loader = DataLoader(
 # Before starting the training, let's have a look at some batches and its class
 # distribution.
 
-train_iter = iter(train_loader)
+train_iter_imbalanced = iter(train_loader_imbalanced)
 for _ in range(5):
-    _, target = train_iter.next()
+    _, target = train_iter_imbalanced.next()
     print('Classes {}, counts: {}'.format(*np.unique(
         target.numpy(), return_counts=True)))
 
@@ -352,9 +357,9 @@ for _ in range(5):
 model = Net()
 model = model.to(device)
 optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
-for epoch in range(25):
-    train(epoch)
-evaluate()
+for epoch in range(epochs):
+    train(epoch, model, train_loader_imbalanced, optimizer, criterion)
+evaluate(model, test_loader_imbalanced, plot_confusion_mat=True)
 
 ###############################################################################
 # As you can see the overall accuracy of a classifier for an imbalanced dataset
@@ -362,8 +367,7 @@ evaluate()
 # `Accuracy paradox <https://en.wikipedia.org/wiki/Accuracy_paradox>`_.
 #
 # Calculating the mean per class accuracy we see that the model performs pretty
-# poorly on the imbalanced dataset
-# (~48% now, while ~70% on the original dataset).
+# poorly on the imbalanced dataset.
 # To tackle this issue, we can use a ``WeightedRandomSample`` to oversample
 # the minority classes while training the model.
 #
@@ -377,7 +381,8 @@ evaluate()
 # Since we usually don't know the targets of the test data, let's just use
 # the targets from the training dataset.
 
-train_targets, train_class_counts = train_dataset.get_labels_and_class_counts()
+train_stats = train_dataset_imbalanced.get_labels_and_class_counts()
+train_targets, train_class_counts = train_stats[0], train_stats[1]
 
 ###############################################################################
 # We will calculate the ``weights`` as the reciprocal of the class counts,
@@ -407,8 +412,8 @@ sampler = WeightedRandomSampler(
     num_samples=len(samples_weights),
     replacement=True)
 
-train_loader = DataLoader(
-    train_dataset,
+train_loader_weighted = DataLoader(
+    train_dataset_imbalanced,
     batch_size=batch_size,
     num_workers=2,
     sampler=sampler,
@@ -418,9 +423,9 @@ train_loader = DataLoader(
 # Before starting the training, let's have another look at some batches and
 # the class distribution in them.
 
-train_iter = iter(train_loader)
+train_iter_weighted = iter(train_loader_weighted)
 for _ in range(5):
-    _, target = train_iter.next()
+    _, target = train_iter_weighted.next()
     print('Classes {}, counts: {}'.format(*np.unique(
         target.numpy(), return_counts=True)))
 
@@ -443,12 +448,12 @@ for _ in range(5):
 model = Net()
 model = model.to(device)
 optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
-for epoch in range(25):
-    train(epoch)
-evaluate()
+for epoch in range(epochs):
+    train(epoch, model, train_loader_weighted, optimizer, criterion)
+evaluate(model, test_loader_imbalanced, plot_confusion_mat=True)
 
 ###############################################################################
-# We got a mean per class accuracy of 56% using the ``WeightedRandomSampler``,
+# We got a mean per class accuracy of 51% using the ``WeightedRandomSampler``,
 # which is better than our plain training on the imbalanced dataset!
 #
 # Another valid approach for training an imbalanced dataset would be to use a
@@ -460,7 +465,7 @@ evaluate()
 # First, let's create a new DataLoader without the sampler and also a new model
 # to restart the training from scratch.
 
-train_loader = DataLoader(
+train_loader_imbalanced = DataLoader(
     train_dataset,
     batch_size=batch_size,
     num_workers=2,
@@ -486,9 +491,9 @@ criterion = nn.NLLLoss(weight=weight)
 ###############################################################################
 # Let's train and evaluate the model again.
 
-for epoch in range(25):
-    train(epoch)
-evaluate()
+for epoch in range(epochs):
+    train(epoch, model, train_loader_imbalanced, optimizer, criterion)
+evaluate(model, test_loader_imbalanced, plot_confusion_mat=True)
 
 ###############################################################################
 # The mean per class accuracy is comparable to the one we got using the
@@ -506,7 +511,6 @@ evaluate()
 # others on its own. Also, you should play around with the ``weights`` for
 # both approaches.
 #
-# A special thanks to `Josiane Rodrigues 
+# A special thanks to `Josiane Rodrigues
 # <https://discuss.pytorch.org/u/josiane_rodrigues>`_ for the idea to create
 # this tutorial!
-
