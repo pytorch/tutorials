@@ -486,13 +486,13 @@ optimizer = optim.SGD(model.parameters(), lr=1e-3, momentum=0.9)
 
 weight = torch.cat((torch.tensor([10.] * 5), torch.tensor([1.] * 5)))
 weight = weight.to(device)
-criterion = nn.NLLLoss(weight=weight)
+criterion_weighted = nn.NLLLoss(weight=weight)
 
 ###############################################################################
 # Let's train and evaluate the model again.
 
 for epoch in range(epochs):
-    train(epoch, model, train_loader_imbalanced, optimizer, criterion)
+    train(epoch, model, train_loader_imbalanced, optimizer, criterion_weighted)
 evaluate(model, test_loader_imbalanced, plot_confusion_mat=True)
 
 ###############################################################################
