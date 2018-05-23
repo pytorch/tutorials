@@ -120,7 +120,7 @@ that the word embeddings will probably not be interpretable. That is,
 although with our hand-crafted vectors above we can see that
 mathematicians and physicists are similar in that they both like coffee,
 if we allow a neural network to learn the embeddings and see that both
-mathematicians and physicisits have a large value in the second
+mathematicians and physicists have a large value in the second
 dimension, it is not clear what that means. They are similar in some
 latent semantic dimension, but this probably has no interpretation to
 us.
