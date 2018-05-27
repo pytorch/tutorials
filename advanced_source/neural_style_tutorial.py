@@ -7,7 +7,7 @@ Neural Transfer with PyTorch
 Introduction
 ------------
 
-Welcome! This tutorial explains how to impletment the
+Welcome! This tutorial explains how to implement the
 `Neural-Style <https://arxiv.org/abs/1508.06576>`__ algorithm developed
 by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
 
