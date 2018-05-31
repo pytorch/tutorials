@@ -251,7 +251,7 @@ differentiation. This is something the PyTorch team is working on, but it is
 not available yet. As such, we have to also implement the backward pass of our
 LLTM, which computes the derivative of the loss with respect to each input of
 the forward pass. Ultimately, we will plop both the forward and backward
-function into a :class:`torch.nn.Function` to create a nice Python binding. The
+function into a :class:`torch.autograd.Function` to create a nice Python binding. The
 backward function is slightly more involved, so we'll not dig deeper into the
 code (if you are interested, `Alex Graves' thesis
 <http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
@@ -415,7 +415,7 @@ matches our C++ code::
       LLTM forward
 
 Since we are now able to call our C++ functions from Python, we can wrap them
-with :class:`torch.nn.Function` and :class:`torch.nn.Module` to make them first
+with :class:`torch.autograd.Function` and :class:`torch.nn.Module` to make them first
 class citizens of PyTorch::
 
   import math
@@ -424,7 +424,7 @@ class citizens of PyTorch::
   # Our module!
   import lltm
 
-  class LLTMFunction(torch.nn.Function):
+  class LLTMFunction(torch.autograd.Function):
       @staticmethod
       def forward(ctx, input, weights, bias, old_h, old_cell):
           outputs = lltm.forward(input, weights, bias, old_h, old_cell)
