@@ -31,7 +31,7 @@ tracked.
 To prevent tracking history (and using memory), you can also wrap the code block
 in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
 model because the model may have trainable parameters with `requires_grad=True`,
-but we don't need the gradients.
+but for which we don't need the gradients.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``.
