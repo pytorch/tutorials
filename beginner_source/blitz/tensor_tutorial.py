@@ -48,7 +48,7 @@ x = torch.tensor([5.5, 3])
 print(x)
 
 ###############################################################
-# or create a tensor basing on existing tensor. These methods
+# or create a tensor based on an existing tensor. These methods
 # will reuse properties of the input tensor, e.g. dtype, unless
 # new values are provided by user
 
