@@ -54,11 +54,11 @@ unfortunately numpy won't be enough for modern deep learning.
 Here we introduce the most fundamental PyTorch concept: the **Tensor**.
 A PyTorch Tensor is conceptually identical to a numpy array: a Tensor is
 an n-dimensional array, and PyTorch provides many functions for
-operating on these Tensors. Like numpy arrays, PyTorch Tensors do not
-know anything about deep learning or computational graphs or gradients;
-they are a generic tool for scientific computing.
+operating on these Tensors. Behind the scenes, Tensors can keep track of
+a computational graph and gradients, but they're also useful as a
+generic tool for scientific computing.
 
-However unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
+Also unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
 their numeric computations. To run a PyTorch Tensor on GPU, you simply
 need to cast it to a new datatype.
 
