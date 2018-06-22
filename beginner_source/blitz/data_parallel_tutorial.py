@@ -9,20 +9,20 @@ It's very easy to use GPUs with PyTorch. You can put the model on a GPU:
 
 .. code:: python
 
-    model.gpu()
+    model.cuda()
 
 Then, you can copy all your tensors to the GPU:
 
 .. code:: python
 
-    mytensor = my_tensor.gpu()
+    mytensor = my_tensor.cuda()
 
-Please note that just calling ``mytensor.gpu()`` won't copy the tensor
+Please note that just calling ``mytensor.cuda()`` won't copy the tensor
 to the GPU. You need to assign it to a new tensor and use that tensor on the GPU.
 
-It's natural to execute your forward, backward propagations on multiple GPUs. 
-However, Pytorch will only use one GPU by default. You can easily run your 
-operations on multiple GPUs by making your model run parallelly using 
+It's natural to execute your forward, backward propagations on multiple GPUs.
+However, Pytorch will only use one GPU by default. You can easily run your
+operations on multiple GPUs by making your model run parallelly using
 ``DataParallel``:
 
 .. code:: python
@@ -36,9 +36,9 @@ That's the core behind this tutorial. We will explore it in more detail below.
 ######################################################################
 # Imports and parameters
 # ----------------------
-# 
+#
 # Import PyTorch modules and define parameters.
-# 
+#
 
 import torch
 import torch.nn as nn
@@ -56,9 +56,9 @@ data_size = 100
 ######################################################################
 # Dummy DataSet
 # -------------
-# 
+#
 # Make a dummy (random) dataset. You just need to implement the
-# getitem 
+# getitem
 #
 
 class RandomDataset(Dataset):
@@ -80,15 +80,15 @@ rand_loader = DataLoader(dataset=RandomDataset(input_size, 100),
 ######################################################################
 # Simple Model
 # ------------
-# 
-# For the demo, our model just gets an input, performs a linear operation, and 
+#
+# For the demo, our model just gets an input, performs a linear operation, and
 # gives an output. However, you can use ``DataParallel`` on any model (CNN, RNN,
-# Capsule Net etc.) 
+# Capsule Net etc.)
 #
 # We've placed a print statement inside the model to monitor the size of input
-# and output tensors. 
+# and output tensors.
 # Please pay attention to what is printed at batch rank 0.
-# 
+#
 
 class Model(nn.Module):
     # Our model
@@ -99,7 +99,7 @@ class Model(nn.Module):
 
     def forward(self, input):
         output = self.fc(input)
-        print("  In Model: input size", input.size(), 
+        print("  In Model: input size", input.size(),
               "output size", output.size())
 
         return output
@@ -108,12 +108,12 @@ class Model(nn.Module):
 ######################################################################
 # Create Model and DataParallel
 # -----------------------------
-# 
+#
 # This is the core part of the tutorial. First, we need to make a model instance
-# and check if we have multiple GPUs. If we have multiple GPUs, we can wrap 
+# and check if we have multiple GPUs. If we have multiple GPUs, we can wrap
 # our model using ``nn.DataParallel``. Then we can put our model on GPUs by
-# ``model.gpu()`` 
-# 
+# ``model.cuda()``
+#
 
 model = Model(input_size, output_size)
 if torch.cuda.device_count() > 1:
@@ -128,9 +128,9 @@ if torch.cuda.is_available():
 ######################################################################
 # Run the Model
 # -------------
-# 
+#
 # Now we can see the sizes of input and output tensors.
-# 
+#
 
 for data in rand_loader:
     if torch.cuda.is_available():
@@ -146,17 +146,17 @@ for data in rand_loader:
 ######################################################################
 # Results
 # -------
-# 
+#
 # When we batch 30 inputs and 30 outputs, the model gets 30 and outputs 30 as
 # expected. But if you have GPUs, then you can get results like this.
-# 
+#
 # 2 GPUs
 # ~~~~~~
 #
 # If you have 2, you will see:
-# 
+#
 # .. code:: bash
-# 
+#
 #     # on 2 GPUs
 #     Let's use 2 GPUs!
 #         In Model: input size torch.Size([15, 5]) output size torch.Size([15, 2])
@@ -171,14 +171,14 @@ for data in rand_loader:
 #         In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
 #         In Model: input size torch.Size([5, 5]) output size torch.Size([5, 2])
 #     Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
-# 
+#
 # 3 GPUs
 # ~~~~~~
-# 
+#
 # If you have 3 GPUs, you will see:
-# 
+#
 # .. code:: bash
-# 
+#
 #     Let's use 3 GPUs!
 #         In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
 #         In Model: input size torch.Size([10, 5]) output size torch.Size([10, 2])
@@ -196,14 +196,14 @@ for data in rand_loader:
 #         In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
 #         In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
 #     Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
-# 
+#
 # 8 GPUs
 # ~~~~~~~~~~~~~~
-# 
+#
 # If you have 8, you will see:
-# 
+#
 # .. code:: bash
-# 
+#
 #     Let's use 8 GPUs!
 #         In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
 #         In Model: input size torch.Size([4, 5]) output size torch.Size([4, 2])
@@ -238,17 +238,17 @@ for data in rand_loader:
 #         In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
 #         In Model: input size torch.Size([2, 5]) output size torch.Size([2, 2])
 #     Outside: input size torch.Size([10, 5]) output_size torch.Size([10, 2])
-# 
+#
 
 
 ######################################################################
 # Summary
 # -------
-# 
+#
 # DataParallel splits your data automatically and sends job orders to multiple
 # models on several GPUs. After each model finishes their job, DataParallel
 # collects and merges the results before returning it to you.
-# 
+#
 # For more information, please check out
 # http://pytorch.org/tutorials/beginner/former\_torchies/parallelism\_tutorial.html.
-# 
+#
