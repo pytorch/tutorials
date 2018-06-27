@@ -61,7 +61,7 @@ for t in range(500):
     loss.backward()
 
     # Update the weights using gradient descent. Each parameter is a Tensor, so
-    # we can access and gradients like we did before.
+    # we can access its gradients like we did before.
     with torch.no_grad():
         for param in model.parameters():
             param -= learning_rate * param.grad

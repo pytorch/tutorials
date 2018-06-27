@@ -18,7 +18,7 @@ import torch
 
 dtype = torch.float
 device = torch.device("cpu")
-# dtype = torch.device("cuda:0") # Uncomment this to run on GPU
+# device = torch.device("cuda:0") # Uncomment this to run on GPU
 
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.

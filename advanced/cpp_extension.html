@@ -25,21 +25,31 @@
   
 
   
+  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html" /> 
+  
+
+  
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../index.html"/>
+        <link rel="prev" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
    
   <div class="wy-grid-for-nav">
@@ -56,7 +66,7 @@
 
           
             
-            <img src="../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
+            <img src="../_static/pytorch-logo-dark.svg" class="logo" />
           
           </a>
 
@@ -470,7 +480,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">PyTorch Tutorials</a>
@@ -478,10 +488,9 @@
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
           
 
 
@@ -576,8 +585,8 @@ look something like this:</p>
         <span class="c1"># 3 * state_size for input gate, output gate and candidate cell gate.</span>
         <span class="c1"># input_features + state_size because we will multiply with [input, h].</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">state_size</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">))</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">state_size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -749,7 +758,7 @@ differentiation. This is something the PyTorch team is working on, but it is
 not available yet. As such, we have to also implement the backward pass of our
 LLTM, which computes the derivative of the loss with respect to each input of
 the forward pass. Ultimately, we will plop both the forward and backward
-function into a <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Function</span></code> to create a nice Python binding. The
+function into a <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> to create a nice Python binding. The
 backward function is slightly more involved, so we’ll not dig deeper into the
 code (if you are interested, <a class="reference external" href="http://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
 information on this):</p>
@@ -880,10 +889,9 @@ Finished processing dependencies for lltm==0.0.0
 </div>
 <p>A small note on compilers: Due to ABI versioning issues, the compiler you use to
 build your C++ extension must be <em>ABI-compatible</em> with the compiler PyTorch was
-built with. In practice, this means that you must use GCC version 4.9 and above.
+built with. In practice, this means that you must use GCC version 4.9 and above on Linux.
 For Ubuntu 16.04 and other more-recent Linux distributions, this should be the
-default compiler already. On MacOS, you will have to download GCC (e.g. <cite>brew
-install gcc</cite> will give you GCC 7 at the time of this writing). In the worst
+default compiler already. On MacOS, you must use clang (which does not have any ABI versioning issues). In the worst
 case, you can build PyTorch from source with your compiler and then build the
 extension with that same compiler.</p>
 <p>Once your extension is built, you can simply import it in Python, using the
@@ -906,7 +914,7 @@ matches our C++ code:</p>
 </pre></div>
 </div>
 <p>Since we are now able to call our C++ functions from Python, we can wrap them
-with <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> to make them first
+with <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> to make them first
 class citizens of PyTorch:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -914,7 +922,7 @@ class citizens of PyTorch:</p>
 <span class="c1"># Our module!</span>
 <span class="kn">import</span> <span class="nn">lltm</span>
 
-<span class="k">class</span> <span class="nc">LLTMFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LLTMFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">):</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">)</span>
@@ -938,8 +946,8 @@ class citizens of PyTorch:</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_features</span> <span class="o">=</span> <span class="n">input_features</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">state_size</span> <span class="o">=</span> <span class="n">state_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">state_size</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">))</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">input_features</span> <span class="o">+</span> <span class="n">state_size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">state_size</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_parameters</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1008,32 +1016,36 @@ can <em>also</em> run on GPU, and individual operations will correspondingly dis
 to GPU-optimized implementations. For certain operations like matrix multiply
 (like <code class="docutils literal notranslate"><span class="pre">mm</span></code> or <code class="docutils literal notranslate"><span class="pre">admm</span></code>), this is a big win. Let’s take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
-our implementation are required, we simply need to move our tensors to GPU
-memory with <code class="docutils literal notranslate"><span class="pre">.cuda()</span></code> from Python:</p>
+our implementation are required, we simply need to put our tensors in GPU
+memory from Python, with either adding <code class="docutils literal notranslate"><span class="pre">device=cuda_device</span></code> argument at
+creation time or using <code class="docutils literal notranslate"><span class="pre">.to(cuda_device)</span></code> after creation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+<span class="n">cuda_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>  <span class="c1"># device object representing GPU</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">input_features</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="n">state_size</span> <span class="o">=</span> <span class="mi">128</span>
 
-<span class="c1"># Note the .cuda() calls here</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">input_features</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">C</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="c1"># Note the device=cuda_device arguments here</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">input_features</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">cuda_device</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">cuda_device</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">cuda_device</span><span class="p">)</span>
 
-<span class="n">rnn</span> <span class="o">=</span> <span class="n">LLTM</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="n">state_size</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">rnn</span> <span class="o">=</span> <span class="n">LLTM</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="n">state_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">cuda_device</span><span class="p">)</span>
 
 <span class="n">forward</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">backward</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100000</span><span class="p">):</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">new_h</span><span class="p">,</span> <span class="n">new_C</span> <span class="o">=</span> <span class="n">rnn</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
     <span class="n">forward</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="p">(</span><span class="n">new_h</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">new_C</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
     <span class="n">backward</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Forward: </span><span class="si">{:.3f}</span><span class="s1"> us | Backward </span><span class="si">{:.3f}</span><span class="s1"> us&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">forward</span> <span class="o">*</span> <span class="mf">1e6</span><span class="o">/</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">backward</span> <span class="o">*</span> <span class="mf">1e6</span><span class="o">/</span><span class="mf">1e5</span><span class="p">))</span>
@@ -1501,7 +1513,9 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
 
 
            </div>
-           
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -1521,7 +1535,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1559,13 +1573,14 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.StickyNav.enable();
       });
   </script>
+  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

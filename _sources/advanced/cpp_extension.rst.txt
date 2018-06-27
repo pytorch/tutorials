@@ -61,8 +61,8 @@ look something like this::
           # 3 * state_size for input gate, output gate and candidate cell gate.
           # input_features + state_size because we will multiply with [input, h].
           self.weights = torch.nn.Parameter(
-              torch.Tensor(3 * state_size, input_features + state_size))
-          self.bias = torch.nn.Parameter(torch.Tensor(3 * state_size))
+              torch.empty(3 * state_size, input_features + state_size))
+          self.bias = torch.nn.Parameter(torch.empty(3 * state_size))
           self.reset_parameters()
 
       def reset_parameters(self):
@@ -251,7 +251,7 @@ differentiation. This is something the PyTorch team is working on, but it is
 not available yet. As such, we have to also implement the backward pass of our
 LLTM, which computes the derivative of the loss with respect to each input of
 the forward pass. Ultimately, we will plop both the forward and backward
-function into a :class:`torch.nn.Function` to create a nice Python binding. The
+function into a :class:`torch.autograd.Function` to create a nice Python binding. The
 backward function is slightly more involved, so we'll not dig deeper into the
 code (if you are interested, `Alex Graves' thesis
 <http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
@@ -389,10 +389,9 @@ should look something like this::
 
 A small note on compilers: Due to ABI versioning issues, the compiler you use to
 build your C++ extension must be *ABI-compatible* with the compiler PyTorch was
-built with. In practice, this means that you must use GCC version 4.9 and above.
+built with. In practice, this means that you must use GCC version 4.9 and above on Linux.
 For Ubuntu 16.04 and other more-recent Linux distributions, this should be the
-default compiler already. On MacOS, you will have to download GCC (e.g. `brew
-install gcc` will give you GCC 7 at the time of this writing). In the worst
+default compiler already. On MacOS, you must use clang (which does not have any ABI versioning issues). In the worst
 case, you can build PyTorch from source with your compiler and then build the
 extension with that same compiler.
 
@@ -416,7 +415,7 @@ matches our C++ code::
       LLTM forward
 
 Since we are now able to call our C++ functions from Python, we can wrap them
-with :class:`torch.nn.Function` and :class:`torch.nn.Module` to make them first
+with :class:`torch.autograd.Function` and :class:`torch.nn.Module` to make them first
 class citizens of PyTorch::
 
   import math
@@ -425,7 +424,7 @@ class citizens of PyTorch::
   # Our module!
   import lltm
 
-  class LLTMFunction(torch.nn.Function):
+  class LLTMFunction(torch.autograd.Function):
       @staticmethod
       def forward(ctx, input, weights, bias, old_h, old_cell):
           outputs = lltm.forward(input, weights, bias, old_h, old_cell)
@@ -449,8 +448,8 @@ class citizens of PyTorch::
           self.input_features = input_features
           self.state_size = state_size
           self.weights = torch.nn.Parameter(
-              torch.Tensor(3 * state_size, input_features + state_size))
-          self.bias = torch.nn.Parameter(torch.Tensor(3 * state_size))
+              torch.empty(3 * state_size, input_features + state_size))
+          self.bias = torch.nn.Parameter(torch.empty(3 * state_size))
           self.reset_parameters()
 
       def reset_parameters(self):
@@ -520,33 +519,37 @@ can *also* run on GPU, and individual operations will correspondingly dispatch
 to GPU-optimized implementations. For certain operations like matrix multiply
 (like ``mm`` or ``admm``), this is a big win. Let's take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
-our implementation are required, we simply need to move our tensors to GPU
-memory with ``.cuda()`` from Python::
+our implementation are required, we simply need to put our tensors in GPU
+memory from Python, with either adding ``device=cuda_device`` argument at
+creation time or using ``.to(cuda_device)`` after creation::
 
   import torch
 
   assert torch.cuda.is_available()
+  cuda_device = torch.device("cuda")  # device object representing GPU
 
   batch_size = 16
   input_features = 32
   state_size = 128
 
-  # Note the .cuda() calls here
-  X = torch.randn(batch_size, input_features).cuda()
-  h = torch.randn(batch_size, state_size).cuda()
-  C = torch.randn(batch_size, state_size).cuda()
+  # Note the device=cuda_device arguments here
+  X = torch.randn(batch_size, input_features, device=cuda_device)
+  h = torch.randn(batch_size, state_size, device=cuda_device)
+  C = torch.randn(batch_size, state_size, device=cuda_device)
 
-  rnn = LLTM(input_features, state_size).cuda()
+  rnn = LLTM(input_features, state_size).to(cuda_device)
 
   forward = 0
   backward = 0
   for _ in range(100000):
       start = time.time()
       new_h, new_C = rnn(X, (h, C))
+      torch.cuda.synchronize()
       forward += time.time() - start
 
       start = time.time()
       (new_h.sum() + new_C.sum()).backward()
+      torch.cuda.synchronize()
       backward += time.time() - start
 
   print('Forward: {:.3f} us | Backward {:.3f} us'.format(forward * 1e6/1e5, backward * 1e6/1e5))

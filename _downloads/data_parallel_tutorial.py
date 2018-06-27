@@ -18,9 +18,9 @@ Then, you can copy all your tensors to the GPU:
 
     mytensor = my_tensor.to(device)
 
-Please note that just calling ``mytensor.to(device)`` returns a new copy of
-``mytensor`` on GPU instead of rewriting ``mytensor``. You need to assign it to
-a new variable and use that tensor on the GPU.
+Please note that just calling ``my_tensor.to(device)`` returns a new copy of
+``my_tensor`` on GPU instead of rewriting ``my_tensor``. You need to assign it to
+a new tensor and use that tensor on the GPU.
 
 It's natural to execute your forward, backward propagations on multiple GPUs.
 However, Pytorch will only use one GPU by default. You can easily run your
@@ -79,7 +79,7 @@ class RandomDataset(Dataset):
     def __len__(self):
         return self.len
 
-rand_loader = DataLoader(dataset=RandomDataset(input_size, 100),
+rand_loader = DataLoader(dataset=RandomDataset(input_size, data_size),
                          batch_size=batch_size, shuffle=True)
 
 
@@ -148,8 +148,8 @@ for data in rand_loader:
 # Results
 # -------
 #
-# When we batch 30 inputs and 30 outputs, the model gets 30 and outputs 30 as
-# expected. But if you have GPUs, then you can get results like this.
+# If you have no GPU or one GPU, when we batch 30 inputs and 30 outputs, the model gets 30 and outputs 30 as
+# expected. But if you have multiple GPUs, then you can get results like this.
 #
 # 2 GPUs
 # ~~~~~~

@@ -234,6 +234,7 @@ of 6 collectives currently implemented in PyTorch.
    from all processes in ``dst``.
 -  ``dist.all_gather(tensor_list, tensor, group)``: Copies ``tensor``
    from all processes to ``tensor_list``, on all processes.
+-  ``dist.barrier(group)``: block all processes in `group` until each one has entered this function.
 
 Distributed Training
 --------------------
@@ -421,9 +422,9 @@ slightly different signature than the ones in PyTorch. It takes a
 ``recv`` tensor and will store the sum of all ``send`` tensors in it. As
 an exercise left to the reader, there is still one difference between
 our version and the one in DeepSpeech: their implementation divide the
-gradient tensor into *chunks*, so as to optimially utilize the
+gradient tensor into *chunks*, so as to optimally utilize the
 communication bandwidth. (Hint:
-`toch.chunk <http://pytorch.org/docs/master/torch.html#torch.chunk>`__)
+`torch.chunk <http://pytorch.org/docs/master/torch.html#torch.chunk>`__)
 
 Advanced Topics
 ---------------
@@ -446,7 +447,7 @@ there are currently three backends implemented in PyTorch: TCP, MPI, and
 Gloo. They each have different specifications and tradeoffs, depending
 on the desired use-case. A comparative table of supported functions can
 be found
-`here <http://pytorch.org/docs/master/distributed.html#module-torch.distributed>`__.
+`here <http://pytorch.org/docs/master/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/master/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
 
 **TCP Backend**
 
@@ -508,7 +509,7 @@ and we'll have to recompile it by hand. Fortunately, this process is
 fairly simple given that upon compilation, PyTorch will look *by itself*
 for an available MPI implementation. The following steps install the MPI
 backend, by installing PyTorch `from
-sources <https://github.com/pytorch/pytorch#from-source>`__.
+source <https://github.com/pytorch/pytorch#from-source>`__.
 
 1. Create and activate your Anaconda environment, install all the
    pre-requisites following `the

@@ -25,22 +25,33 @@
   
 
   
+  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/pytorch_theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Classifying Names with a Character-Level RNN" href="../../intermediate/char_rnn_classification_tutorial.html" />
-    <link rel="prev" title="Sequence Models and Long-Short Term Memory Networks" href="sequence_models_tutorial.html" /> 
+  
+
+  
+    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../../_static/css/pytorch_theme.css" type="text/css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Deep Learning for NLP with Pytorch" href="../deep_learning_nlp_tutorial.html"/>
+        <link rel="next" title="Classifying Names with a Character-Level RNN" href="../../intermediate/char_rnn_classification_tutorial.html"/>
+        <link rel="prev" title="Sequence Models and Long-Short Term Memory Networks" href="sequence_models_tutorial.html"/> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
    
   <div class="wy-grid-for-nav">
@@ -57,7 +68,7 @@
 
           
             
-            <img src="../../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
+            <img src="../../_static/pytorch-logo-dark.svg" class="logo" />
           
           </a>
 
@@ -471,7 +482,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">PyTorch Tutorials</a>
@@ -479,10 +490,9 @@
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
           
 
 
@@ -555,12 +565,12 @@ form a new constituent, use some sort of technique to get an embedding
 of the constituent. In this case, our network architecture will depend
 completely on the input sentence. In the sentence “The green cat
 scratched the wall”, at some point in the model, we will want to combine
-the span <span class="math notranslate nohighlight">\((i,j,r) = (1, 3, \text{NP})\)</span> (that is, an NP constituent
+the span <span class="math notranslate">\((i,j,r) = (1, 3, \text{NP})\)</span> (that is, an NP constituent
 spans word 1 to word 3, in this case “The green cat”).</li>
 </ul>
 <p>However, another sentence might be “Somewhere, the big fat cat scratched
 the wall”. In this sentence, we will want to form the constituent
-<span class="math notranslate nohighlight">\((2, 4, NP)\)</span> at some point. The constituents we will want to form
+<span class="math notranslate">\((2, 4, NP)\)</span> at some point. The constituents we will want to form
 will depend on the instance. If we just compile the computation graph
 once, as in a static toolkit, it will be exceptionally difficult or
 impossible to program this logic. In a dynamic toolkit though, there
@@ -590,26 +600,26 @@ log-space (hint: log-sum-exp)</li>
 </ul>
 <p>If you can do those three things, you should be able to understand the
 code below. Recall that the CRF computes a conditional probability. Let
-<span class="math notranslate nohighlight">\(y\)</span> be a tag sequence and <span class="math notranslate nohighlight">\(x\)</span> an input sequence of words.
+<span class="math notranslate">\(y\)</span> be a tag sequence and <span class="math notranslate">\(x\)</span> an input sequence of words.
 Then we compute</p>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[P(y|x) = \frac{\exp{(\text{Score}(x, y)})}{\sum_{y'} \exp{(\text{Score}(x, y')})}\]</div>
 <p>Where the score is determined by defining some log potentials
-<span class="math notranslate nohighlight">\(\log \psi_i(x,y)\)</span> such that</p>
-<div class="math notranslate nohighlight">
+<span class="math notranslate">\(\log \psi_i(x,y)\)</span> such that</p>
+<div class="math notranslate">
 \[\text{Score}(x,y) = \sum_i \log \psi_i(x,y)\]</div>
 <p>To make the partition function tractable, the potentials must look only
 at local features.</p>
 <p>In the Bi-LSTM CRF, we define two kinds of potentials: emission and
-transition. The emission potential for the word at index <span class="math notranslate nohighlight">\(i\)</span> comes
-from the hidden state of the Bi-LSTM at timestep <span class="math notranslate nohighlight">\(i\)</span>. The
-transition scores are stored in a <span class="math notranslate nohighlight">\(|T|x|T|\)</span> matrix
-<span class="math notranslate nohighlight">\(\textbf{P}\)</span>, where <span class="math notranslate nohighlight">\(T\)</span> is the tag set. In my
-implementation, <span class="math notranslate nohighlight">\(\textbf{P}_{j,k}\)</span> is the score of transitioning
-to tag <span class="math notranslate nohighlight">\(j\)</span> from tag <span class="math notranslate nohighlight">\(k\)</span>. So:</p>
-<div class="math notranslate nohighlight">
+transition. The emission potential for the word at index <span class="math notranslate">\(i\)</span> comes
+from the hidden state of the Bi-LSTM at timestep <span class="math notranslate">\(i\)</span>. The
+transition scores are stored in a <span class="math notranslate">\(|T|x|T|\)</span> matrix
+<span class="math notranslate">\(\textbf{P}\)</span>, where <span class="math notranslate">\(T\)</span> is the tag set. In my
+implementation, <span class="math notranslate">\(\textbf{P}_{j,k}\)</span> is the score of transitioning
+to tag <span class="math notranslate">\(j\)</span> from tag <span class="math notranslate">\(k\)</span>. So:</p>
+<div class="math notranslate">
 \[\text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)\]</div>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}\]</div>
 <p>where in this second expression, we think of the tags as being assigned
 unique non-negative indices.</p>
@@ -894,7 +904,9 @@ much less straightforward.</p>
 
 
            </div>
-           
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -916,7 +928,7 @@ much less straightforward.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -954,13 +966,14 @@ much less straightforward.</p>
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.StickyNav.enable();
       });
   </script>
+  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

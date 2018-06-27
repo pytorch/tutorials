@@ -31,13 +31,13 @@ tracked.
 To prevent tracking history (and using memory), you can also wrap the code block
 in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
 model because the model may have trainable parameters with `requires_grad=True`,
-but we don't need the gradients.
+but for which we don't need the gradients.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``.
 
 ``Tensor`` and ``Function`` are interconnected and build up an acyclic
-graph, that encodes a complete history of computation. Each variable has
+graph, that encodes a complete history of computation. Each tensor has
 a ``.grad_fn`` attribute that references a ``Function`` that has created
 the ``Tensor`` (except for Tensors created by the user - their
 ``grad_fn is None``).
@@ -127,8 +127,8 @@ y.backward(gradients)
 print(x.grad)
 
 ###############################################################
-# You can also stops autograd from tracking history on Tensors
-# with requires_grad=True by wrapping the code block in
+# You can also stop autograd from tracking history on Tensors
+# with ``.requires_grad``=True by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)

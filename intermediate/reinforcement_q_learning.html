@@ -25,22 +25,32 @@
   
 
   
+  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Writing Distributed Applications with PyTorch" href="dist_tuto.html" />
-    <link rel="prev" title="Translation with a Sequence to Sequence Network and Attention" href="seq2seq_translation_tutorial.html" /> 
+  
+
+  
+    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  
+    <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
+  
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../index.html"/>
+        <link rel="next" title="Writing Distributed Applications with PyTorch" href="dist_tuto.html"/>
+        <link rel="prev" title="Translation with a Sequence to Sequence Network and Attention" href="seq2seq_translation_tutorial.html"/> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav">
+<body class="wy-body-for-nav" role="document">
 
    
   <div class="wy-grid-for-nav">
@@ -57,7 +67,7 @@
 
           
             
-            <img src="../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
+            <img src="../_static/pytorch-logo-dark.svg" class="logo" />
           
           </a>
 
@@ -471,7 +481,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" aria-label="top navigation">
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">PyTorch Tutorials</a>
@@ -479,10 +489,9 @@
       </nav>
 
 
+      
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
           
 
 
@@ -645,41 +654,41 @@ reinforcement learning literature, they would also contain expectations
 over stochastic transitions in the environment.</p>
 <p>Our aim will be to train a policy that tries to maximize the discounted,
 cumulative reward
-<span class="math notranslate nohighlight">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
-<span class="math notranslate nohighlight">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
-<span class="math notranslate nohighlight">\(\gamma\)</span>, should be a constant between <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(1\)</span>
+<span class="math notranslate">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
+<span class="math notranslate">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
+<span class="math notranslate">\(\gamma\)</span>, should be a constant between <span class="math notranslate">\(0\)</span> and <span class="math notranslate">\(1\)</span>
 that ensures the sum converges. It makes rewards from the uncertain far
 future less important for our agent than the ones in the near future
 that it can be fairly confident about.</p>
 <p>The main idea behind Q-learning is that if we had a function
-<span class="math notranslate nohighlight">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
+<span class="math notranslate">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
 us what our return would be, if we were to take an action in a given
 state, then we could easily construct a policy that maximizes our
 rewards:</p>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[\pi^*(s) = \arg\!\max_a \ Q^*(s, a)\]</div>
 <p>However, we don’t know everything about the world, so we don’t have
-access to <span class="math notranslate nohighlight">\(Q^*\)</span>. But, since neural networks are universal function
+access to <span class="math notranslate">\(Q^*\)</span>. But, since neural networks are universal function
 approximators, we can simply create one and train it to resemble
-<span class="math notranslate nohighlight">\(Q^*\)</span>.</p>
-<p>For our training update rule, we’ll use a fact that every <span class="math notranslate nohighlight">\(Q\)</span>
+<span class="math notranslate">\(Q^*\)</span>.</p>
+<p>For our training update rule, we’ll use a fact that every <span class="math notranslate">\(Q\)</span>
 function for some policy obeys the Bellman equation:</p>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[Q^{\pi}(s, a) = r + \gamma Q^{\pi}(s', \pi(s'))\]</div>
 <p>The difference between the two sides of the equality is known as the
-temporal difference error, <span class="math notranslate nohighlight">\(\delta\)</span>:</p>
-<div class="math notranslate nohighlight">
+temporal difference error, <span class="math notranslate">\(\delta\)</span>:</p>
+<div class="math notranslate">
 \[\delta = Q(s, a) - (r + \gamma \max_a Q(s', a))\]</div>
 <p>To minimise this error, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Huber_loss">Huber
 loss</a>. The Huber loss acts
 like the mean squared error when the error is small, but like the mean
 absolute error when the error is large - this makes it more robust to
-outliers when the estimates of <span class="math notranslate nohighlight">\(Q\)</span> are very noisy. We calculate
-this over a batch of transitions, <span class="math notranslate nohighlight">\(B\)</span>, sampled from the replay
+outliers when the estimates of <span class="math notranslate">\(Q\)</span> are very noisy. We calculate
+this over a batch of transitions, <span class="math notranslate">\(B\)</span>, sampled from the replay
 memory:</p>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[\mathcal{L} = \frac{1}{|B|}\sum_{(s, a, s', r) \ \in \ B} \mathcal{L}(\delta)\]</div>
-<div class="math notranslate nohighlight">
+<div class="math notranslate">
 \[\begin{split}\text{where} \quad \mathcal{L}(\delta) = \begin{cases}
   \frac{1}{2}{\delta^2}  &amp; \text{for } |\delta| \le 1, \\
   |\delta| - \frac{1}{2} &amp; \text{otherwise.}
@@ -688,8 +697,8 @@ memory:</p>
 <h3>Q-network<a class="headerlink" href="#q-network" title="Permalink to this headline">¶</a></h3>
 <p>Our model will be a convolutional neural network that takes in the
 difference between the current and previous screen patches. It has two
-outputs, representing <span class="math notranslate nohighlight">\(Q(s, \mathrm{left})\)</span> and
-<span class="math notranslate nohighlight">\(Q(s, \mathrm{right})\)</span> (where <span class="math notranslate nohighlight">\(s\)</span> is the input to the
+outputs, representing <span class="math notranslate">\(Q(s, \mathrm{left})\)</span> and
+<span class="math notranslate">\(Q(s, \mathrm{right})\)</span> (where <span class="math notranslate">\(s\)</span> is the input to the
 network). In effect, the network is trying to predict the <em>quality</em> of
 taking each action given the current input.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DQN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -846,10 +855,10 @@ episode.</li>
 <p>Finally, the code for training our model.</p>
 <p>Here, you can find an <code class="docutils literal notranslate"><span class="pre">optimize_model</span></code> function that performs a
 single step of the optimization. It first samples a batch, concatenates
-all the tensors into a single one, computes <span class="math notranslate nohighlight">\(Q(s_t, a_t)\)</span> and
-<span class="math notranslate nohighlight">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
-loss. By defition we set <span class="math notranslate nohighlight">\(V(s) = 0\)</span> if <span class="math notranslate nohighlight">\(s\)</span> is a terminal
-state. We also use a target network to compute <span class="math notranslate nohighlight">\(V(s_{t+1})\)</span> for
+all the tensors into a single one, computes <span class="math notranslate">\(Q(s_t, a_t)\)</span> and
+<span class="math notranslate">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
+loss. By defition we set <span class="math notranslate">\(V(s) = 0\)</span> if <span class="math notranslate">\(s\)</span> is a terminal
+state. We also use a target network to compute <span class="math notranslate">\(V(s_{t+1})\)</span> for
 added stability. The target network has its weights kept frozen most of
 the time, but is updated with the policy network’s weights every so often.
 This is usually a set number of steps but we shall use episodes for
@@ -957,7 +966,9 @@ the notebook and run lot more epsiodes.</p>
 
 
            </div>
-           
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
@@ -979,7 +990,7 @@ the notebook and run lot more epsiodes.</p>
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1017,13 +1028,14 @@ the notebook and run lot more epsiodes.</p>
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
+  
+  
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.StickyNav.enable();
       });
   </script>
+  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

@@ -14,7 +14,7 @@ Tensors that track history
 
 In autograd, if any input ``Tensor`` of an operation has ``requires_grad=True``,
 the computation will be tracked. After computing the backward pass, a gradient
-w.r.t. this variable is accumulated into ``.grad`` attribute.
+w.r.t. this tensor is accumulated into ``.grad`` attribute.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``. ``Tensor`` and ``Function`` are
