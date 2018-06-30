@@ -20,7 +20,6 @@ In this tutorial, we shall go through two tasks:
 import torch
 from torch.autograd import Function
 
-
 ###############################################################
 # Parameter-less example
 # ----------------------
@@ -47,14 +46,12 @@ class BadFFTFunction(Function):
         result = irfft2(numpy_go)
         return grad_output.new(result)
 
-
 # since this layer does not have any parameters, we can
 # simply declare this as a function, rather than as an nn.Module class
 
 
 def incorrect_fft(input):
     return BadFFTFunction()(input)
-
 
 ###############################################################
 # **Example usage of the created layer:**
