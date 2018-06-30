@@ -78,7 +78,7 @@ print(input)
 
 from numpy import flip
 import numpy as np
-from scipy.signal import correlate2d
+from scipy.signal import convolve2d, correlate2d
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
 
@@ -99,15 +99,17 @@ class ScipyConv2dFunction(Function):
         input, filter, bias = ctx.saved_tensors
         grad_output = grad_output.numpy()
         grad_bias = np.sum(grad_output, keepdims=True)
-        grad_input = correlate2d(grad_output, flip(flip(filter.numpy(), axis=0), axis=1), mode='full')
+        grad_input = convolve2d(grad_output, filter.numpy(), mode='full')
+        # the previous line can be expressed equivalently as:
+        # grad_input = correlate2d(grad_output, flip(flip(filter.numpy(), axis=0), axis=1), mode='full')
         grad_filter = correlate2d(input.numpy(), grad_output, mode='valid')
         return torch.from_numpy(grad_input), torch.from_numpy(grad_filter), torch.from_numpy(grad_bias)
 
 
 class ScipyConv2d(Module):
-    def __init__(self, kh, kw):
+    def __init__(self, filter_width, filter_height):
         super(ScipyConv2d, self).__init__()
-        self.filter = Parameter(torch.randn(kh, kw))
+        self.filter = Parameter(torch.randn(filter_width, filter_height))
         self.bias = Parameter(torch.randn(1, 1))
 
     def forward(self, input):
@@ -128,11 +130,10 @@ print("Gradient for the input map: ", input.grad)
 ###############################################################
 # **Check the gradients:**
 
-from torch.autograd import gradcheck
+from torch.autograd.gradcheck import gradcheck
 
 moduleConv = ScipyConv2d(3, 3)
 
 input = [torch.randn(20, 20, dtype=torch.double, requires_grad=True)]
-# print("input: ", input)
 test = gradcheck(moduleConv, input, eps=1e-6, atol=1e-4)
 print("Are the gradients correct: ", test)
