@@ -18,7 +18,6 @@ In this tutorial, we shall go through two tasks:
 """
 
 import torch
-from numpy.fft import rfft2, irfft2
 from torch.autograd import Function
 
 
@@ -32,6 +31,8 @@ from torch.autograd import Function
 # It is aptly named BadFFTFunction
 #
 # **Layer Implementation**
+
+from numpy.fft import rfft2, irfft2
 
 
 class BadFFTFunction(Function):
