@@ -69,11 +69,13 @@ print(input)
 # Parametrized example
 # --------------------
 #
-# In deep learning literature, this layer is confusingly referred to as convolution while the actual operation is
-# cross-correlation (the only difference is that filter is flipped for convolution,
+# In deep learning literature, this layer is confusingly referred
+# to as convolution while the actual operation is cross-correlation
+# (the only difference is that filter is flipped for convolution,
 # which is not the case for cross-correlation).
 #
-# Implementation of a layer with learnable weights, where cross-correlation has a kernel that represents weights.
+# Implementation of a layer with learnable weights, where cross-correlation
+# has a filter (kernel) that represents weights.
 #
 # The backward pass computes the gradient wrt the input and the gradient wrt the filter.
 
