@@ -10,15 +10,17 @@ In this tutorial, we shall go through two tasks:
 
 1. Create a neural network layer with no parameters.
 
-    -  This calls into **numpy** as part of it’s implementation
+    -  This calls into **numpy** as part of its implementation
 
 2. Create a neural network layer that has learnable weights
 
-    -  This calls into **SciPy** as part of it’s implementation
+    -  This calls into **SciPy** as part of its implementation
 """
 
 import torch
+from numpy.fft import rfft2, irfft2
 from torch.autograd import Function
+
 
 ###############################################################
 # Parameter-less example
@@ -30,8 +32,6 @@ from torch.autograd import Function
 # It is aptly named BadFFTFunction
 #
 # **Layer Implementation**
-
-from numpy.fft import rfft2, irfft2
 
 
 class BadFFTFunction(Function):
@@ -46,12 +46,14 @@ class BadFFTFunction(Function):
         result = irfft2(numpy_go)
         return grad_output.new(result)
 
+
 # since this layer does not have any parameters, we can
 # simply declare this as a function, rather than as an nn.Module class
 
 
 def incorrect_fft(input):
     return BadFFTFunction()(input)
+
 
 ###############################################################
 # **Example usage of the created layer:**
@@ -66,26 +68,20 @@ print(input)
 # Parametrized example
 # --------------------
 #
-# This implements a layer with learnable weights.
+# In deep learning literature, this layer is confusingly referred to as convolution while the actual operation is
+# cross-correlation (the only difference is that filter is flipped for convolution,
+# which is not the case for cross-correlation).
 #
-# It implements the Cross-correlation with a learnable kernel.
+# Implementation of a layer with learnable weights, where cross-correlation has a kernel that represents weights.
 #
-# In deep learning literature, it’s confusingly referred to as
-# Convolution.
-#
-# The backward computes the gradients wrt the input and gradients wrt the
-# filter.
-#
-# **Implementation:**
-#
-# *Please Note that the implementation serves as an illustration, and we
-# did not verify it’s correctness*
+# The backward pass computes the gradient wrt the input and the gradient wrt the filter.
 
 from numpy import flip
 import numpy as np
 from scipy.signal import correlate2d
 from torch.nn.modules.module import Module
 from torch.nn.parameter import Parameter
+
 
 class ScipyConv2dFunction(Function):
     @staticmethod
