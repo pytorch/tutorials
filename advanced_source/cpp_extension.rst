@@ -155,7 +155,7 @@ looks as simple as this::
         cmdclass={'build_ext': BuildExtension})
 
 
-In this code, :class:``CppExtension`` is a convenience wrapper around
+In this code, :class:`CppExtension` is a convenience wrapper around
 :class:`setuptools.Extension` that passes the correct include paths and sets
 the language of the extension to C++. The equivalent vanilla :mod:`setuptools`
 code would simply be::
