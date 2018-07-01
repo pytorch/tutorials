@@ -4,9 +4,6 @@ Learning Hybrid Frontend Syntax Through Example
 ===============================================
 **Author:** `Nathan Inkawhich <https://github.com/inkawhich>`_
 
-Hybrid Frontend Information
----------------------------
-
 This document is meant to highlight the syntax of the Hybrid Frontend
 through a non-code intensive example. The Hybrid Frontend is one of the
 new shiny features of Pytorch 1.0 and provides an avenue for developers
@@ -19,6 +16,9 @@ frontend bridges the gap between the the two modes by allowing
 researchers to develop and refine their models in eager mode (i.e.
 PyTorch), then gradually transition the proven model to graph mode for
 production, when speed and resouce consumption become critical.
+
+Hybrid Frontend Information
+---------------------------
 
 The process for transitioning a model to graph mode is as follows.
 First, the developer constructs, trains, and tests the model in eager
@@ -60,21 +60,23 @@ been divided into various pure python functions and modules.
 The function we seek to implement, :math:`Y(x)`, is defined for
 :math:`x \epsilon \mathbb{N}` as
 
-.. math:: z(x) = \Biggl \lfloor \frac{\sqrt{\prod_{i=1}^{ | 2 x | } i}}{5}  \Biggr \rfloor
+.. math::
+
+    z(x) = \Biggl \lfloor \\frac{\sqrt{\prod_{i=1}^{|2 x|}i}}{5} \Biggr \\rfloor
 
 .. math::
 
-   Y(x) = \begin{cases}
-   \frac{z(x)}{2} & if z(x)\%2 == 0 \\
-   z(x) & otherwise
-   \end{cases}
+    Y(x) = \\begin{cases}
+    \\frac{z(x)}{2} & \\text{if } z(x)\%2 == 0 \\
+    z(x) & \\text{otherwise}
+    \end{cases}
 
 .. math::
 
-   \begin{array}{| r  | r |} \hline
-   x &1 &2 &3 &4 &5 &6 &7 \\ \hline
-   Y(x) &0 &0 &-5 &20 &190 &-4377 &-59051 \\ \hline
-   \end{array}
+    \\begin{array}{| r  | r |} \hline
+    x &1 &2 &3 &4 &5 &6 &7 \\ \hline
+    Y(x) &0 &0 &-5 &20 &190 &-4377 &-59051 \\ \hline
+    \end{array}
 
 As mentioned, the computation is split into four parts. Part one is the
 simple tensor calculation of :math:`|2x|`, which can be traced. Part two
