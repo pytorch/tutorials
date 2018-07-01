@@ -67,15 +67,15 @@ The function we seek to implement, :math:`Y(x)`, is defined for
 .. math::
 
     Y(x) = \\begin{cases}
-    \\frac{z(x)}{2} & \\text{if } z(x)\%2 == 0 \\
-    z(x) & \\text{otherwise}
+      \\frac{z(x)}{2}  &  \\text{if } z(x)\%2 == 0, \\\\
+      z(x)             &  \\text{otherwise}
     \end{cases}
 
 .. math::
 
     \\begin{array}{| r  | r |} \hline
-    x &1 &2 &3 &4 &5 &6 &7 \\ \hline
-    Y(x) &0 &0 &-5 &20 &190 &-4377 &-59051 \\ \hline
+    x &1 &2 &3 &4 &5 &6 &7 \\\\ \hline
+    Y(x) &0 &0 &-5 &20 &190 &-4377 &-59051 \\\\ \hline
     \end{array}
 
 As mentioned, the computation is split into four parts. Part one is the
@@ -83,7 +83,7 @@ simple tensor calculation of :math:`|2x|`, which can be traced. Part two
 is the iterative product calculation that represents a data dependent
 control flow to be scripted (the number of loop iteration depends on the
 input at runtime). Part three is a trace-able
-:math:`\lfloor \sqrt{a/5} \rfloor` calculation. Finally, part 4 handles
+:math:`\lfloor \sqrt{a/5} \\rfloor` calculation. Finally, part 4 handles
 the output cases depending on the value of :math:`z(x)` and must be
 scripted due to the data dependency. Now, let's see how this looks in
 code.
