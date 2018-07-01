@@ -18,6 +18,7 @@ In this set of tutorials, you will learn the following:
 .. galleryitem:: /beginner/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py
 
 .. galleryitem:: /beginner/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
+    :figure: /_static/img/hybrid_frontend/pytorch_workflow_small.jpg
 
 .. raw:: html
 
