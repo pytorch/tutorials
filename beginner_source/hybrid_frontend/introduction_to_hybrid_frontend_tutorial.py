@@ -183,18 +183,19 @@ import wget
 #
 
 url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"   # url to data
-filename = url.split("/")[-1]
+filename = os.path.join("data", url.split("/")[-1])
 
 # Download file if it doesn't already exist
 if not os.path.exists(filename):
+    os.makedirs("data")
     print("Downloading...")
-    wget.download(url, 'iris.data')
+    wget.download(url, filename)
     print("Download complete!")
 else:
     print("File exists, skipping download.")
 
 # Print 10 random lines
-with open(filename, 'rb') as datafile:
+with open(filename, 'r') as datafile:
     lines = datafile.readlines()
     # Last line in file is empty, we'll deal with this later
     lines = lines[:-1]
@@ -218,7 +219,7 @@ class_labels = {'Iris-setosa': 0, 'Iris-versicolor': 1, 'Iris-virginica': 2}
 
 # Takes a filename with comma separated contents, returns dataset list
 def create_dataset(filepath):
-    with open(filepath, 'rb') as datafile:
+    with open(filepath, 'r') as datafile:
         # Create dataset list
         lines = csv.reader(datafile)
         dataset = list(lines)
@@ -233,7 +234,7 @@ def create_dataset(filepath):
 
 
 # Load dataset
-dataset = create_dataset("iris.data")
+dataset = create_dataset("data/iris.data")
 
 
 ######################################################################
