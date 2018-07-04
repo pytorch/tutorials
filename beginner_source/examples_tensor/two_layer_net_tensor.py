@@ -53,7 +53,7 @@ for t in range(500):
     grad_w2 = h_relu.t().mm(grad_y_pred)
     grad_h_relu = grad_y_pred.mm(w2.t())
     grad_h = grad_h_relu.clone()
-    grad_h[h < 0] = 0
+    grad_h[h <= 0] = 0
     grad_w1 = x.t().mm(grad_h)
 
     # Update weights using gradient descent
