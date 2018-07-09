@@ -71,7 +71,6 @@ Beginner Tutorials
    beginner/hybrid_frontend_tutorial
    beginner/finetuning_torchvision_models_tutorial
 
-
 Intermediate Tutorials
 ----------------------
 
