@@ -69,6 +69,7 @@ Beginner Tutorials
    beginner/data_loading_tutorial
    beginner/deep_learning_nlp_tutorial
    beginner/hybrid_frontend_tutorial
+   beginner/caffe2_onnx_primer_tutorial
 
 
 Intermediate Tutorials

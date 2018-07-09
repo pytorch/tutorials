@@ -170,39 +170,36 @@ import random
 import operator
 import collections
 import os
-import wget
 
 
 ######################################################################
 # Handle data
 # ~~~~~~~~~~~
 #
-# Next, we'll download the Iris dataset into the current directory as
-# ``iris.data``. To get an idea of what the file looks like, we'll print a
-# few lines.
+# The next step is to download the Iris dataset into ``data/iris.data``.
+# To get an idea of what the file looks like, we'll print a few lines.
+#
+# .. Note ::
+#    Download the data from
+#    `here <https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data>`_
+#    and extract it in a ``data`` directory under the current directory.
 #
 
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"   # url to data
-filename = os.path.join("data", url.split("/")[-1])
-
-# Download file if it doesn't already exist
-if not os.path.exists(filename):
-    os.makedirs("data")
-    print("Downloading...")
-    wget.download(url, filename)
-    print("Download complete!")
-else:
-    print("File exists, skipping download.")
+filename = "data/iris.data"
 
 # Print 10 random lines
-with open(filename, 'r') as datafile:
-    lines = datafile.readlines()
-    # Last line in file is empty, we'll deal with this later
-    lines = lines[:-1]
-    random.shuffle(lines)
-    for line in lines[:10]:
-        print(line.strip())
-
+try:
+    datafile = open(filename, 'r')
+except IOError:
+    print("Cannot open data file: {}. Have you downloaded it yet?".format(filename))
+    exit()
+lines = datafile.readlines()
+# Last line in file is empty, we'll deal with this later
+lines = lines[:-1]
+random.shuffle(lines)
+for line in lines[:10]:
+    print(line.strip())
+datafile.close()
 
 ######################################################################
 # Next, we'll create our dataset, which is a list of lists containing each
