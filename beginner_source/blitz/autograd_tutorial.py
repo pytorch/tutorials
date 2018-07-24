@@ -74,7 +74,7 @@ print(z, out)
 
 ################################################################
 # ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
-# flag in-place. The input flag defaults to ``True`` if not given.
+# flag in-place. The input flag defaults to ``False`` if not given.
 a = torch.randn(2, 2)
 a = ((a * 3) / (a - 1))
 print(a.requires_grad)
