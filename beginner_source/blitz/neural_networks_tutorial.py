@@ -156,7 +156,7 @@ out.backward(torch.randn(1, 10))
 # For example:
 
 output = net(input)
-target = torch.arange(1, 11)  # a dummy target, for example
+target = torch.randn(10)  # a dummy target, for example
 target = target.view(1, -1)  # make it the same shape as output
 criterion = nn.MSELoss()
 
