@@ -91,7 +91,7 @@ class ScipyConv2dFunction(Function):
         result = correlate2d(input.numpy(), filter.numpy(), mode='valid')
         result += bias.numpy()
         ctx.save_for_backward(input, filter, bias)
-        return torch.from_numpy(result)
+        return torch.as_tensor(result, dtype=input.dtype)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -103,7 +103,7 @@ class ScipyConv2dFunction(Function):
         # the previous line can be expressed equivalently as:
         # grad_input = correlate2d(grad_output, flip(flip(filter.numpy(), axis=0), axis=1), mode='full')
         grad_filter = correlate2d(input.numpy(), grad_output, mode='valid')
-        return torch.from_numpy(grad_input), torch.from_numpy(grad_filter), torch.from_numpy(grad_bias)
+        return torch.as_tensor(grad_input, dtype=input.dtype), torch.as_tensor(grad_filter, dtype=filter.dtype), torch.as_tensor(grad_bias, dtype=bias.dtype)
 
 
 class ScipyConv2d(Module):
