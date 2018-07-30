@@ -90,9 +90,7 @@ Intermediate Tutorials
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
 
-
 .. galleryitem:: intermediate/spatial_transformer_tutorial.py
-
 
 .. raw:: html
 
@@ -143,3 +141,40 @@ Advanced Tutorials
    advanced/numpy_extensions_tutorial
    advanced/super_resolution_with_caffe2
    advanced/cpp_extension
+
+.. toctree::
+  :caption: Installation Guides
+
+  installation_guides/local
+  installation_guides/cloud
+
+.. toctree::
+  :caption: PyTorch Basics
+
+  pytorch_basics/abc
+  pytorch_basics/123
+
+.. toctree::
+  :caption: PyTorch Applied
+
+  pytorch_applied/vision
+  pytorch_applied/audio
+  Language/NLP <pytorch_applied/language>
+
+.. toctree::
+  :caption: PyTorch in Depth
+
+  pytorch_in_depth/distributed.rst
+  pytorch_in_depth/optimization.rst
+  pytorch_in_depth/benchmarking.rst
+  pytorch_in_depth/custom_collate_functions.rst
+  pytorch_in_depth/custom_data_loading.rst
+  pytorch_in_depth/custom_operators.rst
+  pytorch_in_depth/graph_mode.rst
+  pytorch_in_depth/tensor_comprehensions.rst
+
+
+.. toctree::
+  :caption: Hacking PyTorch
+
+  hacking_pytorch/cpp_extensions.rst
