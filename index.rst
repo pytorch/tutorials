@@ -71,6 +71,7 @@ Beginner Tutorials
    beginner/hybrid_frontend_tutorial
    beginner/finetuning_torchvision_models_tutorial
    beginner/dcgan_faces_tutorial
+   beginner/saving_loading_models
 
 Intermediate Tutorials
 ----------------------
