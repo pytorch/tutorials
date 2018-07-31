@@ -144,17 +144,13 @@ Advanced Tutorials
    advanced/super_resolution_with_caffe2
    advanced/cpp_extension
 
-.. toctree::
-  :caption: Installation Guides
-
-  installation_guides/local
-  installation_guides/cloud
 
 .. toctree::
   :caption: PyTorch Basics
 
-  pytorch_basics/abc
-  pytorch_basics/123
+  pytorch_basics/installing_pytorch
+  <pytorch_basics/abc>
+  <pytorch_basics/123>
 
 .. toctree::
   :caption: PyTorch Applied
@@ -175,8 +171,20 @@ Advanced Tutorials
   pytorch_in_depth/graph_mode.rst
   pytorch_in_depth/tensor_comprehensions.rst
 
-
 .. toctree::
   :caption: Hacking PyTorch
 
   hacking_pytorch/cpp_extensions.rst
+
+
+.. toctree::
+  :caption: Installation Guides
+
+  installation_guides/local
+  installation_guides/cloud
+
+.. toctree::
+   :caption: Table of Contents
+   :name: mastertoc
+
+   fooby <foo>
