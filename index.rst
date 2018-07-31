@@ -70,6 +70,7 @@ Beginner Tutorials
    beginner/deep_learning_nlp_tutorial
    beginner/hybrid_frontend_tutorial
    beginner/finetuning_torchvision_models_tutorial
+   beginner/dcgan_faces_tutorial
 
 Intermediate Tutorials
 ----------------------
