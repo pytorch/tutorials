@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Transfering a model from PyTorch to Caffe2 and Mobile using ONNX &mdash; PyTorch Tutorials 0.4.0 documentation</title>
+  <title>Transfering a model from PyTorch to Caffe2 and Mobile using ONNX &mdash; PyTorch Tutorials 0.4.1 documentation</title>
   
 
   
@@ -24,33 +24,22 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
-  
-    <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
-  
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../index.html"/>
-        <link rel="next" title="Custom C++ and CUDA Extensions" href="cpp_extension.html"/>
-        <link rel="prev" title="Creating extensions using numpy and scipy" href="numpy_extensions_tutorial.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Custom C++ and CUDA Extensions" href="cpp_extension.html" />
+    <link rel="prev" title="Creating extensions using numpy and scipy" href="numpy_extensions_tutorial.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -67,7 +56,7 @@
 
           
             
-            <img src="../_static/pytorch-logo-dark.svg" class="logo" />
+            <img src="../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
           
           </a>
 
@@ -75,7 +64,7 @@
             
             
               <div class="version">
-                0.4.0
+                0.4.1
               </div>
             
           
@@ -445,7 +434,7 @@
 <li class="toctree-l1"><a class="reference internal" href="cpp_extension.html">Custom C++ and CUDA Extensions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="cpp_extension.html#motivation-and-example">Motivation and Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="cpp_extension.html#writing-a-c-extension">Writing a C++ Extension</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="cpp_extension.html#building-with-setuptools">Building with <code class="docutils literal notranslate"><span class="pre">setuptools</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="cpp_extension.html#building-with-setuptools">Building with <code class="docutils literal"><span class="pre">setuptools</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="cpp_extension.html#writing-the-c-op">Writing the C++ Op</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="cpp_extension.html#forward-pass">Forward Pass</a></li>
 <li class="toctree-l4"><a class="reference internal" href="cpp_extension.html#backward-pass">Backward Pass</a></li>
@@ -481,7 +470,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">PyTorch Tutorials</a>
@@ -489,9 +478,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -533,7 +523,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="transfering-a-model-from-pytorch-to-caffe2-and-mobile-using-onnx">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-advanced-super-resolution-with-caffe2-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="transfering-a-model-from-pytorch-to-caffe2-and-mobile-using-onnx">
 <span id="sphx-glr-advanced-super-resolution-with-caffe2-py"></span><h1>Transfering a model from PyTorch to Caffe2 and Mobile using ONNX<a class="headerlink" href="#transfering-a-model-from-pytorch-to-caffe2-and-mobile-using-onnx" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we describe how to use ONNX to convert a model defined
 in PyTorch into the ONNX format and then load it into Caffe2. Once in
@@ -543,10 +537,10 @@ executing the model on mobile devices.</p>
 <p>For this tutorial, you will need to install <a class="reference external" href="https://github.com/onnx/onnx">onnx</a>,
 <a class="reference external" href="https://github.com/onnx/onnx-caffe2">onnx-caffe2</a> and <a class="reference external" href="https://caffe2.ai/">Caffe2</a>.
 You can get binary builds of onnx and onnx-caffe2 with
-<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">ezyang</span> <span class="pre">onnx</span> <span class="pre">onnx-caffe2</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">NOTE</span></code>: This tutorial needs PyTorch master branch which can be installed by following
+<code class="docutils literal"><span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">ezyang</span> <span class="pre">onnx</span> <span class="pre">onnx-caffe2</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">NOTE</span></code>: This tutorial needs PyTorch master branch which can be installed by following
 the instructions <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">here</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
 <span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 
@@ -562,7 +556,7 @@ input.</p>
 <p>First, let’s create a SuperResolution model in PyTorch. <a class="reference external" href="https://github.com/pytorch/examples/blob/master/super_resolution/model.py">This
 model</a>
 comes directly from PyTorch’s examples without modification:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Super Resolution model definition in PyTorch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Super Resolution model definition in PyTorch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.init</span> <span class="kn">as</span> <span class="nn">init</span>
 
@@ -601,7 +595,7 @@ comes directly from PyTorch’s examples without modification:</p>
 we will instead download some pre-trained weights. Note that this model
 was not trained fully for good accuracy and is used here for
 demonstration purposes only.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load pretrained model weights</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Load pretrained model weights</span>
 <span class="n">model_url</span> <span class="o">=</span> <span class="s1">&#39;https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth&#39;</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>    <span class="c1"># just a random number</span>
 
@@ -616,14 +610,14 @@ demonstration purposes only.</p>
 </pre></div>
 </div>
 <p>Exporting a model in PyTorch works via tracing. To export a model, you
-call the <code class="docutils literal notranslate"><span class="pre">torch.onnx._export()</span></code> function. This will execute the model,
+call the <code class="docutils literal"><span class="pre">torch.onnx._export()</span></code> function. This will execute the model,
 recording a trace of what operators are used to compute the outputs.
-Because <code class="docutils literal notranslate"><span class="pre">_export</span></code> runs the model, we need provide an input tensor
-<code class="docutils literal notranslate"><span class="pre">x</span></code>. The values in this tensor are not important; it can be an image
+Because <code class="docutils literal"><span class="pre">_export</span></code> runs the model, we need provide an input tensor
+<code class="docutils literal"><span class="pre">x</span></code>. The values in this tensor are not important; it can be an image
 or a random tensor as long as it is the right size.</p>
 <p>To learn more details about PyTorch’s export interface, check out the
 <a class="reference external" href="http://pytorch.org/docs/master/onnx.html">torch.onnx documentation</a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Input to the model</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Input to the model</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="c1"># Export the model</span>
@@ -633,14 +627,14 @@ or a random tensor as long as it is the right size.</p>
                                <span class="n">export_params</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>      <span class="c1"># store the trained parameter weights inside the model file</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">torch_out</span></code> is the output after executing the model. Normally you can
+<p><code class="docutils literal"><span class="pre">torch_out</span></code> is the output after executing the model. Normally you can
 ignore this output, but here we will use it to verify that the model we
 exported computes the same values when run in Caffe2.</p>
 <p>Now let’s take the ONNX representation and use it in Caffe2. This part
 can normally be done in a separate process or on another machine, but we
 will continue in the same process so that we can verify that Caffe2 and
 PyTorch are computing the same value for the network:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">onnx</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">onnx</span>
 <span class="kn">import</span> <span class="nn">onnx_caffe2.backend</span>
 
 <span class="c1"># Load the ONNX ModelProto object. model is a standard Python protobuf object</span>
@@ -695,7 +689,7 @@ to generate the two model protobufs that can run on mobile. The first is
 used to initialize the network with the correct weights, and the second
 actual runs executes the model. We will continue to use the small
 super-resolution model for the rest of this tutorial.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># extract the workspace and the model proto from the internal representation</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># extract the workspace and the model proto from the internal representation</span>
 <span class="n">c2_workspace</span> <span class="o">=</span> <span class="n">prepared_backend</span><span class="o">.</span><span class="n">workspace</span>
 <span class="n">c2_model</span> <span class="o">=</span> <span class="n">prepared_backend</span><span class="o">.</span><span class="n">predict_net</span>
 
@@ -712,10 +706,10 @@ super-resolution model for the rest of this tutorial.</p>
     <span class="n">fopen</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">predict_net</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">init_net</span></code> has the model parameters and the model input embedded in it
-and <code class="docutils literal notranslate"><span class="pre">predict_net</span></code> will be used to guide the <code class="docutils literal notranslate"><span class="pre">init_net</span></code> execution at
-run-time. In this tutorial, we will use the <code class="docutils literal notranslate"><span class="pre">init_net</span></code> and
-<code class="docutils literal notranslate"><span class="pre">predict_net</span></code> generated above and run them in both normal Caffe2
+<p><code class="docutils literal"><span class="pre">init_net</span></code> has the model parameters and the model input embedded in it
+and <code class="docutils literal"><span class="pre">predict_net</span></code> will be used to guide the <code class="docutils literal"><span class="pre">init_net</span></code> execution at
+run-time. In this tutorial, we will use the <code class="docutils literal"><span class="pre">init_net</span></code> and
+<code class="docutils literal"><span class="pre">predict_net</span></code> generated above and run them in both normal Caffe2
 backend and mobile and verify that the output high-resolution cat image
 produced in both runs is the same.</p>
 <p>For this tutorial, we will use a famous cat image used widely which
@@ -723,7 +717,7 @@ looks like below</p>
 <div class="figure">
 <img alt="cat" src="../_images/cat_224x224.jpg" />
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
 <span class="kn">from</span> <span class="nn">caffe2.proto</span> <span class="kn">import</span> <span class="n">caffe2_pb2</span>
 <span class="kn">from</span> <span class="nn">caffe2.python</span> <span class="kn">import</span> <span class="n">core</span><span class="p">,</span> <span class="n">net_drawer</span><span class="p">,</span> <span class="n">net_printer</span><span class="p">,</span> <span class="n">visualize</span><span class="p">,</span> <span class="n">workspace</span><span class="p">,</span> <span class="n">utils</span>
 
@@ -738,7 +732,7 @@ looks like below</p>
 <p>First, let’s load the image, pre-process it using standard skimage
 python library. Note that this preprocessing is the standard practice of
 processing data for training/testing neural networks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the image</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># load the image</span>
 <span class="n">img_in</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s2">&quot;./_static/img/cat.jpg&quot;</span><span class="p">)</span>
 
 <span class="c1"># resize the image to dimensions 224x224</span>
@@ -753,7 +747,7 @@ super-resolution model in Caffe2 backend and save the output image. The
 image processing steps below have been adopted from PyTorch
 implementation of super-resolution model
 <a class="reference external" href="https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py">here</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># load the resized image and convert it to Ybr format</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># load the resized image and convert it to Ybr format</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;./_static/img/cat_224x224.jpg&quot;</span><span class="p">)</span>
 <span class="n">img_ycbcr</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;YCbCr&#39;</span><span class="p">)</span>
 <span class="n">img_y</span><span class="p">,</span> <span class="n">img_cb</span><span class="p">,</span> <span class="n">img_cr</span> <span class="o">=</span> <span class="n">img_ycbcr</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
@@ -771,7 +765,7 @@ implementation of super-resolution model
 named “27”(it is a little bit weird that we will have numbers as blob
 names but this is because the tracing JIT produces numbered entries for
 the models)</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now, let&#39;s also pass in the resized cat image for processing by the model.</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Now, let&#39;s also pass in the resized cat image for processing by the model.</span>
 <span class="n">workspace</span><span class="o">.</span><span class="n">FeedBlob</span><span class="p">(</span><span class="s2">&quot;9&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img_y</span><span class="p">)[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
 
 <span class="c1"># run the predict_net to get the model output</span>
@@ -785,7 +779,7 @@ the models)</p>
 implementation of super-resolution model
 <a class="reference external" href="https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py">here</a>
 to construct back the final output image and save the image.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">img_out_y</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">img_out</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">img_out_y</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">img_out</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
 
 <span class="c1"># get the output image follow post-processing step from PyTorch implementation</span>
 <span class="n">final_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
@@ -801,19 +795,19 @@ to construct back the final output image and save the image.</p>
 </div>
 <p>We have finished running our mobile nets in pure Caffe2 backend and now,
 let’s execute the model on an Android device and get the model output.</p>
-<p><code class="docutils literal notranslate"><span class="pre">NOTE</span></code>: for Android development, <code class="docutils literal notranslate"><span class="pre">adb</span></code> shell is needed otherwise the
+<p><code class="docutils literal"><span class="pre">NOTE</span></code>: for Android development, <code class="docutils literal"><span class="pre">adb</span></code> shell is needed otherwise the
 following section of tutorial will not run.</p>
 <p>In our first step of runnig model on mobile, we will push a native speed
 benchmark binary for mobile device to adb. This binary can execute the
 model on mobile and also export the model output that we can retrieve
 later. The binary is available
 <a class="reference external" href="https://github.com/caffe2/caffe2/blob/master/caffe2/binaries/speed_benchmark.cc">here</a>.
-In order to build the binary, execute the <code class="docutils literal notranslate"><span class="pre">build_android.sh</span></code> script
+In order to build the binary, execute the <code class="docutils literal"><span class="pre">build_android.sh</span></code> script
 following the instructions
 <a class="reference external" href="https://github.com/caffe2/caffe2/blob/master/scripts/build_android.sh">here</a>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">NOTE</span></code>: You need to have <code class="docutils literal notranslate"><span class="pre">ANDROID_NDK</span></code> installed and set your env
-variable <code class="docutils literal notranslate"><span class="pre">ANDROID_NDK=path</span> <span class="pre">to</span> <span class="pre">ndk</span> <span class="pre">root</span></code></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># let&#39;s first push a bunch of stuff to adb, specify the path for the binary</span>
+<p><code class="docutils literal"><span class="pre">NOTE</span></code>: You need to have <code class="docutils literal"><span class="pre">ANDROID_NDK</span></code> installed and set your env
+variable <code class="docutils literal"><span class="pre">ANDROID_NDK=path</span> <span class="pre">to</span> <span class="pre">ndk</span> <span class="pre">root</span></code></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># let&#39;s first push a bunch of stuff to adb, specify the path for the binary</span>
 <span class="n">CAFFE2_MOBILE_BINARY</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;caffe2/binaries/speed_benchmark&#39;</span><span class="p">)</span>
 
 <span class="c1"># we had saved our init_net and proto_net in steps above, we use them now.</span>
@@ -860,8 +854,8 @@ variable <code class="docutils literal notranslate"><span class="pre">ANDROID_ND
 <span class="n">final_img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;./_static/img/cat_superres_mobile.jpg&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now, you can compare the image <code class="docutils literal notranslate"><span class="pre">cat_superres.jpg</span></code> (model output from
-pure caffe2 backend execution) and <code class="docutils literal notranslate"><span class="pre">cat_superres_mobile.jpg</span></code> (model
+<p>Now, you can compare the image <code class="docutils literal"><span class="pre">cat_superres.jpg</span></code> (model output from
+pure caffe2 backend execution) and <code class="docutils literal"><span class="pre">cat_superres_mobile.jpg</span></code> (model
 output from mobile execution) and see that both the images look same. If
 they don’t look same, something went wrong with execution on mobile and
 in that case, please contact Caffe2 community. You should expect to see
@@ -873,11 +867,11 @@ the output image to look like following:</p>
 Also, for more information on caffe2 mobile backend, checkout
 <a class="reference external" href="https://caffe2.ai/docs/AI-Camera-demo-android.html">caffe2-android-demo</a>.</p>
 <p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-super-resolution-with-caffe2-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/super_resolution_with_caffe2.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">super_resolution_with_caffe2.py</span></code></a></div>
+<a class="reference download internal" href="../_downloads/super_resolution_with_caffe2.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">super_resolution_with_caffe2.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/super_resolution_with_caffe2.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">super_resolution_with_caffe2.ipynb</span></code></a></div>
+<a class="reference download internal" href="../_downloads/super_resolution_with_caffe2.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">super_resolution_with_caffe2.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -885,9 +879,7 @@ Also, for more information on caffe2 mobile backend, checkout
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -909,7 +901,7 @@ Also, for more information on caffe2 mobile backend, checkout
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -927,7 +919,7 @@ Also, for more information on caffe2 mobile backend, checkout
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.4.0',
+            VERSION:'0.4.1',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -942,19 +934,13 @@ Also, for more information on caffe2 mobile backend, checkout
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

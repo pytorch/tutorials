@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Custom C++ and CUDA Extensions &mdash; PyTorch Tutorials 0.4.0 documentation</title>
+  <title>Custom C++ and CUDA Extensions &mdash; PyTorch Tutorials 0.4.1 documentation</title>
   
 
   
@@ -24,32 +24,21 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
-  
-    <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
-  
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../index.html"/>
-        <link rel="prev" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html"/> 
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/pytorch_theme.css" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Transfering a model from PyTorch to Caffe2 and Mobile using ONNX" href="super_resolution_with_caffe2.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -66,7 +55,7 @@
 
           
             
-            <img src="../_static/pytorch-logo-dark.svg" class="logo" />
+            <img src="../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
           
           </a>
 
@@ -74,7 +63,7 @@
             
             
               <div class="version">
-                0.4.0
+                0.4.1
               </div>
             
           
@@ -444,7 +433,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Custom C++ and CUDA Extensions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#motivation-and-example">Motivation and Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#writing-a-c-extension">Writing a C++ Extension</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#building-with-setuptools">Building with <code class="docutils literal notranslate"><span class="pre">setuptools</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#building-with-setuptools">Building with <code class="docutils literal"><span class="pre">setuptools</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#writing-the-c-op">Writing the C++ Op</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#forward-pass">Forward Pass</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#backward-pass">Backward Pass</a></li>
@@ -480,7 +469,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">PyTorch Tutorials</a>
@@ -488,9 +477,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -541,7 +531,7 @@ yourself in need of a more customized operation. For example, you might want to
 use a novel activation function you found in a paper, or implement an operation
 you developed as part of your research.</p>
 <p>The easiest way of integrating such a custom operation in PyTorch is to write it
-in Python by extending <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> as outlined <a class="reference external" href="http://pytorch.org/docs/master/notes/extending.html">here</a>. This gives you the full
+in Python by extending <code class="xref py py-class docutils literal"><span class="pre">Function</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Module</span></code> as outlined <a class="reference external" href="http://pytorch.org/docs/master/notes/extending.html">here</a>. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code
@@ -571,13 +561,13 @@ is similar to an LSTM, but differs in that it lacks a <em>forget gate</em> and u
 <em>Exponential Linear Unit</em> (ELU) as its internal activation function. Because
 this unit never forgets, we’ll call it <em>LLTM</em>, or <em>Long-Long-Term-Memory</em> unit.</p>
 <p>The two ways in which LLTMs differ from vanilla LSTMs are significant enough
-that we can’t configure PyTorch’s <code class="docutils literal notranslate"><span class="pre">LSTMCell</span></code> for our purposes, so we’ll have to
+that we can’t configure PyTorch’s <code class="docutils literal"><span class="pre">LSTMCell</span></code> for our purposes, so we’ll have to
 create a custom cell. The first and easiest approach for this – and likely in
 all cases a good first step – is to implement our desired functionality in
 plain PyTorch with Python. For this, we need to subclass
-<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> and implement the forward pass of the LLTM. This would
+<code class="xref py py-class docutils literal"><span class="pre">torch.nn.Module</span></code> and implement the forward pass of the LLTM. This would
 look something like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LLTM</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LLTM</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_features</span><span class="p">,</span> <span class="n">state_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LLTM</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_features</span> <span class="o">=</span> <span class="n">input_features</span>
@@ -617,7 +607,7 @@ look something like this:</p>
 </pre></div>
 </div>
 <p>which we could then use as expected:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">input_features</span><span class="p">)</span>
 <span class="n">h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">state_size</span><span class="p">)</span>
@@ -654,15 +644,15 @@ from the massive parallelism GPUs provide.</p>
 <div class="section" id="writing-a-c-extension">
 <h2>Writing a C++ Extension<a class="headerlink" href="#writing-a-c-extension" title="Permalink to this headline">¶</a></h2>
 <p>C++ extensions come in two flavors: They can be built “ahead of time” with
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>, or “just in time” via
-<code class="xref py py-func docutils literal notranslate"><span class="pre">torch.utils.cpp_extension.load()</span></code>. We’ll begin with the first approach and
+<code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code>, or “just in time” via
+<code class="xref py py-func docutils literal"><span class="pre">torch.utils.cpp_extension.load()</span></code>. We’ll begin with the first approach and
 discuss the latter later.</p>
 <div class="section" id="building-with-setuptools">
-<h3>Building with <code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code><a class="headerlink" href="#building-with-setuptools" title="Permalink to this headline">¶</a></h3>
+<h3>Building with <code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code><a class="headerlink" href="#building-with-setuptools" title="Permalink to this headline">¶</a></h3>
 <p>For the “ahead of time” flavor, we build our C++ extension by writing a
-<code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script that uses setuptools to compile our C++ code. For the LLTM, it
+<code class="docutils literal"><span class="pre">setup.py</span></code> script that uses setuptools to compile our C++ code. For the LLTM, it
 looks as simple as this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
 <span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">CppExtension</span><span class="p">,</span> <span class="n">BuildExtension</span>
 
 <span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lltm&#39;</span><span class="p">,</span>
@@ -670,22 +660,22 @@ looks as simple as this:</p>
       <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;build_ext&#39;</span><span class="p">:</span> <span class="n">BuildExtension</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>In this code, :class:<code class="docutils literal notranslate"><span class="pre">CppExtension</span></code> is a convenience wrapper around
-<code class="xref py py-class docutils literal notranslate"><span class="pre">setuptools.Extension</span></code> that passes the correct include paths and sets
-the language of the extension to C++. The equivalent vanilla <code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>
+<p>In this code, <code class="xref py py-class docutils literal"><span class="pre">CppExtension</span></code> is a convenience wrapper around
+<code class="xref py py-class docutils literal"><span class="pre">setuptools.Extension</span></code> that passes the correct include paths and sets
+the language of the extension to C++. The equivalent vanilla <code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code>
 code would simply be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setuptools</span><span class="o">.</span><span class="n">Extension</span><span class="p">(</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">setuptools</span><span class="o">.</span><span class="n">Extension</span><span class="p">(</span>
    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;lltm&#39;</span><span class="p">,</span>
    <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lltm.cpp&#39;</span><span class="p">],</span>
    <span class="n">include_dirs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">include_paths</span><span class="p">(),</span>
    <span class="n">language</span><span class="o">=</span><span class="s1">&#39;c++&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">BuildExtension</span></code> performs a number of required configuration steps and
+<p><code class="xref py py-class docutils literal"><span class="pre">BuildExtension</span></code> performs a number of required configuration steps and
 checks and also manages mixed compilation in the case of mixed C++/CUDA
 extensions. And that’s all we really need to know about building C++ extensions
 for now! Let’s now take a look at the implementation of our C++ extension,
-which goes into <code class="docutils literal notranslate"><span class="pre">lltm.cpp</span></code>.</p>
+which goes into <code class="docutils literal"><span class="pre">lltm.cpp</span></code>.</p>
 </div>
 <div class="section" id="writing-the-c-op">
 <h3>Writing the C++ Op<a class="headerlink" href="#writing-the-c-op" title="Permalink to this headline">¶</a></h3>
@@ -693,7 +683,7 @@ which goes into <code class="docutils literal notranslate"><span class="pre">llt
 backward pass is the derivative of the sigmoid. This is a small enough piece of
 code to discuss the overall environment that is available to us when writing C++
 extensions:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
 
@@ -703,24 +693,24 @@ extensions:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">&lt;torch/torch.h&gt;</span></code> is the one-stop header to include all the necessary PyTorch
+<p><code class="docutils literal"><span class="pre">&lt;torch/torch.h&gt;</span></code> is the one-stop header to include all the necessary PyTorch
 bits to write C++ extensions. It includes:</p>
 <ul class="simple">
 <li>The ATen library, which is our primary API for tensor computation,</li>
 <li><a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>, which is how we create Python bindings for our C++ code,</li>
 <li>Headers that manage the details of interaction between ATen and pybind11.</li>
 </ul>
-<p>The implementation of <code class="xref py py-func docutils literal notranslate"><span class="pre">d_sigmoid()</span></code> shows how to use the ATen API.
+<p>The implementation of <code class="xref py py-func docutils literal"><span class="pre">d_sigmoid()</span></code> shows how to use the ATen API.
 PyTorch’s tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
-<code class="xref py py-class docutils literal notranslate"><span class="pre">at::Tensor</span></code>. Its full API can be inspected <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/aten/doc/Tensor.h">here</a>. Notice
-also that we can include <code class="docutils literal notranslate"><span class="pre">&lt;iostream&gt;</span></code> or <em>any other C or C++ header</em> – we have
+<code class="xref py py-class docutils literal"><span class="pre">at::Tensor</span></code>. Its full API can be inspected <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/aten/doc/Tensor.h">here</a>. Notice
+also that we can include <code class="docutils literal"><span class="pre">&lt;iostream&gt;</span></code> or <em>any other C or C++ header</em> – we have
 the full power of C++11 at our disposal.</p>
 <div class="section" id="forward-pass">
 <h4>Forward Pass<a class="headerlink" href="#forward-pass" title="Permalink to this headline">¶</a></h4>
 <p>Next we can port our entire forward pass to C++:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
 
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_forward</span><span class="p">(</span>
     <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
@@ -758,11 +748,11 @@ differentiation. This is something the PyTorch team is working on, but it is
 not available yet. As such, we have to also implement the backward pass of our
 LLTM, which computes the derivative of the loss with respect to each input of
 the forward pass. Ultimately, we will plop both the forward and backward
-function into a <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> to create a nice Python binding. The
+function into a <code class="xref py py-class docutils literal"><span class="pre">torch.autograd.Function</span></code> to create a nice Python binding. The
 backward function is slightly more involved, so we’ll not dig deeper into the
 code (if you are interested, <a class="reference external" href="http://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
 information on this):</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// tanh&#39;(z) = 1 - tanh^2(z)</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="c1">// tanh&#39;(z) = 1 - tanh^2(z)</span>
 <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">.</span><span class="n">tanh</span><span class="p">().</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
 <span class="p">}</span>
@@ -821,15 +811,15 @@ bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by <a class="reference external" href="http://pybind11.readthedocs.io/en/master/">pybind11 documentation</a>.</p>
 <p>For our extensions, the necessary binding code spans only four lines:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">PYBIND11_MODULE</span><span class="p">(</span><span class="n">TORCH_EXTENSION_NAME</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">PYBIND11_MODULE</span><span class="p">(</span><span class="n">TORCH_EXTENSION_NAME</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;forward&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">lltm_forward</span><span class="p">,</span> <span class="s">&quot;LLTM forward&quot;</span><span class="p">);</span>
   <span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;backward&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">lltm_backward</span><span class="p">,</span> <span class="s">&quot;LLTM backward&quot;</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>One bit to note here is the macro <code class="docutils literal notranslate"><span class="pre">TORCH_EXTENSION_NAME</span></code>. The torch extension
-build will define it as the name you give your extension in the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>
-script. In this case, the value of <code class="docutils literal notranslate"><span class="pre">TORCH_EXTENSION_NAME</span></code> would be “lltm”.
+<p>One bit to note here is the macro <code class="docutils literal"><span class="pre">TORCH_EXTENSION_NAME</span></code>. The torch extension
+build will define it as the name you give your extension in the <code class="docutils literal"><span class="pre">setup.py</span></code>
+script. In this case, the value of <code class="docutils literal"><span class="pre">TORCH_EXTENSION_NAME</span></code> would be “lltm”.
 This is to avoid having to maintain the name of the extension in two places
 (the build script and your C++ code), as a mismatch between the two can lead to
 nasty and hard to track issues.</p>
@@ -838,15 +828,15 @@ nasty and hard to track issues.</p>
 <h3>Using Your Extension<a class="headerlink" href="#using-your-extension" title="Permalink to this headline">¶</a></h3>
 <p>We are now set to import our extension in PyTorch. At this point, your directory
 structure could look something like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytorch</span><span class="o">/</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">pytorch</span><span class="o">/</span>
   <span class="n">lltm</span><span class="o">-</span><span class="n">extension</span><span class="o">/</span>
     <span class="n">lltm</span><span class="o">.</span><span class="n">cpp</span>
     <span class="n">setup</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-<p>Now, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> to build and install your extension. This
+<p>Now, run <code class="docutils literal"><span class="pre">python</span> <span class="pre">setup.py</span> <span class="pre">install</span></code> to build and install your extension. This
 should look something like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>running install
+<div class="highlight-default"><div class="highlight"><pre><span></span>running install
 running bdist_egg
 running egg_info
 writing lltm.egg-info/PKG-INFO
@@ -895,18 +885,18 @@ default compiler already. On MacOS, you must use clang (which does not have any 
 case, you can build PyTorch from source with your compiler and then build the
 extension with that same compiler.</p>
 <p>Once your extension is built, you can simply import it in Python, using the
-name you specified in your <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script. Just be sure to <code class="docutils literal notranslate"><span class="pre">import</span>
+name you specified in your <code class="docutils literal"><span class="pre">setup.py</span></code> script. Just be sure to <code class="docutils literal"><span class="pre">import</span>
 <span class="pre">torch</span></code> first, as this will resolve some symbols that the dynamic linker must
 see:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">torch</span>
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">lltm</span>
 <span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">lltm</span><span class="o">.</span><span class="n">forward</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">lltm</span><span class="o">.</span><span class="n">PyCapsule</span><span class="o">.</span><span class="n">forward</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>If we call <code class="docutils literal notranslate"><span class="pre">help()</span></code> on the function or module, we can see that its signature
+<p>If we call <code class="docutils literal"><span class="pre">help()</span></code> on the function or module, we can see that its signature
 matches our C++ code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">help</span><span class="p">(</span><span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">help</span><span class="p">(</span><span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
 <span class="n">forward</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="n">method</span> <span class="n">of</span> <span class="n">builtins</span><span class="o">.</span><span class="n">PyCapsule</span> <span class="n">instance</span>
     <span class="n">forward</span><span class="p">(</span><span class="n">arg0</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg1</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg2</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg3</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg4</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">]</span>
 
@@ -914,9 +904,9 @@ matches our C++ code:</p>
 </pre></div>
 </div>
 <p>Since we are now able to call our C++ functions from Python, we can wrap them
-with <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> to make them first
+with <code class="xref py py-class docutils literal"><span class="pre">torch.autograd.Function</span></code> and <code class="xref py py-class docutils literal"><span class="pre">torch.nn.Module</span></code> to make them first
 class citizens of PyTorch:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="c1"># Our module!</span>
@@ -965,7 +955,7 @@ class citizens of PyTorch:</p>
 small benchmark to see how much performance we gained from rewriting our op in
 C++. We’ll run the LLTM forwards and backwards a few times and measure the
 duration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">input_features</span> <span class="o">=</span> <span class="mi">32</span>
@@ -993,11 +983,11 @@ duration:</p>
 </div>
 <p>If we run this code with the original LLTM we wrote in pure Python at the start
 of this post, we get the following numbers (on my machine):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">506.480</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">444.694</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">506.480</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">444.694</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>and with our new C++ version:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">349.335</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">443.523</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">349.335</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">443.523</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>We can already see a significant speedup for the forward function (more than
@@ -1014,12 +1004,12 @@ Nevertheless, this is a good start.</p>
 computing device you are running on. This means the same code we wrote for CPU
 can <em>also</em> run on GPU, and individual operations will correspondingly dispatch
 to GPU-optimized implementations. For certain operations like matrix multiply
-(like <code class="docutils literal notranslate"><span class="pre">mm</span></code> or <code class="docutils literal notranslate"><span class="pre">admm</span></code>), this is a big win. Let’s take a look at how much
+(like <code class="docutils literal"><span class="pre">mm</span></code> or <code class="docutils literal"><span class="pre">admm</span></code>), this is a big win. Let’s take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
 our implementation are required, we simply need to put our tensors in GPU
-memory from Python, with either adding <code class="docutils literal notranslate"><span class="pre">device=cuda_device</span></code> argument at
-creation time or using <code class="docutils literal notranslate"><span class="pre">.to(cuda_device)</span></code> after creation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+memory from Python, with either adding <code class="docutils literal"><span class="pre">device=cuda_device</span></code> argument at
+creation time or using <code class="docutils literal"><span class="pre">.to(cuda_device)</span></code> after creation:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
 <span class="n">cuda_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>  <span class="c1"># device object representing GPU</span>
@@ -1053,11 +1043,11 @@ creation time or using <code class="docutils literal notranslate"><span class="p
 </div>
 <p>Once more comparing our plain PyTorch code with our C++ version, now both
 running on CUDA devices, we again see performance gains. For Python/PyTorch:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">187.719</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">410.815</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">187.719</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">410.815</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>And C++/ATen:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">149.802</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">393.458</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">149.802</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">393.458</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>That’s a great overall speedup compared to non-CUDA code. However, we can pull
@@ -1069,27 +1059,27 @@ extensions.</p>
 <div class="section" id="jit-compiling-extensions">
 <h3>JIT Compiling Extensions<a class="headerlink" href="#jit-compiling-extensions" title="Permalink to this headline">¶</a></h3>
 <p>Previously, I mentioned there were two ways of building C++ extensions: using
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code> or just in time (JIT). Having covered the former, let’s
+<code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code> or just in time (JIT). Having covered the former, let’s
 elaborate on the latter. The JIT compilation mechanism provides you with a way
 of compiling and loading your extensions on the fly by calling a simple
-function in PyTorch’s API called <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.utils.cpp_extension.load()</span></code>. For
+function in PyTorch’s API called <code class="xref py py-func docutils literal"><span class="pre">torch.utils.cpp_extension.load()</span></code>. For
 the LLTM, this would look as simple as this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">load</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">load</span>
 
 <span class="n">lltm</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;lltm&quot;</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;lltm.cpp&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Here, we provide the function with the same information as for
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>. In the background, this will do the following:</p>
+<code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code>. In the background, this will do the following:</p>
 <ol class="arabic simple">
-<li>Create a temporary directory <code class="docutils literal notranslate"><span class="pre">/tmp/torch_extensions/lltm</span></code>,</li>
+<li>Create a temporary directory <code class="docutils literal"><span class="pre">/tmp/torch_extensions/lltm</span></code>,</li>
 <li>Emit a <a class="reference external" href="https://ninja-build.org/">Ninja</a> build file into that temporary directory,</li>
 <li>Compile your source files into a shared library,</li>
 <li>Import this shared library as a Python module.</li>
 </ol>
-<p>In fact, if you pass <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> to <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp_extension.load()</span></code>, you will
+<p>In fact, if you pass <code class="docutils literal"><span class="pre">verbose=True</span></code> to <code class="xref py py-func docutils literal"><span class="pre">cpp_extension.load()</span></code>, you will
 be informed about the process:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span> <span class="k">as</span> <span class="n">PyTorch</span> <span class="n">extensions</span> <span class="n">root</span><span class="o">...</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span> <span class="k">as</span> <span class="n">PyTorch</span> <span class="n">extensions</span> <span class="n">root</span><span class="o">...</span>
 <span class="n">Creating</span> <span class="n">extension</span> <span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span><span class="o">/</span><span class="n">lltm</span><span class="o">...</span>
 <span class="n">Emitting</span> <span class="n">ninja</span> <span class="n">build</span> <span class="n">file</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span><span class="o">/</span><span class="n">lltm</span><span class="o">/</span><span class="n">build</span><span class="o">.</span><span class="n">ninja</span><span class="o">...</span>
 <span class="n">Building</span> <span class="n">extension</span> <span class="n">module</span> <span class="n">lltm</span><span class="o">...</span>
@@ -1097,9 +1087,9 @@ be informed about the process:</p>
 </pre></div>
 </div>
 <p>The resulting Python module will be exactly the same as produced by setuptools,
-but removes the requirement of having to maintain a separate <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> build
+but removes the requirement of having to maintain a separate <code class="docutils literal"><span class="pre">setup.py</span></code> build
 file. If your setup is more complicated and you do need the full power of
-<code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>, you <em>can</em> write your own <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> – but in many cases
+<code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code>, you <em>can</em> write your own <code class="docutils literal"><span class="pre">setup.py</span></code> – but in many cases
 this JIT technique will do just fine. The first time you run through this line,
 it will take some time, as the extension is compiling in the background. Since
 we use the Ninja build system to build your sources, re-compilation is
@@ -1119,16 +1109,16 @@ integrate it with PyTorch using this extension mechanism.</p>
 <p>The general strategy for writing a CUDA extension is to first write a C++ file
 which defines the functions that will be called from Python, and binds those
 functions to Python with pybind11. Furthermore, this file will also <em>declare</em>
-functions that are defined in CUDA (<code class="docutils literal notranslate"><span class="pre">.cu</span></code>) files. The C++ functions will then
+functions that are defined in CUDA (<code class="docutils literal"><span class="pre">.cu</span></code>) files. The C++ functions will then
 do some checks and ultimately forward its calls to the CUDA functions. In the
-CUDA files, we write our actual CUDA kernels. The <code class="xref py py-mod docutils literal notranslate"><span class="pre">cpp_extension</span></code> package
+CUDA files, we write our actual CUDA kernels. The <code class="xref py py-mod docutils literal"><span class="pre">cpp_extension</span></code> package
 will then take care of compiling the C++ sources with a C++ compiler like
-<code class="docutils literal notranslate"><span class="pre">gcc</span></code> and the CUDA sources with NVIDIA’s <code class="docutils literal notranslate"><span class="pre">nvcc</span></code> compiler. This ensures that
+<code class="docutils literal"><span class="pre">gcc</span></code> and the CUDA sources with NVIDIA’s <code class="docutils literal"><span class="pre">nvcc</span></code> compiler. This ensures that
 each compiler takes care of files it knows best to compile. Ultimately, they
 will be linked into one shared library that is available to us from Python
 code.</p>
-<p>We’ll start with the C++ file, which we’ll call <code class="docutils literal notranslate"><span class="pre">lltm_cuda.cpp</span></code>, for example:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
+<p>We’ll start with the C++ file, which we’ll call <code class="docutils literal"><span class="pre">lltm_cuda.cpp</span></code>, for example:</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
 
@@ -1212,14 +1202,14 @@ code.</p>
 </div>
 <p>As you can see, it is largely boilerplate, checks and forwarding to functions
 that we’ll define in the CUDA file. We’ll name this file
-<code class="docutils literal notranslate"><span class="pre">lltm_cuda_kernel.cu</span></code> (note the <code class="docutils literal notranslate"><span class="pre">.cu</span></code> extension!). NVCC can reasonably
+<code class="docutils literal"><span class="pre">lltm_cuda_kernel.cu</span></code> (note the <code class="docutils literal"><span class="pre">.cu</span></code> extension!). NVCC can reasonably
 compile C++11, thus we still have ATen and the C++ standard library available
-to us (but not <code class="docutils literal notranslate"><span class="pre">torch.h</span></code>). Note that <code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code> cannot handle files
-with the same name but different extensions, so if you use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code>
+to us (but not <code class="docutils literal"><span class="pre">torch.h</span></code>). Note that <code class="xref py py-mod docutils literal"><span class="pre">setuptools</span></code> cannot handle files
+with the same name but different extensions, so if you use the <code class="docutils literal"><span class="pre">setup.py</span></code>
 method instead of the JIT method, you must give your CUDA file a different name
-than your C++ file (for the JIT method, <code class="docutils literal notranslate"><span class="pre">lltm.cpp</span></code> and <code class="docutils literal notranslate"><span class="pre">lltm.cu</span></code> would work
+than your C++ file (for the JIT method, <code class="docutils literal"><span class="pre">lltm.cpp</span></code> and <code class="docutils literal"><span class="pre">lltm.cu</span></code> would work
 fine). Let’s take a small peek at what this file will look like:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ATen/ATen.h&gt;</span><span class="cp"></span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ATen/ATen.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;cuda.h&gt;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&lt;cuda_runtime.h&gt;</span><span class="cp"></span>
@@ -1233,10 +1223,10 @@ fine). Let’s take a small peek at what this file will look like:</p>
 </pre></div>
 </div>
 <p>Here we see the headers I just described, as well as the fact that we are using
-CUDA-specific declarations like <code class="docutils literal notranslate"><span class="pre">__device__</span></code> and <code class="docutils literal notranslate"><span class="pre">__forceinline__</span></code> and
-functions like <code class="docutils literal notranslate"><span class="pre">exp</span></code>. Let’s continue with a few more helper functions that
+CUDA-specific declarations like <code class="docutils literal"><span class="pre">__device__</span></code> and <code class="docutils literal"><span class="pre">__forceinline__</span></code> and
+functions like <code class="docutils literal"><span class="pre">exp</span></code>. Let’s continue with a few more helper functions that
 we’ll need:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
 <span class="n">__device__</span> <span class="n">__forceinline__</span> <span class="n">scalar_t</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">scalar_t</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">const</span> <span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
   <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="p">;</span>
@@ -1265,7 +1255,7 @@ we’ll need:</p>
 that performs operations we don’t wish to explicitly write by hand and calls
 into CUDA kernels, and then the actual CUDA kernel for the parts we want to
 speed up. For the forward pass, the first function should look like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
     <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
     <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
     <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
@@ -1302,14 +1292,14 @@ speed up. For the forward pass, the first function should look like this:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The main point of interest here is the <code class="docutils literal notranslate"><span class="pre">AT_DISPATCH_FLOATING_TYPES</span></code> macro and
-the kernel launch (indicated by the <code class="docutils literal notranslate"><span class="pre">&lt;&lt;&lt;...&gt;&gt;&gt;</span></code>). While ATen abstracts away
+<p>The main point of interest here is the <code class="docutils literal"><span class="pre">AT_DISPATCH_FLOATING_TYPES</span></code> macro and
+the kernel launch (indicated by the <code class="docutils literal"><span class="pre">&lt;&lt;&lt;...&gt;&gt;&gt;</span></code>). While ATen abstracts away
 the device and datatype of the tensors we deal with, a tensor will, at runtime,
 still be backed by memory of a concrete type on a concrete device. As such, we
 need a way of determining at runtime what type a tensor is and then selectively
 call functions with the corresponding correct type signature. Done manually,
 this would (conceptually) look something like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">switch</span> <span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">type</span><span class="p">().</span><span class="n">scalarType</span><span class="p">())</span> <span class="p">{</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">switch</span> <span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">type</span><span class="p">().</span><span class="n">scalarType</span><span class="p">())</span> <span class="p">{</span>
   <span class="k">case</span> <span class="n">at</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Double</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">function</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">());</span>
   <span class="k">case</span> <span class="n">at</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Float</span><span class="p">:</span>
@@ -1318,31 +1308,31 @@ this would (conceptually) look something like this:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The purpose of <code class="docutils literal notranslate"><span class="pre">AT_DISPATCH_FLOATING_TYPES</span></code> is to take care of this dispatch
-for us. It takes a type (<code class="docutils literal notranslate"><span class="pre">gates.type()</span></code> in our case), a name (for error
+<p>The purpose of <code class="docutils literal"><span class="pre">AT_DISPATCH_FLOATING_TYPES</span></code> is to take care of this dispatch
+for us. It takes a type (<code class="docutils literal"><span class="pre">gates.type()</span></code> in our case), a name (for error
 messages) and a lambda function. Inside this lambda function, the type alias
-<code class="docutils literal notranslate"><span class="pre">scalar_t</span></code> is available and is defined as the type that the tensor actually
+<code class="docutils literal"><span class="pre">scalar_t</span></code> is available and is defined as the type that the tensor actually
 is at runtime in that context. As such, if we have a template function (which
-our CUDA kernel will be), we can instantiate it with this <code class="docutils literal notranslate"><span class="pre">scalar_t</span></code> alias,
+our CUDA kernel will be), we can instantiate it with this <code class="docutils literal"><span class="pre">scalar_t</span></code> alias,
 and the correct function will be called. In this case, we also want to retrieve
-the data pointers of the tensors as pointers of that <code class="docutils literal notranslate"><span class="pre">scalar_t</span></code> type. If you
-wanted to dispatch over all types and not just floating point types (<code class="docutils literal notranslate"><span class="pre">Float</span></code>
-and <code class="docutils literal notranslate"><span class="pre">Double</span></code>), you can use <code class="docutils literal notranslate"><span class="pre">AT_DISPATCH_ALL_TYPES</span></code>.</p>
+the data pointers of the tensors as pointers of that <code class="docutils literal"><span class="pre">scalar_t</span></code> type. If you
+wanted to dispatch over all types and not just floating point types (<code class="docutils literal"><span class="pre">Float</span></code>
+and <code class="docutils literal"><span class="pre">Double</span></code>), you can use <code class="docutils literal"><span class="pre">AT_DISPATCH_ALL_TYPES</span></code>.</p>
 <p>Note that we perform some operations with plain ATen. These operations will
 still run on the GPU, but using ATen’s default implementations. This makes
 sense, because ATen will use highly optimized routines for things like matrix
-multiplies (e.g. <code class="docutils literal notranslate"><span class="pre">addmm</span></code>) or convolutions which would be much harder to
+multiplies (e.g. <code class="docutils literal"><span class="pre">addmm</span></code>) or convolutions which would be much harder to
 implement and improve ourselves.</p>
 <p>As for the kernel launch itself, we are here specifying that each CUDA block
 will have 1024 threads, and that the entire GPU grid is split into as many
-blocks of <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">x</span> <span class="pre">1024</span></code> threads as are required to fill our matrices with one
+blocks of <code class="docutils literal"><span class="pre">1</span> <span class="pre">x</span> <span class="pre">1024</span></code> threads as are required to fill our matrices with one
 thread per component. For example, if our state size was 2048 and our batch
-size 4, we’d launch a total of <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">x</span> <span class="pre">2</span> <span class="pre">=</span> <span class="pre">8</span></code> blocks with each 1024 threads. If
+size 4, we’d launch a total of <code class="docutils literal"><span class="pre">4</span> <span class="pre">x</span> <span class="pre">2</span> <span class="pre">=</span> <span class="pre">8</span></code> blocks with each 1024 threads. If
 you’ve never heard of CUDA “blocks” or “grids” before, an <a class="reference external" href="https://devblogs.nvidia.com/even-easier-introduction-cuda">introductory read
 about CUDA</a> may
 help.</p>
 <p>The actual CUDA kernel is fairly simple (if you’ve ever programmed GPUs before):</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
 <span class="n">__global__</span> <span class="kt">void</span> <span class="n">lltm_cuda_forward_kernel</span><span class="p">(</span>
     <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">gates</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">old_cell</span><span class="p">,</span>
@@ -1368,11 +1358,11 @@ help.</p>
 </div>
 <p>What’s primarily interesting here is that we are able to compute all of these
 pointwise operations entirely in parallel for each individual component in our
-gate matrices. If you imagine having to do this with a giant <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over
+gate matrices. If you imagine having to do this with a giant <code class="docutils literal"><span class="pre">for</span></code> loop over
 a million elements in serial, you can see why this would be much faster.</p>
 <p>The backwards pass follows much the same pattern and I won’t elaborate further
 on it:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
 <span class="n">__global__</span> <span class="kt">void</span> <span class="n">lltm_cuda_backward_kernel</span><span class="p">(</span>
     <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">d_old_cell</span><span class="p">,</span>
     <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">d_gates</span><span class="p">,</span>
@@ -1459,8 +1449,8 @@ on it:</p>
 <div class="section" id="integrating-a-c-cuda-operation-with-pytorch">
 <h3>Integrating a C++/CUDA Operation with PyTorch<a class="headerlink" href="#integrating-a-c-cuda-operation-with-pytorch" title="Permalink to this headline">¶</a></h3>
 <p>Integration of our CUDA-enabled op with PyTorch is again very straightforward.
-If you want to write a <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script, it could look like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
+If you want to write a <code class="docutils literal"><span class="pre">setup.py</span></code> script, it could look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
 <span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">BuildExtension</span><span class="p">,</span> <span class="n">CUDAExtension</span>
 
 <span class="n">setup</span><span class="p">(</span>
@@ -1476,11 +1466,11 @@ If you want to write a <code class="docutils literal notranslate"><span class="p
     <span class="p">})</span>
 </pre></div>
 </div>
-<p>Instead of <code class="xref py py-func docutils literal notranslate"><span class="pre">CppExtension()</span></code>, we now use <code class="xref py py-func docutils literal notranslate"><span class="pre">CUDAExtension()</span></code>. We can just
-specify the <code class="docutils literal notranslate"><span class="pre">.cu</span></code> file along with the <code class="docutils literal notranslate"><span class="pre">.cpp</span></code> files – the library takes
+<p>Instead of <code class="xref py py-func docutils literal"><span class="pre">CppExtension()</span></code>, we now use <code class="xref py py-func docutils literal"><span class="pre">CUDAExtension()</span></code>. We can just
+specify the <code class="docutils literal"><span class="pre">.cu</span></code> file along with the <code class="docutils literal"><span class="pre">.cpp</span></code> files – the library takes
 care of all the hassle this entails for you. The JIT mechanism is even
 simpler:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">load</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">load</span>
 
 <span class="n">lltm</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lltm&#39;</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lltm_cuda.cpp&#39;</span><span class="p">,</span> <span class="s1">&#39;lltm_cuda_kernel.cu&#39;</span><span class="p">])</span>
 </pre></div>
@@ -1491,11 +1481,11 @@ simpler:</p>
 with CUDA would improve the performance of our LLTM. Let’s see if that holds
 true. We can run the code I listed earlier to run a benchmark. Our fastest
 version earlier was the CUDA-based C++ code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">149.802</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">393.458</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">149.802</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">393.458</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>And now with our custom CUDA kernel:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">129.431</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">304.641</span> <span class="n">us</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Forward</span><span class="p">:</span> <span class="mf">129.431</span> <span class="n">us</span> <span class="o">|</span> <span class="n">Backward</span> <span class="mf">304.641</span> <span class="n">us</span>
 </pre></div>
 </div>
 <p>More performance increases!</p>
@@ -1513,9 +1503,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1535,7 +1523,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1553,7 +1541,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.4.0',
+            VERSION:'0.4.1',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -1568,19 +1556,13 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

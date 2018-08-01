@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Multi-GPU examples &mdash; PyTorch Tutorials 0.4.0 documentation</title>
+  <title>Multi-GPU examples &mdash; PyTorch Tutorials 0.4.1 documentation</title>
   
 
   
@@ -24,34 +24,22 @@
 
   
 
-  
-  
-    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-    <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-  
-    <link rel="stylesheet" href="../../_static/css/pytorch_theme.css" type="text/css" />
-  
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="PyTorch Tutorials 0.4.0 documentation" href="../../index.html"/>
-        <link rel="up" title="PyTorch for former Torch users" href="../former_torchies_tutorial.html"/>
-        <link rel="next" title="Learning PyTorch with Examples" href="../pytorch_with_examples.html"/>
-        <link rel="prev" title="nn package" href="nn_tutorial.html"/> 
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/pytorch_theme.css" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Learning PyTorch with Examples" href="../pytorch_with_examples.html" />
+    <link rel="prev" title="nn package" href="nn_tutorial.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -68,7 +56,7 @@
 
           
             
-            <img src="../../_static/pytorch-logo-dark.svg" class="logo" />
+            <img src="../../_static/pytorch-logo-dark.svg" class="logo" alt="Logo"/>
           
           </a>
 
@@ -76,7 +64,7 @@
             
             
               <div class="version">
-                0.4.0
+                0.4.1
               </div>
             
           
@@ -446,7 +434,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../advanced/cpp_extension.html#motivation-and-example">Motivation and Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../advanced/cpp_extension.html#writing-a-c-extension">Writing a C++ Extension</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../advanced/cpp_extension.html#building-with-setuptools">Building with <code class="docutils literal notranslate"><span class="pre">setuptools</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../advanced/cpp_extension.html#building-with-setuptools">Building with <code class="docutils literal"><span class="pre">setuptools</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../advanced/cpp_extension.html#writing-the-c-op">Writing the C++ Op</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../advanced/cpp_extension.html#forward-pass">Forward Pass</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../advanced/cpp_extension.html#backward-pass">Backward Pass</a></li>
@@ -482,7 +470,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">PyTorch Tutorials</a>
@@ -490,9 +478,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -536,17 +525,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="multi-gpu-examples">
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-former-torchies-parallelism-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="multi-gpu-examples">
 <span id="sphx-glr-beginner-former-torchies-parallelism-tutorial-py"></span><h1>Multi-GPU examples<a class="headerlink" href="#multi-gpu-examples" title="Permalink to this headline">¶</a></h1>
 <p>Data Parallelism is when we split the mini-batch of samples into
 multiple smaller mini-batches and run the computation for each of the
 smaller mini-batches in parallel.</p>
-<p>Data Parallelism is implemented using <code class="docutils literal notranslate"><span class="pre">torch.nn.DataParallel</span></code>.
-One can wrap a Module in <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> and it will be parallelized
+<p>Data Parallelism is implemented using <code class="docutils literal"><span class="pre">torch.nn.DataParallel</span></code>.
+One can wrap a Module in <code class="docutils literal"><span class="pre">DataParallel</span></code> and it will be parallelized
 over multiple GPUs in the batch dimension.</p>
 <div class="section" id="dataparallel">
 <h2>DataParallel<a class="headerlink" href="#dataparallel" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
 
 
@@ -582,9 +575,9 @@ We have implemented simple MPI-like primitives:</p>
 <li>parallel_apply: apply a set of already-distributed inputs to a set of
 already-distributed models.</li>
 </ul>
-<p>To give a better clarity, here function <code class="docutils literal notranslate"><span class="pre">data_parallel</span></code> composed using
+<p>To give a better clarity, here function <code class="docutils literal"><span class="pre">data_parallel</span></code> composed using
 these collectives</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">data_parallel</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">output_device</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">data_parallel</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">output_device</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">device_ids</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">module</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 
@@ -603,7 +596,7 @@ these collectives</p>
 <h2>Part of the model on CPU and part on the GPU<a class="headerlink" href="#part-of-the-model-on-cpu-and-part-on-the-gpu" title="Permalink to this headline">¶</a></h2>
 <p>Let’s look at a small example of implementing a network where part of it
 is on the CPU and part on the GPU</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">DistributedModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
@@ -628,7 +621,7 @@ is on the CPU and part on the GPU</p>
 <p>This was a small introduction to PyTorch for former Torch users.
 There’s a lot more to learn.</p>
 <p>Look at our more comprehensive introductory tutorial which introduces
-the <code class="docutils literal notranslate"><span class="pre">optim</span></code> package, data loaders etc.: <a class="reference internal" href="../deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a>.</p>
+the <code class="docutils literal"><span class="pre">optim</span></code> package, data loaders etc.: <a class="reference internal" href="../deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a>.</p>
 <p>Also look at</p>
 <ul class="simple">
 <li><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html"><span class="doc">Train neural nets to play video games</span></a></li>
@@ -640,12 +633,12 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 <li><a class="reference external" href="https://discuss.pytorch.org/">Discuss PyTorch on the Forums</a></li>
 <li><a class="reference external" href="http://pytorch.slack.com/messages/beginner/">Chat with other users on Slack</a></li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer docutils container">
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.001 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-former-torchies-parallelism-tutorial-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/parallelism_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">parallelism_tutorial.py</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/parallelism_tutorial.py" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">parallelism_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../../_downloads/parallelism_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">parallelism_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" href="../../_downloads/parallelism_tutorial.ipynb" download=""><code class="xref download docutils literal"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">parallelism_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -653,9 +646,7 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -677,7 +668,7 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -695,7 +686,7 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.4.0',
+            VERSION:'0.4.1',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -710,19 +701,13 @@ the <code class="docutils literal notranslate"><span class="pre">optim</span></c
 
   
 
-  
-  
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-  
  
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

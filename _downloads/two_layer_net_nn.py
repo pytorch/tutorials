@@ -35,7 +35,7 @@ model = torch.nn.Sequential(
 
 # The nn package also contains definitions of popular loss functions; in this
 # case we will use Mean Squared Error (MSE) as our loss function.
-loss_fn = torch.nn.MSELoss(size_average=False)
+loss_fn = torch.nn.MSELoss(reduction='sum')
 
 learning_rate = 1e-4
 for t in range(500):
