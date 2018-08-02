@@ -51,6 +51,8 @@ Beginner Tutorials
    :tooltip: Learn Hybrid Frontend through examples.
    :description: :doc:`/beginner/hybrid_frontend_tutorial`
 
+.. galleryitem:: beginner/audio_classifier_tutorial.py
+
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -72,6 +74,7 @@ Beginner Tutorials
    beginner/finetuning_torchvision_models_tutorial
    beginner/dcgan_faces_tutorial
    beginner/saving_loading_models
+   beginner/audio_classifier_tutorial
 
 Intermediate Tutorials
 ----------------------
