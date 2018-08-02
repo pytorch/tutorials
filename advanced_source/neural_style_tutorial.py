@@ -144,13 +144,6 @@ plt.figure()
 imshow(content_img, title='Content Image')
 
 ######################################################################
-#.. figure:: /_static/img/neural-style/sphx_glr_neural_style_tutorial_001.png
-#   :alt: content1
-#
-#.. figure:: /_static/img/neural-style/sphx_glr_neural_style_tutorial_002.png
-#   :alt: content1
-
-######################################################################
 # Loss Functions
 # --------------
 # Content Loss
@@ -387,9 +380,6 @@ input_img = content_img.clone()
 plt.figure()
 imshow(input_img, title='Input Image')
 
-######################################################################
-#.. figure:: /_static/img/neural-style/sphx_glr_neural_style_tutorial_003.png
-#   :alt: content1
 
 ######################################################################
 # Gradient Descent
@@ -485,6 +475,3 @@ imshow(output, title='Output Image')
 plt.ioff()
 plt.show()
 
-######################################################################
-#.. figure:: /_static/img/neural-style/sphx_glr_neural_style_tutorial_004.png
-#   :alt: content1
