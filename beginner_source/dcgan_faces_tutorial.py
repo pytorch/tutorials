@@ -160,7 +160,7 @@ from IPython.display import HTML
 dataroot = "/home/ubuntu/facebook/datasets/celeba"
 
 # Number of workers for dataloader
-workers = 16
+workers = 4
 
 # Batch size during training
 batch_size = 128
