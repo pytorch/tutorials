@@ -73,7 +73,6 @@ Beginner Tutorials
    beginner/hybrid_frontend_tutorial
    beginner/finetuning_torchvision_models_tutorial
    beginner/dcgan_faces_tutorial
-   beginner/saving_loading_models
    beginner/audio_classifier_tutorial
 
 Intermediate Tutorials
@@ -150,10 +149,11 @@ Advanced Tutorials
 
 .. toctree::
   :caption: PyTorch Basics
+  :maxdepth: 1
 
   pytorch_basics/installing_pytorch
-  <pytorch_basics/abc>
-  <pytorch_basics/123>
+  pytorch_basics/saving_loading_models
+
 
 .. toctree::
   :caption: PyTorch Applied
