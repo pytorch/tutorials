@@ -22,26 +22,26 @@ functions to be familiar with:
    unpickling facilities to deserialize pickled object files to memory.
    This function also facilitates the device to load the data into (see
    `Saving & Loading Model Across
-   Devices <#Saving-&-Loading-Model-Across-Devices>`__).
+   Devices <#saving-loading-model-across-devices>`__).
 
 3) `torch.nn.Module.load_state_dict <https://pytorch.org/docs/stable/nn.html?highlight=load_state_dict#torch.nn.Module.load_state_dict>`__:
    Loads a model’s parameter dictionary using a deserialized
    *state_dict*. For more information on *state_dict*, see `What is a
-   state_dict? <#What-is-a-state_dict?>`__.
+   state_dict? <#what-is-a-state-dict>`__.
 
 **Contents:**
 
--  `What is a state_dict? <#What-is-a-state_dict?>`__
+-  `What is a state_dict? <#what-is-a-state-dict>`__
 -  `Saving & Loading Model for
-   Inference <#Saving-&-Loading-Model-for-Inference>`__
+   Inference <#saving-loading-model-for-inference>`__
 -  `Saving & Loading a General
-   Checkpoint <#Saving-&-Loading-a-General-Checkpoint-for-Inference-and/or-Resuming-Training>`__
+   Checkpoint <#saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training>`__
 -  `Saving Multiple Models in One
-   File <#Saving-Multiple-Models-in-One-File>`__
+   File <#saving-multiple-models-in-one-file>`__
 -  `Warmstarting Model Using Parameters from a Different
-   Model <#Warmstarting-Model-Using-Parameters-from-a-Different-Model>`__
+   Model <#warmstarting-model-using-parameters-from-a-different-model>`__
 -  `Saving & Loading Model Across
-   Devices <#Saving-&-Loading-Model-Across-Devices>`__
+   Devices <#saving-loading-model-across-devices>`__
 
 """
 
