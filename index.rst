@@ -74,6 +74,7 @@ Beginner Tutorials
    beginner/finetuning_torchvision_models_tutorial
    beginner/dcgan_faces_tutorial
    beginner/audio_classifier_tutorial
+   beginner/fgsm_tutorial
 
 Intermediate Tutorials
 ----------------------
