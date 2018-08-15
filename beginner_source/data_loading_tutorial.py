@@ -425,7 +425,7 @@ for i_batch, sample_batched in enumerate(dataloader):
 #
 # where 'ants', 'bees' etc. are class labels. Similarly generic transforms
 # which operate on ``PIL.Image`` like  ``RandomHorizontalFlip``, ``Scale``,
-# are also avaiable. You can use these to write a dataloader like this: ::
+# are also available. You can use these to write a dataloader like this: ::
 #
 #   import torch
 #   from torchvision import transforms, datasets
