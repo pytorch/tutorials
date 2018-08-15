@@ -75,6 +75,7 @@ Beginner Tutorials
    beginner/dcgan_faces_tutorial
    beginner/audio_classifier_tutorial
    beginner/fgsm_tutorial
+   beginner/chatbot_tutorial
 
 Intermediate Tutorials
 ----------------------
