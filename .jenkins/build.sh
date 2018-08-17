@@ -23,14 +23,14 @@ sudo mkdir -p /home/ubuntu/facebook/datasets/celeba
 sudo chmod -R 0777 /home/ubuntu/facebook/datasets/celeba
 unzip img_align_celeba.zip -d /home/ubuntu/facebook/datasets/celeba > null
 
-mkdir data/
-
 # Download dataset for beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
+mkdir data/
 curl https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data --output data/iris.data
 
 # Download dataset for beginner_source/chatbot_tutorial.py
 curl https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus.zip --output cornell_movie_dialogs_corpus.zip
-unzip cornell_movie_dialogs_corpus.zip -d data/ > null
+mkdir -p beginner_source/data
+unzip cornell_movie_dialogs_corpus.zip -d beginner_source/data/ > null
 
 # Download dataset for beginner_source/audio_classifier_tutorial.py
 curl https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz --output UrbanSound8K.tar.gz
