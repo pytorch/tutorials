@@ -255,7 +255,7 @@ GitHub repository <https://github.com/seba-1511/dist_tuto.pth/>`__.
 Now that we understand how the distributed module works, let us write
 something useful with it. Our goal will be to replicate the
 functionality of
-`DistributedDataParallel <http://pytorch.org/docs/master/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
+`DistributedDataParallel <http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 Of course, this will be a didactic example and in a real-world
 situtation you should use the official, well-tested and well-optimized
 version linked above.
