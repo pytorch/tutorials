@@ -424,7 +424,7 @@ an exercise left to the reader, there is still one difference between
 our version and the one in DeepSpeech: their implementation divide the
 gradient tensor into *chunks*, so as to optimally utilize the
 communication bandwidth. (Hint:
-`torch.chunk <http://pytorch.org/docs/master/torch.html#torch.chunk>`__)
+`torch.chunk <http://pytorch.org/docs/stable/torch.html#torch.chunk>`__)
 
 Advanced Topics
 ---------------
@@ -447,7 +447,7 @@ there are currently three backends implemented in PyTorch: TCP, MPI, and
 Gloo. They each have different specifications and tradeoffs, depending
 on the desired use-case. A comparative table of supported functions can
 be found
-`here <http://pytorch.org/docs/master/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/master/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
+`here <http://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
 
 **TCP Backend**
 
@@ -552,7 +552,7 @@ Those methods allow you to define how this coordination is done.
 Depending on your hardware setup, one of these methods should be
 naturally more suitable than the others. In addition to the following
 sections, you should also have a look at the `official
-documentation <http://pytorch.org/docs/master/distributed.html#initialization>`__.
+documentation <http://pytorch.org/docs/stable/distributed.html#initialization>`__.
 
 Before diving into the initialization methods, let's have a quick look
 at what happens behind ``init_process_group`` from the C/C++
@@ -673,7 +673,7 @@ multiple jobs to be scheduled on the same cluster.
 I'd like to thank the PyTorch developers for doing such a good job on
 their implementation, documentation, and tests. When the code was
 unclear, I could always count on the
-`docs <http://pytorch.org/docs/master/distributed.html>`__ or the
+`docs <http://pytorch.org/docs/stable/distributed.html>`__ or the
 `tests <https://github.com/pytorch/pytorch/blob/master/test/test_distributed.py>`__
 to find an answer. In particular, I'd like to thank Soumith Chintala,
 Adam Paszke, and Natalia Gimelshein for providing insightful comments
