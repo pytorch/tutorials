@@ -380,7 +380,7 @@ could train any model on a large computer cluster.
 lot more tricks <http://seba-1511.github.io/dist_blog>`__ required to
 implement a production-level implementation of synchronous SGD. Again,
 use what `has been tested and
-optimized <http://pytorch.org/docs/master/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
+optimized <http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 
 Our Own Ring-Allreduce
 ~~~~~~~~~~~~~~~~~~~~~~
