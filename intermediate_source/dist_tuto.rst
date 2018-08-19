@@ -480,9 +480,9 @@ modifications:
 
 0. ``init_processes(rank, size, fn, backend='tcp')`` :math:`\rightarrow`
    ``init_processes(rank, size, fn, backend='gloo')``
-1.  Use ``device = torch.device("cuda:{}".format(rank))
-1. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
-2.  Use ``data, target = data.to(device), target.to(device)``
+1.  Use ``device = torch.device("cuda:{}".format(rank))``
+2. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
+3.  Use ``data, target = data.to(device), target.to(device)``
 
 With the above modifications, our model is now training on two GPUs and
 you can monitor their utilization with ``watch nvidia-smi``.
