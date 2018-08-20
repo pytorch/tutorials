@@ -167,7 +167,7 @@ torch.manual_seed(manualSeed)
 #    longer
 # -  **lr** - learning rate for training. As described in the DCGAN paper,
 #    this number should be 0.0002
-# -  **beta1** - beta1 hyperparamter for Adam optimizers. As described in
+# -  **beta1** - beta1 hyperparameter for Adam optimizers. As described in
 #    paper, this number should be 0.5
 # -  **ngpu** - number of GPUs available. If this is 0, code will run in
 #    CPU mode. If this number is greater than 0 it will run on that number
