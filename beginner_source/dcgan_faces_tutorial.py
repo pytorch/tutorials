@@ -90,7 +90,7 @@ DCGAN Tutorial
 # discriminator and generator, respectively. It was first described by
 # Radford et. al. in the paper `Unsupervised Representation Learning With
 # Deep Convolutional Generative Adversarial
-# Netoworks <https://arxiv.org/pdf/1511.06434.pdf>`__. The discriminator
+# Networks <https://arxiv.org/pdf/1511.06434.pdf>`__. The discriminator
 # is made up of strided
 # `convolution <https://pytorch.org/docs/stable/nn.html#torch.nn.Conv2d>`__
 # layers, `batch
