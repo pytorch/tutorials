@@ -132,7 +132,8 @@ import matplotlib.animation as animation
 from IPython.display import HTML
 
 # Set random seem for reproducibility
-manualSeed = random.randint(1, 10000)
+manualSeed = 999
+#manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
@@ -369,7 +370,7 @@ class Generator(nn.Module):
 netG = Generator(ngpu).to(device)
 
 # Handle multi-gpu if desired
-if ('cuda' in str(device)) and (ngpu > 1):
+if (device.type == 'cuda') and (ngpu > 1):
     netG = nn.DataParallel(netG, list(range(ngpu)))
 
 # Apply the weights_init function to randomly initialize all weights
@@ -440,7 +441,7 @@ class Discriminator(nn.Module):
 netD = Discriminator(ngpu).to(device)
 
 # Handle multi-gpu if desired
-if ('cuda' in str(device)) and (ngpu > 1):
+if (device.type == 'cuda') and (ngpu > 1):
     netD = nn.DataParallel(netD, list(range(ngpu)))
     
 # Apply the weights_init function to randomly initialize all weights
@@ -592,7 +593,7 @@ for epoch in range(num_epochs):
         b_size = real_cpu.size(0)
         label = torch.full((b_size,), real_label, device=device)
         # Forward pass real batch through D
-        output = netD(real_cpu).view(-1, 1).squeeze(1)
+        output = netD(real_cpu).view(-1)
         # Calculate loss on all-real batch
         errD_real = criterion(output, label)
         # Calculate gradients for D in backward pass
@@ -606,7 +607,7 @@ for epoch in range(num_epochs):
         fake = netG(noise)
         label.fill_(fake_label)
         # Classify all fake batch with D
-        output = netD(fake.detach()).view(-1, 1).squeeze(1)
+        output = netD(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
         # Calculate the gradients for this batch
@@ -623,7 +624,7 @@ for epoch in range(num_epochs):
         netG.zero_grad()
         label.fill_(real_label)  # fake labels are real for generator cost
         # Since we just updated D, perform another forward pass of all-fake batch through D
-        output = netD(fake).view(-1, 1).squeeze(1)
+        output = netD(fake).view(-1)
         # Calculate G's loss based on this output
         errG = criterion(output, label)
         # Calculate gradients for G
@@ -709,7 +710,7 @@ plt.figure(figsize=(15,15))
 plt.subplot(1,2,1)
 plt.axis("off")
 plt.title("Real Images")
-plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True),(1,2,0)))
+plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=5, normalize=True).cpu(),(1,2,0)))
 
 # Plot the fake images from the last epoch
 plt.subplot(1,2,2)
