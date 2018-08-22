@@ -766,7 +766,7 @@ class EncoderRNN(nn.Module):
 #
 
 # Luong attention layer
-class Attn(nn.Module):
+class Attn(torch.nn.Module):
     def __init__(self, method, hidden_size):
         super(Attn, self).__init__()
 
@@ -774,44 +774,35 @@ class Attn(nn.Module):
         self.hidden_size = hidden_size
 
         if self.method == 'general':
-            self.attn = nn.Linear(self.hidden_size, hidden_size)
+            self.attn = torch.nn.Linear(self.hidden_size, hidden_size)
 
         elif self.method == 'concat':
-            self.attn = nn.Linear(self.hidden_size * 2, hidden_size)
-            self.v = nn.Parameter(torch.FloatTensor(1, hidden_size))
+            self.attn = torch.nn.Linear(self.hidden_size * 2, hidden_size)
+            self.v = torch.nn.Parameter(torch.FloatTensor(hidden_size))
+
+    def dot_score(self, hidden, encoder_output):
+        return torch.sum(hidden * encoder_output, dim=2)
+
+    def general_score(self, hidden, encoder_output):
+        energy = self.attn(encoder_output)
+        return torch.sum(hidden * energy, dim=2)
+
+    def concat_score(self, hidden, encoder_output):
+        energy = self.attn(torch.cat((hidden.expand(encoder_output.size(0), -1, -1), encoder_output), 2)).tanh()
+        return torch.sum(self.v * energy, dim=2)
 
     def forward(self, hidden, encoder_outputs):
-        max_len = encoder_outputs.size(0)
-        batch_size = encoder_outputs.size(1)
-
-        # Create variable to store attention energies
-        attn_energies = torch.zeros(batch_size, max_len) # B x S
-        attn_energies = attn_energies.to(device)
-
-        # For each batch of encoder outputs
-        for b in range(batch_size):
-            # Calculate energy for each encoder output
-            for i in range(max_len):
-                attn_energies[b, i] = self.score(hidden[:, b], encoder_outputs[i, b].unsqueeze(0))
-
-        # Normalize energies to weights in range 0 to 1, resize to 1 x B x S
-        return F.softmax(attn_energies, dim=1).unsqueeze(1)
-
-    # Score functions
-    def score(self, hidden, encoder_output):
-        if self.method == 'dot':
-            energy = hidden.squeeze(0).dot(encoder_output.squeeze(0))
-            return energy
-
-        elif self.method == 'general':
-            energy = self.attn(encoder_output)
-            energy = hidden.squeeze(0).dot(energy.squeeze(0))
-            return energy
-
+        if self.method == 'general':
+            attn_energies = self.general_score(hidden, encoder_outputs)
         elif self.method == 'concat':
-            energy = self.attn(torch.cat((hidden, encoder_output), 1))
-            energy = self.v.squeeze(0).dot(energy.squeeze(0))
-            return energy
+            attn_energies = self.concat_score(hidden, encoder_outputs)
+        elif self.method == 'dot':
+            attn_energies = self.dot_score(hidden, encoder_outputs)
+
+        # Transpose max_len and batch_size dimensions
+        attn_energies = attn_energies.t()
+
+        return F.softmax(attn_energies, dim=1).unsqueeze(1)
 
 
 ######################################################################
@@ -1347,7 +1338,7 @@ def evaluateInput(encoder, decoder, voc, beam_size):
 #
 
 # Configure models
-model_name = 'model7'
+model_name = 'cb_model'
 attn_model = 'dot'
 #attn_model = 'general'
 #attn_model = 'concat'
@@ -1358,11 +1349,11 @@ dropout = 0.1
 batch_size = 64
 
 # Set checkpoint to load from; set to None if starting from scratch
-#loadFilename = None
+loadFilename = None
 checkpoint_iter = 4000
-loadFilename = os.path.join(save_dir, model_name, corpus_name,
-                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-                            '{}_checkpoint.tar'.format(checkpoint_iter))
+# loadFilename = os.path.join(save_dir, model_name, corpus_name,
+#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+#                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
 
 # Initialize Model
