@@ -1,27 +1,17 @@
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
+# Install a nightly build of pytorch
+
+# GPU, requires CUDA version 9.0 and python version 3.6
+pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly-2018.8.23.dev1-cp36-cp36m-linux_x86_64.whl
+
+# CPU
+# pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly-2018.8.24.dev1-cp36-cp36m-linux_x86_64.whl
+
+## Install doc dependencies
+
 export PATH=/opt/conda/bin:$PATH
-
-## Build pytorch
-export CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" # [anaconda root directory]
-
-# Install basic pytorch dependencies
-conda install numpy pyyaml mkl mkl-include setuptools cmake=3.5.0 cffi typing
-conda install -c mingfeima mkldnn
-
-# Add LAPACK support for the GPU
-conda install -c pytorch magma-cuda80 # or magma-cuda90 if CUDA 9
-
-# Clone pytorch repo and build from scratch
-git clone https://github.com/pytorch/pytorch.git
-pushd pytorch
-git submodule update --init
-.jenkins/pytorch/build.sh
-popd
-
-## install doc dependencies
-
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
 conda install -y sphinx pandas pillow=4.1.1
