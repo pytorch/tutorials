@@ -7,7 +7,7 @@ export PATH=/opt/conda/bin:$PATH
 export CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" # [anaconda root directory]
 
 # Install basic pytorch dependencies
-conda install numpy pyyaml mkl mkl-include setuptools cmake cffi typing
+conda install numpy pyyaml mkl mkl-include setuptools cmake=3.5.0 cffi typing
 conda install -c mingfeima mkldnn
 
 # Add LAPACK support for the GPU
