@@ -2,10 +2,30 @@ sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
 export PATH=/opt/conda/bin:$PATH
+
+## Build pytorch
+export CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" # [anaconda root directory]
+
+# Install basic pytorch dependencies
+conda install numpy pyyaml mkl mkl-include setuptools cmake cffi typing
+conda install -c mingfeima mkldnn
+
+# Add LAPACK support for the GPU
+conda install -c pytorch magma-cuda80 # or magma-cuda90 if CUDA 9
+
+# Clone pytorch repo and build from scratch
+git clone https://github.com/pytorch/pytorch.git
+pushd pytorch
+git submodule update --init
+.jenkins/pytorch/build.sh
+popd
+
+## install doc dependencies
+
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
 conda install -y sphinx pandas pillow=4.1.1
-pip install sphinx-gallery sphinx_rtd_theme tqdm matplotlib ipython torch
+pip install sphinx-gallery sphinx_rtd_theme tqdm matplotlib ipython
 
 git clone https://github.com/pytorch/vision --quiet
 pushd vision
