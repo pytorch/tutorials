@@ -63,6 +63,9 @@ Beginner Tutorials
    beginner/transfer_learning_tutorial
    beginner/data_loading_tutorial
    beginner/deep_learning_nlp_tutorial
+   beginner/finetuning_torchvision_models_tutorial
+   beginner/dcgan_faces_tutorial
+   beginner/fgsm_tutorial
 
 Intermediate Tutorials
 ----------------------
