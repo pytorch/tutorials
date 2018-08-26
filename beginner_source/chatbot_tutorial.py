@@ -258,7 +258,6 @@ conversations = loadConversations(os.path.join(corpus, "movie_conversations.txt"
 print("\nWriting newly formatted file...")
 with open(datafile, 'w', encoding='utf-8') as outputfile:
     writer = csv.writer(outputfile, delimiter=delimiter)
-
     for pair in extractSentencePairs(conversations):
         writer.writerow(pair)
 
@@ -351,11 +350,6 @@ class Voc:
 # filter out sentences with length greater than the ``MAX_LENGTH``
 # threshold (``filterPairs``).
 #
-# For the sake of efficient re-usability, in our ``loadPrepareData``
-# function, we will save our clean ``voc`` and ``pairs`` to .tar files.
-# That way, if we run this code again, we can simply load this data
-# instead of having to redo the tedious preprocessing.
-#
 
 MAX_LENGTH = 10  # Maximum sentence length to consider
 
@@ -400,27 +394,17 @@ def filterPairs(pairs):
 
 
 def loadPrepareData(corpus, corpus_name, datafile, save_dir):
-    try:
-        print("Start loading training data ...")
-        voc = torch.load(os.path.join(save_dir, 'training_data', corpus_name, 'voc.tar'))
-        pairs = torch.load(os.path.join(save_dir, 'training_data', corpus_name, 'pairs.tar'))
-    except FileNotFoundError:
-        print("Saved data not found, start preparing training data ...")
-        voc, pairs = readVocs(datafile, corpus_name)
-        print("Read {!s} sentence pairs".format(len(pairs)))
-        pairs = filterPairs(pairs)
-        print("Trimmed to {!s} sentence pairs".format(len(pairs)))
-        print("Counting words...")
-        for pair in pairs:
-            voc.addSentence(pair[0])
-            voc.addSentence(pair[1])
-        print("Counted words:", voc.num_words)
-        # Save filtered & trimmed voc and pairs to file for later use
-        directory = os.path.join(save_dir, 'training_data', corpus_name)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        torch.save(voc, os.path.join(directory, '{!s}.tar'.format('voc')))
-        torch.save(pairs, os.path.join(directory, '{!s}.tar'.format('pairs')))
+    print("Saved data not found, start preparing training data ...")
+    voc, pairs = readVocs(datafile, corpus_name)
+    print("Read {!s} sentence pairs".format(len(pairs)))
+    pairs = filterPairs(pairs)
+    print("Trimmed to {!s} sentence pairs".format(len(pairs)))
+    print("Counting words...")
+    # Add words from both query and response sentences
+    for pair in pairs:
+        voc.addSentence(pair[0])
+        voc.addSentence(pair[1])
+    print("Counted words:", voc.num_words)
     return voc, pairs
 
 
@@ -744,7 +728,7 @@ class EncoderRNN(nn.Module):
 # we calculate attention weights, or energies, using the hidden state of
 # the decoder from the current time step only. Bahdanau et al.’s attention
 # calculation requires knowledge of the decoder’s state from the previous
-# time step. Also, Luong et al. provides various methods to calculate the
+# time step. Also, Luong et al. provides various methods to calculate the
 # attention energies between the encoder output and decoder output which
 # are called “score functions”:
 #
@@ -1064,7 +1048,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 # training right where we left off.
 #
 
-def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size, print_every, save_every, clip, corpus_name):
+def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size, print_every, save_every, clip, corpus_name, loadFilename):
 
     # Load batches for each iteration
     training_batches = [batch2TrainData(voc, [random.choice(pairs) for _ in range(batch_size)])
@@ -1107,7 +1091,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
                 'en_opt': encoder_optimizer.state_dict(),
                 'de_opt': decoder_optimizer.state_dict(),
                 'loss': loss,
-                'voc': voc,
+                'voc_dict': voc.__dict__,
                 'embedding': embedding.state_dict()
             }, os.path.join(directory, '{}_{}.tar'.format(iteration, 'checkpoint')))
 
@@ -1356,24 +1340,31 @@ checkpoint_iter = 4000
 #                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
 
-# Initialize Model
+# Load model if a loadFilename is provided
 if loadFilename:
-    #checkpoint = torch.load(loadFilename)
-    checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
+    # If loading on same machine the model was trained on
+    checkpoint = torch.load(loadFilename)
+    # If loading a model trained on GPU to CPU
+    #checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
     encoder_sd = checkpoint['en']
     decoder_sd = checkpoint['de']
+    encoder_optimizer_sd = checkpoint['en_opt']
+    decoder_optimizer_sd = checkpoint['de_opt']
     embedding_sd = checkpoint['embedding']
+    voc.__dict__ = checkpoint['voc_dict']
 
 
-checkpoint = None
 print('Building encoder and decoder ...')
+# Initialize word embeddings
 embedding = nn.Embedding(voc.num_words, hidden_size)
+if loadFilename:
+    embedding.load_state_dict(embedding_sd)
+# Initialize encoder & decoder models
 encoder = EncoderRNN(hidden_size, embedding, encoder_n_layers, dropout)
 decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.num_words, decoder_n_layers, dropout)
 if loadFilename:
     encoder.load_state_dict(encoder_sd)
     decoder.load_state_dict(decoder_sd)
-    embedding.load_state_dict(embedding_sd)
 # use cuda
 encoder = encoder.to(device)
 decoder = decoder.to(device)
@@ -1409,14 +1400,14 @@ print('Building optimizers ...')
 encoder_optimizer = optim.Adam(encoder.parameters(), lr=learning_rate)
 decoder_optimizer = optim.Adam(decoder.parameters(), lr=learning_rate * decoder_learning_ratio)
 if loadFilename:
-    encoder_optimizer.load_state_dict(checkpoint['en_opt'])
-    decoder_optimizer.load_state_dict(checkpoint['de_opt'])
+    encoder_optimizer.load_state_dict(encoder_optimizer_sd)
+    decoder_optimizer.load_state_dict(decoder_optimizer_sd)
 
 # Run training iterations
 print("Starting Training!")
 trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,
            embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size,
-           print_every, save_every, clip, corpus_name)
+           print_every, save_every, clip, corpus_name, loadFilename)
 
 
 ######################################################################
