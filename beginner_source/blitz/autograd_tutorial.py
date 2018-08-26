@@ -30,8 +30,8 @@ tracked.
 
 To prevent tracking history (and using memory), you can also wrap the code block
 in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
-model because the model may have trainable parameters with `requires_grad=True`,
-but for which we don't need the gradients.
+model because the model may have trainable parameters with
+``requires_grad=True``, but for which we don't need the gradients.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``.
@@ -52,12 +52,12 @@ argument that is a tensor of matching shape.
 import torch
 
 ###############################################################
-# Create a tensor and set requires_grad=True to track computation with it
+# Create a tensor and set ``requires_grad=True`` to track computation with it
 x = torch.ones(2, 2, requires_grad=True)
 print(x)
 
 ###############################################################
-# Do an operation of tensor:
+# Do a tensor operation:
 y = x + 2
 print(y)
 
@@ -66,7 +66,7 @@ print(y)
 print(y.grad_fn)
 
 ###############################################################
-# Do more operations on y
+# Do more operations on ``y``
 z = y * y * 3
 out = z.mean()
 
@@ -86,14 +86,14 @@ print(b.grad_fn)
 ###############################################################
 # Gradients
 # ---------
-# Let's backprop now
+# Let's backprop now.
 # Because ``out`` contains a single scalar, ``out.backward()`` is
 # equivalent to ``out.backward(torch.tensor(1))``.
 
 out.backward()
 
 ###############################################################
-# print gradients d(out)/dx
+# Print gradients d(out)/dx
 #
 
 print(x.grad)
@@ -128,7 +128,7 @@ print(x.grad)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad``=True by wrapping the code block in
+# with ``.requires_grad=True`` by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
