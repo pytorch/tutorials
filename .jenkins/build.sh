@@ -4,7 +4,7 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 # Install a nightly build of pytorch
 
 # GPU, requires CUDA version 9.0 and python version 3.6
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly-2018.8.23.dev1-cp36-cp36m-linux_x86_64.whl
+pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly-2018.8.28.dev1-cp36-cp36m-linux_x86_64.whl
 
 # CPU
 # pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly-2018.8.24.dev1-cp36-cp36m-linux_x86_64.whl
