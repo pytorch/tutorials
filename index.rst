@@ -148,46 +148,6 @@ Advanced Tutorials
    advanced/super_resolution_with_caffe2
    advanced/cpp_extension
 
-
-.. toctree::
-  :caption: PyTorch Basics
-  :maxdepth: 1
-
-  pytorch_basics/installing_pytorch
-  pytorch_basics/saving_loading_models
-
-
-.. toctree::
-  :caption: PyTorch Applied
-
-  pytorch_applied/vision
-  pytorch_applied/audio
-  Language/NLP <pytorch_applied/language>
-
-.. toctree::
-  :caption: PyTorch in Depth
-
-  pytorch_in_depth/distributed.rst
-  pytorch_in_depth/optimization.rst
-  pytorch_in_depth/benchmarking.rst
-  pytorch_in_depth/custom_collate_functions.rst
-  pytorch_in_depth/custom_data_loading.rst
-  pytorch_in_depth/custom_operators.rst
-  pytorch_in_depth/graph_mode.rst
-  pytorch_in_depth/tensor_comprehensions.rst
-
-.. toctree::
-  :caption: Hacking PyTorch
-
-  hacking_pytorch/cpp_extensions.rst
-
-
-.. toctree::
-  :caption: Installation Guides
-
-  installation_guides/local
-  installation_guides/cloud
-
 .. toctree::
    :caption: Table of Contents
    :name: mastertoc
