@@ -1011,7 +1011,7 @@ simpler::
 
 Note that when constructing :func:`CUDAExtension`, you might have to pass
 ``extra_compile_args`` to :func:`CUDAExtension`, to avoid collisions
-between half operator overloading in pytorch and cuda headers (More on this
+between half operator overloading in pytorch and cuda headers. (More on this
 issue can be found here: 
 https://github.com/pytorch/pytorch/pull/10301#issuecomment-416773333)::
 
