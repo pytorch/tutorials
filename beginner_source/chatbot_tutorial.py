@@ -1422,8 +1422,8 @@ trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_
 encoder.eval()
 decoder.eval()
 
-# Begin chatting
-evaluateInput(encoder, decoder, voc, beam_size=1)
+# Uncomment the next line to begin chatting
+# evaluateInput(encoder, decoder, voc, beam_size=1)
 
 
 ######################################################################
