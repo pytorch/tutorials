@@ -6,7 +6,7 @@ Beginner Tutorials
 	http://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html
 
 2. former_torches/* and former_torchies_tutorial.rst
-	PyTorch for former Torch users
+	PyTorch for Former Torch Users
 	http://pytorch.org/tutorials/beginner/former_torchies_tutorial.html
 
 3. examples_*/* and pytorch_with_examples.rst
@@ -14,7 +14,7 @@ Beginner Tutorials
 	http://pytorch.org/tutorials/beginner/pytorch_with_examples.html
 
 4. transfer_learning_tutorial.py
-	Transfer Learning tutorial
+	Transfer Learning Tutorial
 	http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
 
 5. nlp/* and deep_learning_nlp_tutorial.rst

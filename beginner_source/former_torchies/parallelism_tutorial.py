@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Multi-GPU examples
+Multi-GPU Examples
 ==================
 
 Data Parallelism is when we split the mini-batch of samples into

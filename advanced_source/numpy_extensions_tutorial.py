@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Creating extensions using numpy and scipy
+Creating Extensions Using numpy and scipy
 =========================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
