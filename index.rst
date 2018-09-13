@@ -67,7 +67,7 @@ Image
    :figure: /_static/img/stn/five.gif
    :tooltip: Learn how to augment your network using a visual attention mechanism called spatial transformer networks
    :description: :doc:`intermediate/spatial_transformer_tutorial`
-
+   
 .. customgalleryitem::
    :figure: /_static/img/neural-style/sphx_glr_neural_style_tutorial_004.png
    :tooltip: How to implement the Neural-Style algorithm developed by Gatys, Ecker, and Bethge
@@ -105,7 +105,6 @@ Text
    :tooltip: Train a simple chatbot using movie scripts
    :description: :doc:`beginner/chatbot_tutorial`
 
-
 .. customgalleryitem::
    :figure: /_static/img/char_rnn_generation.png
    :tooltip: Generate names from languages
@@ -127,8 +126,7 @@ Text
 .. raw:: html
 
     <div style='clear:both'></div>
-
-
+    
 Generative
 ----------------------
 

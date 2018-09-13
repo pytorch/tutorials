@@ -21,6 +21,6 @@ In case you prefer to write your tutorial in jupyter, you can use [this script](
 
 ## Building
 
-- Start with installing torch and torchvision. Install other requirements using `pip install -r requirements.txt`
-- Then you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. However, this will take about 30-60 min based on your system. 
-- You can skip the execution by running `make html-noplot` to build html documentation to `_build/html`. This way, you can quickly preview your tutorial.
+- Start with installing torch, torchvision, and your GPUs latest drivers. Install other requirements using `pip install -r requirements.txt`
+- Then you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. This will take about 60-120 min for systems with GPUs. If you do not have a GPU installed on your system, then see next step.
+- You can skip the computationally intensive graph generation by running `make html-noplot` to build basic html documentation to `_build/html`. This way, you can quickly preview your tutorial.
