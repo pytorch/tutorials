@@ -43,9 +43,15 @@ Getting Started
    :description: :doc:`beginner/transfer_learning_tutorial`
 
 .. customgalleryitem::
+   :figure: /_static/img/hybrid_frontend/220px-KnnClassification.png
+   :tooltip: Experiment with some of the key features of the PyTorch hybrid frontend
+   :description: :doc:`beginner/hybrid_frontend_tutorial`
+
+.. customgalleryitem::
    :figure: /_static/img/thumbnails/floppy.png
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
+
 
 
 .. .. galleryitem:: beginner/saving_loading_models.py
@@ -208,6 +214,7 @@ Production Usage
    beginner/data_loading_tutorial
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
+   beginner/hybrid_frontend_tutorial
    beginner/saving_loading_models
 
 .. toctree::
