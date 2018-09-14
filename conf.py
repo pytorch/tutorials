@@ -20,7 +20,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-
+import pytorch_sphinx_theme
 import torch
 import glob
 import shutil
@@ -32,7 +32,7 @@ try:
 except ImportError:
     import warnings
     warnings.warn('unable to load "torchvision" package')
-import sphinx_rtd_theme
+import pytorch_sphinx_theme
 
 # -- General configuration ------------------------------------------------
 
@@ -152,10 +152,11 @@ html_static_path = ['_static']
 # }
 
 
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'pytorch_sphinx_theme'
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_logo = '_static/img/pytorch-logo-dark.svg'
 html_theme_options = {
+    'pytorch_project': 'tutorials',
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
@@ -221,8 +222,8 @@ texinfo_documents = [
 
 def setup(app):
     # Custom CSS
-    app.add_stylesheet('css/pytorch_theme.css')
-    app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
+    # app.add_stylesheet('css/pytorch_theme.css')
+    # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
     # Custom directives
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
