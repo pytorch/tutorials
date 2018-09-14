@@ -209,6 +209,7 @@ Production Usage
    beginner/data_loading_tutorial
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
+   beginner/hybrid_frontend_tutorial
    beginner/saving_loading_models
 
 .. toctree::
