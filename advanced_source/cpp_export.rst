@@ -9,8 +9,8 @@ environment in which the latter often applies is *production* -- the land of
 low latencies and strict deployment requirements. For production scenarios, C++
 is very often the language of choice, even if only to bind it into another
 language like Java, Rust or Go. The following paragraphs will outline the path
-PyTorch provides in order to go from an existing Python model to a serialized
-representation that can be *loaded* and *executed* purely from C++ with no
+PyTorch provides to go from an existing Python model to a serialized
+representation that can be *loaded* and *executed* purely from C++, with no
 dependency on Python.
 
 Step 1: Converting Your PyTorch Model to Torch Script
@@ -21,18 +21,18 @@ A PyTorch model's journey from Python to C++ is enabled by `Torch Script
 model that can be understood, compiled and serialized by the Torch Script
 compiler. If you are starting out from an existing PyTorch model written in the
 vanilla "eager" API, you must first convert your model to Torch Script. In the
-most common cases, exemplified below, this requires only little effort. If you
-already have a *scripted* module (a module written in Torch Script), you can
-skip to the next section of this tutorial.
+most common cases, discussed below, this requires only little effort. If you
+already have a Torch Script module, you can skip to the next section of this
+tutorial.
 
-There are two primary ways of converting a PyTorch model to Torch Script. The
-first is known as "tracing", a mechanism in which the structure of the model is
-captured by evaluating it once using examplary inputs, and recording the flow
-of those inputs through the model. This is suitable for models that make
-limited use of control flow. The second approach is to add explicit annotations
-to your model that inform the Torch Script compiler that it may directly parse
-and compile your model code, subject to the constraints imposed by the Torch
-Script language.
+There exist two ways of converting a PyTorch model to Torch Script. The first
+is known as *tracing*, a mechanism in which the structure of the model is
+captured by evaluating it once using example inputs, and recording the flow of
+those inputs through the model. This is suitable for models that make limited
+use of control flow. The second approach is to add explicit annotations to your
+model that inform the Torch Script compiler that it may directly parse and
+compile your model code, subject to the constraints imposed by the Torch Script
+language.
 
 .. tip::
 
@@ -44,9 +44,9 @@ Converting to Torch Script via Tracing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To convert a PyTorch model to Torch Script via tracing, you must pass an
-instance of your model along with an exemple input to the ``torch.jit.trace``
-function. This will produce a ``ScriptModule`` with the trace of your model
-evaluation embedded in the module's ``forward`` method::
+instance of your model along with an example input to the ``torch.jit.trace``
+function. This will produce a ``torch.jit.ScriptModule`` object with the trace
+of your model evaluation embedded in the module's ``forward`` method::
 
   import torch
   import torchvision
@@ -54,7 +54,7 @@ evaluation embedded in the module's ``forward`` method::
   # An instance of your model.
   model = torchvision.models.resnet18()
 
-  # An exemplary input you would normally provide to your model's forward() method.
+  # An example input you would normally provide to your model's forward() method.
   example = torch.rand(1, 3, 224, 224)
 
   # Use torch.jit.trace to generate a torch.jit.ScriptModule via tracing.
@@ -119,8 +119,8 @@ Creating a new ``MyModule`` object now directly produces an instance of
 Step 2: Serializing Your Script Module to a File
 -------------------------------------------------
 
-Once you arrive at obtaining a ``ScriptModule``, having either traced or
-annotated a PyTorch model, you are ready to serialize it to a file. Later on,
+Once you have a ``ScriptModule`` in your hands, either from tracing or
+annotating a PyTorch model, you are ready to serialize it to a file. Later on,
 you'll be able to load the module from this file in C++ and execute it without
 any dependency on Python. Say we want to serialize the ``ResNet18`` model shown
 earlier in the tracing example. To perform this serialization, simply call
@@ -129,15 +129,15 @@ on the module and pass it a filename::
 
   traced_script_module.save("model.pt")
 
-This should produce a ``model.pt`` file in your working directory. We have now
+This will produce a ``model.pt`` file in your working directory. We have now
 officially left the realm of Python and are ready to cross over to the sphere
 of C++.
 
 Step 3: Loading Your Script Module in C++
 ------------------------------------------
 
-To load your serialized PyTorch model in C++, your C++ application must depend
-on the PyTorch C++ API -- also known as *LibTorch*. The LibTorch distribution
+To load your serialized PyTorch model in C++, your application must depend on
+the PyTorch C++ API -- also known as *LibTorch*. The LibTorch distribution
 encompasses a collection of shared libraries, header files and CMake build
 configuration files. While CMake is not a requirement for depending on
 LibTorch, it is the recommended approach and will be well supported into the
@@ -147,13 +147,12 @@ CMake and LibTorch that simply loads and executes a serialized PyTorch model.
 A Minimal C++ Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Let's begin by discussing the code to load a module. It is fairly minimal and
-the following will already do:
+Let's begin by discussing the code to load a module. The following will already
+do:
 
 .. code-block:: cpp
 
-  // One-stop header.
-  #include <torch/op.h>
+  #include <torch/op.h> // One-stop header.
 
   #include <iostream>
   #include <memory>
@@ -171,9 +170,9 @@ the following will already do:
     std::cout << "ok\n";
   }
 
-The ``<torch/op.h>`` include encompasses all relevant headers from the LibTorch
-library necessary to run our example. Our application accepts the file path to
-a serialized PyTorch ``ScriptModule`` as its only command line argument, and
+The ``<torch/op.h>`` header encompasses all relevant includes from the LibTorch
+library necessary to run the example. Our application accepts the file path to
+a serialized PyTorch ``ScriptModule`` as its only command line argument and
 then proceeds to deserialize the module using the ``torch::jit::load()``
 function, which takes this file path as input. In return we receive a shared
 pointer to a ``torch::jit::script::Module``, the equivalent to a
@@ -202,7 +201,7 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
 The last thing we need to build the example application is the LibTorch
 distribution. You can always grab the latest stable release from the `PyTorch
 website <https://pytorch.org/>`_. If you download and unzip the latest archive
-from that page, you should recieve a folder with the following directory
+from that page, you should receive a folder with the following directory
 structure:
 
 .. code-block:: sh
@@ -215,10 +214,10 @@ structure:
 
 - The ``lib/`` folder contains the shared libraries you must link against,
 - The ``include/`` folder contains header files your program will need to include,
-- The ``share/`` folder contains the necessary CMake configuration to enable the simple `find_package(Torch)` command above.
+- The ``share/`` folder contains the necessary CMake configuration to enable the simple ``find_package(Torch)`` command above.
 
 The last step is building the application. For this, assume our example
-directory is layed out like this:
+directory is laid out like this:
 
 .. code-block:: sh
 
@@ -237,7 +236,7 @@ We can now run the following commands to build the application from within the
   make
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
-distribution. If all goes well, it should look something like this:
+distribution. If all goes well, it will look something like this:
 
 .. code-block:: sh
 
@@ -304,17 +303,16 @@ application's ``main()`` function:
     std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 
 The first two lines set up the inputs to our model. We create a vector of
-``torch::jit::IValue`` (a type-erased value type ``ScriptModule`` methods
+``torch::jit::IValue`` (a type-erased value type ``script::Module`` methods
 accept and return) and add a single input. To create the input tensor, we use
 ``torch::ones()``, the equivalent to ``torch.ones`` in the C++ API.  We then
-execute the ``ScriptModule``'s by calling its ``forward`` method, passing in
-the input vector we created. In return we get a new ``IValue``, which we
-convert to a tensor for our purposes.
+run the ``script::Module``'s ``forward`` method, passing it the input vector we
+created. In return we get a new ``IValue``, which we convert to a tensor.
 
 .. tip::
 
   To learn more about functions like ``torch::ones`` and the PyTorch C++ API in
-  general, refer to its documentation at https://pytorch.org/cppdocs/.
+  general, refer to its documentation at https://pytorch.org/cppdocs.
 
 In the last line, we print the first five entries of the output. Since we
 supplied the same input to our model in Python earlier in this tutorial, we
@@ -328,7 +326,7 @@ application and running it with the same serialized model:
   [ 50%] Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
   [100%] Linking CXX executable example-app
   [100%] Built target example-app
-  root@4b5a67132e81:/example-app/build# ./example-app ./model.pt
+  root@4b5a67132e81:/example-app/build# ./example-app model.pt
   -0.2698 -0.0381  0.4023 -0.3010 -0.0448
   [ Variable[CPUFloatType]{1,5} ]
 
@@ -342,11 +340,11 @@ Looks like a good match!
 Step 5: Getting Help and Exploring the API
 ------------------------------------------
 
-This tutorial has hopefully equipped you with a general understanding of the
-path of a PyTorch model from Python to C++. With the concepts described in this
+This tutorial has hopefully equipped you with a general understanding of a
+PyTorch model's path from Python to C++. With the concepts described in this
 tutorial, you should be able to go from a vanilla, "eager" PyTorch model, to a
 compiled ``ScriptModule`` in Python, to a serialized file on disk and -- to
-close the loop -- to an executable ``ScriptModule`` in C++.
+close the loop -- to an executable ``script::Module`` in C++.
 
 Of course, there are many concepts we did not cover. For example, you may find
 yourself wanting to extend your ``ScriptModule`` with a custom operator
@@ -361,6 +359,6 @@ the following links may be generally helpful:
 - The PyTorch C++ API documentation: https://pytorch.org/cppdocs/
 - The Pytorch Python API documentation: https://pytorch.org/docs/
 
-As always, if you run into any problems or have further questions, use our
-`Forums <https://discuss.pytorch.org/>`_ and `GitHub issues
+As always, if you run into any problems or have questions, you can use our
+`forum <https://discuss.pytorch.org/>`_ or `GitHub issues
 <https://github.com/pytorch/pytorch/issues>`_ to get in touch.

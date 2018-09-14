@@ -67,7 +67,7 @@ Image
    :figure: /_static/img/stn/five.gif
    :tooltip: Learn how to augment your network using a visual attention mechanism called spatial transformer networks
    :description: :doc:`intermediate/spatial_transformer_tutorial`
-   
+
 .. customgalleryitem::
    :figure: /_static/img/neural-style/sphx_glr_neural_style_tutorial_004.png
    :tooltip: How to implement the Neural-Style algorithm developed by Gatys, Ecker, and Bethge
@@ -126,7 +126,7 @@ Text
 .. raw:: html
 
     <div style='clear:both'></div>
-    
+
 Generative
 ----------------------
 
@@ -144,7 +144,7 @@ Reinforcement Learning
 ----------------------
 
 .. customgalleryitem::
-    :tooltip: Use PyTorch to train a Deep Q Learning (DQN) agent    
+    :tooltip: Use PyTorch to train a Deep Q Learning (DQN) agent
     :figure: /_static/img/cartpole.gif
     :description: :doc:`intermediate/reinforcement_q_learning`
 
@@ -156,7 +156,7 @@ Extending PyTorch
 ----------------------
 
 .. customgalleryitem::
-    :tooltip: Create extensions using numpy and scipy    
+    :tooltip: Create extensions using numpy and scipy
     :figure: /_static/img/scipynumpy.png
     :description: :doc:`advanced/numpy_extensions_tutorial`
 
@@ -173,6 +173,11 @@ Extending PyTorch
 
 Production Usage
 ----------------------
+
+.. customgalleryitem::
+   :tooltip: Loading a PyTorch model in C++
+   :description: :doc:`advanced/cpp_export`
+   :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
    :tooltip: Convert a neural style transfer model that has been exported from PyTorch into the Apple CoreML format using ONNX
@@ -228,9 +233,9 @@ Production Usage
    :includehidden:
    :hidden:
    :caption: Text
- 
+
    beginner/chatbot_tutorial
-   intermediate/char_rnn_generation_tutorial   
+   intermediate/char_rnn_generation_tutorial
    intermediate/char_rnn_classification_tutorial
    beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
@@ -268,4 +273,4 @@ Production Usage
 
    intermediate/dist_tuto
    advanced/ONNXLive
-
+   advanced/cpp_export
