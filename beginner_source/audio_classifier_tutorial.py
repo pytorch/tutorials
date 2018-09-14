@@ -220,7 +220,7 @@ print(model)
 # 
 
 optimizer = optim.Adam(model.parameters(), lr = 0.01, weight_decay = 0.0001)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 30, gamma = 0.1)
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
 
 
 ######################################################################
@@ -281,7 +281,7 @@ def test(model, epoch):
 # 
 
 log_interval = 20
-for epoch in range(1, 61):
+for epoch in range(1, 41):
     if epoch == 31:
         print("First round of training complete. Setting learn rate to 0.001.")
     scheduler.step()
@@ -302,6 +302,6 @@ for epoch in range(1, 61):
 # For more advanced audio applications, such as speech recognition,
 # recurrent neural networks (RNNs) are commonly used. There are also other
 # data preprocessing methods, such as finding the mel frequency cepstral
-# coefficients (MCFF), that can reduce the size of the dataset.
+# coefficients (MFCC), that can reduce the size of the dataset.
 # 
 
