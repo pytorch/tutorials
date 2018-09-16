@@ -621,7 +621,7 @@ print("max_target_len:", max_target_len)
 # .. figure:: /_static/img/chatbot/RNN-bidirectional.png
 #    :width: 70%
 #    :align: center
-#    :alt: model
+#    :alt: rnn_bidir
 #
 # Image source: http://colah.github.io/posts/2015-09-NN-Types-FP/
 #
