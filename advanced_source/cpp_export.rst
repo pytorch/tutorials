@@ -152,7 +152,7 @@ do:
 
 .. code-block:: cpp
 
-  #include <torch/op.h> // One-stop header.
+  #include <torch/script.h> // One-stop header.
 
   #include <iostream>
   #include <memory>
@@ -170,10 +170,10 @@ do:
     std::cout << "ok\n";
   }
 
-The ``<torch/op.h>`` header encompasses all relevant includes from the LibTorch
-library necessary to run the example. Our application accepts the file path to
-a serialized PyTorch ``ScriptModule`` as its only command line argument and
-then proceeds to deserialize the module using the ``torch::jit::load()``
+The ``<torch/script.h>`` header encompasses all relevant includes from the
+LibTorch library necessary to run the example. Our application accepts the file
+path to a serialized PyTorch ``ScriptModule`` as its only command line argument
+and then proceeds to deserialize the module using the ``torch::jit::load()``
 function, which takes this file path as input. In return we receive a shared
 pointer to a ``torch::jit::script::Module``, the equivalent to a
 ``torch.jit.ScriptModule`` in C++. For now, we only verify that this pointer is
@@ -193,15 +193,13 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
   find_package(Torch REQUIRED)
 
   add_executable(example-app example-app.cpp)
-  target_include_directories(example-app PRIVATE "${TORCH_INCLUDE_DIRS}")
   target_link_libraries(example-app "${TORCH_LIBRARIES}")
-  target_compile_definitions(example-app PRIVATE -D_GLIBCXX_USE_CXX11_ABI=0)
   set_property(TARGET example-app PROPERTY CXX_STANDARD 11)
 
 The last thing we need to build the example application is the LibTorch
-distribution. You can always grab the latest stable release from the `PyTorch
-website <https://pytorch.org/>`_. If you download and unzip the latest archive
-from that page, you should receive a folder with the following directory
+distribution. You can always grab the latest stable release from the `download
+page <https://pytorch.org/>`_ on the PyTorch website. If you download and unzip
+the latest archive, you should receive a folder with the following directory
 structure:
 
 .. code-block:: sh
@@ -307,12 +305,15 @@ The first two lines set up the inputs to our model. We create a vector of
 accept and return) and add a single input. To create the input tensor, we use
 ``torch::ones()``, the equivalent to ``torch.ones`` in the C++ API.  We then
 run the ``script::Module``'s ``forward`` method, passing it the input vector we
-created. In return we get a new ``IValue``, which we convert to a tensor.
+created. In return we get a new ``IValue``, which we convert to a tensor by
+calling ``toTensor()``.
 
 .. tip::
 
   To learn more about functions like ``torch::ones`` and the PyTorch C++ API in
-  general, refer to its documentation at https://pytorch.org/cppdocs.
+  general, refer to its documentation at https://pytorch.org/cppdocs. The
+  PyTorch C++ API provides near feature parity with the Python API, allowing
+  you to further manipulate and process tensors just like in Python.
 
 In the last line, we print the first five entries of the output. Since we
 supplied the same input to our model in Python earlier in this tutorial, we
