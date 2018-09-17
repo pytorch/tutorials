@@ -677,7 +677,7 @@ def evaluateExample(sentence, encoder, decoder, searcher, voc):
 #
 # To load the hosted model:
 #
-# 1) Download the model `here <>`__.
+# 1) Download the model `here <https://download.pytorch.org/models/tutorials/4000_checkpoint.tar>`__.
 #
 # 2) Set the ``loadFilename`` variable to the path to the downloaded
 #    checkpoint file.
@@ -730,10 +730,14 @@ batch_size = 64
 
 # Set checkpoint to load from
 checkpoint_iter = 4000
-loadFilename = os.path.join(save_dir, model_name, corpus_name,
-                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-                            '{}_checkpoint.tar'.format(checkpoint_iter))
 
+# If you're loading your own model
+# loadFilename = os.path.join(save_dir, model_name, corpus_name,
+#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+#                             '{}_checkpoint.tar'.format(checkpoint_iter))
+
+# If you're loading the hosted model
+loadFilename = '4000_checkpoint.tar'
 
 # Load model
 # If loading on same machine the model was trained on
@@ -874,7 +878,8 @@ for s in sentences:
 # will serialize it for use in a non-Python deployment environment. To do
 # this, we can simply save our ``scripted_searcher`` module, as this is
 # the user-facing interface for running inference against the chatbot
-# model.
+# model. When saving a Script module, use script_module.save(PATH) instead
+# of torch.save(model, PATH).
 #
 
-torch.save(scripted_searcher.state_dict(), "scripted_chatbot.pth")
+scripted_searcher.save("scripted_chatbot.pth")
