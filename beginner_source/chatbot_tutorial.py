@@ -7,6 +7,9 @@ Chatbot Tutorial
 
 
 ######################################################################
+# This example requires PyTorch 1.0 (preview) or later. 
+# For installation information visit http://pytorch.org/get-started.
+# 
 # In this tutorial, we explore a fun and interesting use-case of recurrent
 # sequence-to-sequence models. We will train a simple chatbot using movie
 # scripts from the `Cornell Movie-Dialogs
