@@ -9,14 +9,14 @@ Chatbot Tutorial
 ######################################################################
 # In this tutorial, we explore a fun and interesting use-case of recurrent
 # sequence-to-sequence models. We will train a simple chatbot using movie
-# scripts contained in the `Cornell Movie-Dialogs
+# scripts from the `Cornell Movie-Dialogs
 # Corpus <https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html>`__.
 #
 # Conversational models are a hot topic in artificial intelligence
 # research. Chatbots can be found in a variety of settings, including
 # customer service applications and online helpdesks. These bots are often
-# powered by retrieval-based models, which have predefined responses to
-# questions of a certain form. In a highly restricted domain like a
+# powered by retrieval-based models, which output predefined responses to
+# questions of certain forms. In a highly restricted domain like a
 # company’s IT helpdesk, these models may be sufficient, however, they are
 # not robust enough for more general use-cases. Teaching a machine to
 # carry out a meaningful conversation with a human in multiple domains is
@@ -26,7 +26,8 @@ Chatbot Tutorial
 # a large step towards multi-domain generative conversational models. In
 # this tutorial, we will implement this kind of model in PyTorch.
 #
-# .. figure:: /_static/img/chatbot/bot.jpg
+# .. figure:: /_static/img/chatbot/bot.png
+#    :align: center
 #    :alt: bot
 #
 # .. code:: python
@@ -60,8 +61,7 @@ Chatbot Tutorial
 # -  Implement a sequence-to-sequence model with `Luong attention
 #    mechanism(s) <https://arxiv.org/abs/1508.04025>`__
 # -  Jointly train encoder and decoder models using mini-batches
-# -  Implement `beam-search
-#    optimization <https://arxiv.org/abs/1606.02960>`__ for inference
+# -  Implement greedy-search decoding module
 # -  Interact with trained chatbot
 #
 # **Acknowledgements**
@@ -102,7 +102,6 @@ from torch import optim
 import torch.nn.functional as F
 import csv
 import random
-import operator
 import re
 import os
 import unicodedata
@@ -174,44 +173,34 @@ printLines(os.path.join(corpus, "movie_lines.txt"))
 # Splits each line of the file into a dictionary of fields
 def loadLines(fileName, fields):
     lines = {}
-
     with open(fileName, 'r', encoding='iso-8859-1') as f:
         for line in f:
             values = line.split(" +++$+++ ")
-
             # Extract fields
             lineObj = {}
             for i, field in enumerate(fields):
                 lineObj[field] = values[i]
-
             lines[lineObj['lineID']] = lineObj
-
     return lines
 
 
 # Groups fields of lines from `loadLines` into conversations based on *movie_conversations.txt*
 def loadConversations(fileName, lines, fields):
     conversations = []
-
     with open(fileName, 'r', encoding='iso-8859-1') as f:
         for line in f:
             values = line.split(" +++$+++ ")
-
             # Extract fields
             convObj = {}
             for i, field in enumerate(fields):
                 convObj[field] = values[i]
-
             # Convert string to list (convObj["utteranceIDs"] == "['L598485', 'L598486', ...]")
             lineIds = eval(convObj["utteranceIDs"])
-
             # Reassemble lines
             convObj["lines"] = []
             for lineId in lineIds:
                 convObj["lines"].append(lines[lineId])
-
             conversations.append(convObj)
-
     return conversations
 
 
@@ -219,15 +208,13 @@ def loadConversations(fileName, lines, fields):
 def extractSentencePairs(conversations):
     qa_pairs = []
     for conversation in conversations:
-
         # Iterate over all the lines of the conversation
         for i in range(len(conversation["lines"]) - 1):  # We ignore the last line (no answer for it)
             inputLine = conversation["lines"][i]["text"].strip()
             targetLine = conversation["lines"][i+1]["text"].strip()
-
-            if inputLine and targetLine:  # Filter wrong samples (if one of the list is empty)
+            # Filter wrong samples (if one of the lists is empty)
+            if inputLine and targetLine:
                 qa_pairs.append([inputLine, targetLine])
-
     return qa_pairs
 
 
@@ -236,31 +223,34 @@ def extractSentencePairs(conversations):
 # *formatted_movie_lines.txt*.
 #
 
+# Define path to new file
 datafile = os.path.join(corpus, "formatted_movie_lines.txt")
 
 delimiter = '\t'
 # Unescape the delimiter
 delimiter = str(codecs.decode(delimiter, "unicode_escape"))
 
+# Initialize lines dict, conversations list, and field ids
 lines = {}
 conversations = []
-
 MOVIE_LINES_FIELDS = ["lineID", "characterID", "movieID", "character", "text"]
 MOVIE_CONVERSATIONS_FIELDS = ["character1ID", "character2ID", "movieID", "utteranceIDs"]
 
+# Load lines and process conversations
 print("\nProcessing corpus...")
 lines = loadLines(os.path.join(corpus, "movie_lines.txt"), MOVIE_LINES_FIELDS)
 print("\nLoading conversations...")
 conversations = loadConversations(os.path.join(corpus, "movie_conversations.txt"),
                                   lines, MOVIE_CONVERSATIONS_FIELDS)
 
-
+# Write new csv file
 print("\nWriting newly formatted file...")
 with open(datafile, 'w', encoding='utf-8') as outputfile:
     writer = csv.writer(outputfile, delimiter=delimiter)
     for pair in extractSentencePairs(conversations):
         writer.writerow(pair)
 
+# Print a sample of lines
 print("\nSample lines from file:")
 printLines(datafile)
 
@@ -277,9 +267,9 @@ printLines(datafile)
 # one by mapping each unique word that we encounter in our dataset to an
 # index value.
 #
-# For this we define a ``Voc`` class, which keeps a mapping from word to
-# index, a reverse mapping of index to word, a count of each word and a
-# total word count. The class provides methods for adding a word to the
+# For this we define a ``Voc`` class, which keeps a mapping from words to
+# indexes, a reverse mapping of indexes to words, a count of each word and
+# a total word count. The class provides methods for adding a word to the
 # vocabulary (``addWord``), adding all words in a sentence
 # (``addSentence``) and trimming infrequently seen words (``trim``). More
 # on trimming later.
@@ -369,38 +359,34 @@ def normalizeString(s):
     s = re.sub(r"\s+", r" ", s).strip()
     return s
 
+# Read query/response pairs and return a voc object
 def readVocs(datafile, corpus_name):
     print("Reading lines...")
-
     # Read the file and split into lines
     lines = open(datafile, encoding='utf-8').\
         read().strip().split('\n')
-
     # Split every line into pairs and normalize
     pairs = [[normalizeString(s) for s in l.split('\t')] for l in lines]
-
     voc = Voc(corpus_name)
     return voc, pairs
 
-
+# Returns True iff both sentences in a pair 'p' are under the MAX_LENGTH threshold
 def filterPair(p):
-    # input sequences need to preserve the last word for EOS token
-    return len(p[0].split(' ')) < MAX_LENGTH and \
-        len(p[1].split(' ')) < MAX_LENGTH
+    # Input sequences need to preserve the last word for EOS token
+    return len(p[0].split(' ')) < MAX_LENGTH and len(p[1].split(' ')) < MAX_LENGTH
 
-
+# Filter pairs using filterPair condition
 def filterPairs(pairs):
     return [pair for pair in pairs if filterPair(pair)]
 
-
+# Using the functions defined above, return a populated voc object and pairs list
 def loadPrepareData(corpus, corpus_name, datafile, save_dir):
-    print("Saved data not found, start preparing training data ...")
+    print("Start preparing training data ...")
     voc, pairs = readVocs(datafile, corpus_name)
     print("Read {!s} sentence pairs".format(len(pairs)))
     pairs = filterPairs(pairs)
     print("Trimmed to {!s} sentence pairs".format(len(pairs)))
     print("Counting words...")
-    # Add words from both query and response sentences
     for pair in pairs:
         voc.addSentence(pair[0])
         voc.addSentence(pair[1])
@@ -411,6 +397,7 @@ def loadPrepareData(corpus, corpus_name, datafile, save_dir):
 # Load/Assemble voc and pairs
 save_dir = os.path.join("data", "save")
 voc, pairs = loadPrepareData(corpus, corpus_name, datafile, save_dir)
+# Print some pairs to validate
 print("\npairs:")
 for pair in pairs[:10]:
     print(pair)
@@ -420,9 +407,10 @@ for pair in pairs[:10]:
 # Another tactic that is beneficial to achieving faster convergence during
 # training is trimming rarely used words out of our vocabulary. Decreasing
 # the feature space will also soften the difficulty of the function that
-# the model must learn. We will do this as a two-step process:
+# the model must learn to approximate. We will do this as a two-step
+# process:
 #
-# 1) Trim words used under ``MIN_COUNT`` threshold using ``voc.trim``
+# 1) Trim words used under ``MIN_COUNT`` threshold using the ``voc.trim``
 #    function.
 #
 # 2) Filter out pairs with trimmed words.
@@ -440,18 +428,18 @@ def trimRareWords(voc, pairs, MIN_COUNT):
         output_sentence = pair[1]
         keep_input = True
         keep_output = True
-
+        # Check input sentence
         for word in input_sentence.split(' '):
             if word not in voc.word2index:
                 keep_input = False
                 break
-
+        # Check output sentence
         for word in output_sentence.split(' '):
             if word not in voc.word2index:
                 keep_output = False
                 break
 
-        # Remove if pair doesn't match input and output conditions
+        # Only keep pairs that do not contain trimmed word(s) in their input or output sentence
         if keep_input and keep_output:
             keep_pairs.append(pair)
 
@@ -469,46 +457,45 @@ pairs = trimRareWords(voc, pairs, MIN_COUNT)
 #
 # Although we have spent a great effort preparing and massaging our data
 # into a nice vocabulary object and list of sentence pairs, our models
-# will ultimately expect numerical torch.tensors as inputs. One way to
+# will ultimately expect numerical torch tensors as inputs. One way to
 # prepare the processed data for the models can be found in the `seq2seq
 # translation
 # tutorial <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`__.
-# In this tutorial, we use a batch size of 1, meaning that all we have to
+# In that tutorial, we use a batch size of 1, meaning that all we have to
 # do is convert the words in our sentence pairs to their corresponding
 # indexes from the vocabulary and feed this to the models.
 #
 # However, if you’re interested in speeding up training and/or would like
-# to leverage GPU parallelization capabilities, we will need to train with
-# mini-batches.
+# to leverage GPU parallelization capabilities, you will need to train
+# with mini-batches.
 #
-# Using minibatches also means that we must be mindful of the variation of
-# sentence length. To accomodate sentences of different sizes in the same
-# batch, we will make our batched input tensor of shape *(max_length,
-# batch_size)*, where sentences shorter than the *max_length* are zero
-# padded after an *EOS_token*.
+# Using mini-batches also means that we must be mindful of the variation
+# of sentence length in our batches. To accomodate sentences of different
+# sizes in the same batch, we will make our batched input tensor of shape
+# *(max_length, batch_size)*, where sentences shorter than the
+# *max_length* are zero padded after an *EOS_token*.
 #
 # If we simply convert our English sentences to tensors by converting
 # words to their indexes(\ ``indexesFromSentence``) and zero-pad, our
 # tensor would have shape *(batch_size, max_length)* and indexing the
-# first dimension would return a full sequence across one batch. However,
-# we need to be able to index our batch along time, and across all
-# batches. Therefore, we transpose our input batch shape to *(max_length,
-# batch_size)*, so that indexing across the first dimension returns a time
-# step across batches, which is exactly what we want when training our
-# batch of sentences. We handle this transpose implicitly in the
-# ``zeroPadding`` function.
+# first dimension would return a full sequence across all time-steps.
+# However, we need to be able to index our batch along time, and across
+# all sequences in the batch. Therefore, we transpose our input batch
+# shape to *(max_length, batch_size)*, so that indexing across the first
+# dimension returns a time step across all sentences in the batch. We
+# handle this transpose implicitly in the ``zeroPadding`` function.
 #
 # .. figure:: /_static/img/chatbot/seq2seq_batches.png
+#    :align: center
 #    :alt: batches
-#
 #
 # The ``inputVar`` function handles the process of converting sentences to
 # tensor, ultimately creating a correctly shaped zero-padded tensor. It
-# also returns a list of lengths for each of the sequences in the batch
-# which will be passed to our decoder later.
+# also returns a tensor of ``lengths`` for each of the sequences in the
+# batch which will be passed to our decoder later.
 #
 # The ``outputVar`` function performs a similar function to ``inputVar``,
-# but instead of returning a ``lengths`` list, it returns binary mask
+# but instead of returning a ``lengths`` tensor, it returns a binary mask
 # tensor and a maximum target sentence length. The binary mask tensor has
 # the same shape as the output target tensor, but every element that is a
 # *PAD_token* is 0 and all others are 1.
@@ -535,17 +522,15 @@ def binaryMatrix(l, value=PAD_token):
                 m[i].append(1)
     return m
 
-# convert to index, add EOS
-# return input pack_padded_sequence
+# Returns padded input sequence tensor and lengths
 def inputVar(l, voc):
     indexes_batch = [indexesFromSentence(voc, sentence) for sentence in l]
-    lengths = [len(indexes) for indexes in indexes_batch]
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     padVar = torch.LongTensor(padList)
     return padVar, lengths
 
-# convert to index, add EOS, zero padding
-# return output variable, mask, max length of the sentences in batch
+# Returns padded target sequence tensor, padding mask, and max target length
 def outputVar(l, voc):
     indexes_batch = [indexesFromSentence(voc, sentence) for sentence in l]
     max_target_len = max([len(indexes) for indexes in indexes_batch])
@@ -555,6 +540,7 @@ def outputVar(l, voc):
     padVar = torch.LongTensor(padList)
     return padVar, mask, max_target_len
 
+# Returns all items for a given batch of pairs
 def batch2TrainData(voc, pair_batch):
     pair_batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
     input_batch, output_batch = [], []
@@ -566,7 +552,7 @@ def batch2TrainData(voc, pair_batch):
     return inp, lengths, output, mask, max_target_len
 
 
-# Example
+# Example for validation
 small_batch_size = 5
 batches = batch2TrainData(voc, [random.choice(pairs) for _ in range(small_batch_size)])
 input_variable, lengths, target_variable, mask, max_target_len = batches
@@ -590,28 +576,36 @@ print("max_target_len:", max_target_len)
 # input, and return a variable-length sequence as an output using a
 # fixed-sized model.
 #
-# In order to accomplish this, `Sutskever, et
-# al. <https://arxiv.org/abs/1409.3215>`__ use two separate recurrent
-# neural nets together. One acts as an **encoder**, which encodes a
-# variable length input sequence to a fixed-length context vector. In
-# theory, this context vector (the final hidden layer of the RNN) will
-# contain semantic information about the query sentence that is input to
-# the bot. The second RNN is a **decoder**, which takes an input word and
-# the context vector, and returns a guess for the next word in the
-# sequence and a hidden state to use in the next iteration.
+# `Sutskever et al. <https://arxiv.org/abs/1409.3215>`__ discovered that
+# by using two separate recurrent neural nets together, we can accomplish
+# this task. One RNN acts as an **encoder**, which encodes a variable
+# length input sequence to a fixed-length context vector. In theory, this
+# context vector (the final hidden layer of the RNN) will contain semantic
+# information about the query sentence that is input to the bot. The
+# second RNN is a **decoder**, which takes an input word and the context
+# vector, and returns a guess for the next word in the sequence and a
+# hidden state to use in the next iteration.
 #
-# .. figure:: /_static/img/chatbot/seq2seq_model.png
+# .. figure:: /_static/img/chatbot/seq2seq_ts.png
+#    :align: center
 #    :alt: model
 #
-#
 # Image source:
-# https://medium.com/botsupply/generative-model-chatbots-e422ab08461e
+# https://jeddy92.github.io/JEddy92.github.io/ts_seq2seq_intro/
 #
 
 
 ######################################################################
 # Encoder
 # ~~~~~~~
+#
+# The encoder RNN iterates through the input sentence one token
+# (e.g. word) at a time, at each time step outputting an “output” vector
+# and a “hidden state” vector. The hidden state vector is then passed to
+# the next time step, while the output vector is recorded. The encoder
+# transforms the context it saw at each point in the sequence into a set
+# of points in a high-dimensional space, which the decoder will use to
+# generate a meaningful output for the given task.
 #
 # At the heart of our encoder is a multi-layered Gated Recurrent Unit,
 # invented by `Cho et al. <https://arxiv.org/pdf/1406.1078v3.pdf>`__ in
@@ -625,11 +619,13 @@ print("max_target_len:", max_target_len)
 # Bidirectional RNN:
 #
 # .. figure:: /_static/img/chatbot/RNN-bidirectional.png
-#    :alt: model
+#    :width: 70%
+#    :align: center
+#    :alt: rnn_bidir
 #
 # Image source: http://colah.github.io/posts/2015-09-NN-Types-FP/
 #
-# Note that the ``embedding`` layer is used to encode our word indices in
+# Note that an ``embedding`` layer is used to encode our word indices in
 # an arbitrarily sized feature space. For our models, this layer will map
 # each word to a feature space of size *hidden_size*. When trained, these
 # values should encode semantic similarity between similar meaning words.
@@ -640,7 +636,6 @@ print("max_target_len:", max_target_len)
 # ``torch.nn.utils.rnn.pad_packed_sequence`` respectively.
 #
 # **Computation Graph:**
-#
 #
 #    1) Convert word indexes to embeddings.
 #    2) Pack padded batch of sequences for RNN module.
@@ -667,7 +662,6 @@ print("max_target_len:", max_target_len)
 #    num_directions, batch_size, hidden_size)*
 #
 #
-#
 
 class EncoderRNN(nn.Module):
     def __init__(self, hidden_size, embedding, n_layers=1, dropout=0):
@@ -677,47 +671,55 @@ class EncoderRNN(nn.Module):
         self.embedding = embedding
 
         # Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'
-        #   because our input size is a word embedding with number of features = hidden_size
+        #   because our input size is a word embedding with number of features == hidden_size
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers,
                           dropout=(0 if n_layers == 1 else dropout), bidirectional=True)
 
     def forward(self, input_seq, input_lengths, hidden=None):
-        embedded = self.embedding(input_seq)  # 1
-        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)  # 2
-        outputs, hidden = self.gru(packed, hidden)  # 3
-        outputs, _ = torch.nn.utils.rnn.pad_packed_sequence(outputs)  # 4
-        outputs = outputs[:, :, :self.hidden_size] + outputs[:, : ,self.hidden_size:] # 5
-        return outputs, hidden # 6
+        # Convert word indexes to embeddings
+        embedded = self.embedding(input_seq)
+        # Pack padded batch of sequences for RNN module
+        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
+        # Forward pass through GRU
+        outputs, hidden = self.gru(packed, hidden)
+        # Unpack padding
+        outputs, _ = torch.nn.utils.rnn.pad_packed_sequence(outputs)
+        # Sum bidirectional GRU outputs
+        outputs = outputs[:, :, :self.hidden_size] + outputs[:, : ,self.hidden_size:]
+        # Return output and final hidden state
+        return outputs, hidden
 
 
 ######################################################################
 # Decoder
 # ~~~~~~~
 #
-# Recall that the decoder is responsible for predicting an output
-# sentence, word by word, using the hidden state of the encoder and the
-# previous word. A common problem, however, is that if we rely soley on
-# the context vector, or the last hidden state of the decoder, to encode
-# the entire input sentence’s meaning, it is likely that we will have
-# information loss. This is especially the case when dealing with long
-# input sequences, greatly limiting the capability of our decoder.
+# The decoder RNN generates the response sentence in a token-by-token
+# fashion. It uses the encoder’s context vectors, and internal hidden
+# states to generate the next word in the sequence. It continues
+# generating words until it outputs an *EOS_token*, representing the end
+# of the sentence. A common problem with a vanilla seq2seq decoder is that
+# if we rely soley on the context vector to encode the entire input
+# sequence’s meaning, it is likely that we will have information loss.
+# This is especially the case when dealing with long input sequences,
+# greatly limiting the capability of our decoder.
 #
 # To combat this, `Bahdanau et al. <https://arxiv.org/abs/1409.0473>`__
 # created an “attention mechanism” that allows the decoder to pay
-# attention to certain parts of the input sequence, rather than relying on
-# a fixed context.
+# attention to certain parts of the input sequence, rather than using the
+# entire fixed context at every step.
 #
 # At a high level, attention is calculated using the decoder’s current
 # hidden state and the encoder’s outputs. The output attention weights
 # have the same shape as the input sequence, allowing us to multiply them
-# by the encoder outputs, giving us a weighted sum which indicates what
+# by the encoder outputs, giving us a weighted sum which indicates the
 # parts of encoder output to pay attention to. `Sean
 # Robertson’s <https://github.com/spro>`__ figure describes this very
 # well:
 #
 # .. figure:: /_static/img/chatbot/attn2.png
+#    :align: center
 #    :alt: attn2
-#
 #
 # `Luong et al. <https://arxiv.org/abs/1508.04025>`__ improved upon
 # Bahdanau et al.’s groundwork by creating “Global attention”. The key
@@ -728,38 +730,40 @@ class EncoderRNN(nn.Module):
 # we calculate attention weights, or energies, using the hidden state of
 # the decoder from the current time step only. Bahdanau et al.’s attention
 # calculation requires knowledge of the decoder’s state from the previous
-# time step. Also, Luong et al. provides various methods to calculate the
+# time step. Also, Luong et al. provides various methods to calculate the
 # attention energies between the encoder output and decoder output which
 # are called “score functions”:
 #
 # .. figure:: /_static/img/chatbot/scores.png
+#    :width: 60%
+#    :align: center
 #    :alt: scores
 #
 # where :math:`h_t` = current target decoder state and :math:`\bar{h}_s` =
 # all encoder states.
 #
 # Overall, the Global attention mechanism can be summarized by the
-# following figure. Note that we will implement the “Attention layer” as a
+# following figure. Note that we will implement the “Attention Layer” as a
 # separate ``nn.Module`` called ``Attn``. The output of this module is a
 # softmax normalized weights tensor of shape *(batch_size, 1,
 # max_length)*.
 #
 # .. figure:: /_static/img/chatbot/global_attn.png
+#    :align: center
+#    :width: 60%
 #    :alt: global_attn
-#
 #
 
 # Luong attention layer
 class Attn(torch.nn.Module):
     def __init__(self, method, hidden_size):
         super(Attn, self).__init__()
-
         self.method = method
+        if self.method not in ['dot', 'general', 'concat']:
+            raise ValueError(self.method, "is not an appropriate attention method.")
         self.hidden_size = hidden_size
-
         if self.method == 'general':
             self.attn = torch.nn.Linear(self.hidden_size, hidden_size)
-
         elif self.method == 'concat':
             self.attn = torch.nn.Linear(self.hidden_size * 2, hidden_size)
             self.v = torch.nn.Parameter(torch.FloatTensor(hidden_size))
@@ -776,6 +780,7 @@ class Attn(torch.nn.Module):
         return torch.sum(self.v * energy, dim=2)
 
     def forward(self, hidden, encoder_outputs):
+        # Calculate the attention weights (energies) based on the given method
         if self.method == 'general':
             attn_energies = self.general_score(hidden, encoder_outputs)
         elif self.method == 'concat':
@@ -783,21 +788,20 @@ class Attn(torch.nn.Module):
         elif self.method == 'dot':
             attn_energies = self.dot_score(hidden, encoder_outputs)
 
-        # Transpose max_len and batch_size dimensions
+        # Transpose max_length and batch_size dimensions
         attn_energies = attn_energies.t()
 
+        # Return the softmax normalized probability scores (with added dimension)
         return F.softmax(attn_energies, dim=1).unsqueeze(1)
 
 
 ######################################################################
-# Now that we have defined our attention layer, we can implement the
-# actual decoder model. For the decoder, we will manually feed one time
-# step at a time (across batches). This means that our embedded word
-# tensor and GRU output will both have shape *(1, batch_size,
-# hidden_size)*.
+# Now that we have defined our attention submodule, we can implement the
+# actual decoder model. For the decoder, we will manually feed our batch
+# one time step at a time. This means that our embedded word tensor and
+# GRU output will both have shape *(1, batch_size, hidden_size)*.
 #
 # **Computation Graph:**
-#
 #
 #    1) Get embedding of current input word.
 #    2) Forward through unidirectional GRU.
@@ -809,7 +813,7 @@ class Attn(torch.nn.Module):
 #
 # **Inputs:**
 #
-# -  ``input_seq``: one time step (one word) of input sequence batch;
+# -  ``input_step``: one time step (one word) of input sequence batch;
 #    shape=\ *(1, batch_size)*
 # -  ``last_hidden``: final hidden layer of GRU; shape=\ *(n_layers x
 #    num_directions, batch_size, hidden_size)*
@@ -845,32 +849,26 @@ class LuongAttnDecoderRNN(nn.Module):
 
         self.attn = Attn(attn_model, hidden_size)
 
-    def forward(self, input_seq, last_hidden, encoder_outputs):
+    def forward(self, input_step, last_hidden, encoder_outputs):
         # Note: we run this one step (word) at a time
-        # 1
-        embedded = self.embedding(input_seq)
+        # Get embedding of current input word
+        embedded = self.embedding(input_step)
         embedded = self.embedding_dropout(embedded)
-
-        # 2
+        # Forward through unidirectional GRU
         rnn_output, hidden = self.gru(embedded, last_hidden)
-
-        # 3
+        # Calculate attention weights from the current GRU output
         attn_weights = self.attn(rnn_output, encoder_outputs)
-
-        # 4
+        # Multiply attention weights to encoder outputs to get new "weighted sum" context vector
         context = attn_weights.bmm(encoder_outputs.transpose(0, 1))
-
-        # 5 (Luong eq. 5)
+        # Concatenate weighted context vector and GRU output using Luong eq. 5
         rnn_output = rnn_output.squeeze(0)
         context = context.squeeze(1)
         concat_input = torch.cat((rnn_output, context), 1)
         concat_output = torch.tanh(self.concat(concat_input))
-
-        # 6 (Luong eq. 6, without softmax)
+        # Predict next word using Luong eq. 6
         output = self.out(concat_output)
         output = F.softmax(output, dim=1)
-
-        # 7
+        # Return output and final hidden state
         return output, hidden
 
 
@@ -883,7 +881,7 @@ class LuongAttnDecoderRNN(nn.Module):
 #
 # Since we are dealing with batches of padded sequences, we cannot simply
 # consider all elements of the tensor when calculating loss. We define
-# ``maskNLLLoss`` to calculate our loss based on our decoder output
+# ``maskNLLLoss`` to calculate our loss based on our decoder’s output
 # tensor, the target tensor, and a binary mask tensor describing the
 # padding of the target tensor. This loss function calculates the average
 # negative log likelihood of the elements that correspond to a *1* in the
@@ -903,7 +901,7 @@ def maskNLLLoss(inp, target, mask):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # The ``train`` function contains the algorithm for a single training
-# iteration (a.k.a. a single batch of inputs).
+# iteration (a single batch of inputs).
 #
 # We will use a couple of clever tricks to aid in convergence:
 #
@@ -926,13 +924,13 @@ def maskNLLLoss(inp, target, mask):
 #    function.
 #
 # .. figure:: /_static/img/chatbot/grad_clip.png
+#    :align: center
+#    :width: 60%
 #    :alt: grad_clip
 #
-# Image source: Goodfellow et al. *Deep Learning*. 2016.
-# http://www.deeplearningbook.org/
+# Image source: Goodfellow et al. *Deep Learning*. 2016. http://www.deeplearningbook.org/
 #
 # **Sequence of Operations:**
-#
 #
 #    1) Forward pass entire input batch through encoder.
 #    2) Initialize decoder inputs as SOS_token, and hidden state as the encoder's final hidden state.
@@ -943,6 +941,7 @@ def maskNLLLoss(inp, target, mask):
 #    7) Clip gradients.
 #    8) Update encoder and decoder model parameters.
 #
+#
 # .. Note ::
 #
 #   PyTorch’s RNN modules (``RNN``, ``LSTM``, ``GRU``) can be used like any
@@ -950,13 +949,14 @@ def maskNLLLoss(inp, target, mask):
 #   sequence (or batch of sequences). We use the ``GRU`` layer like this in
 #   the ``encoder``. The reality is that under the hood, there is an
 #   iterative process looping over each time step calculating hidden states.
-#   Alternatively, you ran run these modules one time step (word) at a time.
-#   In this case, we manually loop over the sequence during the training
-#   process like we do for the ``decoder`` model. As long as you maintain
-#   the correct conceptual model of these modules, implementing sequential
-#   models can be very straightforward.
+#   Alternatively, you ran run these modules one time-step at a time. In
+#   this case, we manually loop over the sequences during the training
+#   process like we must do for the ``decoder`` model. As long as you
+#   maintain the correct conceptual model of these modules, implementing
+#   sequential models can be very straightforward.
 #
 #
+
 
 def train(input_variable, lengths, target_variable, mask, max_target_len, encoder, decoder, embedding,
           encoder_optimizer, decoder_optimizer, batch_size, clip, max_length=MAX_LENGTH):
@@ -967,6 +967,7 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 
     # Set device options
     input_variable = input_variable.to(device)
+    lengths = lengths.to(device)
     target_variable = target_variable.to(device)
     mask = mask.to(device)
 
@@ -1042,10 +1043,10 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 #
 # One thing to note is that when we save our model, we save a tarball
 # containing the encoder and decoder state_dicts (parameters), the
-# optimizers’ state_dicts, the loss, and the iteration. Saving the model
+# optimizers’ state_dicts, the loss, the iteration, etc. Saving the model
 # in this way will give us the ultimate flexibility with the checkpoint.
-# We can use the model parameters to run inference, or we can continue
-# training right where we left off.
+# After loading a checkpoint, we will be able to use the model parameters
+# to run inference, or we can continue training right where we left off.
 #
 
 def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, embedding, encoder_n_layers, decoder_n_layers, save_dir, n_iteration, batch_size, print_every, save_every, clip, corpus_name, loadFilename):
@@ -1054,7 +1055,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
     training_batches = [batch2TrainData(voc, [random.choice(pairs) for _ in range(batch_size)])
                       for _ in range(n_iteration)]
 
-    # Initialize
+    # Initializations
     print('Initializing ...')
     start_iteration = 1
     print_loss = 0
@@ -1110,180 +1111,109 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
 # we are **NOT** using teacher forcing. In other words, for each time
 # step, we simply choose the word from ``decoder_output`` with the highest
 # softmax value. This decoding method is optimal on a single time-step
-# level. However, we may not be choosing the word to lead to the best
-# overall response sequence.
+# level.
+#
+# To facilite the greedy decoding operation, we define a
+# ``GreedySearchDecoder`` class. When run, an object of this class takes
+# an input sequence (``input_seq``) of shape *(input_seq length, 1)*, a
+# scalar input length (``input_length``) tensor, and a ``max_length`` to
+# bound the response sentence length. The input sentence is evaluated
+# using the following computational graph:
+#
+# **Computation Graph:**
+#
+#    1) Forward input through encoder model.
+#    2) Prepare encoder's final hidden layer to be first hidden input to the decoder.
+#    3) Initialize decoder's first input as SOS_token.
+#    4) Initialize tensors to append decoded words to.
+#    5) Iteratively decode one word token at a time:
+#        a) Forward pass through decoder.
+#        b) Obtain most likely word token and its softmax score.
+#        c) Record token and score.
+#        d) Prepare current token to be next decoder input.
+#    6) Return collections of word tokens and scores.
 #
 
-def decode(decoder, decoder_hidden, encoder_outputs, voc, max_length=MAX_LENGTH):
-    # Initialize input, words, and attentions
-    decoder_input = torch.LongTensor([[SOS_token]])
-    decoder_input = decoder_input.to(device)
-    decoded_words = []
+class GreedySearchDecoder(nn.Module):
+    def __init__(self, encoder, decoder):
+        super(GreedySearchDecoder, self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
 
-    # Allow output sequences with a max length of max_length
-    for _ in range(max_length):
-        # Run forward pass though decoder model
-        decoder_output, decoder_hidden = decoder(
-            decoder_input, decoder_hidden, encoder_outputs
-        )
-
-        # Take word with highest softmax probability
-        _, topi = decoder_output.topk(1)
-        ni = topi[0][0]
-        # If the recommended word is an EOS token, append the token to the decoded_words list and stop decoding
-        if ni == EOS_token:
-            break
-        # Else, append the string word to decoded_words list
-        else:
-            decoded_words.append(voc.index2word[ni.item()])
-
-        # Set next decoder input as the chosen decoded word
-        decoder_input = torch.LongTensor([[ni]])
-        decoder_input = decoder_input.to(device)
-
-    return decoded_words
-
-
-######################################################################
-# Beam decoding
-# ~~~~~~~~~~~~~
-#
-# A common seq2seq decoding technique to optimize overall quality of a
-# response sequence is using beam-search optimization. In general,
-# beam-search is a search algorithm that probes the most promising
-# candidate options before making a final selection. It is an optimization
-# of a best-first algorithm like greedy decoding.
-#
-# Specifically, instead of naively choosing the best word, we probe *k =
-# beam_size* candidates. At each time step, each candidate sentence is
-# expanded with all possible next words. Each candidate step is scored by
-# multiplying the probabilities together. The *k* sequences with the
-# highest probabilities are then selected, and this process repeats until
-# the end of the sequence.
-#
-# Note that unlike the ``decode`` function, which returns the response
-# sentence, ``beam_decode`` returns the top *beam_size* response sentences
-# and their average word scores.
-#
-
-# Code source: https://github.com/ywk991112/pytorch-chatbot/blob/master/evaluate.py
-class Sentence:
-    def __init__(self, decoder_hidden, last_idx=SOS_token, sentence_idxes=[], sentence_scores=[]):
-        if(len(sentence_idxes) != len(sentence_scores)):
-            raise ValueError("length of indexes and scores should be the same")
-        self.decoder_hidden = decoder_hidden
-        self.last_idx = last_idx
-        self.sentence_idxes =  sentence_idxes
-        self.sentence_scores = sentence_scores
-
-    # Return mean of sentence_score
-    def avgScore(self):
-        if len(self.sentence_scores) == 0:
-            raise ValueError("Calculate average score of sentence, but got no word")
-        return sum(self.sentence_scores) / len(self.sentence_scores)
-
-    # Return top k sentences
-    def addTopk(self, topi, topv, decoder_hidden, beam_size, voc):
-        topv = torch.log(topv)
-        terminates, sentences = [], []
-        for i in range(beam_size):
-            if topi[0][i] == EOS_token:
-                terminates.append(([voc.index2word[idx.item()] for idx in self.sentence_idxes],
-                                    self.avgScore()))
-                continue
-            idxes = self.sentence_idxes[:]
-            scores = self.sentence_scores[:]
-            idxes.append(topi[0][i])
-            scores.append(topv[0][i])
-            sentences.append(Sentence(decoder_hidden, topi[0][i], idxes, scores))
-        return terminates, sentences
-
-    # Return output sentence and average sentence score
-    def toWordScore(self, voc):
-        words = []
-        for i in range(len(self.sentence_idxes)):
-            if self.sentence_idxes[i] != EOS_token:
-                words.append(voc.index2word[self.sentence_idxes[i].item()])
-        return (words, self.avgScore())
-
-
-def beam_decode(decoder, decoder_hidden, encoder_outputs, voc, beam_size, max_length=MAX_LENGTH):
-    terminal_sentences, prev_top_sentences, next_top_sentences = [], [], []
-    prev_top_sentences.append(Sentence(decoder_hidden))
-    for i in range(max_length):
-        for sentence in prev_top_sentences:
-            decoder_input = torch.LongTensor([[sentence.last_idx]])
-            decoder_input = decoder_input.to(device)
-
-            decoder_hidden = sentence.decoder_hidden
-            decoder_output, decoder_hidden = decoder(
-                decoder_input, decoder_hidden, encoder_outputs
-            )
-            topv, topi = decoder_output.topk(beam_size)
-            term, top = sentence.addTopk(topi, topv, decoder_hidden, beam_size, voc)
-            terminal_sentences.extend(term)
-            next_top_sentences.extend(top)
-
-        next_top_sentences.sort(key=lambda s: s.avgScore(), reverse=True)
-        prev_top_sentences = next_top_sentences[:beam_size]
-        next_top_sentences = []
-
-    terminal_sentences += [sentence.toWordScore(voc) for sentence in prev_top_sentences]
-    terminal_sentences.sort(key=lambda x: x[1], reverse=True)
-
-    n = min(len(terminal_sentences), beam_size)
-    return terminal_sentences[:n]
+    def forward(self, input_seq, input_length, max_length):
+        # Forward input through encoder model
+        encoder_outputs, encoder_hidden = self.encoder(input_seq, input_length)
+        # Prepare encoder's final hidden layer to be first hidden input to the decoder
+        decoder_hidden = encoder_hidden[:decoder.n_layers]
+        # Initialize decoder input with SOS_token
+        decoder_input = torch.ones(1, 1, device=device, dtype=torch.long) * SOS_token
+        # Initialize tensors to append decoded words to
+        all_tokens = torch.zeros([0], device=device, dtype=torch.long)
+        all_scores = torch.zeros([0], device=device)
+        # Iteratively decode one word token at a time
+        for _ in range(max_length):
+            # Forward pass through decoder
+            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden, encoder_outputs)
+            # Obtain most likely word token and its softmax score
+            decoder_scores, decoder_input = torch.max(decoder_output, dim=1)
+            # Record token and score
+            all_tokens = torch.cat((all_tokens, decoder_input), dim=0)
+            all_scores = torch.cat((all_scores, decoder_scores), dim=0)
+            # Prepare current token to be next decoder input (add a dimension)
+            decoder_input = torch.unsqueeze(decoder_input, 0)
+        # Return collections of word tokens and scores
+        return all_tokens, all_scores
 
 
 ######################################################################
 # Evaluate my text
 # ~~~~~~~~~~~~~~~~
 #
-# Now that we have our decoding methods defined, we can write functions
-# for evaluating an input sentence. The ``evaluate`` function manages the
-# low-level process of handling the input sentence. We first format the
-# sentence as an input batch of word indexes with *batch_size=1*. Next, we
-# forward the input batch through the encoder, and similarly to our
-# ``train`` function, we then prepare the encoder’s final hidden layer to
-# be the initial hidden layer of the decoder. If *beam_size == 1*, we use
-# greedy decoding, otherwise we use beam decoding.
+# Now that we have our decoding method defined, we can write functions for
+# evaluating a string input sentence. The ``evaluate`` function manages
+# the low-level process of handling the input sentence. We first format
+# the sentence as an input batch of word indexes with *batch_size==1*. We
+# do this by converting the words of the sentence to their corresponding
+# indexes, and transposing the dimensions to prepare the tensor for our
+# models. We also create a ``lengths`` tensor which contains the length of
+# our input sentence. In this case, ``lengths`` is scalar because we are
+# only evaluating one sentence at a time (batch_size==1). Next, we obtain
+# the decoded response sentence tensor using our ``GreedySearchDecoder``
+# object (``searcher``). Finally, we convert the response’s indexes to
+# words and return the list of decoded words.
 #
 # ``evaluateInput`` acts as the user interface for our chatbot. When
 # called, an input text field will spawn in which we can enter our query
 # sentence. After typing our input sentence and pressing *Enter*, our text
 # is normalized in the same way as our training data, and is ultimately
 # fed to the ``evaluate`` function to obtain a decoded output sentence. We
-# format the outputs of our greedy decoder and beam decoder differently,
-# as we want to show the top *beam_size* sentences along with their
-# corresponding average word scores. We loop this process, so we can keep
-# chatting with our bot until we enter either “q” or “quit”.
+# loop this process, so we can keep chatting with our bot until we enter
+# either “q” or “quit”.
 #
 # Finally, if a sentence is entered that contains a word that is not in
 # the vocabulary, we handle this gracefully by printing an error message
 # and prompting the user to enter another sentence.
 #
 
-def evaluate(encoder, decoder, voc, sentence, beam_size, max_length=MAX_LENGTH):
-    # Format input sentence as a batch
+def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
+    ### Format input sentence as a batch
+    # words -> indexes
     indexes_batch = [indexesFromSentence(voc, sentence)]
-    lengths = [len(indexes) for indexes in indexes_batch]
+    # Create lengths tensor
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+    # Transpose dimensions of batch to match models' expectations
     input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
+    # Use appropriate device
     input_batch = input_batch.to(device)
-
-    # Forward input through encoder model
-    encoder_outputs, encoder_hidden = encoder(input_batch, lengths)
-
-    # Prepare encoder's final hidden layer to be first hidden input to the decoder
-    decoder_hidden = encoder_hidden[:decoder.n_layers]
-
-    # Decode sentence
-    if beam_size == 1:
-        return decode(decoder, decoder_hidden, encoder_outputs, voc)
-    else:
-        return beam_decode(decoder, decoder_hidden, encoder_outputs, voc, beam_size)
+    lengths = lengths.to(device)
+    # Decode sentence with searcher
+    tokens, scores = searcher(input_batch, lengths, max_length)
+    # indexes -> words
+    decoded_words = [voc.index2word[token.item()] for token in tokens]
+    return decoded_words
 
 
-def evaluateInput(encoder, decoder, voc, beam_size):
+def evaluateInput(encoder, decoder, searcher, voc):
     input_sentence = ''
     while(1):
         try:
@@ -1294,15 +1224,11 @@ def evaluateInput(encoder, decoder, voc, beam_size):
             # Normalize sentence
             input_sentence = normalizeString(input_sentence)
             # Evaluate sentence
-            if beam_size == 1:
-                output_words = evaluate(encoder, decoder, voc, input_sentence, beam_size)
-                output_sentence = ' '.join(output_words)
-                print('bot:', output_sentence)
-            else:
-                output_words_list = evaluate(encoder, decoder, voc, input_sentence, beam_size)
-                for output_words, score in output_words_list:
-                    output_sentence = ' '.join(output_words)
-                    print("{:.3f} < {}".format(score, output_sentence))
+            output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
+            # Format and print response sentence
+            output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
+            print('Bot:', ' '.join(output_words))
+
         except KeyError:
             print("Error: Encountered unknown word.")
 
@@ -1335,9 +1261,9 @@ batch_size = 64
 # Set checkpoint to load from; set to None if starting from scratch
 loadFilename = None
 checkpoint_iter = 4000
-# loadFilename = os.path.join(save_dir, model_name, corpus_name,
-#                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
-#                             '{}_checkpoint.tar'.format(checkpoint_iter))
+#loadFilename = os.path.join(save_dir, model_name, corpus_name,
+#                            '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
+#                            '{}_checkpoint.tar'.format(checkpoint_iter))
 
 
 # Load model if a loadFilename is provided
@@ -1365,7 +1291,7 @@ decoder = LuongAttnDecoderRNN(attn_model, embedding, hidden_size, voc.num_words,
 if loadFilename:
     encoder.load_state_dict(encoder_sd)
     decoder.load_state_dict(decoder_sd)
-# use cuda
+# Use appropriate device
 encoder = encoder.to(device)
 decoder = decoder.to(device)
 print('Models built and ready to go!')
@@ -1414,16 +1340,18 @@ trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_
 # Run Evaluation
 # ~~~~~~~~~~~~~~
 #
-# To chat with your model, run the following block. Feel free to change
-# the beam_size to observe the differences in decoder behavior.
+# To chat with your model, run the following block.
 #
 
 # Set dropout layers to eval mode
 encoder.eval()
 decoder.eval()
 
-# Uncomment the next line to begin chatting
-# evaluateInput(encoder, decoder, voc, beam_size=1)
+# Initialize search module
+searcher = GreedySearchDecoder(encoder, decoder)
+
+# Begin chatting
+evaluateInput(encoder, decoder, searcher, voc)
 
 
 ######################################################################
