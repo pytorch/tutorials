@@ -119,7 +119,7 @@ import numpy as np
 
 
 USE_CUDA = torch.cuda.is_available()
-device = torch.device("cuda" if USE_CUDA else "cpu")
+device = torch.device("cpu")
 
 MAX_LENGTH = 10  # Maximum sentence length
 
@@ -740,10 +740,8 @@ checkpoint_iter = 4000
 loadFilename = '4000_checkpoint.tar'
 
 # Load model
-# If loading on same machine the model was trained on
-checkpoint = torch.load(loadFilename)
-# If loading a model trained on GPU to CPU
-#checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
+# Force CPU device options (to match tensors in this tutorial)
+checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))
 encoder_sd = checkpoint['en']
 decoder_sd = checkpoint['de']
 encoder_optimizer_sd = checkpoint['en_opt']
