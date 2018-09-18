@@ -7,17 +7,17 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 
 
 ######################################################################
+# This example requires PyTorch 1.0 (preview) or later. For installation 
+# information visit http://pytorch.org/get-started.
+#
 # This tutorial will walk through the process of transitioning a
 # sequence-to-sequence model to Torch Script using PyTorch’s Hybrid
 # Frontend. The model that we will convert is the chatbot model from the
-# `Chatbot tutorial <>`__. While the `introductory hybrid frontend
-# tutorials <>`__ are useful for gaining an understanding of the
-# work-flow, purpose, and basic syntax of the feature, this document
-# covers a more challenging model and a more practical use-case. You can
-# either treat this tutorial as a “Part 2” to the `Chatbot tutorial <>`__
+# `Chatbot tutorial <https://pytorch.org/tutorials/beginner/chatbot_tutorial.html>`__. 
+# You can either treat this tutorial as a “Part 2” to the Chatbot tutorial
 # and deploy your own pretrained model, or you can start with this
 # document and use a pretrained model that we host. In the latter case,
-# you can reference the original `Chatbot tutorial <>`__ for details
+# you can reference the original Chatbot tutorial for details
 # regarding data preprocessing, model theory and definition, and model
 # training.
 #
@@ -117,9 +117,8 @@ import os
 import unicodedata
 import numpy as np
 
-
-USE_CUDA = torch.cuda.is_available()
 device = torch.device("cpu")
+
 
 MAX_LENGTH = 10  # Maximum sentence length
 
@@ -728,10 +727,9 @@ decoder_n_layers = 2
 dropout = 0.1
 batch_size = 64
 
+# If you're loading your own model
 # Set checkpoint to load from
 checkpoint_iter = 4000
-
-# If you're loading your own model
 # loadFilename = os.path.join(save_dir, model_name, corpus_name,
 #                             '{}-{}_{}'.format(encoder_n_layers, decoder_n_layers, hidden_size),
 #                             '{}_checkpoint.tar'.format(checkpoint_iter))

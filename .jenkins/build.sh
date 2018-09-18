@@ -3,11 +3,17 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 
 # Install a nightly build of pytorch
 
-# GPU, requires CUDA version 9.0 and python version 3.6
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly-2018.8.28.dev1-cp36-cp36m-linux_x86_64.whl
+# GPU, requires CUDA version 8.0
+pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu80/torch_nightly.html
+
+# GPU, requires CUDA version 9.0
+# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
+
+# GPU, requires CUDA version 9.2
+# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu92/torch_nightly.html
 
 # CPU
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly-2018.8.24.dev1-cp36-cp36m-linux_x86_64.whl
+# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 
 ## Install doc dependencies
 
@@ -15,7 +21,7 @@ export PATH=/opt/conda/bin:$PATH
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
 conda install -y sphinx pandas pillow=4.1.1
-pip install sphinx-gallery sphinx_rtd_theme tqdm matplotlib ipython
+pip install sphinx-gallery pytorch_sphinx_theme tqdm matplotlib ipython
 
 git clone https://github.com/pytorch/vision --quiet
 pushd vision
