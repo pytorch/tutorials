@@ -1,5 +1,5 @@
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
+# sudo apt-get update
+# sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
 # Install a nightly build of pytorch
 
@@ -15,6 +15,7 @@ pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu8
 # CPU
 # pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 
+pip install -r requirements.txt
 pip install -r ../requirements.txt
 
 git clone https://github.com/pytorch/vision --quiet
