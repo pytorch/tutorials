@@ -3,7 +3,7 @@
 What is PyTorch?
 ================
 
-It’s a Python based scientific computing package targeted at two sets of
+It’s a Python-based scientific computing package targeted at two sets of
 audiences:
 
 -  A replacement for NumPy to use the power of GPUs
