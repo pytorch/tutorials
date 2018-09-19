@@ -1353,8 +1353,8 @@ decoder.eval()
 # Initialize search module
 searcher = GreedySearchDecoder(encoder, decoder)
 
-# Begin chatting
-evaluateInput(encoder, decoder, searcher, voc)
+# Begin chatting (uncomment and run the following line to begin)
+# evaluateInput(encoder, decoder, searcher, voc)
 
 
 ######################################################################
