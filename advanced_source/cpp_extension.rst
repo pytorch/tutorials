@@ -246,14 +246,13 @@ Next we can port our entire forward pass to C++:
 Backward Pass
 *************
 
-At this time, PyTorch's C++ interface does not support automatic
-differentiation. This is something the PyTorch team is working on, but it is
-not available yet. As such, we have to also implement the backward pass of our
-LLTM, which computes the derivative of the loss with respect to each input of
-the forward pass. Ultimately, we will plop both the forward and backward
-function into a :class:`torch.autograd.Function` to create a nice Python binding. The
-backward function is slightly more involved, so we'll not dig deeper into the
-code (if you are interested, `Alex Graves' thesis
+The C++ extension API currently does not provide a way of automatically
+generating a backwards function for us. As such, we have to also implement the
+backward pass of our LLTM, which computes the derivative of the loss with
+respect to each input of the forward pass. Ultimately, we will plop both the
+forward and backward function into a :class:`torch.autograd.Function` to create
+a nice Python binding. The backward function is slightly more involved, so
+we'll not dig deeper into the code (if you are interested, `Alex Graves' thesis
 <http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
 information on this):
 
