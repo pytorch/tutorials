@@ -1,5 +1,5 @@
-# sudo apt-get update
-# sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
 # Install a nightly build of pytorch
 
