@@ -1,23 +1,26 @@
 Welcome to PyTorch Tutorials
 ============================
 
-To get started with learning PyTorch, start with our Beginner Tutorials.
+To learn how to use PyTorch, start with our Getting Started Tutorials.
 The :doc:`60-minute blitz </beginner/deep_learning_60min_blitz>` is the most common
-starting point, and gives you a quick introduction to PyTorch.
-If you like learning by examples, you will like the tutorial
-:doc:`/beginner/pytorch_with_examples`
+starting point, and provides a broad view into how to use PyTorch from basics all the way to constructing deep neural networks. 
 
-If you would like to do the tutorials interactively via IPython / Jupyter,
+Some considerations:
+
+- If you would like to do the tutorials interactively via IPython / Jupyter,
 each tutorial has a download link for a Jupyter Notebook and Python source code.
 
-We also provide a lot of high-quality examples covering image classification,
+- Additional high-quality examples are available including image classification,
 unsupervised learning, reinforcement learning, machine translation and
 many other applications at https://github.com/pytorch/examples/
 
-You can find reference documentation for PyTorch's API and layers at
+- You can find reference documentation for PyTorch's API and layers at
 http://docs.pytorch.org or via inline help.
-If you would like the tutorials section improved, please open a github issue
+
+- If you would like the tutorials section improved, please open a github issue
 here with your feedback: https://github.com/pytorch/tutorials
+
+Lastly, some of the tutorials are marked as requiring the *Preview release*. These are tutorials that use the new functionality from the PyTorch 1.0 Preview. Please use the *getting started* section to get instructions on how to install the latest Preview build before trying these tutorials. 
 
 Getting Started
 ------------------
