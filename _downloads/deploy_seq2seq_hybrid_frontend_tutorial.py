@@ -7,9 +7,6 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 
 
 ######################################################################
-# This example requires PyTorch 1.0 (preview) or later. For installation 
-# information visit http://pytorch.org/get-started.
-#
 # This tutorial will walk through the process of transitioning a
 # sequence-to-sequence model to Torch Script using PyTorch’s Hybrid
 # Frontend. The model that we will convert is the chatbot model from the
@@ -20,6 +17,9 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 # you can reference the original Chatbot tutorial for details
 # regarding data preprocessing, model theory and definition, and model
 # training.
+#
+# .. attention:: This example requires PyTorch 1.0 (preview) or later.
+#    For installation information visit http://pytorch.org/get-started.
 #
 # What is the Hybrid Frontend?
 # ----------------------------
