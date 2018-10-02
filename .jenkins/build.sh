@@ -21,6 +21,7 @@ export PATH=/opt/conda/bin:$PATH
 # this is a workaround to the issue.
 conda install -y sphinx==1.7.9 pandas pillow=4.1.1
 # PyTorch Theme
+rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 pip install sphinx-gallery tqdm matplotlib ipython
 
