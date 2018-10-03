@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Transfer Learning tutorial
+Transfer Learning Tutorial
 ==========================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 

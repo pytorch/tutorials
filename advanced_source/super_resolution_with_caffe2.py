@@ -1,5 +1,5 @@
 """
-Transfering a model from PyTorch to Caffe2 and Mobile using ONNX
+Transfering a Model from PyTorch to Caffe2 and Mobile using ONNX
 ================================================================
 
 In this tutorial, we describe how to use ONNX to convert a model defined

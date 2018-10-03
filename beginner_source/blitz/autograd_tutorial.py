@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Autograd: automatic differentiation
+Autograd: Automatic Differentiation
 ===================================
 
 Central to all neural networks in PyTorch is the ``autograd`` package.

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Creating extensions using numpy and scipy
+Creating Extensions Using numpy and scipy
 =========================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
@@ -103,7 +103,7 @@ class ScipyConv2dFunction(Function):
         # the previous line can be expressed equivalently as:
         # grad_input = correlate2d(grad_output, flip(flip(filter.numpy(), axis=0), axis=1), mode='full')
         grad_filter = correlate2d(input.numpy(), grad_output, mode='valid')
-        return torch.as_tensor(grad_input, dtype=input.dtype), torch.as_tensor(grad_filter, dtype=filter.dtype), torch.as_tensor(grad_bias, dtype=bias.dtype)
+        return torch.from_numpy(grad_input), torch.from_numpy(grad_filter).to(torch.float), torch.from_numpy(grad_bias).to(torch.float)
 
 
 class ScipyConv2d(Module):

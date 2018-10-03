@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Training a classifier
+Training a Classifier
 =====================
 
 This is it. You have seen how to define neural networks, compute loss and make

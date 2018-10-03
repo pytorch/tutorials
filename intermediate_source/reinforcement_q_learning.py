@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Reinforcement Learning (DQN) tutorial
+Reinforcement Learning (DQN) Tutorial
 =====================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
