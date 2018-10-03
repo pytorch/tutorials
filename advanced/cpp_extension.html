@@ -470,14 +470,13 @@ the full power of C++11 at our disposal.</p>
 </div>
 <div class="section" id="backward-pass">
 <h4>Backward Pass<a class="headerlink" href="#backward-pass" title="Permalink to this headline">¶</a></h4>
-<p>At this time, PyTorch’s C++ interface does not support automatic
-differentiation. This is something the PyTorch team is working on, but it is
-not available yet. As such, we have to also implement the backward pass of our
-LLTM, which computes the derivative of the loss with respect to each input of
-the forward pass. Ultimately, we will plop both the forward and backward
-function into a <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> to create a nice Python binding. The
-backward function is slightly more involved, so we’ll not dig deeper into the
-code (if you are interested, <a class="reference external" href="http://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
+<p>The C++ extension API currently does not provide a way of automatically
+generating a backwards function for us. As such, we have to also implement the
+backward pass of our LLTM, which computes the derivative of the loss with
+respect to each input of the forward pass. Ultimately, we will plop both the
+forward and backward function into a <code class="xref py py-class docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code> to create
+a nice Python binding. The backward function is slightly more involved, so
+we’ll not dig deeper into the code (if you are interested, <a class="reference external" href="http://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
 information on this):</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// tanh&#39;(z) = 1 - tanh^2(z)</span>
 <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>

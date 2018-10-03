@@ -492,7 +492,7 @@ GitHub repository</a>.</p>
 <p>Now that we understand how the distributed module works, let us write
 something useful with it. Our goal will be to replicate the
 functionality of
-<a class="reference external" href="http://pytorch.org/docs/master/nn.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a>.
+<a class="reference external" href="http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a>.
 Of course, this will be a didactic example and in a real-world
 situtation you should use the official, well-tested and well-optimized
 version linked above.</p>
@@ -605,7 +605,7 @@ could train any model on a large computer cluster.</p>
 <p><strong>Note:</strong> While the last sentence is <em>technically</em> true, there are <a class="reference external" href="http://seba-1511.github.io/dist_blog">a
 lot more tricks</a> required to
 implement a production-level implementation of synchronous SGD. Again,
-use what <a class="reference external" href="http://pytorch.org/docs/master/nn.html#torch.nn.parallel.DistributedDataParallel">has been tested and
+use what <a class="reference external" href="http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">has been tested and
 optimized</a>.</p>
 <div class="section" id="our-own-ring-allreduce">
 <h3>Our Own Ring-Allreduce<a class="headerlink" href="#our-own-ring-allreduce" title="Permalink to this headline">¶</a></h3>
@@ -646,7 +646,7 @@ an exercise left to the reader, there is still one difference between
 our version and the one in DeepSpeech: their implementation divide the
 gradient tensor into <em>chunks</em>, so as to optimally utilize the
 communication bandwidth. (Hint:
-<a class="reference external" href="http://pytorch.org/docs/master/torch.html#torch.chunk">torch.chunk</a>)</p>
+<a class="reference external" href="http://pytorch.org/docs/stable/torch.html#torch.chunk">torch.chunk</a>)</p>
 </div>
 </div>
 <div class="section" id="advanced-topics">
@@ -668,7 +668,7 @@ there are currently three backends implemented in PyTorch: TCP, MPI, and
 Gloo. They each have different specifications and tradeoffs, depending
 on the desired use-case. A comparative table of supported functions can
 be found
-<a class="reference external" href="http://pytorch.org/docs/master/distributed.html#module-torch.distributed">here</a>. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See <a class="reference external" href="https://pytorch.org/docs/master/distributed.html#multi-gpu-collective-functions">this section</a> of the <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> docs for more information about its use and value.</p>
+<a class="reference external" href="http://pytorch.org/docs/stable/distributed.html#module-torch.distributed">here</a>. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions">this section</a> of the <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> docs for more information about its use and value.</p>
 <p><strong>TCP Backend</strong></p>
 <p>So far we have made extensive usage of the TCP backend. It is quite
 handy as a development platform, as it is guaranteed to work on most
@@ -696,10 +696,10 @@ modifications:</p>
 <ol class="arabic simple" start="0">
 <li><code class="docutils literal notranslate"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='tcp')</span></code> <span class="math notranslate nohighlight">\(\rightarrow\)</span>
 <code class="docutils literal notranslate"><span class="pre">init_processes(rank,</span> <span class="pre">size,</span> <span class="pre">fn,</span> <span class="pre">backend='gloo')</span></code></li>
+<li>Use <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">torch.device(&quot;cuda:{}&quot;.format(rank))</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net()</span></code> <span class="math notranslate nohighlight">\(\rightarrow\)</span> <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net().to(device)</span></code></li>
+<li>Use <code class="docutils literal notranslate"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">data.to(device),</span> <span class="pre">target.to(device)</span></code></li>
 </ol>
-<p>1.  Use <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">torch.device(&quot;cuda:{}&quot;.format(rank))</span>
-<span class="pre">1.</span> <span class="pre">``model</span> <span class="pre">=</span> <span class="pre">Net()</span></code> <span class="math notranslate nohighlight">\(\rightarrow\)</span> <code class="docutils literal notranslate"><span class="pre">model</span> <span class="pre">=</span> <span class="pre">Net().to(device)</span></code>
-2.  Use <code class="docutils literal notranslate"><span class="pre">data,</span> <span class="pre">target</span> <span class="pre">=</span> <span class="pre">data.to(device),</span> <span class="pre">target.to(device)</span></code></p>
 <p>With the above modifications, our model is now training on two GPUs and
 you can monitor their utilization with <code class="docutils literal notranslate"><span class="pre">watch</span> <span class="pre">nvidia-smi</span></code>.</p>
 <p><strong>MPI Backend</strong></p>
@@ -763,7 +763,7 @@ are responsible for the initial coordination step between each process.
 Those methods allow you to define how this coordination is done.
 Depending on your hardware setup, one of these methods should be
 naturally more suitable than the others. In addition to the following
-sections, you should also have a look at the <a class="reference external" href="http://pytorch.org/docs/master/distributed.html#initialization">official
+sections, you should also have a look at the <a class="reference external" href="http://pytorch.org/docs/stable/distributed.html#initialization">official
 documentation</a>.</p>
 <p>Before diving into the initialization methods, let’s have a quick look
 at what happens behind <code class="docutils literal notranslate"><span class="pre">init_process_group</span></code> from the C/C++
@@ -862,7 +862,7 @@ multiple jobs to be scheduled on the same cluster.</p>
 </center><p>I’d like to thank the PyTorch developers for doing such a good job on
 their implementation, documentation, and tests. When the code was
 unclear, I could always count on the
-<a class="reference external" href="http://pytorch.org/docs/master/distributed.html">docs</a> or the
+<a class="reference external" href="http://pytorch.org/docs/stable/distributed.html">docs</a> or the
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/test/test_distributed.py">tests</a>
 to find an answer. In particular, I’d like to thank Soumith Chintala,
 Adam Paszke, and Natalia Gimelshein for providing insightful comments
