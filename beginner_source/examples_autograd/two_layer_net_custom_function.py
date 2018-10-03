@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-PyTorch: Defining new autograd functions
+PyTorch: Defining New autograd Functions
 ----------------------------------------
 
 A fully-connected ReLU network with one hidden layer and no biases, trained to

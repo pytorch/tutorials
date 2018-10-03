@@ -1,133 +1,51 @@
-# -*- coding: utf-8 -*-
 """
-Neural Transfer with PyTorch
-============================
+Neural Transfer Using PyTorch
+=============================
+
+
 **Author**: `Alexis Jacq <https://alexis-jacq.github.io>`_
+ 
+**Edited by**: `Winston Herring <https://github.com/winston6>`_
 
 Introduction
 ------------
 
-Welcome! This tutorial explains how to impletment the
-`Neural-Style <https://arxiv.org/abs/1508.06576>`__ algorithm developed
-by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
+This tutorial explains how to implement the `Neural-Style algorithm <https://arxiv.org/abs/1508.06576>`__
+developed by Leon A. Gatys, Alexander S. Ecker and Matthias Bethge.
+Neural-Style, or Neural-Transfer, allows you to take an image and
+reproduce it with a new artistic style. The algorithm takes three images,
+an input image, a content-image, and a style-image, and changes the input 
+to resemble the content of the content-image and the artistic style of the style-image.
 
-Neural what?
-~~~~~~~~~~~~
-
-The Neural-Style, or Neural-Transfer, is an algorithm that takes as
-input a content-image (e.g. a turtle), a style-image (e.g. artistic
-waves) and return the content of the content-image as if it was
-'painted' using the artistic style of the style-image:
-
+ 
 .. figure:: /_static/img/neural-style/neuralstyle.png
    :alt: content1
-
-How does it work?
-~~~~~~~~~~~~~~~~~
-
-The principle is simple: we define two distances, one for the content
-(:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measures
-how different the content is between two images, while :math:`D_S`
-measures how different the style is between two images. Then, we take a
-third image, the input, (e.g. a with noise), and we transform it in
-order to both minimize its content-distance with the content-image and
-its style-distance with the style-image.
-
-OK. How does it work?
-^^^^^^^^^^^^^^^^^^^^^
-
-Well, going further requires some mathematics. Let :math:`C_{nn}` be a
-pre-trained deep convolutional neural network and :math:`X` be any
-image. :math:`C_{nn}(X)` is the network fed by :math:`X` (containing
-feature maps at all layers). Let :math:`F_{XL} \in C_{nn}(X)` be the
-feature maps at depth layer :math:`L`, all vectorized and concatenated
-in one single vector. We simply define the content of :math:`X` at layer
-:math:`L` by :math:`F_{XL}`. Then, if :math:`Y` is another image of same
-the size than :math:`X`, we define the distance of content at layer
-:math:`L` as follow:
-
-.. math:: D_C^L(X,Y) = \|F_{XL} - F_{YL}\|^2 = \sum_i (F_{XL}(i) - F_{YL}(i))^2
-
-Where :math:`F_{XL}(i)` is the :math:`i^{th}` element of :math:`F_{XL}`.
-The style is a bit less trivial to define. Let :math:`F_{XL}^k` with
-:math:`k \leq K` be the vectorized :math:`k^{th}` of the :math:`K`
-feature maps at layer :math:`L`. The style :math:`G_{XL}` of :math:`X`
-at layer :math:`L` is defined by the Gram produce of all vectorized
-feature maps :math:`F_{XL}^k` with :math:`k \leq K`. In other words,
-:math:`G_{XL}` is a :math:`K`\ x\ :math:`K` matrix and the element
-:math:`G_{XL}(k,l)` at the :math:`k^{th}` line and :math:`l^{th}` column
-of :math:`G_{XL}` is the vectorial produce between :math:`F_{XL}^k` and
-:math:`F_{XL}^l` :
-
-.. math::
-
-    G_{XL}(k,l) = \langle F_{XL}^k, F_{XL}^l\\rangle = \sum_i F_{XL}^k(i) . F_{XL}^l(i)
-
-Where :math:`F_{XL}^k(i)` is the :math:`i^{th}` element of
-:math:`F_{XL}^k`. We can see :math:`G_{XL}(k,l)` as a measure of the
-correlation between feature maps :math:`k` and :math:`l`. In that way,
-:math:`G_{XL}` represents the correlation matrix of feature maps of
-:math:`X` at layer :math:`L`. Note that the size of :math:`G_{XL}` only
-depends on the number of feature maps, not on the size of :math:`X`.
-Then, if :math:`Y` is another image *of any size*, we define the
-distance of style at layer :math:`L` as follow:
-
-.. math::
-
-    D_S^L(X,Y) = \|G_{XL} - G_{YL}\|^2 = \sum_{k,l} (G_{XL}(k,l) - G_{YL}(k,l))^2
-
-In order to minimize in one shot :math:`D_C(X,C)` between a variable
-image :math:`X` and target content-image :math:`C` and :math:`D_S(X,S)`
-between :math:`X` and target style-image :math:`S`, both computed at
-several layers , we compute and sum the gradients (derivative with
-respect to :math:`X`) of each distance at each wanted layer:
-
-.. math::
-
-    \\nabla_{\textit{total}}(X,S,C) = \sum_{L_C} w_{CL_C}.\\nabla_{\textit{content}}^{L_C}(X,C) + \sum_{L_S} w_{SL_S}.\\nabla_{\textit{style}}^{L_S}(X,S)
-
-Where :math:`L_C` and :math:`L_S` are respectivement the wanted layers
-(arbitrary stated) of content and style and :math:`w_{CL_C}` and
-:math:`w_{SL_S}` the weights (arbitrary stated) associated with the
-style or the content at each wanted layer. Then, we run a gradient
-descent over :math:`X`:
-
-.. math:: X \leftarrow X - \\alpha \\nabla_{\textit{total}}(X,S,C)
-
-Ok. That's enough with maths. If you want to go deeper (how to compute
-the gradients) **we encourage you to read the original paper** by Leon
-A. Gatys and AL, where everything is much better and much clearer
-explained.
-
-For our implementation in PyTorch, we already have everything
-we need: indeed, with PyTorch, all the gradients are automatically and
-dynamically computed for you (while you use functions from the library).
-This is why the implementation of this algorithm becomes very
-comfortable with PyTorch.
-
-PyTorch implementation
-----------------------
-
-If you are not sure to understand all the mathematics above, you will
-probably get it by implementing it. If you are discovering PyTorch, we
-recommend you to first read this :doc:`Introduction to
-PyTorch </beginner/deep_learning_60min_blitz>`.
-
-Packages
-~~~~~~~~
-
-We will have recourse to the following packages:
-
--  ``torch``, ``torch.nn``, ``numpy`` (indispensables packages for
-   neural networks with PyTorch)
--  ``torch.optim`` (efficient gradient descents)
--  ``PIL``, ``PIL.Image``, ``matplotlib.pyplot`` (load and display
-   images)
--  ``torchvision.transforms`` (treat PIL images and transform into torch
-   tensors)
--  ``torchvision.models`` (train or load pre-trained models)
--  ``copy`` (to deep copy the models; system package)
 """
+
+######################################################################
+# Underlying Principle
+# --------------------
+# 
+# The principle is simple: we define two distances, one for the content
+# (:math:`D_C`) and one for the style (:math:`D_S`). :math:`D_C` measures how different the content
+# is between two images while :math:`D_S` measures how different the style is
+# between two images. Then, we take a third image, the input, and
+# transform it to minimize both its content-distance with the
+# content-image and its style-distance with the style-image. Now we can
+# import the necessary packages and begin the neural transfer.
+# 
+# Importing Packages and Selecting a Device
+# -----------------------------------------
+# Below is a  list of the packages needed to implement the neural transfer.
+#
+# -  ``torch``, ``torch.nn``, ``numpy`` (indispensables packages for
+#    neural networks with PyTorch)
+# -  ``torch.optim`` (efficient gradient descents)
+# -  ``PIL``, ``PIL.Image``, ``matplotlib.pyplot`` (load and display
+#    images)
+# -  ``torchvision.transforms`` (transform PIL images into tensors)
+# -  ``torchvision.models`` (train or load pre-trained models)
+# -  ``copy`` (to deep copy the models; system package)
 
 from __future__ import print_function
 
@@ -146,38 +64,36 @@ import copy
 
 
 ######################################################################
-# Cuda
-# ~~~~
-#
-# If you have a GPU on your computer, it is preferable to run the
-# algorithm on it, especially if you want to try larger networks (like
-# VGG). For this, we have ``torch.cuda.is_available()`` that returns
-# ``True`` if you computer has an available GPU. Then, we can set the
-# ``torch.device`` that will be used in this script. Then, we will use
-# the method ``.to(device)`` that moves a tensor or a module to the desired
-# device. When we want to move back this tensor or module to the
-# CPU (e.g. to use numpy), we can use the ``.cpu()`` method.
+# Next, we need to choose which device to run the network on and import the
+# content and style images. Running the neural transfer algorithm on large
+# images takes longer and will go much faster when running on a GPU. We can
+# use ``torch.cuda.is_available()`` to detect if there is a GPU available.
+# Next, we set the ``torch.device`` for use throughout the tutorial. Also the ``.to(device)``
+# method is used to move tensors or modules to a desired device. 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
 ######################################################################
-# Load images
-# ~~~~~~~~~~~
+# Loading the Images
+# ------------------
 #
-# In order to simplify the implementation, let's start by importing a
-# style and a content image of the same dimentions. We then scale them to
-# the desired output image size (128 or 512 in the example, depending on gpu
-# availablity) and transform them into torch tensors, ready to feed
-# a neural network:
+# Now we will import the style and content images. The original PIL images have values between 0 and 255, but when
+# transformed into torch tensors, their values are converted to be between
+# 0 and 1. The images also need to be resized to have the same dimensions.
+# An important detail to note is that neural networks from the
+# torch library are trained with tensor values ranging from 0 to 1. If you
+# try to feed the networks with 0 to 255 tensor images, then the activated
+# feature maps will be unable sense the intended content and style.
+# However, pre-trained networks from the Caffe library are trained with 0
+# to 255 tensor images. 
+#
 #
 # .. Note::
 #     Here are links to download the images required to run the tutorial:
 #     `picasso.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
 #     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
 #     Download these two images and add them to a directory
-#     with name ``images``
-
+#     with name ``images`` in your current working directory.
 
 # desired size of the output image
 imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
@@ -194,28 +110,18 @@ def image_loader(image_name):
     return image.to(device, torch.float)
 
 
-style_img = image_loader("images/picasso.jpg")
-content_img = image_loader("images/dancing.jpg")
+style_img = image_loader("./images/picasso.jpg")
+content_img = image_loader("./images/dancing.jpg")
 
 assert style_img.size() == content_img.size(), \
     "we need to import style and content images of the same size"
 
 
 ######################################################################
-# Imported PIL images have values between 0 and 255. Transformed into torch
-# tensors, their values are between 0 and 1. This is an important detail:
-# neural networks from torch library are trained with 0-1 tensor image. If
-# you try to feed the networks with 0-255 tensor images the activated
-# feature maps will have no sense. This is not the case with pre-trained
-# networks from the Caffe library: they are trained with 0-255 tensor
-# images.
-#
-# Display images
-# ~~~~~~~~~~~~~~
-#
-# We will use ``plt.imshow`` to display images. So we need to first
-# reconvert them into PIL images:
-#
+# Now, let's create a function that displays an image by reconverting a 
+# copy of it to PIL format and displaying the copy using 
+# ``plt.imshow``. We will try displaying the content and style images 
+# to ensure they were imported correctly.
 
 unloader = transforms.ToPILImage()  # reconvert into PIL image
 
@@ -237,36 +143,31 @@ imshow(style_img, title='Style Image')
 plt.figure()
 imshow(content_img, title='Content Image')
 
-
 ######################################################################
-# Content loss
+# Loss Functions
+# --------------
+# Content Loss
 # ~~~~~~~~~~~~
-#
-# The content loss is a function that takes as input the feature maps
-# :math:`F_{XL}` at a layer :math:`L` in a network fed by :math:`X` and
-# returns the weigthed content distance :math:`w_{CL}.D_C^L(X,C)` between
-# this image and the content image. Hence, the weight :math:`w_{CL}` and
-# the target content :math:`F_{CL}` are parameters of the function. We
+# 
+# The content loss is a function that represents a weighted version of the
+# content distance for an individual layer. The function takes the feature
+# maps :math:`F_{XL}` of a layer :math:`L` in a network processing input :math:`X` and returns the
+# weighted content distance :math:`w_{CL}.D_C^L(X,C)` between the image :math:`X` and the
+# content image :math:`C`. The feature maps of the content image(:math:`F_{CL}`) must be
+# known by the function in order to calculate the content distance. We
 # implement this function as a torch module with a constructor that takes
-# these parameters as input. The distance :math:`\|F_{XL} - F_{YL}\|^2` is
-# the Mean Square Error between the two sets of feature maps, that can be
-# computed using a criterion ``nn.MSELoss`` stated as a third parameter.
-#
-# We will add our content losses at each desired layer as additive modules
-# of the neural network. That way, each time we will feed the network with
-# an input image :math:`X`, all the content losses will be computed at the
-# desired layers and, thanks to autograd, all the gradients will be
-# computed. For that, we just need to make the ``forward`` method of our
-# module returning the input: the module becomes a ''transparent layer''
-# of the neural network. The computed loss is saved as a parameter of the
-# module.
-#
-# Finally, we define a fake ``backward`` method that just calls the
-# backward method of ``nn.MSELoss`` in order to reconstruct the gradient.
-# This method returns the computed loss: this will be useful when running
-# the gradient descent in order to display the evolution of style and
-# content losses.
-#
+# :math:`F_{CL}` as an input. The distance :math:`\|F_{XL} - F_{CL}\|^2` is the mean square error
+# between the two sets of feature maps, and can be computed using ``nn.MSELoss``.
+# 
+# We will add this content loss module directly after the convolution
+# layer(s) that are being used to compute the content distance. This way
+# each time the network is fed an input image the content losses will be
+# computed at the desired layers and because of auto grad, all the
+# gradients will be computed. Now, in order to make the content loss layer
+# transparent we must define a ``forward`` method that computes the content
+# loss and then returns the layer’s input. The computed loss is saved as a
+# parameter of the module.
+# 
 
 class ContentLoss(nn.Module):
 
@@ -282,29 +183,37 @@ class ContentLoss(nn.Module):
         self.loss = F.mse_loss(input, self.target)
         return input
 
-
 ######################################################################
 # .. Note::
-#    **Important detail**: this module, although it is named ``ContentLoss``,
+#    **Important detail**: although this module is named ``ContentLoss``, it
 #    is not a true PyTorch Loss function. If you want to define your content
-#    loss as a PyTorch Loss, you have to create a PyTorch autograd Function
-#    and to recompute/implement the gradient by the hand in the ``backward``
+#    loss as a PyTorch Loss function, you have to create a PyTorch autograd function 
+#    to recompute/implement the gradient manually in the ``backward``
 #    method.
-#
-# Style loss
+
+######################################################################
+# Style Loss
 # ~~~~~~~~~~
-#
-# For the style loss, we need first to define a module that compute the
-# gram produce :math:`G_{XL}` given the feature maps :math:`F_{XL}` of the
-# neural network fed by :math:`X`, at layer :math:`L`. Let
-# :math:`\hat{F}_{XL}` be the re-shaped version of :math:`F_{XL}` into a
-# :math:`K`\ x\ :math:`N` matrix, where :math:`K` is the number of feature
-# maps at layer :math:`L` and :math:`N` the lenght of any vectorized
-# feature map :math:`F_{XL}^k`. The :math:`k^{th}` line of
-# :math:`\hat{F}_{XL}` is :math:`F_{XL}^k`. We let you check that
-# :math:`\hat{F}_{XL} \cdot \hat{F}_{XL}^T = G_{XL}`. Given that, it
-# becomes easy to implement our module:
-#
+# 
+# The style loss module is implemented similarly to the content loss
+# module. It will act as a transparent layer in a
+# network that computes the style loss of that layer. In order to
+# calculate the style loss, we need to compute the gram matrix :math:`G_{XL}`. A gram
+# matrix is the result of multiplying a given matrix by its transposed
+# matrix. In this application the given matrix is a reshaped version of
+# the feature maps :math:`F_{XL}` of a layer :math:`L`. :math:`F_{XL}` is reshaped to form :math:`\hat{F}_{XL}`, a :math:`K`\ x\ :math:`N`
+# matrix, where :math:`K` is the number of feature maps at layer :math:`L` and :math:`N` is the
+# length of any vectorized feature map :math:`F_{XL}^k`. For example, the first line
+# of :math:`\hat{F}_{XL}` corresponds to the first vectorized feature map :math:`F_{XL}^1`.
+# 
+# Finally, the gram matrix must be normalized by dividing each element by
+# the total number of elements in the matrix. This normalization is to
+# counteract the fact that :math:`\hat{F}_{XL}` matrices with a large :math:`N` dimension yield
+# larger values in the Gram matrix. These larger values will cause the
+# first layers (before pooling layers) to have a larger impact during the
+# gradient descent. Style features tend to be in the deeper layers of the
+# network so this normalization step is crucial.
+# 
 
 def gram_matrix(input):
     a, b, c, d = input.size()  # a=batch size(=1)
@@ -321,16 +230,10 @@ def gram_matrix(input):
 
 
 ######################################################################
-# The longer is the feature maps dimension :math:`N`, the bigger are the
-# values of the Gram matrix. Therefore, if we don't normalize by :math:`N`,
-# the loss computed at the first layers (before pooling layers) will have
-# much more importance during the gradient descent. We dont want that,
-# since the most interesting style features are in the deepest layers!
-#
-# Then, the style loss module is implemented exactly the same way than the
-# content loss module, but it compares the difference in Gram matrices of target
-# and input
-#
+# Now the style loss module looks almost exactly like the content loss
+# module. The style distance is also computed using the mean square
+# error between :math:`G_{XL}` and :math:`G_{SL}`.
+# 
 
 class StyleLoss(nn.Module):
 
@@ -345,28 +248,30 @@ class StyleLoss(nn.Module):
 
 
 ######################################################################
-# Load the neural network
-# ~~~~~~~~~~~~~~~~~~~~~~~
-#
-# Now, we have to import a pre-trained neural network. As in the paper, we
-# are going to use a pretrained VGG network with 19 layers (VGG19).
-#
-# PyTorch's implementation of VGG is a module divided in two child
-# ``Sequential`` modules: ``features`` (containing convolution and pooling
-# layers) and ``classifier`` (containing fully connected layers). We are
-# just interested by ``features``:
-# Some layers have different behavior in training and in evaluation. Since we
-# are using it as a feature extractor. We will use ``.eval()`` to set the
-# network in evaluation mode.
-#
+# Importing the Model
+# -------------------
+# 
+# Now we need to import a pre-trained neural network. We will use a 19
+# layer VGG network like the one used in the paper.
+# 
+# PyTorch’s implementation of VGG is a module divided into two child
+# ``Sequential`` modules: ``features`` (containing convolution and pooling layers),
+# and ``classifier`` (containing fully connected layers). We will use the
+# ``features`` module because we need the output of the individual
+# convolution layers to measure content and style loss. Some layers have
+# different behavior during training than evaluation, so we must set the
+# network to evaluation mode using ``.eval()``.
+# 
 
 cnn = models.vgg19(pretrained=True).features.to(device).eval()
 
+
+
 ######################################################################
-# Additionally, VGG networks are trained on images with each channel normalized
-# by mean=[0.485, 0.456, 0.406] and std=[0.229, 0.224, 0.225]. We will use them
-# to normalize the image before sending into the network.
-#
+# Additionally, VGG networks are trained on images with each channel
+# normalized by mean=[0.485, 0.456, 0.406] and std=[0.229, 0.224, 0.225].
+# We will use them to normalize the image before sending it into the network.
+# 
 
 cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
 cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
@@ -389,14 +294,12 @@ class Normalization(nn.Module):
 
 ######################################################################
 # A ``Sequential`` module contains an ordered list of child modules. For
-# instance, ``vgg19.features`` contains a sequence (Conv2d, ReLU,
-# MaxPool2d, Conv2d, ReLU...) aligned in the right order of depth. As we
-# said in *Content loss* section, we wand to add our style and content
-# loss modules as additive 'transparent' layers in our network, at desired
-# depths. For that, we construct a new ``Sequential`` module, in which we
-# are going to add modules from ``vgg19`` and our loss modules in the
-# right order:
-#
+# instance, ``vgg19.features`` contains a sequence (Conv2d, ReLU, MaxPool2d,
+# Conv2d, ReLU…) aligned in the right order of depth. We need to add our
+# content loss and style loss layers immediately after the convolution
+# layer they are detecting. To do this we must create a new ``Sequential``
+# module that has content loss and style loss modules correctly inserted.
+# 
 
 # desired depth layers to compute style/content losses :
 content_layers_default = ['conv_4']
@@ -465,31 +368,12 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 
 
 ######################################################################
-# .. Note::
-#    In the paper they recommend to change max pooling layers into
-#    average pooling. With AlexNet, that is a small network compared to VGG19
-#    used in the paper, we are not going to see any difference of quality in
-#    the result. However, you can use these lines instead if you want to do
-#    this substitution:
-#
-#    ::
-#
-#        # avgpool = nn.AvgPool2d(kernel_size=layer.kernel_size,
-#        #                         stride=layer.stride, padding = layer.padding)
-#        # model.add_module(name,avgpool)
-
-
-######################################################################
-# Input image
-# ~~~~~~~~~~~
-#
-# Again, in order to simplify the code, we take an image of the same
-# dimensions than content and style images. This image can be a white
-# noise, or it can also be a copy of the content-image.
-#
+# Next, we select the input image. You can use a copy of the content image
+# or white noise.
+# 
 
 input_img = content_img.clone()
-# if you want to use a white noise instead uncomment the below line:
+# if you want to use white noise instead uncomment the below line:
 # input_img = torch.randn(content_img.data.size(), device=device)
 
 # add the original input image to the figure:
@@ -498,18 +382,15 @@ imshow(input_img, title='Input Image')
 
 
 ######################################################################
-# Gradient descent
-# ~~~~~~~~~~~~~~~~
-#
-# As Leon Gatys, the author of the algorithm, suggested
-# `here <https://discuss.pytorch.org/t/pytorch-tutorial-for-neural-transfert-of-artistic-style/336/20?u=alexis-jacq>`__,
-# we will use L-BFGS algorithm to run our gradient descent. Unlike
-# training a network, we want to train the input image in order to
-# minimise the content/style losses. We would like to simply create a
-# PyTorch  L-BFGS optimizer ``optim.LBFGS``, passing our image as the
-# Tensor to optimize. We use ``.requires_grad_()`` to make sure that this
-# image requires gradient.
-#
+# Gradient Descent
+# ----------------
+# 
+# As Leon Gatys, the author of the algorithm, suggested `here <https://discuss.pytorch.org/t/pytorch-tutorial-for-neural-transfert-of-artistic-style/336/20?u=alexis-jacq>`__, we will use
+# L-BFGS algorithm to run our gradient descent. Unlike training a network,
+# we want to train the input image in order to minimise the content/style
+# losses. We will create a PyTorch L-BFGS optimizer ``optim.LBFGS`` and pass
+# our image to it as the tensor to optimize.
+# 
 
 def get_input_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
@@ -518,21 +399,17 @@ def get_input_optimizer(input_img):
 
 
 ######################################################################
-# **Last step**: the loop of gradient descent. At each step, we must feed
-# the network with the updated input in order to compute the new losses,
-# we must run the ``backward`` methods of each loss to dynamically compute
-# their gradients and perform the step of gradient descent. The optimizer
-# requires as argument a "closure": a function that reevaluates the model
-# and returns the loss.
-#
-# However, there's a small catch. The optimized image may take its values
-# between :math:`-\infty` and :math:`+\infty` instead of staying between 0
-# and 1. In other words, the image might be well optimized and have absurd
-# values. In fact, we must perform an optimization under constraints in
-# order to keep having right vaues into our input image. There is a simple
-# solution: at each step, to correct the image to maintain its values into
-# the 0-1 interval.
-#
+# Finally, we must define a function that performs the neural transfer. For
+# each iteration of the networks, it is fed an updated input and computes
+# new losses. We will run the ``backward`` methods of each loss module to
+# dynamicaly compute their gradients. The optimizer requires a “closure”
+# function, which reevaluates the modul and returns the loss.
+# 
+# We still have one final constraint to address. The network may try to
+# optimize the input with values that exceed the 0 to 1 tensor range for
+# the image. We can address this by correcting the input values to be
+# between 0 to 1 each time the network is run.
+# 
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
                        content_img, style_img, input_img, num_steps=300,
@@ -583,8 +460,10 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
     return input_img
 
+
 ######################################################################
-# Finally, run the algorithm
+# Finally, we can run the algorithm.
+# 
 
 output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
                             content_img, style_img, input_img)
@@ -595,3 +474,4 @@ imshow(output, title='Output Image')
 # sphinx_gallery_thumbnail_number = 4
 plt.ioff()
 plt.show()
+
