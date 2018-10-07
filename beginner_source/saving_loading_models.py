@@ -29,6 +29,8 @@ functions to be familiar with:
    *state_dict*. For more information on *state_dict*, see `What is a
    state_dict? <#what-is-a-state-dict>`__.
 
+
+
 **Contents:**
 
 -  `What is a state_dict? <#what-is-a-state-dict>`__
@@ -429,7 +431,7 @@ functions to be familiar with:
 # ``my_tensor = my_tensor.to(torch.device('cuda'))``.
 #
 # Save on CPU, Load on GPU
-# ~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # **Save:**
 #
@@ -459,7 +461,7 @@ functions to be familiar with:
 # overwrite tensors: ``my_tensor = my_tensor.to(torch.device('cuda'))``.
 #
 # Saving ``torch.nn.DataParallel`` Models
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # **Save:**
 #
