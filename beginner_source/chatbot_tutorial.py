@@ -894,7 +894,9 @@ class LuongAttnDecoderRNN(nn.Module):
 
 def maskNLLLoss(inp, target, mask):
     nTotal = mask.sum()
-    crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)))
+    # The following line is equivalent to
+    # crossEntropy = -torch.log(inp[torch.arange(inp.shape[0]), target])
+    crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1))).view(-1)
     loss = crossEntropy.masked_select(mask).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
