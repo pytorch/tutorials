@@ -108,13 +108,13 @@ method::
 
       @torch.jit.script_method
       def forward(self, input):
-          if input.sum() > 0:
+          if int(input.sum()) > 0:
             output = self.weight.mv(input)
           else:
             output = self.weight + input
           return output
-
-  my_script_module = MyModule()
+  
+  my_script_module = MyModule(10, 10)
 
 Creating a new ``MyModule`` object now directly produces an instance of
 ``ScriptModule`` that is ready for serialization.
