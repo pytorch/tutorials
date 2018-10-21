@@ -159,9 +159,8 @@ printLines(os.path.join(corpus, "movie_lines.txt"))
 # Create formatted data file
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Now it is time to use the functions that we defined above to create an
-# appropriately formatted data file. Each line of this new file will
-# contain a tab-separated *query sentence* and a *response sentence* pair.
+# For convenience, we'll create a nicely formatted data file in which each line
+# contains a tab-separated *query sentence* and a *response sentence* pair.
 #
 # The following functions facilitate the parsing of the raw
 # *movie_lines.txt* data file.
@@ -459,8 +458,8 @@ pairs = trimRareWords(voc, pairs, MIN_COUNT)
 # Prepare Data for Models
 # -----------------------
 #
-# Although we have spent a great effort preparing and massaging our data
-# into a nice vocabulary object and list of sentence pairs, our models
+# Although we have put a great deal of effort into preparing and massaging our
+# data into a nice vocabulary object and list of sentence pairs, our models
 # will ultimately expect numerical torch tensors as inputs. One way to
 # prepare the processed data for the models can be found in the `seq2seq
 # translation
