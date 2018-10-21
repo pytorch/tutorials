@@ -250,7 +250,7 @@ conversations = loadConversations(os.path.join(corpus, "movie_conversations.txt"
 # Write new csv file
 print("\nWriting newly formatted file...")
 with open(datafile, 'w', encoding='utf-8') as outputfile:
-    writer = csv.writer(outputfile, delimiter=delimiter)
+    writer = csv.writer(outputfile, delimiter=delimiter, lineterminator='\n')
     for pair in extractSentencePairs(conversations):
         writer.writerow(pair)
 
