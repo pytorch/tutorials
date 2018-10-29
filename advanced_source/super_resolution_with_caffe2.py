@@ -9,9 +9,9 @@ and we then show how to use Caffe2 features such as mobile exporter for
 executing the model on mobile devices.
 
 For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__
-and `Caffe2 <https://caffe2.ai/>`__.
+and `Caffe2 <https://github.com/pytorch/pytorch>`__.
 You can get binary builds of onnx with
-``conda install -c ezyang onnx``.
+``pip install onnx``.
 
 ``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
 the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
