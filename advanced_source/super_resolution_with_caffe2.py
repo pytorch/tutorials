@@ -8,10 +8,10 @@ Caffe2, we can run the model to double-check it was exported correctly,
 and we then show how to use Caffe2 features such as mobile exporter for
 executing the model on mobile devices.
 
-For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__,
-`onnx-caffe2 <https://github.com/onnx/onnx-caffe2>`__ and `Caffe2 <https://caffe2.ai/>`__.
-You can get binary builds of onnx and onnx-caffe2 with
-``conda install -c ezyang onnx onnx-caffe2``.
+For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__
+and `Caffe2 <https://caffe2.ai/>`__.
+You can get binary builds of onnx with
+``conda install -c ezyang onnx``.
 
 ``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
 the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
@@ -128,7 +128,7 @@ torch_out = torch.onnx._export(torch_model,             # model being run
 #
 
 import onnx
-import onnx_caffe2.backend
+import caffe2.python.onnx.backend as onnx_caffe2_backend
 
 # Load the ONNX ModelProto object. model is a standard Python protobuf object
 model = onnx.load("super_resolution.onnx")
@@ -136,7 +136,7 @@ model = onnx.load("super_resolution.onnx")
 # prepare the caffe2 backend for executing the model this converts the ONNX model into a
 # Caffe2 NetDef that can execute it. Other ONNX backends, like one for CNTK will be
 # availiable soon.
-prepared_backend = onnx_caffe2.backend.prepare(model)
+prepared_backend = onnx_caffe2_backend.prepare(model)
 
 # run the model in Caffe2
 
