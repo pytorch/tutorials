@@ -1029,7 +1029,8 @@ Conclusion
 ----------
 
 You should now be equipped with a good overview of PyTorch's C++ extension
-mechanism as well as a motivation for using them. You can find the code examples
-displayed in this note `here
-<https://github.com/pytorch/extension-cpp>`_. If you have
-questions, please use `the forums <https://discuss.pytorch.org>`_.
+mechanism as well as a motivation for using them. You can find the code
+examples displayed in this note `here
+<https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
+`the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
+<https://pytorch.org/cppdocs/faq.html>`_ in case you run into any issues.
