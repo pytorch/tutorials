@@ -1,7 +1,7 @@
 Loading a PyTorch Model in C++
 ==============================
 
-.. attention:: This tutorial requires PyTorch 1.0 (preview) or later. 
+.. attention:: This tutorial requires PyTorch 1.0 (preview) or later.
    For installation information visit http://pytorch.org/get-started.
 
 As its name suggests, the primary interface to PyTorch is the Python
@@ -288,7 +288,7 @@ to the resulting ``example-app`` binary, we should be rewarded with a friendly
 Step 4: Executing the Script Module in C++
 ----------------------------------------
 
-Having succesfully loaded our serialized ``ResNet18`` in C++, we are now just a
+Having successfully loaded our serialized ``ResNet18`` in C++, we are now just a
 couple lines of code away from executing it! Let's add those lines to our C++
 application's ``main()`` function:
 
@@ -299,7 +299,7 @@ application's ``main()`` function:
     inputs.push_back(torch::ones({1, 3, 224, 224}));
 
     // Execute the model and turn its output into a tensor.
-    auto output = module->forward(inputs).toTensor();
+    at::Tensor output = module->forward(inputs).toTensor();
 
     std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 
@@ -341,6 +341,13 @@ For reference, the output in Python previously was::
 
 Looks like a good match!
 
+.. tip::
+
+  To move your model to GPU memory, you can write ``model->to(at::kCUDA);``.
+  Make sure the inputs to a model living in CUDA memory are also in CUDA memory
+  by calling ``tensor.to(at::kCUDA)``, which will return a new tensor in CUDA
+  memory.
+
 Step 5: Getting Help and Exploring the API
 ------------------------------------------
 
@@ -361,7 +368,7 @@ the following links may be generally helpful:
 
 - The Torch Script reference: https://pytorch.org/docs/master/jit.html
 - The PyTorch C++ API documentation: https://pytorch.org/cppdocs/
-- The Pytorch Python API documentation: https://pytorch.org/docs/
+- The PyTorch Python API documentation: https://pytorch.org/docs/
 
 As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues
