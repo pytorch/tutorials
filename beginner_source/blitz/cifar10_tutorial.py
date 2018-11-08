@@ -43,7 +43,7 @@ Training an image classifier
 
 We will do the following steps in order:
 
-1. Load and normalizing the CIFAR10 training and test datasets using
+1. Load and normalize the CIFAR10 training and test datasets using
    ``torchvision``
 2. Define a Convolution Neural Network
 3. Define a loss function

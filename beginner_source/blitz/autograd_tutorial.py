@@ -86,7 +86,7 @@ print(b.grad_fn)
 ###############################################################
 # Gradients
 # ---------
-# Let's backprop now
+# Let's backprop now.
 # Because ``out`` contains a single scalar, ``out.backward()`` is
 # equivalent to ``out.backward(torch.tensor(1))``.
 
