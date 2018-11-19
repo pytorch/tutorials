@@ -954,7 +954,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.data<scalar_t>(),
           d_gates.data<scalar_t>(),
