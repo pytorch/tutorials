@@ -19,7 +19,7 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 # training.
 #
 # .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit http://pytorch.org/get-started.
+#    For installation information visit https://pytorch.org/get-started.
 #
 # What is the Hybrid Frontend?
 # ----------------------------

@@ -103,7 +103,7 @@ torch_model.train(False)
 # or a random tensor as long as it is the right size.
 #
 # To learn more details about PyTorch's export interface, check out the
-# `torch.onnx documentation <http://pytorch.org/docs/master/onnx.html>`__.
+# `torch.onnx documentation <https://pytorch.org/docs/master/onnx.html>`__.
 #
 
 # Input to the model

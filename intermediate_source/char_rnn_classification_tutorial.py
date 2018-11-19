@@ -32,7 +32,7 @@ spelling:
 I assume you have at least installed PyTorch, know Python, and
 understand Tensors:
 
--  http://pytorch.org/ For installation instructions
+-  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
@@ -171,7 +171,7 @@ print(lineToTensor('Jones').size())
 # as regular feed-forward layers.
 #
 # This RNN module (mostly copied from `the PyTorch for Torch users
-# tutorial <http://pytorch.org/tutorials/beginner/former_torchies/
+# tutorial <https://pytorch.org/tutorials/beginner/former_torchies/
 # nn_tutorial.html#example-2-recurrent-net>`__)
 # is just 2 linear layers which operate on an input and hidden state, with
 # a LogSoftmax layer after the output.

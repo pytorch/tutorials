@@ -14,7 +14,7 @@ Chatbot Tutorial
 # Corpus <https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html>`__.
 #
 # .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit http://pytorch.org/get-started.
+#    For installation information visit https://pytorch.org/get-started.
 #
 # Conversational models are a hot topic in artificial intelligence
 # research. Chatbots can be found in a variety of settings, including
