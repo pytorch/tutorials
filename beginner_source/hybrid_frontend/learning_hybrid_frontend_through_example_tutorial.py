@@ -5,7 +5,7 @@ Learning Hybrid Frontend Syntax Through Example
 **Author:** `Nathan Inkawhich <https://github.com/inkawhich>`_
 
 This tutorial requires PyTorch 1.0 (preview) or later. For installation 
-information visit http://pytorch.org/get-started.
+information visit https://pytorch.org/get-started.
 
 This document is meant to highlight the syntax of the Hybrid Frontend
 through a non-code intensive example. The Hybrid Frontend is one of the

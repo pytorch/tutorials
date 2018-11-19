@@ -124,7 +124,7 @@ print(x.item())
 #   100+ Tensor operations, including transposing, indexing, slicing,
 #   mathematical operations, linear algebra, random numbers, etc.,
 #   are described
-#   `here <http://pytorch.org/docs/torch>`_.
+#   `here <https://pytorch.org/docs/torch>`_.
 #
 # NumPy Bridge
 # ------------
