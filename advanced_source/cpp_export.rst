@@ -44,7 +44,7 @@ language.
   reference <https://pytorch.org/docs/master/jit.html>`_.
 
 Converting to Torch Script via Tracing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To convert a PyTorch model to Torch Script via tracing, you must pass an
 instance of your model along with an example input to the ``torch.jit.trace``
@@ -286,7 +286,7 @@ to the resulting ``example-app`` binary, we should be rewarded with a friendly
   ok
 
 Step 4: Executing the Script Module in C++
-----------------------------------------
+------------------------------------------
 
 Having succesfully loaded our serialized ``ResNet18`` in C++, we are now just a
 couple lines of code away from executing it! Let's add those lines to our C++
