@@ -242,17 +242,12 @@ def visualize_stn():
         axarr[1].imshow(out_grid)
         axarr[1].set_title('Transformed Images')
 
-# This sample is temporarily disabled on pytorch.org/tutorials 
-# as we're debugging a build issue. It should continue to work 
-# if you build this locally. (Uncomment the code below.)  
-# We'll get it running as soon as we're able.
-# 
-# for epoch in range(1, 20 + 1):
-#    train(epoch)
-#    test()
+for epoch in range(1, 20 + 1):
+    train(epoch)
+    test()
 
 # Visualize the STN transformation on some input batch
-# visualize_stn()
+visualize_stn()
 
-# plt.ioff()
-# plt.show()
+plt.ioff()
+plt.show()
