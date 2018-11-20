@@ -29,6 +29,9 @@ Goal of this tutorial:
 .. galleryitem:: /beginner/blitz/tensor_tutorial.py
     :figure: /_static/img/tensor_illustration_flat.png
 
+.. galleryitem:: /beginner/blitz/autograd_tutorial.py
+    :figure: /_static/img/autodiff.png
+
 .. galleryitem:: /beginner/blitz/neural_networks_tutorial.py
     :figure: /_static/img/mnist.png
 

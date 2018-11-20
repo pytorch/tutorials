@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Transfer Learning tutorial
+Transfer Learning Tutorial
 ==========================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
@@ -289,7 +289,7 @@ visualize_model(model_ft)
 # gradients are not computed in ``backward()``.
 #
 # You can read more about this in the documentation
-# `here <http://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
+# `here <https://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
 #
 
 model_conv = torchvision.models.resnet18(pretrained=True)

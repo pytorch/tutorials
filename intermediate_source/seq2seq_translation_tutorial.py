@@ -47,7 +47,7 @@ learn to focus over a specific range of the input sequence.
 I assume you have at least installed PyTorch, know Python, and
 understand Tensors:
 
--  http://pytorch.org/ For installation instructions
+-  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user

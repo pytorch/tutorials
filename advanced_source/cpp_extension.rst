@@ -11,7 +11,7 @@ you developed as part of your research.
 
 The easiest way of integrating such a custom operation in PyTorch is to write it
 in Python by extending :class:`Function` and :class:`Module` as outlined `here
-<http://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
+<https://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code
@@ -246,14 +246,13 @@ Next we can port our entire forward pass to C++:
 Backward Pass
 *************
 
-At this time, PyTorch's C++ interface does not support automatic
-differentiation. This is something the PyTorch team is working on, but it is
-not available yet. As such, we have to also implement the backward pass of our
-LLTM, which computes the derivative of the loss with respect to each input of
-the forward pass. Ultimately, we will plop both the forward and backward
-function into a :class:`torch.autograd.Function` to create a nice Python binding. The
-backward function is slightly more involved, so we'll not dig deeper into the
-code (if you are interested, `Alex Graves' thesis
+The C++ extension API currently does not provide a way of automatically
+generating a backwards function for us. As such, we have to also implement the
+backward pass of our LLTM, which computes the derivative of the loss with
+respect to each input of the forward pass. Ultimately, we will plop both the
+forward and backward function into a :class:`torch.autograd.Function` to create
+a nice Python binding. The backward function is slightly more involved, so
+we'll not dig deeper into the code (if you are interested, `Alex Graves' thesis
 <http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
 information on this):
 
@@ -955,7 +954,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.data<scalar_t>(),
           d_gates.data<scalar_t>(),
@@ -1030,7 +1029,8 @@ Conclusion
 ----------
 
 You should now be equipped with a good overview of PyTorch's C++ extension
-mechanism as well as a motivation for using them. You can find the code examples
-displayed in this note `here
-<https://github.com/pytorch/extension-cpp>`_. If you have
-questions, please use `the forums <https://discuss.pytorch.org>`_.
+mechanism as well as a motivation for using them. You can find the code
+examples displayed in this note `here
+<https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
+`the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
+<https://pytorch.org/cppdocs/faq.html>`_ in case you run into any issues.

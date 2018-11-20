@@ -1,4 +1,4 @@
-PyTorch for former Torch users
+PyTorch for Former Torch Users
 ------------------------------
 **Author**: `Soumith Chintala <http://soumith.ch>`_
 

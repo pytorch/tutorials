@@ -148,7 +148,7 @@ out.backward(torch.randn(1, 10))
 # value that estimates how far away the output is from the target.
 #
 # There are several different
-# `loss functions <http://pytorch.org/docs/nn.html#loss-functions>`_ under the
+# `loss functions <https://pytorch.org/docs/nn.html#loss-functions>`_ under the
 # nn package .
 # A simple loss is: ``nn.MSELoss`` which computes the mean-squared error
 # between the input and the target.
@@ -214,7 +214,7 @@ print(net.conv1.bias.grad)
 #
 #   The neural network package contains various modules and loss functions
 #   that form the building blocks of deep neural networks. A full list with
-#   documentation is `here <http://pytorch.org/docs/nn>`_.
+#   documentation is `here <https://pytorch.org/docs/nn>`_.
 #
 # **The only thing left to learn is:**
 #

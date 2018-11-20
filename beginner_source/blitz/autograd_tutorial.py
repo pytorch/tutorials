@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Autograd: automatic differentiation
+Autograd: Automatic Differentiation
 ===================================
 
 Central to all neural networks in PyTorch is the ``autograd`` package.
@@ -140,4 +140,4 @@ with torch.no_grad():
 # **Read Later:**
 #
 # Documentation of ``autograd`` and ``Function`` is at
-# http://pytorch.org/docs/autograd
+# https://pytorch.org/docs/autograd
