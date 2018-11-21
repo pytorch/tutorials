@@ -19,7 +19,7 @@ pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu8
 export PATH=/opt/conda/bin:$PATH
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-conda install -y sphinx==1.7.9 pandas pillow=4.1.1
+conda install -y sphinx==1.8.2 pandas pillow=4.1.1
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
