@@ -242,7 +242,6 @@ def visualize_stn():
         axarr[1].imshow(out_grid)
         axarr[1].set_title('Transformed Images')
 
-
 for epoch in range(1, 20 + 1):
     train(epoch)
     test()
