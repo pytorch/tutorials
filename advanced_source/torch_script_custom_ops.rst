@@ -252,7 +252,7 @@ file should then be the following:
   was tested inside a Docker container running Ubuntu Xenial with
   ``libopencv-dev`` installed via ``apt``. If it does not work for you and you
   feel stuck, please use the ``Dockerfile`` in the `accompanying tutorial
-  repository <https://github.com/goldsborough/custom-torch-script-ops>`_ to
+  repository <https://github.com/pytorch/extension-script>`_ to
   build an isolated, reproducible environment in which to play around with the
   code from this tutorial. If you run into further troubles, please file an
   issue in the tutorial repository or post a question in `our forum
