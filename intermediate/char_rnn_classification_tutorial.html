@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Classifying Names with a Character-Level RNN &mdash; PyTorch Tutorials 1.0.0.dev20181002 documentation</title>
+  <title>Classifying Names with a Character-Level RNN &mdash; PyTorch Tutorials 1.0.0.dev20181128 documentation</title>
   
 
   
@@ -88,7 +88,6 @@
 <body class="pytorch-body">
 
    
-  <div>
 
     
 
@@ -107,7 +106,7 @@
               
               
                 <div class="version">
-                  1.0.0.dev20181002
+                  1.0.0.dev20181128
                 </div>
               
             
@@ -172,6 +171,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Production Usage</span></p>
 <ul>
@@ -187,11 +187,9 @@
     </nav>
 
     <div class="pytorch-container">
-
-      <section data-toggle="wy-nav-shift" class="pytorch-content-wrap">
-        <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
-          <div class="pytorch-breadcrumbs-wrapper">
-            
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
 
 
 
@@ -235,19 +233,20 @@
 
   
 </div>
-          </div>
-
-          <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
-            Shortcuts
-          </div>
         </div>
 
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
         <div class="pytorch-content-left">
           
           <div class="rst-content">
           
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
-             <article itemprop="articleBody" class="pytorch-article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <div class="sphx-glr-download-link-note admonition note">
 <p class="first admonition-title">Note</p>
@@ -279,7 +278,7 @@ $ python predict.py Schmidhuber
 <p>I assume you have at least installed PyTorch, know Python, and
 understand Tensors:</p>
 <ul class="simple">
-<li><a class="reference external" href="http://pytorch.org/">http://pytorch.org/</a> For installation instructions</li>
+<li><a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> For installation instructions</li>
 <li><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a> to get started with PyTorch in general</li>
 <li><a class="reference internal" href="../beginner/pytorch_with_examples.html"><span class="doc">Learning PyTorch with Examples</span></a> for a wide and deep overview</li>
 <li><a class="reference internal" href="../beginner/former_torchies_tutorial.html"><span class="doc">PyTorch for Former Torch Users</span></a> if you are former Lua Torch user</li>
@@ -353,7 +352,7 @@ ASCII).</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;data/names/Arabic.txt&#39;, &#39;data/names/Spanish.txt&#39;, &#39;data/names/Chinese.txt&#39;, &#39;data/names/Portuguese.txt&#39;, &#39;data/names/Russian.txt&#39;, &#39;data/names/German.txt&#39;, &#39;data/names/French.txt&#39;, &#39;data/names/English.txt&#39;, &#39;data/names/Greek.txt&#39;, &#39;data/names/Polish.txt&#39;, &#39;data/names/Korean.txt&#39;, &#39;data/names/Scottish.txt&#39;, &#39;data/names/Czech.txt&#39;, &#39;data/names/Japanese.txt&#39;, &#39;data/names/Irish.txt&#39;, &#39;data/names/Vietnamese.txt&#39;, &#39;data/names/Dutch.txt&#39;, &#39;data/names/Italian.txt&#39;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;data/names/Portuguese.txt&#39;, &#39;data/names/German.txt&#39;, &#39;data/names/English.txt&#39;, &#39;data/names/French.txt&#39;, &#39;data/names/Arabic.txt&#39;, &#39;data/names/Spanish.txt&#39;, &#39;data/names/Chinese.txt&#39;, &#39;data/names/Greek.txt&#39;, &#39;data/names/Russian.txt&#39;, &#39;data/names/Scottish.txt&#39;, &#39;data/names/Polish.txt&#39;, &#39;data/names/Italian.txt&#39;, &#39;data/names/Korean.txt&#39;, &#39;data/names/Czech.txt&#39;, &#39;data/names/Irish.txt&#39;, &#39;data/names/Japanese.txt&#39;, &#39;data/names/Dutch.txt&#39;, &#39;data/names/Vietnamese.txt&#39;]
 Slusarski
 </pre></div>
 </div>
@@ -421,7 +420,7 @@ cloning the parameters of a layer over several timesteps. The layers
 held hidden state and gradients which are now entirely handled by the
 graph itself. This means you can implement a RNN in a very “pure” way,
 as regular feed-forward layers.</p>
-<p>This RNN module (mostly copied from <a class="reference external" href="http://pytorch.org/tutorials/beginner/former_torchies/nn_tutorial.html#example-2-recurrent-net">the PyTorch for Torch users
+<p>This RNN module (mostly copied from <a class="reference external" href="https://pytorch.org/tutorials/beginner/former_torchies/nn_tutorial.html#example-2-recurrent-net">the PyTorch for Torch users
 tutorial</a>)
 is just 2 linear layers which operate on an input and hidden state, with
 a LogSoftmax layer after the output.</p>
@@ -477,9 +476,9 @@ pre-computing batches of Tensors.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9013, -2.8680, -2.8035, -2.8980, -2.8736, -2.8238, -2.9438, -2.9016,
-         -2.8130, -2.9452, -2.8634, -2.9389, -2.8678, -2.9725, -2.8495, -2.9330,
-         -2.9810, -2.8724]], grad_fn=&lt;LogSoftmaxBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9362, -2.9114, -2.9074, -2.8735, -2.8507, -2.7882, -2.7943, -2.9810,
+         -2.7996, -2.8723, -3.0054, -2.9633, -2.9095, -2.8729, -3.0085, -2.8379,
+         -2.8789, -2.8742]], grad_fn=&lt;LogSoftmaxBackward&gt;)
 </pre></div>
 </div>
 <p>As you can see the output is a <code class="docutils literal notranslate"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_categories&gt;</span></code> Tensor, where
@@ -502,7 +501,7 @@ of the greatest value:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&#39;Chinese&#39;, 2)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(&#39;Spanish&#39;, 5)
 </pre></div>
 </div>
 <p>We will also want a quick way to get a training example (a name and its
@@ -525,16 +524,16 @@ language):</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Scottish / line = Jamieson
-category = German / line = Giehl
-category = Polish / line = Stawski
-category = Irish / line = O&#39;Hannigain
-category = Portuguese / line = Rios
-category = German / line = Sommer
-category = Polish / line = Pasternack
-category = Korean / line = Jang
-category = Chinese / line = Song
-category = Chinese / line = Huo
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Polish / line = Bartosz
+category = English / line = Goldsmith
+category = Scottish / line = Thomson
+category = Scottish / line = Maclean
+category = Japanese / line = Tojo
+category = Vietnamese / line = Pham
+category = Portuguese / line = Melo
+category = Portuguese / line = Lobo
+category = Polish / line = Mikolajczak
+category = Chinese / line = Zhui
 </pre></div>
 </div>
 </div>
@@ -624,26 +623,26 @@ average of the loss.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 8s) 1.4160 Tomonaga / Japanese ✓
-10000 10% (0m 17s) 2.5300 Elena / Spanish ✗ (Italian)
-15000 15% (0m 26s) 1.6603 Pae / Chinese ✗ (Korean)
-20000 20% (0m 35s) 1.4653 Seelen / Dutch ✓
-25000 25% (0m 45s) 1.8783 Pelaez / Spanish ✓
-30000 30% (0m 54s) 0.6228 Dickson / Scottish ✓
-35000 35% (1m 3s) 2.3649 Rhee / French ✗ (Korean)
-40000 40% (1m 12s) 2.4653 Reynold / English ✗ (Irish)
-45000 45% (1m 21s) 1.1477 Escarra / Spanish ✓
-50000 50% (1m 30s) 1.4292 Mercier / Portuguese ✗ (French)
-55000 55% (1m 39s) 2.9252 Tomes / Dutch ✗ (Czech)
-60000 60% (1m 48s) 0.8048 Niadh / Irish ✓
-65000 65% (1m 57s) 0.5738 So / Korean ✓
-70000 70% (2m 6s) 3.9542 Shakespeare / Czech ✗ (English)
-75000 75% (2m 15s) 0.1940 Sook / Korean ✓
-80000 80% (2m 24s) 1.3553 Osladil / Czech ✓
-85000 85% (2m 32s) 0.1259 Delacroix / French ✓
-90000 90% (2m 41s) 1.5989 Nam / Vietnamese ✗ (Korean)
-95000 95% (2m 50s) 2.4327 Clark / Czech ✗ (Scottish)
-100000 100% (2m 59s) 2.7586 Matos / Arabic ✗ (Portuguese)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 7s) 2.7870 Furlan / Scottish ✗ (Italian)
+10000 10% (0m 14s) 2.8242 Best / Chinese ✗ (English)
+15000 15% (0m 21s) 2.5783 Laurie / French ✗ (English)
+20000 20% (0m 28s) 1.6628 Murchadh / Irish ✓
+25000 25% (0m 35s) 1.2500 Marquez / Portuguese ✗ (Spanish)
+30000 30% (0m 42s) 0.6578 Shamoun / Arabic ✓
+35000 35% (0m 49s) 1.4123 Cucinotta / Spanish ✗ (Italian)
+40000 40% (0m 56s) 0.4124 Lai / Chinese ✓
+45000 45% (1m 3s) 1.5521 Fabbro / Portuguese ✗ (Italian)
+50000 50% (1m 11s) 0.8191 Zhagalin / Russian ✓
+55000 55% (1m 18s) 1.0131 Tai / Vietnamese ✗ (Chinese)
+60000 60% (1m 25s) 1.0099 Ri / Korean ✓
+65000 65% (1m 32s) 0.3811 Whyte / Scottish ✓
+70000 70% (1m 39s) 0.3431 Khoury / Arabic ✓
+75000 75% (1m 46s) 0.8095 Ma / Korean ✓
+80000 80% (1m 53s) 1.3727 Sokoloff / Polish ✓
+85000 85% (2m 0s) 2.0966 Ojeda / Japanese ✗ (Spanish)
+90000 90% (2m 7s) 1.0790 Rosa / Italian ✓
+95000 95% (2m 14s) 1.0394 Yarnold / English ✓
+100000 100% (2m 21s) 0.2296 Sarraf / Arabic ✓
 </pre></div>
 </div>
 </div>
@@ -740,19 +739,19 @@ English (perhaps because of overlap with other languages).</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; Dovesky
-(-0.78) Russian
-(-1.03) Czech
+(-0.47) Russian
+(-1.53) Czech
 (-2.39) Polish
 
 &gt; Jackson
-(-0.48) Scottish
-(-1.98) English
-(-2.49) Dutch
+(-0.56) Scottish
+(-1.67) English
+(-2.04) Russian
 
 &gt; Satoshi
-(-1.09) Japanese
-(-1.62) Italian
-(-1.80) Arabic
+(-0.83) Japanese
+(-1.32) Arabic
+(-2.13) Polish
 </pre></div>
 </div>
 <p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
@@ -794,12 +793,12 @@ output of predictions.</p>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 3 minutes  9.046 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 2 minutes  28.395 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/char_rnn_classification_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>
+<a class="reference download internal" download="" href="../_downloads/ccb15f8365bdae22a0a019e57216d7c6/char_rnn_classification_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/char_rnn_classification_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" download="" href="../_downloads/977c14818c75427641ccb85ad21ed6dc/char_rnn_classification_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_classification_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -866,27 +865,19 @@ output of predictions.</p>
         </div>
       </section>
     </div>
-  </div>
-  
-
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'1.0.0.dev20181002',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script type="text/javascript" src="../_static/jquery.js"></script>
+         <script type="text/javascript" src="../_static/underscore.js"></script>
+         <script type="text/javascript" src="../_static/doctools.js"></script>
+         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+     
 
   
 
@@ -910,6 +901,7 @@ output of predictions.</p>
   ga('send', 'pageview');
 
 </script>
+<img height="1" width="1" style="border-style:none;" alt="" src="http://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0"/>
 
 
   <!-- Begin Footer -->
@@ -1071,20 +1063,19 @@ output of predictions.</p>
   <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
 
   <script type="text/javascript">
-    mobileMenu.bind();
-    mobileTOC.bind();
-    pytorchAnchors.bind();
-
-    $(window).on("load", function() {
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
       sideMenus.bind();
       scrollToAnchor.bind();
       highlightNavigation.bind();
-    })
 
-    // Add class to links that have code blocks, since we cannot create links in code blocks
-    $("article.pytorch-article a span.pre").each(function(e) {
-      $(this).closest("a").addClass("has-code");
-    });
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
   </script>
 </body>
 </html>

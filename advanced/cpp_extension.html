@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Custom C++ and CUDA Extensions &mdash; PyTorch Tutorials 1.0.0.dev20181002 documentation</title>
+  <title>Custom C++ and CUDA Extensions &mdash; PyTorch Tutorials 1.0.0.dev20181128 documentation</title>
   
 
   
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Writing Distributed Applications with PyTorch" href="../intermediate/dist_tuto.html" />
+    <link rel="next" title="Extending TorchScript with Custom C++ Operators" href="torch_script_custom_ops.html" />
     <link rel="prev" title="Creating Extensions Using numpy and scipy" href="numpy_extensions_tutorial.html" /> 
 
   
@@ -88,7 +88,6 @@
 <body class="pytorch-body">
 
    
-  <div>
 
     
 
@@ -107,7 +106,7 @@
               
               
                 <div class="version">
-                  1.0.0.dev20181002
+                  1.0.0.dev20181128
                 </div>
               
             
@@ -172,6 +171,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Production Usage</span></p>
 <ul>
@@ -187,11 +187,9 @@
     </nav>
 
     <div class="pytorch-container">
-
-      <section data-toggle="wy-nav-shift" class="pytorch-content-wrap">
-        <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
-          <div class="pytorch-breadcrumbs-wrapper">
-            
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
 
 
 
@@ -235,19 +233,20 @@
 
   
 </div>
-          </div>
-
-          <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
-            Shortcuts
-          </div>
         </div>
 
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
         <div class="pytorch-content-left">
           
           <div class="rst-content">
           
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
-             <article itemprop="articleBody" class="pytorch-article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <div class="section" id="custom-c-and-cuda-extensions">
 <h1>Custom C++ and CUDA Extensions<a class="headerlink" href="#custom-c-and-cuda-extensions" title="Permalink to this headline">¶</a></h1>
@@ -258,7 +257,7 @@ yourself in need of a more customized operation. For example, you might want to
 use a novel activation function you found in a paper, or implement an operation
 you developed as part of your research.</p>
 <p>The easiest way of integrating such a custom operation in PyTorch is to write it
-in Python by extending <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> as outlined <a class="reference external" href="http://pytorch.org/docs/master/notes/extending.html">here</a>. This gives you the full
+in Python by extending <code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> as outlined <a class="reference external" href="https://pytorch.org/docs/master/notes/extending.html">here</a>. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code
@@ -1147,7 +1146,7 @@ on it:</p>
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
   <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
 
-  <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">&quot;lltm_forward_cuda&quot;</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
+  <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">&quot;lltm_backward_cuda&quot;</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
     <span class="n">lltm_cuda_backward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
         <span class="n">d_old_cell</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
         <span class="n">d_gates</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
@@ -1221,9 +1220,9 @@ version earlier was the CUDA-based C++ code:</p>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
 <p>You should now be equipped with a good overview of PyTorch’s C++ extension
-mechanism as well as a motivation for using them. You can find the code examples
-displayed in this note <a class="reference external" href="https://github.com/pytorch/extension-cpp">here</a>. If you have
-questions, please use <a class="reference external" href="https://discuss.pytorch.org">the forums</a>.</p>
+mechanism as well as a motivation for using them. You can find the code
+examples displayed in this note <a class="reference external" href="https://github.com/pytorch/extension-cpp">here</a>. If you have questions, please use
+<a class="reference external" href="https://discuss.pytorch.org">the forums</a>. Also be sure to check our <a class="reference external" href="https://pytorch.org/cppdocs/faq.html">FAQ</a> in case you run into any issues.</p>
 </div>
 </div>
 
@@ -1235,7 +1234,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../intermediate/dist_tuto.html" class="btn btn-neutral float-right" title="Writing Distributed Applications with PyTorch" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+        <a href="torch_script_custom_ops.html" class="btn btn-neutral float-right" title="Extending TorchScript with Custom C++ Operators" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
         <a href="numpy_extensions_tutorial.html" class="btn btn-neutral" title="Creating Extensions Using numpy and scipy" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
@@ -1297,27 +1296,19 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
         </div>
       </section>
     </div>
-  </div>
-  
-
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'1.0.0.dev20181002',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script type="text/javascript" src="../_static/jquery.js"></script>
+         <script type="text/javascript" src="../_static/underscore.js"></script>
+         <script type="text/javascript" src="../_static/doctools.js"></script>
+         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+     
 
   
 
@@ -1341,6 +1332,7 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
   ga('send', 'pageview');
 
 </script>
+<img height="1" width="1" style="border-style:none;" alt="" src="http://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0"/>
 
 
   <!-- Begin Footer -->
@@ -1502,20 +1494,19 @@ questions, please use <a class="reference external" href="https://discuss.pytorc
   <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
 
   <script type="text/javascript">
-    mobileMenu.bind();
-    mobileTOC.bind();
-    pytorchAnchors.bind();
-
-    $(window).on("load", function() {
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
       sideMenus.bind();
       scrollToAnchor.bind();
       highlightNavigation.bind();
-    })
 
-    // Add class to links that have code blocks, since we cannot create links in code blocks
-    $("article.pytorch-article a span.pre").each(function(e) {
-      $(this).closest("a").addClass("has-code");
-    });
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
   </script>
 </body>
 </html>

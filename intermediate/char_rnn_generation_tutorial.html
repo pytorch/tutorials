@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Generating Names with a Character-Level RNN &mdash; PyTorch Tutorials 1.0.0.dev20181002 documentation</title>
+  <title>Generating Names with a Character-Level RNN &mdash; PyTorch Tutorials 1.0.0.dev20181128 documentation</title>
   
 
   
@@ -88,7 +88,6 @@
 <body class="pytorch-body">
 
    
-  <div>
 
     
 
@@ -107,7 +106,7 @@
               
               
                 <div class="version">
-                  1.0.0.dev20181002
+                  1.0.0.dev20181128
                 </div>
               
             
@@ -172,6 +171,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Production Usage</span></p>
 <ul>
@@ -187,11 +187,9 @@
     </nav>
 
     <div class="pytorch-container">
-
-      <section data-toggle="wy-nav-shift" class="pytorch-content-wrap">
-        <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
-          <div class="pytorch-breadcrumbs-wrapper">
-            
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
 
 
 
@@ -235,19 +233,20 @@
 
   
 </div>
-          </div>
-
-          <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
-            Shortcuts
-          </div>
         </div>
 
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
         <div class="pytorch-content-left">
           
           <div class="rst-content">
           
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
-             <article itemprop="articleBody" class="pytorch-article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <div class="sphx-glr-download-link-note admonition note">
 <p class="first admonition-title">Note</p>
@@ -290,7 +289,7 @@ as a “language model”.</p>
 <p>I assume you have at least installed PyTorch, know Python, and
 understand Tensors:</p>
 <ul class="simple">
-<li><a class="reference external" href="http://pytorch.org/">http://pytorch.org/</a> For installation instructions</li>
+<li><a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> For installation instructions</li>
 <li><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html"><span class="doc">Deep Learning with PyTorch: A 60 Minute Blitz</span></a> to get started with PyTorch in general</li>
 <li><a class="reference internal" href="../beginner/pytorch_with_examples.html"><span class="doc">Learning PyTorch with Examples</span></a> for a wide and deep overview</li>
 <li><a class="reference internal" href="../beginner/former_torchies_tutorial.html"><span class="doc">PyTorch for Former Torch Users</span></a> if you are former Lua Torch user</li>
@@ -364,7 +363,7 @@ and end up with a dictionary <code class="docutils literal notranslate"><span cl
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># categories: 18 [&#39;Arabic&#39;, &#39;Spanish&#39;, &#39;Chinese&#39;, &#39;Portuguese&#39;, &#39;Russian&#39;, &#39;German&#39;, &#39;French&#39;, &#39;English&#39;, &#39;Greek&#39;, &#39;Polish&#39;, &#39;Korean&#39;, &#39;Scottish&#39;, &#39;Czech&#39;, &#39;Japanese&#39;, &#39;Irish&#39;, &#39;Vietnamese&#39;, &#39;Dutch&#39;, &#39;Italian&#39;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># categories: 18 [&#39;Portuguese&#39;, &#39;German&#39;, &#39;English&#39;, &#39;French&#39;, &#39;Arabic&#39;, &#39;Spanish&#39;, &#39;Chinese&#39;, &#39;Greek&#39;, &#39;Russian&#39;, &#39;Scottish&#39;, &#39;Polish&#39;, &#39;Italian&#39;, &#39;Korean&#39;, &#39;Czech&#39;, &#39;Irish&#39;, &#39;Japanese&#39;, &#39;Dutch&#39;, &#39;Vietnamese&#39;]
 O&#39;Neal
 </pre></div>
 </div>
@@ -560,26 +559,26 @@ in <code class="docutils literal notranslate"><span class="pre">all_losses</span
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0m 20s (5000 5%) 2.9084
-0m 41s (10000 10%) 2.8870
-1m 2s (15000 15%) 2.5159
-1m 23s (20000 20%) 2.3363
-1m 44s (25000 25%) 1.2236
-2m 4s (30000 30%) 2.1916
-2m 25s (35000 35%) 2.2042
-2m 47s (40000 40%) 2.7651
-3m 8s (45000 45%) 3.0234
-3m 29s (50000 50%) 2.6531
-3m 50s (55000 55%) 2.7218
-4m 11s (60000 60%) 2.8554
-4m 33s (65000 65%) 2.4291
-4m 54s (70000 70%) 2.2001
-5m 15s (75000 75%) 1.7105
-5m 36s (80000 80%) 2.7801
-5m 57s (85000 85%) 2.5325
-6m 19s (90000 90%) 2.7083
-6m 40s (95000 95%) 1.9805
-7m 1s (100000 100%) 1.7354
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0m 16s (5000 5%) 2.7672
+0m 33s (10000 10%) 3.1807
+0m 50s (15000 15%) 3.2877
+1m 7s (20000 20%) 3.3990
+1m 23s (25000 25%) 3.0005
+1m 40s (30000 30%) 2.8617
+1m 57s (35000 35%) 2.5791
+2m 15s (40000 40%) 2.7346
+2m 31s (45000 45%) 2.0137
+2m 48s (50000 50%) 2.0330
+3m 4s (55000 55%) 2.3214
+3m 21s (60000 60%) 2.8106
+3m 38s (65000 65%) 2.6862
+3m 54s (70000 70%) 1.9485
+4m 11s (75000 75%) 2.5547
+4m 28s (80000 80%) 1.9621
+4m 44s (85000 85%) 2.4182
+5m 1s (90000 90%) 2.2346
+5m 18s (95000 95%) 2.4583
+5m 34s (100000 100%) 1.6913
 </pre></div>
 </div>
 </div>
@@ -659,18 +658,18 @@ training and have the network choose its own starting letter.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Roshinov
-Uakoven
-Shevan
-Gertan
-Eelen
-Rour
-Sarana
-Parer
-Allan
-Cha
-Hon
-Iue
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Rovanov
+Uoverovev
+Shilovev
+Ganger
+Erenger
+Romer
+Sallan
+Panel
+Allana
+Chang
+Hang
+Iua
 </pre></div>
 </div>
 </div>
@@ -691,12 +690,12 @@ choosing a start letter</li>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 7 minutes  1.729 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 5 minutes  34.695 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-generation-tutorial-py">
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/char_rnn_generation_tutorial.py" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_generation_tutorial.py</span></code></a></div>
+<a class="reference download internal" download="" href="../_downloads/8167177b6dd8ddf05bb9fe58744ac406/char_rnn_generation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_generation_tutorial.py</span></code></a></div>
 <div class="sphx-glr-download docutils container">
-<a class="reference download internal" href="../_downloads/char_rnn_generation_tutorial.ipynb" download=""><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_generation_tutorial.ipynb</span></code></a></div>
+<a class="reference download internal" download="" href="../_downloads/a35c00bb5afae3962e1e7869c66872fa/char_rnn_generation_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">char_rnn_generation_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
 </div>
@@ -757,27 +756,19 @@ choosing a start letter</li>
         </div>
       </section>
     </div>
-  </div>
-  
-
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'1.0.0.dev20181002',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script type="text/javascript" src="../_static/jquery.js"></script>
+         <script type="text/javascript" src="../_static/underscore.js"></script>
+         <script type="text/javascript" src="../_static/doctools.js"></script>
+         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+     
 
   
 
@@ -801,6 +792,7 @@ choosing a start letter</li>
   ga('send', 'pageview');
 
 </script>
+<img height="1" width="1" style="border-style:none;" alt="" src="http://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0"/>
 
 
   <!-- Begin Footer -->
@@ -962,20 +954,19 @@ choosing a start letter</li>
   <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
 
   <script type="text/javascript">
-    mobileMenu.bind();
-    mobileTOC.bind();
-    pytorchAnchors.bind();
-
-    $(window).on("load", function() {
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
       sideMenus.bind();
       scrollToAnchor.bind();
       highlightNavigation.bind();
-    })
 
-    // Add class to links that have code blocks, since we cannot create links in code blocks
-    $("article.pytorch-article a span.pre").each(function(e) {
-      $(this).closest("a").addClass("has-code");
-    });
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
   </script>
 </body>
 </html>
