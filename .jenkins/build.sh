@@ -1,3 +1,5 @@
+set -ex
+
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
@@ -36,33 +38,89 @@ pushd audio
 python setup.py install
 popd
 
-# Download dataset for beginner_source/dcgan_faces_tutorial.py
-curl https://s3.amazonaws.com/pytorch-tutorial-assets/img_align_celeba.zip --output img_align_celeba.zip
-sudo mkdir -p /home/ubuntu/facebook/datasets/celeba
-sudo chmod -R 0777 /home/ubuntu/facebook/datasets/celeba
-unzip img_align_celeba.zip -d /home/ubuntu/facebook/datasets/celeba > null
-
-# Download dataset for beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
-mkdir data/
-curl https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data --output data/iris.data
-
-# Download dataset for beginner_source/chatbot_tutorial.py
-curl https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus.zip --output cornell_movie_dialogs_corpus.zip
-mkdir -p beginner_source/data
-unzip cornell_movie_dialogs_corpus.zip -d beginner_source/data/ > null
-
-# Download dataset for beginner_source/audio_classifier_tutorial.py
-curl https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz --output UrbanSound8K.tar.gz
-tar -xzf UrbanSound8K.tar.gz -C ./beginner_source
-
-# Download model for beginner_source/fgsm_tutorial.py
-curl https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth --output ./beginner_source/lenet_mnist_model.pth
-
 # We will fix the hybrid frontend tutorials when the API is stable
-rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py
-rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
+rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py || true
+rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py || true
 
-make docs
+# Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
+export NUM_WORKERS=20
+if [[ "${JOB_BASE_NAME}" == *worker-* ]]; then
+  # Step 1: Keep certain tutorials based on file count, and remove all other tutorials
+  export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
+  count=0
+  for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing "$filename
+      rm $filename
+    fi
+    count=$((count+1))
+  done
+  for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing "$filename
+      rm $filename
+    fi
+    count=$((count+1))
+  done
+  for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing "$filename
+      rm $filename
+    fi
+    count=$((count+1))
+  done
+
+  # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
+  make docs
+
+  # Step 3: Enable all tutorial Python files again
+  git checkout -- beginner_source/
+  git checkout -- intermediate_source/
+  git checkout -- advanced_source/
+
+  # Step 4: Copy generated HTML files and static files to S3, tag with commit ID
+  7z a worker_${WORKER_ID}.7z docs
+  aws s3 cp worker_${WORKER_ID}.7z s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_${WORKER_ID}.7z
+elif [[ "${JOB_BASE_NAME}" == *master ]]; then
+  # Step 1: Generate no-plot HTML pages for all tutorials
+  make html-noplot
+  cp -r _build/html docs
+
+  # Step 2: Wait for all workers to finish
+  set +e
+  for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
+    until aws s3api head-object --bucket pytorch-tutorial-build-pull-request --key ${COMMIT_ID}/worker_$worker_id.7z
+    do
+      echo "Waiting for worker $worker_id to finish..."
+      sleep 5
+    done
+  done
+  set -e
+
+  # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
+  mkdir docs_with_plot/
+  for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
+    aws s3 cp s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
+    7z x worker_$worker_id.7z -oworker_$worker_id
+    yes | cp -rf worker_$worker_id/docs docs_with_plot/docs
+  done
+
+  # Step 4: Copy plots into the no-plot HTML pages
+  for filename in $(find docs/beginner/ -name '*.html'); do
+    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+  done
+  for filename in $(find docs/intermediate/ -name '*.html'); do
+    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+  done
+  for filename in $(find docs/advanced/ -name '*.html'); do
+    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+  done
+
+  # Step 5: Copy all generated image files into docs/_images
+  cp -rf docs_with_plot/docs/_images docs/_images
+else
+  make docs
+fi
 
 rm -rf vision
 rm -rf audio
