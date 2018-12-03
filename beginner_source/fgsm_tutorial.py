@@ -132,7 +132,7 @@ import matplotlib.pyplot as plt
 # 
 
 epsilons = [0, .05, .1, .15, .2, .25, .3]
-pretrained_model = "lenet_mnist_model.pth"
+pretrained_model = "data/lenet_mnist_model.pth"
 use_cuda=False
 
 
