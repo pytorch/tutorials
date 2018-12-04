@@ -51,6 +51,8 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
+    else
+      echo "Keeping "$filename
     fi
     count=$((count+1))
   done
@@ -58,6 +60,8 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
+    else
+      echo "Keeping "$filename
     fi
     count=$((count+1))
   done
@@ -65,6 +69,8 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
+    else
+      echo "Keeping "$filename
     fi
     count=$((count+1))
   done
