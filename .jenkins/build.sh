@@ -48,7 +48,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Keep certain tutorials based on file count, and remove all other tutorials
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
-  for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
+  for filename in beginner_source/*.py; do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
@@ -57,7 +57,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
     count=$((count+1))
   done
-  for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
+  for filename in intermediate_source/*.py; do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
@@ -66,7 +66,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
     count=$((count+1))
   done
-  for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
+  for filename in advanced_source/*.py; do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing "$filename
       rm $filename
@@ -74,6 +74,40 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       echo "Keeping "$filename
     fi
     count=$((count+1))
+  done
+
+  for dirname in beginner_source/*/; do
+    if [[ "$dirname" != beginner_source/data/ ]]; then
+      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+        echo "Removing "$dirname
+        rm -rf $dirname
+      else
+        echo "Keeping "$dirname
+      fi
+      count=$((count+1))
+    fi
+  done
+  for dirname in intermediate_source/*/; do
+    if [[ "$dirname" != intermediate_source/data/ ]]; then
+      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+        echo "Removing "$dirname
+        rm -rf $dirname
+      else
+        echo "Keeping "$dirname
+      fi
+      count=$((count+1))
+    fi
+  done
+  for dirname in advanced_source/*/; do
+    if [[ "$dirname" != advanced_source/data/ ]]; then
+      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+        echo "Removing "$dirname
+        rm -rf $dirname
+      else
+        echo "Keeping "$dirname
+      fi
+      count=$((count+1))
+    fi
   done
 
   # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
