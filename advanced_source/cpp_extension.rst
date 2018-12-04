@@ -203,7 +203,7 @@ PyTorch's tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
 :class:`at::Tensor`. Its full API can be inspected `here
-<https://github.com/pytorch/pytorch/blob/master/aten/doc/Tensor.h>`_. Notice
+<https://pytorch.org/cppdocs/api/classat_1_1_tensor.html>`_. Notice
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
 the full power of C++11 at our disposal.
 
@@ -1033,4 +1033,4 @@ mechanism as well as a motivation for using them. You can find the code
 examples displayed in this note `here
 <https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
 `the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
-<https://pytorch.org/cppdocs/faq.html>`_ in case you run into any issues.
+<https://pytorch.org/cppdocs/notes/faq.html>`_ in case you run into any issues.
