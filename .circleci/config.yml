@@ -59,9 +59,16 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         .jenkins/build.sh
 
-        if [[ "${JOB_BASE_NAME}" == *master ]]; then
-          7z a master.7z docs
-          aws s3 cp master.7z s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/master.7z
+        if [[ "$COMMIT_SOURCE" == master ]]; then
+          export BUCKET_NAME=pytorch-tutorial-build-master
+        else
+          export BUCKET_NAME=pytorch-tutorial-build-pull-request
+        fi
+
+        # yf225 TODO: DEBUG
+        if [[ "${JOB_BASE_NAME}" == *manager ]]; then
+          7z a manager.7z docs
+          aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z
         fi
         # =================== The above code will be executed inside Docker container ===================
         EOL
@@ -75,211 +82,143 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         fi
 
-        echo "declare -x JOB_BASE_NAME=${JOB_BASE_NAME}" > /home/circleci/project/env
+        echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
         echo "declare -x COMMIT_ID=${CIRCLE_SHA1}" >> /home/circleci/project/env
-        echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
-        echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
+        echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
+        if [[ "$COMMIT_SOURCE" == master ]]; then
+          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
+          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
+        else
+          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
+          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
+        fi
 
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
 
+pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
+  environment:
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
+    CUDA_VERSION: "8"
+  resource_class: gpu.medium
+  <<: *pytorch_tutorial_build_defaults
+
+pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_defaults
+  environment:
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
+  resource_class: medium
+  <<: *pytorch_tutorial_build_defaults
+
 version: 2
 jobs:
-  pytorch_tutorial_build_pr_worker_0:
-    environment:
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    branches:
-      ignore:
-        - master
-    resource_class: gpu.medium
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-0
-    <<: *pytorch_tutorial_build_defaults
+  pytorch_tutorial_build_worker_0:
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_1:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-1
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_2:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-2
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_3:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-3
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_4:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-4
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_5:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-5
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_6:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-6
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_7:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-7
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_8:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-8
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_9:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-9
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_10:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-10
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_11:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-11
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_12:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-12
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_13:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-13
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_14:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-14
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_15:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-15
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_16:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-16
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_17:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-17
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_18:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-18
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
   pytorch_tutorial_build_worker_19:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-worker-19
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-      CUDA_VERSION: "8"
-    resource_class: gpu.medium
-    <<: *pytorch_tutorial_build_defaults
+    <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_master:
-    environment:
-      JOB_BASE_NAME: pytorch-tutorial-build-master
-      DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn6-py3:latest"
-    resource_class: medium
-    <<: *pytorch_tutorial_build_defaults
+  pytorch_tutorial_build_manager:
+    <<: *pytorch_tutorial_build_manager_defaults
 
 workflows:
   version: 2
   build:
     jobs:
-      - pytorch_tutorial_build_worker_0
-      - pytorch_tutorial_build_worker_1
-      - pytorch_tutorial_build_worker_2
-      - pytorch_tutorial_build_worker_3
-      - pytorch_tutorial_build_worker_4
-      - pytorch_tutorial_build_worker_5
-      - pytorch_tutorial_build_worker_6
-      - pytorch_tutorial_build_worker_7
-      - pytorch_tutorial_build_worker_8
-      - pytorch_tutorial_build_worker_9
-      - pytorch_tutorial_build_worker_10
-      - pytorch_tutorial_build_worker_11
-      - pytorch_tutorial_build_worker_12
-      - pytorch_tutorial_build_worker_13
-      - pytorch_tutorial_build_worker_14
-      - pytorch_tutorial_build_worker_15
-      - pytorch_tutorial_build_worker_16
-      - pytorch_tutorial_build_worker_17
-      - pytorch_tutorial_build_worker_18
-      - pytorch_tutorial_build_worker_19
-      - pytorch_tutorial_build_master
+      - pytorch_tutorial_build_worker_0:
+          context: org-admin
+      - pytorch_tutorial_build_worker_1:
+          context: org-admin
+      - pytorch_tutorial_build_worker_2:
+          context: org-admin
+      - pytorch_tutorial_build_worker_3:
+          context: org-admin
+      - pytorch_tutorial_build_worker_4:
+          context: org-admin
+      - pytorch_tutorial_build_worker_5:
+          context: org-admin
+      - pytorch_tutorial_build_worker_6:
+          context: org-admin
+      - pytorch_tutorial_build_worker_7:
+          context: org-admin
+      - pytorch_tutorial_build_worker_8:
+          context: org-admin
+      - pytorch_tutorial_build_worker_9:
+          context: org-admin
+      - pytorch_tutorial_build_worker_10:
+          context: org-admin
+      - pytorch_tutorial_build_worker_11:
+          context: org-admin
+      - pytorch_tutorial_build_worker_12:
+          context: org-admin
+      - pytorch_tutorial_build_worker_13:
+          context: org-admin
+      - pytorch_tutorial_build_worker_14:
+          context: org-admin
+      - pytorch_tutorial_build_worker_15:
+          context: org-admin
+      - pytorch_tutorial_build_worker_16:
+          context: org-admin
+      - pytorch_tutorial_build_worker_17:
+          context: org-admin
+      - pytorch_tutorial_build_worker_18:
+          context: org-admin
+      - pytorch_tutorial_build_worker_19:
+          context: org-admin
+      - pytorch_tutorial_build_manager:
+          context: org-admin
