@@ -69,6 +69,7 @@ download:
 docs:
 	make download
 	make html
+	# yf225 TODO: you should git add -A all intermediate products and push them to repo, so that next time these can be reused.
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
 	touch docs/.nojekyll
