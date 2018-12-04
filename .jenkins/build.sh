@@ -43,7 +43,7 @@ rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py |
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
-if [[ "${JOB_BASE_NAME}" == *worker-* ]]; then
+if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Keep certain tutorials based on file count, and remove all other tutorials
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
@@ -80,7 +80,7 @@ if [[ "${JOB_BASE_NAME}" == *worker-* ]]; then
   # Step 4: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_${WORKER_ID}.7z
-elif [[ "${JOB_BASE_NAME}" == *master ]]; then
+elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
   cp -r _build/html docs
