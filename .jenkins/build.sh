@@ -1,5 +1,11 @@
 set -ex
 
+if [[ "$COMMIT_SOURCE" == master ]]; then
+  export BUCKET_NAME=pytorch-tutorial-build-master
+else
+  export BUCKET_NAME=pytorch-tutorial-build-pull-request
+fi
+
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
@@ -78,7 +84,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   cp -r _build/html docs
   touch docs/.nojekyll
   7z a worker_${WORKER_ID}.7z docs
-  aws s3 cp worker_${WORKER_ID}.7z s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
@@ -87,7 +93,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 2: Wait for all workers to finish
   set +e
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
-    until aws s3api head-object --bucket pytorch-tutorial-build-pull-request --key ${COMMIT_ID}/worker_$worker_id.7z
+    until aws s3api head-object --bucket ${BUCKET_NAME} --key ${COMMIT_ID}/worker_$worker_id.7z
     do
       echo "Waiting for worker $worker_id to finish..."
       sleep 5
@@ -98,7 +104,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
   mkdir docs_with_plot/
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
-    aws s3 cp s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
+    aws s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
     yes | cp -rf worker_$worker_id/docs docs_with_plot/docs
   done
@@ -115,8 +121,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   done
 
   # Step 5: Copy all static files into docs
-  cp -rf docs_with_plot/docs/_images docs/_images
-  cp -rf docs_with_plot/docs/_static docs/_static
+  rsync -av docs_with_plot/docs/ docs --exclude beginner --exclude intermediate --exclude advanced
 else
   make docs
 fi
