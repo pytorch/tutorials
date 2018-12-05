@@ -177,7 +177,6 @@ for epoch in range(2):  # loop over the dataset multiple times
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
-        break # yf225 TODO: remove this line!
 
 print('Finished Training')
 
@@ -194,72 +193,71 @@ print('Finished Training')
 #
 # Okay, first step. Let us display an image from the test set to get familiar.
 
-# yf225 TODO: uncomment the following!
-# dataiter = iter(testloader)
-# images, labels = dataiter.next()
+dataiter = iter(testloader)
+images, labels = dataiter.next()
 
-# # print images
-# imshow(torchvision.utils.make_grid(images))
-# print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+# print images
+imshow(torchvision.utils.make_grid(images))
+print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
-# ########################################################################
-# # Okay, now let us see what the neural network thinks these examples above are:
+########################################################################
+# Okay, now let us see what the neural network thinks these examples above are:
 
-# outputs = net(images)
+outputs = net(images)
 
-# ########################################################################
-# # The outputs are energies for the 10 classes.
-# # Higher the energy for a class, the more the network
-# # thinks that the image is of the particular class.
-# # So, let's get the index of the highest energy:
-# _, predicted = torch.max(outputs, 1)
+########################################################################
+# The outputs are energies for the 10 classes.
+# Higher the energy for a class, the more the network
+# thinks that the image is of the particular class.
+# So, let's get the index of the highest energy:
+_, predicted = torch.max(outputs, 1)
 
-# print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
-#                               for j in range(4)))
+print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
+                              for j in range(4)))
 
-# ########################################################################
-# # The results seem pretty good.
-# #
-# # Let us look at how the network performs on the whole dataset.
+########################################################################
+# The results seem pretty good.
+#
+# Let us look at how the network performs on the whole dataset.
 
-# correct = 0
-# total = 0
-# with torch.no_grad():
-#     for data in testloader:
-#         images, labels = data
-#         outputs = net(images)
-#         _, predicted = torch.max(outputs.data, 1)
-#         total += labels.size(0)
-#         correct += (predicted == labels).sum().item()
+correct = 0
+total = 0
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
 
-# print('Accuracy of the network on the 10000 test images: %d %%' % (
-#     100 * correct / total))
+print('Accuracy of the network on the 10000 test images: %d %%' % (
+    100 * correct / total))
 
-# ########################################################################
-# # That looks waaay better than chance, which is 10% accuracy (randomly picking
-# # a class out of 10 classes).
-# # Seems like the network learnt something.
-# #
-# # Hmmm, what are the classes that performed well, and the classes that did
-# # not perform well:
+########################################################################
+# That looks waaay better than chance, which is 10% accuracy (randomly picking
+# a class out of 10 classes).
+# Seems like the network learnt something.
+#
+# Hmmm, what are the classes that performed well, and the classes that did
+# not perform well:
 
-# class_correct = list(0. for i in range(10))
-# class_total = list(0. for i in range(10))
-# with torch.no_grad():
-#     for data in testloader:
-#         images, labels = data
-#         outputs = net(images)
-#         _, predicted = torch.max(outputs, 1)
-#         c = (predicted == labels).squeeze()
-#         for i in range(4):
-#             label = labels[i]
-#             class_correct[label] += c[i].item()
-#             class_total[label] += 1
+class_correct = list(0. for i in range(10))
+class_total = list(0. for i in range(10))
+with torch.no_grad():
+    for data in testloader:
+        images, labels = data
+        outputs = net(images)
+        _, predicted = torch.max(outputs, 1)
+        c = (predicted == labels).squeeze()
+        for i in range(4):
+            label = labels[i]
+            class_correct[label] += c[i].item()
+            class_total[label] += 1
 
 
-# for i in range(10):
-#     print('Accuracy of %5s : %2d %%' % (
-#         classes[i], 100 * class_correct[i] / class_total[i]))
+for i in range(10):
+    print('Accuracy of %5s : %2d %%' % (
+        classes[i], 100 * class_correct[i] / class_total[i]))
 
 ########################################################################
 # Okay, so what next?
