@@ -51,7 +51,7 @@ download:
 	unzip img_align_celeba.zip -d beginner_source/data/celeba > null
 
 	# Download dataset for beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
-	mkdir data/
+	mkdir data/ || true
 	curl https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data --output beginner_source/data/iris.data
 
 	# Download dataset for beginner_source/chatbot_tutorial.py
