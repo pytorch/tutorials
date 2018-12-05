@@ -114,8 +114,9 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
     python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
 
-  # Step 5: Copy all generated image files into docs/_images
+  # Step 5: Copy all static files into docs
   cp -rf docs_with_plot/docs/_images docs/_images
+  cp -rf docs_with_plot/docs/_static docs/_static
 else
   make docs
 fi
