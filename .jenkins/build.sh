@@ -45,80 +45,38 @@ rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py |
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
-  # Step 1: Keep certain tutorials based on file count, and remove all other tutorials
+  # Step 1: Download all datasets
+  make download
+
+  # Step 2: Keep certain tutorials based on file count, and remove all other tutorials
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
-  for filename in beginner_source/*.py; do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
-    else
-      echo "Keeping "$filename
+  for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) == $WORKER_ID ]; then
+      echo "Generating "$filename
+      sphinx-build -b html . _build/html $filename
     fi
     count=$((count+1))
   done
-  for filename in intermediate_source/*.py; do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
-    else
-      echo "Keeping "$filename
+  for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) == $WORKER_ID ]; then
+      echo "Generating "$filename
+      sphinx-build -b html . _build/html $filename
     fi
     count=$((count+1))
   done
-  for filename in advanced_source/*.py; do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
-    else
-      echo "Keeping "$filename
+  for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) == $WORKER_ID ]; then
+      echo "Generating "$filename
+      sphinx-build -b html . _build/html $filename
     fi
     count=$((count+1))
   done
 
-  for dirname in beginner_source/*/; do
-    if [[ "$dirname" != beginner_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
-  done
-  for dirname in intermediate_source/*/; do
-    if [[ "$dirname" != intermediate_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
-  done
-  for dirname in advanced_source/*/; do
-    if [[ "$dirname" != advanced_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
-  done
-
-  # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
-  make docs
-
-  # Step 3: Enable all tutorial Python files again
-  git checkout -- beginner_source/
-  git checkout -- intermediate_source/
-  git checkout -- advanced_source/
-
-  # Step 4: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 3: Copy generated HTML files and static files to S3, tag with commit ID
+  rm -rf docs
+  cp -r _build/html docs
+  touch docs/.nojekyll
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://pytorch-tutorial-build-pull-request/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
