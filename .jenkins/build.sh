@@ -122,18 +122,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   done
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
-  for filename in $(find docs/beginner -name '*.html'); do
-    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
-    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
-  done
-  for filename in $(find docs/intermediate -name '*.html'); do
-    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
-    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
-  done
-  for filename in $(find docs/advanced -name '*.html'); do
-    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
-    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
-  done
+  bash $DIR/remove_invisible_code_block_batch.sh docs
 
   # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
