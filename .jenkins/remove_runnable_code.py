@@ -16,24 +16,24 @@ with open(python_file_path, 'r', encoding='utf-8') as file:
             if line.startswith('#'):
                 ret_lines.append(line)
                 state = STATE_NORMAL
-            elif '"""' in line:
+            elif line.startswith('"""'):
                 ret_lines.append(line)
                 state = STATE_IN_MULTILINE_COMMENT_BLOCK_DOUBLE_QUOTE
-            elif "'''" in line:
+            elif line.startswith("'''"):
                 ret_lines.append(line)
                 state = STATE_IN_MULTILINE_COMMENT_BLOCK_SINGLE_QUOTE
             else:
                 ret_lines.append("\n")
                 state = STATE_NORMAL
         elif state == STATE_IN_MULTILINE_COMMENT_BLOCK_DOUBLE_QUOTE:
-            if '"""' in line:
+            if line.startswith('"""'):
                 ret_lines.append(line)
                 state = STATE_NORMAL
             else:
                 ret_lines.append(line)
                 state = STATE_IN_MULTILINE_COMMENT_BLOCK_DOUBLE_QUOTE
         elif state == STATE_IN_MULTILINE_COMMENT_BLOCK_SINGLE_QUOTE:
-            if "'''" in line:
+            if line.startswith("'''"):
                 ret_lines.append(line)
                 state = STATE_NORMAL
             else:
