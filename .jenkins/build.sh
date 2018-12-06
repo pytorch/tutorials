@@ -159,7 +159,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
     aws s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
-    yes | cp -rf worker_$worker_id/docs docs_with_plot/docs
+    yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
 
   # Step 4: Copy plots into the no-plot HTML pages
