@@ -6,6 +6,8 @@ else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
 fi
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
@@ -50,69 +52,35 @@ rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py |
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
-  # Step 1: Keep certain tutorials based on file count, and remove all other tutorials
+  # Step 1: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
-  for filename in beginner_source/*.py; do
+  for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename
     else
       echo "Keeping "$filename
     fi
     count=$((count+1))
   done
-  for filename in intermediate_source/*.py; do
+  for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename
     else
       echo "Keeping "$filename
     fi
     count=$((count+1))
   done
-  for filename in advanced_source/*.py; do
+  for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing "$filename
-      rm $filename
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename
     else
       echo "Keeping "$filename
     fi
     count=$((count+1))
-  done
-
-  for dirname in beginner_source/*/; do
-    if [[ "$dirname" != beginner_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
-  done
-  for dirname in intermediate_source/*/; do
-    if [[ "$dirname" != intermediate_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
-  done
-  for dirname in advanced_source/*/; do
-    if [[ "$dirname" != advanced_source/data/ ]]; then
-      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-        echo "Removing "$dirname
-        rm -rf $dirname
-      else
-        echo "Keeping "$dirname
-      fi
-      count=$((count+1))
-    fi
   done
 
   # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
@@ -123,7 +91,27 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   git checkout -- intermediate_source/
   git checkout -- advanced_source/
 
-  # Step 4: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 4: Remove all HTML files that don't contain runnable code
+  for filename in $(find docs/beginner/ -name '*.html'); do
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+      echo "Removing " $filename
+      rm $filename
+    fi
+  done
+  for filename in $(find docs/intermediate/ -name '*.html'); do
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+      echo "Removing " $filename
+      rm $filename
+    fi
+  done
+  for filename in $(find docs/advanced/ -name '*.html'); do
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+      echo "Removing " $filename
+      rm $filename
+    fi
+  done
+
+  # Step 5: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
@@ -152,13 +140,13 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 4: Copy plots into the no-plot HTML pages
   for filename in $(find docs/beginner/ -name '*.html'); do
-    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
   for filename in $(find docs/intermediate/ -name '*.html'); do
-    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
   for filename in $(find docs/advanced/ -name '*.html'); do
-    python replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
 
   # Step 5: Copy all static files into docs
