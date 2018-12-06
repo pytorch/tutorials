@@ -144,7 +144,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   set -e
 
   # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
-  mkdir docs_with_plot/
+  mkdir -p docs_with_plot/docs
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
     aws s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
