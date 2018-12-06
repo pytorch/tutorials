@@ -33,7 +33,7 @@ rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-pip install sphinx-gallery tqdm matplotlib ipython pillow=4.1.1
+pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
 git clone https://github.com/pytorch/vision --quiet
 pushd vision
