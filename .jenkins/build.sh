@@ -128,7 +128,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
-  aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
+  aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
