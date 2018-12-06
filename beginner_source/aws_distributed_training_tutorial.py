@@ -202,7 +202,7 @@ PyTorch 1.0 Distributed Trainer with Amazon AWS
 # It is also important to set the multiprocessing start method to *spawn*
 # or *forkserver* (only supported in Python 3),
 # as the default is *fork* which may cause deadlocks when using multiple
-# worker threads for dataloading.
+# worker processes for dataloading.
 #
 
 import time
@@ -449,7 +449,7 @@ print("Collect Inputs...")
 # Batch Size for training and testing
 batch_size = 32
 
-# Number of worker threads for dataloading
+# Number of additional worker processes for dataloading
 workers = 2
 
 # Number of epochs to train for
