@@ -54,6 +54,7 @@ popd
 # We will fix the hybrid frontend tutorials when the API is stable
 rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py || true
 rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py || true
+rm beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py || true
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
@@ -120,7 +121,21 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
   done
 
-  # Step 5: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
+  for filename in $(find docs/beginner/ -name '*.html'); do
+    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
+    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
+  done
+  for filename in $(find docs/intermediate/ -name '*.html'); do
+    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
+    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
+  done
+  for filename in $(find docs/advanced/ -name '*.html'); do
+    echo "Removing INVISIBLE_CODE_BLOCK from " $filename
+    python $DIR/remove_invisible_code_block_from_html.py $filename $filename
+  done
+
+  # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
