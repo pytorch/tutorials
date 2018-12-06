@@ -95,38 +95,21 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
 
-  # Step 3: Enable all tutorial Python files again
-  git checkout -- beginner_source/
-  git checkout -- intermediate_source/
-  git checkout -- advanced_source/
-
-  # Step 4: Remove all HTML files that don't contain runnable code
+  # Step 3: Remove all HTML files generated from Python files that don't contain runnable code
   for filename in $(find docs/beginner -name '*.html'); do
-    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
-    then
-      echo "Removing " $filename
-      rm $filename
-    fi
+    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
   done
   for filename in $(find docs/intermediate -name '*.html'); do
-    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
-    then
-      echo "Removing " $filename
-      rm $filename
-    fi
+    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
   done
   for filename in $(find docs/advanced -name '*.html'); do
-    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
-    then
-      echo "Removing " $filename
-      rm $filename
-    fi
+    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
   done
 
-  # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
+  # Step 4: Remove INVISIBLE_CODE_BLOCK from all HTML files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 5: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
