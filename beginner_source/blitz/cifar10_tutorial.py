@@ -332,3 +332,7 @@ print(device)
 # .. _More tutorials: https://github.com/pytorch/tutorials
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
 # .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
+
+# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
+del dataiter
+# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
