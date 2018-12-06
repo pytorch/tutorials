@@ -281,7 +281,7 @@ def test(model, epoch):
 # 
 
 log_interval = 20
-for epoch in range(1, 41):
+for epoch in range(1, 2):
     if epoch == 31:
         print("First round of training complete. Setting learn rate to 0.001.")
     scheduler.step()
