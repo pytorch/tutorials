@@ -24,6 +24,9 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O) -v
 
 download:
+	# IMPORTANT NOTE: Please make sure your dataset is downloaded to *_source/data folder,
+	# otherwise CI might silently break.
+
 	# transfer learning tutorial data
 	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip
 	unzip -o hymenoptera_data.zip -d beginner_source/data
