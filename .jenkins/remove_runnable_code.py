@@ -7,7 +7,7 @@ STATE_NORMAL = "STATE_NORMAL"
 python_file_path = sys.argv[1]
 output_file_path = sys.argv[2]
 
-with open(python_file_path, 'r') as file:
+with open(python_file_path, 'r', encoding='utf-8') as file:
     lines = file.readlines()
     ret_lines = []
     state = STATE_NORMAL
@@ -42,6 +42,6 @@ with open(python_file_path, 'r') as file:
 
 ret_lines.append("\n# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%")
 
-with open(output_file_path, 'w') as file:
+with open(output_file_path, 'w', encoding='utf-8') as file:
     for line in ret_lines:
         file.write(line)

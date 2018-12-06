@@ -11,6 +11,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
 
+export PATH=/opt/conda/bin:$PATH
+rm -rf src
+pip install -r $DIR/../requirements.txt
+pip uninstall -y torchvision || true
+
 # Install a nightly build of pytorch
 
 # GPU, requires CUDA version 8.0
@@ -25,7 +30,6 @@ pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu8
 # CPU
 # pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
 
-
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
 # PyTorch Theme
@@ -35,11 +39,13 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # this is a workaround to the issue.
 pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
+# Install torchvision from source
 git clone https://github.com/pytorch/vision --quiet
 pushd vision
 pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
 popd
 
+# Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
 pushd audio
 python setup.py install
