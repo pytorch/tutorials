@@ -58,7 +58,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename
+      python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
     fi
@@ -67,7 +67,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename
+      python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
     fi
@@ -76,7 +76,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename
+      python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
     fi
@@ -93,19 +93,22 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: Remove all HTML files that don't contain runnable code
   for filename in $(find docs/beginner/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+    then
       echo "Removing " $filename
       rm $filename
     fi
   done
   for filename in $(find docs/intermediate/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+    then
       echo "Removing " $filename
       rm $filename
     fi
   done
   for filename in $(find docs/advanced/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename then
+    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+    then
       echo "Removing " $filename
       rm $filename
     fi
