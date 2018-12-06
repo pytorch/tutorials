@@ -56,6 +56,8 @@ rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tuto
 rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py || true
 rm beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py || true
 
+aws configure set default.s3.multipart_threshold 5120MB
+
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
