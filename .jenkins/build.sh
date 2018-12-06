@@ -138,13 +138,13 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 4: Copy plots into the no-plot HTML pages
   for filename in $(find docs/beginner -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
   done
   for filename in $(find docs/intermediate -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
   done
   for filename in $(find docs/advanced -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
+    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
   done
 
   # Step 5: Copy all static files into docs
