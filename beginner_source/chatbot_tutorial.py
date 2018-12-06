@@ -34,25 +34,25 @@ Chatbot Tutorial
 # .. code:: python
 #
 #   > hello?
-#   bot: hello .
+#   Bot: hello .
 #   > where am I?
-#   bot: you re in a hospital .
+#   Bot: you re in a hospital .
 #   > who are you?
-#   bot: i m a lawyer .
+#   Bot: i m a lawyer .
 #   > how are you doing?
-#   bot: i m fine .
+#   Bot: i m fine .
 #   > are you my friend?
-#   bot: no .
+#   Bot: no .
 #   > you're under arrest
-#   bot: i m trying to help you !
+#   Bot: i m trying to help you !
 #   > i'm just kidding
-#   bot: i m sorry .
+#   Bot: i m sorry .
 #   > where are you from?
-#   bot: san francisco .
+#   Bot: san francisco .
 #   > it's time for me to leave
-#   bot: i know .
+#   Bot: i know .
 #   > goodbye
-#   bot: goodbye .
+#   Bot: goodbye .
 #
 # **Tutorial Highlights**
 #
@@ -156,9 +156,8 @@ printLines(os.path.join(corpus, "movie_lines.txt"))
 # Create formatted data file
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Now it is time to use the functions that we defined above to create an
-# appropriately formatted data file. Each line of this new file will
-# contain a tab-separated *query sentence* and a *response sentence* pair.
+# For convenience, we'll create a nicely formatted data file in which each line
+# contains a tab-separated *query sentence* and a *response sentence* pair.
 #
 # The following functions facilitate the parsing of the raw
 # *movie_lines.txt* data file.
@@ -456,8 +455,8 @@ pairs = trimRareWords(voc, pairs, MIN_COUNT)
 # Prepare Data for Models
 # -----------------------
 #
-# Although we have spent a great effort preparing and massaging our data
-# into a nice vocabulary object and list of sentence pairs, our models
+# Although we have put a great deal of effort into preparing and massaging our
+# data into a nice vocabulary object and list of sentence pairs, our models
 # will ultimately expect numerical torch tensors as inputs. One way to
 # prepare the processed data for the models can be found in the `seq2seq
 # translation

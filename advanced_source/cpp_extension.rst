@@ -11,7 +11,7 @@ you developed as part of your research.
 
 The easiest way of integrating such a custom operation in PyTorch is to write it
 in Python by extending :class:`Function` and :class:`Module` as outlined `here
-<http://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
+<https://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code
@@ -203,7 +203,7 @@ PyTorch's tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
 :class:`at::Tensor`. Its full API can be inspected `here
-<https://github.com/pytorch/pytorch/blob/master/aten/doc/Tensor.h>`_. Notice
+<https://pytorch.org/cppdocs/api/classat_1_1_tensor.html>`_. Notice
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
 the full power of C++11 at our disposal.
 
@@ -954,7 +954,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.data<scalar_t>(),
           d_gates.data<scalar_t>(),
@@ -1029,7 +1029,8 @@ Conclusion
 ----------
 
 You should now be equipped with a good overview of PyTorch's C++ extension
-mechanism as well as a motivation for using them. You can find the code examples
-displayed in this note `here
-<https://github.com/pytorch/extension-cpp>`_. If you have
-questions, please use `the forums <https://discuss.pytorch.org>`_.
+mechanism as well as a motivation for using them. You can find the code
+examples displayed in this note `here
+<https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
+`the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
+<https://pytorch.org/cppdocs/notes/faq.html>`_ in case you run into any issues.

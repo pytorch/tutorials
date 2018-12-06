@@ -102,7 +102,7 @@ print(z)
 
 
 ######################################################################
-# See `the documentation <http://pytorch.org/docs/torch.html>`__ for a
+# See `the documentation <https://pytorch.org/docs/torch.html>`__ for a
 # complete list of the massive number of operations available to you. They
 # expand beyond just mathematical operations.
 #

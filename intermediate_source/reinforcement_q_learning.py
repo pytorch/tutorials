@@ -260,7 +260,7 @@ def get_screen():
                             cart_location + view_width // 2)
     # Strip off the edges, so that we have a square image centered on a cart
     screen = screen[:, :, slice_range]
-    # Convert to float, rescare, convert to torch tensor
+    # Convert to float, rescale, convert to torch tensor
     # (this doesn't require a copy)
     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
     screen = torch.from_numpy(screen)
