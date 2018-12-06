@@ -9,7 +9,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all
+sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
@@ -99,22 +99,22 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   git checkout -- advanced_source/
 
   # Step 4: Remove all HTML files that don't contain runnable code
-  for filename in $(find docs/beginner/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+  for filename in $(find docs/beginner -name '*.html'); do
+    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
     then
       echo "Removing " $filename
       rm $filename
     fi
   done
-  for filename in $(find docs/intermediate/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+  for filename in $(find docs/intermediate -name '*.html'); do
+    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
     then
       echo "Removing " $filename
       rm $filename
     fi
   done
-  for filename in $(find docs/advanced/ -name '*.html'); do
-    if grep -Fxq "%%%%%%RUNNABLE_CODE_REMOVED%%%%%%" $filename
+  for filename in $(find docs/advanced -name '*.html'); do
+    if grep -q %%%%%%RUNNABLE_CODE_REMOVED%%%%%% $filename
     then
       echo "Removing " $filename
       rm $filename
@@ -122,15 +122,15 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   done
 
   # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
-  for filename in $(find docs/beginner/ -name '*.html'); do
+  for filename in $(find docs/beginner -name '*.html'); do
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_html.py $filename $filename
   done
-  for filename in $(find docs/intermediate/ -name '*.html'); do
+  for filename in $(find docs/intermediate -name '*.html'); do
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_html.py $filename $filename
   done
-  for filename in $(find docs/advanced/ -name '*.html'); do
+  for filename in $(find docs/advanced -name '*.html'); do
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_html.py $filename $filename
   done
@@ -163,13 +163,13 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   done
 
   # Step 4: Copy plots into the no-plot HTML pages
-  for filename in $(find docs/beginner/ -name '*.html'); do
+  for filename in $(find docs/beginner -name '*.html'); do
     python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
-  for filename in $(find docs/intermediate/ -name '*.html'); do
+  for filename in $(find docs/intermediate -name '*.html'); do
     python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
-  for filename in $(find docs/advanced/ -name '*.html'); do
+  for filename in $(find docs/advanced -name '*.html'); do
     python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename
   done
 
