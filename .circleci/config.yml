@@ -65,15 +65,12 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         # =================== The following code will be executed inside Docker container ===================
         set -ex
 
-        export JOB_BASE_NAME_BACKUP=${JOB_BASE_NAME}
-        export COMMIT_SOURCE_BACKUP=${COMMIT_SOURCE}
+        echo "JOB_BASE_NAME: " ${JOB_BASE_NAME}
+        echo "COMMIT_SOURCE: " ${COMMIT_SOURCE}
 
         .jenkins/build.sh
 
-        export JOB_BASE_NAME=${JOB_BASE_NAME_BACKUP}
-        export COMMIT_SOURCE=${COMMIT_SOURCE_BACKUP}
-
-        if [[ "$COMMIT_SOURCE" == master ]]; then
+        if [[ "${COMMIT_SOURCE}" == master ]]; then
           export BUCKET_NAME=pytorch-tutorial-build-master
         else
           export BUCKET_NAME=pytorch-tutorial-build-pull-request
@@ -99,20 +96,22 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         fi
 
-        echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
-        echo "declare -x COMMIT_ID=${CIRCLE_SHA1}" >> /home/circleci/project/env
-        echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
         if [[ "$COMMIT_SOURCE" == master ]]; then
-          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
-          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
+          export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}
+          export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}
         else
-          echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
-          echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
+          export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}
+          export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}
         fi
 
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
 
-        export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
+        export COMMAND='((echo "export JOB_BASE_NAME=${CIRCLE_JOB} && \
+          export COMMIT_ID=${CIRCLE_SHA1} && \
+          export COMMIT_SOURCE=${CIRCLE_BRANCH} && \
+          export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && \
+          export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" && \
+          echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
