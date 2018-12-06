@@ -1,9 +1,6 @@
 Loading a PyTorch Model in C++
 ==============================
 
-.. attention:: This tutorial requires PyTorch 1.0 (preview) or later.
-   For installation information visit https://pytorch.org/get-started.
-
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many

@@ -18,9 +18,6 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 # regarding data preprocessing, model theory and definition, and model
 # training.
 #
-# .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit https://pytorch.org/get-started.
-#
 # What is the Hybrid Frontend?
 # ----------------------------
 #
