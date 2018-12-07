@@ -1,0 +1,980 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PyTorch 1.0 Distributed Trainer with Amazon AWS — PyTorch Tutorials 1.0.0.dev20181206 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<script src="../_static/js/modernizr.min.js"></script>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">Features</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.0.0.dev20181206
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_loading_tutorial.html">Data Loading and Processing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning_tutorial.html">Transfer Learning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saving_loading_models.html">Saving and Loading Models</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="finetuning_torchvision_models_tutorial.html">Finetuning Torchvision Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_caffe2.html">Transfering a Model from PyTorch to Caffe2 and Mobile using ONNX</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chatbot_tutorial.html">Chatbot Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Generative</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Production Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ONNXLive.html">ONNX Live Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a PyTorch Model in C++</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>PyTorch 1.0 Distributed Trainer with Amazon AWS</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/beginner/aws_distributed_training_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-aws-distributed-training-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="pytorch-1-0-distributed-trainer-with-amazon-aws">
+<span id="sphx-glr-beginner-aws-distributed-training-tutorial-py"></span><h1>PyTorch 1.0 Distributed Trainer with Amazon AWS<a class="headerlink" href="#pytorch-1-0-distributed-trainer-with-amazon-aws" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/inkawhich">Nathan Inkawhich</a></p>
+<p><strong>Edited by</strong>: <a class="reference external" href="https://github.com/teng-li">Teng Li</a></p>
+<p>In this tutorial we will show how to setup, code, and run a PyTorch 1.0
+distributed trainer across two multi-gpu Amazon AWS nodes. We will start
+with describing the AWS setup, then the PyTorch environment
+configuration, and finally the code for the distributed trainer.
+Hopefully you will find that there is actually very little code change
+required to extend your current training code to a distributed
+application, and most of the work is in the one-time environment setup.</p>
+<div class="section" id="amazon-aws-setup">
+<h2>Amazon AWS Setup<a class="headerlink" href="#amazon-aws-setup" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we will run distributed training across two multi-gpu
+nodes. In this section we will first cover how to create the nodes, then
+how to setup the security group so the nodes can communicate with
+eachother.</p>
+<div class="section" id="creating-the-nodes">
+<h3>Creating the Nodes<a class="headerlink" href="#creating-the-nodes" title="Permalink to this headline">¶</a></h3>
+<p>In Amazon AWS, there are seven steps to creating an instance. To get
+started, login and select <strong>Launch Instance</strong>.</p>
+<p><strong>Step 1: Choose an Amazon Machine Image (AMI)</strong> - Here we will select
+the <code class="docutils literal notranslate"><span class="pre">Deep</span> <span class="pre">Learning</span> <span class="pre">AMI</span> <span class="pre">(Ubuntu)</span> <span class="pre">Version</span> <span class="pre">14.0</span></code>. As described, this
+instance comes with many of the most popular deep learning frameworks
+installed and is preconfigured with CUDA, cuDNN, and NCCL. It is a very
+good starting point for this tutorial.</p>
+<p><strong>Step 2: Choose an Instance Type</strong> - Now, select the GPU compute unit
+called <code class="docutils literal notranslate"><span class="pre">p2.8xlarge</span></code>. Notice, each of these instances has a different
+cost but this instance provides 8 NVIDIA Tesla K80 GPUs per node, and
+provides a good architecture for multi-gpu distributed training.</p>
+<p><strong>Step 3: Configure Instance Details</strong> - The only setting to change here
+is increasing the <em>Number of instances</em> to 2. All other configurations
+may be left at default.</p>
+<p><strong>Step 4: Add Storage</strong> - Notice, by default these nodes do not come
+with a lot of storage (only 75 GB). For this tutorial, since we are only
+using the STL-10 dataset, this is plenty of storage. But, if you want to
+train on a larger dataset such as ImageNet, you will have to add much
+more storage just to fit the dataset and any trained models you wish to
+save.</p>
+<p><strong>Step 5: Add Tags</strong> - Nothing to be done here, just move on.</p>
+<p><strong>Step 6: Configure Security Group</strong> - This is a critical step in the
+configuration process. By default two nodes in the same security group
+would not be able to communicate in the distributed training setting.
+Here, we want to create a <strong>new</strong> security group for the two nodes to be
+in. However, we cannot finish configuring in this step. For now, just
+remember your new security group name (e.g. launch-wizard-12) then move
+on to Step 7.</p>
+<p><strong>Step 7: Review Instance Launch</strong> - Here, review the instance then
+launch it. By default, this will automatically start initializing the
+two instances. You can monitor the initialization progress from the
+dashboard.</p>
+</div>
+<div class="section" id="configure-security-group">
+<h3>Configure Security Group<a class="headerlink" href="#configure-security-group" title="Permalink to this headline">¶</a></h3>
+<p>Recall that we were not able to properly configure the security group
+when creating the instances. Once you have launched the instance, select
+the <em>Network &amp; Security &gt; Security Groups</em> tab in the EC2 dashboard.
+This will bring up a list of security groups you have access to. Select
+the new security group you created in Step 6 (i.e. launch-wizard-12),
+which will bring up tabs called <em>Description, Inbound, Outbound, and
+Tags</em>. First, select the <em>Inbound</em> tab and <em>Edit</em> to add a rule to allow
+“All Traffic” from “Sources” in the launch-wizard-12 security group.
+Then select the <em>Outbound</em> tab and do the exact same thing. Now, we have
+effectively allowed all Inbound and Outbound traffic of all types
+between nodes in the launch-wizard-12 security group.</p>
+</div>
+<div class="section" id="necessary-information">
+<h3>Necessary Information<a class="headerlink" href="#necessary-information" title="Permalink to this headline">¶</a></h3>
+<p>Before continuing, we must find and remember the IP addresses of both
+nodes. In the EC2 dashboard find your running instances. For both
+instances, write down the <em>IPv4 Public IP</em> and the <em>Private IPs</em>. For
+the remainder of the document, we will refer to these as the
+<strong>node0-publicIP</strong>, <strong>node0-privateIP</strong>, <strong>node1-publicIP</strong>, and
+<strong>node1-privateIP</strong>. The public IPs are the addresses we will use to SSH
+in, and the private IPs will be used for inter-node communication.</p>
+</div>
+</div>
+<div class="section" id="environment-setup">
+<h2>Environment Setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h2>
+<p>The next critical step is the setup of each node. Unfortunately, we
+cannot configure both nodes at the same time, so this process must be
+done on each node separately. However, this is a one time setup, so once
+you have the nodes configured properly you will not have to reconfigure
+for future distributed training projects.</p>
+<p>The first step, once logged onto the node, is to create a new conda
+environment with python 3.6 and numpy. Once created activate the
+environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ conda create -n nightly_pt python=3.6 numpy
+$ source activate nightly_pt
+</pre></div>
+</div>
+<p>Next, we will install a nightly build of Cuda 9.0 enabled PyTorch with
+pip in the conda environment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
+</pre></div>
+</div>
+<p>We must also install torchvision so we can use the torchvision model and
+dataset. At this time, we must build torchvision from source as the pip
+installation will by default install an old version of PyTorch on top of
+the nightly build we just installed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd
+$ git clone https://github.com/pytorch/vision.git
+$ cd vision
+$ python setup.py install
+</pre></div>
+</div>
+<p>And finally, <strong>VERY IMPORTANT</strong> step is to set the network interface
+name for the NCCL socket. This is set with the environment variable
+<code class="docutils literal notranslate"><span class="pre">NCCL_SOCKET_IFNAME</span></code>. To get the correct name, run the <code class="docutils literal notranslate"><span class="pre">ifconfig</span></code>
+command on the node and look at the interface name that corresponds to
+the node’s <em>privateIP</em> (e.g. ens3). Then set the environment variable as</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export NCCL_SOCKET_IFNAME=ens3
+</pre></div>
+</div>
+<p>Remember, do this on both nodes. You may also consider adding the
+NCCL_SOCKET_IFNAME setting to your <em>.bashrc</em>. An important observation
+is that we did not setup a shared filesystem between the nodes.
+Therefore, each node will have to have a copy of the code and a copy of
+the datasets. For more information about setting up a shared network
+filesystem between nodes, see
+<a class="reference external" href="https://aws.amazon.com/blogs/aws/amazon-elastic-file-system-shared-file-storage-for-amazon-ec2/">here</a>.</p>
+</div>
+<div class="section" id="distributed-training-code">
+<h2>Distributed Training Code<a class="headerlink" href="#distributed-training-code" title="Permalink to this headline">¶</a></h2>
+<p>With the instances running and the environments setup we can now get
+into the training code. Most of the code here has been taken from the
+<a class="reference external" href="https://github.com/pytorch/examples/tree/master/imagenet">PyTorch ImageNet
+Example</a>
+which also supports distributed training. This code provides a good
+starting point for a custom trainer as it has much of the boilerplate
+training loop, validation loop, and accuracy tracking functionality.
+However, you will notice that the argument parsing and other
+non-essential functions have been stripped out for simplicity.</p>
+<p>In this example we will use
+<a class="reference external" href="https://pytorch.org/docs/stable/torchvision/models.html#torchvision.models.resnet18">torchvision.models.resnet18</a>
+model and will train it on the
+<a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.STL10">torchvision.datasets.STL10</a>
+dataset. To accomodate for the dimensionality mismatch of STL-10 with
+Resnet18, we will resize each image to 224x224 with a transform. Notice,
+the choice of model and dataset are orthogonal to the distributed
+training code, you may use any dataset and model you wish and the
+process is the same. Lets get started by first handling the imports and
+talking about some helper functions. Then we will define the train and
+test functions, which have been largely taken from the ImageNet Example.
+At the end, we will build the main part of the code which handles the
+distributed training setup. And finally, we will discuss how to actually
+run the code.</p>
+<div class="section" id="imports">
+<h3>Imports<a class="headerlink" href="#imports" title="Permalink to this headline">¶</a></h3>
+<p>The important distributed training specific imports here are
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">torch.nn.parallel</a>,
+<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">torch.distributed</a>,
+<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.distributed.DistributedSampler">torch.utils.data.distributed</a>,
+and
+<a class="reference external" href="https://pytorch.org/docs/stable/multiprocessing.html">torch.multiprocessing</a>.
+It is also important to set the multiprocessing start method to <em>spawn</em>
+or <em>forkserver</em> (only supported in Python 3),
+as the default is <em>fork</em> which may cause deadlocks when using multiple
+worker processes for dataloading.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s1">'spawn'</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.parallel</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="kn">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span>
+<span class="kn">import</span> <span class="nn">torch.utils.data</span>
+<span class="kn">import</span> <span class="nn">torch.utils.data.distributed</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="kn">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="kn">as</span> <span class="nn">datasets</span>
+<span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="kn">as</span> <span class="nn">models</span>
+
+<span class="kn">from</span> <span class="nn">torch.multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">Process</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="helper-functions">
+<h3>Helper Functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h3>
+<p>We must also define some helper functions and classes that will make
+training easier. The <code class="docutils literal notranslate"><span class="pre">AverageMeter</span></code> class tracks training statistics
+like accuracy and iteration count. The <code class="docutils literal notranslate"><span class="pre">accuracy</span></code> function computes
+and returns the top-k accuracy of the model so we can track learning
+progress. Both are provided for training convenience but neither are
+distributed training specific.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AverageMeter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">"""Computes and stores the average and current value"""</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">+=</span> <span class="n">val</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)):</span>
+    <span class="sd">"""Computes the precision@k for the specified values of k"""</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">maxk</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">maxk</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+        <span class="n">correct</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">topk</span><span class="p">:</span>
+            <span class="n">correct_k</span> <span class="o">=</span> <span class="n">correct</span><span class="p">[:</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correct_k</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">res</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="train-functions">
+<h3>Train Functions<a class="headerlink" href="#train-functions" title="Permalink to this headline">¶</a></h3>
+<p>To simplify the main loop, it is best to separate a training epoch step
+into a function called <code class="docutils literal notranslate"><span class="pre">train</span></code>. This function trains the input model
+for one epoch of the <em>train_loader</em>. The only distributed training
+artifact in this function is setting the
+<a class="reference external" href="https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers">non_blocking</a>
+attributes of the data and label tensors to <code class="docutils literal notranslate"><span class="pre">True</span></code> before the forward
+pass. This allows asynchronous GPU copies of the data meaning transfers
+can be overlapped with computation. This function also outputs training
+statistics along the way so we can track progress throughout the epoch.</p>
+<p>The other function to define here is <code class="docutils literal notranslate"><span class="pre">adjust_learning_rate</span></code>, which
+decays the initial learning rate at a fixed schedule. This is another
+boilerplate trainer function that is useful to train accurate models.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
+
+    <span class="n">batch_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">data_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+
+    <span class="c1"># switch to train mode</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+
+        <span class="c1"># measure data loading time</span>
+        <span class="n">data_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
+
+        <span class="c1"># Create non_blocking tensors for distributed training</span>
+        <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c1"># compute output</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+        <span class="c1"># measure accuracy and record loss</span>
+        <span class="n">prec1</span><span class="p">,</span> <span class="n">prec5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="n">losses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c1"># compute gradients in a backward pass</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+        <span class="c1"># Call step of optimizer to update model params</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># measure elapsed time</span>
+        <span class="n">batch_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">'Epoch: [{0}][{1}/{2}]</span><span class="se">\t</span><span class="s1">'</span>
+                  <span class="s1">'Time {batch_time.val:.3f} ({batch_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
+                  <span class="s1">'Data {data_time.val:.3f} ({data_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
+                  <span class="s1">'Loss {loss.val:.4f} ({loss.avg:.4f})</span><span class="se">\t</span><span class="s1">'</span>
+                  <span class="s1">'Prec@1 {top1.val:.3f} ({top1.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
+                  <span class="s1">'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                   <span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">batch_time</span><span class="o">=</span><span class="n">batch_time</span><span class="p">,</span>
+                   <span class="n">data_time</span><span class="o">=</span><span class="n">data_time</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="p">,</span> <span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">adjust_learning_rate</span><span class="p">(</span><span class="n">initial_lr</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
+    <span class="sd">"""Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="n">initial_lr</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">**</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">//</span> <span class="mi">30</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
+        <span class="n">param_group</span><span class="p">[</span><span class="s1">'lr'</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="validation-function">
+<h3>Validation Function<a class="headerlink" href="#validation-function" title="Permalink to this headline">¶</a></h3>
+<p>To track generalization performance and simplify the main loop further
+we can also extract the validation step into a function called
+<code class="docutils literal notranslate"><span class="pre">validate</span></code>. This function runs a full validation step of the input
+model on the input validation dataloader and returns the top-1 accuracy
+of the model on the validation set. Again, you will notice the only
+distributed training feature here is setting <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> for
+the training data and labels before they are passed to the model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">):</span>
+
+    <span class="n">batch_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
+
+    <span class="c1"># switch to evaluate mode</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">):</span>
+
+            <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="c1"># compute output</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+            <span class="c1"># measure accuracy and record loss</span>
+            <span class="n">prec1</span><span class="p">,</span> <span class="n">prec5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+            <span class="n">losses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+            <span class="c1"># measure elapsed time</span>
+            <span class="n">batch_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">'Test: [{0}/{1}]</span><span class="se">\t</span><span class="s1">'</span>
+                      <span class="s1">'Time {batch_time.val:.3f} ({batch_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
+                      <span class="s1">'Loss {loss.val:.4f} ({loss.avg:.4f})</span><span class="se">\t</span><span class="s1">'</span>
+                      <span class="s1">'Prec@1 {top1.val:.3f} ({top1.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
+                      <span class="s1">'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                       <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_loader</span><span class="p">),</span> <span class="n">batch_time</span><span class="o">=</span><span class="n">batch_time</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="p">,</span>
+                       <span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="s1">' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'</span>
+              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="inputs">
+<h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h3>
+<p>With the helper functions out of the way, now we have reached the
+interesting part. Here is where we will define the inputs for the run.
+Some of the inputs are standard model training inputs such as batch size
+and number of training epochs, and some are specific to our distributed
+training task. The required inputs are:</p>
+<ul class="simple">
+<li><strong>batch_size</strong> - batch size for <em>each</em> process in the distributed
+training group. Total batch size across distributed model is
+batch_size*world_size</li>
+<li><strong>workers</strong> - number of worker processes used with the dataloaders in
+each process</li>
+<li><strong>num_epochs</strong> - total number of epochs to train for</li>
+<li><strong>starting_lr</strong> - starting learning rate for training</li>
+<li><strong>world_size</strong> - number of processes in the distributed training
+environment</li>
+<li><strong>dist_backend</strong> - backend to use for distributed training
+communication (i.e. NCCL, Gloo, MPI, etc.). In this tutorial, since
+we are using several multi-gpu nodes, NCCL is suggested.</li>
+<li><strong>dist_url</strong> - URL to specify the initialization method of the
+process group. This may contain the IP address and port of the rank0
+process or be a non-existant file on a shared file system. Here,
+since we do not have a shared file system this will incorporate the
+<strong>node0-privateIP</strong> and the port on node0 to use.</li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Collect Inputs..."</span><span class="p">)</span>
+
+<span class="c1"># Batch Size for training and testing</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
+
+<span class="c1"># Number of additional worker processes for dataloading</span>
+<span class="n">workers</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Number of epochs to train for</span>
+<span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Starting Learning Rate</span>
+<span class="n">starting_lr</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+<span class="c1"># Number of distributed processes</span>
+<span class="n">world_size</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1"># Distributed backend type</span>
+<span class="n">dist_backend</span> <span class="o">=</span> <span class="s1">'nccl'</span>
+
+<span class="c1"># Url used to setup distributed training</span>
+<span class="n">dist_url</span> <span class="o">=</span> <span class="s2">"tcp://172.31.22.234:23456"</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initialize-process-group">
+<h3>Initialize process group<a class="headerlink" href="#initialize-process-group" title="Permalink to this headline">¶</a></h3>
+<p>One of the most important parts of distributed training in PyTorch is to
+properly setup the process group, which is the <strong>first</strong> step in
+initializing the <code class="docutils literal notranslate"><span class="pre">torch.distributed</span></code> package. To do this, we will use
+the <code class="docutils literal notranslate"><span class="pre">torch.distributed.init_process_group</span></code> function which takes
+several inputs. First, a <em>backend</em> input which specifies the backend to
+use (i.e. NCCL, Gloo, MPI, etc.). An <em>init_method</em> input which is
+either a url containing the address and port of the rank0 machine or a
+path to a non-existant file on the shared file system. Note, to use the
+file init_method, all machines must have access to the file, similarly
+for the url method, all machines must be able to communicate on the
+network so make sure to configure any firewalls and network settings to
+accomodate. The <em>init_process_group</em> function also takes <em>rank</em> and
+<em>world_size</em> arguments which specify the rank of this process when run
+and the number of processes in the collective, respectively.
+The <em>init_method</em> input can also be “env://”. In this case, the address
+and port of the rank0 machine will be read from the following two
+environment variables respectively: MASTER_ADDR, MASTER_PORT.  If <em>rank</em>
+and <em>world_size</em> arguments are not specified in the <em>init_process_group</em>
+function, they both can be read from the following two environment
+variables respectively as well: RANK, WORLD_SIZE.</p>
+<p>Another important step, especially when each node has multiple gpus is
+to set the <em>local_rank</em> of this process. For example, if you have two
+nodes, each with 8 GPUs and you wish to train with all of them then
+<span class="math notranslate nohighlight">\(world\_size=16\)</span> and each node will have a process with local rank
+0-7. This local_rank is used to set the device (i.e. which GPU to use)
+for the process and later used to set the device when creating a
+distributed data parallel model. It is also recommended to use NCCL
+backend in this hypothetical environment as NCCL is preferred for
+multi-gpu nodes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Process Group..."</span><span class="p">)</span>
+<span class="c1"># Initialize Process Group</span>
+<span class="c1"># v1 - init with url</span>
+<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">dist_backend</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="n">dist_url</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+<span class="c1"># v2 - init with file</span>
+<span class="c1"># dist.init_process_group(backend="nccl", init_method="file:///home/ubuntu/pt-distributed-tutorial/trainfile", rank=int(sys.argv[1]), world_size=world_size)</span>
+<span class="c1"># v3 - init with environment variables</span>
+<span class="c1"># dist.init_process_group(backend="nccl", init_method="env://", rank=int(sys.argv[1]), world_size=world_size)</span>
+
+
+<span class="c1"># Establish Local Rank and set device on this node</span>
+<span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">dp_device_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">local_rank</span><span class="p">]</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initialize-model">
+<h3>Initialize Model<a class="headerlink" href="#initialize-model" title="Permalink to this headline">¶</a></h3>
+<p>The next major step is to initialize the model to be trained. Here, we
+will use a resnet18 model from <code class="docutils literal notranslate"><span class="pre">torchvision.models</span></code> but any model may
+be used. First, we initialize the model and place it in GPU memory.
+Next, we make the model <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>, which handles the
+distribution of the data to and from the model and is critical for
+distributed training. The <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> module also
+handles the averaging of gradients across the world, so we do not have
+to explicitly average the gradients in the training step.</p>
+<p>It is important to note that this is a blocking function, meaning
+program execution will wait at this function until <em>world_size</em>
+processes have joined the process group. Also, notice we pass our device
+ids list as a parameter which contains the local rank (i.e. GPU) we are
+using. Finally, we specify the loss function and optimizer to train the
+model with.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Model..."</span><span class="p">)</span>
+<span class="c1"># Construct Model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="c1"># Make model DistributedDataParallel</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">DistributedDataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="n">dp_device_ids</span><span class="p">,</span> <span class="n">output_device</span><span class="o">=</span><span class="n">local_rank</span><span class="p">)</span>
+
+<span class="c1"># define loss function (criterion) and optimizer</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">starting_lr</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="initialize-dataloaders">
+<h3>Initialize Dataloaders<a class="headerlink" href="#initialize-dataloaders" title="Permalink to this headline">¶</a></h3>
+<p>The last step in preparation for the training is to specify which
+dataset to use. Here we use the <a class="reference external" href="https://cs.stanford.edu/~acoates/stl10/">STL-10
+dataset</a> from
+<a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html#torchvision.datasets.STL10">torchvision.datasets.STL10</a>.
+The STL10 dataset is a 10 class dataset of 96x96px color images. For use
+with our model, we resize the images to 224x224px in the transform. One
+distributed training specific item in this section is the use of the
+<code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code> for the training set, which is designed to be
+used in conjunction with <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> models. This object
+handles the partitioning of the dataset across the distributed
+environment so that not all models are training on the same subset of
+data, which would be counterproductive. Finally, we create the
+<code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>’s which are responsible for feeding the data to the
+processes.</p>
+<p>The STL-10 dataset will automatically download on the nodes if they are
+not present. If you wish to use your own dataset you should download the
+data, write your own dataset handler, and construct a dataloader for
+your dataset here.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Dataloaders..."</span><span class="p">)</span>
+<span class="c1"># Define the transform for the data. Notice, we must resize to 224x224 with this dataset and model.</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+     <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+     <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))])</span>
+
+<span class="c1"># Initialize Datasets. STL10 will automatically download if not present</span>
+<span class="n">trainset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">STL10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
+<span class="n">valset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">STL10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s1">'test'</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
+
+<span class="c1"># Create DistributedSampler to handle distributing the dataset across nodes when training</span>
+<span class="c1"># This can only be called after torch.distributed.init_process_group is called</span>
+<span class="n">train_sampler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span>
+
+<span class="c1"># Create the Dataloaders to feed data to the training and validation steps</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="p">(</span><span class="n">train_sampler</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">),</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">)</span>
+<span class="n">val_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">valset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="training-loop">
+<h3>Training Loop<a class="headerlink" href="#training-loop" title="Permalink to this headline">¶</a></h3>
+<p>The last step is to define the training loop. We have already done most
+of the work for setting up the distributed training so this is not
+distributed training specific. The only detail is setting the current
+epoch count in the <code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code>, as the sampler shuffles the
+data going to each process deterministically based on epoch. After
+updating the sampler, the loop runs a full training epoch, runs a full
+validation step then prints the performance of the current model against
+the best performing model so far. After training for num_epochs, the
+loop exits and the tutorial is complete. Notice, since this is an
+exercise we are not saving models but one may wish to keep track of the
+best performing model then save it at the end of training (see
+<a class="reference external" href="https://github.com/pytorch/examples/blob/master/imagenet/main.py#L184">here</a>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_prec1</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
+    <span class="c1"># Set epoch count for DistributedSampler</span>
+    <span class="n">train_sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+
+    <span class="c1"># Adjust learning rate according to schedule</span>
+    <span class="n">adjust_learning_rate</span><span class="p">(</span><span class="n">starting_lr</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+
+    <span class="c1"># train for one epoch</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Begin Training Epoch {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+
+    <span class="c1"># evaluate on validation set</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">"Begin Validation @ Epoch {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">prec1</span> <span class="o">=</span> <span class="n">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">)</span>
+
+    <span class="c1"># remember best prec@1 and save checkpoint if desired</span>
+    <span class="c1"># is_best = prec1 &gt; best_prec1</span>
+    <span class="n">best_prec1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">prec1</span><span class="p">,</span> <span class="n">best_prec1</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">"Epoch Summary: "</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Epoch Accuracy: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prec1</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Best Accuracy: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">best_prec1</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="running-the-code">
+<h2>Running the Code<a class="headerlink" href="#running-the-code" title="Permalink to this headline">¶</a></h2>
+<p>Unlike most of the other PyTorch tutorials, this code may not be run
+directly out of this notebook. To run, download the .py version of this
+file (or convert it using
+<a class="reference external" href="https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe">this</a>)
+and upload a copy to both nodes. The astute reader would have noticed
+that we hardcoded the <strong>node0-privateIP</strong> and <span class="math notranslate nohighlight">\(world\_size=4\)</span> but
+input the <em>rank</em> and <em>local_rank</em> inputs as arg[1] and arg[2] command
+line arguments, respectively. Once uploaded, open two ssh terminals into
+each node.</p>
+<ul class="simple">
+<li>On the first terminal for node0, run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">0</span> <span class="pre">0</span></code></li>
+<li>On the second terminal for node0 run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">1</span> <span class="pre">1</span></code></li>
+<li>On the first terminal for node1, run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">2</span> <span class="pre">0</span></code></li>
+<li>On the second terminal for node1 run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">main.py</span> <span class="pre">3</span> <span class="pre">1</span></code></li>
+</ul>
+<p>The programs will start and wait after printing “Initialize Model…”
+for all four processes to join the process group. Notice the first
+argument is not repeated as this is the unique global rank of the
+process. The second argument is repeated as that is the local rank of
+the process running on the node. If you run <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> on each node,
+you will see two processes on each node, one running on GPU0 and one on
+GPU1.</p>
+<p>We have now completed the distributed training example! Hopefully you
+can see how you would use this tutorial to help train your own models on
+your own datasets, even if you are not using the exact same distributed
+envrionment. If you are using AWS, don’t forget to <strong>SHUT DOWN YOUR
+NODES</strong> if you are not using them or you may find an uncomfortably large
+bill at the end of the month.</p>
+<p><strong>Where to go next</strong></p>
+<ul class="simple">
+<li>Check out the <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#launch-utility">launcher
+utility</a>
+for a different way of kicking off the run</li>
+<li>Check out the <a class="reference external" href="https://pytorch.org/docs/master/multiprocessing.html#spawning-subprocesses">torch.multiprocessing.spawn
+utility</a>
+for another easy way of kicking off multiple distributed processes.
+<a class="reference external" href="https://github.com/pytorch/examples/tree/master/imagenet">PyTorch ImageNet Example</a>
+has it implemented and can demonstrate how to use it.</li>
+<li>If possible, setup a NFS so you only need one copy of the dataset</li>
+</ul>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-aws-distributed-training-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/f8e87d04570b9a376652ece1006edccb/aws_distributed_training_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">aws_distributed_training_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/80fe1ab73c6b2b3cefcd5ba0e4ed7609/aws_distributed_training_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">aws_distributed_training_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<hr/>
+<div role="contentinfo">
+<p>
+        © Copyright 2017, PyTorch.
+
+    </p>
+</div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+</div>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">PyTorch 1.0 Distributed Trainer with Amazon AWS</a><ul>
+<li><a class="reference internal" href="#amazon-aws-setup">Amazon AWS Setup</a><ul>
+<li><a class="reference internal" href="#creating-the-nodes">Creating the Nodes</a></li>
+<li><a class="reference internal" href="#configure-security-group">Configure Security Group</a></li>
+<li><a class="reference internal" href="#necessary-information">Necessary Information</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-setup">Environment Setup</a></li>
+<li><a class="reference internal" href="#distributed-training-code">Distributed Training Code</a><ul>
+<li><a class="reference internal" href="#imports">Imports</a></li>
+<li><a class="reference internal" href="#helper-functions">Helper Functions</a></li>
+<li><a class="reference internal" href="#train-functions">Train Functions</a></li>
+<li><a class="reference internal" href="#validation-function">Validation Function</a></li>
+<li><a class="reference internal" href="#inputs">Inputs</a></li>
+<li><a class="reference internal" href="#initialize-process-group">Initialize process group</a></li>
+<li><a class="reference internal" href="#initialize-model">Initialize Model</a></li>
+<li><a class="reference internal" href="#initialize-dataloaders">Initialize Dataloaders</a></li>
+<li><a class="reference internal" href="#training-loop">Training Loop</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-the-code">Running the Code</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-90545585-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<img alt="" height="1" src="http://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://pytorch.org/resources">Resources</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/support">Support</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.slack.com" target="_blank">Slack</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Follow Us</li>
+<li>
+<div id="mc_embed_signup">
+<form action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&amp;id=91d0dccd39" class="email-subscribe-form validate" id="mc-embedded-subscribe-form" method="post" name="mc-embedded-subscribe-form" novalidate="" target="_blank">
+<div class="email-subscribe-form-fields-wrapper" id="mc_embed_signup_scroll">
+<div class="mc-field-group">
+<label for="mce-EMAIL" style="display:none;">Email Address</label>
+<input class="required email" id="mce-EMAIL" name="EMAIL" placeholder="Email Address" type="email" value=""/>
+</div>
+<div class="clear" id="mce-responses">
+<div class="response" id="mce-error-response" style="display:none"></div>
+<div class="response" id="mce-success-response" style="display:none"></div>
+</div> <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+<div aria-hidden="true" style="position: absolute; left: -5000px;"><input name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" type="text" value=""/></div>
+<div class="clear">
+<input class="button email-subscribe-button" id="mc-embedded-subscribe" name="subscribe" type="submit" value=""/>
+</div>
+</div>
+</form>
+</div>
+</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="#">Get Started</a>
+</li>
+<li>
+<a href="#">Features</a>
+</li>
+<li>
+<a href="#">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

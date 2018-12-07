@@ -17,8 +17,11 @@ Some considerations:
   <https://pytorch.org/docs>`_ or via inline help.
 * If you would like the tutorials section improved, please open a github issue
   `here <https://github.com/pytorch/tutorials>`_ with your feedback.
-
-Lastly, some of the tutorials are marked as requiring the *Preview release*. These are tutorials that use the new functionality from the PyTorch 1.0 Preview. Please visit the `Get Started <https://pytorch.org/get-started>`_ section of the PyTorch website for instructions on how to install the latest Preview build before trying these tutorials.
+* Check out our 
+  `PyTorch Cheat Sheet <https://pytorch.org/tutorials/beginner/ptcheat.html>`_ 
+  for additional useful information. 
+* Finally, here's a link to the 
+  `PyTorch Release Notes <https://github.com/pytorch/pytorch/releases>`_
 
 Getting Started
 ------------------

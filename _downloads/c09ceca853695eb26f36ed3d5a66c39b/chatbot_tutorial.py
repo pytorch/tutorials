@@ -13,9 +13,6 @@ Chatbot Tutorial
 # scripts from the `Cornell Movie-Dialogs
 # Corpus <https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html>`__.
 #
-# .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit https://pytorch.org/get-started.
-#
 # Conversational models are a hot topic in artificial intelligence
 # research. Chatbots can be found in a variety of settings, including
 # customer service applications and online helpdesks. These bots are often
