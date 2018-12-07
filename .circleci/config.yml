@@ -82,7 +82,14 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
         echo "declare -x COMMIT_ID=${CIRCLE_SHA1}" >> /home/circleci/project/env
         echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
+        # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
+        set +x
         if [[ "$COMMIT_SOURCE" == master ]]; then
+          if [ -z "${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
+          if [ -z "${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" ]; then exit 1; fi
+          if [ -z "${GITHUB_PYTORCHBOT_USERNAME}" ]; then exit 1; fi
+          if [ -z "${GITHUB_PYTORCHBOT_TOKEN}" ]; then exit 1; fi
+
           echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
           echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_MASTER_S3_BUCKET}" >> /home/circleci/project/env
           echo "declare -x GITHUB_PYTORCHBOT_USERNAME=${GITHUB_PYTORCHBOT_USERNAME}" >> /home/circleci/project/env
@@ -91,6 +98,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           echo "declare -x AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
           echo "declare -x AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_PYTORCH_TUTORIAL_BUILD_PR_S3_BUCKET}" >> /home/circleci/project/env
         fi
+        set -x
 
         docker cp /home/circleci/project/. "$id:/var/lib/jenkins/workspace"
 
