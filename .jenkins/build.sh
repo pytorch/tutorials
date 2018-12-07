@@ -51,9 +51,6 @@ pushd audio
 python setup.py install
 popd
 
-# We will fix the hybrid frontend tutorials when the API is stable
-rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py || true
-
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
