@@ -11,11 +11,11 @@ for filename in $(find $BUILDDIR/_sources/beginner $BUILDDIR/_sources/intermedia
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_rst_txt.py $filename $filename
 done
-for filename in $(find $BUILDDIR/_download -name '*.ipynb'); do
+for filename in $(find $BUILDDIR/_downloads -name '*.ipynb'); do
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_ipynb.py $filename $filename
 done
-for filename in $(find $BUILDDIR/_download -name '*.py'); do
+for filename in $(find $BUILDDIR/_downloads -name '*.py'); do
     echo "Removing INVISIBLE_CODE_BLOCK from " $filename
     python $DIR/remove_invisible_code_block_from_py.py $filename $filename
 done
