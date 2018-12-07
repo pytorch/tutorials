@@ -45,7 +45,7 @@ print(device)
 # use ``.iloc()`` to access the data within it.
 # 
 
-csvData = pd.read_csv('./UrbanSound8K/metadata/UrbanSound8K.csv')
+csvData = pd.read_csv('./data/UrbanSound8K/metadata/UrbanSound8K.csv')
 print(csvData.iloc[0, :])
 
 
@@ -58,9 +58,9 @@ print(csvData.iloc[0, :])
 # 
 
 import IPython.display as ipd
-ipd.Audio('./UrbanSound8K/audio/fold1/108041-9-0-5.wav')
+ipd.Audio('./data/UrbanSound8K/audio/fold1/108041-9-0-5.wav')
 
-ipd.Audio('./UrbanSound8K/audio/fold5/100852-0-0-19.wav')
+ipd.Audio('./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav')
 
 
 ######################################################################
@@ -141,8 +141,8 @@ class UrbanSoundDataset(Dataset):
         return len(self.file_names)
 
     
-csv_path = './UrbanSound8K/metadata/UrbanSound8K.csv'
-file_path = './UrbanSound8K/audio/'
+csv_path = './data/UrbanSound8K/metadata/UrbanSound8K.csv'
+file_path = './data/UrbanSound8K/audio/'
 
 train_set = UrbanSoundDataset(csv_path, file_path, range(1,10))
 test_set = UrbanSoundDataset(csv_path, file_path, [10])
