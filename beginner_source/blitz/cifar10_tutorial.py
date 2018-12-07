@@ -178,6 +178,7 @@ for epoch in range(1):  # yf225 TODO: change this back
             print('[%d, %5d] loss: %.3f' %
                   (epoch + 1, i + 1, running_loss / 2000))
             running_loss = 0.0
+        break
 
 print('Finished Training')
 
@@ -230,6 +231,7 @@ with torch.no_grad():
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
+        break
 
 print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
@@ -254,6 +256,7 @@ with torch.no_grad():
             label = labels[i]
             class_correct[label] += c[i].item()
             class_total[label] += 1
+        break
 
 
 for i in range(10):
@@ -336,4 +339,6 @@ print(device)
 
 # %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
 del dataiter
+del trainloader
+del testloader
 # %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
