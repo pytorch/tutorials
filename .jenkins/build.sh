@@ -54,7 +54,6 @@ popd
 # We will fix the hybrid frontend tutorials when the API is stable
 rm beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py || true
 rm beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py || true
-rm beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py || true
 
 aws configure set default.s3.multipart_threshold 5120MB
 
