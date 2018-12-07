@@ -23,9 +23,6 @@ you can reference the original Chatbot tutorial for details
 regarding data preprocessing, model theory and definition, and model
 training.
 
-.. attention:: This example requires PyTorch 1.0 (preview) or later.
-   For installation information visit https://pytorch.org/get-started.
-
 What is the Hybrid Frontend?
 ----------------------------
 
@@ -811,7 +808,7 @@ not inherit the ``to`` or ``eval`` methods.
     #                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
     # If you're loading the hosted model
-    loadFilename = '4000_checkpoint.tar'
+    loadFilename = 'data/4000_checkpoint.tar'
 
     # Load model
     # Force CPU device options (to match tensors in this tutorial)
@@ -959,109 +956,109 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
  .. code-block:: none
 
     scripted_searcher graph:
-     graph(%input_seq : Dynamic
-          %input_length : Dynamic
+     graph(%input_seq : Tensor
+          %input_length : Tensor
           %max_length : int
-          %3 : Dynamic
-          %4 : Dynamic
-          %5 : Dynamic
-          %6 : Dynamic
-          %7 : Dynamic
-          %8 : Dynamic
-          %9 : Dynamic
-          %10 : Dynamic
-          %11 : Dynamic
-          %12 : Dynamic
-          %13 : Dynamic
-          %14 : Dynamic
-          %15 : Dynamic
-          %16 : Dynamic
-          %17 : Dynamic
-          %18 : Dynamic
-          %19 : Dynamic
-          %115 : Dynamic
-          %116 : Dynamic
-          %117 : Dynamic
-          %118 : Dynamic
-          %119 : Dynamic
-          %120 : Dynamic
-          %121 : Dynamic
-          %122 : Dynamic
-          %123 : Dynamic
-          %124 : Dynamic
-          %125 : Dynamic
-          %126 : Dynamic
-          %127 : Dynamic) {
-      %55 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN
-      %50 : float = prim::Constant[value=0](), scope: EncoderRNN
-      %40 : float = prim::Constant[value=0.1](), scope: EncoderRNN/GRU[gru]
-      %39 : int = prim::Constant[value=2](), scope: EncoderRNN/GRU[gru]
-      %38 : bool = prim::Constant[value=1](), scope: EncoderRNN/GRU[gru]
-      %35 : int[] = prim::Constant[value=[0, -1]](), scope: EncoderRNN/GRU[gru]
-      %33 : int = prim::Constant[value=6](), scope: EncoderRNN/GRU[gru]
-      %31 : int = prim::Constant[value=500](), scope: EncoderRNN/GRU[gru]
-      %29 : int = prim::Constant[value=4](), scope: EncoderRNN/GRU[gru]
+          %3 : Tensor
+          %4 : Tensor
+          %5 : Tensor
+          %6 : Tensor
+          %7 : Tensor
+          %8 : Tensor
+          %9 : Tensor
+          %10 : Tensor
+          %11 : Tensor
+          %12 : Tensor
+          %13 : Tensor
+          %14 : Tensor
+          %15 : Tensor
+          %16 : Tensor
+          %17 : Tensor
+          %18 : Tensor
+          %19 : Tensor
+          %118 : Tensor
+          %119 : Tensor
+          %120 : Tensor
+          %121 : Tensor
+          %122 : Tensor
+          %123 : Tensor
+          %124 : Tensor
+          %125 : Tensor
+          %126 : Tensor
+          %127 : Tensor
+          %128 : Tensor
+          %129 : Tensor
+          %130 : Tensor) {
+      %58 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN
+      %53 : float = prim::Constant[value=0](), scope: EncoderRNN
+      %43 : float = prim::Constant[value=0.1](), scope: EncoderRNN/GRU[gru]
+      %42 : int = prim::Constant[value=2](), scope: EncoderRNN/GRU[gru]
+      %41 : bool = prim::Constant[value=1](), scope: EncoderRNN/GRU[gru]
+      %36 : int = prim::Constant[value=6](), scope: EncoderRNN/GRU[gru]
+      %34 : int = prim::Constant[value=500](), scope: EncoderRNN/GRU[gru]
+      %25 : int = prim::Constant[value=4](), scope: EncoderRNN
+      %24 : Device = prim::Constant[value="cpu"](), scope: EncoderRNN
       %21 : bool = prim::Constant[value=0](), scope: EncoderRNN/Embedding[embedding]
       %20 : int = prim::Constant[value=-1](), scope: EncoderRNN/Embedding[embedding]
-      %87 : int = prim::Constant[value=0]()
-      %91 : int = prim::Constant[value=1]()
+      %90 : int = prim::Constant[value=0]()
+      %94 : int = prim::Constant[value=1]()
       %input.7 : Float(10, 1, 500) = aten::embedding(%3, %input_seq, %20, %21, %21), scope: EncoderRNN/Embedding[embedding]
-      %lengths : Long(1) = aten::_cast_Long(%input_length, %21), scope: EncoderRNN
+      %lengths : Long(1) = aten::to(%input_length, %24, %25, %21, %21), scope: EncoderRNN
       %input.1 : Float(10, 500), %batch_sizes : Long(10) = aten::_pack_padded_sequence(%input.7, %lengths, %21), scope: EncoderRNN
-      %32 : int[] = prim::ListConstruct(%29, %91, %31), scope: EncoderRNN/GRU[gru]
-      %hx : Float(4, 1, 500) = aten::zeros(%32, %33, %87, %35), scope: EncoderRNN/GRU[gru]
-      %37 : Dynamic[] = prim::ListConstruct(%4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19), scope: EncoderRNN/GRU[gru]
-      %43 : Float(10, 1000), %encoder_hidden : Float(4, 1, 500) = aten::gru(%input.1, %batch_sizes, %hx, %37, %38, %39, %40, %21, %38), scope: EncoderRNN/GRU[gru]
-      %46 : int = aten::size(%batch_sizes, %87), scope: EncoderRNN
-      %max_seq_length : Long() = prim::NumToTensor(%46), scope: EncoderRNN
-      %48 : int = prim::TensorToNum(%max_seq_length), scope: EncoderRNN
-      %outputs : Float(10, 1, 1000), %52 : Long(1) = aten::_pad_packed_sequence(%43, %batch_sizes, %21, %50, %48), scope: EncoderRNN
-      %57 : Float(10, 1, 1000) = aten::slice(%outputs, %87, %87, %55, %91), scope: EncoderRNN
-      %62 : Float(10, 1, 1000) = aten::slice(%57, %91, %87, %55, %91), scope: EncoderRNN
-      %67 : Float(10, 1!, 500) = aten::slice(%62, %39, %87, %31, %91), scope: EncoderRNN
-      %72 : Float(10, 1, 1000) = aten::slice(%outputs, %87, %87, %55, %91), scope: EncoderRNN
-      %77 : Float(10, 1, 1000) = aten::slice(%72, %91, %87, %55, %91), scope: EncoderRNN
-      %82 : Float(10, 1!, 500) = aten::slice(%77, %39, %31, %55, %91), scope: EncoderRNN
-      %encoder_outputs : Float(10, 1, 500) = aten::add(%67, %82, %91), scope: EncoderRNN
-      %decoder_hidden.1 : Dynamic = aten::slice(%encoder_hidden, %87, %87, %39, %91)
-      %95 : int[] = prim::ListConstruct(%91, %91)
-      %97 : Dynamic = aten::ones(%95, %29, %87, %35)
-      %decoder_input.1 : Dynamic = aten::mul(%97, %91)
-      %100 : int[] = prim::ListConstruct(%87)
-      %all_tokens.1 : Dynamic = aten::zeros(%100, %29, %87, %35)
-      %105 : int[] = prim::ListConstruct(%87)
-      %all_scores.1 : Dynamic = aten::zeros(%105, %33, %87, %35)
-      %all_scores : Dynamic, %all_tokens : Dynamic, %decoder_hidden : Dynamic, %decoder_input : Dynamic = prim::Loop(%max_length, %38, %all_scores.1, %all_tokens.1, %decoder_hidden.1, %decoder_input.1)
-        block0(%111 : int, %185 : Dynamic, %181 : Dynamic, %113 : Dynamic, %112 : Dynamic) {
-          %input.2 : Float(1, 1, 500) = aten::embedding(%115, %112, %20, %21, %21), scope: LuongAttnDecoderRNN/Embedding[embedding]
-          %input.3 : Float(1, 1, 500) = aten::dropout(%input.2, %40, %21), scope: LuongAttnDecoderRNN/Dropout[embedding_dropout]
-          %135 : Dynamic[] = prim::ListConstruct(%116, %117, %118, %119, %120, %121, %122, %123), scope: LuongAttnDecoderRNN/GRU[gru]
-          %hidden : Float(1, 1, 500), %decoder_hidden.2 : Float(2, 1, 500) = aten::gru(%input.3, %113, %135, %38, %39, %40, %21, %21, %21), scope: LuongAttnDecoderRNN/GRU[gru]
-          %144 : Float(10, 1, 500) = aten::mul(%hidden, %encoder_outputs), scope: LuongAttnDecoderRNN/Attn[attn]
-          %146 : int[] = prim::ListConstruct(%39), scope: LuongAttnDecoderRNN/Attn[attn]
-          %attn_energies : Float(10, 1) = aten::sum(%144, %146, %21), scope: LuongAttnDecoderRNN/Attn[attn]
+      %35 : int[] = prim::ListConstruct(%25, %94, %34), scope: EncoderRNN/GRU[gru]
+      %hx : Float(4, 1, 500) = aten::zeros(%35, %36, %90, %24), scope: EncoderRNN/GRU[gru]
+      %40 : Tensor[] = prim::ListConstruct(%4, %5, %6, %7, %8, %9, %10, %11, %12, %13, %14, %15, %16, %17, %18, %19), scope: EncoderRNN/GRU[gru]
+      %46 : Float(10, 1000), %encoder_hidden : Float(4, 1, 500) = aten::gru(%input.1, %batch_sizes, %hx, %40, %41, %42, %43, %21, %41), scope: EncoderRNN/GRU[gru]
+      %49 : int = aten::size(%batch_sizes, %90), scope: EncoderRNN
+      %max_seq_length : Long() = prim::NumToTensor(%49), scope: EncoderRNN
+      %51 : int = prim::TensorToNum(%max_seq_length), scope: EncoderRNN
+      %outputs : Float(10, 1, 1000), %55 : Long(1) = aten::_pad_packed_sequence(%46, %batch_sizes, %21, %53, %51), scope: EncoderRNN
+      %60 : Float(10, 1, 1000) = aten::slice(%outputs, %90, %90, %58, %94), scope: EncoderRNN
+      %65 : Float(10, 1, 1000) = aten::slice(%60, %94, %90, %58, %94), scope: EncoderRNN
+      %70 : Float(10, 1!, 500) = aten::slice(%65, %42, %90, %34, %94), scope: EncoderRNN
+      %75 : Float(10, 1, 1000) = aten::slice(%outputs, %90, %90, %58, %94), scope: EncoderRNN
+      %80 : Float(10, 1, 1000) = aten::slice(%75, %94, %90, %58, %94), scope: EncoderRNN
+      %85 : Float(10, 1!, 500) = aten::slice(%80, %42, %34, %58, %94), scope: EncoderRNN
+      %encoder_outputs : Float(10, 1, 500) = aten::add(%70, %85, %94), scope: EncoderRNN
+      %decoder_hidden.1 : Tensor = aten::slice(%encoder_hidden, %90, %90, %42, %94)
+      %98 : int[] = prim::ListConstruct(%94, %94)
+      %100 : Tensor = aten::ones(%98, %25, %90, %24)
+      %decoder_input.1 : Tensor = aten::mul(%100, %94)
+      %103 : int[] = prim::ListConstruct(%90)
+      %all_tokens.1 : Tensor = aten::zeros(%103, %25, %90, %24)
+      %108 : int[] = prim::ListConstruct(%90)
+      %all_scores.1 : Tensor = aten::zeros(%108, %36, %90, %24)
+      %all_scores : Tensor, %all_tokens : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length, %41, %all_scores.1, %all_tokens.1, %decoder_hidden.1, %decoder_input.1)
+        block0(%114 : int, %188 : Tensor, %184 : Tensor, %116 : Tensor, %115 : Tensor) {
+          %input.2 : Float(1, 1, 500) = aten::embedding(%118, %115, %20, %21, %21), scope: LuongAttnDecoderRNN/Embedding[embedding]
+          %input.3 : Float(1, 1, 500) = aten::dropout(%input.2, %43, %21), scope: LuongAttnDecoderRNN/Dropout[embedding_dropout]
+          %138 : Tensor[] = prim::ListConstruct(%119, %120, %121, %122, %123, %124, %125, %126), scope: LuongAttnDecoderRNN/GRU[gru]
+          %hidden : Float(1, 1, 500), %decoder_hidden.2 : Float(2, 1, 500) = aten::gru(%input.3, %116, %138, %41, %42, %43, %21, %21, %21), scope: LuongAttnDecoderRNN/GRU[gru]
+          %147 : Float(10, 1, 500) = aten::mul(%hidden, %encoder_outputs), scope: LuongAttnDecoderRNN/Attn[attn]
+          %149 : int[] = prim::ListConstruct(%42), scope: LuongAttnDecoderRNN/Attn[attn]
+          %attn_energies : Float(10, 1) = aten::sum(%147, %149, %21), scope: LuongAttnDecoderRNN/Attn[attn]
           %input.4 : Float(1!, 10) = aten::t(%attn_energies), scope: LuongAttnDecoderRNN/Attn[attn]
-          %151 : Float(1, 10) = aten::softmax(%input.4, %91), scope: LuongAttnDecoderRNN/Attn[attn]
-          %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%151, %91), scope: LuongAttnDecoderRNN/Attn[attn]
-          %156 : Float(1!, 10, 500) = aten::transpose(%encoder_outputs, %87, %91), scope: LuongAttnDecoderRNN
-          %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %156), scope: LuongAttnDecoderRNN
-          %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %87), scope: LuongAttnDecoderRNN
-          %context : Float(1, 500) = aten::squeeze(%context.1, %91), scope: LuongAttnDecoderRNN
-          %162 : Dynamic[] = prim::ListConstruct(%rnn_output, %context), scope: LuongAttnDecoderRNN
-          %input.5 : Float(1, 1000) = aten::cat(%162, %91), scope: LuongAttnDecoderRNN
-          %165 : Float(1000!, 500!) = aten::t(%124), scope: LuongAttnDecoderRNN/Linear[concat]
-          %168 : Float(1, 500) = aten::addmm(%125, %input.5, %165, %91, %91), scope: LuongAttnDecoderRNN/Linear[concat]
-          %input.6 : Float(1, 500) = aten::tanh(%168), scope: LuongAttnDecoderRNN
-          %170 : Float(500!, 7826!) = aten::t(%126), scope: LuongAttnDecoderRNN/Linear[out]
-          %input : Float(1, 7826) = aten::addmm(%127, %input.6, %170, %91, %91), scope: LuongAttnDecoderRNN/Linear[out]
-          %decoder_output : Float(1, 7826) = aten::softmax(%input, %91), scope: LuongAttnDecoderRNN
-          %decoder_scores : Dynamic, %decoder_input.2 : Dynamic = aten::max(%decoder_output, %91, %21)
-          %183 : Dynamic[] = prim::ListConstruct(%181, %decoder_input.2)
-          %all_tokens.2 : Dynamic = aten::cat(%183, %87)
-          %187 : Dynamic[] = prim::ListConstruct(%185, %decoder_scores)
-          %all_scores.2 : Dynamic = aten::cat(%187, %87)
-          %decoder_input.3 : Dynamic = aten::unsqueeze(%decoder_input.2, %87)
-          -> (%38, %all_scores.2, %all_tokens.2, %decoder_hidden.2, %decoder_input.3)
+          %154 : Float(1, 10) = aten::softmax(%input.4, %94), scope: LuongAttnDecoderRNN/Attn[attn]
+          %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%154, %94), scope: LuongAttnDecoderRNN/Attn[attn]
+          %159 : Float(1!, 10, 500) = aten::transpose(%encoder_outputs, %90, %94), scope: LuongAttnDecoderRNN
+          %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %159), scope: LuongAttnDecoderRNN
+          %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %90), scope: LuongAttnDecoderRNN
+          %context : Float(1, 500) = aten::squeeze(%context.1, %94), scope: LuongAttnDecoderRNN
+          %165 : Tensor[] = prim::ListConstruct(%rnn_output, %context), scope: LuongAttnDecoderRNN
+          %input.5 : Float(1, 1000) = aten::cat(%165, %94), scope: LuongAttnDecoderRNN
+          %168 : Float(1000!, 500!) = aten::t(%127), scope: LuongAttnDecoderRNN/Linear[concat]
+          %171 : Float(1, 500) = aten::addmm(%128, %input.5, %168, %94, %94), scope: LuongAttnDecoderRNN/Linear[concat]
+          %input.6 : Float(1, 500) = aten::tanh(%171), scope: LuongAttnDecoderRNN
+          %173 : Float(500!, 7826!) = aten::t(%129), scope: LuongAttnDecoderRNN/Linear[out]
+          %input : Float(1, 7826) = aten::addmm(%130, %input.6, %173, %94, %94), scope: LuongAttnDecoderRNN/Linear[out]
+          %decoder_output : Float(1, 7826) = aten::softmax(%input, %94), scope: LuongAttnDecoderRNN
+          %decoder_scores : Tensor, %decoder_input.2 : Tensor = aten::max(%decoder_output, %94, %21)
+          %186 : Tensor[] = prim::ListConstruct(%184, %decoder_input.2)
+          %all_tokens.2 : Tensor = aten::cat(%186, %90)
+          %190 : Tensor[] = prim::ListConstruct(%188, %decoder_scores)
+          %all_scores.2 : Tensor = aten::cat(%190, %90)
+          %decoder_input.3 : Tensor = aten::unsqueeze(%decoder_input.2, %90)
+          -> (%41, %all_scores.2, %all_tokens.2, %decoder_hidden.2, %decoder_input.3)
         }
       return (%all_tokens, %all_scores);
     }
@@ -1138,7 +1135,7 @@ of torch.save(model, PATH).
 
 
 
-**Total running time of the script:** ( 0 minutes  0.582 seconds)
+**Total running time of the script:** ( 0 minutes  1.157 seconds)
 
 
 .. _sphx_glr_download_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:

@@ -18,9 +18,6 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 # regarding data preprocessing, model theory and definition, and model
 # training.
 #
-# .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit https://pytorch.org/get-started.
-#
 # What is the Hybrid Frontend?
 # ----------------------------
 #
@@ -735,7 +732,7 @@ checkpoint_iter = 4000
 #                             '{}_checkpoint.tar'.format(checkpoint_iter))
 
 # If you're loading the hosted model
-loadFilename = '4000_checkpoint.tar'
+loadFilename = 'data/4000_checkpoint.tar'
 
 # Load model
 # Force CPU device options (to match tensors in this tutorial)
