@@ -205,6 +205,11 @@ Production Usage
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
 
+.. customgalleryitem::
+   :tooltip: PyTorch distributed trainer with Amazon AWS
+   :description: :doc:`/beginner/aws_distributed_training_tutorial`
+   :figure: _static/img/distributed/DistPyTorch.jpg
+
 
 .. raw:: html
 
@@ -289,5 +294,6 @@ Production Usage
    :caption: Production Usage
 
    intermediate/dist_tuto
+   beginner/aws_distributed_training_tutorial
    advanced/ONNXLive
    advanced/cpp_export
