@@ -65,14 +65,17 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   rm beginner_source/aws_distributed_training_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
+  # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
+  FILES_TO_RUN=()
   for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing runnable code from "$filename
       python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
     fi
     count=$((count+1))
   done
@@ -82,6 +85,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
     fi
     count=$((count+1))
   done
@@ -91,28 +95,58 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       python $DIR/remove_runnable_code.py $filename $filename
     else
       echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
     fi
     count=$((count+1))
   done
+  echo "FILES_TO_RUN: " $FILES_TO_RUN
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
 
-  # Step 4: Remove all HTML files generated from Python files that don't contain runnable code
-  for filename in $(find docs/beginner -name '*.html'); do
-    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
+  # Step 4: If any of the generated files are not related the tutorial files we want to run,
+  # then we remove them
+  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.html'); do
+    file_basename=$(basename $filename .html)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
   done
-  for filename in $(find docs/intermediate -name '*.html'); do
-    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
+  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.rst'); do
+    file_basename=$(basename $filename .rst)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
   done
-  for filename in $(find docs/advanced -name '*.html'); do
-    python $DIR/delete_html_file_with_runnable_code_removed.py $filename
+  for filename in $(find docs/_download -name '*.py'); do
+    file_basename=$(basename $filename .py)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
+  done
+  for filename in $(find docs/_download -name '*.ipynb'); do
+    file_basename=$(basename $filename .ipynb)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
+  done
+  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced -name '*.rst.txt'); do
+    file_basename=$(basename $filename .rst.txt)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
+  done
+  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced -name '*.doctree'); do
+    file_basename=$(basename $filename .doctree)
+    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+      rm $filename
+    fi
   done
 
-  # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
+  # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
@@ -151,14 +185,17 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   done
 
   # Step 5: Copy all static files into docs
-  rsync -av docs_with_plot/docs/ docs --exclude beginner --exclude intermediate --exclude advanced
+  rsync -av docs_with_plot/docs/ docs
 
-  # Step 6: Copy generated HTML files and static files to S3
+  # Step 6: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
+  bash $DIR/remove_invisible_code_block_batch.sh docs
+
+  # Step 7: Copy generated HTML files and static files to S3
   7z a manager.7z docs
   aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
 
   # yf225 TODO: re-enable this after tutorial build is fixed
-  # # Step 7: push new HTML files and static files to gh-pages
+  # # Step 8: push new HTML files and static files to gh-pages
   # if [[ "$COMMIT_SOURCE" == master ]]; then
   #   git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
   #   cp -r docs/* gh-pages/

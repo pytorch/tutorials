@@ -7,7 +7,7 @@
 
 2. autograd.py
 	Autograd
-	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial_old.html
 
 3. nn_tutorial.py
 	nn package
