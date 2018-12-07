@@ -99,7 +99,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
     count=$((count+1))
   done
-  echo "FILES_TO_RUN: " $FILES_TO_RUN
+  echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
@@ -118,13 +118,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/_download -name '*.py'); do
+  for filename in $(find docs/_downloads -name '*.py'); do
     file_basename=$(basename $filename .py)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/_download -name '*.ipynb'); do
+  for filename in $(find docs/_downloads -name '*.ipynb'); do
     file_basename=$(basename $filename .ipynb)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
