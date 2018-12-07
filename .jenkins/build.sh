@@ -61,7 +61,10 @@ aws configure set default.s3.multipart_threshold 5120MB
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
-  # Step 1: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
+  # Step 1: Remove files that are not runnable
+  rm beginner_source/aws_distributed_training_tutorial.py || true
+
+  # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
   for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
@@ -92,10 +95,10 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     count=$((count+1))
   done
 
-  # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
 
-  # Step 3: Remove all HTML files generated from Python files that don't contain runnable code
+  # Step 4: Remove all HTML files generated from Python files that don't contain runnable code
   for filename in $(find docs/beginner -name '*.html'); do
     python $DIR/delete_html_file_with_runnable_code_removed.py $filename
   done
@@ -106,10 +109,10 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     python $DIR/delete_html_file_with_runnable_code_removed.py $filename
   done
 
-  # Step 4: Remove INVISIBLE_CODE_BLOCK from all HTML files
+  # Step 5: Remove INVISIBLE_CODE_BLOCK from all HTML files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 5: Copy generated HTML files and static files to S3, tag with commit ID
+  # Step 6: Copy generated HTML files and static files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
