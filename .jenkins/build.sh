@@ -149,6 +149,15 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 5: Copy all static files into docs
   rsync -av docs_with_plot/docs/ docs --exclude beginner --exclude intermediate --exclude advanced
+
+  # Step 6: Copy generated HTML files and static files to S3
+  7z a manager.7z docs
+  aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
+
+  # yf225 TODO: push new html pages to gh-pages
+  # make sure to git add -f all the files in docs/ !!!
+  # if [[ "$COMMIT_SOURCE" == master ]]; then
+  # fi
 else
   make docs
 fi

@@ -65,27 +65,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         # =================== The following code will be executed inside Docker container ===================
         set -ex
 
-        export JOB_BASE_NAME_BACKUP=${JOB_BASE_NAME}
-        export COMMIT_SOURCE_BACKUP=${COMMIT_SOURCE}
-
         .jenkins/build.sh
-
-        export JOB_BASE_NAME=${JOB_BASE_NAME_BACKUP}
-        export COMMIT_SOURCE=${COMMIT_SOURCE_BACKUP}
-
-        if [[ "$COMMIT_SOURCE" == master ]]; then
-          export BUCKET_NAME=pytorch-tutorial-build-master
-        else
-          export BUCKET_NAME=pytorch-tutorial-build-pull-request
-        fi
-
-        if [[ "${JOB_BASE_NAME}" == *manager ]]; then
-          7z a manager.7z docs
-          aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
-
-          # yf225 TODO: push new html pages to gh-pages
-          # make sure to git add -f all the files in docs/ !!!
-        fi
         # =================== The above code will be executed inside Docker container ===================
         EOL
         chmod +x /home/circleci/project/ci_build_script.sh
