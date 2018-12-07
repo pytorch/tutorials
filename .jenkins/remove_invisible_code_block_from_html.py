@@ -5,7 +5,7 @@ html_file_path = sys.argv[1]
 output_file_path = sys.argv[2]
 
 with open(html_file_path, 'r', encoding='utf-8') as html_file:
-  html = html_file.read()
+    html = html_file.read()
 html_soup = BeautifulSoup(html, 'html.parser')
 
 elems = html_soup.find_all("div", {"class": "highlight-python"})

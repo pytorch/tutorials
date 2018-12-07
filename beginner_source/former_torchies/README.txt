@@ -1,13 +1,13 @@
  PyTorch for former Torch users
  ------------------------------
  
-1. tensor_tutorial.py
+1. tensor_tutorial_old.py
 	Tensors
-	https://pytorch.org/tutorials/beginner/former_torchies/tensor_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/tensor_tutorial_old.html
 
-2. autograd.py
+2. autograd_tutorial_old.py
 	Autograd
-	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial_old.html
 
 3. nn_tutorial.py
 	nn package
