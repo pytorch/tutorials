@@ -210,10 +210,7 @@ import sys
 import torch
 
 if __name__ == '__main__':
-    try:
-        torch.multiprocessing.set_start_method('spawn')
-    except RuntimeError:
-        pass
+    torch.multiprocessing.set_start_method('spawn')
 
 import torch.nn as nn
 import torch.nn.parallel
