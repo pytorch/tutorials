@@ -168,34 +168,17 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
     yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
 
-  # Step 4: Copy plots into the no-plot HTML pages, but skip those tutorials that are not supposed to be run (which have wrong HTML files generated)
-  for filename in $(find docs/beginner -name '*.html'); do
-    if [[ $filename != *"aws_distributed_training_tutorial"* ]]; then
-      python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-    fi
-  done
-  for filename in $(find docs/intermediate -name '*.html'); do
-    if [[ $filename != *"aws_distributed_training_tutorial"* ]]; then
-      python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-    fi
-  done
-  for filename in $(find docs/advanced -name '*.html'); do
-    if [[ $filename != *"aws_distributed_training_tutorial"* ]]; then
-      python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-    fi
-  done
+  # Step 4: Copy all generated files into docs
+  rsync -av docs_with_plot/docs/ docs --exclude='**aws_distributed_training_tutorial*'
 
-  # Step 5: Copy all static files into docs
-  rsync -av docs_with_plot/docs/ docs
-
-  # Step 6: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
+  # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 7: Copy generated HTML files and static files to S3
+  # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
   aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
 
-  # Step 8: push new HTML files and static files to gh-pages
+  # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == master ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     cp -r docs/* gh-pages/
