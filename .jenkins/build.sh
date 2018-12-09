@@ -56,8 +56,8 @@ aws configure set default.s3.multipart_threshold 5120MB
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
-  # Step 1: Remove files that are not runnable
-  rm beginner_source/aws_distributed_training_tutorial.py || true
+  # Step 1: Remove runnable code from tutorials that are not supposed to be run
+  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -168,28 +168,17 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
     yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
 
-  # Step 4: Copy plots into the no-plot HTML pages
-  for filename in $(find docs/beginner -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-  done
-  for filename in $(find docs/intermediate -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-  done
-  for filename in $(find docs/advanced -name '*.html'); do
-    python $DIR/replace_tutorial_html_content.py $filename docs_with_plot/$filename $filename || true
-  done
+  # Step 4: Copy all generated files into docs
+  rsync -av docs_with_plot/docs/ docs --exclude='**aws_distributed_training_tutorial*'
 
-  # Step 5: Copy all static files into docs
-  rsync -av docs_with_plot/docs/ docs
-
-  # Step 6: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
+  # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 7: Copy generated HTML files and static files to S3
+  # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
   aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
 
-  # Step 8: push new HTML files and static files to gh-pages
+  # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == master ]]; then
     git clone https://github.com/pytorch/tutorials.git -b gh-pages gh-pages
     cp -r docs/* gh-pages/
