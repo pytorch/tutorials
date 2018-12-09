@@ -312,26 +312,6 @@ It is also important to set the multiprocessing start method to <em>spawn</em>
 or <em>forkserver</em> (only supported in Python 3),
 as the default is <em>fork</em> which may cause deadlocks when using multiple
 worker processes for dataloading.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">'__main__'</span><span class="p">:</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">multiprocessing</span><span class="o">.</span><span class="n">set_start_method</span><span class="p">(</span><span class="s1">'spawn'</span><span class="p">)</span>
-
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.parallel</span>
-<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="kn">as</span> <span class="nn">dist</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span>
-<span class="kn">import</span> <span class="nn">torch.utils.data</span>
-<span class="kn">import</span> <span class="nn">torch.utils.data.distributed</span>
-<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="kn">as</span> <span class="nn">transforms</span>
-<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="kn">as</span> <span class="nn">datasets</span>
-<span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="kn">as</span> <span class="nn">models</span>
-
-<span class="kn">from</span> <span class="nn">torch.multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span><span class="p">,</span> <span class="n">Process</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="helper-functions">
 <h3>Helper Functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h3>
@@ -341,40 +321,6 @@ like accuracy and iteration count. The <code class="docutils literal notranslate
 and returns the top-k accuracy of the model so we can track learning
 progress. Both are provided for training convenience but neither are
 distributed training specific.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AverageMeter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">"""Computes and stores the average and current value"""</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">+=</span> <span class="n">val</span> <span class="o">*</span> <span class="n">n</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="n">n</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
-
-<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)):</span>
-    <span class="sd">"""Computes the precision@k for the specified values of k"""</span>
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">maxk</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span>
-        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-        <span class="n">_</span><span class="p">,</span> <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">maxk</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
-        <span class="n">correct</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span>
-
-        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">topk</span><span class="p">:</span>
-            <span class="n">correct_k</span> <span class="o">=</span> <span class="n">correct</span><span class="p">[:</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correct_k</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">res</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="train-functions">
 <h3>Train Functions<a class="headerlink" href="#train-functions" title="Permalink to this headline">¶</a></h3>
@@ -390,65 +336,6 @@ statistics along the way so we can track progress throughout the epoch.</p>
 <p>The other function to define here is <code class="docutils literal notranslate"><span class="pre">adjust_learning_rate</span></code>, which
 decays the initial learning rate at a fixed schedule. This is another
 boilerplate trainer function that is useful to train accurate models.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
-
-    <span class="n">batch_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">data_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">losses</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-
-    <span class="c1"># switch to train mode</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-
-    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-
-        <span class="c1"># measure data loading time</span>
-        <span class="n">data_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
-
-        <span class="c1"># Create non_blocking tensors for distributed training</span>
-        <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-        <span class="c1"># compute output</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-        <span class="c1"># measure accuracy and record loss</span>
-        <span class="n">prec1</span><span class="p">,</span> <span class="n">prec5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-        <span class="n">losses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-        <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-        <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-
-        <span class="c1"># compute gradients in a backward pass</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-
-        <span class="c1"># Call step of optimizer to update model params</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-
-        <span class="c1"># measure elapsed time</span>
-        <span class="n">batch_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'Epoch: [{0}][{1}/{2}]</span><span class="se">\t</span><span class="s1">'</span>
-                  <span class="s1">'Time {batch_time.val:.3f} ({batch_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
-                  <span class="s1">'Data {data_time.val:.3f} ({data_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
-                  <span class="s1">'Loss {loss.val:.4f} ({loss.avg:.4f})</span><span class="se">\t</span><span class="s1">'</span>
-                  <span class="s1">'Prec@1 {top1.val:.3f} ({top1.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
-                  <span class="s1">'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                   <span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">batch_time</span><span class="o">=</span><span class="n">batch_time</span><span class="p">,</span>
-                   <span class="n">data_time</span><span class="o">=</span><span class="n">data_time</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="p">,</span> <span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
-
-<span class="k">def</span> <span class="nf">adjust_learning_rate</span><span class="p">(</span><span class="n">initial_lr</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
-    <span class="sd">"""Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""</span>
-    <span class="n">lr</span> <span class="o">=</span> <span class="n">initial_lr</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.1</span> <span class="o">**</span> <span class="p">(</span><span class="n">epoch</span> <span class="o">//</span> <span class="mi">30</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
-        <span class="n">param_group</span><span class="p">[</span><span class="s1">'lr'</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="validation-function">
 <h3>Validation Function<a class="headerlink" href="#validation-function" title="Permalink to this headline">¶</a></h3>
@@ -459,52 +346,6 @@ model on the input validation dataloader and returns the top-1 accuracy
 of the model on the validation set. Again, you will notice the only
 distributed training feature here is setting <code class="docutils literal notranslate"><span class="pre">non_blocking=True</span></code> for
 the training data and labels before they are passed to the model.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">):</span>
-
-    <span class="n">batch_time</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">losses</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">()</span>
-
-    <span class="c1"># switch to evaluate mode</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">):</span>
-
-            <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-
-            <span class="c1"># compute output</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># measure accuracy and record loss</span>
-            <span class="n">prec1</span><span class="p">,</span> <span class="n">prec5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-            <span class="n">losses</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-            <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-            <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">prec5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">input</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-
-            <span class="c1"># measure elapsed time</span>
-            <span class="n">batch_time</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
-            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-
-            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">print</span><span class="p">(</span><span class="s1">'Test: [{0}/{1}]</span><span class="se">\t</span><span class="s1">'</span>
-                      <span class="s1">'Time {batch_time.val:.3f} ({batch_time.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
-                      <span class="s1">'Loss {loss.val:.4f} ({loss.avg:.4f})</span><span class="se">\t</span><span class="s1">'</span>
-                      <span class="s1">'Prec@1 {top1.val:.3f} ({top1.avg:.3f})</span><span class="se">\t</span><span class="s1">'</span>
-                      <span class="s1">'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                       <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_loader</span><span class="p">),</span> <span class="n">batch_time</span><span class="o">=</span><span class="n">batch_time</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">losses</span><span class="p">,</span>
-                       <span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
-
-        <span class="k">print</span><span class="p">(</span><span class="s1">' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'</span>
-              <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="inputs">
 <h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h3>
@@ -532,28 +373,25 @@ process or be a non-existant file on a shared file system. Here,
 since we do not have a shared file system this will incorporate the
 <strong>node0-privateIP</strong> and the port on node0 to use.</li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Collect Inputs..."</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batch Size for training and testing</span>
 
-<span class="c1"># Batch Size for training and testing</span>
-<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
 
 <span class="c1"># Number of additional worker processes for dataloading</span>
-<span class="n">workers</span> <span class="o">=</span> <span class="mi">2</span>
+
 
 <span class="c1"># Number of epochs to train for</span>
-<span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">2</span>
+
 
 <span class="c1"># Starting Learning Rate</span>
-<span class="n">starting_lr</span> <span class="o">=</span> <span class="mf">0.1</span>
+
 
 <span class="c1"># Number of distributed processes</span>
-<span class="n">world_size</span> <span class="o">=</span> <span class="mi">4</span>
+
 
 <span class="c1"># Distributed backend type</span>
-<span class="n">dist_backend</span> <span class="o">=</span> <span class="s1">'nccl'</span>
+
 
 <span class="c1"># Url used to setup distributed training</span>
-<span class="n">dist_url</span> <span class="o">=</span> <span class="s2">"tcp://172.31.22.234:23456"</span>
 </pre></div>
 </div>
 </div>
@@ -588,10 +426,9 @@ for the process and later used to set the device when creating a
 distributed data parallel model. It is also recommended to use NCCL
 backend in this hypothetical environment as NCCL is preferred for
 multi-gpu nodes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Process Group..."</span><span class="p">)</span>
-<span class="c1"># Initialize Process Group</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize Process Group</span>
 <span class="c1"># v1 - init with url</span>
-<span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="n">backend</span><span class="o">=</span><span class="n">dist_backend</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="n">dist_url</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+
 <span class="c1"># v2 - init with file</span>
 <span class="c1"># dist.init_process_group(backend="nccl", init_method="file:///home/ubuntu/pt-distributed-tutorial/trainfile", rank=int(sys.argv[1]), world_size=world_size)</span>
 <span class="c1"># v3 - init with environment variables</span>
@@ -599,9 +436,6 @@ multi-gpu nodes.</p>
 
 
 <span class="c1"># Establish Local Rank and set device on this node</span>
-<span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-<span class="n">dp_device_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">local_rank</span><span class="p">]</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -621,15 +455,12 @@ processes have joined the process group. Also, notice we pass our device
 ids list as a parameter which contains the local rank (i.e. GPU) we are
 using. Finally, we specify the loss function and optimizer to train the
 model with.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Model..."</span><span class="p">)</span>
-<span class="c1"># Construct Model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Construct Model</span>
+
 <span class="c1"># Make model DistributedDataParallel</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">DistributedDataParallel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="n">dp_device_ids</span><span class="p">,</span> <span class="n">output_device</span><span class="o">=</span><span class="n">local_rank</span><span class="p">)</span>
+
 
 <span class="c1"># define loss function (criterion) and optimizer</span>
-<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">starting_lr</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -653,24 +484,21 @@ processes.</p>
 not present. If you wish to use your own dataset you should download the
 data, write your own dataset handler, and construct a dataloader for
 your dataset here.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">"Initialize Dataloaders..."</span><span class="p">)</span>
-<span class="c1"># Define the transform for the data. Notice, we must resize to 224x224 with this dataset and model.</span>
-<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
-    <span class="p">[</span><span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
-     <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-     <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the transform for the data. Notice, we must resize to 224x224 with this dataset and model.</span>
+
+
+
+
 
 <span class="c1"># Initialize Datasets. STL10 will automatically download if not present</span>
-<span class="n">trainset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">STL10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
-<span class="n">valset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">STL10</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'./data'</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s1">'test'</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
+
+
 
 <span class="c1"># Create DistributedSampler to handle distributing the dataset across nodes when training</span>
 <span class="c1"># This can only be called after torch.distributed.init_process_group is called</span>
-<span class="n">train_sampler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedSampler</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span>
+
 
 <span class="c1"># Create the Dataloaders to feed data to the training and validation steps</span>
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">trainset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="p">(</span><span class="n">train_sampler</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">),</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">)</span>
-<span class="n">val_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">valset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -688,32 +516,6 @@ loop exits and the tutorial is complete. Notice, since this is an
 exercise we are not saving models but one may wish to keep track of the
 best performing model then save it at the end of training (see
 <a class="reference external" href="https://github.com/pytorch/examples/blob/master/imagenet/main.py#L184">here</a>).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">best_prec1</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
-    <span class="c1"># Set epoch count for DistributedSampler</span>
-    <span class="n">train_sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
-
-    <span class="c1"># Adjust learning rate according to schedule</span>
-    <span class="n">adjust_learning_rate</span><span class="p">(</span><span class="n">starting_lr</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
-
-    <span class="c1"># train for one epoch</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Begin Training Epoch {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
-
-    <span class="c1"># evaluate on validation set</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Begin Validation @ Epoch {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">prec1</span> <span class="o">=</span> <span class="n">validate</span><span class="p">(</span><span class="n">val_loader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">)</span>
-
-    <span class="c1"># remember best prec@1 and save checkpoint if desired</span>
-    <span class="c1"># is_best = prec1 &gt; best_prec1</span>
-    <span class="n">best_prec1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">prec1</span><span class="p">,</span> <span class="n">best_prec1</span><span class="p">)</span>
-
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Epoch Summary: "</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Epoch Accuracy: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prec1</span><span class="p">))</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\t</span><span class="s2">Best Accuracy: {}"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">best_prec1</span><span class="p">))</span>
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="running-the-code">
@@ -758,6 +560,9 @@ for another easy way of kicking off multiple distributed processes.
 has it implemented and can demonstrate how to use it.</li>
 <li>If possible, setup a NFS so you only need one copy of the dataset</li>
 </ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
+</pre></div>
+</div>
 <p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-aws-distributed-training-tutorial-py">
 <div class="sphx-glr-download docutils container">
