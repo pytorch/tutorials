@@ -88,7 +88,7 @@ print(b.grad_fn)
 # ---------
 # Let's backprop now
 # Because ``out`` contains a single scalar, ``out.backward()`` is
-# equivalent to ``out.backward(torch.tensor(1))``.
+# equivalent to ``out.backward(torch.tensor(1.))``.
 
 out.backward()
 
