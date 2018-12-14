@@ -613,7 +613,7 @@ class GreedySearchDecoder(torch.jit.ScriptModule):
 # an argument, normalizes it, evaluates it, and prints the response.
 #
 
-def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
+def evaluate(searcher, voc, sentence, max_length=MAX_LENGTH):
     ### Format input sentence as a batch
     # words -> indexes
     indexes_batch = [indexesFromSentence(voc, sentence)]
@@ -632,7 +632,7 @@ def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
 
 
 # Evaluate inputs from user input (stdin)
-def evaluateInput(encoder, decoder, searcher, voc):
+def evaluateInput(searcher, voc):
     input_sentence = ''
     while(1):
         try:
@@ -643,7 +643,7 @@ def evaluateInput(encoder, decoder, searcher, voc):
             # Normalize sentence
             input_sentence = normalizeString(input_sentence)
             # Evaluate sentence
-            output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
+            output_words = evaluate(searcher, voc, input_sentence)
             # Format and print response sentence
             output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
             print('Bot:', ' '.join(output_words))
@@ -652,12 +652,12 @@ def evaluateInput(encoder, decoder, searcher, voc):
             print("Error: Encountered unknown word.")
 
 # Normalize input sentence and call evaluate()
-def evaluateExample(sentence, encoder, decoder, searcher, voc):
+def evaluateExample(sentence, searcher, voc):
     print("> " + sentence)
     # Normalize sentence
     input_sentence = normalizeString(sentence)
     # Evaluate sentence
-    output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
+    output_words = evaluate(searcher, voc, input_sentence)
     output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
     print('Bot:', ' '.join(output_words))
 
@@ -857,7 +857,7 @@ print('scripted_searcher graph:\n', scripted_searcher.graph)
 # Evaluate examples
 sentences = ["hello", "what's up?", "who are you?", "where am I?", "where are you from?"]
 for s in sentences:
-    evaluateExample(s, traced_encoder, traced_decoder, scripted_searcher, voc)
+    evaluateExample(s, scripted_searcher, voc)
 
 # Evaluate your input
 #evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)
