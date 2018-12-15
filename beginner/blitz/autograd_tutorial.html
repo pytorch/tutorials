@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Autograd: Automatic Differentiation — PyTorch Tutorials 1.0.0.dev20181212 documentation</title>
+<title>Autograd: Automatic Differentiation — PyTorch Tutorials 1.0.0.dev20181214 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20181212
+                  1.0.0.dev20181214
                 </div>
 <div role="search">
 <form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -218,7 +218,7 @@ argument that is a tensor of matching shape.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;AddBackward0 object at 0x7fac152615c0&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;AddBackward0 object at 0x7f96fda4a4a8&gt;
 </pre></div>
 </div>
 <p>Do more operations on y</p>
@@ -247,7 +247,7 @@ flag in-place. The input flag defaults to <code class="docutils literal notransl
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>False
 True
-&lt;SumBackward0 object at 0x7fac15261f28&gt;
+&lt;SumBackward0 object at 0x7f96fda4ae10&gt;
 </pre></div>
 </div>
 </div>
@@ -275,7 +275,42 @@ We have that <span class="math notranslate nohighlight">\(o = \frac{1}{4}\sum_i 
 Therefore,
 <span class="math notranslate nohighlight">\(\frac{\partial o}{\partial x_i} = \frac{3}{2}(x_i+2)\)</span>, hence
 <span class="math notranslate nohighlight">\(\frac{\partial o}{\partial x_i}\bigr\rvert_{x_i=1} = \frac{9}{2} = 4.5\)</span>.</p>
-<p>You can do many crazy things with autograd!</p>
+<p>Mathematically, if you have a vector valued function <span class="math notranslate nohighlight">\(\vec{y}=f(\vec{x})\)</span>,
+then the gradient of <span class="math notranslate nohighlight">\(\vec{y}\)</span> with respect to <span class="math notranslate nohighlight">\(\vec{x}\)</span>
+is a Jacobian matrix:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}J=\left(\begin{array}{ccc}
+ \frac{\partial y_{1}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{1}}\\
+ \vdots &amp; \ddots &amp; \vdots\\
+ \frac{\partial y_{1}}{\partial x_{n}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{n}}
+ \end{array}\right)\end{split}\]</div>
+<p>Generally speaking, <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> is an engine for computing
+Jacobian-vector product. That is, given any vector
+<span class="math notranslate nohighlight">\(v=\left(\begin{array}{cccc} v_{1} &amp; v_{2} &amp; \cdots &amp; v_{m}\end{array}\right)^{T}\)</span>,
+compute the product <span class="math notranslate nohighlight">\(J\cdot v\)</span>. If <span class="math notranslate nohighlight">\(v\)</span> happens to be
+the gradient of a scalar function <span class="math notranslate nohighlight">\(l=g\left(\vec{y}\right)\)</span>,
+that is,
+<span class="math notranslate nohighlight">\(v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} &amp; \cdots &amp; \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}\)</span>,
+then by the chain rule, the Jacobian-vector product would be the
+gradient of <span class="math notranslate nohighlight">\(l\)</span> with respect to <span class="math notranslate nohighlight">\(\vec{x}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}J\cdot v=\left(\begin{array}{ccc}
+ \frac{\partial y_{1}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{1}}\\
+ \vdots &amp; \ddots &amp; \vdots\\
+ \frac{\partial y_{1}}{\partial x_{n}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{n}}
+ \end{array}\right)\left(\begin{array}{c}
+ \frac{\partial l}{\partial y_{1}}\\
+ \vdots\\
+ \frac{\partial l}{\partial y_{m}}
+ \end{array}\right)=\left(\begin{array}{c}
+ \frac{\partial l}{\partial x_{1}}\\
+ \vdots\\
+ \frac{\partial l}{\partial x_{n}}
+ \end{array}\right)\end{split}\]</div>
+<p>This characteristic of Jacobian-vector product makes it very
+convenient to feed external gradients into a model that has
+non-scalar output.</p>
+<p>Now let’s take a look at an example of Jacobian-vector product:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
@@ -286,17 +321,21 @@ Therefore,
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-1807.2162,  -212.8973,  -811.3801], grad_fn=&lt;MulBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-194.3112,  662.3179, -814.1020], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gradients</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0001</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">gradients</span><span class="p">)</span>
+<p>Now in this case <code class="docutils literal notranslate"><span class="pre">y</span></code> is no longer a scalar. <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code>
+could not compute the full Jacobian directly, but if we just
+want the Jacobian-vector product, simply pass the vector to
+<code class="docutils literal notranslate"><span class="pre">backward</span></code> as argument:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0001</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
 
 <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([1.0240e+02, 1.0240e+03, 1.0240e-01])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
 </pre></div>
 </div>
 <p>You can also stop autograd from tracking history on Tensors
@@ -318,7 +357,7 @@ False
 <p><strong>Read Later:</strong></p>
 <p>Documentation of <code class="docutils literal notranslate"><span class="pre">autograd</span></code> and <code class="docutils literal notranslate"><span class="pre">Function</span></code> is at
 <a class="reference external" href="https://pytorch.org/docs/autograd">https://pytorch.org/docs/autograd</a></p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  3.459 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  3.503 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-autograd-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/00a1ac60985c7481f4250bafeae15ffa/autograd_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial.py</span></code></a></div>
