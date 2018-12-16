@@ -45,7 +45,7 @@ We will do the following steps in order:
 
 1. Load and normalizing the CIFAR10 training and test datasets using
    ``torchvision``
-2. Define a Convolution Neural Network
+2. Define a Convolutional Neural Network
 3. Define a loss function
 4. Train the network on the training data
 5. Test the network on the test data
@@ -107,7 +107,7 @@ print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
 
 ########################################################################
-# 2. Define a Convolution Neural Network
+# 2. Define a Convolutional Neural Network
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Copy the neural network from the Neural Networks section before and modify it to
 # take 3-channel images (instead of 1-channel images as it was defined).
