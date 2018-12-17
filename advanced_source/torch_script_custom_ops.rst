@@ -1076,3 +1076,34 @@ visible to TorchScript:
   >>> torch.ops.load_library("warp_perspective.so")
   >>> print(torch.ops.custom.warp_perspective)
   <built-in method custom::warp_perspective of PyCapsule object at 0x7ff51c5b7bd0>
+
+
+FAQ
+---------------------------------------
+
+
+Custom Ops Types
+*******************
+
+TorchScript custom Ops supports a limited number of types. The types supported by JIT custom ops are declared `here<https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/core/jit_type.h>`_.
+
+Currently, the types that are supported are:
+
+- torch::Tensor
+- at::Scalar
+
+This represents the python number
+
+- double
+
+Note that float is not currently supported.
+
+- int64_t
+
+Note that int is not currently supported.
+
+- bool
+- string
+- std::vector<torch::Tensor>
+- std::vector<double>
+- std::vector<int64_t>
