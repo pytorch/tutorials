@@ -24,7 +24,7 @@ As the agent observes the current state of the environment and chooses
 an action, the environment *transitions* to a new state, and also
 returns a reward that indicates the consequences of the action. In this
 task, rewards are +1 for every incremental timestep and the environment
-terminates if the pole falls over too far or the crat mover more then 2.4
+terminates if the pole falls over too far or the cart moves more then 2.4
 units away from center. This means better performing scenarios will run
 for longer duration, accumulating larger return.
 
@@ -249,14 +249,15 @@ resize = T.Compose([T.ToPILImage(),
                     T.Resize(40, interpolation=Image.CUBIC),
                     T.ToTensor()])
 
+
 def get_cart_location(screen_width):
     world_width = env.x_threshold * 2
     scale = screen_width / world_width
     return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
 
 def get_screen():
-    # Returned requested by gym is 400x600x3, but is sometimes larger such as
-    # as 800x1200x3. Transpose into torch order (CHW).
+    # Returned screen requested by gym is 400x600x3, but is sometimes larger
+    # such as 800x1200x3. Transpose it into torch order (CHW).
     screen = env.render(mode='rgb_array').transpose((2, 0, 1))
     # Cart is in the lower half, so strip off the top and bottom of the screen
     _, screen_height, screen_width = screen.shape
@@ -310,20 +311,18 @@ plt.show()
 #    episode.
 #
 
-BATCH_SIZE = 196 #128
+BATCH_SIZE = 128
 GAMMA = 0.999
 EPS_START = 0.9
-EPS_END = 0.07
-EPS_DECAY = 300
+EPS_END = 0.05
+EPS_DECAY = 200
 TARGET_UPDATE = 10
 
 # Get screen size so that we can initialize layers correctly based on shape
-# returned from AI gym. Typical dimentions at this pont are close to 3x40x90
-# which is the result of a clamped and down-scaled buffer in get_screen()
+# returned from AI gym. Typical dimensions at this point are close to 3x40x90
+# which is the result of a clamped and down-scaled render buffer in get_screen()
 init_screen = get_screen()
 _, _, screen_height, screen_width = init_screen.shape
-#screen_height = init_screen.shape[2]
-#print("Screen size w,h:", screen_width, " ", screen_height)
 
 policy_net = DQN(screen_height, screen_width).to(device)
 target_net = DQN(screen_height, screen_width).to(device)
@@ -452,7 +451,7 @@ def optimize_model():
 # duration improvements.
 #
 
-num_episodes = 500
+num_episodes = 50
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     env.reset()
@@ -496,14 +495,14 @@ plt.ioff()
 plt.show()
 
 ######################################################################
-# Here is the diagram that illustrates the overall resulting flow.
+# Here is the diagram that illustrates the overall resulting data flow.
 #
 # .. figure:: /_static/img/reinforcement_learning_diagram.jpg
 #
 # Actions are chosen either randomly or based on a policy, getting the next
-# step sample for the gym environment. We record the results in the
-# replay memory and also perform optimization step on every iteration.
+# step sample from the gym environment. We record the results in the
+# replay memory and also run optimization step on every iteration.
 # Optimization picks a random batch from the replay memory to do training of the
-# new policy. "Older" target_net, used in optimization to computed expected
-#  Q values is updated occasionally to keep it current.
+# new policy. "Older" target_net is also used in optimization to compute the
+# expected Q values; it is updated occasionally to keep it current.
 #
