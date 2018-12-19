@@ -322,6 +322,7 @@ print(loss_func(model(xb), yb))
 # Previously for our training loop we had to update the values for each parameter
 # by name, and manually zero out the grads for each parameter separately, like this:
 # ::
+#
 #   with torch.no_grad():
 #       weights -= weights.grad * lr
 #       bias -= bias.grad * lr
@@ -334,6 +335,7 @@ print(loss_func(model(xb), yb))
 # and less prone to the error of forgetting some of our parameters, particularly
 # if we had a more complicated model:
 # ::
+#
 #   with torch.no_grad():
 #       for p in model.parameters(): p -= p.grad * lr
 #       model.zero_grad()
@@ -408,12 +410,14 @@ print(loss_func(model(xb), yb))
 #
 # This will let us replace our previous manually coded optimization step:
 # ::
+#
 #   with torch.no_grad():
 #       for p in model.parameters(): p -= p.grad * lr
 #       model.zero_grad()
 #
 # and instead use just:
 # ::
+#
 #   opt.step()
 #   opt.zero_grad()
 #
@@ -476,12 +480,14 @@ train_ds = TensorDataset(x_train, y_train)
 ###############################################################################
 # Previously, we had to iterate through minibatches of x and y values separately:
 # ::
+#
 #     xb = x_train[start_i:end_i]
 #     yb = y_train[start_i:end_i]
 #
 #
 # Now, we can do these two steps together:
 # ::
+#
 #     xb,yb = train_ds[i*bs : i*bs+bs]
 #
 
@@ -516,12 +522,14 @@ train_dl = DataLoader(train_ds, batch_size=bs)
 ###############################################################################
 # Previously, our loop iterated over batches (xb, yb) like this:
 # ::
+#
 #       for i in range((n-1)//bs + 1):
 #           xb,yb = train_ds[i*bs : i*bs+bs]
 #           pred = model(xb)
 #
 # Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the data loader:
 # ::
+#
 #       for xb,yb in train_dl:
 #           pred = model(xb)
 

@@ -23,7 +23,7 @@ Python and in their serialized form directly in C++.
 The following paragraphs give an example of writing a TorchScript custom op to
 call into `OpenCV <https://www.opencv.org>`_, a computer vision library written
 in C++. We will discuss how to work with tensors in C++, how to efficiently
-convert them to third party tensor formats (in this case, OpenCV ``Mat``s), how
+convert them to third party tensor formats (in this case, OpenCV ``Mat`` s), how
 to register your operator with the TorchScript runtime and finally how to
 compile the operator and use it in Python and C++.
 
@@ -1018,7 +1018,7 @@ expects from a module), this route can be slightly quirky. That said, all you
 need is a ``setup.py`` file in place of the ``CMakeLists.txt`` which looks like
 this:
 
-.. code-block::
+.. code-block:: python
 
   from setuptools import setup
   from torch.utils.cpp_extension import BuildExtension, CppExtension
@@ -1081,7 +1081,7 @@ This will produce a shared library called ``warp_perspective.so``, which we can
 pass to ``torch.ops.load_library`` as we did earlier to make our operator
 visible to TorchScript:
 
-.. code-block::
+.. code-block:: python
 
   >>> import torch
   >>> torch.ops.load_library("warp_perspective.so")
