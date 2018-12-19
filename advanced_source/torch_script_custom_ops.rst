@@ -874,7 +874,9 @@ lines between Python, TorchScript and C++ to blend smoothly.
 
 As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues
-<https://github.com/pytorch/pytorch/issues>`_ to get in touch.
+<https://github.com/pytorch/pytorch/issues>`_ to get in touch. Also, our
+`frequently asked questions (FAQ) page
+<https://pytorch.org/cppdocs/notes/faq.html>`_ may have helpful information.
 
 Appendix A: More Ways of Building Custom Operators
 --------------------------------------------------
@@ -1076,34 +1078,3 @@ visible to TorchScript:
   >>> torch.ops.load_library("warp_perspective.so")
   >>> print(torch.ops.custom.warp_perspective)
   <built-in method custom::warp_perspective of PyCapsule object at 0x7ff51c5b7bd0>
-
-
-FAQ
----------------------------------------
-
-
-Custom Ops Types
-*******************
-
-TorchScript custom Ops supports a limited number of types. The types supported by JIT custom ops are declared `here<https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/core/jit_type.h>`_.
-
-Currently, the types that are supported are:
-
-- torch::Tensor
-- at::Scalar
-
-This represents the python number
-
-- double
-
-Note that float is not currently supported.
-
-- int64_t
-
-Note that int is not currently supported.
-
-- bool
-- string
-- std::vector<torch::Tensor>
-- std::vector<double>
-- std::vector<int64_t>
