@@ -11,7 +11,7 @@ Date updated: 7/30/18
 
 ```
 import torch                                        # root package
-from torch.utils.data import Dataset, Dataloader    # dataset representation and loading
+from torch.utils.data import Dataset, DataLoader    # dataset representation and loading
 ```
 
 ### Neural Network API
@@ -39,12 +39,10 @@ See [hybrid frontend](https://pytorch.org/docs/stable/hybridfrontend)
 ```
 torch.onnx.export(model, dummy data, xxxx.proto)       # exports an ONNX formatted model using a trained model, dummy data and the desired file name
 model = onnx.load("alexnet.proto")                     # load an ONNX model
-onnx.checker.check_model(model)                        # check that the model IR is well formed                      
+onnx.checker.check_model(model)                        # check that the model IR is well formed
 onnx.helper.printable_graph(model.graph)               # print a human readable representation of the graph
 ```
 See [onnx](https://pytorch.org/docs/stable/onnx.html)
-
-
 
 ### Vision
 
@@ -52,7 +50,6 @@ See [onnx](https://pytorch.org/docs/stable/onnx.html)
 from torchvision import datasets, models, transforms     # vision datasets, architectures & transforms
 import torchvision.transforms as transforms              # composable transforms
 ```
-
 See [torchvision](https://pytorch.org/docs/stable/torchvision/index.html)
 
 ### Distributed Training
@@ -60,9 +57,7 @@ See [torchvision](https://pytorch.org/docs/stable/torchvision/index.html)
 ```
 import torch.distributed as dist          # distributed communication
 from multiprocessing import Process       # memory sharing processes
-
 ```
-
 See [distributed](https://pytorch.org/docs/stable/distributed.html) and [multiprocessing](https://pytorch.org/docs/stable/multiprocessing.html)
 
 
@@ -79,10 +74,7 @@ x.clone()                       # clone of x
 with torch.no_grad():           # code wrap that stops autograd from tracking tensor history
 requires_grad=True              # arg, when set to True, tracks computation history for future derivative calculations
 ```
-
 See [tensor](https://pytorch.org/docs/stable/tensors.html)
-
-
 
 ### Dimensionality
 
@@ -121,7 +113,6 @@ else:                                                   #
 
 net.to(device)                                          # recursively convert their parameters and buffers to device specific tensors
 mytensor.to(device)                                     # copy your tensors to a device (gpu, cpu)
-
 ```
 See [cuda](https://pytorch.org/docs/stable/cuda.html)
 
@@ -136,10 +127,8 @@ nn.RNN/LSTM/GRU                               # recurrent layers
 nn.Dropout(p=0.5, inplace=False)              # dropout layer for any dimensional input
 nn.Dropout2d(p=0.5, inplace=False)            # 2-dimensional channel-wise dropout
 nn.Embedding(num_embeddings, embedding_dim)   # (tensor-wise) mapping from indices to embedding vectors
-
 ```
 See [nn](https://pytorch.org/docs/stable/nn.html)
-
 
 ### Loss Functions
 
@@ -170,9 +159,9 @@ See [optimizers](https://pytorch.org/docs/stable/optim.html)
 scheduler = optim.X(optimizer,...)      # create lr scheduler
 scheduler.step()                        # update lr at start of epoch
 optim.lr_scheduler.X where ...          # LambdaLR, StepLR, MultiStepLR, ExponentialLR or ReduceLROnPLateau
-
 ```
 See [learning rate scheduler](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate)
+
 
 # Data Utilities
 
@@ -181,7 +170,7 @@ See [learning rate scheduler](https://pytorch.org/docs/stable/optim.html#how-to-
 ```
 Dataset                    # abstract class representing dataset
 TensorDataset              # labelled dataset in the form of tensors
-Concat Dataset             # concatenation of Datasets
+ConcatDataset              # concatenation of Datasets
 ```
 See [datasets](https://pytorch.org/docs/stable/data.html?highlight=dataset#torch.utils.data.Dataset)
 
@@ -191,7 +180,6 @@ See [datasets](https://pytorch.org/docs/stable/data.html?highlight=dataset#torch
 DataLoader(dataset, batch_size=1, ...)      # loads data batches agnostic of structure of individual data points
 sampler.Sampler(dataset,...)                # abstract class dealing with ways to sample from dataset
 sampler.XSampler where ...                  # Sequential, Random, Subset, WeightedRandom or Distributed
-
 ```
 See [dataloader](https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader)
 
