@@ -85,6 +85,15 @@ in Python). The return type of our ``warp_perspective`` function will also be a
   allocate and initialize new tensor objects in C++ (not required for this
   operator).
 
+.. attention::
+
+  The TorchScript compiler understands a fixed number of types. Only these types
+  can be used as arguments to your custom operator. Currently these types are:
+  ``torch::Tensor``, ``torch::Scalar``, ``double``, ``int64_t`` and
+  ``std::vector``s of these types. Note that __only__ ``double`` and __not__
+  ``float``, and __only__ ``int64_t`` and __not__ other integral types such as
+  ``int``, ``short`` or ``long`` are supported.
+
 Inside of our function, the first thing we need to do is convert our PyTorch
 tensors to OpenCV matrices, as OpenCV's ``warpPerspective`` expects ``cv::Mat``
 objects as inputs. Fortunately, there is a way to do this **without copying
