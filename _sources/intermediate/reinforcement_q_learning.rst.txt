@@ -30,7 +30,10 @@ official leaderboard with various algorithms and visualizations at the
 As the agent observes the current state of the environment and chooses
 an action, the environment *transitions* to a new state, and also
 returns a reward that indicates the consequences of the action. In this
-task, the environment terminates if the pole falls over too far.
+task, rewards are +1 for every incremental timestep and the environment
+terminates if the pole falls over too far or the cart moves more then 2.4
+units away from center. This means better performing scenarios will run
+for longer duration, accumulating larger return.
 
 The CartPole task is designed so that the inputs to the agent are 4 real
 values representing the environment state (position, velocity, etc.).
@@ -108,7 +111,9 @@ and improves the DQN training procedure.
 For this, we're going to need two classses:
 
 -  ``Transition`` - a named tuple representing a single transition in
-   our environment
+   our environment. It maps essentially maps (state, action) pairs
+   to their (next_state, reward) result, with the state being the
+   screen difference image as described later on.
 -  ``ReplayMemory`` - a cyclic buffer of bounded size that holds the
    transitions observed recently. It also implements a ``.sample()``
    method for selecting a random batch of transitions for training.
@@ -213,7 +218,7 @@ Our model will be a convolutional neural network that takes in the
 difference between the current and previous screen patches. It has two
 outputs, representing :math:`Q(s, \mathrm{left})` and
 :math:`Q(s, \mathrm{right})` (where :math:`s` is the input to the
-network). In effect, the network is trying to predict the *quality* of
+network). In effect, the network is trying to predict the *expected return* of
 taking each action given the current input.
 
 
@@ -224,7 +229,7 @@ taking each action given the current input.
 
     class DQN(nn.Module):
 
-        def __init__(self):
+        def __init__(self, h, w):
             super(DQN, self).__init__()
             self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=2)
             self.bn1 = nn.BatchNorm2d(16)
@@ -232,8 +237,18 @@ taking each action given the current input.
             self.bn2 = nn.BatchNorm2d(32)
             self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
             self.bn3 = nn.BatchNorm2d(32)
-            self.head = nn.Linear(448, 2)
 
+            # Number of Linear input connections depends on output of conv2d layers
+            # and therefore the input image size, so compute it.
+            def conv2d_size_out(size, kernel_size = 5, stride = 2):
+                return (size - (kernel_size - 1) - 1) // stride  + 1
+            convw = conv2d_size_out(conv2d_size_out(conv2d_size_out(w)))
+            convh = conv2d_size_out(conv2d_size_out(conv2d_size_out(h)))
+            linear_input_size = convw * convh * 32
+            self.head = nn.Linear(linear_input_size, 2) # 448 or 512
+
+        # Called with either one element to determine next action, or a batch
+        # during optimization. Returns tensor([[left0exp,right0exp]...]).
         def forward(self, x):
             x = F.relu(self.bn1(self.conv1(x)))
             x = F.relu(self.bn2(self.conv2(x)))
@@ -260,23 +275,21 @@ display an example patch that it extracted.
                         T.Resize(40, interpolation=Image.CUBIC),
                         T.ToTensor()])
 
-    # This is based on the code from gym.
-    screen_width = 600
 
-
-    def get_cart_location():
+    def get_cart_location(screen_width):
         world_width = env.x_threshold * 2
         scale = screen_width / world_width
         return int(env.state[0] * scale + screen_width / 2.0)  # MIDDLE OF CART
 
-
     def get_screen():
-        screen = env.render(mode='rgb_array').transpose(
-            (2, 0, 1))  # transpose into torch order (CHW)
-        # Strip off the top and bottom of the screen
-        screen = screen[:, 160:320]
-        view_width = 320
-        cart_location = get_cart_location()
+        # Returned screen requested by gym is 400x600x3, but is sometimes larger
+        # such as 800x1200x3. Transpose it into torch order (CHW).
+        screen = env.render(mode='rgb_array').transpose((2, 0, 1))
+        # Cart is in the lower half, so strip off the top and bottom of the screen
+        _, screen_height, screen_width = screen.shape
+        screen = screen[:, int(screen_height*0.4):int(screen_height * 0.8)]
+        view_width = int(screen_width * 0.6)
+        cart_location = get_cart_location(screen_width)
         if cart_location < view_width // 2:
             slice_range = slice(view_width)
         elif cart_location > (screen_width - view_width // 2):
@@ -336,8 +349,14 @@ utilities:
     EPS_DECAY = 200
     TARGET_UPDATE = 10
 
-    policy_net = DQN().to(device)
-    target_net = DQN().to(device)
+    # Get screen size so that we can initialize layers correctly based on shape
+    # returned from AI gym. Typical dimensions at this point are close to 3x40x90
+    # which is the result of a clamped and down-scaled render buffer in get_screen()
+    init_screen = get_screen()
+    _, _, screen_height, screen_width = init_screen.shape
+
+    policy_net = DQN(screen_height, screen_width).to(device)
+    target_net = DQN(screen_height, screen_width).to(device)
     target_net.load_state_dict(policy_net.state_dict())
     target_net.eval()
 
@@ -356,6 +375,9 @@ utilities:
         steps_done += 1
         if sample > eps_threshold:
             with torch.no_grad():
+                # t.max(1) will return largest value for column of each row.
+                # second column on max result is index of where max element was
+                # found, so we pick action with the larger expected reward.
                 return policy_net(state).max(1)[1].view(1, 1)
         else:
             return torch.tensor([[random.randrange(2)]], device=device, dtype=torch.long)
@@ -412,10 +434,12 @@ simplicity.
             return
         transitions = memory.sample(BATCH_SIZE)
         # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
-        # detailed explanation).
+        # detailed explanation). This converts batch-array of Transitions
+        # to Transition of batch-arrays.
         batch = Transition(*zip(*transitions))
 
         # Compute a mask of non-final states and concatenate the batch elements
+        # (a final state would've been the one after which simulation ended)
         non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
                                               batch.next_state)), device=device, dtype=torch.uint8)
         non_final_next_states = torch.cat([s for s in batch.next_state
@@ -425,10 +449,15 @@ simplicity.
         reward_batch = torch.cat(batch.reward)
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-        # columns of actions taken
+        # columns of actions taken. These are the actions which would've been taken
+        # for each batch state according to policy_net
         state_action_values = policy_net(state_batch).gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.
+        # Expected values of actions for non_final_next_states are computed based
+        # on the "older" target_net; selecting their best reward with max(1)[0].
+        # This is merged based on the mask, such that we'll have either the expected
+        # state value or 0 in case the state was final.
         next_state_values = torch.zeros(BATCH_SIZE, device=device)
         next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
         # Compute the expected Q values
@@ -453,7 +482,8 @@ an action, execute it, observe the next screen and the reward (always
 fails), we restart the loop.
 
 Below, `num_episodes` is set small. You should download
-the notebook and run lot more epsiodes.
+the notebook and run lot more epsiodes, such as 300+ for meaningful
+duration improvements.
 
 
 
@@ -494,7 +524,7 @@ the notebook and run lot more epsiodes.
                 episode_durations.append(t + 1)
                 plot_durations()
                 break
-        # Update the target network
+        # Update the target network, copying all weights and biases in DQN
         if i_episode % TARGET_UPDATE == 0:
             target_net.load_state_dict(policy_net.state_dict())
 
@@ -503,6 +533,20 @@ the notebook and run lot more epsiodes.
     env.close()
     plt.ioff()
     plt.show()
+
+
+Here is the diagram that illustrates the overall resulting data flow.
+
+.. figure:: /_static/img/reinforcement_learning_diagram.jpg
+
+Actions are chosen either randomly or based on a policy, getting the next
+step sample from the gym environment. We record the results in the
+replay memory and also run optimization step on every iteration.
+Optimization picks a random batch from the replay memory to do training of the
+new policy. "Older" target_net is also used in optimization to compute the
+expected Q values; it is updated occasionally to keep it current.
+
+
 
 **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
