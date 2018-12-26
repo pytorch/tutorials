@@ -305,7 +305,7 @@ model_conv = model_conv.to(device)
 criterion = nn.CrossEntropyLoss()
 
 # Observe that only parameters of final layer are being optimized as
-# opoosed to before.
+# opposed to before.
 optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs
