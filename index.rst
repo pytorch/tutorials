@@ -56,9 +56,13 @@ Getting Started
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
 
-
-
 .. .. galleryitem:: beginner/saving_loading_models.py
+
+.. customgalleryitem::
+   :figure: /_static/img/torch.nn.png
+   :tooltip: Use torch.nn to create and train a neural network
+   :description: :doc:`beginner/nn_tutorial`
+
 
 .. raw:: html
 
@@ -230,6 +234,7 @@ Production Usage
    beginner/transfer_learning_tutorial
    beginner/deploy_seq2seq_hybrid_frontend_tutorial
    beginner/saving_loading_models
+   beginner/nn_tutorial
 
 .. toctree::
    :maxdepth: 2
