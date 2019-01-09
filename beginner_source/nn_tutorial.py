@@ -2,7 +2,7 @@
 """
 What is `torch.nn` *really*?
 ============================
-by Jeremy Howard, `fast.ai <https://fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
+by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 """
 ###############################################################################
 # We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
@@ -29,13 +29,13 @@ by Jeremy Howard, `fast.ai <https://fast.ai>`_. Thanks to Rachel Thomas and Fran
 # MNIST data setup
 # ----------------
 #
-# We will use the classic `MNIST <https://deeplearning.net/data/mnist/>`_ dataset,
+# We will use the classic `MNIST <http://deeplearning.net/data/mnist/>`_ dataset,
 # which consists of black-and-white images of hand-drawn digits (between 0 and 9).
 #
 # We will use `pathlib <https://docs.python.org/3/library/pathlib.html>`_
 # for dealing with paths (part of the Python 3 standard library), and will
 # download the dataset using
-# `requests <https://docs.python-requests.org/en/master/>`_. We will only
+# `requests <http://docs.python-requests.org/en/master/>`_. We will only
 # import modules when we use them, so you can see exactly what's being
 # used at each point.
 
@@ -47,7 +47,7 @@ PATH = DATA_PATH / "mnist"
 
 PATH.mkdir(parents=True, exist_ok=True)
 
-URL = "https://deeplearning.net/data/mnist/"
+URL = "http://deeplearning.net/data/mnist/"
 FILENAME = "mnist.pkl.gz"
 
 if not (PATH / FILENAME).exists():
@@ -109,7 +109,7 @@ print(y_train.min(), y_train.max())
 # PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
-#    `Xavier initialisation <https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
+#    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
 #    (by multiplying with 1/sqrt(n)).
 
 import math

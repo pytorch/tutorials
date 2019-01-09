@@ -1,6 +1,6 @@
 Custom C++ and CUDA Extensions
 ==============================
-**Author**: `Peter Goldsborough <https://goldsborough.me>`_
+**Author**: `Peter Goldsborough <https://www.goldsborough.me/>`_
 
 
 PyTorch provides a plethora of operations related to neural networks, arbitrary

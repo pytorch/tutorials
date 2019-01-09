@@ -503,7 +503,7 @@ predict('Satoshi')
 #     (-1.39) Polish
 #     (-3.51) Czech
 #
-# Run ``server.py`` and visit https://localhost:5533/Yourname to get JSON
+# Run ``server.py`` and visit http://localhost:5533/Yourname to get JSON
 # output of predictions.
 #
 

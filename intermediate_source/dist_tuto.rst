@@ -494,7 +494,7 @@ field of high-performance computing. It allows to do point-to-point and
 collective communications and was the main inspiration for the API of
 ``torch.distributed``. Several implementations of MPI exist (e.g.
 `Open-MPI <https://www.open-mpi.org/>`__,
-`MVAPICH2 <https://mvapich.cse.ohio-state.edu/>`__, `Intel
+`MVAPICH2 <http://mvapich.cse.ohio-state.edu/>`__, `Intel
 MPI <https://software.intel.com/en-us/intel-mpi-library>`__) each
 optimized for different purposes. The advantage of using the MPI backend
 lies in MPI's wide availability - and high-level of optimization - on
@@ -606,7 +606,7 @@ that each process will open the file, write its information, and wait
 until everybody did so. After what all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
-`fcntl <https://man7.org/linux/man-pages/man2/fcntl.2.html>`__. Note that
+`fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__. Note that
 you can specify ranks manually or let the processes figure it out by
 themselves. Be defining a unique ``groupname`` per job you can use the
 same file path for multiple jobs and safely avoid collision.

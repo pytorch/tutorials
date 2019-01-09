@@ -1,6 +1,6 @@
 PyTorch for Former Torch Users
 ------------------------------
-**Author**: `Soumith Chintala <https://soumith.ch>`_
+**Author**: `Soumith Chintala <http://soumith.ch>`_
 
 In this tutorial, you will learn the following:
 

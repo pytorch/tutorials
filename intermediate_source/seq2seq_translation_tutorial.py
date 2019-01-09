@@ -521,7 +521,7 @@ def tensorsFromPair(pair):
 # each next input, instead of using the decoder's guess as the next input.
 # Using teacher forcing causes it to converge faster but `when the trained
 # network is exploited, it may exhibit
-# instability <https://minds.jacobs-university.de/sites/default/files/uploads/papers/ESNTutorialRev.pdf>`__.
+# instability <http://minds.jacobs-university.de/sites/default/files/uploads/papers/ESNTutorialRev.pdf>`__.
 #
 # You can observe outputs of teacher-forced networks that read with
 # coherent grammar but wander far from the correct translation -
