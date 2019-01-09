@@ -90,8 +90,8 @@ print(len(params))
 print(params[0].size())  # conv1's .weight
 
 ########################################################################
-# Let try a random 32x32 input
-# Note: Expected input size to this net(LeNet) is 32x32. To use this net on
+# Let try a random 32x32 input.
+# Note: expected input size of this net (LeNet) is 32x32. To use this net on
 # MNIST dataset, please resize the images from the dataset to 32x32.
 
 input = torch.randn(1, 1, 32, 32)
@@ -130,8 +130,8 @@ out.backward(torch.randn(1, 10))
 #      registered as a parameter when assigned as an attribute to a*
 #      ``Module``.
 #   -  ``autograd.Function`` - Implements *forward and backward definitions
-#      of an autograd operation*. Every ``Tensor`` operation, creates at
-#      least a single ``Function`` node, that connects to functions that
+#      of an autograd operation*. Every ``Tensor`` operation creates at
+#      least a single ``Function`` node that connects to functions that
 #      created a ``Tensor`` and *encodes its history*.
 #
 # **At this point, we covered:**
