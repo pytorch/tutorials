@@ -177,7 +177,7 @@ which will be optimized during learning.
 In TensorFlow, packages like
 `Keras <https://github.com/fchollet/keras>`__,
 `TensorFlow-Slim <https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/slim>`__,
-and `TFLearn <http://tflearn.org/>`__ provide higher-level abstractions
+and `TFLearn <https://tflearn.org/>`__ provide higher-level abstractions
 over raw computational graphs that are useful for building neural
 networks.
 

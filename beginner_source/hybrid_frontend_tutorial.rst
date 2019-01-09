@@ -1,6 +1,6 @@
 Hybrid Frontend Tutorials
 -------------------------
-**Authors**: `Nathan Inkawhich <http://google.com>`_ and `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
+**Authors**: `Nathan Inkawhich <https://google.com>`_ and `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
 
 In this set of tutorials, you will learn the following:
 

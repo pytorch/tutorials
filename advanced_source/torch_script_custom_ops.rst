@@ -265,7 +265,7 @@ file should then be the following:
   build an isolated, reproducible environment in which to play around with the
   code from this tutorial. If you run into further troubles, please file an
   issue in the tutorial repository or post a question in `our forum
-  <http://discuss.pytorch.org/>`_.
+  <https://discuss.pytorch.org/>`_.
 
 To now build our operator, we can run the following commands from our
 ``warp_perspective`` folder:
@@ -619,7 +619,7 @@ example will showcase this using CMake.
 	Technically, you can also dynamically load the shared library into your C++
 	application at runtime in much the same way we did it in Python. On Linux,
 	`you can do this with dlopen
-	<http://tldp.org/HOWTO/Program-Library-HOWTO/dl-libraries.html>`_. There exist
+	<https://tldp.org/HOWTO/Program-Library-HOWTO/dl-libraries.html>`_. There exist
 	equivalents on other platforms.
 
 Building on the C++ execution tutorial linked above, let's start with a minimal

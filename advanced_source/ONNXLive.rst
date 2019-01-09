@@ -7,7 +7,7 @@ This tutorial will show you to convert a neural style transfer model that has be
 What is ONNX?
 -------------
 
-ONNX (Open Neural Network Exchange) is an open format to represent deep learning models. With ONNX, AI developers can more easily move models between state-of-the-art tools and choose the combination that is best for them. ONNX is developed and supported by a community of partners. You can learn more about ONNX and what tools are supported by going to `onnx.ai <http://onnx.ai/>`_.
+ONNX (Open Neural Network Exchange) is an open format to represent deep learning models. With ONNX, AI developers can more easily move models between state-of-the-art tools and choose the combination that is best for them. ONNX is developed and supported by a community of partners. You can learn more about ONNX and what tools are supported by going to `onnx.ai <https://onnx.ai/>`_.
 
 Tutorial Overview
 -----------------
@@ -84,7 +84,7 @@ However, the pixel size of this image is important, as this will be the size for
 To get good performance, we'll use a resolution of 250x540. Feel free to take a larger resolution if you care less about
 FPS and more about style transfer quality.
 
-Let's use `ImageMagick <http://www.imagemagick.org/>`_ to create a blank image of the resolution we want:
+Let's use `ImageMagick <https://www.imagemagick.org/>`_ to create a blank image of the resolution we want:
 
 .. code-block:: bash
 

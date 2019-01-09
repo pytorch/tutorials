@@ -2,7 +2,7 @@
 """
 What is `torch.nn` *really*?
 ============================
-by Jeremy Howard, `fast.ai <http://fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
+by Jeremy Howard, `fast.ai <https://fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 """
 ###############################################################################
 # We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
@@ -29,13 +29,13 @@ by Jeremy Howard, `fast.ai <http://fast.ai>`_. Thanks to Rachel Thomas and Franc
 # MNIST data setup
 # ----------------
 #
-# We will use the classic `MNIST <http://deeplearning.net/data/mnist/>`_ dataset,
+# We will use the classic `MNIST <https://deeplearning.net/data/mnist/>`_ dataset,
 # which consists of black-and-white images of hand-drawn digits (between 0 and 9).
 #
 # We will use `pathlib <https://docs.python.org/3/library/pathlib.html>`_
 # for dealing with paths (part of the Python 3 standard library), and will
 # download the dataset using
-# `requests <http://docs.python-requests.org/en/master/>`_. We will only
+# `requests <https://docs.python-requests.org/en/master/>`_. We will only
 # import modules when we use them, so you can see exactly what's being
 # used at each point.
 
@@ -47,7 +47,7 @@ PATH = DATA_PATH / "mnist"
 
 PATH.mkdir(parents=True, exist_ok=True)
 
-URL = "http://deeplearning.net/data/mnist/"
+URL = "https://deeplearning.net/data/mnist/"
 FILENAME = "mnist.pkl.gz"
 
 if not (PATH / FILENAME).exists():
@@ -96,7 +96,7 @@ print(y_train.min(), y_train.max())
 #
 # Let's first create a model using nothing but PyTorch tensor operations. We're assuming
 # you're already familiar with the basics of neural networks. (If you're not, you can
-# learn them at `course.fast.ai <http://course.fast.ai>`_).
+# learn them at `course.fast.ai <https://course.fast.ai>`_).
 #
 # PyTorch provides methods to create random or zero-filled tensors, which we will
 # use to create our weights and bias for a simple linear model. These are just regular
@@ -109,7 +109,7 @@ print(y_train.min(), y_train.max())
 # PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
-#    `Xavier initialisation <http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
+#    `Xavier initialisation <https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>`_
 #    (by multiplying with 1/sqrt(n)).
 
 import math
@@ -548,7 +548,7 @@ print(loss_func(model(xb), yb))
 #
 # In section 1, we were just trying to get a reasonable training loop set up for
 # use on our training data.  In reality, you **always** should also have
-# a `validation set <http://www.fast.ai/2017/11/13/validation-sets/>`_, in order
+# a `validation set <https://www.fast.ai/2017/11/13/validation-sets/>`_, in order
 # to identify if you are overfitting.
 #
 # Shuffling the training data is
@@ -693,7 +693,7 @@ class Mnist_CNN(nn.Module):
 lr = 0.1
 
 ###############################################################################
-# `Momentum <http://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
+# `Momentum <https://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
 # stochastic gradient descent that takes previous updates into account as well
 # and generally leads to faster training.
 

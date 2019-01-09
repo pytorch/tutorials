@@ -1,6 +1,6 @@
 Custom C++ and CUDA Extensions
 ==============================
-**Author**: `Peter Goldsborough <http://goldsborough.me>`_
+**Author**: `Peter Goldsborough <https://goldsborough.me>`_
 
 
 PyTorch provides a plethora of operations related to neural networks, arbitrary
@@ -253,7 +253,7 @@ respect to each input of the forward pass. Ultimately, we will plop both the
 forward and backward function into a :class:`torch.autograd.Function` to create
 a nice Python binding. The backward function is slightly more involved, so
 we'll not dig deeper into the code (if you are interested, `Alex Graves' thesis
-<http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
+<https://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
 information on this):
 
 .. code-block:: cpp
@@ -314,7 +314,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<http://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/master/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
