@@ -208,7 +208,7 @@ outputs = net(images)
 
 ########################################################################
 # The outputs are energies for the 10 classes.
-# Higher the energy for a class, the more the network
+# The higher the energy for a class, the more the network
 # thinks that the image is of the particular class.
 # So, let's get the index of the highest energy:
 _, predicted = torch.max(outputs, 1)
@@ -267,7 +267,7 @@ for i in range(10):
 #
 # Training on GPU
 # ----------------
-# Just like how you transfer a Tensor on to the GPU, you transfer the neural
+# Just like how you transfer a Tensor onto the GPU, you transfer the neural
 # net onto the GPU.
 #
 # Let's first define our device as the first visible cuda device if we have
@@ -275,12 +275,12 @@ for i in range(10):
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# Assume that we are on a CUDA machine, then this should print a CUDA device:
+# Assuming that we are on a CUDA machine, this should print a CUDA device:
 
 print(device)
 
 ########################################################################
-# The rest of this section assumes that `device` is a CUDA device.
+# The rest of this section assumes that ``device`` is a CUDA device.
 #
 # Then these methods will recursively go over all modules and convert their
 # parameters and buffers to CUDA tensors:
