@@ -2,7 +2,7 @@
 """
 What is `torch.nn` *really*?
 ============================
-by Jeremy Howard, `fast.ai <http://fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
+by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 """
 ###############################################################################
 # We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
@@ -96,7 +96,7 @@ print(y_train.min(), y_train.max())
 #
 # Let's first create a model using nothing but PyTorch tensor operations. We're assuming
 # you're already familiar with the basics of neural networks. (If you're not, you can
-# learn them at `course.fast.ai <http://course.fast.ai>`_).
+# learn them at `course.fast.ai <https://course.fast.ai>`_).
 #
 # PyTorch provides methods to create random or zero-filled tensors, which we will
 # use to create our weights and bias for a simple linear model. These are just regular
@@ -548,7 +548,7 @@ print(loss_func(model(xb), yb))
 #
 # In section 1, we were just trying to get a reasonable training loop set up for
 # use on our training data.  In reality, you **always** should also have
-# a `validation set <http://www.fast.ai/2017/11/13/validation-sets/>`_, in order
+# a `validation set <https://www.fast.ai/2017/11/13/validation-sets/>`_, in order
 # to identify if you are overfitting.
 #
 # Shuffling the training data is
@@ -693,7 +693,7 @@ class Mnist_CNN(nn.Module):
 lr = 0.1
 
 ###############################################################################
-# `Momentum <http://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
+# `Momentum <https://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
 # stochastic gradient descent that takes previous updates into account as well
 # and generally leads to faster training.
 

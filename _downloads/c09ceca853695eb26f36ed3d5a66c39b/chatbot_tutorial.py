@@ -344,7 +344,7 @@ class Voc:
 MAX_LENGTH = 10  # Maximum sentence length to consider
 
 # Turn a Unicode string to plain ASCII, thanks to
-# http://stackoverflow.com/a/518232/2809427
+# https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -623,7 +623,7 @@ print("max_target_len:", max_target_len)
 #    :align: center
 #    :alt: rnn_bidir
 #
-# Image source: http://colah.github.io/posts/2015-09-NN-Types-FP/
+# Image source: https://colah.github.io/posts/2015-09-NN-Types-FP/
 #
 # Note that an ``embedding`` layer is used to encode our word indices in
 # an arbitrarily sized feature space. For our models, this layer will map
@@ -928,7 +928,7 @@ def maskNLLLoss(inp, target, mask):
 #    :width: 60%
 #    :alt: grad_clip
 #
-# Image source: Goodfellow et al. *Deep Learning*. 2016. http://www.deeplearningbook.org/
+# Image source: Goodfellow et al. *Deep Learning*. 2016. https://www.deeplearningbook.org/
 #
 # **Sequence of Operations:**
 #

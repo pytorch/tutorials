@@ -6,7 +6,7 @@ Transfer Learning Tutorial
 
 In this tutorial, you will learn how to train your network using
 transfer learning. You can read more about the transfer learning at `cs231n
-notes <http://cs231n.github.io/transfer-learning/>`__
+notes <https://cs231n.github.io/transfer-learning/>`__
 
 Quoting these notes,
 

@@ -1,6 +1,6 @@
 Writing Distributed Applications with PyTorch
 =============================================
-**Author**: `Séb Arnold <http://seba1511.com>`_
+**Author**: `Séb Arnold <https://seba1511.com>`_
 
 In this short tutorial, we will be going over the distributed package of PyTorch. We'll see how to set up the distributed setting, use the different communication strategies, and go over some the internals of the package.
 
@@ -27,7 +27,7 @@ In order to get started we need the ability to run multiple processes
 simultaneously. If you have access to compute cluster you should check
 with your local sysadmin or use your favorite coordination tool. (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
-`clustershell <http://cea-hpc.github.io/clustershell/>`__, or
+`clustershell <https://cea-hpc.github.io/clustershell/>`__, or
 `others <https://slurm.schedmd.com/>`__) For the purpose of this
 tutorial, we will use a single machine and fork multiple processes using
 the following template.
@@ -74,7 +74,7 @@ every process will be able to coordinate through a master, using the
 same ip address and port. Note that we used the TCP backend, but we
 could have used
 `MPI <https://en.wikipedia.org/wiki/Message_Passing_Interface>`__ or
-`Gloo <http://github.com/facebookincubator/gloo>`__ instead. (c.f.
+`Gloo <https://github.com/facebookincubator/gloo>`__ instead. (c.f.
 `Section 5.1 <#communication-backends>`__) We will go over the magic
 happening in ``dist.init_process_group`` at the end of this tutorial,
 but it essentially allows processes to communicate with each other by
@@ -377,7 +377,7 @@ world.
 could train any model on a large computer cluster.
 
 **Note:** While the last sentence is *technically* true, there are `a
-lot more tricks <http://seba-1511.github.io/dist_blog>`__ required to
+lot more tricks <https://seba-1511.github.io/dist_blog>`__ required to
 implement a production-level implementation of synchronous SGD. Again,
 use what `has been tested and
 optimized <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
@@ -500,7 +500,7 @@ optimized for different purposes. The advantage of using the MPI backend
 lies in MPI's wide availability - and high-level of optimization - on
 large computer clusters. `Some <https://developer.nvidia.com/mvapich>`__
 `recent <https://developer.nvidia.com/ibm-spectrum-mpi>`__
-`implementations <http://www.open-mpi.org/>`__ are also able to take
+`implementations <https://www.open-mpi.org/>`__ are also able to take
 advantage of CUDA IPC and GPU Direct technologies in order to avoid
 memory copies through the CPU.
 
