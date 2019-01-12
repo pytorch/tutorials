@@ -10,6 +10,7 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = PyTorchTutorials
 SOURCEDIR     = .
 BUILDDIR      = _build
+DATADIR       = _data
 GH_PAGES_SOURCES = $(SOURCEDIR) Makefile
 
 # Put it first so that "make" without argument is like "make help".
@@ -27,47 +28,58 @@ download:
 	# IMPORTANT NOTE: Please make sure your dataset is downloaded to *_source/data folder,
 	# otherwise CI might silently break.
 
-	# transfer learning tutorial data
-	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip
-	unzip -o hymenoptera_data.zip -d beginner_source/data
-	
-	# nlp tutorial data
-	wget -N https://download.pytorch.org/tutorial/data.zip
-	unzip -o data.zip -d intermediate_source/  # This will unzip all files in data.zip to intermediate_source/data/ folder
-	
-	# data loader tutorial
-	wget -N https://download.pytorch.org/tutorial/faces.zip
-	unzip -o faces.zip -d beginner_source/data
+	# NOTE: Please consider using the Step1 and one of Step2 for new dataset,
+	# [something] should be replaced with the actual value.
+	# Step1. DOWNLOAD: wget -N [SOURCE_FILE] -P $(DATADIR)
+	# Step2-1. UNZIP: unzip -o $(DATADIR)/[SOURCE_FILE] -d [*_source/data/]
+	# Step2-2. UNTAR: tar -xzf $(DATADIR)/[SOURCE_FILE] -C [*_source/data/]
+	# Step2-3. AS-IS: cp $(DATADIR)/[SOURCE_FILE] [*_source/data/]
 
-	wget -N https://download.pytorch.org/models/tutorials/4000_checkpoint.tar
-	cp 4000_checkpoint.tar beginner_source/data
-	
+	# make data directories
+	mkdir -p $(DATADIR)
+	mkdir -p advanced_source/data
+	mkdir -p beginner_source/data
+	mkdir -p intermediate_source/data
+
+	# transfer learning tutorial data
+	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/hymenoptera_data.zip -d beginner_source/data/
+
+	# nlp tutorial data
+	wget -N https://download.pytorch.org/tutorial/data.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/data.zip -d intermediate_source/  # This will unzip all files in data.zip to intermediate_source/data/ folder
+
+	# data loader tutorial
+	wget -N https://download.pytorch.org/tutorial/faces.zip -P $(DATADIR)
+	unzip -o $(DATADIR)/faces.zip -d beginner_source/data/
+
+	wget -N https://download.pytorch.org/models/tutorials/4000_checkpoint.tar -P $(DATADIR)
+	cp $(DATADIR)/4000_checkpoint.tar beginner_source/data/
+
 	# neural style images
 	rm -rf advanced_source/data/images/ || true
 	mkdir -p advanced_source/data/images/
 	cp -r _static/img/neural-style/ advanced_source/data/images/
 
 	# Download dataset for beginner_source/dcgan_faces_tutorial.py
-	curl https://s3.amazonaws.com/pytorch-tutorial-assets/img_align_celeba.zip --output img_align_celeba.zip
-	sudo mkdir -p beginner_source/data/celeba
-	sudo chmod -R 0777 beginner_source/data/celeba
-	unzip img_align_celeba.zip -d beginner_source/data/celeba > null
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/img_align_celeba.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/img_align_celeba.zip -d beginner_source/data/celeba
 
 	# Download dataset for beginner_source/hybrid_frontend/introduction_to_hybrid_frontend_tutorial.py
-	mkdir data/
-	curl https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data --output beginner_source/data/iris.data
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/iris.data -P $(DATADIR)
+	cp $(DATADIR)/iris.data beginner_source/data/
 
 	# Download dataset for beginner_source/chatbot_tutorial.py
-	curl https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus.zip --output cornell_movie_dialogs_corpus.zip
-	mkdir -p beginner_source/data
-	unzip cornell_movie_dialogs_corpus.zip -d beginner_source/data/ > null
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/cornell_movie_dialogs_corpus.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/cornell_movie_dialogs_corpus.zip -d beginner_source/data/
 
 	# Download dataset for beginner_source/audio_classifier_tutorial.py
-	curl https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz --output UrbanSound8K.tar.gz
-	tar -xzf UrbanSound8K.tar.gz -C ./beginner_source/data
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/UrbanSound8K.tar.gz -P $(DATADIR)
+	tar -xzf $(DATADIR)/UrbanSound8K.tar.gz -C ./beginner_source/data/
 
 	# Download model for beginner_source/fgsm_tutorial.py
-	curl https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth --output ./beginner_source/data/lenet_mnist_model.pth
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth -P $(DATADIR)
+	cp $(DATADIR)/lenet_mnist_model.pth ./beginner_source/data/lenet_mnist_model.pth
 
 docs:
 	make download
