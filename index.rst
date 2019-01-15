@@ -17,10 +17,10 @@ Some considerations:
   <https://pytorch.org/docs>`_ or via inline help.
 * If you would like the tutorials section improved, please open a github issue
   `here <https://github.com/pytorch/tutorials>`_ with your feedback.
-* Check out our 
-  `PyTorch Cheat Sheet <https://pytorch.org/tutorials/beginner/ptcheat.html>`_ 
-  for additional useful information. 
-* Finally, here's a link to the 
+* Check out our
+  `PyTorch Cheat Sheet <https://pytorch.org/tutorials/beginner/ptcheat.html>`_
+  for additional useful information.
+* Finally, here's a link to the
   `PyTorch Release Notes <https://github.com/pytorch/pytorch/releases>`_
 
 Getting Started
@@ -219,6 +219,19 @@ Production Usage
 
     <div style='clear:both'></div>
 
+
+PyTorch in Other Languages
+-------------
+
+.. customgalleryitem::
+    :tooltip: Using the PyTorch C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_frontend`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
@@ -302,3 +315,11 @@ Production Usage
    beginner/aws_distributed_training_tutorial
    advanced/ONNXLive
    advanced/cpp_export
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: PyTorch in Other Languages
+
+   advanced/cpp_frontend
