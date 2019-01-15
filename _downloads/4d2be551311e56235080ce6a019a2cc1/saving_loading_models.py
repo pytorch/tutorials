@@ -53,7 +53,7 @@ functions to be familiar with:
 # -------------------------
 #
 # In PyTorch, the learnable parameters (i.e. weights and biases) of an
-# ``torch.nn.Module`` model is contained in the model’s *parameters*
+# ``torch.nn.Module`` model are contained in the model’s *parameters*
 # (accessed with ``model.parameters()``). A *state_dict* is simply a
 # Python dictionary object that maps each layer to its parameter tensor.
 # Note that only layers with learnable parameters (convolutional layers,

@@ -83,7 +83,7 @@ a python-specific format for serializing data.
     import pickle
     import gzip
 
-    with gzip.open(PATH / FILENAME, "rb") as f:
+    with gzip.open((PATH / FILENAME).as_posix(), "rb") as f:
             ((x_train, y_train), (x_valid, y_valid), _) = pickle.load(f, encoding="latin-1")
 
 
@@ -255,8 +255,8 @@ random at this stage, since we start with random weights.
 
  .. code-block:: none
 
-    tensor([-2.4912, -2.7605, -2.5176, -2.8292, -2.2452, -1.8146, -2.8291, -2.1203,
-            -1.7733, -2.3375], grad_fn=<SelectBackward>) torch.Size([64, 10])
+    tensor([-2.4508, -1.9042, -2.2481, -2.4234, -1.9494, -2.2319, -2.8293, -1.9301,
+            -2.8383, -2.8436], grad_fn=<SelectBackward>) torch.Size([64, 10])
 
 
 As you see, the ``preds`` tensor contains not only the tensor values, but also a
@@ -304,7 +304,7 @@ after a backprop pass later.
 
  .. code-block:: none
 
-    tensor(2.4034, grad_fn=<NegBackward>)
+    tensor(2.2805, grad_fn=<NegBackward>)
 
 
 Let's also implement a function to calculate the accuracy of our model.
@@ -346,7 +346,7 @@ accuracy improves as our loss improves.
 
  .. code-block:: none
 
-    tensor(0.1094)
+    tensor(0.0625)
 
 
 We can now run a training loop.  For each iteration, we will:
@@ -431,7 +431,7 @@ have increased, and they have.
 
  .. code-block:: none
 
-    tensor(0.0821, grad_fn=<NegBackward>) tensor(1.)
+    tensor(0.0820, grad_fn=<NegBackward>) tensor(1.)
 
 
 Using torch.nn.functional
@@ -494,7 +494,7 @@ confirm that our loss and accuracy are the same as before:
 
  .. code-block:: none
 
-    tensor(0.0821, grad_fn=<NllLossBackward>) tensor(1.)
+    tensor(0.0820, grad_fn=<NllLossBackward>) tensor(1.)
 
 
 Refactor using nn.Module
@@ -571,7 +571,7 @@ method automatically.
 
  .. code-block:: none
 
-    tensor(2.5518, grad_fn=<NllLossBackward>)
+    tensor(2.3259, grad_fn=<NllLossBackward>)
 
 
 Previously for our training loop we had to update the values for each parameter
@@ -645,7 +645,7 @@ Let's double-check that our loss has gone down:
 
  .. code-block:: none
 
-    tensor(0.0824, grad_fn=<NllLossBackward>)
+    tensor(0.0826, grad_fn=<NllLossBackward>)
 
 
 Refactor using nn.Linear
@@ -698,7 +698,7 @@ We instantiate our model and calculate the loss in the same way as before:
 
  .. code-block:: none
 
-    tensor(2.3063, grad_fn=<NllLossBackward>)
+    tensor(2.2953, grad_fn=<NllLossBackward>)
 
 
 We are still able to use our same ``fit`` method as before.
@@ -722,7 +722,7 @@ We are still able to use our same ``fit`` method as before.
 
  .. code-block:: none
 
-    tensor(0.0810, grad_fn=<NllLossBackward>)
+    tensor(0.0814, grad_fn=<NllLossBackward>)
 
 
 Refactor using optim
@@ -799,8 +799,8 @@ can reuse it in the future.
 
  .. code-block:: none
 
-    tensor(2.3263, grad_fn=<NllLossBackward>)
-    tensor(0.0811, grad_fn=<NllLossBackward>)
+    tensor(2.3277, grad_fn=<NllLossBackward>)
+    tensor(0.0806, grad_fn=<NllLossBackward>)
 
 
 Refactor using Dataset
@@ -888,7 +888,7 @@ Now, we can do these two steps together:
 
  .. code-block:: none
 
-    tensor(0.0822, grad_fn=<NllLossBackward>)
+    tensor(0.0811, grad_fn=<NllLossBackward>)
 
 
 Refactor using DataLoader
@@ -954,7 +954,7 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
 
  .. code-block:: none
 
-    tensor(0.0829, grad_fn=<NllLossBackward>)
+    tensor(0.0798, grad_fn=<NllLossBackward>)
 
 
 Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
@@ -1037,8 +1037,8 @@ and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
 
  .. code-block:: none
 
-    0 tensor(0.3813)
-    1 tensor(0.2931)
+    0 tensor(0.2970)
+    1 tensor(0.2844)
 
 
 Create fit() and get_data()
@@ -1148,8 +1148,8 @@ model can be run in 3 lines of code:
 
  .. code-block:: none
 
-    0 0.31177826709747314
-    1 0.3063953022480011
+    0 0.30143425164222715
+    1 0.2925441846847534
 
 
 You can use these basic 3 lines of code to train a wide variety of models.
@@ -1221,8 +1221,8 @@ and generally leads to faster training.
 
  .. code-block:: none
 
-    0 0.3508880533695221
-    1 0.22647719130516053
+    0 0.32751402988433836
+    1 0.2233603606700897
 
 
 nn.Sequential
@@ -1295,8 +1295,8 @@ The model created with ``Sequential`` is simply:
 
  .. code-block:: none
 
-    0 0.32941507740020753
-    1 0.24592432107925416
+    0 0.31878321685791017
+    1 0.23863072872161864
 
 
 Wrapping DataLoader
@@ -1391,8 +1391,8 @@ Let's try it out:
 
  .. code-block:: none
 
-    0 0.5002322141647338
-    1 0.37937569923400877
+    0 0.6025283242702484
+    1 0.5115314152240753
 
 
 Using your GPU
@@ -1496,8 +1496,8 @@ You should find it runs faster now:
 
  .. code-block:: none
 
-    0 0.3192318927764893
-    1 0.304834810256958
+    0 0.46617322511672976
+    1 0.4432950387954712
 
 
 Closing thoughts
@@ -1534,7 +1534,7 @@ what we've seen:
  - ``DataLoader``: Takes any ``Dataset`` and creates an iterator which returns batches of data.
 
 
-**Total running time of the script:** ( 1 minutes  14.704 seconds)
+**Total running time of the script:** ( 1 minutes  17.858 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:
