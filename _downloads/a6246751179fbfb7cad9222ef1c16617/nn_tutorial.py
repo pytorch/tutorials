@@ -61,7 +61,7 @@ if not (PATH / FILENAME).exists():
 import pickle
 import gzip
 
-with gzip.open((PATH / FILENAME).as_posix(), "rb") as f:
+with gzip.open(PATH / FILENAME, "rb") as f:
         ((x_train, y_train), (x_valid, y_valid), _) = pickle.load(f, encoding="latin-1")
 
 ###############################################################################
