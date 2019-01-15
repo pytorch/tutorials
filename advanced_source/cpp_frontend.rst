@@ -662,6 +662,11 @@ this task. In particular, we'll use a `DCGAN architecture
 <https://arxiv.org/abs/1511.06434>`_ -- one of the first and simplest of its
 kind, but entirely sufficient for this task.
 
+.. tip::
+
+  You can find the full source code presented in this tutorial `in this
+  repository <https://github.com/pytorch/examples/tree/master/cpp/dcgan>`_.
+
 What was a GAN aGAN?
 ********************
 
@@ -1338,8 +1343,10 @@ you get stuck. Also, remember that you can expect the C++ frontend to follow the
 design and semantics of the Python frontend whenever we could make this
 possible, so you can leverage this fact to increase your learning rate.
 
-You can find the full source code presented in this tutorial in `here
-<https://github.com/pytorch/examples/cpp>`_.
+.. tip::
+
+  You can find the full source code presented in this tutorial `in this
+  repository <https://github.com/pytorch/examples/tree/master/cpp/dcgan>`_.
 
 As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues
