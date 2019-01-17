@@ -62,7 +62,7 @@ of our custom operator in C++. Let's call the file for this implementation
     cv::Mat output_mat;
     cv::warpPerspective(image_mat, output_mat, warp_mat, /*dsize=*/{8, 8});
 
-    torch::Tensor output = torch::from_blob(output.ptr<float>(), /*sizes=*/{8, 8});
+    torch::Tensor output = torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8});
     return output.clone();
   }
 
@@ -148,7 +148,7 @@ like this:
 
 .. code-block:: cpp
 
-  torch::from_blob(output.ptr<float>(), /*sizes=*/{8, 8})
+  torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8})
 
 We use the ``.ptr<float>()`` method on the OpenCV ``Mat`` class to get a raw
 pointer to the underlying data (just like ``.data<float>()`` for the PyTorch
