@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Using the PyTorch C++ Frontend — PyTorch Tutorials 1.0.0.dev20190121 documentation</title>
+<title>Using the PyTorch C++ Frontend — PyTorch Tutorials 1.0.0.dev20190122 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -61,7 +61,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190121
+                  1.0.0.dev20190122
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -965,7 +965,7 @@ the range of <code class="docutils literal notranslate"><span class="pre">-1</sp
 Second, we apply the <code class="docutils literal notranslate"><span class="pre">Stack</span></code> <em>collation</em>, which takes a batch of tensors and
 stacks them into a single tensor along the first dimension:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">dataset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">datasets</span><span class="o">::</span><span class="n">MNIST</span><span class="p">(</span><span class="s">"./mnist"</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">transforms</span><span class="o">::</span><span class="n">Normalize</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+    <span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">transforms</span><span class="o">::</span><span class="n">Normalize</span><span class="o">&lt;&gt;</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
     <span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">transforms</span><span class="o">::</span><span class="n">Stack</span><span class="o">&lt;&gt;</span><span class="p">());</span>
 </pre></div>
 </div>
@@ -977,7 +977,7 @@ to download the MNIST dataset.</p>
 loader, we use <code class="docutils literal notranslate"><span class="pre">torch::data::make_data_loader</span></code>, which returns a
 <code class="docutils literal notranslate"><span class="pre">std::unique_ptr</span></code> of the correct type (which depends on the type of the
 dataset, the type of the sampler and some other implementation details):</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">make_data_loader</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">dataset</span><span class="p">));</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">make_data_loader</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">dataset</span><span class="p">));</span>
 </pre></div>
 </div>
 <p>The data loader does come with a lot of options. You can inspect the full set
@@ -988,7 +988,7 @@ If we set <code class="docutils literal notranslate"><span class="pre">workers</
 concurrently. We should also increase the batch size from its default of <code class="docutils literal notranslate"><span class="pre">1</span></code>
 to something more reasonable, like <code class="docutils literal notranslate"><span class="pre">64</span></code> (the value of <code class="docutils literal notranslate"><span class="pre">kBatchSize</span></code>). So
 let’s create a <code class="docutils literal notranslate"><span class="pre">DataLoaderOptions</span></code> object and set the appropriate properties:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">make_data_loader</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">make_data_loader</span><span class="p">(</span>
     <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span>
     <span class="n">torch</span><span class="o">::</span><span class="n">data</span><span class="o">::</span><span class="n">DataLoaderOptions</span><span class="p">().</span><span class="n">batch_size</span><span class="p">(</span><span class="n">kBatchSize</span><span class="p">).</span><span class="n">workers</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
 </pre></div>

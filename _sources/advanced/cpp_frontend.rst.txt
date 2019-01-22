@@ -899,7 +899,7 @@ stacks them into a single tensor along the first dimension:
 .. code-block:: cpp
 
   auto dataset = torch::data::datasets::MNIST("./mnist")
-      .map(torch::data::transforms::Normalize(0.5, 0.5))
+      .map(torch::data::transforms::Normalize<>(0.5, 0.5))
       .map(torch::data::transforms::Stack<>());
 
 Note that the MNIST dataset should be located in the ``./mnist`` directory
@@ -914,7 +914,7 @@ dataset, the type of the sampler and some other implementation details):
 
 .. code-block:: cpp
 
-  auto dataloader = torch::data::make_data_loader(std::move(dataset));
+  auto data_loader = torch::data::make_data_loader(std::move(dataset));
 
 The data loader does come with a lot of options. You can inspect the full set
 `here
@@ -928,7 +928,7 @@ let's create a ``DataLoaderOptions`` object and set the appropriate properties:
 
 .. code-block:: cpp
 
-  auto dataloader = torch::data::make_data_loader(
+  auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
 
