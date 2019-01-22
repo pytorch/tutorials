@@ -914,7 +914,7 @@ dataset, the type of the sampler and some other implementation details):
 
 .. code-block:: cpp
 
-  auto dataloader = torch::data::make_data_loader(std::move(dataset));
+  auto data_loader = torch::data::make_data_loader(std::move(dataset));
 
 The data loader does come with a lot of options. You can inspect the full set
 `here
@@ -928,7 +928,7 @@ let's create a ``DataLoaderOptions`` object and set the appropriate properties:
 
 .. code-block:: cpp
 
-  auto dataloader = torch::data::make_data_loader(
+  auto data_loader = torch::data::make_data_loader(
       std::move(dataset),
       torch::data::DataLoaderOptions().batch_size(kBatchSize).workers(2));
 
