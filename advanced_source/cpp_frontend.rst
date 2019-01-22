@@ -899,7 +899,7 @@ stacks them into a single tensor along the first dimension:
 .. code-block:: cpp
 
   auto dataset = torch::data::datasets::MNIST("./mnist")
-      .map(torch::data::transforms::Normalize(0.5, 0.5))
+      .map(torch::data::transforms::Normalize<>(0.5, 0.5))
       .map(torch::data::transforms::Stack<>());
 
 Note that the MNIST dataset should be located in the ``./mnist`` directory
