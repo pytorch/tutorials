@@ -90,8 +90,8 @@ in Python). The return type of our ``warp_perspective`` function will also be a
   The TorchScript compiler understands a fixed number of types. Only these types
   can be used as arguments to your custom operator. Currently these types are:
   ``torch::Tensor``, ``torch::Scalar``, ``double``, ``int64_t`` and
-  ``std::vector``s of these types. Note that __only__ ``double`` and __not__
-  ``float``, and __only__ ``int64_t`` and __not__ other integral types such as
+  ``std::vector`` s of these types. Note that *only* ``double`` and *not*
+  ``float``, and *only* ``int64_t`` and *not* other integral types such as
   ``int``, ``short`` or ``long`` are supported.
 
 Inside of our function, the first thing we need to do is convert our PyTorch
@@ -1018,7 +1018,7 @@ expects from a module), this route can be slightly quirky. That said, all you
 need is a ``setup.py`` file in place of the ``CMakeLists.txt`` which looks like
 this:
 
-.. code-block::
+.. code-block:: python
 
   from setuptools import setup
   from torch.utils.cpp_extension import BuildExtension, CppExtension
@@ -1081,7 +1081,7 @@ This will produce a shared library called ``warp_perspective.so``, which we can
 pass to ``torch.ops.load_library`` as we did earlier to make our operator
 visible to TorchScript:
 
-.. code-block::
+.. code-block:: python
 
   >>> import torch
   >>> torch.ops.load_library("warp_perspective.so")
