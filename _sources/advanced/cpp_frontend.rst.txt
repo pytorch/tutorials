@@ -284,7 +284,7 @@ In C++, it would look like this:
       b = register_parameter("b", torch::randn(M));
     }
     torch::Tensor forward(torch::Tensor input) {
-      return torch::admm(b, input, W);
+      return torch::addmm(b, input, W);
     }
     torch::Tensor W, b;
   };

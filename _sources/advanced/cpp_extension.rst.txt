@@ -516,7 +516,7 @@ A wonderful fact about PyTorch's *ATen* backend is that it abstracts the
 computing device you are running on. This means the same code we wrote for CPU
 can *also* run on GPU, and individual operations will correspondingly dispatch
 to GPU-optimized implementations. For certain operations like matrix multiply
-(like ``mm`` or ``admm``), this is a big win. Let's take a look at how much
+(like ``mm`` or ``addmm``), this is a big win. Let's take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
 our implementation are required, we simply need to put our tensors in GPU
 memory from Python, with either adding ``device=cuda_device`` argument at
