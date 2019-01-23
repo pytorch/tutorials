@@ -102,6 +102,11 @@ environment, however you are free to follow along on MacOS or Windows too.
   <https://pytorch.org/cppdocs/installing.html>`_ describes the following steps
   in more detail.
 
+.. tip::
+  On Windows, debug and release builds are not ABI-compatible. If you plan to
+  build your project in debug mode, we recommend
+  `building PyTorch from source <https://github.com/pytorch/pytorch#from-source>`_.
+
 The first step is to download the LibTorch distribution locally, via the link
 retrieved from the PyTorch website. For a vanilla Ubuntu Linux environment, this
 means running:
