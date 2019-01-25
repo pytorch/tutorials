@@ -811,7 +811,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # ---------------
 #
 # If you're lucky enough to have access to a CUDA-capable GPU (you can
-# rent one for about about $0.50/hour from most cloud providers) you can
+# rent one for about $0.50/hour from most cloud providers) you can
 # use it to speed up your code. First check that your GPU is working in
 # Pytorch:
 
