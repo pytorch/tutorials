@@ -132,7 +132,7 @@ Do a tensor operation:
 
  .. code-block:: none
 
-    <AddBackward0 object at 0x7fc74e881c18>
+    <AddBackward0 object at 0x7f341a4efef0>
 
 
 Do more operations on ``y``
@@ -187,7 +187,7 @@ flag in-place. The input flag defaults to ``False`` if not given.
 
     False
     True
-    <SumBackward0 object at 0x7fc74e8ab898>
+    <SumBackward0 object at 0x7f341a51a898>
 
 
 Gradients
@@ -248,23 +248,23 @@ is a Jacobian matrix:
 
 .. math::
   J=\left(\begin{array}{ccc}
-   \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
+   \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
    \vdots & \ddots & \vdots\\
-   \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+   \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
    \end{array}\right)
 
 Generally speaking, ``torch.autograd`` is an engine for computing
-Jacobian-vector product. That is, given any vector
+vector-Jacobian product. That is, given any vector
 :math:`v=\left(\begin{array}{cccc} v_{1} & v_{2} & \cdots & v_{m}\end{array}\right)^{T}`,
-compute the product :math:`J\cdot v`. If :math:`v` happens to be
+compute the product :math:`v^{T}\cdot J`. If :math:`v` happens to be
 the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`,
 that is,
 :math:`v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}`,
-then by the chain rule, the Jacobian-vector product would be the
+then by the chain rule, the vector-Jacobian product would be the
 gradient of :math:`l` with respect to :math:`\vec{x}`:
 
 .. math::
-  J\cdot v=\left(\begin{array}{ccc}
+  J^{T}\cdot v=\left(\begin{array}{ccc}
    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
    \vdots & \ddots & \vdots\\
    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
@@ -278,12 +278,15 @@ gradient of :math:`l` with respect to :math:`\vec{x}`:
    \frac{\partial l}{\partial x_{n}}
    \end{array}\right)
 
-This characteristic of Jacobian-vector product makes it very
+(Note that :math:`v^{T}\cdot J` gives a row vector which can be
+treated as a column vector by taking :math:`J^{T}\cdot v`.)
+
+This characteristic of vector-Jacobian product makes it very
 convenient to feed external gradients into a model that has
 non-scalar output.
 
 
-Now let's take a look at an example of Jacobian-vector product:
+Now let's take a look at an example of vector-Jacobian product:
 
 
 
@@ -308,12 +311,12 @@ Now let's take a look at an example of Jacobian-vector product:
 
  .. code-block:: none
 
-    tensor([-628.8815,  555.5963, -564.8652], grad_fn=<MulBackward0>)
+    tensor([-1109.3398,    -1.4602,   835.0535], grad_fn=<MulBackward0>)
 
 
 Now in this case ``y`` is no longer a scalar. ``torch.autograd``
 could not compute the full Jacobian directly, but if we just
-want the Jacobian-vector product, simply pass the vector to
+want the vector-Jacobian product, simply pass the vector to
 ``backward`` as argument:
 
 
@@ -335,7 +338,7 @@ want the Jacobian-vector product, simply pass the vector to
 
  .. code-block:: none
 
-    tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
+    tensor([1.0240e+02, 1.0240e+03, 1.0240e-01])
 
 
 You can also stop autograd from tracking history on Tensors
@@ -373,7 +376,7 @@ Documentation of ``autograd`` and ``Function`` is at
 https://pytorch.org/docs/autograd
 
 
-**Total running time of the script:** ( 0 minutes  3.399 seconds)
+**Total running time of the script:** ( 0 minutes  3.519 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_autograd_tutorial.py:

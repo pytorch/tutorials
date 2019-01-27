@@ -223,7 +223,7 @@ argument that is a tensor of matching shape.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;AddBackward0 object at 0x7fc74e881c18&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;AddBackward0 object at 0x7f341a4efef0&gt;
 </pre></div>
 </div>
 <p>Do more operations on <code class="docutils literal notranslate"><span class="pre">y</span></code></p>
@@ -252,7 +252,7 @@ flag in-place. The input flag defaults to <code class="docutils literal notransl
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>False
 True
-&lt;SumBackward0 object at 0x7fc74e8ab898&gt;
+&lt;SumBackward0 object at 0x7f341a51a898&gt;
 </pre></div>
 </div>
 </div>
@@ -285,21 +285,21 @@ then the gradient of <span class="math notranslate nohighlight">\(\vec{y}\)</spa
 is a Jacobian matrix:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}J=\left(\begin{array}{ccc}
- \frac{\partial y_{1}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{1}}\\
+ \frac{\partial y_{1}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{1}}{\partial x_{n}}\\
  \vdots &amp; \ddots &amp; \vdots\\
- \frac{\partial y_{1}}{\partial x_{n}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{n}}
+ \frac{\partial y_{m}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{n}}
  \end{array}\right)\end{split}\]</div>
 <p>Generally speaking, <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code> is an engine for computing
-Jacobian-vector product. That is, given any vector
+vector-Jacobian product. That is, given any vector
 <span class="math notranslate nohighlight">\(v=\left(\begin{array}{cccc} v_{1} &amp; v_{2} &amp; \cdots &amp; v_{m}\end{array}\right)^{T}\)</span>,
-compute the product <span class="math notranslate nohighlight">\(J\cdot v\)</span>. If <span class="math notranslate nohighlight">\(v\)</span> happens to be
+compute the product <span class="math notranslate nohighlight">\(v^{T}\cdot J\)</span>. If <span class="math notranslate nohighlight">\(v\)</span> happens to be
 the gradient of a scalar function <span class="math notranslate nohighlight">\(l=g\left(\vec{y}\right)\)</span>,
 that is,
 <span class="math notranslate nohighlight">\(v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} &amp; \cdots &amp; \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}\)</span>,
-then by the chain rule, the Jacobian-vector product would be the
+then by the chain rule, the vector-Jacobian product would be the
 gradient of <span class="math notranslate nohighlight">\(l\)</span> with respect to <span class="math notranslate nohighlight">\(\vec{x}\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}J\cdot v=\left(\begin{array}{ccc}
+\[\begin{split}J^{T}\cdot v=\left(\begin{array}{ccc}
  \frac{\partial y_{1}}{\partial x_{1}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{1}}\\
  \vdots &amp; \ddots &amp; \vdots\\
  \frac{\partial y_{1}}{\partial x_{n}} &amp; \cdots &amp; \frac{\partial y_{m}}{\partial x_{n}}
@@ -312,10 +312,12 @@ gradient of <span class="math notranslate nohighlight">\(l\)</span> with respect
  \vdots\\
  \frac{\partial l}{\partial x_{n}}
  \end{array}\right)\end{split}\]</div>
-<p>This characteristic of Jacobian-vector product makes it very
+<p>(Note that <span class="math notranslate nohighlight">\(v^{T}\cdot J\)</span> gives a row vector which can be
+treated as a column vector by taking <span class="math notranslate nohighlight">\(J^{T}\cdot v\)</span>.)</p>
+<p>This characteristic of vector-Jacobian product makes it very
 convenient to feed external gradients into a model that has
 non-scalar output.</p>
-<p>Now let’s take a look at an example of Jacobian-vector product:</p>
+<p>Now let’s take a look at an example of vector-Jacobian product:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
@@ -326,12 +328,12 @@ non-scalar output.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-628.8815,  555.5963, -564.8652], grad_fn=&lt;MulBackward0&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-1109.3398,    -1.4602,   835.0535], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 <p>Now in this case <code class="docutils literal notranslate"><span class="pre">y</span></code> is no longer a scalar. <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code>
 could not compute the full Jacobian directly, but if we just
-want the Jacobian-vector product, simply pass the vector to
+want the vector-Jacobian product, simply pass the vector to
 <code class="docutils literal notranslate"><span class="pre">backward</span></code> as argument:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0001</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 <span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
@@ -340,7 +342,7 @@ want the Jacobian-vector product, simply pass the vector to
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([1.0240e+02, 1.0240e+03, 1.0240e-01])
 </pre></div>
 </div>
 <p>You can also stop autograd from tracking history on Tensors
@@ -362,7 +364,7 @@ False
 <p><strong>Read Later:</strong></p>
 <p>Documentation of <code class="docutils literal notranslate"><span class="pre">autograd</span></code> and <code class="docutils literal notranslate"><span class="pre">Function</span></code> is at
 <a class="reference external" href="https://pytorch.org/docs/autograd">https://pytorch.org/docs/autograd</a></p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  3.399 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  3.519 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-autograd-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/00a1ac60985c7481f4250bafeae15ffa/autograd_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_tutorial.py</span></code></a></div>
