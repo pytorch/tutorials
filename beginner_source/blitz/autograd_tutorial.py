@@ -114,23 +114,23 @@ print(x.grad)
 #
 # .. math::
 #   J=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
+#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
 #    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#    \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
 #    \end{array}\right)
 #
 # Generally speaking, ``torch.autograd`` is an engine for computing
-# Jacobian-vector product. That is, given any vector
+# vector-Jacobian product. That is, given any vector
 # :math:`v=\left(\begin{array}{cccc} v_{1} & v_{2} & \cdots & v_{m}\end{array}\right)^{T}`,
-# compute the product :math:`J\cdot v`. If :math:`v` happens to be
+# compute the product :math:`v^{T}\cdot J`. If :math:`v` happens to be
 # the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`,
 # that is,
 # :math:`v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}`,
-# then by the chain rule, the Jacobian-vector product would be the
+# then by the chain rule, the vector-Jacobian product would be the
 # gradient of :math:`l` with respect to :math:`\vec{x}`:
 #
 # .. math::
-#   J\cdot v=\left(\begin{array}{ccc}
+#   J^{T}\cdot v=\left(\begin{array}{ccc}
 #    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
 #    \vdots & \ddots & \vdots\\
 #    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
@@ -144,12 +144,15 @@ print(x.grad)
 #    \frac{\partial l}{\partial x_{n}}
 #    \end{array}\right)
 #
-# This characteristic of Jacobian-vector product makes it very
+# (Note that :math:`v^{T}\cdot J` gives a row vector which can be
+# treated as a column vector by taking :math:`J^{T}\cdot v`.)
+#
+# This characteristic of vector-Jacobian product makes it very
 # convenient to feed external gradients into a model that has
 # non-scalar output.
 
 ###############################################################
-# Now let's take a look at an example of Jacobian-vector product:
+# Now let's take a look at an example of vector-Jacobian product:
 
 x = torch.randn(3, requires_grad=True)
 
@@ -162,7 +165,7 @@ print(y)
 ###############################################################
 # Now in this case ``y`` is no longer a scalar. ``torch.autograd``
 # could not compute the full Jacobian directly, but if we just
-# want the Jacobian-vector product, simply pass the vector to
+# want the vector-Jacobian product, simply pass the vector to
 # ``backward`` as argument:
 v = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
 y.backward(v)
