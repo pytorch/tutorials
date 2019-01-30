@@ -100,7 +100,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # For this, we're going to need two classses:
 #
 # -  ``Transition`` - a named tuple representing a single transition in
-#    our environment. It maps essentially maps (state, action) pairs
+#    our environment. It essentially maps (state, action) pairs
 #    to their (next_state, reward) result, with the state being the
 #    screen difference image as described later on.
 # -  ``ReplayMemory`` - a cyclic buffer of bounded size that holds the
