@@ -351,7 +351,7 @@ to register a module like ``torch::nn::Linear``:
       another_bias = register_parameter("b", torch::randn(M));
     }
     torch::Tensor forward(torch::Tensor input) {
-      return linear(input) + another_bias;
+      return linear->forward(input) + another_bias;
     }
     torch::nn::Linear linear;
     torch::Tensor another_bias;
