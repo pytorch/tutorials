@@ -1,18 +1,18 @@
  PyTorch for former Torch users
  ------------------------------
  
-1. tensor_tutorial.py
+1. tensor_tutorial_old.py
 	Tensors
-	http://pytorch.org/tutorials/beginner/former_torchies/tensor_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/tensor_tutorial_old.html
 
-2. autograd.py
+2. autograd_tutorial_old.py
 	Autograd
-	http://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial_old.html
 
 3. nn_tutorial.py
 	nn package
-	http://pytorch.org/tutorials/beginner/former_torchies/nn_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/nn_tutorial.html
 
 4. parallelism_tutorial.py
 	Multi-GPU examples
-	http://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/parallelism_tutorial.html

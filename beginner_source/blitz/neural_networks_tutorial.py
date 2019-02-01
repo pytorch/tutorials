@@ -90,8 +90,8 @@ print(len(params))
 print(params[0].size())  # conv1's .weight
 
 ########################################################################
-# Let try a random 32x32 input
-# Note: Expected input size to this net(LeNet) is 32x32. To use this net on
+# Let try a random 32x32 input.
+# Note: expected input size of this net (LeNet) is 32x32. To use this net on
 # MNIST dataset, please resize the images from the dataset to 32x32.
 
 input = torch.randn(1, 1, 32, 32)
@@ -130,8 +130,8 @@ out.backward(torch.randn(1, 10))
 #      registered as a parameter when assigned as an attribute to a*
 #      ``Module``.
 #   -  ``autograd.Function`` - Implements *forward and backward definitions
-#      of an autograd operation*. Every ``Tensor`` operation, creates at
-#      least a single ``Function`` node, that connects to functions that
+#      of an autograd operation*. Every ``Tensor`` operation creates at
+#      least a single ``Function`` node that connects to functions that
 #      created a ``Tensor`` and *encodes its history*.
 #
 # **At this point, we covered:**
@@ -148,7 +148,7 @@ out.backward(torch.randn(1, 10))
 # value that estimates how far away the output is from the target.
 #
 # There are several different
-# `loss functions <http://pytorch.org/docs/nn.html#loss-functions>`_ under the
+# `loss functions <https://pytorch.org/docs/nn.html#loss-functions>`_ under the
 # nn package .
 # A simple loss is: ``nn.MSELoss`` which computes the mean-squared error
 # between the input and the target.
@@ -214,7 +214,7 @@ print(net.conv1.bias.grad)
 #
 #   The neural network package contains various modules and loss functions
 #   that form the building blocks of deep neural networks. A full list with
-#   documentation is `here <http://pytorch.org/docs/nn>`_.
+#   documentation is `here <https://pytorch.org/docs/nn>`_.
 #
 # **The only thing left to learn is:**
 #

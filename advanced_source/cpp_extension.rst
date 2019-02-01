@@ -1,6 +1,6 @@
 Custom C++ and CUDA Extensions
 ==============================
-**Author**: `Peter Goldsborough <http://goldsborough.me>`_
+**Author**: `Peter Goldsborough <https://www.goldsborough.me/>`_
 
 
 PyTorch provides a plethora of operations related to neural networks, arbitrary
@@ -11,7 +11,7 @@ you developed as part of your research.
 
 The easiest way of integrating such a custom operation in PyTorch is to write it
 in Python by extending :class:`Function` and :class:`Module` as outlined `here
-<http://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
+<https://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code
@@ -203,7 +203,7 @@ PyTorch's tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
 :class:`at::Tensor`. Its full API can be inspected `here
-<https://github.com/pytorch/pytorch/blob/master/aten/doc/Tensor.h>`_. Notice
+<https://pytorch.org/cppdocs/api/classat_1_1_tensor.html>`_. Notice
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
 the full power of C++11 at our disposal.
 
@@ -253,7 +253,7 @@ respect to each input of the forward pass. Ultimately, we will plop both the
 forward and backward function into a :class:`torch.autograd.Function` to create
 a nice Python binding. The backward function is slightly more involved, so
 we'll not dig deeper into the code (if you are interested, `Alex Graves' thesis
-<http://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
+<https://www.cs.toronto.edu/~graves/phd.pdf>`_ is a good read for more
 information on this):
 
 .. code-block:: cpp
@@ -314,7 +314,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<http://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/master/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
@@ -428,7 +428,7 @@ class citizens of PyTorch::
       def forward(ctx, input, weights, bias, old_h, old_cell):
           outputs = lltm.forward(input, weights, bias, old_h, old_cell)
           new_h, new_cell = outputs[:2]
-          variables = outputs[1:] + [weights, old_cell]
+          variables = outputs[1:] + [weights]
           ctx.save_for_backward(*variables)
 
           return new_h, new_cell
@@ -437,7 +437,7 @@ class citizens of PyTorch::
       def backward(ctx, grad_h, grad_cell):
           outputs = lltm.backward(
               grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_variables)
-          d_old_h, d_input, d_weights, d_bias, d_old_cell, d_gates = outputs
+          d_old_h, d_input, d_weights, d_bias, d_old_cell = outputs
           return d_input, d_weights, d_bias, d_old_h, d_old_cell
 
 
@@ -516,7 +516,7 @@ A wonderful fact about PyTorch's *ATen* backend is that it abstracts the
 computing device you are running on. This means the same code we wrote for CPU
 can *also* run on GPU, and individual operations will correspondingly dispatch
 to GPU-optimized implementations. For certain operations like matrix multiply
-(like ``mm`` or ``admm``), this is a big win. Let's take a look at how much
+(like ``mm`` or ``addmm``), this is a big win. Let's take a look at how much
 performance we gain from running our C++ code with CUDA tensors. No changes to
 our implementation are required, we simply need to put our tensors in GPU
 memory from Python, with either adding ``device=cuda_device`` argument at
@@ -954,7 +954,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.data<scalar_t>(),
           d_gates.data<scalar_t>(),
@@ -1029,7 +1029,8 @@ Conclusion
 ----------
 
 You should now be equipped with a good overview of PyTorch's C++ extension
-mechanism as well as a motivation for using them. You can find the code examples
-displayed in this note `here
-<https://github.com/pytorch/extension-cpp>`_. If you have
-questions, please use `the forums <https://discuss.pytorch.org>`_.
+mechanism as well as a motivation for using them. You can find the code
+examples displayed in this note `here
+<https://github.com/pytorch/extension-cpp>`_. If you have questions, please use
+`the forums <https://discuss.pytorch.org>`_. Also be sure to check our `FAQ
+<https://pytorch.org/cppdocs/notes/faq.html>`_ in case you run into any issues.

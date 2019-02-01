@@ -13,9 +13,6 @@ Chatbot Tutorial
 # scripts from the `Cornell Movie-Dialogs
 # Corpus <https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html>`__.
 #
-# .. attention:: This example requires PyTorch 1.0 (preview) or later.
-#    For installation information visit http://pytorch.org/get-started.
-#
 # Conversational models are a hot topic in artificial intelligence
 # research. Chatbots can be found in a variety of settings, including
 # customer service applications and online helpdesks. These bots are often
@@ -37,25 +34,25 @@ Chatbot Tutorial
 # .. code:: python
 #
 #   > hello?
-#   bot: hello .
+#   Bot: hello .
 #   > where am I?
-#   bot: you re in a hospital .
+#   Bot: you re in a hospital .
 #   > who are you?
-#   bot: i m a lawyer .
+#   Bot: i m a lawyer .
 #   > how are you doing?
-#   bot: i m fine .
+#   Bot: i m fine .
 #   > are you my friend?
-#   bot: no .
+#   Bot: no .
 #   > you're under arrest
-#   bot: i m trying to help you !
+#   Bot: i m trying to help you !
 #   > i'm just kidding
-#   bot: i m sorry .
+#   Bot: i m sorry .
 #   > where are you from?
-#   bot: san francisco .
+#   Bot: san francisco .
 #   > it's time for me to leave
-#   bot: i know .
+#   Bot: i know .
 #   > goodbye
-#   bot: goodbye .
+#   Bot: goodbye .
 #
 # **Tutorial Highlights**
 #
@@ -159,9 +156,8 @@ printLines(os.path.join(corpus, "movie_lines.txt"))
 # Create formatted data file
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Now it is time to use the functions that we defined above to create an
-# appropriately formatted data file. Each line of this new file will
-# contain a tab-separated *query sentence* and a *response sentence* pair.
+# For convenience, we'll create a nicely formatted data file in which each line
+# contains a tab-separated *query sentence* and a *response sentence* pair.
 #
 # The following functions facilitate the parsing of the raw
 # *movie_lines.txt* data file.
@@ -348,7 +344,7 @@ class Voc:
 MAX_LENGTH = 10  # Maximum sentence length to consider
 
 # Turn a Unicode string to plain ASCII, thanks to
-# http://stackoverflow.com/a/518232/2809427
+# https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -459,8 +455,8 @@ pairs = trimRareWords(voc, pairs, MIN_COUNT)
 # Prepare Data for Models
 # -----------------------
 #
-# Although we have spent a great effort preparing and massaging our data
-# into a nice vocabulary object and list of sentence pairs, our models
+# Although we have put a great deal of effort into preparing and massaging our
+# data into a nice vocabulary object and list of sentence pairs, our models
 # will ultimately expect numerical torch tensors as inputs. One way to
 # prepare the processed data for the models can be found in the `seq2seq
 # translation
@@ -627,7 +623,7 @@ print("max_target_len:", max_target_len)
 #    :align: center
 #    :alt: rnn_bidir
 #
-# Image source: http://colah.github.io/posts/2015-09-NN-Types-FP/
+# Image source: https://colah.github.io/posts/2015-09-NN-Types-FP/
 #
 # Note that an ``embedding`` layer is used to encode our word indices in
 # an arbitrarily sized feature space. For our models, this layer will map
@@ -894,7 +890,7 @@ class LuongAttnDecoderRNN(nn.Module):
 
 def maskNLLLoss(inp, target, mask):
     nTotal = mask.sum()
-    crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)))
+    crossEntropy = -torch.log(torch.gather(inp, 1, target.view(-1, 1)).squeeze(1))
     loss = crossEntropy.masked_select(mask).mean()
     loss = loss.to(device)
     return loss, nTotal.item()
@@ -932,7 +928,7 @@ def maskNLLLoss(inp, target, mask):
 #    :width: 60%
 #    :alt: grad_clip
 #
-# Image source: Goodfellow et al. *Deep Learning*. 2016. http://www.deeplearningbook.org/
+# Image source: Goodfellow et al. *Deep Learning*. 2016. https://www.deeplearningbook.org/
 #
 # **Sequence of Operations:**
 #

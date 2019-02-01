@@ -1,9 +1,6 @@
 Loading a PyTorch Model in C++
 ==============================
 
-.. attention:: This tutorial requires PyTorch 1.0 (preview) or later. 
-   For installation information visit http://pytorch.org/get-started.
-
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
@@ -44,7 +41,7 @@ language.
   reference <https://pytorch.org/docs/master/jit.html>`_.
 
 Converting to Torch Script via Tracing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To convert a PyTorch model to Torch Script via tracing, you must pass an
 instance of your model along with an example input to the ``torch.jit.trace``
@@ -108,13 +105,13 @@ method::
 
       @torch.jit.script_method
       def forward(self, input):
-          if input.sum() > 0:
+          if bool(input.sum() > 0):
             output = self.weight.mv(input)
           else:
             output = self.weight + input
           return output
 
-  my_script_module = MyModule()
+  my_script_module = MyModule(2, 3)
 
 Creating a new ``MyModule`` object now directly produces an instance of
 ``ScriptModule`` that is ready for serialization.
@@ -217,6 +214,11 @@ structure:
 - The ``include/`` folder contains header files your program will need to include,
 - The ``share/`` folder contains the necessary CMake configuration to enable the simple ``find_package(Torch)`` command above.
 
+.. tip::
+  On Windows, debug and release builds are not ABI-compatible. If you plan to
+  build your project in debug mode, we recommend
+  `building PyTorch from source <https://github.com/pytorch/pytorch#from-source>`_.
+
 The last step is building the application. For this, assume our example
 directory is laid out like this:
 
@@ -286,9 +288,9 @@ to the resulting ``example-app`` binary, we should be rewarded with a friendly
   ok
 
 Step 4: Executing the Script Module in C++
-----------------------------------------
+------------------------------------------
 
-Having succesfully loaded our serialized ``ResNet18`` in C++, we are now just a
+Having successfully loaded our serialized ``ResNet18`` in C++, we are now just a
 couple lines of code away from executing it! Let's add those lines to our C++
 application's ``main()`` function:
 
@@ -299,7 +301,7 @@ application's ``main()`` function:
     inputs.push_back(torch::ones({1, 3, 224, 224}));
 
     // Execute the model and turn its output into a tensor.
-    auto output = module->forward(inputs).toTensor();
+    at::Tensor output = module->forward(inputs).toTensor();
 
     std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 
@@ -341,6 +343,13 @@ For reference, the output in Python previously was::
 
 Looks like a good match!
 
+.. tip::
+
+  To move your model to GPU memory, you can write ``model->to(at::kCUDA);``.
+  Make sure the inputs to a model living in CUDA memory are also in CUDA memory
+  by calling ``tensor.to(at::kCUDA)``, which will return a new tensor in CUDA
+  memory.
+
 Step 5: Getting Help and Exploring the API
 ------------------------------------------
 
@@ -361,7 +370,7 @@ the following links may be generally helpful:
 
 - The Torch Script reference: https://pytorch.org/docs/master/jit.html
 - The PyTorch C++ API documentation: https://pytorch.org/cppdocs/
-- The Pytorch Python API documentation: https://pytorch.org/docs/
+- The PyTorch Python API documentation: https://pytorch.org/docs/
 
 As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues

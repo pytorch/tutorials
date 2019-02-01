@@ -90,8 +90,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #
 # .. Note::
 #     Here are links to download the images required to run the tutorial:
-#     `picasso.jpg <http://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
-#     `dancing.jpg <http://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
+#     `picasso.jpg <https://pytorch.org/tutorials/_static/img/neural-style/picasso.jpg>`__ and
+#     `dancing.jpg <https://pytorch.org/tutorials/_static/img/neural-style/dancing.jpg>`__.
 #     Download these two images and add them to a directory
 #     with name ``images`` in your current working directory.
 
@@ -110,8 +110,8 @@ def image_loader(image_name):
     return image.to(device, torch.float)
 
 
-style_img = image_loader("./images/picasso.jpg")
-content_img = image_loader("./images/dancing.jpg")
+style_img = image_loader("./data/images/neural-style/picasso.jpg")
+content_img = image_loader("./data/images/neural-style/dancing.jpg")
 
 assert style_img.size() == content_img.size(), \
     "we need to import style and content images of the same size"

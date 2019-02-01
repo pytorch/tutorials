@@ -3,22 +3,25 @@ Welcome to PyTorch Tutorials
 
 To learn how to use PyTorch, begin with our Getting Started Tutorials.
 The :doc:`60-minute blitz </beginner/deep_learning_60min_blitz>` is the most common
-starting point, and provides a broad view into how to use PyTorch from the basics all the way into constructing deep neural networks. 
+starting point, and provides a broad view into how to use PyTorch from the basics all the way into constructing deep neural networks.
 
 Some considerations:
 
-* If you would like to do the tutorials interactively via IPython / Jupyter, 
+* If you would like to do the tutorials interactively via IPython / Jupyter,
   each tutorial has a download link for a Jupyter Notebook and Python source code.
 * Additional high-quality examples are available, including image classification,
   unsupervised learning, reinforcement learning, machine translation, and
-  many other applications, in `PyTorch Examples 
+  many other applications, in `PyTorch Examples
   <https://github.com/pytorch/examples/>`_.
-* You can find reference documentation for the PyTorch API and layers in `PyTorch Docs 
+* You can find reference documentation for the PyTorch API and layers in `PyTorch Docs
   <https://pytorch.org/docs>`_ or via inline help.
 * If you would like the tutorials section improved, please open a github issue
   `here <https://github.com/pytorch/tutorials>`_ with your feedback.
-
-Lastly, some of the tutorials are marked as requiring the *Preview release*. These are tutorials that use the new functionality from the PyTorch 1.0 Preview. Please visit the `Get Started <http://pytorch.org/get-started>`_ section of the PyTorch website for instructions on how to install the latest Preview build before trying these tutorials.
+* Check out our
+  `PyTorch Cheat Sheet <https://pytorch.org/tutorials/beginner/ptcheat.html>`_
+  for additional useful information.
+* Finally, here's a link to the
+  `PyTorch Release Notes <https://github.com/pytorch/pytorch/releases>`_
 
 Getting Started
 ------------------
@@ -53,9 +56,13 @@ Getting Started
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
 
-
-
 .. .. galleryitem:: beginner/saving_loading_models.py
+
+.. customgalleryitem::
+   :figure: /_static/img/torch.nn.png
+   :tooltip: Use torch.nn to create and train a neural network
+   :description: :doc:`beginner/nn_tutorial`
+
 
 .. raw:: html
 
@@ -168,8 +175,13 @@ Extending PyTorch
     :description: :doc:`advanced/numpy_extensions_tutorial`
 
 .. customgalleryitem::
-   :tooltip: Implement custom extensions in C++ or CUDA
+   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
    :description: :doc:`/advanced/cpp_extension`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_ops`
    :figure: _static/img/cpp_logo.png
 
 
@@ -197,6 +209,24 @@ Production Usage
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
 
+.. customgalleryitem::
+   :tooltip: PyTorch distributed trainer with Amazon AWS
+   :description: :doc:`/beginner/aws_distributed_training_tutorial`
+   :figure: _static/img/distributed/DistPyTorch.jpg
+
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
+PyTorch in Other Languages
+-------------
+
+.. customgalleryitem::
+    :tooltip: Using the PyTorch C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_frontend`
 
 .. raw:: html
 
@@ -215,8 +245,9 @@ Production Usage
    beginner/data_loading_tutorial
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
-   beginner/deploy_seq2seq_hybrid_frontend_tutorial   
+   beginner/deploy_seq2seq_hybrid_frontend_tutorial
    beginner/saving_loading_models
+   beginner/nn_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -272,6 +303,7 @@ Production Usage
 
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
+   advanced/torch_script_custom_ops
 
 .. toctree::
    :maxdepth: 2
@@ -280,5 +312,14 @@ Production Usage
    :caption: Production Usage
 
    intermediate/dist_tuto
+   beginner/aws_distributed_training_tutorial
    advanced/ONNXLive
    advanced/cpp_export
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: PyTorch in Other Languages
+
+   advanced/cpp_frontend

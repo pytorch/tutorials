@@ -30,8 +30,8 @@ tracked.
 
 To prevent tracking history (and using memory), you can also wrap the code block
 in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
-model because the model may have trainable parameters with `requires_grad=True`,
-but for which we don't need the gradients.
+model because the model may have trainable parameters with
+``requires_grad=True``, but for which we don't need the gradients.
 
 There’s one more class which is very important for autograd
 implementation - a ``Function``.
@@ -52,12 +52,12 @@ argument that is a tensor of matching shape.
 import torch
 
 ###############################################################
-# Create a tensor and set requires_grad=True to track computation with it
+# Create a tensor and set ``requires_grad=True`` to track computation with it
 x = torch.ones(2, 2, requires_grad=True)
 print(x)
 
 ###############################################################
-# Do an operation of tensor:
+# Do a tensor operation:
 y = x + 2
 print(y)
 
@@ -66,7 +66,7 @@ print(y)
 print(y.grad_fn)
 
 ###############################################################
-# Do more operations on y
+# Do more operations on ``y``
 z = y * y * 3
 out = z.mean()
 
@@ -86,14 +86,14 @@ print(b.grad_fn)
 ###############################################################
 # Gradients
 # ---------
-# Let's backprop now
+# Let's backprop now.
 # Because ``out`` contains a single scalar, ``out.backward()`` is
-# equivalent to ``out.backward(torch.tensor(1))``.
+# equivalent to ``out.backward(torch.tensor(1.))``.
 
 out.backward()
 
 ###############################################################
-# print gradients d(out)/dx
+# Print gradients d(out)/dx
 #
 
 print(x.grad)
@@ -108,8 +108,51 @@ print(x.grad)
 # :math:`\frac{\partial o}{\partial x_i}\bigr\rvert_{x_i=1} = \frac{9}{2} = 4.5`.
 
 ###############################################################
-# You can do many crazy things with autograd!
+# Mathematically, if you have a vector valued function :math:`\vec{y}=f(\vec{x})`,
+# then the gradient of :math:`\vec{y}` with respect to :math:`\vec{x}`
+# is a Jacobian matrix:
+#
+# .. math::
+#   J=\left(\begin{array}{ccc}
+#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
+#    \vdots & \ddots & \vdots\\
+#    \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#    \end{array}\right)
+#
+# Generally speaking, ``torch.autograd`` is an engine for computing
+# vector-Jacobian product. That is, given any vector
+# :math:`v=\left(\begin{array}{cccc} v_{1} & v_{2} & \cdots & v_{m}\end{array}\right)^{T}`,
+# compute the product :math:`v^{T}\cdot J`. If :math:`v` happens to be
+# the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`,
+# that is,
+# :math:`v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}`,
+# then by the chain rule, the vector-Jacobian product would be the
+# gradient of :math:`l` with respect to :math:`\vec{x}`:
+#
+# .. math::
+#   J^{T}\cdot v=\left(\begin{array}{ccc}
+#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
+#    \vdots & \ddots & \vdots\\
+#    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#    \end{array}\right)\left(\begin{array}{c}
+#    \frac{\partial l}{\partial y_{1}}\\
+#    \vdots\\
+#    \frac{\partial l}{\partial y_{m}}
+#    \end{array}\right)=\left(\begin{array}{c}
+#    \frac{\partial l}{\partial x_{1}}\\
+#    \vdots\\
+#    \frac{\partial l}{\partial x_{n}}
+#    \end{array}\right)
+#
+# (Note that :math:`v^{T}\cdot J` gives a row vector which can be
+# treated as a column vector by taking :math:`J^{T}\cdot v`.)
+#
+# This characteristic of vector-Jacobian product makes it very
+# convenient to feed external gradients into a model that has
+# non-scalar output.
 
+###############################################################
+# Now let's take a look at an example of vector-Jacobian product:
 
 x = torch.randn(3, requires_grad=True)
 
@@ -120,16 +163,19 @@ while y.data.norm() < 1000:
 print(y)
 
 ###############################################################
-#
-gradients = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
-y.backward(gradients)
+# Now in this case ``y`` is no longer a scalar. ``torch.autograd``
+# could not compute the full Jacobian directly, but if we just
+# want the vector-Jacobian product, simply pass the vector to
+# ``backward`` as argument:
+v = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
+y.backward(v)
 
 print(x.grad)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
 # with ``.requires_grad=True`` by wrapping the code block in
-# ``with torch.no_grad()``:
+# ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
 
@@ -140,4 +186,4 @@ with torch.no_grad():
 # **Read Later:**
 #
 # Documentation of ``autograd`` and ``Function`` is at
-# http://pytorch.org/docs/autograd
+# https://pytorch.org/docs/autograd

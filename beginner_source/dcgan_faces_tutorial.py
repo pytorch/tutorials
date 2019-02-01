@@ -176,10 +176,10 @@ torch.manual_seed(manualSeed)
 # 
 
 # Root directory for dataset
-dataroot = "/home/ubuntu/facebook/datasets/celeba"
+dataroot = "data/celeba"
 
 # Number of workers for dataloader
-workers = 4
+workers = 2
 
 # Batch size during training
 batch_size = 128
@@ -218,7 +218,7 @@ ngpu = 1
 # ----
 # 
 # In this tutorial we will use the `Celeb-A Faces
-# dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
+# dataset <https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
 # The dataset will download as a file named *img_align_celeba.zip*. Once

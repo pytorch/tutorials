@@ -1,6 +1,6 @@
 Writing Distributed Applications with PyTorch
 =============================================
-**Author**: `Séb Arnold <http://seba1511.com>`_
+**Author**: `Séb Arnold <https://seba1511.com>`_
 
 In this short tutorial, we will be going over the distributed package of PyTorch. We'll see how to set up the distributed setting, use the different communication strategies, and go over some the internals of the package.
 
@@ -27,7 +27,7 @@ In order to get started we need the ability to run multiple processes
 simultaneously. If you have access to compute cluster you should check
 with your local sysadmin or use your favorite coordination tool. (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
-`clustershell <http://cea-hpc.github.io/clustershell/>`__, or
+`clustershell <https://cea-hpc.github.io/clustershell/>`__, or
 `others <https://slurm.schedmd.com/>`__) For the purpose of this
 tutorial, we will use a single machine and fork multiple processes using
 the following template.
@@ -74,7 +74,7 @@ every process will be able to coordinate through a master, using the
 same ip address and port. Note that we used the TCP backend, but we
 could have used
 `MPI <https://en.wikipedia.org/wiki/Message_Passing_Interface>`__ or
-`Gloo <http://github.com/facebookincubator/gloo>`__ instead. (c.f.
+`Gloo <https://github.com/facebookincubator/gloo>`__ instead. (c.f.
 `Section 5.1 <#communication-backends>`__) We will go over the magic
 happening in ``dist.init_process_group`` at the end of this tutorial,
 but it essentially allows processes to communicate with each other by
@@ -255,7 +255,7 @@ GitHub repository <https://github.com/seba-1511/dist_tuto.pth/>`__.
 Now that we understand how the distributed module works, let us write
 something useful with it. Our goal will be to replicate the
 functionality of
-`DistributedDataParallel <http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
+`DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 Of course, this will be a didactic example and in a real-world
 situtation you should use the official, well-tested and well-optimized
 version linked above.
@@ -377,10 +377,10 @@ world.
 could train any model on a large computer cluster.
 
 **Note:** While the last sentence is *technically* true, there are `a
-lot more tricks <http://seba-1511.github.io/dist_blog>`__ required to
+lot more tricks <https://seba-1511.github.io/dist_blog>`__ required to
 implement a production-level implementation of synchronous SGD. Again,
 use what `has been tested and
-optimized <http://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
+optimized <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 
 Our Own Ring-Allreduce
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -424,7 +424,7 @@ an exercise left to the reader, there is still one difference between
 our version and the one in DeepSpeech: their implementation divide the
 gradient tensor into *chunks*, so as to optimally utilize the
 communication bandwidth. (Hint:
-`torch.chunk <http://pytorch.org/docs/stable/torch.html#torch.chunk>`__)
+`torch.chunk <https://pytorch.org/docs/stable/torch.html#torch.chunk>`__)
 
 Advanced Topics
 ---------------
@@ -447,7 +447,7 @@ there are currently three backends implemented in PyTorch: TCP, MPI, and
 Gloo. They each have different specifications and tradeoffs, depending
 on the desired use-case. A comparative table of supported functions can
 be found
-`here <http://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
+`here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
 
 **TCP Backend**
 
@@ -500,7 +500,7 @@ optimized for different purposes. The advantage of using the MPI backend
 lies in MPI's wide availability - and high-level of optimization - on
 large computer clusters. `Some <https://developer.nvidia.com/mvapich>`__
 `recent <https://developer.nvidia.com/ibm-spectrum-mpi>`__
-`implementations <http://www.open-mpi.org/>`__ are also able to take
+`implementations <https://www.open-mpi.org/>`__ are also able to take
 advantage of CUDA IPC and GPU Direct technologies in order to avoid
 memory copies through the CPU.
 
@@ -552,7 +552,7 @@ Those methods allow you to define how this coordination is done.
 Depending on your hardware setup, one of these methods should be
 naturally more suitable than the others. In addition to the following
 sections, you should also have a look at the `official
-documentation <http://pytorch.org/docs/stable/distributed.html#initialization>`__.
+documentation <https://pytorch.org/docs/stable/distributed.html#initialization>`__.
 
 Before diving into the initialization methods, let's have a quick look
 at what happens behind ``init_process_group`` from the C/C++
@@ -673,7 +673,7 @@ multiple jobs to be scheduled on the same cluster.
 I'd like to thank the PyTorch developers for doing such a good job on
 their implementation, documentation, and tests. When the code was
 unclear, I could always count on the
-`docs <http://pytorch.org/docs/stable/distributed.html>`__ or the
+`docs <https://pytorch.org/docs/stable/distributed.html>`__ or the
 `tests <https://github.com/pytorch/pytorch/blob/master/test/test_distributed.py>`__
 to find an answer. In particular, I'd like to thank Soumith Chintala,
 Adam Paszke, and Natalia Gimelshein for providing insightful comments

@@ -6,7 +6,7 @@ Transfer Learning Tutorial
 
 In this tutorial, you will learn how to train your network using
 transfer learning. You can read more about the transfer learning at `cs231n
-notes <http://cs231n.github.io/transfer-learning/>`__
+notes <https://cs231n.github.io/transfer-learning/>`__
 
 Quoting these notes,
 
@@ -87,7 +87,7 @@ data_transforms = {
     ]),
 }
 
-data_dir = 'hymenoptera_data'
+data_dir = 'data/hymenoptera_data'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
@@ -289,7 +289,7 @@ visualize_model(model_ft)
 # gradients are not computed in ``backward()``.
 #
 # You can read more about this in the documentation
-# `here <http://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
+# `here <https://pytorch.org/docs/notes/autograd.html#excluding-subgraphs-from-backward>`__.
 #
 
 model_conv = torchvision.models.resnet18(pretrained=True)
@@ -305,7 +305,7 @@ model_conv = model_conv.to(device)
 criterion = nn.CrossEntropyLoss()
 
 # Observe that only parameters of final layer are being optimized as
-# opoosed to before.
+# opposed to before.
 optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs

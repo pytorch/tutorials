@@ -4,9 +4,6 @@ Learning Hybrid Frontend Syntax Through Example
 ===============================================
 **Author:** `Nathan Inkawhich <https://github.com/inkawhich>`_
 
-This tutorial requires PyTorch 1.0 (preview) or later. For installation 
-information visit http://pytorch.org/get-started.
-
 This document is meant to highlight the syntax of the Hybrid Frontend
 through a non-code intensive example. The Hybrid Frontend is one of the
 new shiny features of Pytorch 1.0 and provides an avenue for developers
@@ -95,21 +92,21 @@ Part 1 - Tracing a pure python function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We can implement part one as a pure python function as below. Notice, to
-trace this function we add the ``@torch.jit.trace`` decorator. Since the
-trace requires a dummy input of the expected runtime type and shape, we
-also include the ``torch.rand`` to generate a single valued torch
-tensor.
+trace this function we call ``torch.jit.trace`` and pass in the function
+to be traced. Since the trace requires a dummy input of the expected
+runtime type and shape, we also include the ``torch.rand`` to generate a
+single valued torch tensor.
 
 """
 
 import torch
 
-# This is how you define a traced function
-# Pass in an example input to this decorator and then apply it to the function
-@torch.jit.trace(torch.rand(()))
-def traced_fn(x):
+def fn(x):
     return torch.abs(2*x)
 
+# This is how you define a traced function
+# Pass in both the function to be traced and an example input to ``torch.jit.trace``
+traced_fn = torch.jit.trace(fn, torch.rand(()))
 
 ######################################################################
 # Part 2 - Scripting a pure python function
@@ -127,7 +124,7 @@ def traced_fn(x):
 @torch.jit.script
 def script_fn(x):
     z = torch.ones([1], dtype=torch.int64)
-    for i in range(x):
+    for i in range(int(x)):
         z = z * (i + 1)
     return z
 
@@ -166,7 +163,7 @@ class ScriptModule(torch.jit.ScriptModule):
     @torch.jit.script_method
     def forward(self, x):
         r = -x
-        if torch.fmod(x, 2.0) == 0.0:
+        if int(torch.fmod(x, 2.0)) == 0.0:
             r = x / 2.0
         return r
 
@@ -204,7 +201,7 @@ class Net(torch.nn.Module):
         # Modules must be attributes on the Module because if you want to trace
         # or script this Module, we must be able to inherit the submodules'
         # params.
-        self.traced_module = torch.jit.trace(torch.rand(()))(TracedModule())
+        self.traced_module = torch.jit.trace(TracedModule(), torch.rand(()))
         self.script_module = ScriptModule()
 
         print('traced_fn graph', traced_fn.graph)
@@ -247,8 +244,6 @@ print(n(torch.tensor([5]))) # 190.
 # Tracing the Top-Level Model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# **NOTE:** Open issue https://github.com/pytorch/pytorch/issues/8755
-#
 # The last part of the example is to trace the top-level module, ``Net``.
 # As mentioned previously, since the traced/scripted modules are
 # attributes of Net, we are able to trace ``Net`` as it inherits the
@@ -257,11 +252,9 @@ print(n(torch.tensor([5]))) # 190.
 # Also, check out the graph that is created.
 #
 
-# TODO: this fails with some weird bug https://github.com/pytorch/pytorch/issues/8755
-#n_traced = torch.jit.trace(torch.tensor([5]))(n)
-#print(n_traced(torch.tensor([5])))
-
-# TODO: print the graph of the traced module
+n_traced = torch.jit.trace(n, torch.tensor([5]))
+print(n_traced(torch.tensor([5])))
+print('n_traced graph', n_traced.graph)
 
 
 ######################################################################

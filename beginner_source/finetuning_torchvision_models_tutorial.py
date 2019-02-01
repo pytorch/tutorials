@@ -27,8 +27,8 @@ Finetuning Torchvision Models
 # from which we derive predictions. It is called feature extraction
 # because we use the pretrained CNN as a fixed feature-extractor, and only
 # change the output layer. For more technical information about transfer
-# learning see `here <http://cs231n.github.io/transfer-learning/>`__ and
-# `here <http://ruder.io/transfer-learning/>`__.
+# learning see `here <https://cs231n.github.io/transfer-learning/>`__ and
+# `here <https://ruder.io/transfer-learning/>`__.
 # 
 # In general both transfer learning methods follow the same few steps:
 # 
@@ -88,7 +88,7 @@ print("Torchvision Version: ",torchvision.__version__)
 
 # Top level data directory. Here we assume the format of the directory conforms 
 #   to the ImageFolder structure
-data_dir = "./hymenoptera_data"
+data_dir = "./data/hymenoptera_data"
 
 # Models to choose from [resnet, alexnet, vgg, squeezenet, densenet, inception]
 model_name = "squeezenet"

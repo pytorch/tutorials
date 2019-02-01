@@ -26,7 +26,7 @@ import numpy as np
 ######################################################################
 # Let’s check if a CUDA GPU is available and select our device. Running
 # the network on a GPU will greatly decrease the training/testing runtime.
-# 
+#
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -35,7 +35,7 @@ print(device)
 ######################################################################
 # Importing the Dataset
 # ---------------------
-# 
+#
 # We will use the UrbanSound8K dataset to train our network. It is
 # available for free `here <https://urbansounddataset.weebly.com/>`_ and contains
 # 10 audio classes with over 8000 audio samples! Once you have downloaded
@@ -43,9 +43,9 @@ print(device)
 # First, we will look at the csv file that provides information about the
 # individual sound files. ``pandas`` allows us to open the csv file and
 # use ``.iloc()`` to access the data within it.
-# 
+#
 
-csvData = pd.read_csv('./UrbanSound8K/metadata/UrbanSound8K.csv')
+csvData = pd.read_csv('./data/UrbanSound8K/metadata/UrbanSound8K.csv')
 print(csvData.iloc[0, :])
 
 
@@ -55,18 +55,18 @@ print(csvData.iloc[0, :])
 # gun_shot, jackhammer, siren, and street_music. Let’s play a couple files
 # and see what they sound like. The first file is street music and the
 # second is an air conditioner.
-# 
+#
 
 import IPython.display as ipd
-ipd.Audio('./UrbanSound8K/audio/fold1/108041-9-0-5.wav')
+ipd.Audio('./data/UrbanSound8K/audio/fold1/108041-9-0-5.wav')
 
-ipd.Audio('./UrbanSound8K/audio/fold5/100852-0-0-19.wav')
+ipd.Audio('./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav')
 
 
 ######################################################################
 # Formatting the Data
 # -------------------
-# 
+#
 # Now that we know the format of the csv file entries, we can construct
 # our dataset. We will create a rapper class for our dataset using
 # ``torch.utils.data.Dataset`` that will handle loading the files and
@@ -76,7 +76,7 @@ ipd.Audio('./UrbanSound8K/audio/fold5/100852-0-0-19.wav')
 # class will store the file names, labels, and folder numbers of the audio
 # files in the inputted folder list when initialized. The actual loading
 # and formatting steps will happen in the access function ``__getitem__``.
-# 
+#
 # In ``__getitem__``, we use ``torchaudio.load()`` to convert the wav
 # files to tensors. ``torchaudio.load()`` returns a tuple containing the
 # newly created tensor along with the sampling frequency of the audio file
@@ -92,7 +92,7 @@ ipd.Audio('./UrbanSound8K/audio/fold5/100852-0-0-19.wav')
 # long enough to handle the downsampling so these tensors will need to be
 # padded with zeros. The minimum length that won’t require padding is
 # 160,000 samples.
-# 
+#
 
 class UrbanSoundDataset(Dataset):
 #rapper for the UrbanSound8K dataset
@@ -100,7 +100,7 @@ class UrbanSoundDataset(Dataset):
     #  path to the UrbanSound8K csv file
     #  path to the UrbanSound8K audio files
     #  list of folders to use in the dataset
-    
+
     def __init__(self, csv_path, file_path, folderList):
         csvData = pd.read_csv(csv_path)
         #initialize lists to hold file names, labels, and folder numbers
@@ -113,11 +113,11 @@ class UrbanSoundDataset(Dataset):
                 self.file_names.append(csvData.iloc[i, 0])
                 self.labels.append(csvData.iloc[i, 6])
                 self.folders.append(csvData.iloc[i, 5])
-                
+
         self.file_path = file_path
         self.mixer = torchaudio.transforms.DownmixMono() #UrbanSound8K uses two channels, this will convert them to one
         self.folderList = folderList
-        
+
     def __getitem__(self, index):
         #format the file path and load the file
         path = self.file_path + "fold" + str(self.folders[index]) + "/" + self.file_names[index]
@@ -130,19 +130,19 @@ class UrbanSoundDataset(Dataset):
             tempData[:soundData.numel()] = soundData[:]
         else:
             tempData[:] = soundData[:160000]
-        
+
         soundData = tempData
         soundFormatted = torch.zeros([32000, 1])
         soundFormatted[:32000] = soundData[::5] #take every fifth sample of soundData
         soundFormatted = soundFormatted.permute(1, 0)
         return soundFormatted, self.labels[index]
-    
+
     def __len__(self):
         return len(self.file_names)
 
-    
-csv_path = './UrbanSound8K/metadata/UrbanSound8K.csv'
-file_path = './UrbanSound8K/audio/'
+
+csv_path = './data/UrbanSound8K/metadata/UrbanSound8K.csv'
+file_path = './data/UrbanSound8K/audio/'
 
 train_set = UrbanSoundDataset(csv_path, file_path, range(1,10))
 test_set = UrbanSoundDataset(csv_path, file_path, [10])
@@ -158,7 +158,7 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size = 128, shuffle = 
 ######################################################################
 # Define the Network
 # ------------------
-# 
+#
 # For this tutorial we will use a convolutional neural network to process
 # the raw audio data. Usually more advanced transforms are applied to the
 # audio data, however CNNs can be used to accurately process the raw data.
@@ -169,7 +169,7 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size = 128, shuffle = 
 # processing audio sampled at 8kHz the receptive field is around 10ms.
 # This size is similar to speech processing applications that often use
 # receptive fields ranging from 20ms to 40ms.
-# 
+#
 
 class Net(nn.Module):
     def __init__(self):
@@ -188,7 +188,7 @@ class Net(nn.Module):
         self.pool4 = nn.MaxPool1d(4)
         self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
         self.fc1 = nn.Linear(512, 10)
-        
+
     def forward(self, x):
         x = self.conv1(x)
         x = F.relu(self.bn1(x))
@@ -217,7 +217,7 @@ print(model)
 # optimizer with weight decay set to 0.0001. At first, we will train with
 # a learning rate of 0.01, but we will use a ``scheduler`` to decrease it
 # to 0.001 during training.
-# 
+#
 
 optimizer = optim.Adam(model.parameters(), lr = 0.01, weight_decay = 0.0001)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
@@ -226,10 +226,10 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
 ######################################################################
 # Training and Testing the Network
 # --------------------------------
-# 
+#
 # Now let’s define a training function that will feed our training data
 # into the model and perform the backward pass and optimization steps.
-# 
+#
 
 def train(model, epoch):
     model.train()
@@ -239,7 +239,7 @@ def train(model, epoch):
         target = target.to(device)
         data = data.requires_grad_() #set requires_grad to True for training
         output = model(data)
-        output = output.permute(1, 0, 2) #original output dimensions are batchSizex1x10 
+        output = output.permute(1, 0, 2) #original output dimensions are batchSizex1x10
         loss = F.nll_loss(output[0], target) #the loss functions expects a batchSizex10 input
         loss.backward()
         optimizer.step()
@@ -256,7 +256,7 @@ def train(model, epoch):
 # variable in all modules in the network to false. Certain layers like
 # batch normalization and dropout layers behave differently during
 # training so this step is crucial for getting correct results.
-# 
+#
 
 def test(model, epoch):
     model.eval()
@@ -278,10 +278,13 @@ def test(model, epoch):
 # for ten epochs then reduce the learn rate and train for ten more epochs.
 # The network will be tested after each epoch to see how the accuracy
 # varies during the training.
-# 
+#
+# .. note:: Due to a build issue, we've reduced the number of epochs to 10.
+#           Run this sample with 40 locally to get the proper values.
+#
 
 log_interval = 20
-for epoch in range(1, 41):
+for epoch in range(1, 11):
     if epoch == 31:
         print("First round of training complete. Setting learn rate to 0.001.")
     scheduler.step()
@@ -292,16 +295,16 @@ for epoch in range(1, 41):
 ######################################################################
 # Conclusion
 # ----------
-# 
+#
 # If trained on 9 folders, the network should be more than 50% accurate by
 # the end of the training process. Training on less folders will result in
 # a lower overall accuracy but may be necessary if long runtimes are a
 # problem. Greater accuracies can be achieved using deeper CNNs at the
 # expense of a larger memory footprint.
-# 
+#
 # For more advanced audio applications, such as speech recognition,
 # recurrent neural networks (RNNs) are commonly used. There are also other
 # data preprocessing methods, such as finding the mel frequency cepstral
 # coefficients (MFCC), that can reduce the size of the dataset.
-# 
+#
 
