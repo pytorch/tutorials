@@ -132,7 +132,7 @@ print(err)
 # The output of the ConvNet ``out`` is a ``Tensor``. We compute the loss
 # using that, and that results in ``err`` which is also a ``Tensor``.
 # Calling ``.backward`` on ``err`` hence will propagate gradients all the
-# way through the ConvNet to it’s weights
+# way through the ConvNet to its weights.
 #
 # Let's access individual layer weights and gradients:
 
