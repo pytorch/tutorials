@@ -189,7 +189,7 @@ Loss Functions
 
 .. code-block:: python
 
-    nn.X where for example X is ...       # BCELoss, CrossEntropyLoss, 
+    nn.X                                  # where X is BCELoss, CrossEntropyLoss, 
                                           # L1Loss, MSELoss, NLLLoss, SoftMarginLoss,
                                           # MultiLabelSoftMarginLoss, CosineEmbeddingLoss, 
                                           # KLDivLoss, MarginRankingLoss, HingeEmbeddingLoss 
@@ -203,7 +203,7 @@ Activation Functions
 
 .. code-block:: python
 
-    nn.X where for example X is ...       # ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, 
+    nn.X                                  # where X is ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, 
                                           # Threshold, HardTanh, Sigmoid, Tanh, 
                                           # LogSigmoid, Softplus, SoftShrink, 
                                           # Softsign, TanhShrink, Softmin, Softmax, 
@@ -219,7 +219,7 @@ Optimizers
 
     opt = optim.x(model.parameters(), ...)      # create optimizer
     opt.step()                                  # update weights
-    optim.X where for example X is ...          # SGD, Adadelta, Adagrad, Adam, 
+    optim.X                                     # where X is SGD, Adadelta, Adagrad, Adam, 
                                                 # SparseAdam, Adamax, ASGD, 
                                                 # LBFGS, RMSProp or Rprop
 
@@ -232,8 +232,8 @@ Learning rate scheduling
 
     scheduler = optim.X(optimizer,...)      # create lr scheduler
     scheduler.step()                        # update lr at start of epoch
-    optim.lr_scheduler.X where ...          # LambdaLR, StepLR, MultiStepLR, 
-    					    # ExponentialLR or ReduceLROnPLateau
+    optim.lr_scheduler.X                    # where X is LambdaLR, StepLR, MultiStepLR, 
+                  # ExponentialLR or ReduceLROnPLateau
 
 See `learning rate
 scheduler <https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate>`__
