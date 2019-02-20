@@ -113,6 +113,7 @@ means running:
 
 .. code-block:: shell
 
+  # If you need e.g. CUDA 9.0 support, please replace "cpu" with "cu90" in the URL below.
   wget https://download.pytorch.org/libtorch/nightly/cpu/libtorch-shared-with-deps-latest.zip
   unzip libtorch-shared-with-deps-latest.zip
 
