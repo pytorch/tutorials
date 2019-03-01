@@ -6,11 +6,24 @@ install_official_git_client: &install_official_git_client
     sudo apt-get -qq update
     sudo apt-get -qq install openssh-client git
 
+# This system setup script is meant to run before the CI-related scripts, e.g.,
+# installing Git client, checking out code, setting up CI env, and
+# building/testing.
+setup_linux_system_environment: &setup_linux_system_environment
+  name: Set Up System Environment
+  no_output_timeout: "1h"
+  command: |
+    set -e
+     # Set up CircleCI GPG keys for apt, if needed
+    curl -L https://packagecloud.io/circleci/trusty/gpgkey | sudo apt-key add -
+
 pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
   machine:
     image: default
   steps:
   - checkout
+  - run:
+      <<: *setup_linux_system_environment
   - run:
       name: Set Up CI Environment
       no_output_timeout: "1h"
