@@ -111,7 +111,7 @@ plt.show()
 # stored in the memory at once but read as required.
 #
 # Sample of our dataset will be a dict
-# ``{'image': image, 'landmarks': landmarks}``. Our datset will take an
+# ``{'image': image, 'landmarks': landmarks}``. Our dataset will take an
 # optional argument ``transform`` so that any required processing can be
 # applied on the sample. We will see the usefulness of ``transform`` in the
 # next section.
