@@ -15,6 +15,9 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 pip uninstall -y torchvision || true
+# Clean up previous PyTorch installations
+pip uninstall -y torch || true
+pip uninstall -y torch || true
 
 # Install a nightly build of pytorch
 
