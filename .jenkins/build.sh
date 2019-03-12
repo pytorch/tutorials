@@ -47,18 +47,8 @@ fi
 
 # Install a nightly build of pytorch
 
-# GPU, requires CUDA version 8.0
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu80/torch_nightly.html
-
 # GPU, requires CUDA version 9.0
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
-
-# GPU, requires CUDA version 9.2
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu92/torch_nightly.html
-
-# CPU
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-
+pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
