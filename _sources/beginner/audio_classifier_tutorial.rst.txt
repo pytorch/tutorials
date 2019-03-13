@@ -20,51 +20,9 @@ instructions on the website.
 
 
 
-
-.. code-block:: python
-
-
-    import torch
-    import torch.nn as nn
-    import torch.nn.functional as F
-    import torch.optim as optim
-    from torchvision import datasets, transforms
-    from torch.utils.data import Dataset
-    import torchaudio
-    import pandas as pd
-    import numpy as np
-
-
-
-
-
-
-
-
 Let’s check if a CUDA GPU is available and select our device. Running
 the network on a GPU will greatly decrease the training/testing runtime.
 
-
-
-
-.. code-block:: python
-
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(device)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    cuda
 
 
 Importing the Dataset
@@ -80,56 +38,11 @@ use ``.iloc()`` to access the data within it.
 
 
 
-
-.. code-block:: python
-
-
-    csvData = pd.read_csv('./data/UrbanSound8K/metadata/UrbanSound8K.csv')
-    print(csvData.iloc[0, :])
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    slice_file_name    100032-3-0-0.wav
-    fsID                         100032
-    start                             0
-    end                        0.317551
-    salience                          1
-    fold                              5
-    classID                           3
-    class                      dog_bark
-    Name: 0, dtype: object
-
-
 The 10 audio classes in the UrbanSound8K dataset are air_conditioner,
 car_horn, children_playing, dog_bark, drilling, enginge_idling,
 gun_shot, jackhammer, siren, and street_music. Let’s play a couple files
 and see what they sound like. The first file is street music and the
 second is an air conditioner.
-
-
-
-
-.. code-block:: python
-
-
-    import IPython.display as ipd
-    ipd.Audio('./data/UrbanSound8K/audio/fold1/108041-9-0-5.wav')
-
-    ipd.Audio('./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav')
-
-
-
-
-
 
 
 
@@ -168,79 +81,71 @@ padded with zeros. The minimum length that won’t require padding is
 .. code-block:: python
 
 
-    class UrbanSoundDataset(Dataset):
+
     #rapper for the UrbanSound8K dataset
-        # Argument List
-        #  path to the UrbanSound8K csv file
-        #  path to the UrbanSound8K audio files
-        #  list of folders to use in the dataset
-
-        def __init__(self, csv_path, file_path, folderList):
-            csvData = pd.read_csv(csv_path)
-            #initialize lists to hold file names, labels, and folder numbers
-            self.file_names = []
-            self.labels = []
-            self.folders = []
-            #loop through the csv entries and only add entries from folders in the folder list
-            for i in range(0,len(csvData)):
-                if csvData.iloc[i, 5] in folderList:
-                    self.file_names.append(csvData.iloc[i, 0])
-                    self.labels.append(csvData.iloc[i, 6])
-                    self.folders.append(csvData.iloc[i, 5])
-
-            self.file_path = file_path
-            self.mixer = torchaudio.transforms.DownmixMono() #UrbanSound8K uses two channels, this will convert them to one
-            self.folderList = folderList
-
-        def __getitem__(self, index):
-            #format the file path and load the file
-            path = self.file_path + "fold" + str(self.folders[index]) + "/" + self.file_names[index]
-            sound = torchaudio.load(path, out = None, normalization = True)
-            #load returns a tensor with the sound data and the sampling frequency (44.1kHz for UrbanSound8K)
-            soundData = self.mixer(sound[0])
-            #downsample the audio to ~8kHz
-            tempData = torch.zeros([160000, 1]) #tempData accounts for audio clips that are too short
-            if soundData.numel() < 160000:
-                tempData[:soundData.numel()] = soundData[:]
-            else:
-                tempData[:] = soundData[:160000]
-
-            soundData = tempData
-            soundFormatted = torch.zeros([32000, 1])
-            soundFormatted[:32000] = soundData[::5] #take every fifth sample of soundData
-            soundFormatted = soundFormatted.permute(1, 0)
-            return soundFormatted, self.labels[index]
-
-        def __len__(self):
-            return len(self.file_names)
-
-
-    csv_path = './data/UrbanSound8K/metadata/UrbanSound8K.csv'
-    file_path = './data/UrbanSound8K/audio/'
-
-    train_set = UrbanSoundDataset(csv_path, file_path, range(1,10))
-    test_set = UrbanSoundDataset(csv_path, file_path, [10])
-    print("Train set size: " + str(len(train_set)))
-    print("Test set size: " + str(len(test_set)))
-
-    kwargs = {'num_workers': 1, 'pin_memory': True} if device == 'cuda' else {} #needed for using datasets on gpu
-
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size = 128, shuffle = True, **kwargs)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size = 128, shuffle = True, **kwargs)
 
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
 
- Out:
 
- .. code-block:: none
 
-    Train set size: 7895
-    Test set size: 837
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 Define the Network
@@ -259,97 +164,10 @@ receptive fields ranging from 20ms to 40ms.
 
 
 
-
-.. code-block:: python
-
-
-    class Net(nn.Module):
-        def __init__(self):
-            super(Net, self).__init__()
-            self.conv1 = nn.Conv1d(1, 128, 80, 4)
-            self.bn1 = nn.BatchNorm1d(128)
-            self.pool1 = nn.MaxPool1d(4)
-            self.conv2 = nn.Conv1d(128, 128, 3)
-            self.bn2 = nn.BatchNorm1d(128)
-            self.pool2 = nn.MaxPool1d(4)
-            self.conv3 = nn.Conv1d(128, 256, 3)
-            self.bn3 = nn.BatchNorm1d(256)
-            self.pool3 = nn.MaxPool1d(4)
-            self.conv4 = nn.Conv1d(256, 512, 3)
-            self.bn4 = nn.BatchNorm1d(512)
-            self.pool4 = nn.MaxPool1d(4)
-            self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
-            self.fc1 = nn.Linear(512, 10)
-
-        def forward(self, x):
-            x = self.conv1(x)
-            x = F.relu(self.bn1(x))
-            x = self.pool1(x)
-            x = self.conv2(x)
-            x = F.relu(self.bn2(x))
-            x = self.pool2(x)
-            x = self.conv3(x)
-            x = F.relu(self.bn3(x))
-            x = self.pool3(x)
-            x = self.conv4(x)
-            x = F.relu(self.bn4(x))
-            x = self.pool4(x)
-            x = self.avgPool(x)
-            x = x.permute(0, 2, 1) #change the 512x1 to 1x512
-            x = self.fc1(x)
-            return F.log_softmax(x, dim = 2)
-
-    model = Net()
-    model.to(device)
-    print(model)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Net(
-      (conv1): Conv1d(1, 128, kernel_size=(80,), stride=(4,))
-      (bn1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (pool1): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-      (conv2): Conv1d(128, 128, kernel_size=(3,), stride=(1,))
-      (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (pool2): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-      (conv3): Conv1d(128, 256, kernel_size=(3,), stride=(1,))
-      (bn3): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (pool3): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-      (conv4): Conv1d(256, 512, kernel_size=(3,), stride=(1,))
-      (bn4): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (pool4): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-      (avgPool): AvgPool1d(kernel_size=(30,), stride=(30,), padding=(0,))
-      (fc1): Linear(in_features=512, out_features=10, bias=True)
-    )
-
-
 We will use the same optimization technique used in the paper, an Adam
 optimizer with weight decay set to 0.0001. At first, we will train with
 a learning rate of 0.01, but we will use a ``scheduler`` to decrease it
 to 0.001 during training.
-
-
-
-
-.. code-block:: python
-
-
-    optimizer = optim.Adam(model.parameters(), lr = 0.01, weight_decay = 0.0001)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
-
-
-
-
-
 
 
 
@@ -358,34 +176,6 @@ Training and Testing the Network
 
 Now let’s define a training function that will feed our training data
 into the model and perform the backward pass and optimization steps.
-
-
-
-
-.. code-block:: python
-
-
-    def train(model, epoch):
-        model.train()
-        for batch_idx, (data, target) in enumerate(train_loader):
-            optimizer.zero_grad()
-            data = data.to(device)
-            target = target.to(device)
-            data = data.requires_grad_() #set requires_grad to True for training
-            output = model(data)
-            output = output.permute(1, 0, 2) #original output dimensions are batchSizex1x10
-            loss = F.nll_loss(output[0], target) #the loss functions expects a batchSizex10 input
-            loss.backward()
-            optimizer.step()
-            if batch_idx % log_interval == 0: #print training stats
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                    epoch, batch_idx * len(data), len(train_loader.dataset),
-                    100. * batch_idx / len(train_loader), loss))
-
-
-
-
-
 
 
 
@@ -398,31 +188,6 @@ training so this step is crucial for getting correct results.
 
 
 
-
-.. code-block:: python
-
-
-    def test(model, epoch):
-        model.eval()
-        correct = 0
-        for data, target in test_loader:
-            data = data.to(device)
-            target = target.to(device)
-            output = model(data)
-            output = output.permute(1, 0, 2)
-            pred = output.max(2)[1] # get the index of the max log-probability
-            correct += pred.eq(target).cpu().sum().item()
-        print('\nTest set: Accuracy: {}/{} ({:.0f}%)\n'.format(
-            correct, len(test_loader.dataset),
-            100. * correct / len(test_loader.dataset)))
-
-
-
-
-
-
-
-
 Finally, we can train and test the network. We will train the network
 for ten epochs then reduce the learn rate and train for ten more epochs.
 The network will be tested after each epoch to see how the accuracy
@@ -431,100 +196,6 @@ varies during the training.
 .. note:: Due to a build issue, we've reduced the number of epochs to 10.
           Run this sample with 40 locally to get the proper values.
 
-
-
-
-.. code-block:: python
-
-
-    log_interval = 20
-    for epoch in range(1, 11):
-        if epoch == 31:
-            print("First round of training complete. Setting learn rate to 0.001.")
-        scheduler.step()
-        train(model, epoch)
-        test(model, epoch)
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Train Epoch: 1 [0/7895 (0%)]    Loss: 2.331622
-    Train Epoch: 1 [2560/7895 (32%)]        Loss: 2.302134
-    Train Epoch: 1 [5120/7895 (65%)]        Loss: 2.263820
-    Train Epoch: 1 [7680/7895 (97%)]        Loss: 2.287742
-
-    Test set: Accuracy: 83/837 (10%)
-
-    Train Epoch: 2 [0/7895 (0%)]    Loss: 2.197621
-    Train Epoch: 2 [2560/7895 (32%)]        Loss: 2.246405
-    Train Epoch: 2 [5120/7895 (65%)]        Loss: 2.228399
-    Train Epoch: 2 [7680/7895 (97%)]        Loss: 2.288940
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 3 [0/7895 (0%)]    Loss: 2.207867
-    Train Epoch: 3 [2560/7895 (32%)]        Loss: 2.254007
-    Train Epoch: 3 [5120/7895 (65%)]        Loss: 2.295757
-    Train Epoch: 3 [7680/7895 (97%)]        Loss: 2.223080
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 4 [0/7895 (0%)]    Loss: 2.204138
-    Train Epoch: 4 [2560/7895 (32%)]        Loss: 2.187754
-    Train Epoch: 4 [5120/7895 (65%)]        Loss: 2.244264
-    Train Epoch: 4 [7680/7895 (97%)]        Loss: 2.235183
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 5 [0/7895 (0%)]    Loss: 2.301197
-    Train Epoch: 5 [2560/7895 (32%)]        Loss: 2.202263
-    Train Epoch: 5 [5120/7895 (65%)]        Loss: 2.247790
-    Train Epoch: 5 [7680/7895 (97%)]        Loss: 2.299739
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 6 [0/7895 (0%)]    Loss: 2.224701
-    Train Epoch: 6 [2560/7895 (32%)]        Loss: 2.209438
-    Train Epoch: 6 [5120/7895 (65%)]        Loss: 2.230847
-    Train Epoch: 6 [7680/7895 (97%)]        Loss: 2.189469
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 7 [0/7895 (0%)]    Loss: 2.230097
-    Train Epoch: 7 [2560/7895 (32%)]        Loss: 2.296733
-    Train Epoch: 7 [5120/7895 (65%)]        Loss: 2.256371
-    Train Epoch: 7 [7680/7895 (97%)]        Loss: 2.254415
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 8 [0/7895 (0%)]    Loss: 2.180878
-    Train Epoch: 8 [2560/7895 (32%)]        Loss: 2.261118
-    Train Epoch: 8 [5120/7895 (65%)]        Loss: 2.216501
-    Train Epoch: 8 [7680/7895 (97%)]        Loss: 2.190038
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 9 [0/7895 (0%)]    Loss: 2.209308
-    Train Epoch: 9 [2560/7895 (32%)]        Loss: 2.209536
-    Train Epoch: 9 [5120/7895 (65%)]        Loss: 2.237752
-    Train Epoch: 9 [7680/7895 (97%)]        Loss: 2.229389
-
-    Test set: Accuracy: 32/837 (4%)
-
-    Train Epoch: 10 [0/7895 (0%)]   Loss: 2.229044
-    Train Epoch: 10 [2560/7895 (32%)]       Loss: 2.250195
-    Train Epoch: 10 [5120/7895 (65%)]       Loss: 2.195721
-    Train Epoch: 10 [7680/7895 (97%)]       Loss: 2.238297
-
-    Test set: Accuracy: 32/837 (4%)
 
 
 Conclusion
@@ -543,7 +214,18 @@ coefficients (MFCC), that can reduce the size of the dataset.
 
 
 
-**Total running time of the script:** ( 3 minutes  1.108 seconds)
+
+.. code-block:: python
+
+
+
+    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+
+
+
+
+
+**Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_classifier_tutorial.py:

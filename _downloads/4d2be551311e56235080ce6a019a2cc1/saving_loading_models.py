@@ -57,7 +57,8 @@ functions to be familiar with:
 # (accessed with ``model.parameters()``). A *state_dict* is simply a
 # Python dictionary object that maps each layer to its parameter tensor.
 # Note that only layers with learnable parameters (convolutional layers,
-# linear layers, etc.) have entries in the model’s *state_dict*. Optimizer
+# linear layers, etc.) and registered buffers (batchnorm's running_mean)
+# have entries in the model’s *state_dict*. Optimizer
 # objects (``torch.optim``) also have a *state_dict*, which contains
 # information about the optimizer’s state, as well as the hyperparameters
 # used.

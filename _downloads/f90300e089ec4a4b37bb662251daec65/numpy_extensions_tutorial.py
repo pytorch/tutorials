@@ -4,7 +4,7 @@ Creating Extensions Using numpy and scipy
 =========================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
-**Updated by**: `Adam Dziedzic` [https://github.com/adam-dziedzic](https://github.com/adam-dziedzic)
+**Updated by**: `Adam Dziedzic <https://github.com/adam-dziedzic>`_
 
 In this tutorial, we shall go through two tasks:
 

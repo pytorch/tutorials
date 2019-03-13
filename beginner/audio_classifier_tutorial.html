@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Audio Classifier Tutorial — PyTorch Tutorials 1.0.0.dev20190125 documentation</title>
+<title>Audio Classifier Tutorial — PyTorch Tutorials 1.0.0.dev20190312 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -60,7 +60,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190125
+                  1.0.0.dev20190312
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -165,27 +165,8 @@ import the common torch packages as well as <code class="docutils literal notran
 and <code class="docutils literal notranslate"><span class="pre">numpy</span></code>. <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> is available <a class="reference external" href="https://github.com/pytorch/audio">here</a>
 and can be installed by following the
 instructions on the website.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="kn">as</span> <span class="nn">F</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="kn">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
-<span class="kn">import</span> <span class="nn">torchaudio</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-</pre></div>
-</div>
 <p>Let’s check if a CUDA GPU is available and select our device. Running
 the network on a GPU will greatly decrease the training/testing runtime.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>cuda
-</pre></div>
-</div>
 <div class="section" id="importing-the-dataset">
 <h2>Importing the Dataset<a class="headerlink" href="#importing-the-dataset" title="Permalink to this headline">¶</a></h2>
 <p>We will use the UrbanSound8K dataset to train our network. It is
@@ -195,33 +176,11 @@ the compressed dataset, extract it to your current working directory.
 First, we will look at the csv file that provides information about the
 individual sound files. <code class="docutils literal notranslate"><span class="pre">pandas</span></code> allows us to open the csv file and
 use <code class="docutils literal notranslate"><span class="pre">.iloc()</span></code> to access the data within it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">csvData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'./data/UrbanSound8K/metadata/UrbanSound8K.csv'</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">csvData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:])</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>slice_file_name    100032-3-0-0.wav
-fsID                         100032
-start                             0
-end                        0.317551
-salience                          1
-fold                              5
-classID                           3
-class                      dog_bark
-Name: 0, dtype: object
-</pre></div>
-</div>
 <p>The 10 audio classes in the UrbanSound8K dataset are air_conditioner,
 car_horn, children_playing, dog_bark, drilling, enginge_idling,
 gun_shot, jackhammer, siren, and street_music. Let’s play a couple files
 and see what they sound like. The first file is street music and the
 second is an air conditioner.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">IPython.display</span> <span class="kn">as</span> <span class="nn">ipd</span>
-<span class="n">ipd</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="s1">'./data/UrbanSound8K/audio/fold1/108041-9-0-5.wav'</span><span class="p">)</span>
-
-<span class="n">ipd</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="s1">'./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav'</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="formatting-the-data">
 <h2>Formatting the Data<a class="headerlink" href="#formatting-the-data" title="Permalink to this headline">¶</a></h2>
@@ -249,70 +208,7 @@ fifth sample of the original audio tensor. Not every audio tensor is
 long enough to handle the downsampling so these tensors will need to be
 padded with zeros. The minimum length that won’t require padding is
 160,000 samples.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UrbanSoundDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-<span class="c1">#rapper for the UrbanSound8K dataset</span>
-    <span class="c1"># Argument List</span>
-    <span class="c1">#  path to the UrbanSound8K csv file</span>
-    <span class="c1">#  path to the UrbanSound8K audio files</span>
-    <span class="c1">#  list of folders to use in the dataset</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">folderList</span><span class="p">):</span>
-        <span class="n">csvData</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
-        <span class="c1">#initialize lists to hold file names, labels, and folder numbers</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_names</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">folders</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="c1">#loop through the csv entries and only add entries from folders in the folder list</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">csvData</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">csvData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="ow">in</span> <span class="n">folderList</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csvData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csvData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">csvData</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mixer</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">DownmixMono</span><span class="p">()</span> <span class="c1">#UrbanSound8K uses two channels, this will convert them to one</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">folderList</span> <span class="o">=</span> <span class="n">folderList</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
-        <span class="c1">#format the file path and load the file</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_path</span> <span class="o">+</span> <span class="s2">"fold"</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folders</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">+</span> <span class="s2">"/"</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-        <span class="n">sound</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">normalization</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
-        <span class="c1">#load returns a tensor with the sound data and the sampling frequency (44.1kHz for UrbanSound8K)</span>
-        <span class="n">soundData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixer</span><span class="p">(</span><span class="n">sound</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="c1">#downsample the audio to ~8kHz</span>
-        <span class="n">tempData</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">160000</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="c1">#tempData accounts for audio clips that are too short</span>
-        <span class="k">if</span> <span class="n">soundData</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">160000</span><span class="p">:</span>
-            <span class="n">tempData</span><span class="p">[:</span><span class="n">soundData</span><span class="o">.</span><span class="n">numel</span><span class="p">()]</span> <span class="o">=</span> <span class="n">soundData</span><span class="p">[:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">tempData</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">soundData</span><span class="p">[:</span><span class="mi">160000</span><span class="p">]</span>
-
-        <span class="n">soundData</span> <span class="o">=</span> <span class="n">tempData</span>
-        <span class="n">soundFormatted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="mi">32000</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="n">soundFormatted</span><span class="p">[:</span><span class="mi">32000</span><span class="p">]</span> <span class="o">=</span> <span class="n">soundData</span><span class="p">[::</span><span class="mi">5</span><span class="p">]</span> <span class="c1">#take every fifth sample of soundData</span>
-        <span class="n">soundFormatted</span> <span class="o">=</span> <span class="n">soundFormatted</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">soundFormatted</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_names</span><span class="p">)</span>
-
-
-<span class="n">csv_path</span> <span class="o">=</span> <span class="s1">'./data/UrbanSound8K/metadata/UrbanSound8K.csv'</span>
-<span class="n">file_path</span> <span class="o">=</span> <span class="s1">'./data/UrbanSound8K/audio/'</span>
-
-<span class="n">train_set</span> <span class="o">=</span> <span class="n">UrbanSoundDataset</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">test_set</span> <span class="o">=</span> <span class="n">UrbanSoundDataset</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">"Train set size: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_set</span><span class="p">)))</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">"Test set size: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test_set</span><span class="p">)))</span>
-
-<span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'num_workers'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'pin_memory'</span><span class="p">:</span> <span class="bp">True</span><span class="p">}</span> <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s1">'cuda'</span> <span class="k">else</span> <span class="p">{}</span> <span class="c1">#needed for using datasets on gpu</span>
-
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">shuffle</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train set size: 7895
-Test set size: 837
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#rapper for the UrbanSound8K dataset</span>
 </pre></div>
 </div>
 </div>
@@ -328,118 +224,21 @@ first layer’s filters. Our model’s first filter is length 80 so when
 processing audio sampled at 8kHz the receptive field is around 10ms.
 This size is similar to speech processing applications that often use
 receptive fields ranging from 20ms to 40ms.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool1d</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool1d</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool1d</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv4</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn4</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pool4</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool1d</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">avgPool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AvgPool1d</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="c1">#input should be 512x30 so this outputs a 512x1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bn3</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bn4</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgPool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">#change the 512x1 to 1x512</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Net(
-  (conv1): Conv1d(1, 128, kernel_size=(80,), stride=(4,))
-  (bn1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-  (pool1): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-  (conv2): Conv1d(128, 128, kernel_size=(3,), stride=(1,))
-  (bn2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-  (pool2): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-  (conv3): Conv1d(128, 256, kernel_size=(3,), stride=(1,))
-  (bn3): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-  (pool3): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-  (conv4): Conv1d(256, 512, kernel_size=(3,), stride=(1,))
-  (bn4): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-  (pool4): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
-  (avgPool): AvgPool1d(kernel_size=(30,), stride=(30,), padding=(0,))
-  (fc1): Linear(in_features=512, out_features=10, bias=True)
-)
-</pre></div>
-</div>
 <p>We will use the same optimization technique used in the paper, an Adam
 optimizer with weight decay set to 0.0001. At first, we will train with
 a learning rate of 0.01, but we will use a <code class="docutils literal notranslate"><span class="pre">scheduler</span></code> to decrease it
 to 0.001 during training.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">weight_decay</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">)</span>
-<span class="n">scheduler</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">step_size</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="training-and-testing-the-network">
 <h2>Training and Testing the Network<a class="headerlink" href="#training-and-testing-the-network" title="Permalink to this headline">¶</a></h2>
 <p>Now let’s define a training function that will feed our training data
 into the model and perform the backward pass and optimization steps.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()</span> <span class="c1">#set requires_grad to True for training</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1">#original output dimensions are batchSizex1x10</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">target</span><span class="p">)</span> <span class="c1">#the loss functions expects a batchSizex10 input</span>
-        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">batch_idx</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1">#print training stats</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'Train Epoch: {} [{}/{} ({:.0f}%)]</span><span class="se">\t</span><span class="s1">Loss: {:.6f}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_idx</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
-                <span class="mf">100.</span> <span class="o">*</span> <span class="n">batch_idx</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">loss</span><span class="p">))</span>
-</pre></div>
-</div>
 <p>Now that we have a training function, we need to make one for testing
 the networks accuracy. We will set the model to <code class="docutils literal notranslate"><span class="pre">eval()</span></code> mode and then
 run inference on the test dataset. Calling <code class="docutils literal notranslate"><span class="pre">eval()</span></code> sets the training
 variable in all modules in the network to false. Certain layers like
 batch normalization and dropout layers behave differently during
 training so this step is crucial for getting correct results.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">):</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># get the index of the max log-probability</span>
-        <span class="n">correct</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">Test set: Accuracy: {}/{} ({:.0f}%)</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">correct</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
-        <span class="mf">100.</span> <span class="o">*</span> <span class="n">correct</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)))</span>
-</pre></div>
-</div>
 <p>Finally, we can train and test the network. We will train the network
 for ten epochs then reduce the learn rate and train for ten more epochs.
 The network will be tested after each epoch to see how the accuracy
@@ -448,87 +247,6 @@ varies during the training.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">Due to a build issue, we’ve reduced the number of epochs to 10.
 Run this sample with 40 locally to get the proper values.</p>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">log_interval</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">epoch</span> <span class="o">==</span> <span class="mi">31</span><span class="p">:</span>
-        <span class="k">print</span><span class="p">(</span><span class="s2">"First round of training complete. Setting learn rate to 0.001."</span><span class="p">)</span>
-    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-    <span class="n">train</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
-    <span class="n">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train Epoch: 1 [0/7895 (0%)]    Loss: 2.331622
-Train Epoch: 1 [2560/7895 (32%)]        Loss: 2.302134
-Train Epoch: 1 [5120/7895 (65%)]        Loss: 2.263820
-Train Epoch: 1 [7680/7895 (97%)]        Loss: 2.287742
-
-Test set: Accuracy: 83/837 (10%)
-
-Train Epoch: 2 [0/7895 (0%)]    Loss: 2.197621
-Train Epoch: 2 [2560/7895 (32%)]        Loss: 2.246405
-Train Epoch: 2 [5120/7895 (65%)]        Loss: 2.228399
-Train Epoch: 2 [7680/7895 (97%)]        Loss: 2.288940
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 3 [0/7895 (0%)]    Loss: 2.207867
-Train Epoch: 3 [2560/7895 (32%)]        Loss: 2.254007
-Train Epoch: 3 [5120/7895 (65%)]        Loss: 2.295757
-Train Epoch: 3 [7680/7895 (97%)]        Loss: 2.223080
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 4 [0/7895 (0%)]    Loss: 2.204138
-Train Epoch: 4 [2560/7895 (32%)]        Loss: 2.187754
-Train Epoch: 4 [5120/7895 (65%)]        Loss: 2.244264
-Train Epoch: 4 [7680/7895 (97%)]        Loss: 2.235183
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 5 [0/7895 (0%)]    Loss: 2.301197
-Train Epoch: 5 [2560/7895 (32%)]        Loss: 2.202263
-Train Epoch: 5 [5120/7895 (65%)]        Loss: 2.247790
-Train Epoch: 5 [7680/7895 (97%)]        Loss: 2.299739
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 6 [0/7895 (0%)]    Loss: 2.224701
-Train Epoch: 6 [2560/7895 (32%)]        Loss: 2.209438
-Train Epoch: 6 [5120/7895 (65%)]        Loss: 2.230847
-Train Epoch: 6 [7680/7895 (97%)]        Loss: 2.189469
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 7 [0/7895 (0%)]    Loss: 2.230097
-Train Epoch: 7 [2560/7895 (32%)]        Loss: 2.296733
-Train Epoch: 7 [5120/7895 (65%)]        Loss: 2.256371
-Train Epoch: 7 [7680/7895 (97%)]        Loss: 2.254415
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 8 [0/7895 (0%)]    Loss: 2.180878
-Train Epoch: 8 [2560/7895 (32%)]        Loss: 2.261118
-Train Epoch: 8 [5120/7895 (65%)]        Loss: 2.216501
-Train Epoch: 8 [7680/7895 (97%)]        Loss: 2.190038
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 9 [0/7895 (0%)]    Loss: 2.209308
-Train Epoch: 9 [2560/7895 (32%)]        Loss: 2.209536
-Train Epoch: 9 [5120/7895 (65%)]        Loss: 2.237752
-Train Epoch: 9 [7680/7895 (97%)]        Loss: 2.229389
-
-Test set: Accuracy: 32/837 (4%)
-
-Train Epoch: 10 [0/7895 (0%)]   Loss: 2.229044
-Train Epoch: 10 [2560/7895 (32%)]       Loss: 2.250195
-Train Epoch: 10 [5120/7895 (65%)]       Loss: 2.195721
-Train Epoch: 10 [7680/7895 (97%)]       Loss: 2.238297
-
-Test set: Accuracy: 32/837 (4%)
-</pre></div>
 </div>
 </div>
 <div class="section" id="conclusion">
@@ -542,7 +260,10 @@ expense of a larger memory footprint.</p>
 recurrent neural networks (RNNs) are commonly used. There are also other
 data preprocessing methods, such as finding the mel frequency cepstral
 coefficients (MFCC), that can reduce the size of the dataset.</p>
-<p><strong>Total running time of the script:</strong> ( 3 minutes  1.108 seconds)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
+</pre></div>
+</div>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-audio-classifier-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/9b53c08488e3aeeb6a90f5b86d198375/audio_classifier_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">audio_classifier_tutorial.py</span></code></a></div>
@@ -690,6 +411,12 @@ coefficients (MFCC), that can reduce the size of the dataset.</p>
 </div>
 </div>
 </footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
 <div class="mobile-main-menu">
@@ -749,5 +476,4 @@ coefficients (MFCC), that can reduce the size of the dataset.</p>
       });
     })
   </script>
-</body>
-</html>
+</body></html>

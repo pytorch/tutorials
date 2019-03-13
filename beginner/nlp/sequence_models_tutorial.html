@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sequence Models and Long-Short Term Memory Networks — PyTorch Tutorials 1.0.0.dev20190125 documentation</title>
+<title>Sequence Models and Long-Short Term Memory Networks — PyTorch Tutorials 1.0.0.dev20190312 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190125
+                  1.0.0.dev20190312
                 </div>
 <div role="search">
 <form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -313,20 +313,10 @@ target space of <span class="math notranslate nohighlight">\(A\)</span> is <span
 
         <span class="c1"># The linear layer that maps from hidden state space to tag space</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">tagset_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">init_hidden</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Before we've done anything, we dont have any hidden state.</span>
-        <span class="c1"># Refer to the Pytorch documentation to see exactly</span>
-        <span class="c1"># why they have this dimensionality.</span>
-        <span class="c1"># The axes semantics are (num_layers, minibatch_size, hidden_dim)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">),</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
         <span class="n">embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embeddings</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
-        <span class="n">lstm_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span>
-            <span class="n">embeds</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden</span><span class="p">)</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">embeds</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">tag_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span><span class="p">(</span><span class="n">lstm_out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">tag_scores</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">tag_space</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">tag_scores</span>
@@ -350,10 +340,6 @@ target space of <span class="math notranslate nohighlight">\(A\)</span> is <span
         <span class="c1"># Step 1. Remember that Pytorch accumulates gradients.</span>
         <span class="c1"># We need to clear them out before each instance</span>
         <span class="n">model</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-
-        <span class="c1"># Also, we need to clear out the hidden state of the LSTM,</span>
-        <span class="c1"># detaching it from its history on the last instance.</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">hidden</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">init_hidden</span><span class="p">()</span>
 
         <span class="c1"># Step 2. Get our inputs ready for the network, that is, turn them into</span>
         <span class="c1"># Tensors of word indices.</span>
@@ -389,11 +375,11 @@ target space of <span class="math notranslate nohighlight">\(A\)</span> is <span
         [-1.1286, -1.2093, -0.9726],
         [-1.1190, -1.1960, -0.9916],
         [-1.0137, -1.2642, -1.0366]])
-tensor([[-0.0858, -2.9355, -3.5374],
-        [-5.2313, -0.0234, -4.0314],
-        [-3.9098, -4.1279, -0.0368],
-        [-0.0187, -4.7809, -4.5960],
-        [-5.8170, -0.0183, -4.1879]])
+tensor([[-0.0462, -4.0106, -3.6096],
+        [-4.8205, -0.0286, -3.9045],
+        [-3.7876, -4.1355, -0.0394],
+        [-0.0185, -4.7874, -4.6013],
+        [-5.7881, -0.0186, -4.1778]])
 </pre></div>
 </div>
 </div>
@@ -420,7 +406,7 @@ outputs a character-level representation of each word.</li>
 <li>To do a sequence model over characters, you will have to embed characters.
 The character embeddings will be the input to the character LSTM.</li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  5.068 seconds)</p>
+<p><strong>Total running time of the script:</strong> ( 0 minutes  4.865 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-sequence-models-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/2541b9734d50383920a32879ba460d3d/sequence_models_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
@@ -570,6 +556,12 @@ The character embeddings will be the input to the character LSTM.</li>
 </div>
 </div>
 </footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../../_static/images/pytorch-x.svg">
+</img></div>
+</div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
 <div class="mobile-main-menu">
@@ -629,5 +621,4 @@ The character embeddings will be the input to the character LSTM.</li>
       });
     })
   </script>
-</body>
-</html>
+</body></html>

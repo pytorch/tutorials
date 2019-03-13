@@ -12,15 +12,15 @@ instructions on the website.
 
 """
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from torchvision import datasets, transforms
-from torch.utils.data import Dataset
-import torchaudio
-import pandas as pd
-import numpy as np
+
+
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -28,8 +28,8 @@ import numpy as np
 # the network on a GPU will greatly decrease the training/testing runtime.
 #
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
+
+
 
 
 ######################################################################
@@ -45,8 +45,8 @@ print(device)
 # use ``.iloc()`` to access the data within it.
 #
 
-csvData = pd.read_csv('./data/UrbanSound8K/metadata/UrbanSound8K.csv')
-print(csvData.iloc[0, :])
+
+
 
 
 ######################################################################
@@ -57,10 +57,10 @@ print(csvData.iloc[0, :])
 # second is an air conditioner.
 #
 
-import IPython.display as ipd
-ipd.Audio('./data/UrbanSound8K/audio/fold1/108041-9-0-5.wav')
 
-ipd.Audio('./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav')
+
+
+
 
 
 ######################################################################
@@ -94,65 +94,65 @@ ipd.Audio('./data/UrbanSound8K/audio/fold5/100852-0-0-19.wav')
 # 160,000 samples.
 #
 
-class UrbanSoundDataset(Dataset):
+
 #rapper for the UrbanSound8K dataset
-    # Argument List
-    #  path to the UrbanSound8K csv file
-    #  path to the UrbanSound8K audio files
-    #  list of folders to use in the dataset
-
-    def __init__(self, csv_path, file_path, folderList):
-        csvData = pd.read_csv(csv_path)
-        #initialize lists to hold file names, labels, and folder numbers
-        self.file_names = []
-        self.labels = []
-        self.folders = []
-        #loop through the csv entries and only add entries from folders in the folder list
-        for i in range(0,len(csvData)):
-            if csvData.iloc[i, 5] in folderList:
-                self.file_names.append(csvData.iloc[i, 0])
-                self.labels.append(csvData.iloc[i, 6])
-                self.folders.append(csvData.iloc[i, 5])
-
-        self.file_path = file_path
-        self.mixer = torchaudio.transforms.DownmixMono() #UrbanSound8K uses two channels, this will convert them to one
-        self.folderList = folderList
-
-    def __getitem__(self, index):
-        #format the file path and load the file
-        path = self.file_path + "fold" + str(self.folders[index]) + "/" + self.file_names[index]
-        sound = torchaudio.load(path, out = None, normalization = True)
-        #load returns a tensor with the sound data and the sampling frequency (44.1kHz for UrbanSound8K)
-        soundData = self.mixer(sound[0])
-        #downsample the audio to ~8kHz
-        tempData = torch.zeros([160000, 1]) #tempData accounts for audio clips that are too short
-        if soundData.numel() < 160000:
-            tempData[:soundData.numel()] = soundData[:]
-        else:
-            tempData[:] = soundData[:160000]
-
-        soundData = tempData
-        soundFormatted = torch.zeros([32000, 1])
-        soundFormatted[:32000] = soundData[::5] #take every fifth sample of soundData
-        soundFormatted = soundFormatted.permute(1, 0)
-        return soundFormatted, self.labels[index]
-
-    def __len__(self):
-        return len(self.file_names)
 
 
-csv_path = './data/UrbanSound8K/metadata/UrbanSound8K.csv'
-file_path = './data/UrbanSound8K/audio/'
 
-train_set = UrbanSoundDataset(csv_path, file_path, range(1,10))
-test_set = UrbanSoundDataset(csv_path, file_path, [10])
-print("Train set size: " + str(len(train_set)))
-print("Test set size: " + str(len(test_set)))
 
-kwargs = {'num_workers': 1, 'pin_memory': True} if device == 'cuda' else {} #needed for using datasets on gpu
 
-train_loader = torch.utils.data.DataLoader(train_set, batch_size = 128, shuffle = True, **kwargs)
-test_loader = torch.utils.data.DataLoader(test_set, batch_size = 128, shuffle = True, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -171,45 +171,45 @@ test_loader = torch.utils.data.DataLoader(test_set, batch_size = 128, shuffle = 
 # receptive fields ranging from 20ms to 40ms.
 #
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv1d(1, 128, 80, 4)
-        self.bn1 = nn.BatchNorm1d(128)
-        self.pool1 = nn.MaxPool1d(4)
-        self.conv2 = nn.Conv1d(128, 128, 3)
-        self.bn2 = nn.BatchNorm1d(128)
-        self.pool2 = nn.MaxPool1d(4)
-        self.conv3 = nn.Conv1d(128, 256, 3)
-        self.bn3 = nn.BatchNorm1d(256)
-        self.pool3 = nn.MaxPool1d(4)
-        self.conv4 = nn.Conv1d(256, 512, 3)
-        self.bn4 = nn.BatchNorm1d(512)
-        self.pool4 = nn.MaxPool1d(4)
-        self.avgPool = nn.AvgPool1d(30) #input should be 512x30 so this outputs a 512x1
-        self.fc1 = nn.Linear(512, 10)
 
-    def forward(self, x):
-        x = self.conv1(x)
-        x = F.relu(self.bn1(x))
-        x = self.pool1(x)
-        x = self.conv2(x)
-        x = F.relu(self.bn2(x))
-        x = self.pool2(x)
-        x = self.conv3(x)
-        x = F.relu(self.bn3(x))
-        x = self.pool3(x)
-        x = self.conv4(x)
-        x = F.relu(self.bn4(x))
-        x = self.pool4(x)
-        x = self.avgPool(x)
-        x = x.permute(0, 2, 1) #change the 512x1 to 1x512
-        x = self.fc1(x)
-        return F.log_softmax(x, dim = 2)
 
-model = Net()
-model.to(device)
-print(model)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -219,8 +219,8 @@ print(model)
 # to 0.001 during training.
 #
 
-optimizer = optim.Adam(model.parameters(), lr = 0.01, weight_decay = 0.0001)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
+
+
 
 
 ######################################################################
@@ -231,22 +231,22 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size = 20, gamma = 0.1)
 # into the model and perform the backward pass and optimization steps.
 #
 
-def train(model, epoch):
-    model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
-        optimizer.zero_grad()
-        data = data.to(device)
-        target = target.to(device)
-        data = data.requires_grad_() #set requires_grad to True for training
-        output = model(data)
-        output = output.permute(1, 0, 2) #original output dimensions are batchSizex1x10
-        loss = F.nll_loss(output[0], target) #the loss functions expects a batchSizex10 input
-        loss.backward()
-        optimizer.step()
-        if batch_idx % log_interval == 0: #print training stats
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -258,19 +258,19 @@ def train(model, epoch):
 # training so this step is crucial for getting correct results.
 #
 
-def test(model, epoch):
-    model.eval()
-    correct = 0
-    for data, target in test_loader:
-        data = data.to(device)
-        target = target.to(device)
-        output = model(data)
-        output = output.permute(1, 0, 2)
-        pred = output.max(2)[1] # get the index of the max log-probability
-        correct += pred.eq(target).cpu().sum().item()
-    print('\nTest set: Accuracy: {}/{} ({:.0f}%)\n'.format(
-        correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -283,13 +283,13 @@ def test(model, epoch):
 #           Run this sample with 40 locally to get the proper values.
 #
 
-log_interval = 20
-for epoch in range(1, 11):
-    if epoch == 31:
-        print("First round of training complete. Setting learn rate to 0.001.")
-    scheduler.step()
-    train(model, epoch)
-    test(model, epoch)
+
+
+
+
+
+
+
 
 
 ######################################################################
@@ -308,3 +308,5 @@ for epoch in range(1, 11):
 # coefficients (MFCC), that can reduce the size of the dataset.
 #
 
+
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
