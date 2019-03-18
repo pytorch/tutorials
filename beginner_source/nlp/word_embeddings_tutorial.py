@@ -93,7 +93,7 @@ Although it is more common to normalize by the lengths:
 .. math::
 
     \text{Similarity}(\text{physicist}, \text{mathematician}) = \frac{q_\text{physicist} \cdot q_\text{mathematician}}
-   {\| q_\text{\physicist} \| \| q_\text{mathematician} \|} = \cos (\phi)
+   {\| q_\text{physicist} \| \| q_\text{mathematician} \|} = \cos (\phi)
 
 Where :math:`\phi` is the angle between the two vectors. That way,
 extremely similar words (words whose embeddings point in the same
