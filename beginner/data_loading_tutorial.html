@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Data Loading and Processing Tutorial — PyTorch Tutorials 1.0.0.dev20190318 documentation</title>
+<title>Data Loading and Processing Tutorial — PyTorch Tutorials 1.0.0.dev20190325 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190318
+                  1.0.0.dev20190325
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -172,15 +172,15 @@ installed:</p>
 <li><code class="docutils literal notranslate"><span class="pre">scikit-image</span></code>: For image io and transforms</li>
 <li><code class="docutils literal notranslate"><span class="pre">pandas</span></code>: For easier csv parsing</li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">skimage</span> <span class="kn">import</span> <span class="n">io</span><span class="p">,</span> <span class="n">transform</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">skimage</span> <span class="k">import</span> <span class="n">io</span><span class="p">,</span> <span class="n">transform</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="k">import</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">utils</span>
 
 <span class="c1"># Ignore warnings</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -212,16 +212,16 @@ on a few images from imagenet tagged as ‘face’.</p>
 </div>
 <p>Let’s quickly read the CSV and get the annotations in an (N, 2) array where N
 is the number of landmarks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">landmarks_frame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">landmarks_frame</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">)</span>
 
 <span class="n">n</span> <span class="o">=</span> <span class="mi">65</span>
 <span class="n">img_name</span> <span class="o">=</span> <span class="n">landmarks_frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">landmarks</span> <span class="o">=</span> <span class="n">landmarks_frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
 <span class="n">landmarks</span> <span class="o">=</span> <span class="n">landmarks</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">'float'</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s1">'Image name: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">img_name</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">'Landmarks shape: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">landmarks</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">'First 4 Landmarks: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">landmarks</span><span class="p">[:</span><span class="mi">4</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Image name: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">img_name</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Landmarks shape: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">landmarks</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'First 4 Landmarks: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">landmarks</span><span class="p">[:</span><span class="mi">4</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -235,7 +235,7 @@ First 4 Landmarks: [[32. 65.]
 </div>
 <p>Let’s write a simple helper function to show an image and its landmarks
 and use it to show a sample.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">show_landmarks</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">show_landmarks</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">landmarks</span><span class="p">):</span>
     <span class="sd">"""Show image with landmarks"""</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">landmarks</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">landmarks</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">'r'</span><span class="p">)</span>
@@ -268,10 +268,10 @@ stored in the memory at once but read as required.</p>
 optional argument <code class="docutils literal notranslate"><span class="pre">transform</span></code> so that any required processing can be
 applied on the sample. We will see the usefulness of <code class="docutils literal notranslate"><span class="pre">transform</span></code> in the
 next section.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FaceLandmarksDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FaceLandmarksDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
     <span class="sd">"""Face Landmarks dataset."""</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_file</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_file</span><span class="p">,</span> <span class="n">root_dir</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">"""</span>
 <span class="sd">        Args:</span>
 <span class="sd">            csv_file (string): Path to the csv file with annotations.</span>
@@ -283,10 +283,10 @@ next section.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span> <span class="o">=</span> <span class="n">root_dir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">landmarks_frame</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
         <span class="n">img_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_dir</span><span class="p">,</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">landmarks_frame</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_name</span><span class="p">)</span>
@@ -302,7 +302,7 @@ next section.</p>
 </div>
 <p>Let’s instantiate this class and iterate through the data samples. We
 will print the sizes of first 4 samples and show their landmarks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">face_dataset</span> <span class="o">=</span> <span class="n">FaceLandmarksDataset</span><span class="p">(</span><span class="n">csv_file</span><span class="o">=</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">face_dataset</span> <span class="o">=</span> <span class="n">FaceLandmarksDataset</span><span class="p">(</span><span class="n">csv_file</span><span class="o">=</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">,</span>
                                     <span class="n">root_dir</span><span class="o">=</span><span class="s1">'data/faces/'</span><span class="p">)</span>
 
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -310,11 +310,11 @@ will print the sizes of first 4 samples and show their landmarks.</p>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">face_dataset</span><span class="p">)):</span>
     <span class="n">sample</span> <span class="o">=</span> <span class="n">face_dataset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
     <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Sample #{}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Sample #</span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">'off'</span><span class="p">)</span>
     <span class="n">show_landmarks</span><span class="p">(</span><span class="o">**</span><span class="n">sample</span><span class="p">)</span>
 
@@ -355,7 +355,7 @@ if required, <code class="docutils literal notranslate"><span class="pre">__init
 </div>
 <p>Observe below how these transforms had to be applied both on the image and
 landmarks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rescale</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rescale</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">"""Rescale the image in a sample to a given size.</span>
 
 <span class="sd">    Args:</span>
@@ -364,11 +364,11 @@ landmarks.</p>
 <span class="sd">            to output_size keeping aspect ratio the same.</span>
 <span class="sd">    """</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span>
 
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
@@ -399,7 +399,7 @@ landmarks.</p>
 <span class="sd">            is made.</span>
 <span class="sd">    """</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">output_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">)</span>
@@ -407,7 +407,7 @@ landmarks.</p>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_size</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span>
 
         <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
@@ -427,7 +427,7 @@ landmarks.</p>
 <span class="k">class</span> <span class="nc">ToTensor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">"""Convert ndarrays in sample to Tensors."""</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">landmarks</span> <span class="o">=</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">],</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span>
 
         <span class="c1"># swap color axis because</span>
@@ -446,7 +446,7 @@ then randomly crop a square of size 224 from it. i.e, we want to compose
 <code class="docutils literal notranslate"><span class="pre">Rescale</span></code> and <code class="docutils literal notranslate"><span class="pre">RandomCrop</span></code> transforms.
 <code class="docutils literal notranslate"><span class="pre">torchvision.transforms.Compose</span></code> is a simple callable class which allows us
 to do this.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scale</span> <span class="o">=</span> <span class="n">Rescale</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scale</span> <span class="o">=</span> <span class="n">Rescale</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
 <span class="n">crop</span> <span class="o">=</span> <span class="n">RandomCrop</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
 <span class="n">composed</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">Rescale</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
                                <span class="n">RandomCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">)])</span>
@@ -481,7 +481,7 @@ sampling</li>
 </ul>
 <p>We can iterate over the created dataset with a <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range</span></code>
 loop as before.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">transformed_dataset</span> <span class="o">=</span> <span class="n">FaceLandmarksDataset</span><span class="p">(</span><span class="n">csv_file</span><span class="o">=</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">transformed_dataset</span> <span class="o">=</span> <span class="n">FaceLandmarksDataset</span><span class="p">(</span><span class="n">csv_file</span><span class="o">=</span><span class="s1">'data/faces/face_landmarks.csv'</span><span class="p">,</span>
                                            <span class="n">root_dir</span><span class="o">=</span><span class="s1">'data/faces/'</span><span class="p">,</span>
                                            <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
                                                <span class="n">Rescale</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
@@ -492,7 +492,7 @@ loop as before.</p>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">transformed_dataset</span><span class="p">)):</span>
     <span class="n">sample</span> <span class="o">=</span> <span class="n">transformed_dataset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-    <span class="k">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">sample</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
 
     <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="k">break</span>
@@ -517,8 +517,8 @@ features. Parameters used below should be clear. One parameter of
 interest is <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code>. You can specify how exactly the samples need
 to be batched using <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code>. However, default collate should work
 fine for most use cases.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">transformed_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
-                        <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">transformed_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
 
 <span class="c1"># Helper function to show a batch</span>
@@ -540,7 +540,7 @@ fine for most use cases.</p>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Batch from dataloader'</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i_batch</span><span class="p">,</span> <span class="n">sample_batched</span><span class="p">[</span><span class="s1">'image'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span>
           <span class="n">sample_batched</span><span class="p">[</span><span class="s1">'landmarks'</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
 
     <span class="c1"># observe 4th batch and stop.</span>
@@ -602,7 +602,7 @@ are also available. You can use these to write a dataloader like this:</p>
 </div>
 <p>For an example with training code, please see
 <a class="reference internal" href="transfer_learning_tutorial.html"><span class="doc">Transfer Learning Tutorial</span></a>.</p>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  55.385 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  58.900 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-data-loading-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/0daab3cdf9be9579bd736e92d8de3917/data_loading_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">data_loading_tutorial.py</span></code></a></div>

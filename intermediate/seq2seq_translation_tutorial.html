@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.0.0.dev20190318 documentation</title>
+<title>Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.0.0.dev20190325 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190318
+                  1.0.0.dev20190325
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -230,17 +230,17 @@ Translate</a></li>
 <li><a class="reference external" href="https://arxiv.org/abs/1506.05869">A Neural Conversational Model</a></li>
 </ul>
 <p><strong>Requirements</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="nb">open</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="nb">open</span>
 <span class="kn">import</span> <span class="nn">unicodedata</span>
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">random</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="kn">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">optim</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
 </pre></div>
@@ -282,12 +282,12 @@ the networks later. To keep track of all this we will use a helper class
 called <code class="docutils literal notranslate"><span class="pre">Lang</span></code> which has word → index (<code class="docutils literal notranslate"><span class="pre">word2index</span></code>) and index → word
 (<code class="docutils literal notranslate"><span class="pre">index2word</span></code>) dictionaries, as well as a count of each word
 <code class="docutils literal notranslate"><span class="pre">word2count</span></code> to use to later replace rare words.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">SOS_token</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SOS_token</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">EOS_token</span> <span class="o">=</span> <span class="mi">1</span>
 
 
 <span class="k">class</span> <span class="nc">Lang</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2index</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2count</span> <span class="o">=</span> <span class="p">{}</span>
@@ -311,7 +311,7 @@ called <code class="docutils literal notranslate"><span class="pre">Lang</span><
 <p>The files are all in Unicode, to simplify we will turn Unicode
 characters to ASCII, make everything lowercase, and trim most
 punctuation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn a Unicode string to plain ASCII, thanks to</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn a Unicode string to plain ASCII, thanks to</span>
 <span class="c1"># https://stackoverflow.com/a/518232/2809427</span>
 <span class="k">def</span> <span class="nf">unicodeToAscii</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
     <span class="k">return</span> <span class="s1">''</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -333,8 +333,8 @@ punctuation.</p>
 lines into pairs. The files are all English → Other Language, so if we
 want to translate from Other Language → English I added the <code class="docutils literal notranslate"><span class="pre">reverse</span></code>
 flag to reverse the pairs.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Reading lines..."</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Reading lines..."</span><span class="p">)</span>
 
     <span class="c1"># Read the file and split into lines</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'data/</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">.txt'</span> <span class="o">%</span> <span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">),</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span><span class="o">.</span>\
@@ -361,7 +361,7 @@ simple sentences. Here the maximum length is 10 words (that includes
 ending punctuation) and we’re filtering to sentences that translate to
 the form “I am” or “He is” etc. (accounting for apostrophes replaced
 earlier).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MAX_LENGTH</span> <span class="o">=</span> <span class="mi">10</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MAX_LENGTH</span> <span class="o">=</span> <span class="mi">10</span>
 
 <span class="n">eng_prefixes</span> <span class="o">=</span> <span class="p">(</span>
     <span class="s2">"i am "</span><span class="p">,</span> <span class="s2">"i m "</span><span class="p">,</span>
@@ -389,23 +389,23 @@ earlier).</p>
 <li>Normalize text, filter by length and content</li>
 <li>Make word lists from sentences in pairs</li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepareData</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepareData</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="n">input_lang</span><span class="p">,</span> <span class="n">output_lang</span><span class="p">,</span> <span class="n">pairs</span> <span class="o">=</span> <span class="n">readLangs</span><span class="p">(</span><span class="n">lang1</span><span class="p">,</span> <span class="n">lang2</span><span class="p">,</span> <span class="n">reverse</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Read </span><span class="si">%s</span><span class="s2"> sentence pairs"</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Read </span><span class="si">%s</span><span class="s2"> sentence pairs"</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
     <span class="n">pairs</span> <span class="o">=</span> <span class="n">filterPairs</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Trimmed to </span><span class="si">%s</span><span class="s2"> sentence pairs"</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Counting words..."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Trimmed to </span><span class="si">%s</span><span class="s2"> sentence pairs"</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Counting words..."</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
         <span class="n">input_lang</span><span class="o">.</span><span class="n">addSentence</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">output_lang</span><span class="o">.</span><span class="n">addSentence</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"Counted words:"</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">input_lang</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">input_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">output_lang</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">output_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Counted words:"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">input_lang</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">input_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">output_lang</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">output_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">input_lang</span><span class="p">,</span> <span class="n">output_lang</span><span class="p">,</span> <span class="n">pairs</span>
 
 
-<span class="n">input_lang</span><span class="p">,</span> <span class="n">output_lang</span><span class="p">,</span> <span class="n">pairs</span> <span class="o">=</span> <span class="n">prepareData</span><span class="p">(</span><span class="s1">'eng'</span><span class="p">,</span> <span class="s1">'fra'</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
+<span class="n">input_lang</span><span class="p">,</span> <span class="n">output_lang</span><span class="p">,</span> <span class="n">pairs</span> <span class="o">=</span> <span class="n">prepareData</span><span class="p">(</span><span class="s1">'eng'</span><span class="p">,</span> <span class="s1">'fra'</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pairs</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -416,7 +416,7 @@ Counting words...
 Counted words:
 fra 4345
 eng 2803
-['je suis fauche .', 'i m broke .']
+['ils sont chanceux d etre en vie .', 'they re lucky to be alive .']
 </pre></div>
 </div>
 </div>
@@ -456,8 +456,8 @@ next input word.</p>
 <div class="figure">
 <img alt="" src="../_images/encoder-network.png"/>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EncoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
 
@@ -492,8 +492,8 @@ last hidden state).</p>
 <div class="figure">
 <img alt="" src="../_images/decoder-network.png"/>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
 
@@ -541,8 +541,8 @@ while shorter sentences will only use the first few.</p>
 <div class="figure">
 <img alt="" src="../_images/attention-decoder-network.png"/>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AttnDecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
@@ -596,7 +596,7 @@ Translation</a>.</p>
 words in the input sentence) and target tensor (indexes of the words in
 the target sentence). While creating these vectors we will append the
 EOS token to both sequences.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">indexesFromSentence</span><span class="p">(</span><span class="n">lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">indexesFromSentence</span><span class="p">(</span><span class="n">lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">lang</span><span class="o">.</span><span class="n">word2index</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">sentence</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">' '</span><span class="p">)]</span>
 
 
@@ -633,7 +633,7 @@ in the first place.</p>
 <p>Because of the freedom PyTorch’s autograd gives us, we can randomly
 choose to use teacher forcing or not with a simple if statement. Turn
 <code class="docutils literal notranslate"><span class="pre">teacher_forcing_ratio</span></code> up to use more of it.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">teacher_forcing_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">teacher_forcing_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 
 <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">,</span> <span class="n">target_tensor</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">encoder_optimizer</span><span class="p">,</span> <span class="n">decoder_optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
@@ -658,7 +658,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
     <span class="n">decoder_hidden</span> <span class="o">=</span> <span class="n">encoder_hidden</span>
 
-    <span class="n">use_teacher_forcing</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">teacher_forcing_ratio</span> <span class="k">else</span> <span class="bp">False</span>
+    <span class="n">use_teacher_forcing</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">teacher_forcing_ratio</span> <span class="k">else</span> <span class="kc">False</span>
 
     <span class="k">if</span> <span class="n">use_teacher_forcing</span><span class="p">:</span>
         <span class="c1"># Teacher forcing: Feed the target as the next input</span>
@@ -690,7 +690,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 </div>
 <p>This is a helper function to print time elapsed and estimated time
 remaining given the current time and progress %.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">math</span>
 
 
@@ -717,7 +717,7 @@ remaining given the current time and progress %.</p>
 </ul>
 <p>Then we call <code class="docutils literal notranslate"><span class="pre">train</span></code> many times and occasionally print the progress (%
 of examples, time so far, estimated time) and average loss.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">trainIters</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n_iters</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot_every</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">trainIters</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n_iters</span><span class="p">,</span> <span class="n">print_every</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">plot_every</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">plot_losses</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">print_loss_total</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Reset every print_every</span>
@@ -742,7 +742,7 @@ of examples, time so far, estimated time) and average loss.</p>
         <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">print_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">print_loss_avg</span> <span class="o">=</span> <span class="n">print_loss_total</span> <span class="o">/</span> <span class="n">print_every</span>
             <span class="n">print_loss_total</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">/</span> <span class="n">n_iters</span><span class="p">),</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="si">%s</span><span class="s1"> (</span><span class="si">%d</span><span class="s1"> </span><span class="si">%d%%</span><span class="s1">) </span><span class="si">%.4f</span><span class="s1">'</span> <span class="o">%</span> <span class="p">(</span><span class="n">timeSince</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">/</span> <span class="n">n_iters</span><span class="p">),</span>
                                          <span class="nb">iter</span><span class="p">,</span> <span class="nb">iter</span> <span class="o">/</span> <span class="n">n_iters</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">print_loss_avg</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="nb">iter</span> <span class="o">%</span> <span class="n">plot_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -758,10 +758,10 @@ of examples, time so far, estimated time) and average loss.</p>
 <h3>Plotting results<a class="headerlink" href="#plotting-results" title="Permalink to this headline">¶</a></h3>
 <p>Plotting is done with matplotlib, using the array of loss values
 <code class="docutils literal notranslate"><span class="pre">plot_losses</span></code> saved while training.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">switch_backend</span><span class="p">(</span><span class="s1">'agg'</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="kn">as</span> <span class="nn">ticker</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">ticker</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 
 <span class="k">def</span> <span class="nf">showPlot</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
@@ -782,7 +782,7 @@ we simply feed the decoder’s predictions back to itself for each step.
 Every time it predicts a word we add it to the output string, and if it
 predicts the EOS token we stop there. We also store the decoder’s
 attention outputs for display later.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="n">input_tensor</span> <span class="o">=</span> <span class="n">tensorFromSentence</span><span class="p">(</span><span class="n">input_lang</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)</span>
         <span class="n">input_length</span> <span class="o">=</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
@@ -820,15 +820,15 @@ attention outputs for display later.</p>
 </div>
 <p>We can evaluate random sentences from the training set and print out the
 input, target, and output to make some subjective quality judgements:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluateRandomly</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluateRandomly</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">pair</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">'&gt;'</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">'='</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'&gt;'</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'='</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="n">output_sentence</span> <span class="o">=</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">'&lt;'</span><span class="p">,</span> <span class="n">output_sentence</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'&lt;'</span><span class="p">,</span> <span class="n">output_sentence</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -847,7 +847,7 @@ reasonable results.</p>
 evaluate, and continue training later. Comment out the lines where the
 encoder and decoder are initialized and run <code class="docutils literal notranslate"><span class="pre">trainIters</span></code> again.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">hidden_size</span> <span class="o">=</span> <span class="mi">256</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">hidden_size</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">encoder1</span> <span class="o">=</span> <span class="n">EncoderRNN</span><span class="p">(</span><span class="n">input_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">attn_decoder1</span> <span class="o">=</span> <span class="n">AttnDecoderRNN</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_lang</span><span class="o">.</span><span class="n">n_words</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
@@ -861,66 +861,66 @@ encoder and decoder are initialized and run <code class="docutils literal notran
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 50s (- 25m 47s) (5000 6%) 2.8071
-3m 37s (- 23m 31s) (10000 13%) 2.2798
-5m 24s (- 21m 36s) (15000 20%) 1.9727
-7m 10s (- 19m 44s) (20000 26%) 1.7222
-8m 57s (- 17m 54s) (25000 33%) 1.5408
-10m 44s (- 16m 7s) (30000 40%) 1.3799
-12m 32s (- 14m 20s) (35000 46%) 1.2102
-14m 19s (- 12m 32s) (40000 53%) 1.0943
-16m 7s (- 10m 45s) (45000 60%) 0.9857
-17m 54s (- 8m 57s) (50000 66%) 0.9206
-19m 40s (- 7m 9s) (55000 73%) 0.8445
-21m 27s (- 5m 21s) (60000 80%) 0.7552
-23m 13s (- 3m 34s) (65000 86%) 0.6894
-25m 0s (- 1m 47s) (70000 93%) 0.6422
-26m 46s (- 0m 0s) (75000 100%) 0.5932
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 49s (- 25m 35s) (5000 6%) 2.8382
+3m 34s (- 23m 13s) (10000 13%) 2.2755
+5m 18s (- 21m 15s) (15000 20%) 1.9659
+7m 6s (- 19m 34s) (20000 26%) 1.7494
+8m 54s (- 17m 49s) (25000 33%) 1.5317
+10m 42s (- 16m 3s) (30000 40%) 1.3565
+12m 29s (- 14m 16s) (35000 46%) 1.2130
+14m 15s (- 12m 28s) (40000 53%) 1.1159
+16m 2s (- 10m 41s) (45000 60%) 1.0135
+17m 49s (- 8m 54s) (50000 66%) 0.9107
+19m 36s (- 7m 7s) (55000 73%) 0.8388
+21m 24s (- 5m 21s) (60000 80%) 0.7563
+23m 13s (- 3m 34s) (65000 86%) 0.6677
+25m 2s (- 1m 47s) (70000 93%) 0.6334
+26m 50s (- 0m 0s) (75000 100%) 0.5794
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; elles attendent toutes .
-= they re all waiting .
-&lt; they re all waiting . &lt;EOS&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je suis beaucoup plus a l aise maintenant .
+= i m a lot more comfortable now .
+&lt; i m a little now now now . &lt;EOS&gt;
 
-&gt; j agis pour mon pere .
-= i am acting for my father .
-&lt; i m waiting for my father . &lt;EOS&gt;
+&gt; il est endormi .
+= he is asleep .
+&lt; he s asleep . &lt;EOS&gt;
 
-&gt; il est mon ami .
-= he is my friend .
-&lt; he s my friend . &lt;EOS&gt;
+&gt; vous etes trop lente .
+= you re too slow .
+&lt; you re too loud . &lt;EOS&gt;
 
-&gt; c est un garcon tres gentil .
-= he s a very nice boy .
-&lt; he s a very nice boy . &lt;EOS&gt;
+&gt; vous analysez trop .
+= you re over analyzing .
+&lt; you re too analyzing . &lt;EOS&gt;
 
-&gt; je suis desolee de t ennuyer si souvent .
-= i m sorry to bother you so often .
-&lt; i m sorry to bother you so often . &lt;EOS&gt;
+&gt; il deambule aux alentours en transe .
+= he is wandering around in a trance .
+&lt; he s been in in in . &lt;EOS&gt;
 
-&gt; vous etes tres ingenieux .
-= you re very clever .
-&lt; you re very clever . &lt;EOS&gt;
+&gt; je suis ouvert aux suggestions .
+= i m open to suggestions .
+&lt; i m open to suggestions . &lt;EOS&gt;
 
-&gt; je ne suis pas si maligne .
-= i m not all that smart .
-&lt; i m not so worried . &lt;EOS&gt;
+&gt; nous sommes tous tres inquiets pour toi .
+= we re all very worried about you .
+&lt; we re all very worried worried about you . &lt;EOS&gt;
 
-&gt; je suis tellement las !
-= i m so tired !
-&lt; i m so full . &lt;EOS&gt;
+&gt; je ne te donnerai pas davantage d argent .
+= i m not giving you any more money .
+&lt; i m not giving you any money money money .
 
-&gt; vous etes bavardes .
-= you re talkative .
-&lt; you re talkative . &lt;EOS&gt;
+&gt; je suis deja riche .
+= i m already rich .
+&lt; i m already already . &lt;EOS&gt;
 
-&gt; tu penses de travers .
-= you re not thinking straight .
-&lt; you re not thinking straight . &lt;EOS&gt;
+&gt; ils sont partis .
+= they re gone .
+&lt; they re gone . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -932,7 +932,7 @@ at each time step.</p>
 <p>You could simply run <code class="docutils literal notranslate"><span class="pre">plt.matshow(attentions)</span></code> to see attention output
 displayed as a matrix, with the columns being input steps and rows being
 output steps:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span>
     <span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">,</span> <span class="s2">"je suis trop froid ."</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">matshow</span><span class="p">(</span><span class="n">attentions</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
@@ -940,7 +940,7 @@ output steps:</p>
 <img alt="../_images/sphx_glr_seq2seq_translation_tutorial_003.png" class="sphx-glr-single-img" src="../_images/sphx_glr_seq2seq_translation_tutorial_003.png"/>
 <p>For a better viewing experience we will do the extra work of adding axes
 and labels:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">showAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">,</span> <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">showAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">,</span> <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span><span class="p">):</span>
     <span class="c1"># Set up figure with colorbar</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
@@ -962,8 +962,8 @@ and labels:</p>
 <span class="k">def</span> <span class="nf">evaluateAndShowAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">):</span>
     <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span>
         <span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">'input ='</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">'output ='</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'input ='</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'output ='</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
     <span class="n">showAttention</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">,</span> <span class="n">output_words</span><span class="p">,</span> <span class="n">attentions</span><span class="p">)</span>
 
 
@@ -988,13 +988,13 @@ and labels:</p>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>input = elle a cinq ans de moins que moi .
-output = she is five years younger than me . &lt;EOS&gt;
+output = she s six years younger than me . &lt;EOS&gt;
 input = elle est trop petit .
 output = she is too short . &lt;EOS&gt;
 input = je ne crains pas de mourir .
 output = i m not scared to die . &lt;EOS&gt;
 input = c est un jeune directeur plein de talent .
-output = he is a young young character . &lt;EOS&gt;
+output = he s a very talented great . &lt;EOS&gt;
 </pre></div>
 </div>
 </div>
@@ -1022,7 +1022,7 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 26 minutes  52.608 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 26 minutes  58.081 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a96a2daac1918ec72f68233dfe3f2c47/seq2seq_translation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>

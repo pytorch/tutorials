@@ -11,7 +11,6 @@ What is `torch.nn` *really*?
 ============================
 by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and Francisco Ingham.
 
-
 We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
 click `here <https://pytorch.org/tutorials/beginner/nn_tutorial.html#sphx-glr-download-beginner-nn-tutorial-py>`_ .
 
@@ -47,8 +46,7 @@ import modules when we use them, so you can see exactly what's being
 used at each point.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from pathlib import Path
@@ -76,8 +74,7 @@ This dataset is in numpy array format, and has been stored using pickle,
 a python-specific format for serializing data.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import pickle
@@ -97,8 +94,7 @@ Each image is 28 x 28, and is being stored as a flattened row of length
 first.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from matplotlib import pyplot
@@ -127,8 +123,7 @@ PyTorch uses ``torch.tensor``, rather than numpy arrays, so we need to
 convert our data.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import torch
@@ -185,8 +180,7 @@ PyTorch signifies that the operation is performed in-place.)
    (by multiplying with 1/sqrt(n)).
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import math
@@ -212,8 +206,7 @@ even create fast GPU or vectorized CPU code for your function
 automatically.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def log_softmax(x):
@@ -234,8 +227,7 @@ one *forward pass*.  Note that our predictions won't be any better than
 random at this stage, since we start with random weights.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     bs = 64  # batch size
@@ -255,8 +247,8 @@ random at this stage, since we start with random weights.
 
  .. code-block:: none
 
-    tensor([-2.5980, -2.2360, -2.6431, -2.7174, -2.1763, -1.7899, -2.9593, -2.3023,
-            -1.9166, -2.2821], grad_fn=<SelectBackward>) torch.Size([64, 10])
+    tensor([-2.8506, -2.6034, -1.9310, -2.1064, -1.9708, -1.9737, -2.2708, -2.6363,
+            -2.5834, -2.6194], grad_fn=<SelectBackward>) torch.Size([64, 10])
 
 
 As you see, the ``preds`` tensor contains not only the tensor values, but also a
@@ -266,8 +258,7 @@ Let's implement negative log-likelihood to use as the loss function
 (again, we can just use standard Python):
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
 
@@ -286,8 +277,7 @@ Let's check our loss with our random model, so we can see if we improve
 after a backprop pass later.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     yb = y_train[0:bs]
@@ -304,7 +294,7 @@ after a backprop pass later.
 
  .. code-block:: none
 
-    tensor(2.3817, grad_fn=<NegBackward>)
+    tensor(2.3406, grad_fn=<NegBackward>)
 
 
 Let's also implement a function to calculate the accuracy of our model.
@@ -312,8 +302,7 @@ For each prediction, if the index with the largest value matches the
 target value, then the prediction was correct.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def accuracy(out, yb):
@@ -330,8 +319,7 @@ Let's check the accuracy of our random model, so we can see if our
 accuracy improves as our loss improves.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(accuracy(preds, yb))
@@ -346,7 +334,7 @@ accuracy improves as our loss improves.
 
  .. code-block:: none
 
-    tensor(0.0312)
+    tensor(0.1094)
 
 
 We can now run a training loop.  For each iteration, we will:
@@ -375,8 +363,7 @@ already stored, rather than replacing them).
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from IPython.core.debugger import set_trace
@@ -415,8 +402,7 @@ earlier. We expect that the loss will have decreased and accuracy to
 have increased, and they have.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(loss_func(model(xb), yb), accuracy(model(xb), yb))
@@ -431,7 +417,7 @@ have increased, and they have.
 
  .. code-block:: none
 
-    tensor(0.0796, grad_fn=<NegBackward>) tensor(1.)
+    tensor(0.0836, grad_fn=<NegBackward>) tensor(1.)
 
 
 Using torch.nn.functional
@@ -457,8 +443,7 @@ then Pytorch provides a single function ``F.cross_entropy`` that combines
 the two. So we can even remove the activation function from our model.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import torch.nn.functional as F
@@ -478,8 +463,7 @@ Note that we no longer call ``log_softmax`` in the ``model`` function. Let's
 confirm that our loss and accuracy are the same as before:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(loss_func(model(xb), yb), accuracy(model(xb), yb))
@@ -494,7 +478,7 @@ confirm that our loss and accuracy are the same as before:
 
  .. code-block:: none
 
-    tensor(0.0796, grad_fn=<NllLossBackward>) tensor(1.)
+    tensor(0.0836, grad_fn=<NllLossBackward>) tensor(1.)
 
 
 Refactor using nn.Module
@@ -512,8 +496,7 @@ which we will be using.
    which is a file of Python code that can be imported.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from torch import nn
@@ -537,8 +520,7 @@ Since we're now using an object instead of just using a function, we
 first have to instantiate our model:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model = Mnist_Logistic()
@@ -555,8 +537,7 @@ Now we can calculate the loss in the same way as before. Note that
 method automatically.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(loss_func(model(xb), yb))
@@ -571,7 +552,7 @@ method automatically.
 
  .. code-block:: none
 
-    tensor(2.4230, grad_fn=<NllLossBackward>)
+    tensor(2.1987, grad_fn=<NllLossBackward>)
 
 
 Previously for our training loop we had to update the values for each parameter
@@ -598,8 +579,7 @@ We'll wrap our little training loop in a ``fit`` function so we can run it
 again later.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def fit():
@@ -629,8 +609,7 @@ again later.
 Let's double-check that our loss has gone down:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(loss_func(model(xb), yb))
@@ -645,7 +624,7 @@ Let's double-check that our loss has gone down:
 
  .. code-block:: none
 
-    tensor(0.0830, grad_fn=<NllLossBackward>)
+    tensor(0.0800, grad_fn=<NllLossBackward>)
 
 
 Refactor using nn.Linear
@@ -660,8 +639,7 @@ predefined layers that can greatly simplify our code, and often makes it
 faster too.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class Mnist_Logistic(nn.Module):
@@ -681,8 +659,7 @@ faster too.
 We instantiate our model and calculate the loss in the same way as before:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model = Mnist_Logistic()
@@ -698,14 +675,13 @@ We instantiate our model and calculate the loss in the same way as before:
 
  .. code-block:: none
 
-    tensor(2.3612, grad_fn=<NllLossBackward>)
+    tensor(2.2974, grad_fn=<NllLossBackward>)
 
 
 We are still able to use our same ``fit`` method as before.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     fit()
@@ -722,7 +698,7 @@ We are still able to use our same ``fit`` method as before.
 
  .. code-block:: none
 
-    tensor(0.0815, grad_fn=<NllLossBackward>)
+    tensor(0.0835, grad_fn=<NllLossBackward>)
 
 
 Refactor using optim
@@ -747,8 +723,7 @@ and instead use just:
 computing the gradient for the next minibatch.)
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from torch import optim
@@ -763,8 +738,7 @@ We'll define a little function to create our model and optimizer so we
 can reuse it in the future.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def get_model():
@@ -799,8 +773,8 @@ can reuse it in the future.
 
  .. code-block:: none
 
-    tensor(2.3683, grad_fn=<NllLossBackward>)
-    tensor(0.0827, grad_fn=<NllLossBackward>)
+    tensor(2.4099, grad_fn=<NllLossBackward>)
+    tensor(0.0828, grad_fn=<NllLossBackward>)
 
 
 Refactor using Dataset
@@ -820,8 +794,7 @@ dimension of a tensor. This will make it easier to access both the
 independent and dependent variables in the same line as we train.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from torch.utils.data import TensorDataset
@@ -836,8 +809,7 @@ Both ``x_train`` and ``y_train`` can be combined in a single ``TensorDataset``,
 which will be easier to iterate over and slice.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     train_ds = TensorDataset(x_train, y_train)
@@ -860,8 +832,7 @@ Now, we can do these two steps together:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model, opt = get_model()
@@ -888,7 +859,7 @@ Now, we can do these two steps together:
 
  .. code-block:: none
 
-    tensor(0.0801, grad_fn=<NllLossBackward>)
+    tensor(0.0811, grad_fn=<NllLossBackward>)
 
 
 Refactor using DataLoader
@@ -900,8 +871,7 @@ to iterate over batches. Rather than having to use ``train_ds[i*bs : i*bs+bs]``,
 the DataLoader gives us each minibatch automatically.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from torch.utils.data import DataLoader
@@ -927,8 +897,7 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
           pred = model(xb)
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model, opt = get_model()
@@ -954,7 +923,7 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
 
  .. code-block:: none
 
-    tensor(0.0803, grad_fn=<NllLossBackward>)
+    tensor(0.0816, grad_fn=<NllLossBackward>)
 
 
 Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
@@ -982,8 +951,7 @@ store the gradients). We take advantage of this to use a larger batch
 size and compute the loss more quickly.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     train_ds = TensorDataset(x_train, y_train)
@@ -1005,8 +973,7 @@ before inference, because these are used by layers such as ``nn.BatchNorm2d``
 and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model, opt = get_model()
@@ -1037,8 +1004,8 @@ and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
 
  .. code-block:: none
 
-    0 tensor(0.3100)
-    1 tensor(0.2990)
+    0 tensor(0.3091)
+    1 tensor(0.2917)
 
 
 Create fit() and get_data()
@@ -1054,8 +1021,7 @@ backprop.  For the validation set, we don't pass an optimizer, so the
 method doesn't perform backprop.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
 
@@ -1079,8 +1045,7 @@ method doesn't perform backprop.
 training and validation losses for each epoch.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import numpy as np
@@ -1109,8 +1074,7 @@ training and validation losses for each epoch.
 ``get_data`` returns dataloaders for the training and validation sets.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
 
@@ -1130,8 +1094,7 @@ Now, our whole process of obtaining the data loaders and fitting the
 model can be run in 3 lines of code:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     train_dl, valid_dl = get_data(train_ds, valid_ds, bs)
@@ -1148,8 +1111,8 @@ model can be run in 3 lines of code:
 
  .. code-block:: none
 
-    0 0.29687174963951113
-    1 0.29255313816070555
+    0 0.3770600509166718
+    1 0.2860745767593384
 
 
 You can use these basic 3 lines of code to train a wide variety of models.
@@ -1170,8 +1133,7 @@ average pooling.  (Note that ``view`` is PyTorch's version of numpy's
 ``reshape``)
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class Mnist_CNN(nn.Module):
@@ -1202,8 +1164,7 @@ stochastic gradient descent that takes previous updates into account as well
 and generally leads to faster training.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model = Mnist_CNN()
@@ -1221,8 +1182,8 @@ and generally leads to faster training.
 
  .. code-block:: none
 
-    0 0.38584502844810487
-    1 0.266486762046814
+    0 0.4351462517261505
+    1 0.2723671995639801
 
 
 nn.Sequential
@@ -1240,8 +1201,7 @@ will create a layer that we can then use when defining a network with
 ``Sequential``.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class Lambda(nn.Module):
@@ -1265,8 +1225,7 @@ will create a layer that we can then use when defining a network with
 The model created with ``Sequential`` is simply:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model = nn.Sequential(
@@ -1295,8 +1254,8 @@ The model created with ``Sequential`` is simply:
 
  .. code-block:: none
 
-    0 0.3136497309684753
-    1 0.2406315101146698
+    0 0.6665381790161132
+    1 0.5283667533874512
 
 
 Wrapping DataLoader
@@ -1312,8 +1271,7 @@ single channel image. First, we can remove the initial Lambda layer but
 moving the data preprocessing into a generator:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def preprocess(x, y):
@@ -1349,8 +1307,7 @@ the *input* tensor we have. As a result, our model will work with any
 size input.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model = nn.Sequential(
@@ -1375,8 +1332,7 @@ size input.
 Let's try it out:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
@@ -1391,8 +1347,8 @@ Let's try it out:
 
  .. code-block:: none
 
-    0 0.3704858135223389
-    1 0.2661662670135498
+    0 0.3697156398296356
+    1 0.23148919429779052
 
 
 Using your GPU
@@ -1404,8 +1360,7 @@ use it to speed up your code. First check that your GPU is working in
 Pytorch:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print(torch.cuda.is_available())
@@ -1426,8 +1381,7 @@ Pytorch:
 And then create a device object for it:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     dev = torch.device(
@@ -1442,8 +1396,7 @@ And then create a device object for it:
 Let's update ``preprocess`` to move batches to the GPU:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
 
@@ -1464,8 +1417,7 @@ Let's update ``preprocess`` to move batches to the GPU:
 Finally, we can move our model to the GPU.
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     model.to(dev)
@@ -1480,8 +1432,7 @@ Finally, we can move our model to the GPU.
 You should find it runs faster now:
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
@@ -1496,8 +1447,8 @@ You should find it runs faster now:
 
  .. code-block:: none
 
-    0 0.22743592176437377
-    1 0.19734640703201295
+    0 0.21985293703079223
+    1 0.15908825273513794
 
 
 Closing thoughts
@@ -1534,7 +1485,9 @@ what we've seen:
  - ``DataLoader``: Takes any ``Dataset`` and creates an iterator which returns batches of data.
 
 
-**Total running time of the script:** ( 1 minutes  17.926 seconds)
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 1 minutes  21.510 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:

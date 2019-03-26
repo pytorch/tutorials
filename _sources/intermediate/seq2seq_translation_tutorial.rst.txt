@@ -91,8 +91,7 @@ And for more, read the papers that introduced these topics:
 **Requirements**
 
 
-
-.. code-block:: python
+.. code-block:: default
 
     from __future__ import unicode_literals, print_function, division
     from io import open
@@ -140,7 +139,6 @@ separated list of translation pairs:
    `here <https://download.pytorch.org/tutorial/data.zip>`_
    and extract it to the current directory.
 
-
 Similar to the character encoding used in the character-level RNN
 tutorials, we will be representing each word in a language as a one-hot
 vector, or giant vector of zeros except for a single one (at the index
@@ -154,7 +152,6 @@ thousand words per language.
 
 
 
-
 We'll need a unique index per word to use as the inputs and targets of
 the networks later. To keep track of all this we will use a helper class
 called ``Lang`` which has word → index (``word2index``) and index → word
@@ -163,8 +160,7 @@ called ``Lang`` which has word → index (``word2index``) and index → word
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     SOS_token = 0
@@ -205,8 +201,7 @@ punctuation.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     # Turn a Unicode string to plain ASCII, thanks to
@@ -240,8 +235,7 @@ flag to reverse the pairs.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def readLangs(lang1, lang2, reverse=False):
@@ -281,8 +275,7 @@ earlier).
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     MAX_LENGTH = 10
@@ -321,8 +314,7 @@ The full process for preparing the data is:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def prepareData(lang1, lang2, reverse=False):
@@ -361,7 +353,7 @@ The full process for preparing the data is:
     Counted words:
     fra 4345
     eng 2803
-    ['je suis fauche .', 'i m broke .']
+    ['ils sont chanceux d etre en vie .', 'they re lucky to be alive .']
 
 
 The Seq2Seq Model
@@ -398,7 +390,6 @@ ideal case, encodes the "meaning" of the input sequence into a single
 vector — a single point in some N dimensional space of sentences.
 
 
-
 The Encoder
 -----------
 
@@ -413,8 +404,7 @@ next input word.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class EncoderRNN(nn.Module):
@@ -447,7 +437,6 @@ The decoder is another RNN that takes the encoder output vector(s) and
 outputs a sequence of words to create the translation.
 
 
-
 Simple Decoder
 ^^^^^^^^^^^^^^
 
@@ -467,8 +456,7 @@ last hidden state).
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class DecoderRNN(nn.Module):
@@ -502,7 +490,6 @@ save space we'll be going straight for the gold and introducing the
 Attention Mechanism.
 
 
-
 Attention Decoder
 ^^^^^^^^^^^^^^^^^
 
@@ -534,8 +521,7 @@ while shorter sentences will only use the first few.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class AttnDecoderRNN(nn.Module):
@@ -599,8 +585,7 @@ EOS token to both sequences.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def indexesFromSentence(lang, sentence):
@@ -652,8 +637,7 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     teacher_forcing_ratio = 0.5
@@ -722,8 +706,7 @@ remaining given the current time and progress %.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import time
@@ -762,8 +745,7 @@ of examples, time so far, estimated time) and average loss.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
@@ -816,8 +798,7 @@ Plotting is done with matplotlib, using the array of loss values
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     import matplotlib.pyplot as plt
@@ -852,8 +833,7 @@ attention outputs for display later.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
@@ -903,8 +883,7 @@ input, target, and output to make some subjective quality judgements:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def evaluateRandomly(encoder, decoder, n=10):
@@ -943,8 +922,7 @@ reasonable results.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     hidden_size = 256
@@ -976,25 +954,25 @@ reasonable results.
 
  .. code-block:: none
 
-    1m 50s (- 25m 47s) (5000 6%) 2.8071
-    3m 37s (- 23m 31s) (10000 13%) 2.2798
-    5m 24s (- 21m 36s) (15000 20%) 1.9727
-    7m 10s (- 19m 44s) (20000 26%) 1.7222
-    8m 57s (- 17m 54s) (25000 33%) 1.5408
-    10m 44s (- 16m 7s) (30000 40%) 1.3799
-    12m 32s (- 14m 20s) (35000 46%) 1.2102
-    14m 19s (- 12m 32s) (40000 53%) 1.0943
-    16m 7s (- 10m 45s) (45000 60%) 0.9857
-    17m 54s (- 8m 57s) (50000 66%) 0.9206
-    19m 40s (- 7m 9s) (55000 73%) 0.8445
-    21m 27s (- 5m 21s) (60000 80%) 0.7552
-    23m 13s (- 3m 34s) (65000 86%) 0.6894
-    25m 0s (- 1m 47s) (70000 93%) 0.6422
-    26m 46s (- 0m 0s) (75000 100%) 0.5932
+    1m 49s (- 25m 35s) (5000 6%) 2.8382
+    3m 34s (- 23m 13s) (10000 13%) 2.2755
+    5m 18s (- 21m 15s) (15000 20%) 1.9659
+    7m 6s (- 19m 34s) (20000 26%) 1.7494
+    8m 54s (- 17m 49s) (25000 33%) 1.5317
+    10m 42s (- 16m 3s) (30000 40%) 1.3565
+    12m 29s (- 14m 16s) (35000 46%) 1.2130
+    14m 15s (- 12m 28s) (40000 53%) 1.1159
+    16m 2s (- 10m 41s) (45000 60%) 1.0135
+    17m 49s (- 8m 54s) (50000 66%) 0.9107
+    19m 36s (- 7m 7s) (55000 73%) 0.8388
+    21m 24s (- 5m 21s) (60000 80%) 0.7563
+    23m 13s (- 3m 34s) (65000 86%) 0.6677
+    25m 2s (- 1m 47s) (70000 93%) 0.6334
+    26m 50s (- 0m 0s) (75000 100%) 0.5794
 
 
 
-.. code-block:: python
+.. code-block:: default
 
 
     evaluateRandomly(encoder1, attn_decoder1)
@@ -1010,45 +988,45 @@ reasonable results.
 
  .. code-block:: none
 
-    > elles attendent toutes .
-    = they re all waiting .
-    < they re all waiting . <EOS>
+    > je suis beaucoup plus a l aise maintenant .
+    = i m a lot more comfortable now .
+    < i m a little now now now . <EOS>
 
-    > j agis pour mon pere .
-    = i am acting for my father .
-    < i m waiting for my father . <EOS>
+    > il est endormi .
+    = he is asleep .
+    < he s asleep . <EOS>
 
-    > il est mon ami .
-    = he is my friend .
-    < he s my friend . <EOS>
+    > vous etes trop lente .
+    = you re too slow .
+    < you re too loud . <EOS>
 
-    > c est un garcon tres gentil .
-    = he s a very nice boy .
-    < he s a very nice boy . <EOS>
+    > vous analysez trop .
+    = you re over analyzing .
+    < you re too analyzing . <EOS>
 
-    > je suis desolee de t ennuyer si souvent .
-    = i m sorry to bother you so often .
-    < i m sorry to bother you so often . <EOS>
+    > il deambule aux alentours en transe .
+    = he is wandering around in a trance .
+    < he s been in in in . <EOS>
 
-    > vous etes tres ingenieux .
-    = you re very clever .
-    < you re very clever . <EOS>
+    > je suis ouvert aux suggestions .
+    = i m open to suggestions .
+    < i m open to suggestions . <EOS>
 
-    > je ne suis pas si maligne .
-    = i m not all that smart .
-    < i m not so worried . <EOS>
+    > nous sommes tous tres inquiets pour toi .
+    = we re all very worried about you .
+    < we re all very worried worried about you . <EOS>
 
-    > je suis tellement las !
-    = i m so tired !
-    < i m so full . <EOS>
+    > je ne te donnerai pas davantage d argent .
+    = i m not giving you any more money .
+    < i m not giving you any money money money .
 
-    > vous etes bavardes .
-    = you re talkative .
-    < you re talkative . <EOS>
+    > je suis deja riche .
+    = i m already rich .
+    < i m already already . <EOS>
 
-    > tu penses de travers .
-    = you re not thinking straight .
-    < you re not thinking straight . <EOS>
+    > ils sont partis .
+    = they re gone .
+    < they re gone . <EOS>
 
 
 Visualizing Attention
@@ -1065,8 +1043,7 @@ output steps:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     output_words, attentions = evaluate(
@@ -1088,8 +1065,7 @@ and labels:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def showAttention(input_sentence, output_words, attentions):
@@ -1162,13 +1138,13 @@ and labels:
  .. code-block:: none
 
     input = elle a cinq ans de moins que moi .
-    output = she is five years younger than me . <EOS>
+    output = she s six years younger than me . <EOS>
     input = elle est trop petit .
     output = she is too short . <EOS>
     input = je ne crains pas de mourir .
     output = i m not scared to die . <EOS>
     input = c est un jeune directeur plein de talent .
-    output = he is a young young character . <EOS>
+    output = he s a very talented great . <EOS>
 
 
 Exercises
@@ -1195,7 +1171,9 @@ Exercises
 
 
 
-**Total running time of the script:** ( 26 minutes  52.608 seconds)
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 26 minutes  58.081 seconds)
 
 
 .. _sphx_glr_download_intermediate_seq2seq_translation_tutorial.py:

@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Deploying a Seq2Seq Model with the Hybrid Frontend — PyTorch Tutorials 1.0.0.dev20190318 documentation</title>
+<title>Deploying a Seq2Seq Model with the Hybrid Frontend — PyTorch Tutorials 1.0.0.dev20190325 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190318
+                  1.0.0.dev20190325
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -239,18 +239,18 @@ you are planning on using your own model, be sure that the
 <code class="docutils literal notranslate"><span class="pre">MAX_LENGTH</span></code> constant is set correctly. As a reminder, this constant
 defines the maximum allowed sentence length during training and the
 maximum length output that the model is capable of producing.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="kn">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">unicodedata</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
@@ -317,10 +317,10 @@ converts all characters in a string to lowercase and removes all
 non-letter characters. The <code class="docutils literal notranslate"><span class="pre">indexesFromSentence</span></code> function takes a
 sentence of words and returns the corresponding sequence of word
 indexes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Voc</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Voc</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trimmed</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimmed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2index</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2count</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">index2word</span> <span class="o">=</span> <span class="p">{</span><span class="n">PAD_token</span><span class="p">:</span> <span class="s2">"PAD"</span><span class="p">,</span> <span class="n">SOS_token</span><span class="p">:</span> <span class="s2">"SOS"</span><span class="p">,</span> <span class="n">EOS_token</span><span class="p">:</span> <span class="s2">"EOS"</span><span class="p">}</span>
@@ -343,13 +343,13 @@ indexes.</p>
     <span class="k">def</span> <span class="nf">trim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_count</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trimmed</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trimmed</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trimmed</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">keep_words</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">word2count</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">v</span> <span class="o">&gt;=</span> <span class="n">min_count</span><span class="p">:</span>
                 <span class="n">keep_words</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
 
-        <span class="k">print</span><span class="p">(</span><span class="s1">'keep_words {} / {} = {:.4f}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'keep_words </span><span class="si">{}</span><span class="s1"> / </span><span class="si">{}</span><span class="s1"> = </span><span class="si">{:.4f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="nb">len</span><span class="p">(</span><span class="n">keep_words</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">word2index</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep_words</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">word2index</span><span class="p">)</span>
         <span class="p">))</span>
         <span class="c1"># Reinitialize dictionaries</span>
@@ -403,8 +403,8 @@ data-dependent control flow, we will use <strong>tracing</strong> to convert it 
 script mode. When tracing a module, we can leave the module definition
 as-is. We will initialize all models towards the end of this document
 before we run evaluations.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EncoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_layers</span> <span class="o">=</span> <span class="n">n_layers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
@@ -413,9 +413,9 @@ before we run evaluations.</p>
         <span class="c1"># Initialize GRU; the input_size and hidden_size params are both set to 'hidden_size'</span>
         <span class="c1">#   because our input size is a word embedding with number of features == hidden_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gru</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">GRU</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">n_layers</span><span class="p">,</span>
-                          <span class="n">dropout</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">n_layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">dropout</span><span class="p">),</span> <span class="n">bidirectional</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                          <span class="n">dropout</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">n_layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">dropout</span><span class="p">),</span> <span class="n">bidirectional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_seq</span><span class="p">,</span> <span class="n">input_lengths</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_seq</span><span class="p">,</span> <span class="n">input_lengths</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Convert word indexes to embeddings</span>
         <span class="n">embedded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">input_seq</span><span class="p">)</span>
         <span class="c1"># Pack padded batch of sequences for RNN module</span>
@@ -442,9 +442,9 @@ RNN output and the entire encoder output, and return attention
 encoder output, and the two are ultimately multiplied, resulting in a
 weighted tensor whose largest values represent the most important parts
 of the query sentence at a particular time-step of decoding.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Luong attention layer</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Luong attention layer</span>
 <span class="k">class</span> <span class="nc">Attn</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Attn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'dot'</span><span class="p">,</span> <span class="s1">'general'</span><span class="p">,</span> <span class="s1">'concat'</span><span class="p">]:</span>
@@ -506,8 +506,8 @@ to select the next word in the output sequence.</p>
 data-dependent control flow. Therefore, we can once again use
 <strong>tracing</strong> to convert this model to Torch Script after it is
 initialized and its parameters are loaded.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LuongAttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attn_model</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LuongAttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attn_model</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LuongAttnDecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="c1"># Keep for reference</span>
@@ -655,8 +655,8 @@ by multiplying 1 by our SOS_token value stored in the constant
 </ul>
 </li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GreedySearchDecoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">decoder_n_layers</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GreedySearchDecoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">decoder_n_layers</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GreedySearchDecoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">decoder</span>
@@ -666,7 +666,7 @@ by multiplying 1 by our SOS_token value stored in the constant
 
     <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'_device'</span><span class="p">,</span> <span class="s1">'_SOS_token'</span><span class="p">,</span> <span class="s1">'_decoder_n_layers'</span><span class="p">]</span>
 
-    <span class="nd">@torch.jit.script_method</span>
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script_method</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_seq</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">input_length</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">max_length</span> <span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="c1"># Forward input through encoder model</span>
         <span class="n">encoder_outputs</span><span class="p">,</span> <span class="n">encoder_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">input_seq</span><span class="p">,</span> <span class="n">input_length</span><span class="p">)</span>
@@ -710,7 +710,7 @@ it. It will continue to ask for another input until the user enters ‘q’
 or ‘quit’.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">evaluateExample</span></code> function simply takes a string input sentence as
 an argument, normalizes it, evaluates it, and prints the response.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
     <span class="c1">### Format input sentence as a batch</span>
     <span class="c1"># words -&gt; indexes</span>
     <span class="n">indexes_batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">indexesFromSentence</span><span class="p">(</span><span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)]</span>
@@ -743,20 +743,20 @@ an argument, normalizes it, evaluates it, and prints the response.</p>
             <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
             <span class="c1"># Format and print response sentence</span>
             <span class="n">output_words</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">output_words</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="s1">'EOS'</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">'PAD'</span><span class="p">)]</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
 
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="s2">"Error: Encountered unknown word."</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Error: Encountered unknown word."</span><span class="p">)</span>
 
 <span class="c1"># Normalize input sentence and call evaluate()</span>
 <span class="k">def</span> <span class="nf">evaluateExample</span><span class="p">(</span><span class="n">sentence</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s2">"&gt; "</span> <span class="o">+</span> <span class="n">sentence</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"&gt; "</span> <span class="o">+</span> <span class="n">sentence</span><span class="p">)</span>
     <span class="c1"># Normalize sentence</span>
     <span class="n">input_sentence</span> <span class="o">=</span> <span class="n">normalizeString</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
     <span class="c1"># Evaluate sentence</span>
     <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
     <span class="n">output_words</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">output_words</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="s1">'EOS'</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">'PAD'</span><span class="p">)]</span>
-    <span class="k">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -800,7 +800,7 @@ decoder models as usual. Also, we must call <code class="docutils literal notran
 device options of the models and <code class="docutils literal notranslate"><span class="pre">.eval()</span></code> to set the dropout layers
 to test mode <strong>before</strong> we trace the models. <code class="docutils literal notranslate"><span class="pre">TracedModule</span></code> objects do
 not inherit the <code class="docutils literal notranslate"><span class="pre">to</span></code> or <code class="docutils literal notranslate"><span class="pre">eval</span></code> methods.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"save"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"save"</span><span class="p">)</span>
 <span class="n">corpus_name</span> <span class="o">=</span> <span class="s2">"cornell movie-dialogs corpus"</span>
 
 <span class="c1"># Configure models</span>
@@ -836,7 +836,7 @@ not inherit the <code class="docutils literal notranslate"><span class="pre">to<
 <span class="n">voc</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="p">[</span><span class="s1">'voc_dict'</span><span class="p">]</span>
 
 
-<span class="k">print</span><span class="p">(</span><span class="s1">'Building encoder and decoder ...'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Building encoder and decoder ...'</span><span class="p">)</span>
 <span class="c1"># Initialize word embeddings</span>
 <span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">voc</span><span class="o">.</span><span class="n">num_words</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
 <span class="n">embedding</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">embedding_sd</span><span class="p">)</span>
@@ -852,7 +852,7 @@ not inherit the <code class="docutils literal notranslate"><span class="pre">to<
 <span class="c1"># Set dropout layers to eval mode</span>
 <span class="n">encoder</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 <span class="n">decoder</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">'Models built and ready to go!'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Models built and ready to go!'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -899,7 +899,7 @@ data-dependent control flow. In the case of scripting, we do the
 conversion work up front by adding the decorator and making sure the
 implementation complies with scripting rules. We initialize the scripted
 searcher the same way that we would initialize an un-scripted variant.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">### Convert encoder model</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">### Convert encoder model</span>
 <span class="c1"># Create artificial inputs</span>
 <span class="n">test_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">voc</span><span class="o">.</span><span class="n">num_words</span><span class="p">)</span>
 <span class="n">test_seq_length</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">test_seq</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]])</span>
@@ -926,7 +926,7 @@ searcher the same way that we would initialize an un-scripted variant.</p>
 each to ensure that we captured the computational graph appropriately.
 Since our <code class="docutils literal notranslate"><span class="pre">scripted_searcher</span></code> contains our <code class="docutils literal notranslate"><span class="pre">traced_encoder</span></code> and
 <code class="docutils literal notranslate"><span class="pre">traced_decoder</span></code>, these graphs will print inline.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s1">'scripted_searcher graph:</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'scripted_searcher graph:</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -934,36 +934,36 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
  graph(%input_seq : Tensor,
       %input_length : Tensor,
       %max_length : int,
-      %3 : Tensor,
-      %4 : Tensor,
-      %5 : Tensor,
-      %6 : Tensor,
-      %7 : Tensor,
-      %8 : Tensor,
-      %9 : Tensor,
-      %10 : Tensor,
-      %11 : Tensor,
-      %12 : Tensor,
-      %13 : Tensor,
-      %14 : Tensor,
-      %15 : Tensor,
-      %16 : Tensor,
-      %17 : Tensor,
-      %18 : Tensor,
-      %19 : Tensor,
-      %122 : Tensor,
-      %123 : Tensor,
-      %124 : Tensor,
-      %125 : Tensor,
-      %126 : Tensor,
-      %127 : Tensor,
-      %128 : Tensor,
-      %129 : Tensor,
-      %130 : Tensor,
-      %131 : Tensor,
-      %132 : Tensor,
-      %133 : Tensor,
-      %134 : Tensor):
+      %3 : Float(7826, 500),
+      %4 : Float(1500, 500),
+      %5 : Float(1500, 500),
+      %6 : Float(1500),
+      %7 : Float(1500),
+      %8 : Float(1500, 500),
+      %9 : Float(1500, 500),
+      %10 : Float(1500),
+      %11 : Float(1500),
+      %12 : Float(1500, 1000),
+      %13 : Float(1500, 500),
+      %14 : Float(1500),
+      %15 : Float(1500),
+      %16 : Float(1500, 1000),
+      %17 : Float(1500, 500),
+      %18 : Float(1500),
+      %19 : Float(1500),
+      %122 : Float(7826, 500),
+      %123 : Float(1500, 500),
+      %124 : Float(1500, 500),
+      %125 : Float(1500),
+      %126 : Float(1500),
+      %127 : Float(1500, 500),
+      %128 : Float(1500, 500),
+      %129 : Float(1500),
+      %130 : Float(1500),
+      %131 : Float(500, 1000),
+      %132 : Float(500),
+      %133 : Float(7826, 500),
+      %134 : Float(7826)):
   %100 : int? = prim::Constant()
   %58 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN
   %53 : float = prim::Constant[value=0](), scope: EncoderRNN
@@ -1048,7 +1048,7 @@ they would in their eager-mode representation.</p>
 <p>By default, we evaluate a few common query sentences. If you want to
 chat with the bot yourself, uncomment the <code class="docutils literal notranslate"><span class="pre">evaluateInput</span></code> line and
 give it a spin.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate examples</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate examples</span>
 <span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"hello"</span><span class="p">,</span> <span class="s2">"what's up?"</span><span class="p">,</span> <span class="s2">"who are you?"</span><span class="p">,</span> <span class="s2">"where am I?"</span><span class="p">,</span> <span class="s2">"where are you from?"</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sentences</span><span class="p">:</span>
     <span class="n">evaluateExample</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">traced_encoder</span><span class="p">,</span> <span class="n">traced_decoder</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">)</span>
@@ -1079,10 +1079,10 @@ this, we can simply save our <code class="docutils literal notranslate"><span cl
 the user-facing interface for running inference against the chatbot
 model. When saving a Script module, use script_module.save(PATH) instead
 of torch.save(model, PATH).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_searcher</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"scripted_chatbot.pth"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_searcher</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"scripted_chatbot.pth"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 0 minutes  0.950 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.925 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6dce8206a711b28b2b916bfd7de16bbc/deploy_seq2seq_hybrid_frontend_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_seq2seq_hybrid_frontend_tutorial.py</span></code></a></div>

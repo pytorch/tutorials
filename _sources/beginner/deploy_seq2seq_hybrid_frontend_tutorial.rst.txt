@@ -11,7 +11,6 @@ Deploying a Seq2Seq Model with the Hybrid Frontend
 ==================================================
 **Author:** `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
 
-
 This tutorial will walk through the process of transitioning a
 sequence-to-sequence model to Torch Script using PyTorch’s Hybrid
 Frontend. The model that we will convert is the chatbot model from the
@@ -76,7 +75,6 @@ incrementally.
    :alt: workflow
 
 
-
 Acknowledgements
 ----------------
 
@@ -92,7 +90,6 @@ This tutorial was inspired by the following sources:
    https://github.com/floydhub/textutil-preprocess-cornell-movie-corpus
 
 
-
 Prepare Environment
 -------------------
 
@@ -104,8 +101,7 @@ maximum length output that the model is capable of producing.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     from __future__ import absolute_import
@@ -183,7 +179,6 @@ al. <https://arxiv.org/abs/1508.04025>`__\ ’s “Global attention” module,
 and use it as a submodule in our decode model.
 
 
-
 Data Handling
 -------------
 
@@ -204,8 +199,7 @@ indexes.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class Voc:
@@ -305,8 +299,7 @@ before we run evaluations.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class EncoderRNN(nn.Module):
@@ -356,8 +349,7 @@ of the query sentence at a particular time-step of decoding.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     # Luong attention layer
@@ -435,8 +427,7 @@ initialized and its parameters are loaded.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class LuongAttnDecoderRNN(nn.Module):
@@ -605,8 +596,7 @@ Changes:
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     class GreedySearchDecoder(torch.jit.ScriptModule):
@@ -675,8 +665,7 @@ an argument, normalizes it, evaluates it, and prints the response.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
@@ -782,8 +771,7 @@ not inherit the ``to`` or ``eval`` methods.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     save_dir = os.path.join("data", "save")
@@ -899,8 +887,7 @@ searcher the same way that we would initialize an un-scripted variant.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     ### Convert encoder model
@@ -938,8 +925,7 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     print('scripted_searcher graph:\n', scripted_searcher.graph)
@@ -959,36 +945,36 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
      graph(%input_seq : Tensor,
           %input_length : Tensor,
           %max_length : int,
-          %3 : Tensor,
-          %4 : Tensor,
-          %5 : Tensor,
-          %6 : Tensor,
-          %7 : Tensor,
-          %8 : Tensor,
-          %9 : Tensor,
-          %10 : Tensor,
-          %11 : Tensor,
-          %12 : Tensor,
-          %13 : Tensor,
-          %14 : Tensor,
-          %15 : Tensor,
-          %16 : Tensor,
-          %17 : Tensor,
-          %18 : Tensor,
-          %19 : Tensor,
-          %122 : Tensor,
-          %123 : Tensor,
-          %124 : Tensor,
-          %125 : Tensor,
-          %126 : Tensor,
-          %127 : Tensor,
-          %128 : Tensor,
-          %129 : Tensor,
-          %130 : Tensor,
-          %131 : Tensor,
-          %132 : Tensor,
-          %133 : Tensor,
-          %134 : Tensor):
+          %3 : Float(7826, 500),
+          %4 : Float(1500, 500),
+          %5 : Float(1500, 500),
+          %6 : Float(1500),
+          %7 : Float(1500),
+          %8 : Float(1500, 500),
+          %9 : Float(1500, 500),
+          %10 : Float(1500),
+          %11 : Float(1500),
+          %12 : Float(1500, 1000),
+          %13 : Float(1500, 500),
+          %14 : Float(1500),
+          %15 : Float(1500),
+          %16 : Float(1500, 1000),
+          %17 : Float(1500, 500),
+          %18 : Float(1500),
+          %19 : Float(1500),
+          %122 : Float(7826, 500),
+          %123 : Float(1500, 500),
+          %124 : Float(1500, 500),
+          %125 : Float(1500),
+          %126 : Float(1500),
+          %127 : Float(1500, 500),
+          %128 : Float(1500, 500),
+          %129 : Float(1500),
+          %130 : Float(1500),
+          %131 : Float(500, 1000),
+          %132 : Float(500),
+          %133 : Float(7826, 500),
+          %134 : Float(7826)):
       %100 : int? = prim::Constant()
       %58 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN
       %53 : float = prim::Constant[value=0](), scope: EncoderRNN
@@ -1077,8 +1063,7 @@ give it a spin.
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     # Evaluate examples
@@ -1124,8 +1109,7 @@ of torch.save(model, PATH).
 
 
 
-
-.. code-block:: python
+.. code-block:: default
 
 
     scripted_searcher.save("scripted_chatbot.pth")
@@ -1135,7 +1119,10 @@ of torch.save(model, PATH).
 
 
 
-**Total running time of the script:** ( 0 minutes  0.950 seconds)
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  0.925 seconds)
 
 
 .. _sphx_glr_download_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:

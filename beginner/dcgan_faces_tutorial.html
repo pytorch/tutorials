@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DCGAN Tutorial — PyTorch Tutorials 1.0.0.dev20190318 documentation</title>
+<title>DCGAN Tutorial — PyTorch Tutorials 1.0.0.dev20190325 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190318
+                  1.0.0.dev20190325
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -254,29 +254,29 @@ volume with the same shape as an image. In the paper, the authors also
 give some tips about how to setup the optimizers, how to calculate the
 loss functions, and how to initialize the model weights, all of which
 will be explained in the coming sections.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="c1">#%matplotlib inline</span>
 <span class="kn">import</span> <span class="nn">argparse</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.nn.parallel</span>
-<span class="kn">import</span> <span class="nn">torch.backends.cudnn</span> <span class="kn">as</span> <span class="nn">cudnn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="kn">as</span> <span class="nn">optim</span>
+<span class="kn">import</span> <span class="nn">torch.backends.cudnn</span> <span class="k">as</span> <span class="nn">cudnn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
 <span class="kn">import</span> <span class="nn">torch.utils.data</span>
-<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="kn">as</span> <span class="nn">dset</span>
-<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="kn">as</span> <span class="nn">transforms</span>
-<span class="kn">import</span> <span class="nn">torchvision.utils</span> <span class="kn">as</span> <span class="nn">vutils</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">matplotlib.animation</span> <span class="kn">as</span> <span class="nn">animation</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">HTML</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">dset</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">torchvision.utils</span> <span class="k">as</span> <span class="nn">vutils</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib.animation</span> <span class="k">as</span> <span class="nn">animation</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">HTML</span>
 
 <span class="c1"># Set random seem for reproducibility</span>
 <span class="n">manualSeed</span> <span class="o">=</span> <span class="mi">999</span>
 <span class="c1">#manualSeed = random.randint(1, 10000) # use if you want new results</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">"Random Seed: "</span><span class="p">,</span> <span class="n">manualSeed</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Random Seed: "</span><span class="p">,</span> <span class="n">manualSeed</span><span class="p">)</span>
 <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">manualSeed</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">manualSeed</span><span class="p">)</span>
 </pre></div>
@@ -320,7 +320,7 @@ paper, this number should be 0.5</li>
 CPU mode. If this number is greater than 0 it will run on that number
 of GPUs</li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Root directory for dataset</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Root directory for dataset</span>
 <span class="n">dataroot</span> <span class="o">=</span> <span class="s2">"data/celeba"</span>
 
 <span class="c1"># Number of workers for dataloader</span>
@@ -384,7 +384,7 @@ dataset class, which requires there to be subdirectories in the
 dataset’s root folder. Now, we can create the dataset, create the
 dataloader, set the device to run on, and finally visualize some of the
 training data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can use an image folder dataset the way we have it setup.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># We can use an image folder dataset the way we have it setup.</span>
 <span class="c1"># Create the dataset</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">dataroot</span><span class="p">,</span>
                            <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
@@ -395,7 +395,7 @@ training data.</p>
                            <span class="p">]))</span>
 <span class="c1"># Create the dataloader</span>
 <span class="n">dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-                                         <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+                                         <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
 
 <span class="c1"># Decide which device we want to run on</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda:0"</span> <span class="k">if</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ngpu</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
@@ -405,7 +405,7 @@ training data.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Training Images"</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">real_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)[:</span><span class="mi">64</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">real_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)[:</span><span class="mi">64</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_dcgan_faces_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_dcgan_faces_tutorial_001.png"/>
@@ -424,7 +424,7 @@ stdev=0.2. The <code class="docutils literal notranslate"><span class="pre">weig
 input and reinitializes all convolutional, convolutional-transpose, and
 batch normalization layers to meet this criteria. This function is
 applied to the models immediately after initialization.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># custom weights initialization called on netG and netD</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># custom weights initialization called on netG and netD</span>
 <span class="k">def</span> <span class="nf">weights_init</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
     <span class="n">classname</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="k">if</span> <span class="n">classname</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'Conv'</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
@@ -458,31 +458,31 @@ of the z input vector, <em>ngf</em> relates to the size of the feature maps
 that are propagated through the generator, and <em>nc</em> is the number of
 channels in the output image (set to 3 for RGB images). Below is the
 code for the generator.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generator Code</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generator Code</span>
 
 <span class="k">class</span> <span class="nc">Generator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Generator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ngpu</span> <span class="o">=</span> <span class="n">ngpu</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">main</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="c1"># input is Z, going into a convolution</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">nz</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">nz</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ngf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ngf*8) x 4 x 4</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">ngf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">ngf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ngf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ngf*4) x 8 x 8</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ngf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ngf*2) x 16 x 16</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ngf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ngf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ngf</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ngf) x 32 x 32</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span> <span class="n">ngf</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">()</span>
             <span class="c1"># state size. (nc) x 64 x 64</span>
         <span class="p">)</span>
@@ -494,7 +494,7 @@ code for the generator.</p>
 <p>Now, we can instantiate the generator and apply the <code class="docutils literal notranslate"><span class="pre">weights_init</span></code>
 function. Check out the printed model to see how the generator object is
 structured.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the generator</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the generator</span>
 <span class="n">netG</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span><span class="n">ngpu</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
 <span class="c1"># Handle multi-gpu if desired</span>
@@ -506,7 +506,7 @@ structured.</p>
 <span class="n">netG</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
 
 <span class="c1"># Print the model</span>
-<span class="k">print</span><span class="p">(</span><span class="n">netG</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">netG</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -547,28 +547,28 @@ own pooling function. Also batch norm and leaky relu functions promote
 healthy gradient flow which is critical for the learning process of both
 <span class="math notranslate nohighlight">\(G\)</span> and <span class="math notranslate nohighlight">\(D\)</span>.</p>
 <p>Discriminator Code</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Discriminator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ngpu</span> <span class="o">=</span> <span class="n">ngpu</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">main</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="c1"># input is (nc) x 64 x 64</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">ndf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nc</span><span class="p">,</span> <span class="n">ndf</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ndf) x 32 x 32</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ndf*2) x 16 x 16</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ndf*4) x 8 x 8</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">ndf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
             <span class="c1"># state size. (ndf*8) x 4 x 4</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">ndf</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
         <span class="p">)</span>
 
@@ -578,7 +578,7 @@ healthy gradient flow which is critical for the learning process of both
 </div>
 <p>Now, as with the generator, we can create the discriminator, apply the
 <code class="docutils literal notranslate"><span class="pre">weights_init</span></code> function, and print the model’s structure.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the Discriminator</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create the Discriminator</span>
 <span class="n">netD</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">(</span><span class="n">ngpu</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
 <span class="c1"># Handle multi-gpu if desired</span>
@@ -590,7 +590,7 @@ healthy gradient flow which is critical for the learning process of both
 <span class="n">netD</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weights_init</span><span class="p">)</span>
 
 <span class="c1"># Print the model</span>
-<span class="k">print</span><span class="p">(</span><span class="n">netD</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">netD</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -641,7 +641,7 @@ of latent vectors that are drawn from a Gaussian distribution
 (i.e. fixed_noise) . In the training loop, we will periodically input
 this fixed_noise into <span class="math notranslate nohighlight">\(G\)</span>, and over the iterations we will see
 images form out of the noise.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize BCELoss function</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize BCELoss function</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCELoss</span><span class="p">()</span>
 
 <span class="c1"># Create batch of latent vectors that we will use to visualize</span>
@@ -717,7 +717,7 @@ after D is updated. These numbers should start near 0 and converge to
 </ul>
 <p><strong>Note:</strong> This step might take a while, depending on how many epochs you
 run and if you removed some data from the dataset.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training Loop</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training Loop</span>
 
 <span class="c1"># Lists to keep track of progress</span>
 <span class="n">img_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -725,7 +725,7 @@ run and if you removed some data from the dataset.</p>
 <span class="n">D_losses</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">iters</span> <span class="o">=</span> <span class="mi">0</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s2">"Starting Training Loop..."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Starting Training Loop..."</span><span class="p">)</span>
 <span class="c1"># For each epoch</span>
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_epochs</span><span class="p">):</span>
     <span class="c1"># For each batch in the dataloader</span>
@@ -783,7 +783,7 @@ run and if you removed some data from the dataset.</p>
 
         <span class="c1"># Output training stats</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'[</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">][</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">]</span><span class="se">\t</span><span class="s1">Loss_D: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">Loss_G: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">D(x): </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">D(G(z)): </span><span class="si">%.4f</span><span class="s1"> / </span><span class="si">%.4f</span><span class="s1">'</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'[</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">][</span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1">]</span><span class="se">\t</span><span class="s1">Loss_D: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">Loss_G: </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">D(x): </span><span class="si">%.4f</span><span class="se">\t</span><span class="s1">D(G(z)): </span><span class="si">%.4f</span><span class="s1"> / </span><span class="si">%.4f</span><span class="s1">'</span>
                   <span class="o">%</span> <span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">),</span>
                      <span class="n">errD</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">errG</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">D_x</span><span class="p">,</span> <span class="n">D_G_z1</span><span class="p">,</span> <span class="n">D_G_z2</span><span class="p">))</span>
 
@@ -795,173 +795,173 @@ run and if you removed some data from the dataset.</p>
         <span class="k">if</span> <span class="p">(</span><span class="n">iters</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="n">epoch</span> <span class="o">==</span> <span class="n">num_epochs</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)):</span>
             <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
                 <span class="n">fake</span> <span class="o">=</span> <span class="n">netG</span><span class="p">(</span><span class="n">fixed_noise</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-            <span class="n">img_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">fake</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+            <span class="n">img_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">fake</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
         <span class="n">iters</span> <span class="o">+=</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Starting Training Loop...
-[0/5][0/1583]   Loss_D: 1.7410  Loss_G: 4.7765  D(x): 0.5343    D(G(z)): 0.5771 / 0.0136
-[0/5][50/1583]  Loss_D: 0.2913  Loss_G: 27.3206 D(x): 0.8725    D(G(z)): 0.0000 / 0.0000
-[0/5][100/1583] Loss_D: 0.8845  Loss_G: 9.8764  D(x): 0.9949    D(G(z)): 0.4462 / 0.0002
-[0/5][150/1583] Loss_D: 0.5701  Loss_G: 3.4445  D(x): 0.7888    D(G(z)): 0.2121 / 0.0498
-[0/5][200/1583] Loss_D: 0.5400  Loss_G: 4.5821  D(x): 0.6948    D(G(z)): 0.0424 / 0.0207
-[0/5][250/1583] Loss_D: 0.3816  Loss_G: 3.9187  D(x): 0.8350    D(G(z)): 0.1299 / 0.0308
-[0/5][300/1583] Loss_D: 0.3790  Loss_G: 3.8341  D(x): 0.7831    D(G(z)): 0.0587 / 0.0357
-[0/5][350/1583] Loss_D: 0.4119  Loss_G: 4.7852  D(x): 0.8468    D(G(z)): 0.1699 / 0.0140
-[0/5][400/1583] Loss_D: 0.5042  Loss_G: 3.4067  D(x): 0.7722    D(G(z)): 0.1282 / 0.0492
-[0/5][450/1583] Loss_D: 0.8759  Loss_G: 8.0989  D(x): 0.9018    D(G(z)): 0.4673 / 0.0010
-[0/5][500/1583] Loss_D: 0.6009  Loss_G: 5.8161  D(x): 0.6498    D(G(z)): 0.0129 / 0.0109
-[0/5][550/1583] Loss_D: 0.6170  Loss_G: 6.3148  D(x): 0.8777    D(G(z)): 0.3132 / 0.0040
-[0/5][600/1583] Loss_D: 0.3710  Loss_G: 4.9920  D(x): 0.8838    D(G(z)): 0.1785 / 0.0133
-[0/5][650/1583] Loss_D: 0.5502  Loss_G: 6.0860  D(x): 0.9364    D(G(z)): 0.3216 / 0.0052
-[0/5][700/1583] Loss_D: 0.5880  Loss_G: 5.6250  D(x): 0.8517    D(G(z)): 0.2754 / 0.0073
-[0/5][750/1583] Loss_D: 0.7802  Loss_G: 7.1560  D(x): 0.9069    D(G(z)): 0.4222 / 0.0021
-[0/5][800/1583] Loss_D: 1.7804  Loss_G: 6.4755  D(x): 0.9575    D(G(z)): 0.6784 / 0.0043
-[0/5][850/1583] Loss_D: 0.5965  Loss_G: 4.3894  D(x): 0.8129    D(G(z)): 0.2496 / 0.0203
-[0/5][900/1583] Loss_D: 0.5762  Loss_G: 3.7666  D(x): 0.7108    D(G(z)): 0.0888 / 0.0498
-[0/5][950/1583] Loss_D: 0.2698  Loss_G: 3.7843  D(x): 0.8852    D(G(z)): 0.1019 / 0.0457
-[0/5][1000/1583]        Loss_D: 0.3335  Loss_G: 3.4398  D(x): 0.8197    D(G(z)): 0.0899 / 0.0535
-[0/5][1050/1583]        Loss_D: 0.6549  Loss_G: 4.8846  D(x): 0.8319    D(G(z)): 0.3103 / 0.0167
-[0/5][1100/1583]        Loss_D: 0.6474  Loss_G: 2.6426  D(x): 0.6460    D(G(z)): 0.0398 / 0.1183
-[0/5][1150/1583]        Loss_D: 0.4430  Loss_G: 4.1355  D(x): 0.9066    D(G(z)): 0.2417 / 0.0293
-[0/5][1200/1583]        Loss_D: 0.4854  Loss_G: 4.5648  D(x): 0.8817    D(G(z)): 0.2576 / 0.0166
-[0/5][1250/1583]        Loss_D: 0.5112  Loss_G: 3.6469  D(x): 0.7830    D(G(z)): 0.1448 / 0.0538
-[0/5][1300/1583]        Loss_D: 0.5136  Loss_G: 4.5103  D(x): 0.8658    D(G(z)): 0.2523 / 0.0167
-[0/5][1350/1583]        Loss_D: 0.5353  Loss_G: 3.3245  D(x): 0.6684    D(G(z)): 0.0234 / 0.0628
-[0/5][1400/1583]        Loss_D: 1.1608  Loss_G: 6.4351  D(x): 0.9756    D(G(z)): 0.6228 / 0.0053
-[0/5][1450/1583]        Loss_D: 2.1031  Loss_G: 10.9874 D(x): 0.9793    D(G(z)): 0.7813 / 0.0000
-[0/5][1500/1583]        Loss_D: 0.5954  Loss_G: 5.4419  D(x): 0.8889    D(G(z)): 0.3111 / 0.0085
-[0/5][1550/1583]        Loss_D: 0.2545  Loss_G: 3.9333  D(x): 0.8790    D(G(z)): 0.0967 / 0.0324
-[1/5][0/1583]   Loss_D: 0.5108  Loss_G: 3.5201  D(x): 0.8271    D(G(z)): 0.2249 / 0.0452
-[1/5][50/1583]  Loss_D: 0.3057  Loss_G: 3.6399  D(x): 0.8934    D(G(z)): 0.1534 / 0.0407
-[1/5][100/1583] Loss_D: 1.1070  Loss_G: 6.2737  D(x): 0.9349    D(G(z)): 0.5634 / 0.0044
-[1/5][150/1583] Loss_D: 0.5543  Loss_G: 2.5026  D(x): 0.6763    D(G(z)): 0.0665 / 0.1266
-[1/5][200/1583] Loss_D: 1.9784  Loss_G: 5.4232  D(x): 0.9161    D(G(z)): 0.7818 / 0.0087
-[1/5][250/1583] Loss_D: 0.5625  Loss_G: 4.2356  D(x): 0.8337    D(G(z)): 0.2673 / 0.0216
-[1/5][300/1583] Loss_D: 0.4083  Loss_G: 3.7031  D(x): 0.8667    D(G(z)): 0.2076 / 0.0367
-[1/5][350/1583] Loss_D: 1.6883  Loss_G: 0.7481  D(x): 0.2591    D(G(z)): 0.0084 / 0.5357
-[1/5][400/1583] Loss_D: 0.6552  Loss_G: 5.6395  D(x): 0.9327    D(G(z)): 0.4013 / 0.0064
-[1/5][450/1583] Loss_D: 0.5777  Loss_G: 3.9755  D(x): 0.8364    D(G(z)): 0.2666 / 0.0299
-[1/5][500/1583] Loss_D: 0.4864  Loss_G: 4.3763  D(x): 0.8989    D(G(z)): 0.2827 / 0.0200
-[1/5][550/1583] Loss_D: 0.4686  Loss_G: 4.2680  D(x): 0.9202    D(G(z)): 0.2854 / 0.0237
-[1/5][600/1583] Loss_D: 0.6885  Loss_G: 5.2839  D(x): 0.8897    D(G(z)): 0.3894 / 0.0074
-[1/5][650/1583] Loss_D: 0.7226  Loss_G: 2.4855  D(x): 0.6273    D(G(z)): 0.0984 / 0.1264
-[1/5][700/1583] Loss_D: 0.3968  Loss_G: 3.0834  D(x): 0.8601    D(G(z)): 0.1861 / 0.0674
-[1/5][750/1583] Loss_D: 0.6522  Loss_G: 5.0874  D(x): 0.9148    D(G(z)): 0.3827 / 0.0098
-[1/5][800/1583] Loss_D: 0.4794  Loss_G: 2.6374  D(x): 0.7576    D(G(z)): 0.1231 / 0.0978
-[1/5][850/1583] Loss_D: 0.6545  Loss_G: 2.8344  D(x): 0.7640    D(G(z)): 0.2659 / 0.0808
-[1/5][900/1583] Loss_D: 0.3130  Loss_G: 3.8748  D(x): 0.8662    D(G(z)): 0.1308 / 0.0325
-[1/5][950/1583] Loss_D: 0.3503  Loss_G: 3.0790  D(x): 0.7772    D(G(z)): 0.0619 / 0.0673
-[1/5][1000/1583]        Loss_D: 0.4747  Loss_G: 3.2276  D(x): 0.8131    D(G(z)): 0.1844 / 0.0598
-[1/5][1050/1583]        Loss_D: 0.8616  Loss_G: 1.8546  D(x): 0.5055    D(G(z)): 0.0403 / 0.2027
-[1/5][1100/1583]        Loss_D: 0.6170  Loss_G: 1.8726  D(x): 0.6447    D(G(z)): 0.0984 / 0.1941
-[1/5][1150/1583]        Loss_D: 1.1665  Loss_G: 4.9900  D(x): 0.8776    D(G(z)): 0.5664 / 0.0119
-[1/5][1200/1583]        Loss_D: 0.8937  Loss_G: 1.1257  D(x): 0.5100    D(G(z)): 0.0571 / 0.3945
-[1/5][1250/1583]        Loss_D: 0.4353  Loss_G: 2.3903  D(x): 0.7685    D(G(z)): 0.1249 / 0.1240
-[1/5][1300/1583]        Loss_D: 2.6448  Loss_G: 7.7538  D(x): 0.9891    D(G(z)): 0.8753 / 0.0015
-[1/5][1350/1583]        Loss_D: 0.5649  Loss_G: 2.4311  D(x): 0.8353    D(G(z)): 0.2800 / 0.1191
-[1/5][1400/1583]        Loss_D: 0.6808  Loss_G: 4.1931  D(x): 0.9287    D(G(z)): 0.4104 / 0.0219
-[1/5][1450/1583]        Loss_D: 0.3884  Loss_G: 2.7732  D(x): 0.8462    D(G(z)): 0.1751 / 0.0863
-[1/5][1500/1583]        Loss_D: 0.5661  Loss_G: 2.9044  D(x): 0.8751    D(G(z)): 0.3154 / 0.0750
-[1/5][1550/1583]        Loss_D: 0.8663  Loss_G: 1.4155  D(x): 0.5244    D(G(z)): 0.0865 / 0.3098
-[2/5][0/1583]   Loss_D: 0.5749  Loss_G: 2.2547  D(x): 0.6787    D(G(z)): 0.1128 / 0.1372
-[2/5][50/1583]  Loss_D: 0.6050  Loss_G: 1.9154  D(x): 0.6524    D(G(z)): 0.1070 / 0.1933
-[2/5][100/1583] Loss_D: 0.5706  Loss_G: 2.2819  D(x): 0.6681    D(G(z)): 0.1022 / 0.1339
-[2/5][150/1583] Loss_D: 0.5914  Loss_G: 2.2584  D(x): 0.7500    D(G(z)): 0.2290 / 0.1299
-[2/5][200/1583] Loss_D: 0.4844  Loss_G: 2.5862  D(x): 0.7887    D(G(z)): 0.1900 / 0.0959
-[2/5][250/1583] Loss_D: 0.8295  Loss_G: 4.0203  D(x): 0.9462    D(G(z)): 0.4882 / 0.0319
-[2/5][300/1583] Loss_D: 1.6811  Loss_G: 5.1996  D(x): 0.9465    D(G(z)): 0.7339 / 0.0092
-[2/5][350/1583] Loss_D: 0.6444  Loss_G: 1.8984  D(x): 0.5891    D(G(z)): 0.0342 / 0.1950
-[2/5][400/1583] Loss_D: 0.7207  Loss_G: 2.6740  D(x): 0.6931    D(G(z)): 0.2387 / 0.0999
-[2/5][450/1583] Loss_D: 0.2633  Loss_G: 3.3940  D(x): 0.8929    D(G(z)): 0.1270 / 0.0444
-[2/5][500/1583] Loss_D: 1.0093  Loss_G: 1.3814  D(x): 0.4286    D(G(z)): 0.0188 / 0.2953
-[2/5][550/1583] Loss_D: 0.8844  Loss_G: 4.2517  D(x): 0.9008    D(G(z)): 0.4748 / 0.0233
-[2/5][600/1583] Loss_D: 0.9445  Loss_G: 4.1339  D(x): 0.9398    D(G(z)): 0.5296 / 0.0269
-[2/5][650/1583] Loss_D: 0.3873  Loss_G: 3.0572  D(x): 0.8443    D(G(z)): 0.1756 / 0.0613
-[2/5][700/1583] Loss_D: 0.6943  Loss_G: 1.8587  D(x): 0.6160    D(G(z)): 0.1068 / 0.2029
-[2/5][750/1583] Loss_D: 0.7173  Loss_G: 1.5541  D(x): 0.6683    D(G(z)): 0.1923 / 0.2485
-[2/5][800/1583] Loss_D: 0.5043  Loss_G: 2.6189  D(x): 0.8787    D(G(z)): 0.2744 / 0.0974
-[2/5][850/1583] Loss_D: 1.1842  Loss_G: 4.5929  D(x): 0.9170    D(G(z)): 0.6181 / 0.0178
-[2/5][900/1583] Loss_D: 0.7059  Loss_G: 3.0826  D(x): 0.7977    D(G(z)): 0.3267 / 0.0669
-[2/5][950/1583] Loss_D: 0.5175  Loss_G: 3.4089  D(x): 0.8466    D(G(z)): 0.2681 / 0.0436
-[2/5][1000/1583]        Loss_D: 0.5258  Loss_G: 2.9226  D(x): 0.8367    D(G(z)): 0.2661 / 0.0669
-[2/5][1050/1583]        Loss_D: 0.4636  Loss_G: 2.6317  D(x): 0.7717    D(G(z)): 0.1589 / 0.0924
-[2/5][1100/1583]        Loss_D: 0.5930  Loss_G: 3.1417  D(x): 0.7946    D(G(z)): 0.2671 / 0.0568
-[2/5][1150/1583]        Loss_D: 0.6186  Loss_G: 2.5936  D(x): 0.7611    D(G(z)): 0.2533 / 0.0961
-[2/5][1200/1583]        Loss_D: 0.5942  Loss_G: 1.8950  D(x): 0.6548    D(G(z)): 0.0892 / 0.1873
-[2/5][1250/1583]        Loss_D: 0.5892  Loss_G: 2.8770  D(x): 0.8327    D(G(z)): 0.2989 / 0.0745
-[2/5][1300/1583]        Loss_D: 0.5566  Loss_G: 3.3825  D(x): 0.8488    D(G(z)): 0.2901 / 0.0457
-[2/5][1350/1583]        Loss_D: 0.8161  Loss_G: 1.5362  D(x): 0.5539    D(G(z)): 0.1256 / 0.2658
-[2/5][1400/1583]        Loss_D: 0.6491  Loss_G: 1.6616  D(x): 0.6689    D(G(z)): 0.1703 / 0.2275
-[2/5][1450/1583]        Loss_D: 0.9300  Loss_G: 2.3294  D(x): 0.7757    D(G(z)): 0.4290 / 0.1281
-[2/5][1500/1583]        Loss_D: 0.7280  Loss_G: 1.5553  D(x): 0.5797    D(G(z)): 0.0944 / 0.2625
-[2/5][1550/1583]        Loss_D: 0.7519  Loss_G: 2.7140  D(x): 0.8478    D(G(z)): 0.4020 / 0.0825
-[3/5][0/1583]   Loss_D: 0.8249  Loss_G: 1.1754  D(x): 0.5313    D(G(z)): 0.1000 / 0.3521
-[3/5][50/1583]  Loss_D: 2.4646  Loss_G: 0.4075  D(x): 0.1329    D(G(z)): 0.0116 / 0.7011
-[3/5][100/1583] Loss_D: 0.9017  Loss_G: 1.6233  D(x): 0.5030    D(G(z)): 0.0609 / 0.2511
-[3/5][150/1583] Loss_D: 0.5100  Loss_G: 2.3427  D(x): 0.8676    D(G(z)): 0.2805 / 0.1235
-[3/5][200/1583] Loss_D: 0.6214  Loss_G: 2.6225  D(x): 0.7143    D(G(z)): 0.1995 / 0.1000
-[3/5][250/1583] Loss_D: 0.8840  Loss_G: 1.4296  D(x): 0.5731    D(G(z)): 0.1937 / 0.2941
-[3/5][300/1583] Loss_D: 0.4727  Loss_G: 2.4644  D(x): 0.7363    D(G(z)): 0.1237 / 0.1093
-[3/5][350/1583] Loss_D: 0.4415  Loss_G: 2.6914  D(x): 0.8104    D(G(z)): 0.1749 / 0.0882
-[3/5][400/1583] Loss_D: 0.6242  Loss_G: 2.3871  D(x): 0.7782    D(G(z)): 0.2732 / 0.1174
-[3/5][450/1583] Loss_D: 0.7875  Loss_G: 1.0737  D(x): 0.5876    D(G(z)): 0.1376 / 0.3983
-[3/5][500/1583] Loss_D: 0.6895  Loss_G: 4.2050  D(x): 0.9055    D(G(z)): 0.4053 / 0.0232
-[3/5][550/1583] Loss_D: 0.7154  Loss_G: 3.5479  D(x): 0.8938    D(G(z)): 0.4080 / 0.0397
-[3/5][600/1583] Loss_D: 0.5721  Loss_G: 2.4897  D(x): 0.7685    D(G(z)): 0.2291 / 0.1122
-[3/5][650/1583] Loss_D: 0.4995  Loss_G: 2.9295  D(x): 0.8486    D(G(z)): 0.2567 / 0.0719
-[3/5][700/1583] Loss_D: 0.8384  Loss_G: 4.0192  D(x): 0.8932    D(G(z)): 0.4601 / 0.0301
-[3/5][750/1583] Loss_D: 0.9900  Loss_G: 3.3760  D(x): 0.8385    D(G(z)): 0.4975 / 0.0522
-[3/5][800/1583] Loss_D: 0.5181  Loss_G: 2.4808  D(x): 0.7737    D(G(z)): 0.2030 / 0.1052
-[3/5][850/1583] Loss_D: 0.6474  Loss_G: 2.1492  D(x): 0.6359    D(G(z)): 0.0849 / 0.1631
-[3/5][900/1583] Loss_D: 0.7423  Loss_G: 1.1979  D(x): 0.6364    D(G(z)): 0.1889 / 0.3481
-[3/5][950/1583] Loss_D: 0.8323  Loss_G: 3.9171  D(x): 0.9328    D(G(z)): 0.4896 / 0.0269
-[3/5][1000/1583]        Loss_D: 0.8037  Loss_G: 3.8684  D(x): 0.8782    D(G(z)): 0.4485 / 0.0283
-[3/5][1050/1583]        Loss_D: 0.6125  Loss_G: 2.8821  D(x): 0.8151    D(G(z)): 0.2900 / 0.0742
-[3/5][1100/1583]        Loss_D: 0.6844  Loss_G: 3.0779  D(x): 0.8665    D(G(z)): 0.3769 / 0.0629
-[3/5][1150/1583]        Loss_D: 0.6337  Loss_G: 2.0837  D(x): 0.7457    D(G(z)): 0.2444 / 0.1547
-[3/5][1200/1583]        Loss_D: 0.4530  Loss_G: 3.3453  D(x): 0.8677    D(G(z)): 0.2439 / 0.0488
-[3/5][1250/1583]        Loss_D: 0.6742  Loss_G: 2.3392  D(x): 0.7278    D(G(z)): 0.2462 / 0.1187
-[3/5][1300/1583]        Loss_D: 0.5555  Loss_G: 2.5805  D(x): 0.8496    D(G(z)): 0.2909 / 0.0939
-[3/5][1350/1583]        Loss_D: 0.7483  Loss_G: 1.1854  D(x): 0.5529    D(G(z)): 0.0760 / 0.3568
-[3/5][1400/1583]        Loss_D: 0.7197  Loss_G: 3.5704  D(x): 0.8668    D(G(z)): 0.3922 / 0.0383
-[3/5][1450/1583]        Loss_D: 2.1201  Loss_G: 0.1672  D(x): 0.1653    D(G(z)): 0.0235 / 0.8740
-[3/5][1500/1583]        Loss_D: 0.6452  Loss_G: 2.9699  D(x): 0.7924    D(G(z)): 0.3005 / 0.0683
-[3/5][1550/1583]        Loss_D: 0.6481  Loss_G: 3.2820  D(x): 0.8417    D(G(z)): 0.3400 / 0.0502
-[4/5][0/1583]   Loss_D: 1.1235  Loss_G: 0.6507  D(x): 0.4275    D(G(z)): 0.1208 / 0.5714
-[4/5][50/1583]  Loss_D: 0.4938  Loss_G: 2.6457  D(x): 0.8007    D(G(z)): 0.2026 / 0.0934
-[4/5][100/1583] Loss_D: 0.5935  Loss_G: 2.3206  D(x): 0.7578    D(G(z)): 0.2163 / 0.1364
-[4/5][150/1583] Loss_D: 0.7663  Loss_G: 3.0891  D(x): 0.8652    D(G(z)): 0.4193 / 0.0650
-[4/5][200/1583] Loss_D: 1.0856  Loss_G: 4.7791  D(x): 0.9557    D(G(z)): 0.5977 / 0.0139
-[4/5][250/1583] Loss_D: 0.7172  Loss_G: 2.0143  D(x): 0.6798    D(G(z)): 0.2200 / 0.1613
-[4/5][300/1583] Loss_D: 0.7093  Loss_G: 2.0855  D(x): 0.6448    D(G(z)): 0.1734 / 0.1635
-[4/5][350/1583] Loss_D: 0.4988  Loss_G: 2.5742  D(x): 0.7529    D(G(z)): 0.1561 / 0.0986
-[4/5][400/1583] Loss_D: 0.6381  Loss_G: 1.7872  D(x): 0.6062    D(G(z)): 0.0666 / 0.2141
-[4/5][450/1583] Loss_D: 0.6353  Loss_G: 2.5315  D(x): 0.7867    D(G(z)): 0.2912 / 0.1010
-[4/5][500/1583] Loss_D: 0.6637  Loss_G: 3.5648  D(x): 0.9442    D(G(z)): 0.4189 / 0.0361
-[4/5][550/1583] Loss_D: 0.5461  Loss_G: 2.4011  D(x): 0.7328    D(G(z)): 0.1639 / 0.1121
-[4/5][600/1583] Loss_D: 1.1140  Loss_G: 1.3266  D(x): 0.4037    D(G(z)): 0.0384 / 0.3262
-[4/5][650/1583] Loss_D: 1.5140  Loss_G: 4.7118  D(x): 0.8491    D(G(z)): 0.6626 / 0.0153
-[4/5][700/1583] Loss_D: 0.6046  Loss_G: 2.6768  D(x): 0.8754    D(G(z)): 0.3322 / 0.0887
-[4/5][750/1583] Loss_D: 0.5414  Loss_G: 2.0473  D(x): 0.7036    D(G(z)): 0.1187 / 0.1639
-[4/5][800/1583] Loss_D: 0.5834  Loss_G: 2.5215  D(x): 0.8196    D(G(z)): 0.2806 / 0.1031
-[4/5][850/1583] Loss_D: 0.8337  Loss_G: 1.7287  D(x): 0.6168    D(G(z)): 0.2169 / 0.2183
-[4/5][900/1583] Loss_D: 0.6726  Loss_G: 1.9821  D(x): 0.6773    D(G(z)): 0.1969 / 0.1706
-[4/5][950/1583] Loss_D: 0.8011  Loss_G: 2.2303  D(x): 0.5480    D(G(z)): 0.0819 / 0.1472
-[4/5][1000/1583]        Loss_D: 0.5181  Loss_G: 2.4381  D(x): 0.8540    D(G(z)): 0.2690 / 0.1082
-[4/5][1050/1583]        Loss_D: 2.6980  Loss_G: 0.1360  D(x): 0.1065    D(G(z)): 0.0187 / 0.8866
-[4/5][1100/1583]        Loss_D: 0.6896  Loss_G: 3.2757  D(x): 0.8760    D(G(z)): 0.3931 / 0.0474
-[4/5][1150/1583]        Loss_D: 0.5826  Loss_G: 2.2118  D(x): 0.7190    D(G(z)): 0.1875 / 0.1417
-[4/5][1200/1583]        Loss_D: 0.7822  Loss_G: 3.6914  D(x): 0.8733    D(G(z)): 0.4308 / 0.0338
-[4/5][1250/1583]        Loss_D: 1.4110  Loss_G: 0.3719  D(x): 0.3172    D(G(z)): 0.0488 / 0.7127
-[4/5][1300/1583]        Loss_D: 0.6790  Loss_G: 1.2476  D(x): 0.5989    D(G(z)): 0.0965 / 0.3366
-[4/5][1350/1583]        Loss_D: 0.8312  Loss_G: 4.2156  D(x): 0.9318    D(G(z)): 0.4816 / 0.0213
-[4/5][1400/1583]        Loss_D: 1.5377  Loss_G: 0.3751  D(x): 0.2823    D(G(z)): 0.0394 / 0.7148
-[4/5][1450/1583]        Loss_D: 0.6127  Loss_G: 3.6128  D(x): 0.9081    D(G(z)): 0.3650 / 0.0354
-[4/5][1500/1583]        Loss_D: 0.6328  Loss_G: 1.9700  D(x): 0.6545    D(G(z)): 0.1332 / 0.1859
-[4/5][1550/1583]        Loss_D: 1.2825  Loss_G: 0.8622  D(x): 0.3590    D(G(z)): 0.0437 / 0.4739
+[0/5][0/1583]   Loss_D: 1.7410  Loss_G: 4.7764  D(x): 0.5343    D(G(z)): 0.5771 / 0.0136
+[0/5][50/1583]  Loss_D: 0.3757  Loss_G: 20.1905 D(x): 0.9826    D(G(z)): 0.2570 / 0.0000
+[0/5][100/1583] Loss_D: 4.2812  Loss_G: 21.8433 D(x): 0.3063    D(G(z)): 0.0000 / 0.0000
+[0/5][150/1583] Loss_D: 0.7232  Loss_G: 8.2756  D(x): 0.8893    D(G(z)): 0.3841 / 0.0010
+[0/5][200/1583] Loss_D: 0.6709  Loss_G: 5.6107  D(x): 0.6090    D(G(z)): 0.0092 / 0.0110
+[0/5][250/1583] Loss_D: 0.5987  Loss_G: 4.2564  D(x): 0.7169    D(G(z)): 0.1232 / 0.0228
+[0/5][300/1583] Loss_D: 1.7991  Loss_G: 10.2325 D(x): 0.9617    D(G(z)): 0.7610 / 0.0002
+[0/5][350/1583] Loss_D: 0.5548  Loss_G: 4.2182  D(x): 0.6886    D(G(z)): 0.0137 / 0.0285
+[0/5][400/1583] Loss_D: 0.2892  Loss_G: 4.0152  D(x): 0.8203    D(G(z)): 0.0302 / 0.0404
+[0/5][450/1583] Loss_D: 0.2651  Loss_G: 4.7856  D(x): 0.8865    D(G(z)): 0.1013 / 0.0180
+[0/5][500/1583] Loss_D: 0.4914  Loss_G: 3.8482  D(x): 0.7376    D(G(z)): 0.0788 / 0.0433
+[0/5][550/1583] Loss_D: 0.4612  Loss_G: 3.7546  D(x): 0.8483    D(G(z)): 0.1985 / 0.0462
+[0/5][600/1583] Loss_D: 0.3110  Loss_G: 5.4533  D(x): 0.9019    D(G(z)): 0.1536 / 0.0106
+[0/5][650/1583] Loss_D: 0.2930  Loss_G: 4.8789  D(x): 0.8524    D(G(z)): 0.0910 / 0.0155
+[0/5][700/1583] Loss_D: 0.1946  Loss_G: 5.0624  D(x): 0.8991    D(G(z)): 0.0461 / 0.0137
+[0/5][750/1583] Loss_D: 0.5863  Loss_G: 6.9552  D(x): 0.9584    D(G(z)): 0.3573 / 0.0019
+[0/5][800/1583] Loss_D: 0.3227  Loss_G: 4.4258  D(x): 0.9164    D(G(z)): 0.1831 / 0.0195
+[0/5][850/1583] Loss_D: 0.9465  Loss_G: 5.3926  D(x): 0.9093    D(G(z)): 0.4254 / 0.0156
+[0/5][900/1583] Loss_D: 0.4255  Loss_G: 4.3128  D(x): 0.9081    D(G(z)): 0.2401 / 0.0222
+[0/5][950/1583] Loss_D: 0.5295  Loss_G: 4.0513  D(x): 0.8443    D(G(z)): 0.2410 / 0.0336
+[0/5][1000/1583]        Loss_D: 0.9793  Loss_G: 7.3424  D(x): 0.7631    D(G(z)): 0.4251 / 0.0017
+[0/5][1050/1583]        Loss_D: 0.8082  Loss_G: 5.1436  D(x): 0.7229    D(G(z)): 0.2712 / 0.0116
+[0/5][1100/1583]        Loss_D: 0.3180  Loss_G: 2.8936  D(x): 0.8175    D(G(z)): 0.0543 / 0.0900
+[0/5][1150/1583]        Loss_D: 0.5608  Loss_G: 5.2787  D(x): 0.8928    D(G(z)): 0.3070 / 0.0100
+[0/5][1200/1583]        Loss_D: 0.6169  Loss_G: 3.8988  D(x): 0.8098    D(G(z)): 0.2617 / 0.0326
+[0/5][1250/1583]        Loss_D: 0.8384  Loss_G: 1.4738  D(x): 0.5797    D(G(z)): 0.0806 / 0.3453
+[0/5][1300/1583]        Loss_D: 0.6316  Loss_G: 6.4335  D(x): 0.9397    D(G(z)): 0.3639 / 0.0047
+[0/5][1350/1583]        Loss_D: 0.6382  Loss_G: 2.5824  D(x): 0.6341    D(G(z)): 0.0333 / 0.1192
+[0/5][1400/1583]        Loss_D: 0.9975  Loss_G: 7.7616  D(x): 0.9494    D(G(z)): 0.5381 / 0.0009
+[0/5][1450/1583]        Loss_D: 0.4137  Loss_G: 4.9179  D(x): 0.8985    D(G(z)): 0.2294 / 0.0124
+[0/5][1500/1583]        Loss_D: 0.2608  Loss_G: 3.6773  D(x): 0.9023    D(G(z)): 0.1222 / 0.0427
+[0/5][1550/1583]        Loss_D: 0.3902  Loss_G: 3.5507  D(x): 0.7547    D(G(z)): 0.0409 / 0.0487
+[1/5][0/1583]   Loss_D: 0.5094  Loss_G: 5.1718  D(x): 0.8892    D(G(z)): 0.2711 / 0.0106
+[1/5][50/1583]  Loss_D: 0.8191  Loss_G: 6.6652  D(x): 0.9374    D(G(z)): 0.4670 / 0.0029
+[1/5][100/1583] Loss_D: 0.5826  Loss_G: 2.9674  D(x): 0.7256    D(G(z)): 0.1471 / 0.0858
+[1/5][150/1583] Loss_D: 0.4133  Loss_G: 3.0241  D(x): 0.7639    D(G(z)): 0.0642 / 0.0809
+[1/5][200/1583] Loss_D: 1.1010  Loss_G: 0.9721  D(x): 0.4342    D(G(z)): 0.0140 / 0.4715
+[1/5][250/1583] Loss_D: 0.5366  Loss_G: 1.9299  D(x): 0.6785    D(G(z)): 0.0749 / 0.2044
+[1/5][300/1583] Loss_D: 0.3160  Loss_G: 3.4021  D(x): 0.8544    D(G(z)): 0.1123 / 0.0602
+[1/5][350/1583] Loss_D: 1.0583  Loss_G: 0.5805  D(x): 0.4712    D(G(z)): 0.0521 / 0.6272
+[1/5][400/1583] Loss_D: 0.3787  Loss_G: 3.5828  D(x): 0.8181    D(G(z)): 0.1250 / 0.0440
+[1/5][450/1583] Loss_D: 0.4942  Loss_G: 3.6829  D(x): 0.8683    D(G(z)): 0.2464 / 0.0383
+[1/5][500/1583] Loss_D: 0.3837  Loss_G: 4.7866  D(x): 0.8992    D(G(z)): 0.2154 / 0.0128
+[1/5][550/1583] Loss_D: 0.4584  Loss_G: 3.6343  D(x): 0.8302    D(G(z)): 0.1931 / 0.0460
+[1/5][600/1583] Loss_D: 0.3620  Loss_G: 4.1537  D(x): 0.9035    D(G(z)): 0.1922 / 0.0238
+[1/5][650/1583] Loss_D: 1.0598  Loss_G: 3.1993  D(x): 0.4496    D(G(z)): 0.0155 / 0.1013
+[1/5][700/1583] Loss_D: 0.3529  Loss_G: 3.5902  D(x): 0.9209    D(G(z)): 0.2131 / 0.0410
+[1/5][750/1583] Loss_D: 0.8268  Loss_G: 1.7897  D(x): 0.5816    D(G(z)): 0.0910 / 0.2379
+[1/5][800/1583] Loss_D: 0.6953  Loss_G: 1.9068  D(x): 0.6502    D(G(z)): 0.1522 / 0.1993
+[1/5][850/1583] Loss_D: 0.5492  Loss_G: 3.5280  D(x): 0.8640    D(G(z)): 0.2843 / 0.0451
+[1/5][900/1583] Loss_D: 0.9067  Loss_G: 6.2051  D(x): 0.9324    D(G(z)): 0.4845 / 0.0048
+[1/5][950/1583] Loss_D: 0.7604  Loss_G: 2.3324  D(x): 0.6011    D(G(z)): 0.0820 / 0.1436
+[1/5][1000/1583]        Loss_D: 0.7825  Loss_G: 1.9405  D(x): 0.5550    D(G(z)): 0.0198 / 0.2126
+[1/5][1050/1583]        Loss_D: 1.3006  Loss_G: 0.9017  D(x): 0.3426    D(G(z)): 0.0095 / 0.4785
+[1/5][1100/1583]        Loss_D: 0.6237  Loss_G: 4.9627  D(x): 0.9364    D(G(z)): 0.3693 / 0.0120
+[1/5][1150/1583]        Loss_D: 0.5256  Loss_G: 2.1631  D(x): 0.7391    D(G(z)): 0.1424 / 0.1619
+[1/5][1200/1583]        Loss_D: 0.6402  Loss_G: 4.3137  D(x): 0.9239    D(G(z)): 0.3884 / 0.0228
+[1/5][1250/1583]        Loss_D: 0.4884  Loss_G: 2.8579  D(x): 0.7989    D(G(z)): 0.1970 / 0.0724
+[1/5][1300/1583]        Loss_D: 0.5378  Loss_G: 3.4730  D(x): 0.8872    D(G(z)): 0.2945 / 0.0459
+[1/5][1350/1583]        Loss_D: 0.4314  Loss_G: 2.8157  D(x): 0.8199    D(G(z)): 0.1807 / 0.0803
+[1/5][1400/1583]        Loss_D: 0.4790  Loss_G: 3.3419  D(x): 0.8586    D(G(z)): 0.2478 / 0.0510
+[1/5][1450/1583]        Loss_D: 0.5452  Loss_G: 3.5681  D(x): 0.8478    D(G(z)): 0.2907 / 0.0356
+[1/5][1500/1583]        Loss_D: 0.5555  Loss_G: 2.8978  D(x): 0.8241    D(G(z)): 0.2660 / 0.0751
+[1/5][1550/1583]        Loss_D: 0.5473  Loss_G: 2.2249  D(x): 0.6779    D(G(z)): 0.0720 / 0.1513
+[2/5][0/1583]   Loss_D: 0.6435  Loss_G: 2.3317  D(x): 0.7287    D(G(z)): 0.2212 / 0.1399
+[2/5][50/1583]  Loss_D: 0.5209  Loss_G: 2.8301  D(x): 0.8398    D(G(z)): 0.2586 / 0.0815
+[2/5][100/1583] Loss_D: 0.6026  Loss_G: 2.3309  D(x): 0.6250    D(G(z)): 0.0579 / 0.1483
+[2/5][150/1583] Loss_D: 0.7364  Loss_G: 2.4364  D(x): 0.7092    D(G(z)): 0.2474 / 0.1269
+[2/5][200/1583] Loss_D: 0.4563  Loss_G: 3.1660  D(x): 0.8784    D(G(z)): 0.2525 / 0.0587
+[2/5][250/1583] Loss_D: 1.9535  Loss_G: 0.1790  D(x): 0.2099    D(G(z)): 0.0130 / 0.8532
+[2/5][300/1583] Loss_D: 0.8450  Loss_G: 2.4108  D(x): 0.6526    D(G(z)): 0.2482 / 0.1403
+[2/5][350/1583] Loss_D: 0.5807  Loss_G: 3.2284  D(x): 0.7931    D(G(z)): 0.2564 / 0.0546
+[2/5][400/1583] Loss_D: 1.4780  Loss_G: 1.8092  D(x): 0.3131    D(G(z)): 0.0256 / 0.2227
+[2/5][450/1583] Loss_D: 0.7476  Loss_G: 1.4531  D(x): 0.6278    D(G(z)): 0.1618 / 0.2837
+[2/5][500/1583] Loss_D: 0.5341  Loss_G: 2.6472  D(x): 0.7411    D(G(z)): 0.1619 / 0.0952
+[2/5][550/1583] Loss_D: 0.9164  Loss_G: 1.4038  D(x): 0.4912    D(G(z)): 0.0508 / 0.3087
+[2/5][600/1583] Loss_D: 1.0229  Loss_G: 4.2436  D(x): 0.8526    D(G(z)): 0.5065 / 0.0286
+[2/5][650/1583] Loss_D: 0.5634  Loss_G: 1.6984  D(x): 0.7185    D(G(z)): 0.1598 / 0.2199
+[2/5][700/1583] Loss_D: 1.0103  Loss_G: 3.9155  D(x): 0.8222    D(G(z)): 0.4877 / 0.0310
+[2/5][750/1583] Loss_D: 0.5844  Loss_G: 1.2576  D(x): 0.6759    D(G(z)): 0.1288 / 0.3193
+[2/5][800/1583] Loss_D: 0.8426  Loss_G: 4.8932  D(x): 0.9090    D(G(z)): 0.4763 / 0.0119
+[2/5][850/1583] Loss_D: 0.5268  Loss_G: 2.3878  D(x): 0.7841    D(G(z)): 0.2148 / 0.1201
+[2/5][900/1583] Loss_D: 0.9512  Loss_G: 2.2835  D(x): 0.6812    D(G(z)): 0.3615 / 0.1264
+[2/5][950/1583] Loss_D: 1.1605  Loss_G: 4.6955  D(x): 0.9583    D(G(z)): 0.6147 / 0.0141
+[2/5][1000/1583]        Loss_D: 0.4423  Loss_G: 2.9624  D(x): 0.8297    D(G(z)): 0.2004 / 0.0693
+[2/5][1050/1583]        Loss_D: 0.5808  Loss_G: 2.7369  D(x): 0.8120    D(G(z)): 0.2482 / 0.0844
+[2/5][1100/1583]        Loss_D: 0.4425  Loss_G: 3.3127  D(x): 0.8621    D(G(z)): 0.2288 / 0.0497
+[2/5][1150/1583]        Loss_D: 0.7979  Loss_G: 1.2905  D(x): 0.5364    D(G(z)): 0.0581 / 0.3288
+[2/5][1200/1583]        Loss_D: 0.5038  Loss_G: 2.7695  D(x): 0.7450    D(G(z)): 0.1441 / 0.0879
+[2/5][1250/1583]        Loss_D: 0.6353  Loss_G: 4.0559  D(x): 0.9078    D(G(z)): 0.3780 / 0.0237
+[2/5][1300/1583]        Loss_D: 0.9001  Loss_G: 4.6277  D(x): 0.9097    D(G(z)): 0.5006 / 0.0135
+[2/5][1350/1583]        Loss_D: 0.4680  Loss_G: 3.1031  D(x): 0.8629    D(G(z)): 0.2539 / 0.0561
+[2/5][1400/1583]        Loss_D: 0.4939  Loss_G: 2.6664  D(x): 0.7822    D(G(z)): 0.1910 / 0.0915
+[2/5][1450/1583]        Loss_D: 0.4736  Loss_G: 2.6727  D(x): 0.8049    D(G(z)): 0.1981 / 0.0891
+[2/5][1500/1583]        Loss_D: 0.6237  Loss_G: 1.5345  D(x): 0.6580    D(G(z)): 0.1387 / 0.2587
+[2/5][1550/1583]        Loss_D: 1.3570  Loss_G: 5.2834  D(x): 0.9213    D(G(z)): 0.6533 / 0.0083
+[3/5][0/1583]   Loss_D: 0.6682  Loss_G: 2.3744  D(x): 0.8105    D(G(z)): 0.3254 / 0.1163
+[3/5][50/1583]  Loss_D: 0.5884  Loss_G: 1.7978  D(x): 0.7274    D(G(z)): 0.1994 / 0.1944
+[3/5][100/1583] Loss_D: 0.4202  Loss_G: 2.7316  D(x): 0.8299    D(G(z)): 0.1901 / 0.0841
+[3/5][150/1583] Loss_D: 0.6142  Loss_G: 2.6516  D(x): 0.7633    D(G(z)): 0.2483 / 0.0988
+[3/5][200/1583] Loss_D: 0.4547  Loss_G: 3.3249  D(x): 0.8850    D(G(z)): 0.2583 / 0.0454
+[3/5][250/1583] Loss_D: 0.7498  Loss_G: 0.8409  D(x): 0.5570    D(G(z)): 0.0702 / 0.4699
+[3/5][300/1583] Loss_D: 0.4359  Loss_G: 2.5004  D(x): 0.7918    D(G(z)): 0.1586 / 0.1025
+[3/5][350/1583] Loss_D: 0.9252  Loss_G: 0.8995  D(x): 0.4785    D(G(z)): 0.0496 / 0.4672
+[3/5][400/1583] Loss_D: 0.6221  Loss_G: 1.9138  D(x): 0.7355    D(G(z)): 0.2292 / 0.1722
+[3/5][450/1583] Loss_D: 0.7314  Loss_G: 2.8758  D(x): 0.8336    D(G(z)): 0.3771 / 0.0772
+[3/5][500/1583] Loss_D: 1.1521  Loss_G: 1.1084  D(x): 0.3951    D(G(z)): 0.0197 / 0.3802
+[3/5][550/1583] Loss_D: 0.4035  Loss_G: 2.4574  D(x): 0.8315    D(G(z)): 0.1772 / 0.1071
+[3/5][600/1583] Loss_D: 0.4484  Loss_G: 1.9914  D(x): 0.7736    D(G(z)): 0.1507 / 0.1696
+[3/5][650/1583] Loss_D: 0.8041  Loss_G: 3.3063  D(x): 0.9065    D(G(z)): 0.4588 / 0.0564
+[3/5][700/1583] Loss_D: 0.7388  Loss_G: 3.7701  D(x): 0.9141    D(G(z)): 0.4302 / 0.0357
+[3/5][750/1583] Loss_D: 1.8209  Loss_G: 5.4735  D(x): 0.9527    D(G(z)): 0.7706 / 0.0074
+[3/5][800/1583] Loss_D: 0.6315  Loss_G: 1.8221  D(x): 0.6429    D(G(z)): 0.1322 / 0.1981
+[3/5][850/1583] Loss_D: 0.6037  Loss_G: 1.6117  D(x): 0.6398    D(G(z)): 0.0963 / 0.2428
+[3/5][900/1583] Loss_D: 0.9245  Loss_G: 0.7835  D(x): 0.4903    D(G(z)): 0.0881 / 0.4984
+[3/5][950/1583] Loss_D: 0.5112  Loss_G: 2.4824  D(x): 0.8215    D(G(z)): 0.2363 / 0.1072
+[3/5][1000/1583]        Loss_D: 0.5540  Loss_G: 1.9729  D(x): 0.7417    D(G(z)): 0.1942 / 0.1719
+[3/5][1050/1583]        Loss_D: 0.8078  Loss_G: 2.5358  D(x): 0.7211    D(G(z)): 0.3129 / 0.1002
+[3/5][1100/1583]        Loss_D: 0.6000  Loss_G: 2.5106  D(x): 0.8378    D(G(z)): 0.3097 / 0.1024
+[3/5][1150/1583]        Loss_D: 0.8856  Loss_G: 3.4912  D(x): 0.8086    D(G(z)): 0.4457 / 0.0416
+[3/5][1200/1583]        Loss_D: 0.5537  Loss_G: 3.1994  D(x): 0.8739    D(G(z)): 0.3006 / 0.0613
+[3/5][1250/1583]        Loss_D: 0.6184  Loss_G: 3.4058  D(x): 0.8871    D(G(z)): 0.3573 / 0.0447
+[3/5][1300/1583]        Loss_D: 0.7083  Loss_G: 2.4592  D(x): 0.7347    D(G(z)): 0.2945 / 0.1002
+[3/5][1350/1583]        Loss_D: 1.2319  Loss_G: 3.8328  D(x): 0.8346    D(G(z)): 0.5953 / 0.0306
+[3/5][1400/1583]        Loss_D: 1.1217  Loss_G: 3.8853  D(x): 0.9120    D(G(z)): 0.5885 / 0.0298
+[3/5][1450/1583]        Loss_D: 0.6794  Loss_G: 1.9268  D(x): 0.6567    D(G(z)): 0.1776 / 0.1754
+[3/5][1500/1583]        Loss_D: 0.9042  Loss_G: 3.9166  D(x): 0.8769    D(G(z)): 0.4941 / 0.0294
+[3/5][1550/1583]        Loss_D: 0.7209  Loss_G: 3.1008  D(x): 0.8644    D(G(z)): 0.3901 / 0.0568
+[4/5][0/1583]   Loss_D: 1.4112  Loss_G: 4.7653  D(x): 0.9204    D(G(z)): 0.6698 / 0.0130
+[4/5][50/1583]  Loss_D: 0.9744  Loss_G: 1.3989  D(x): 0.4743    D(G(z)): 0.0629 / 0.2966
+[4/5][100/1583] Loss_D: 0.5854  Loss_G: 1.5825  D(x): 0.6595    D(G(z)): 0.1085 / 0.2456
+[4/5][150/1583] Loss_D: 0.7139  Loss_G: 2.4720  D(x): 0.7776    D(G(z)): 0.3200 / 0.1056
+[4/5][200/1583] Loss_D: 0.5739  Loss_G: 3.1327  D(x): 0.8499    D(G(z)): 0.3089 / 0.0573
+[4/5][250/1583] Loss_D: 0.8336  Loss_G: 0.7932  D(x): 0.5592    D(G(z)): 0.1392 / 0.5047
+[4/5][300/1583] Loss_D: 0.9403  Loss_G: 1.0391  D(x): 0.4860    D(G(z)): 0.0896 / 0.4139
+[4/5][350/1583] Loss_D: 0.9704  Loss_G: 3.2479  D(x): 0.9460    D(G(z)): 0.5419 / 0.0596
+[4/5][400/1583] Loss_D: 0.5017  Loss_G: 2.3566  D(x): 0.7214    D(G(z)): 0.1239 / 0.1220
+[4/5][450/1583] Loss_D: 0.6676  Loss_G: 2.4457  D(x): 0.7195    D(G(z)): 0.2404 / 0.1191
+[4/5][500/1583] Loss_D: 0.2955  Loss_G: 3.4908  D(x): 0.8908    D(G(z)): 0.1512 / 0.0405
+[4/5][550/1583] Loss_D: 0.7249  Loss_G: 1.7222  D(x): 0.6072    D(G(z)): 0.1245 / 0.2145
+[4/5][600/1583] Loss_D: 0.4436  Loss_G: 2.6432  D(x): 0.8019    D(G(z)): 0.1731 / 0.0944
+[4/5][650/1583] Loss_D: 0.4737  Loss_G: 2.1220  D(x): 0.7278    D(G(z)): 0.1177 / 0.1583
+[4/5][700/1583] Loss_D: 0.4728  Loss_G: 2.3856  D(x): 0.7824    D(G(z)): 0.1685 / 0.1237
+[4/5][750/1583] Loss_D: 0.9566  Loss_G: 0.8700  D(x): 0.4805    D(G(z)): 0.0967 / 0.4729
+[4/5][800/1583] Loss_D: 0.4648  Loss_G: 2.5059  D(x): 0.8301    D(G(z)): 0.2196 / 0.1037
+[4/5][850/1583] Loss_D: 0.9203  Loss_G: 4.2870  D(x): 0.9366    D(G(z)): 0.5179 / 0.0213
+[4/5][900/1583] Loss_D: 0.8654  Loss_G: 2.2818  D(x): 0.7902    D(G(z)): 0.4071 / 0.1297
+[4/5][950/1583] Loss_D: 0.5198  Loss_G: 2.6702  D(x): 0.8355    D(G(z)): 0.2565 / 0.0899
+[4/5][1000/1583]        Loss_D: 0.9313  Loss_G: 3.3818  D(x): 0.8833    D(G(z)): 0.4918 / 0.0519
+[4/5][1050/1583]        Loss_D: 1.6500  Loss_G: 6.1621  D(x): 0.9534    D(G(z)): 0.7364 / 0.0040
+[4/5][1100/1583]        Loss_D: 0.5357  Loss_G: 2.3646  D(x): 0.8005    D(G(z)): 0.2368 / 0.1171
+[4/5][1150/1583]        Loss_D: 0.4917  Loss_G: 2.3222  D(x): 0.7501    D(G(z)): 0.1434 / 0.1283
+[4/5][1200/1583]        Loss_D: 0.6405  Loss_G: 3.6658  D(x): 0.8965    D(G(z)): 0.3695 / 0.0370
+[4/5][1250/1583]        Loss_D: 0.7516  Loss_G: 1.5977  D(x): 0.5780    D(G(z)): 0.1132 / 0.2525
+[4/5][1300/1583]        Loss_D: 0.4798  Loss_G: 2.8720  D(x): 0.7907    D(G(z)): 0.1837 / 0.0780
+[4/5][1350/1583]        Loss_D: 0.5585  Loss_G: 3.0635  D(x): 0.8273    D(G(z)): 0.2691 / 0.0613
+[4/5][1400/1583]        Loss_D: 0.5986  Loss_G: 2.1243  D(x): 0.7231    D(G(z)): 0.1954 / 0.1525
+[4/5][1450/1583]        Loss_D: 0.7114  Loss_G: 3.8731  D(x): 0.8940    D(G(z)): 0.4067 / 0.0302
+[4/5][1500/1583]        Loss_D: 0.7864  Loss_G: 1.3152  D(x): 0.5839    D(G(z)): 0.1283 / 0.3179
+[4/5][1550/1583]        Loss_D: 0.6441  Loss_G: 1.8099  D(x): 0.7091    D(G(z)): 0.2170 / 0.1986
 </pre></div>
 </div>
 </div>
@@ -975,7 +975,7 @@ batch for every epoch. And third, we will look at a batch of real data
 next to a batch of fake data from G.</p>
 <p><strong>Loss versus training iteration</strong></p>
 <p>Below is a plot of D &amp; G’s losses versus training iterations.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Generator and Discriminator Loss During Training"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">G_losses</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"G"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D_losses</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"D"</span><span class="p">)</span>
@@ -991,11 +991,11 @@ next to a batch of fake data from G.</p>
 after every epoch of training. Now, we can visualize the training
 progression of G with an animation. Press the play button to start the
 animation.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#%%capture</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#%%capture</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
-<span class="n">ims</span> <span class="o">=</span> <span class="p">[[</span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">i</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="n">animated</span><span class="o">=</span><span class="bp">True</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">img_list</span><span class="p">]</span>
-<span class="n">ani</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">ArtistAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ims</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">repeat_delay</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">ims</span> <span class="o">=</span> <span class="p">[[</span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">i</span><span class="p">,(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)),</span> <span class="n">animated</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">img_list</span><span class="p">]</span>
+<span class="n">ani</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">ArtistAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">ims</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">repeat_delay</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">blit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">HTML</span><span class="p">(</span><span class="n">ani</span><span class="o">.</span><span class="n">to_jshtml</span><span class="p">())</span>
 </pre></div>
@@ -1004,7 +1004,7 @@ animation.</p>
 <p><strong>Real Images vs. Fake Images</strong></p>
 <p>Finally, lets take a look at some real images and fake images side by
 side.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grab a batch of real images from the dataloader</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grab a batch of real images from the dataloader</span>
 <span class="n">real_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">dataloader</span><span class="p">))</span>
 
 <span class="c1"># Plot the real images</span>
@@ -1012,7 +1012,7 @@ side.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">"off"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Real Images"</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">real_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)[:</span><span class="mi">64</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">vutils</span><span class="o">.</span><span class="n">make_grid</span><span class="p">(</span><span class="n">real_batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)[:</span><span class="mi">64</span><span class="p">],</span> <span class="n">padding</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)))</span>
 
 <span class="c1"># Plot the fake images from the last epoch</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
@@ -1037,7 +1037,7 @@ size of the images and the model architecture</li>
 <li>Create GANs that generate
 <a class="reference external" href="https://deepmind.com/blog/wavenet-generative-model-raw-audio/">music</a></li>
 </ul>
-<p><strong>Total running time of the script:</strong> ( 28 minutes  26.137 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 27 minutes  59.919 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-dcgan-faces-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/dc0e6f475c6735eb8d233374f8f462eb/dcgan_faces_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dcgan_faces_tutorial.py</span></code></a></div>

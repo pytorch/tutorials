@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Spatial Transformer Networks Tutorial — PyTorch Tutorials 1.0.0.dev20190318 documentation</title>
+<title>Spatial Transformer Networks Tutorial — PyTorch Tutorials 1.0.0.dev20190325 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.0.0.dev20190318
+                  1.0.0.dev20190325
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -179,18 +179,18 @@ are not invariant to rotation and scale and more general affine
 transformations.</p>
 <p>One of the best things about STN is the ability to simply plug it into
 any existing CNN with very little modification.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># License: BSD</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># License: BSD</span>
 <span class="c1"># Author: Ghassen Hamrouni</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="kn">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="kn">as</span> <span class="nn">F</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="kn">as</span> <span class="nn">optim</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
 <span class="kn">import</span> <span class="nn">torchvision</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="k">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>   <span class="c1"># interactive mode</span>
 </pre></div>
@@ -200,21 +200,21 @@ any existing CNN with very little modification.</p>
 <p>In this post we experiment with the classic MNIST dataset. Using a
 standard convolutional network augmented with a spatial transformer
 network.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
 
 <span class="c1"># Training dataset</span>
 <span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                    <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
                        <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
                        <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
-                   <span class="p">])),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+                   <span class="p">])),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="c1"># Test dataset</span>
 <span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
-    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
         <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
         <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
-    <span class="p">])),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="p">])),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -252,8 +252,8 @@ it to the input image.</li>
 <p class="last">We need the latest version of PyTorch that contains
 affine_grid and grid_sample modules.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
@@ -265,16 +265,16 @@ affine_grid and grid_sample modules.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">localization</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">7</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="c1"># Regressor for the 3 * 2 affine matrix</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc_loc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="kc">True</span><span class="p">),</span>
             <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
         <span class="p">)</span>
 
@@ -317,7 +317,7 @@ affine_grid and grid_sample modules.</p>
 <p>Now, let’s use the SGD algorithm to train the model. The network is
 learning the classification task in a supervised way. In the same time
 the model is learning STN automatically in an end-to-end fashion.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">epoch</span><span class="p">):</span>
@@ -331,7 +331,7 @@ the model is learning STN automatically in an end-to-end fashion.</p>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">batch_idx</span> <span class="o">%</span> <span class="mi">500</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="s1">'Train Epoch: {} [{}/{} ({:.0f}%)]</span><span class="se">\t</span><span class="s1">Loss: {:.6f}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Train Epoch: </span><span class="si">{}</span><span class="s1"> [</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)]</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{:.6f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_idx</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
                 <span class="mf">100.</span> <span class="o">*</span> <span class="n">batch_idx</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
 <span class="c1">#</span>
@@ -349,13 +349,13 @@ the model is learning STN automatically in an end-to-end fashion.</p>
             <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
             <span class="c1"># sum up batch loss</span>
-            <span class="n">test_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">size_average</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">test_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">size_average</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="c1"># get the index of the max log-probability</span>
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">correct</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="n">test_loss</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
-        <span class="k">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)</span><span class="se">\n</span><span class="s1">'</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">Test set: Average loss: </span><span class="si">{:.4f}</span><span class="s1">, Accuracy: </span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)</span><span class="se">\n</span><span class="s1">'</span>
               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_loss</span><span class="p">,</span> <span class="n">correct</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
                       <span class="mf">100.</span> <span class="o">*</span> <span class="n">correct</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)))</span>
 </pre></div>
@@ -367,7 +367,7 @@ the model is learning STN automatically in an end-to-end fashion.</p>
 mechanism.</p>
 <p>We define a small helper function in order to visualize the
 transformations while training.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">convert_image_np</span><span class="p">(</span><span class="n">inp</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">convert_image_np</span><span class="p">(</span><span class="n">inp</span><span class="p">):</span>
     <span class="sd">"""Convert a Tensor to numpy image."""</span>
     <span class="n">inp</span> <span class="o">=</span> <span class="n">inp</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
     <span class="n">mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">])</span>
@@ -417,107 +417,107 @@ transformations while training.</p>
 <img alt="../_images/sphx_glr_spatial_transformer_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_spatial_transformer_tutorial_001.png"/>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train Epoch: 1 [0/60000 (0%)]   Loss: 2.336866
-Train Epoch: 1 [32000/60000 (53%)]      Loss: 0.830538
+Train Epoch: 1 [32000/60000 (53%)]      Loss: 0.868230
 
-Test set: Average loss: 0.2835, Accuracy: 9140/10000 (91%)
+Test set: Average loss: 0.2308, Accuracy: 9321/10000 (93%)
 
-Train Epoch: 2 [0/60000 (0%)]   Loss: 0.549837
-Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.391807
+Train Epoch: 2 [0/60000 (0%)]   Loss: 0.540811
+Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.394075
 
-Test set: Average loss: 0.1237, Accuracy: 9604/10000 (96%)
+Test set: Average loss: 0.1205, Accuracy: 9629/10000 (96%)
 
-Train Epoch: 3 [0/60000 (0%)]   Loss: 0.219520
-Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.204000
+Train Epoch: 3 [0/60000 (0%)]   Loss: 0.238025
+Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.178637
 
-Test set: Average loss: 0.1164, Accuracy: 9651/10000 (97%)
+Test set: Average loss: 0.1056, Accuracy: 9695/10000 (97%)
 
-Train Epoch: 4 [0/60000 (0%)]   Loss: 0.179459
-Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.301167
+Train Epoch: 4 [0/60000 (0%)]   Loss: 0.275965
+Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.302979
 
-Test set: Average loss: 0.0840, Accuracy: 9732/10000 (97%)
+Test set: Average loss: 0.0990, Accuracy: 9704/10000 (97%)
 
-Train Epoch: 5 [0/60000 (0%)]   Loss: 0.381930
-Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.101953
+Train Epoch: 5 [0/60000 (0%)]   Loss: 0.365403
+Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.131956
 
-Test set: Average loss: 0.0949, Accuracy: 9702/10000 (97%)
+Test set: Average loss: 0.0774, Accuracy: 9761/10000 (98%)
 
-Train Epoch: 6 [0/60000 (0%)]   Loss: 0.299551
-Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.151090
+Train Epoch: 6 [0/60000 (0%)]   Loss: 0.266409
+Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.210105
 
-Test set: Average loss: 0.0581, Accuracy: 9809/10000 (98%)
+Test set: Average loss: 0.0645, Accuracy: 9799/10000 (98%)
 
-Train Epoch: 7 [0/60000 (0%)]   Loss: 0.053922
-Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.146720
+Train Epoch: 7 [0/60000 (0%)]   Loss: 0.058987
+Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.143000
 
-Test set: Average loss: 0.0575, Accuracy: 9817/10000 (98%)
+Test set: Average loss: 0.0631, Accuracy: 9804/10000 (98%)
 
-Train Epoch: 8 [0/60000 (0%)]   Loss: 0.088986
-Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.137105
+Train Epoch: 8 [0/60000 (0%)]   Loss: 0.109768
+Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.082441
 
-Test set: Average loss: 0.0528, Accuracy: 9836/10000 (98%)
+Test set: Average loss: 0.0555, Accuracy: 9830/10000 (98%)
 
-Train Epoch: 9 [0/60000 (0%)]   Loss: 0.112366
-Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.065724
+Train Epoch: 9 [0/60000 (0%)]   Loss: 0.150223
+Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.088911
 
-Test set: Average loss: 0.0544, Accuracy: 9837/10000 (98%)
+Test set: Average loss: 0.0506, Accuracy: 9834/10000 (98%)
 
-Train Epoch: 10 [0/60000 (0%)]  Loss: 0.062318
-Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.076459
+Train Epoch: 10 [0/60000 (0%)]  Loss: 0.076003
+Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.075164
 
-Test set: Average loss: 0.0621, Accuracy: 9806/10000 (98%)
+Test set: Average loss: 0.0661, Accuracy: 9793/10000 (98%)
 
-Train Epoch: 11 [0/60000 (0%)]  Loss: 0.087323
-Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.126949
+Train Epoch: 11 [0/60000 (0%)]  Loss: 0.112464
+Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.225240
 
-Test set: Average loss: 0.0536, Accuracy: 9845/10000 (98%)
+Test set: Average loss: 0.0509, Accuracy: 9841/10000 (98%)
 
-Train Epoch: 12 [0/60000 (0%)]  Loss: 0.075015
-Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.069897
+Train Epoch: 12 [0/60000 (0%)]  Loss: 0.083338
+Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.080169
 
-Test set: Average loss: 0.0954, Accuracy: 9703/10000 (97%)
+Test set: Average loss: 0.0496, Accuracy: 9846/10000 (98%)
 
-Train Epoch: 13 [0/60000 (0%)]  Loss: 0.076194
-Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.107816
+Train Epoch: 13 [0/60000 (0%)]  Loss: 0.057085
+Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.162157
 
-Test set: Average loss: 0.0501, Accuracy: 9852/10000 (99%)
+Test set: Average loss: 0.0952, Accuracy: 9681/10000 (97%)
 
-Train Epoch: 14 [0/60000 (0%)]  Loss: 0.044301
-Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.080440
+Train Epoch: 14 [0/60000 (0%)]  Loss: 0.163284
+Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.180386
 
-Test set: Average loss: 0.0472, Accuracy: 9851/10000 (99%)
+Test set: Average loss: 0.0455, Accuracy: 9865/10000 (99%)
 
-Train Epoch: 15 [0/60000 (0%)]  Loss: 0.094337
-Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.194480
+Train Epoch: 15 [0/60000 (0%)]  Loss: 0.131693
+Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.073620
 
-Test set: Average loss: 0.0457, Accuracy: 9856/10000 (99%)
+Test set: Average loss: 0.0395, Accuracy: 9874/10000 (99%)
 
-Train Epoch: 16 [0/60000 (0%)]  Loss: 0.098260
-Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.056442
+Train Epoch: 16 [0/60000 (0%)]  Loss: 0.140122
+Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.032372
 
-Test set: Average loss: 0.0462, Accuracy: 9867/10000 (99%)
+Test set: Average loss: 0.0421, Accuracy: 9884/10000 (99%)
 
-Train Epoch: 17 [0/60000 (0%)]  Loss: 0.066871
-Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.102490
+Train Epoch: 17 [0/60000 (0%)]  Loss: 0.056898
+Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.096055
 
-Test set: Average loss: 0.0455, Accuracy: 9866/10000 (99%)
+Test set: Average loss: 0.0475, Accuracy: 9847/10000 (98%)
 
-Train Epoch: 18 [0/60000 (0%)]  Loss: 0.113800
-Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.141753
+Train Epoch: 18 [0/60000 (0%)]  Loss: 0.085108
+Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.084986
 
-Test set: Average loss: 0.0436, Accuracy: 9873/10000 (99%)
+Test set: Average loss: 0.0442, Accuracy: 9860/10000 (99%)
 
-Train Epoch: 19 [0/60000 (0%)]  Loss: 0.037552
-Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.188025
+Train Epoch: 19 [0/60000 (0%)]  Loss: 0.024365
+Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.159113
 
-Test set: Average loss: 0.0494, Accuracy: 9852/10000 (99%)
+Test set: Average loss: 0.0533, Accuracy: 9831/10000 (98%)
 
-Train Epoch: 20 [0/60000 (0%)]  Loss: 0.134722
-Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.076491
+Train Epoch: 20 [0/60000 (0%)]  Loss: 0.174177
+Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.014701
 
-Test set: Average loss: 0.0434, Accuracy: 9871/10000 (99%)
+Test set: Average loss: 0.0728, Accuracy: 9791/10000 (98%)
 </pre></div>
 </div>
-<p><strong>Total running time of the script:</strong> ( 1 minutes  45.891 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  43.865 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-spatial-transformer-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/8aa31a122008b8db8bbe28365db9ea47/spatial_transformer_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">spatial_transformer_tutorial.py</span></code></a></div>
