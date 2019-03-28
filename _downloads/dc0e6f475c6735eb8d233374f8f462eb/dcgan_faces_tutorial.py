@@ -74,7 +74,7 @@ DCGAN Tutorial
 # :math:`D` will predict its outputs are fake (:math:`log(1-D(G(x)))`).
 # From the paper, the GAN loss function is
 # 
-# .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(x)))\big]
+# .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
 # 
 # In theory, the solution to this minimax game is where
 # :math:`p_g = p_{data}`, and the discriminator guesses randomly if the
