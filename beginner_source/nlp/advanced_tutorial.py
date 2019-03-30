@@ -16,7 +16,7 @@ The core difference is the following:
 * In a static toolkit, you define
   a computation graph once, compile it, and then stream instances to it.
 * In a dynamic toolkit, you define a computation graph *for each
-  instance*. It is never compiled and is executed on-the-fly
+  instance*. It is never compiled and is executed on-the-fly.
 
 Without a lot of experience, it is difficult to appreciate the
 difference. One example is to suppose we want to build a deep
@@ -56,7 +56,7 @@ Conditional Random Field for named-entity recognition. The LSTM tagger
 above is typically sufficient for part-of-speech tagging, but a sequence
 model like the CRF is really essential for strong performance on NER.
 Familiarity with CRF's is assumed. Although this name sounds scary, all
-the model is is a CRF but where an LSTM provides the features. This is
+the model is a CRF but where an LSTM provides the features. This is
 an advanced model though, far more complicated than any earlier model in
 this tutorial. If you want to skip it, that is fine. To see if you're
 ready, see if you can:
@@ -84,14 +84,18 @@ at local features.
 In the Bi-LSTM CRF, we define two kinds of potentials: emission and
 transition. The emission potential for the word at index :math:`i` comes
 from the hidden state of the Bi-LSTM at timestep :math:`i`. The
-transition scores are stored in a :math:`|T|x|T|` matrix
+transition scores are stored in a :math:`|T|\times |T|` matrix
 :math:`\textbf{P}`, where :math:`T` is the tag set. In my
 implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
 to tag :math:`j` from tag :math:`k`. So:
 
-.. math::  \text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
+.. math::
 
-.. math::  = \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
+    \begin{align}
+      \text{Score}(x,y) &= \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) +
+      \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i) \\
+      &= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
+    \end{align}
 
 where in this second expression, we think of the tags as being assigned
 unique non-negative indices.
