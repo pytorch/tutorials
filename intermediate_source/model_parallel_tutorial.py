@@ -15,11 +15,12 @@ post shows how to solve that problem by using model parallel and also shares
 some insights on how to speed up model parallel training.
 
 The high-level idea of model parallel is to place different sub-networks of a
-model onto different devices. All input data will run through all devices, but
-each device only operates on a part of the entire model. In this post, we will
-not try to construct huge models and squeeze them into a limited number of GPUs.
-Instead, this post focuses on showing the idea of model parallel. It is up to
-the readers to apply the ideas to real-world applications.
+model onto different devices, and implement the ``forward`` method accordingly
+to move intermediate outputs across devices. As only part of a model operates on
+any individual device, a set of devices can collectively serve a larger model.
+In this post, we will not try to construct huge models and squeeze them into a
+limited number of GPUs. Instead, this post focuses on showing the idea of model
+parallel. It is up to the readers to apply the ideas to real-world applications.
 
 Let us start with a toy model that contains two linear layers. To run this
 model on two GPUs, simply put each linear layer on a different GPU, and move
@@ -34,20 +35,21 @@ import torch.optim as optim
 class ToyModel(nn.Module):
     def __init__(self):
         super(ToyModel, self).__init__()
-        self.net1 = torch.nn.Linear(10, 10).cuda(0)
-        self.net2 = torch.nn.Linear(10, 5).cuda(1)
+        self.net1 = torch.nn.Linear(10, 10).to('cuda:0')
+        self.relu = torch.nn.ReLU().to('cuda:0')
+        self.net2 = torch.nn.Linear(10, 5).to('cuda:1')
 
     def forward(self, x):
-        return self.net2(self.net1(x.cuda(0)).cuda(1))
+        return self.net2(self.net1(x.to('cuda:0')).to('cuda:1'))
 
 ######################################################################
 # Note that, the above ``ToyModel`` looks very similar to how one would
-# implement it on a single GPU, except the four ``cuda(device)`` calls which
-# place linear layers and tensors to on proper devices. That is the only
-# place in the model that requires changes. The ``backward()`` and
-# ``torch.optim`` will automatically take care of gradients as if the
-# model is on one GPU. You only need to make sure that the labels are on the
-# same device as the outputs when calling the loss function.
+# implement it on a single GPU, except the five ``to(device)`` calls which
+# place linear layers and tensors on proper devices. That is the only place in
+# the model that requires changes. The ``backward()`` and ``torch.optim`` will
+# automatically take care of gradients as if the model is on one GPU. You only
+# need to make sure that the labels are on the same device as the outputs when
+# calling the loss function.
 
 
 model = ToyModel()
@@ -56,7 +58,7 @@ optimizer = optim.SGD(model.parameters(), lr=0.001)
 
 optimizer.zero_grad()
 outputs = model(torch.randn(20, 10))
-labels = torch.randn(20, 5).cuda(1)
+labels = torch.randn(20, 5).to('cuda:1')
 loss_fn(outputs, labels).backward()
 optimizer.step()
 
@@ -90,18 +92,18 @@ class ModelParallelResNet50(ResNet):
 
             self.layer1,
             self.layer2
-        ).cuda(0)
+        ).to('cuda:0')
 
         self.seq2 = nn.Sequential(
             self.layer3,
             self.layer4,
             self.avgpool,
-        ).cuda(1)
+        ).to('cuda:1')
 
-        self.fc.cuda(1)
+        self.fc.to('cuda:1')
 
     def forward(self, x):
-        x = self.seq2(self.seq1(x).cuda(1))
+        x = self.seq2(self.seq1(x).to('cuda:1'))
         return self.fc(x.view(x.size(0), -1))
 
 
@@ -122,7 +124,6 @@ class ModelParallelResNet50(ResNet):
 
 
 import torchvision.models as models
-import timeit
 
 num_batches = 3
 batch_size = 120
@@ -147,7 +148,7 @@ def train(model):
 
         # run forward pass
         optimizer.zero_grad()
-        outputs = model(inputs.cuda())
+        outputs = model(inputs.to('cuda:0'))
 
         # run backward pass
         labels = labels.to(outputs.device)
@@ -163,8 +164,10 @@ def train(model):
 # and plot the execution times with standard deviations.
 
 
-import numpy as np
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+import numpy as np
+import timeit
 
 num_repeat = 10
 
@@ -177,7 +180,7 @@ mp_mean, mp_std = np.mean(mp_run_times), np.std(mp_run_times)
 
 setup = "from __main__ import train, num_classes;" + \
         "import torchvision.models as models;" + \
-        "model = models.resnet50(num_classes=num_classes).cuda()"
+        "model = models.resnet50(num_classes=num_classes).to('cuda:0')"
 rn_run_times = timeit.repeat(stmt, setup, number=1, repeat=num_repeat)
 rn_mean, rn_std = np.mean(rn_run_times), np.std(rn_run_times)
 
@@ -206,12 +209,13 @@ plot([mp_mean, rn_mean],
 #    :alt:
 #
 # The result shows that the execution time of model parallel implementation is
-# ``4.02/3.75-1=7%`` longer than the existing single-GPU implementation. There
-# is room for improvements, as we know one of the two GPUs is sitting idle
-# throughout the execution. One option is to further divide each batch into
-# a pipeline of splits, such that when one split reaches the second
-# sub-network, the following split can be fed into the first sub-network. In
-# this way, two consecutive splits can run concurrently on two GPUs.
+# ``4.02/3.75-1=7%`` longer than the existing single-GPU implementation. So we
+# can conclude there is roughly 7% overhead in copying tensors back and forth
+# across the GPUs. There are rooms for improvements, as we know one of the two
+# GPUs is sitting idle throughout the execution. One option is to further divide
+# each batch into a pipeline of splits, such that when one split reaches the
+# second sub-network, the following split can be fed into the first sub-network.
+# In this way, two consecutive splits can run concurrently on two GPUs.
 
 ######################################################################
 # Speed Up by Pipelining Inputs
@@ -230,7 +234,7 @@ class PipelineParallelResNet50(ModelParallelResNet50):
     def forward(self, x):
         splits = iter(x.split(self.split_size, dim=0))
         s_next = next(splits)
-        s_prev = self.seq1(s_next).cuda(1)
+        s_prev = self.seq1(s_next).to('cuda:1')
         ret = []
 
         for s_next in splits:
@@ -239,7 +243,7 @@ class PipelineParallelResNet50(ModelParallelResNet50):
             ret.append(self.fc(s_prev.view(s_prev.size(0), -1)))
 
             # B. s_next runs on cuda:0, which can run concurrently with A
-            s_prev = self.seq1(s_next).cuda(1)
+            s_prev = self.seq1(s_next).to('cuda:1')
 
         s_prev = self.seq2(s_prev)
         ret.append(self.fc(s_prev.view(s_prev.size(0), -1)))
