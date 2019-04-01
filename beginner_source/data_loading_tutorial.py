@@ -384,7 +384,7 @@ def show_landmarks_batch(sample_batched):
     plt.imshow(grid.numpy().transpose((1, 2, 0)))
 
     for i in range(batch_size):
-        plt.scatter(landmarks_batch[i, :, 0].numpy() + i * im_size,
+        plt.scatter(landmarks_batch[i, :, 0].numpy() + i * im_size + (i + 1) * 2,
                     landmarks_batch[i, :, 1].numpy(),
                     s=10, marker='.', c='r')
 
