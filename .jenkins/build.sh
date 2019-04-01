@@ -16,20 +16,6 @@ rm -rf src
 pip install -r $DIR/../requirements.txt
 pip uninstall -y torchvision || true
 
-# Install a nightly build of pytorch
-
-# GPU, requires CUDA version 8.0
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu80/torch_nightly.html
-
-# GPU, requires CUDA version 9.0
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
-
-# GPU, requires CUDA version 9.2
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu92/torch_nightly.html
-
-# CPU
-# pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
-
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
 # PyTorch Theme
@@ -53,11 +39,24 @@ popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
+if [[ $(pip show torch) ]]; then
+  # Clean up previous PyTorch installations
+  pip uninstall -y torch || true
+  pip uninstall -y torch || true
+fi
+
+# Install a nightly build of pytorch
+
+# GPU, requires CUDA version 9.0
+pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
+
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
   python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
+  # TODO: Fix bugs in these tutorials to make them runnable again
+  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.

@@ -7,6 +7,8 @@ starting point, and provides a broad view into how to use PyTorch from the basic
 
 Some considerations:
 
+* We’ve added a new feature to tutorials that allows users to open the notebook associated with a tutorial in Google Colab. 
+  Visit `this page <https://pytorch.org/tutorials/beginner/colab.html>`_ for more information.
 * If you would like to do the tutorials interactively via IPython / Jupyter,
   each tutorial has a download link for a Jupyter Notebook and Python source code.
 * Additional high-quality examples are available, including image classification,

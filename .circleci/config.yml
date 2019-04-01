@@ -6,11 +6,24 @@ install_official_git_client: &install_official_git_client
     sudo apt-get -qq update
     sudo apt-get -qq install openssh-client git
 
+# This system setup script is meant to run before the CI-related scripts, e.g.,
+# installing Git client, checking out code, setting up CI env, and
+# building/testing.
+setup_linux_system_environment: &setup_linux_system_environment
+  name: Set Up System Environment
+  no_output_timeout: "1h"
+  command: |
+    set -e
+     # Set up CircleCI GPG keys for apt, if needed
+    curl -L https://packagecloud.io/circleci/trusty/gpgkey | sudo apt-key add -
+
 pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
   machine:
     image: default
   steps:
   - checkout
+  - run:
+      <<: *setup_linux_system_environment
   - run:
       name: Set Up CI Environment
       no_output_timeout: "1h"
@@ -29,7 +42,8 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           linux-image-generic \
           moreutils \
           nvidia-docker2 \
-          expect-dev
+          expect-dev \
+          docker-ce=18.06.2~ce~3-0~ubuntu
 
         sudo pkill -SIGHUP dockerd
 
@@ -51,15 +65,8 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
       command: |
         set -e
 
-        # Get latest PyTorch docker image version
-        curl -O https://raw.githubusercontent.com/pytorch/pytorch/master/.circleci/config.yml
-        while read line; do
-          if [[ "$line" == *PyTorchDockerVersion* ]]; then
-            export pyTorchDockerImageTag=${line:23}  # len("# PyTorchDockerVersion:") == 23
-            echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
-            break
-          fi
-        done < config.yml
+        export pyTorchDockerImageTag=291
+        echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
 
         cat >/home/circleci/project/ci_build_script.sh <<EOL
         # =================== The following code will be executed inside Docker container ===================
@@ -107,14 +114,14 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn7-py3"
-    CUDA_VERSION: "8"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3"
+    CUDA_VERSION: "9"
   resource_class: gpu.medium
   <<: *pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda8-cudnn7-py3"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3"
   resource_class: medium
   <<: *pytorch_tutorial_build_defaults
 
