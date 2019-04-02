@@ -193,8 +193,8 @@ class RNN(nn.Module):
         self.i2o = nn.Linear(input_size + hidden_size, output_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
-    def forward(self, input, hidden):
-        combined = torch.cat((input, hidden), 1)
+    def forward(self, _input, hidden):
+        combined = torch.cat((_input, hidden), 1)
         hidden = self.i2h(combined)
         output = self.i2o(combined)
         output = self.softmax(output)
@@ -215,10 +215,10 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 # step).
 #
 
-input = letterToTensor('A')
+_input = letterToTensor('A')
 hidden =torch.zeros(1, n_hidden)
 
-output, next_hidden = rnn(input, hidden)
+output, next_hidden = rnn(_input, hidden)
 
 
 ######################################################################
@@ -228,10 +228,10 @@ output, next_hidden = rnn(input, hidden)
 # pre-computing batches of Tensors.
 #
 
-input = lineToTensor('Albert')
+_input = lineToTensor('Albert')
 hidden = torch.zeros(1, n_hidden)
 
-output, next_hidden = rnn(input[0], hidden)
+output, next_hidden = rnn(_input[0], hidden)
 print(output)
 
 
