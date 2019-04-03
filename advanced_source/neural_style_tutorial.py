@@ -273,8 +273,8 @@ cnn = models.vgg19(pretrained=True).features.to(device).eval()
 # We will use them to normalize the image before sending it into the network.
 # 
 
-cnn_normalization_mean = torch.tensor([0.485, 0.456, 0.406]).to(device)
-cnn_normalization_std = torch.tensor([0.229, 0.224, 0.225]).to(device)
+cnn_normalization_mean = [0.485, 0.456, 0.406]
+cnn_normalization_std = [0.229, 0.224, 0.225]
 
 # create a module to normalize input image so we can easily put it in a
 # nn.Sequential
