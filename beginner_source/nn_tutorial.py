@@ -144,7 +144,6 @@ bs = 64  # batch size
 
 xb = x_train[0:bs]  # a mini-batch from x
 preds = model(xb)  # predictions
-preds[0], preds.shape
 print(preds[0], preds.shape)
 
 ###############################################################################
