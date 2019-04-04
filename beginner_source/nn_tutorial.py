@@ -51,8 +51,8 @@ URL = "http://deeplearning.net/data/mnist/"
 FILENAME = "mnist.pkl.gz"
 
 if not (PATH / FILENAME).exists():
-        content = requests.get(URL + FILENAME).content
-        (PATH / FILENAME).open("wb").write(content)
+    content = requests.get(URL + FILENAME).content
+    (PATH / FILENAME).open("wb").write(content)
 
 ###############################################################################
 # This dataset is in numpy array format, and has been stored using pickle,
@@ -62,7 +62,7 @@ import pickle
 import gzip
 
 with gzip.open((PATH / FILENAME).as_posix(), "rb") as f:
-        ((x_train, y_train), (x_valid, y_valid), _) = pickle.load(f, encoding="latin-1")
+    ((x_train, y_train), (x_valid, y_valid), _) = pickle.load(f, encoding="latin-1")
 
 ###############################################################################
 # Each image is 28 x 28, and is being stored as a flattened row of length
