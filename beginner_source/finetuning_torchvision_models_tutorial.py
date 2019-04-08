@@ -176,6 +176,13 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                         loss1 = criterion(outputs, labels)
                         loss2 = criterion(aux_outputs, labels)
                         loss = loss1 + 0.4*loss2
+                        # From https://discuss.pytorch.org/t/why-auxiliary-logits-set-to-false-in-train-mode/40705/15
+                        # If model set to GoogLeNet, the net has two auxiliary logits.
+                        #aux1, aux2, outputs = model(inputs)
+                        #loss1 = criterion(aux1, labels)
+                        #loss2 = criterion(aux2, labels)
+                        #loss3 = criterion(outputs, labels)
+                        #loss = loss3 + 0.3 * (loss1 + loss2)
                     else:
                         outputs = model(inputs)
                         loss = criterion(outputs, labels)
@@ -376,6 +383,35 @@ def set_parameter_requires_grad(model, feature_extracting):
 # 
 #    model.classifier = nn.Linear(1024, num_classes)
 # 
+#
+# GoogLeNet
+# ~~~~~~~~~~~~
+# 
+# GoogLeNet or Incetion v1 was first described in `Going Deeper with Convolutions`
+# <https://arxiv.org/pdf/1409.4842>`__. This network is
+# unique because it has two output layers when training. The second output
+# is known as an auxiliary (two) output and is contained in the `aux1 & aux2` parts
+# of the network. The primary output is a linear layer at the end of the
+# network. Note, when testing we only consider the primary output. The
+# auxiliary output and primary output of the loaded model are printed as:
+# 
+# ::
+# 
+#    (aux2): InceptionAux(
+#        ...
+#        (fc2): Linear(in_features=1024, out_features=1000, bias=True)
+#     )
+#     ...
+#    (fc): Linear(in_features=1024, out_features=1000, bias=True)
+# 
+# To finetune this model we must reshape both layers. This is accomplished
+# with the following
+# 
+# ::
+# 
+#    model.aux2.fc2 = nn.Linear(1024, num_classes)
+#    model.fc = nn.Linear(1024, num_classes)
+#
 # Inception v3
 # ~~~~~~~~~~~~
 # 
@@ -460,6 +496,20 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
         set_parameter_requires_grad(model_ft, feature_extract)
         num_ftrs = model_ft.classifier.in_features
         model_ft.classifier = nn.Linear(num_ftrs, num_classes) 
+        input_size = 224
+    
+    elif model_name == "GoogLeNet":
+        """ GoogLeNet or Inception v1
+        Be careful, expects (224,224) sized images and has two auxiliary outputs
+        """
+        model_ft = models.inception_v3(pretrained=use_pretrained)
+        set_parameter_requires_grad(model_ft, feature_extract)
+        # Handle the auxilary net
+        num_ftrs = model_ft.aux2.fc2.in_features
+        model_ft.aux2.fc2 = nn.Linear(num_ftrs, num_classes)
+        # Handle the primary net
+        num_ftrs = model_ft.fc.in_features
+        model_ft.fc = nn.Linear(num_ftrs,num_classes)
         input_size = 224
 
     elif model_name == "inception":
@@ -590,7 +640,8 @@ criterion = nn.CrossEntropyLoss()
 # Train and evaluate
 model_ft, hist = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"))
 
-
+# Save checkpoint
+# torch.save(model_ft.state_dict(), 'checkpoint.pth')
 ######################################################################
 # Comparison with Model Trained from Scratch
 # ------------------------------------------
