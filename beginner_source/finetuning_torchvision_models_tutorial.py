@@ -502,7 +502,7 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
         """ GoogLeNet or Inception v1
         Be careful, expects (224,224) sized images and has two auxiliary outputs
         """
-        model_ft = models.inception_v3(pretrained=use_pretrained)
+        model_ft = models.googlenet(pretrained=use_pretrained)
         set_parameter_requires_grad(model_ft, feature_extract)
         # Handle the auxilary net
         num_ftrs = model_ft.aux2.fc2.in_features
