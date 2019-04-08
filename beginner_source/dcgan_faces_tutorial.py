@@ -283,7 +283,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # 
 # From the DCGAN paper, the authors specify that all model weights shall
 # be randomly initialized from a Normal distribution with mean=0,
-# stdev=0.2. The ``weights_init`` function takes an initialized model as
+# stdev=0.02. The ``weights_init`` function takes an initialized model as
 # input and reinitializes all convolutional, convolutional-transpose, and
 # batch normalization layers to meet this criteria. This function is
 # applied to the models immediately after initialization.
