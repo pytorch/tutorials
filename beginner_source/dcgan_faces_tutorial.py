@@ -218,7 +218,7 @@ ngpu = 1
 # ----
 # 
 # In this tutorial we will use the `Celeb-A Faces
-# dataset <https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
+# dataset <mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
 # The dataset will download as a file named *img_align_celeba.zip*. Once
