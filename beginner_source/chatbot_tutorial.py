@@ -632,8 +632,8 @@ print("max_target_len:", max_target_len)
 #
 # Finally, if passing a padded batch of sequences to an RNN module, we
 # must pack and unpack padding around the RNN pass using
-# ``torch.nn.utils.rnn.pack_padded_sequence`` and
-# ``torch.nn.utils.rnn.pad_packed_sequence`` respectively.
+# ``nn.utils.rnn.pack_padded_sequence`` and
+# ``nn.utils.rnn.pad_packed_sequence`` respectively.
 #
 # **Computation Graph:**
 #
@@ -679,11 +679,11 @@ class EncoderRNN(nn.Module):
         # Convert word indexes to embeddings
         embedded = self.embedding(input_seq)
         # Pack padded batch of sequences for RNN module
-        packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
+        packed = nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
         # Forward pass through GRU
         outputs, hidden = self.gru(packed, hidden)
         # Unpack padding
-        outputs, _ = torch.nn.utils.rnn.pad_packed_sequence(outputs)
+        outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs)
         # Sum bidirectional GRU outputs
         outputs = outputs[:, :, :self.hidden_size] + outputs[:, : ,self.hidden_size:]
         # Return output and final hidden state
@@ -755,7 +755,7 @@ class EncoderRNN(nn.Module):
 #
 
 # Luong attention layer
-class Attn(torch.nn.Module):
+class Attn(nn.Module):
     def __init__(self, method, hidden_size):
         super(Attn, self).__init__()
         self.method = method
@@ -763,10 +763,10 @@ class Attn(torch.nn.Module):
             raise ValueError(self.method, "is not an appropriate attention method.")
         self.hidden_size = hidden_size
         if self.method == 'general':
-            self.attn = torch.nn.Linear(self.hidden_size, hidden_size)
+            self.attn = nn.Linear(self.hidden_size, hidden_size)
         elif self.method == 'concat':
-            self.attn = torch.nn.Linear(self.hidden_size * 2, hidden_size)
-            self.v = torch.nn.Parameter(torch.FloatTensor(hidden_size))
+            self.attn = nn.Linear(self.hidden_size * 2, hidden_size)
+            self.v = nn.Parameter(torch.FloatTensor(hidden_size))
 
     def dot_score(self, hidden, encoder_output):
         return torch.sum(hidden * encoder_output, dim=2)
@@ -1021,8 +1021,8 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
     loss.backward()
 
     # Clip gradients: gradients are modified in place
-    _ = torch.nn.utils.clip_grad_norm_(encoder.parameters(), clip)
-    _ = torch.nn.utils.clip_grad_norm_(decoder.parameters(), clip)
+    _ = nn.utils.clip_grad_norm_(encoder.parameters(), clip)
+    _ = nn.utils.clip_grad_norm_(decoder.parameters(), clip)
 
     # Adjust model weights
     encoder_optimizer.step()
