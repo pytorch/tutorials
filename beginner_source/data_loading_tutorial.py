@@ -116,6 +116,10 @@ plt.show()
 # applied on the sample. We will see the usefulness of ``transform`` in the
 # next section.
 #
+# .. note::
+#     The first image can return an error during the processing, you can skip is by starting from the second images
+#     in the dataset
+#
 
 class FaceLandmarksDataset(Dataset):
     """Face Landmarks dataset."""
@@ -309,7 +313,7 @@ composed = transforms.Compose([Rescale(256),
 fig = plt.figure()
 sample = face_dataset[65]
 for i, tsfrm in enumerate([scale, crop, composed]):
-    transformed_sample = tsfrm(sample)
+    transformed_sample = composed(sample)
 
     ax = plt.subplot(1, 3, i + 1)
     plt.tight_layout()
