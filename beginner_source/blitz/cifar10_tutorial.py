@@ -77,8 +77,7 @@ testset = torchvision.datasets.CIFAR10(root='./data', train=False,
 testloader = torch.utils.data.DataLoader(testset, batch_size=4,
                                          shuffle=False, num_workers=2)
 
-classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+classes = trainset.classes()
 
 ########################################################################
 # Let us show some of the training images, for fun.
@@ -103,7 +102,7 @@ images, labels = dataiter.next()
 # show images
 imshow(torchvision.utils.make_grid(images))
 # print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+print(' '.join(['%5s' % classes[l] for l in labels.numpy()]))
 
 
 ########################################################################
