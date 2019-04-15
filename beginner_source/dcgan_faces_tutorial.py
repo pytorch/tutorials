@@ -218,7 +218,7 @@ ngpu = 1
 # ----
 # 
 # In this tutorial we will use the `Celeb-A Faces
-# dataset <https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
+# dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
 # The dataset will download as a file named *img_align_celeba.zip*. Once
@@ -283,7 +283,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # 
 # From the DCGAN paper, the authors specify that all model weights shall
 # be randomly initialized from a Normal distribution with mean=0,
-# stdev=0.2. The ``weights_init`` function takes an initialized model as
+# stdev=0.02. The ``weights_init`` function takes an initialized model as
 # input and reinitializes all convolutional, convolutional-transpose, and
 # batch normalization layers to meet this criteria. This function is
 # applied to the models immediately after initialization.
