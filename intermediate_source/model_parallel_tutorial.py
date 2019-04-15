@@ -7,20 +7,21 @@ Model Parallel Best Practices
 Data parallel and model parallel are widely-used distributed training
 techniques. Previous posts have explained how to use
 `DataParallel <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
-to train a neural network on multiple GPUs. ``DataParallel`` replicates the same
-model to all GPUs, where each GPU consumes a different partition of the input
-data. Although it can significantly accelerate the training process, it does not
-work for some use cases where the model is large to fit into a single GPU. This
-post shows how to solve that problem by using model parallel and also shares
-some insights on how to speed up model parallel training.
+to train a neural network on multiple GPUs. ``DataParallel`` replicates the
+same model to all GPUs, where each GPU consumes a different partition of the
+input data. Although it can significantly accelerate the training process, it
+does not work for some use cases where the model is large to fit into a single
+GPU. This post shows how to solve that problem by using model parallel and also
+shares some insights on how to speed up model parallel training.
 
 The high-level idea of model parallel is to place different sub-networks of a
 model onto different devices, and implement the ``forward`` method accordingly
-to move intermediate outputs across devices. As only part of a model operates on
-any individual device, a set of devices can collectively serve a larger model.
-In this post, we will not try to construct huge models and squeeze them into a
-limited number of GPUs. Instead, this post focuses on showing the idea of model
-parallel. It is up to the readers to apply the ideas to real-world applications.
+to move intermediate outputs across devices. As only part of a model operates
+on any individual device, a set of devices can collectively serve a larger
+model. In this post, we will not try to construct huge models and squeeze them
+into a limited number of GPUs. Instead, this post focuses on showing the idea
+of model parallel. It is up to the readers to apply the ideas to real-world
+applications.
 
 Let us start with a toy model that contains two linear layers. To run this
 model on two GPUs, simply put each linear layer on a different GPU, and move
@@ -173,15 +174,18 @@ num_repeat = 10
 
 stmt = "train(model)"
 
-setup = "from __main__ import train, ModelParallelResNet50;" + \
-        "model = ModelParallelResNet50()"
-mp_run_times = timeit.repeat(stmt, setup, number=1, repeat=num_repeat)
+setup = "model = ModelParallelResNet50()"
+# globals arg is only available in Python 3. In Python 2, use the following
+# import __builtin__
+# __builtin__.__dict__.update(locals())
+mp_run_times = timeit.repeat(
+    stmt, setup, number=1, repeat=num_repeat, globals=globals())
 mp_mean, mp_std = np.mean(mp_run_times), np.std(mp_run_times)
 
-setup = "from __main__ import train, num_classes;" + \
-        "import torchvision.models as models;" + \
+setup = "import torchvision.models as models;" + \
         "model = models.resnet50(num_classes=num_classes).to('cuda:0')"
-rn_run_times = timeit.repeat(stmt, setup, number=1, repeat=num_repeat)
+rn_run_times = timeit.repeat(
+    stmt, setup, number=1, repeat=num_repeat, globals=globals())
 rn_mean, rn_std = np.mean(rn_run_times), np.std(rn_run_times)
 
 
@@ -212,10 +216,11 @@ plot([mp_mean, rn_mean],
 # ``4.02/3.75-1=7%`` longer than the existing single-GPU implementation. So we
 # can conclude there is roughly 7% overhead in copying tensors back and forth
 # across the GPUs. There are rooms for improvements, as we know one of the two
-# GPUs is sitting idle throughout the execution. One option is to further divide
-# each batch into a pipeline of splits, such that when one split reaches the
-# second sub-network, the following split can be fed into the first sub-network.
-# In this way, two consecutive splits can run concurrently on two GPUs.
+# GPUs is sitting idle throughout the execution. One option is to further
+# divide each batch into a pipeline of splits, such that when one split reaches
+# the second sub-network, the following split can be fed into the first
+# sub-network. In this way, two consecutive splits can run concurrently on two
+# GPUs.
 
 ######################################################################
 # Speed Up by Pipelining Inputs
@@ -223,7 +228,8 @@ plot([mp_mean, rn_mean],
 #
 # In the following experiments, we further divide each 120-image batch into
 # 20-image splits. As PyTorch launches CUDA operations asynchronizely, the
-# implementation does not need to spawn multiple threads to achieve concurrency.
+# implementation does not need to spawn multiple threads to achieve
+# concurrency.
 
 
 class PipelineParallelResNet50(ModelParallelResNet50):
@@ -251,9 +257,9 @@ class PipelineParallelResNet50(ModelParallelResNet50):
         return torch.cat(ret)
 
 
-setup = "from __main__ import train, PipelineParallelResNet50;" + \
-        "model = PipelineParallelResNet50()"
-pp_run_times = timeit.repeat(stmt, setup, number=1, repeat=num_repeat)
+setup = "model = PipelineParallelResNet50()"
+pp_run_times = timeit.repeat(
+    stmt, setup, number=1, repeat=num_repeat, globals=globals())
 pp_mean, pp_std = np.mean(pp_run_times), np.std(pp_run_times)
 
 plot([mp_mean, rn_mean, pp_mean],
@@ -266,16 +272,17 @@ plot([mp_mean, rn_mean, pp_mean],
 # current streams on the source and the destination devices. If you create
 # multiple streams, you have to make sure that copy operations are properly
 # synchronized. Writing the source tensor or reading/writing the destination
-# tensor before finishing the copy operation can lead to undefined behavior. The
-# above implementation only uses default streams on both source and destination
-# devices, hence it is not necessary to enforce additional synchronizations.
+# tensor before finishing the copy operation can lead to undefined behavior.
+# The above implementation only uses default streams on both source and
+# destination devices, hence it is not necessary to enforce additional
+# synchronizations.
 #
 # .. figure:: /_static/img/model-parallel-images/mp_vs_rn_vs_pp.png
 #    :alt:
 #
-# The experiment result shows that, pipelining inputs to model parallel ResNet50
-# speeds up the training process by roughly ``3.75/2.51-1=49%``. It is still
-# quite far away from the ideal 100% speedup. As we have introduced a new
+# The experiment result shows that, pipelining inputs to model parallel
+# ResNet50 speeds up the training process by roughly ``3.75/2.51-1=49%``. It is
+# still quite far away from the ideal 100% speedup. As we have introduced a new
 # parameter ``split_sizes`` in our pipeline parallel implementation, it is
 # unclear how the new parameter affects the overall training time. Intuitively
 # speaking, using small ``split_size`` leads to many tiny CUDA kernel launch,
@@ -290,10 +297,9 @@ stds = []
 split_sizes = [1, 3, 5, 8, 10, 12, 20, 40, 60]
 
 for split_size in split_sizes:
-    setup = "from __main__ import train, PipelineParallelResNet50;" + \
-            "from __main__ import split_size;" + \
-            "model = PipelineParallelResNet50(split_size=split_size)"
-    pp_run_times = timeit.repeat(stmt, setup, number=1, repeat=num_repeat)
+    setup = "model = PipelineParallelResNet50(split_size=%d)" % split_size
+    pp_run_times = timeit.repeat(
+        stmt, setup, number=1, repeat=num_repeat, globals=globals())
     means.append(np.mean(pp_run_times))
     stds.append(np.std(pp_run_times))
 
