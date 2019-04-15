@@ -32,9 +32,8 @@ import torch
 import torch.distributed as dist
 import torch.nn as nn
 import torch.optim as optim
-import torch.multiprocessing as multiprocessing
+import torch.multiprocessing as mp
 
-from torch.multiprocessing import Process
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
@@ -71,8 +70,13 @@ class ToyModel(nn.Module):
         return self.net2(self.relu(self.net1(x)))
 
 
-def demo_basic(rank, world_size, device_ids):
+def demo_basic(rank, world_size):
     setup(rank, world_size)
+
+    # setup devices for this process, rank 1 uses GPUs [0, 1, 2, 3] and
+    # rank 2 uses GPUs [4, 5, 6, 7].
+    n = torch.cuda.device_count() // world_size
+    device_ids = list(range(rank * n, (rank + 1) * n))
 
     # create model and move it to device_ids[0]
     model = ToyModel().to(device_ids[0])
@@ -92,23 +96,11 @@ def demo_basic(rank, world_size, device_ids):
 
 
 def run_demo(demo_fn, world_size):
-    per_process = torch.cuda.device_count() // world_size
-    processes = []
-    for rank in range(world_size):
-        # setup devices for this process, rank 1 uses GPUs [0, 1, 2, 3] and
-        # rank 2 uses GPUs [4, 5, 6, 7].
-        device_ids = list(range(rank * per_process, (rank + 1) * per_process))
-        p = Process(target=demo_fn, args=(rank, world_size, device_ids))
-        p.start()
-        processes.append(p)
+    mp.spawn(demo_fn,
+             args=(world_size,),
+             nprocs=world_size,
+             join=True)
 
-    for p in processes:
-        p.join()
-
-
-if __name__ == "__main__":
-    multiprocessing.set_start_method('spawn')
-    run_demo(demo_basic, 2)
 
 ######################################################################
 # As you can see, DDP wraps lower level distributed communication details, and
@@ -153,8 +145,13 @@ if __name__ == "__main__":
 # set of devices.
 
 
-def demo_checkpoint(rank, world_size, device_ids):
+def demo_checkpoint(rank, world_size):
     setup(rank, world_size)
+
+    # setup devices for this process, rank 1 uses GPUs [0, 1, 2, 3] and
+    # rank 2 uses GPUs [4, 5, 6, 7].
+    n = torch.cuda.device_count() // world_size
+    device_ids = list(range(rank * n, (rank + 1) * n))
 
     model = ToyModel().to(device_ids[0])
     # output_device defaults to device_ids[0]
@@ -212,9 +209,11 @@ class ToyMpModel(nn.Module):
 
     def forward(self, x):
         # avoid hard-coding devices
-        x = x.to(self.net1.weight.device)
+        dev0 = self.net1.weight.device
+        dev1 = self.net2.weight.device
+        x = x.to(dev0)
         x = self.relu(self.net1(x))
-        x = x.to(self.net2.weight.device)
+        x = x.to(dev1)
         return self.net2(x)
 
 ######################################################################
@@ -257,3 +256,11 @@ def demo_model_parallel(rank, world_size):
     optimizer.step()
 
     cleanup()
+
+
+if __name__ == "__main__":
+    run_demo(demo_basic, 2)
+    run_demo(demo_checkpoint, 2)
+
+    if torch.cuda.device_count() >= 8:
+        run_demo(demo_model_parallel, 2)
