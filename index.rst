@@ -212,6 +212,11 @@ Production Usage
    :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
+  :tooltip: Train large models with multiple GPUs using model parallel
+  :description: :doc:`/intermediate/model_parallel_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
