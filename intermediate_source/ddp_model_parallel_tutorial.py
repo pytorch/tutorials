@@ -13,21 +13,23 @@ replicates the input module to devices specified in `device_ids`, scatters
 inputs along the batch dimension accordingly, and gathers outputs to the
 `output_device`, which is similar to
 `DataParallel <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_.
-Across processes, DDP inserts necessary synchronizations in forward and
-backward passes. It is up to users to map processes to available resources, as
-long as processes do not share GPU devices. The
-recommended (usually fastest) approach is to create a process for every module
-replica, i.e., no module replication within a process. For demonstration
-purpose, this tutorial will create two processes on a 8-GPU machine, with each
-exclusively occupying 4 GPUs.
-
-**Basic Usage**
-
-To create DDP modules, first set up process groups properly. More details can be
-found in `WRITING DISTRIBUTED APPLICATIONS WITH PYTORCH <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_.
+Across processes, DDP inserts necessary parameter synchronizations in forward
+passes and gradient synchronizations in backward passes. It is up to users to
+map processes to available resources, as long as processes do not share GPU
+devices. The recommended (usually fastest) approach is to create a process for
+every module replica, i.e., no module replication within a process.
 """
 
+######################################################################
+# Basic Use Case
+# =======================
+#
+# To create DDP modules, first set up process groups properly. More details can
+# be found in
+# `WRITING DISTRIBUTED APPLICATIONS WITH PYTORCH <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`_.
+
 import os
+import tempfile
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -160,7 +162,7 @@ def demo_checkpoint(rank, world_size):
     loss_fn = nn.MSELoss()
     optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
 
-    CHECKPOINT_PATH = "./model.checkpoint"
+    CHECKPOINT_PATH = tempfile.gettempdir() + "/model.checkpoint"
     if rank == 0:
         # All processes should see same parameters as they all start from same
         # random parameters and gradients are synchronized in backward passes.
@@ -178,11 +180,18 @@ def demo_checkpoint(rank, world_size):
         torch.load(CHECKPOINT_PATH, map_location=map_location))
 
     optimizer.zero_grad()
-    outputs = ddp_model(torch.randn(20, 10).to(device_ids[0]))
+    outputs = ddp_model(torch.randn(20, 10))
     labels = torch.randn(20, 5).to(device_ids[0])
     loss_fn = nn.MSELoss()
     loss_fn(outputs, labels).backward()
     optimizer.step()
+
+    # Use a barrier() to make sure that all processes have finished reading the
+    # checkpoint
+    dist.barrier()
+
+    if rank == 0:
+        os.remove(CHECKPOINT_PATH)
 
     cleanup()
 
@@ -191,67 +200,52 @@ def demo_checkpoint(rank, world_size):
 # Combine DDP with Model Parallelism
 # =======================
 #
-# DDP also works with multi-GPU models, i.e., you may use model parallelism in
-# each replica and data parallelism across replicas. This is especially helpful
-# when training large models with a huge amount of data. When using this
-# feature, the multi-GPU model needs to be carefully implemented to avoid
-# hard-coded devices, because different model replicas will be placed to
-# different devices. In the example below, the `forward` pass explicitly uses
-# the device on layer weights instead of `dev0` and `dev1`.
+# DDP also works with multi-GPU models, but replications within a process are
+# not supported. You need to create one process per module replica, which
+# usually leads to better performance compared to multiple replicas per process.
+# DDP wrapping multi-GPU models is especially helpful when training large
+# models with a huge amount of data. When using this feature, the multi-GPU
+# model needs to be carefully implemented to avoid hard-coded devices, because
+# different model replicas will be placed to different devices.
 
 
 class ToyMpModel(nn.Module):
     def __init__(self, dev0, dev1):
         super(ToyMpModel, self).__init__()
+        self.dev0 = dev0
+        self.dev1 = dev1
         self.net1 = torch.nn.Linear(10, 10).to(dev0)
         self.relu = torch.nn.ReLU().to(dev0)
         self.net2 = torch.nn.Linear(10, 5).to(dev1)
 
     def forward(self, x):
-        # avoid hard-coding devices
-        dev0 = self.net1.weight.device
-        dev1 = self.net2.weight.device
-        x = x.to(dev0)
+        x = x.to(self.dev0)
         x = self.relu(self.net1(x))
-        x = x.to(dev1)
+        x = x.to(self.dev1)
         return self.net2(x)
 
 ######################################################################
-# To pass a multi-GPU model to DDP, you need to provide a 2D list for
-# `device_ids`, where devices in a row are exclusively used by one model
-# replica. The devices in `device_ids[0]` must match devices of the input
-# model, and the order does not matter. DDP will find model parameters and
-# buffers on `devices_ids[0][i]` and replicate them to `devices_ids[j][i]` for
-# all replica `j`. Let us walk through an example. Say you construct a
-# `ToyMpModel` object using `dev0=0` and `dev1=1`. So `net1` and `relu` resides
-# on device 0 and `net2` resides on device 1. If you do not need multiploe
-# model replicas within a DDP process, pass `[[0, 1]]` to `device_ids`. If you
-# need two replicas, you may set `device_ids` to `[[0, 1], [2, 3]]` instead.
-# DDP will create a model replica on devices 2 and 3, with `net1` and `relu`
-# replicated to 2, and `net2` replicated to 3.
+# When passing a multi-GPU model to DDP, `device_ids` and `output_device` must
+# NOT be set. Input and output data will be placed in proper devices by either
+# the application or the model `forward()` method.
 
 
 def demo_model_parallel(rank, world_size):
     setup(rank, world_size)
 
-    # setup mp_model and devices for this process, rank 1 uses GPUs
-    # [[0, 1], [2, 3]] and rank 2 uses GPUs [[4, 5], [6, 7]].
-    if rank == 0:
-        mp_model = ToyMpModel(0, 1)
-        device_ids = [[0, 1], [2, 3]]
-    else:
-        mp_model = ToyMpModel(4, 5)
-        device_ids = [[4, 5], [6, 7]]
-
-    ddp_mp_model = DDP(mp_model, device_ids=device_ids)
+    # setup mp_model and devices for this process
+    dev0 = rank * 2
+    dev1 = rank * 2 + 1
+    mp_model = ToyMpModel(dev0, dev1)
+    ddp_mp_model = DDP(mp_model)
 
     loss_fn = nn.MSELoss()
     optimizer = optim.SGD(ddp_mp_model.parameters(), lr=0.001)
 
     optimizer.zero_grad()
-    # output_device defaults to device_ids[0][0]
+    # outputs will be on dev1
     outputs = ddp_mp_model(torch.randn(20, 10))
-    labels = torch.randn(20, 5).to(device_ids[0][0])
+    labels = torch.randn(20, 5).to(dev1)
     loss_fn(outputs, labels).backward()
     optimizer.step()
 
@@ -263,4 +257,4 @@ if __name__ == "__main__":
     run_demo(demo_checkpoint, 2)
 
     if torch.cuda.device_count() >= 8:
-        run_demo(demo_model_parallel, 2)
+        run_demo(demo_model_parallel, 4)
