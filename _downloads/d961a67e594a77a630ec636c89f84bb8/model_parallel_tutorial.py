@@ -37,11 +37,12 @@ class ToyModel(nn.Module):
     def __init__(self):
         super(ToyModel, self).__init__()
         self.net1 = torch.nn.Linear(10, 10).to('cuda:0')
-        self.relu = torch.nn.ReLU().to('cuda:0')
+        self.relu = torch.nn.ReLU()
         self.net2 = torch.nn.Linear(10, 5).to('cuda:1')
 
     def forward(self, x):
-        return self.net2(self.net1(x.to('cuda:0')).to('cuda:1'))
+        x = self.relu(self.net1(x.to('cuda:0')))
+        return self.net2(x.to('cuda:1'))
 
 ######################################################################
 # Note that, the above ``ToyModel`` looks very similar to how one would
@@ -166,7 +167,7 @@ def train(model):
 
 
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
+plt.switch_backend('Agg')
 import numpy as np
 import timeit
 
@@ -199,6 +200,7 @@ def plot(means, stds, labels, fig_name):
     ax.yaxis.grid(True)
     plt.tight_layout()
     plt.savefig(fig_name)
+    plt.close(fig)
 
 
 plot([mp_mean, rn_mean],
@@ -312,6 +314,7 @@ ax.set_xticks(split_sizes)
 ax.yaxis.grid(True)
 plt.tight_layout()
 plt.savefig("split_size_tradeoff.png")
+plt.close(fig)
 
 ######################################################################
 #

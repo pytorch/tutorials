@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Custom C++ and CUDA Extensions — PyTorch Tutorials 1.1.0.dev20190416 documentation</title>
+<title>Custom C++ and CUDA Extensions — PyTorch Tutorials 1.1.0.dev20190417 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.1.0.dev20190416
+                  1.1.0.dev20190417
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -243,15 +243,15 @@ look something like this:</p>
         <span class="c1"># Split the combined gate weight matrix into its components.</span>
         <span class="n">gates</span> <span class="o">=</span> <span class="n">gate_weights</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">input_gate</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">output_gate</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">input_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">output_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="c1"># Here we use an ELU instead of the usual tanh.</span>
         <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">elu</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 
         <span class="c1"># Compute the new cell state.</span>
         <span class="n">new_cell</span> <span class="o">=</span> <span class="n">old_cell</span> <span class="o">+</span> <span class="n">candidate_cell</span> <span class="o">*</span> <span class="n">input_gate</span>
         <span class="c1"># Compute the new hidden state and output.</span>
-        <span class="n">new_h</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">output_gate</span>
+        <span class="n">new_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">output_gate</span>
 
         <span class="k">return</span> <span class="n">new_h</span><span class="p">,</span> <span class="n">new_cell</span>
 </pre></div>
@@ -305,7 +305,7 @@ looks as simple as this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
 <span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">CppExtension</span><span class="p">,</span> <span class="n">BuildExtension</span>
 
-<span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'lltm'</span><span class="p">,</span>
+<span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'lltm_cpp'</span><span class="p">,</span>
       <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span><span class="n">CppExtension</span><span class="p">(</span><span class="s1">'lltm'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'lltm.cpp'</span><span class="p">])],</span>
       <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">BuildExtension</span><span class="p">})</span>
 </pre></div>
@@ -315,7 +315,7 @@ looks as simple as this:</p>
 the language of the extension to C++. The equivalent vanilla <code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>
 code would simply be:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setuptools</span><span class="o">.</span><span class="n">Extension</span><span class="p">(</span>
-   <span class="n">name</span><span class="o">=</span><span class="s1">'lltm'</span><span class="p">,</span>
+   <span class="n">name</span><span class="o">=</span><span class="s1">'lltm_cpp'</span><span class="p">,</span>
    <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s1">'lltm.cpp'</span><span class="p">],</span>
    <span class="n">include_dirs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">include_paths</span><span class="p">(),</span>
    <span class="n">language</span><span class="o">=</span><span class="s1">'c++'</span><span class="p">)</span>
@@ -333,17 +333,17 @@ which goes into <code class="docutils literal notranslate"><span class="pre">llt
 backward pass is the derivative of the sigmoid. This is a small enough piece of
 code to discuss the overall environment that is available to us when writing C++
 extensions:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/extension.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
 
-<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
   <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">&lt;torch/torch.h&gt;</span></code> is the one-stop header to include all the necessary PyTorch
+<p><code class="docutils literal notranslate"><span class="pre">&lt;torch/extension.h&gt;</span></code> is the one-stop header to include all the necessary PyTorch
 bits to write C++ extensions. It includes:</p>
 <ul class="simple">
 <li>The ATen library, which is our primary API for tensor computation,</li>
@@ -354,7 +354,7 @@ bits to write C++ extensions. It includes:</p>
 PyTorch’s tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
-<code class="xref py py-class docutils literal notranslate"><span class="pre">at::Tensor</span></code>. Its full API can be inspected <a class="reference external" href="https://pytorch.org/cppdocs/api/classat_1_1_tensor.html">here</a>. Notice
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch::Tensor</span></code>. Its full API can be inspected <a class="reference external" href="https://pytorch.org/cppdocs/api/classat_1_1_tensor.html">here</a>. Notice
 also that we can include <code class="docutils literal notranslate"><span class="pre">&lt;iostream&gt;</span></code> or <em>any other C or C++ header</em> – we have
 the full power of C++11 at our disposal.</p>
 <div class="section" id="forward-pass">
@@ -363,22 +363,22 @@ the full power of C++11 at our disposal.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
 
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_forward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">auto</span> <span class="n">X</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">old_h</span><span class="p">,</span> <span class="n">input</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">old_h</span><span class="p">,</span> <span class="n">input</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
 
-  <span class="k">auto</span> <span class="n">gate_weights</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">addmm</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">weights</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+  <span class="k">auto</span> <span class="n">gate_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">addmm</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">weights</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
   <span class="k">auto</span> <span class="n">gates</span> <span class="o">=</span> <span class="n">gate_weights</span><span class="p">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
 
-  <span class="k">auto</span> <span class="n">input_gate</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-  <span class="k">auto</span> <span class="n">output_gate</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-  <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">elu</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="cm">/*alpha=*/</span><span class="mf">1.0</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">input_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+  <span class="k">auto</span> <span class="n">output_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+  <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">elu</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="cm">/*alpha=*/</span><span class="mf">1.0</span><span class="p">);</span>
 
   <span class="k">auto</span> <span class="n">new_cell</span> <span class="o">=</span> <span class="n">old_cell</span> <span class="o">+</span> <span class="n">candidate_cell</span> <span class="o">*</span> <span class="n">input_gate</span><span class="p">;</span>
-  <span class="k">auto</span> <span class="n">new_h</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">output_gate</span><span class="p">;</span>
+  <span class="k">auto</span> <span class="n">new_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">output_gate</span><span class="p">;</span>
 
   <span class="k">return</span> <span class="p">{</span><span class="n">new_h</span><span class="p">,</span>
           <span class="n">new_cell</span><span class="p">,</span>
@@ -402,28 +402,28 @@ a nice Python binding. The backward function is slightly more involved, so
 we’ll not dig deeper into the code (if you are interested, <a class="reference external" href="https://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
 information on this):</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// tanh'(z) = 1 - tanh^2(z)</span>
-<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">.</span><span class="n">tanh</span><span class="p">().</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="c1">// elu'(z) = relu'(z) + { alpha * exp(z) if (alpha * (exp(z) - 1)) &lt; 0, else 0}</span>
-<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">,</span> <span class="n">at</span><span class="o">::</span><span class="n">Scalar</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Scalar</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">auto</span> <span class="n">e</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">exp</span><span class="p">();</span>
   <span class="k">auto</span> <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
   <span class="k">return</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">mask</span><span class="p">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">e</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_backward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">auto</span> <span class="n">d_output_gate</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_backward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">d_output_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">;</span>
   <span class="k">auto</span> <span class="n">d_tanh_new_cell</span> <span class="o">=</span> <span class="n">output_gate</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">;</span>
   <span class="k">auto</span> <span class="n">d_new_cell</span> <span class="o">=</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">)</span> <span class="o">*</span> <span class="n">d_tanh_new_cell</span> <span class="o">+</span> <span class="n">grad_cell</span><span class="p">;</span>
 
@@ -437,7 +437,7 @@ information on this):</p>
   <span class="n">d_candidate_cell</span> <span class="o">*=</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
 
   <span class="k">auto</span> <span class="n">d_gates</span> <span class="o">=</span>
-      <span class="n">at</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">d_input_gate</span><span class="p">,</span> <span class="n">d_output_gate</span><span class="p">,</span> <span class="n">d_candidate_cell</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
+      <span class="n">torch</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">d_input_gate</span><span class="p">,</span> <span class="n">d_output_gate</span><span class="p">,</span> <span class="n">d_candidate_cell</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
 
   <span class="k">auto</span> <span class="n">d_weights</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">t</span><span class="p">().</span><span class="n">mm</span><span class="p">(</span><span class="n">X</span><span class="p">);</span>
   <span class="k">auto</span> <span class="n">d_bias</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">sum</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">0</span><span class="p">,</span> <span class="cm">/*keepdim=*/</span><span class="nb">true</span><span class="p">);</span>
@@ -488,42 +488,47 @@ should look something like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>running install
 running bdist_egg
 running egg_info
-writing lltm.egg-info/PKG-INFO
-writing dependency_links to lltm.egg-info/dependency_links.txt
-writing top-level names to lltm.egg-info/top_level.txt
-reading manifest file 'lltm.egg-info/SOURCES.txt'
-writing manifest file 'lltm.egg-info/SOURCES.txt'
+creating lltm_cpp.egg-info
+writing lltm_cpp.egg-info/PKG-INFO
+writing dependency_links to lltm_cpp.egg-info/dependency_links.txt
+writing top-level names to lltm_cpp.egg-info/top_level.txt
+writing manifest file 'lltm_cpp.egg-info/SOURCES.txt'
+reading manifest file 'lltm_cpp.egg-info/SOURCES.txt'
+writing manifest file 'lltm_cpp.egg-info/SOURCES.txt'
 installing library code to build/bdist.linux-x86_64/egg
 running install_lib
 running build_ext
-building 'lltm' extension
-gcc -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include/TH -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include/THC -I~/local/miniconda/include/python3.6m -c lltm.cpp -o build/temp.linux-x86_64-3.6/lltm.o -DTORCH_EXTENSION_NAME=lltm -std=c++11
+building 'lltm_cpp' extension
+creating build
+creating build/temp.linux-x86_64-3.7
+gcc -pthread -B ~/local/miniconda/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.7/site-packages/torch/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/torch/csrc/api/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/TH -I~/local/miniconda/lib/python3.7/site-packages/torch/include/THC -I~/local/miniconda/include/python3.7m -c lltm.cpp -o build/temp.linux-x86_64-3.7/lltm.o -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME=lltm_cpp -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++11
 cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid for C/ObjC but not for C++
-g++ -pthread -shared -B ~/local/miniconda/compiler_compat -L~/local/miniconda/lib -Wl,-rpath=~/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot=/ build/temp.linux-x86_64-3.6/lltm.o -o build/lib.linux-x86_64-3.6/lltm.cpython-36m-x86_64-linux-gnu.so
+creating build/lib.linux-x86_64-3.7
+g++ -pthread -shared -B ~/local/miniconda/compiler_compat -L~/local/miniconda/lib -Wl,-rpath=~/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot=/ build/temp.linux-x86_64-3.7/lltm.o -o build/lib.linux-x86_64-3.7/lltm_cpp.cpython-37m-x86_64-linux-gnu.so
+creating build/bdist.linux-x86_64
 creating build/bdist.linux-x86_64/egg
-copying build/lib.linux-x86_64-3.6/lltm_cuda.cpython-36m-x86_64-linux-gnu.so -&gt; build/bdist.linux-x86_64/egg
-copying build/lib.linux-x86_64-3.6/lltm.cpython-36m-x86_64-linux-gnu.so -&gt; build/bdist.linux-x86_64/egg
-creating stub loader for lltm.cpython-36m-x86_64-linux-gnu.so
-byte-compiling build/bdist.linux-x86_64/egg/lltm.py to lltm.cpython-36.pyc
+copying build/lib.linux-x86_64-3.7/lltm_cpp.cpython-37m-x86_64-linux-gnu.so -&gt; build/bdist.linux-x86_64/egg
+creating stub loader for lltm_cpp.cpython-37m-x86_64-linux-gnu.so
+byte-compiling build/bdist.linux-x86_64/egg/lltm_cpp.py to lltm_cpp.cpython-37.pyc
 creating build/bdist.linux-x86_64/egg/EGG-INFO
-copying lltm.egg-info/PKG-INFO -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
-copying lltm.egg-info/SOURCES.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
-copying lltm.egg-info/dependency_links.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
-copying lltm.egg-info/top_level.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
+copying lltm_cpp.egg-info/PKG-INFO -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
+copying lltm_cpp.egg-info/SOURCES.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
+copying lltm_cpp.egg-info/dependency_links.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
+copying lltm_cpp.egg-info/top_level.txt -&gt; build/bdist.linux-x86_64/egg/EGG-INFO
 writing build/bdist.linux-x86_64/egg/EGG-INFO/native_libs.txt
 zip_safe flag not set; analyzing archive contents...
-__pycache__.lltm.cpython-36: module references __file__
-creating 'dist/lltm-0.0.0-py3.6-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
+__pycache__.lltm_cpp.cpython-37: module references __file__
+creating 'dist/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
 removing 'build/bdist.linux-x86_64/egg' (and everything under it)
-Processing lltm-0.0.0-py3.6-linux-x86_64.egg
-removing '~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg' (and everything under it)
-creating ~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg
-Extracting lltm-0.0.0-py3.6-linux-x86_64.egg to ~/local/miniconda/lib/python3.6/site-packages
-lltm 0.0.0 is already the active version in easy-install.pth
+Processing lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+removing '~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg' (and everything under it)
+creating ~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+Extracting lltm_cpp-0.0.0-py3.7-linux-x86_64.egg to ~/local/miniconda/lib/python3.7/site-packages
+lltm-cpp 0.0.0 is already the active version in easy-install.pth
 
-Installed ~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg
-Processing dependencies for lltm==0.0.0
-Finished processing dependencies for lltm==0.0.0
+Installed ~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+Processing dependencies for lltm-cpp==0.0.0
+Finished processing dependencies for lltm-cpp==0.0.0
 </pre></div>
 </div>
 <p>A small note on compilers: Due to ABI versioning issues, the compiler you use to
@@ -538,8 +543,8 @@ name you specified in your <code class="docutils literal notranslate"><span clas
 <span class="pre">torch</span></code> first, as this will resolve some symbols that the dynamic linker must
 see:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">lltm</span>
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">lltm</span><span class="o">.</span><span class="n">forward</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">lltm_cpp</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">lltm_cpp</span><span class="o">.</span><span class="n">forward</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">lltm</span><span class="o">.</span><span class="n">PyCapsule</span><span class="o">.</span><span class="n">forward</span><span class="o">&gt;</span>
 </pre></div>
 </div>
@@ -547,7 +552,7 @@ see:</p>
 matches our C++ code:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">help</span><span class="p">(</span><span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
 <span class="n">forward</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="n">method</span> <span class="n">of</span> <span class="n">builtins</span><span class="o">.</span><span class="n">PyCapsule</span> <span class="n">instance</span>
-    <span class="n">forward</span><span class="p">(</span><span class="n">arg0</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg1</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg2</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg3</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg4</span><span class="p">:</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">forward</span><span class="p">(</span><span class="n">arg0</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg1</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg2</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg3</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg4</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">]</span>
 
     <span class="n">LLTM</span> <span class="n">forward</span>
 </pre></div>
@@ -559,12 +564,12 @@ class citizens of PyTorch:</p>
 <span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="c1"># Our module!</span>
-<span class="kn">import</span> <span class="nn">lltm</span>
+<span class="kn">import</span> <span class="nn">lltm_cpp</span>
 
 <span class="k">class</span> <span class="nc">LLTMFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">):</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">lltm_cpp</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">)</span>
         <span class="n">new_h</span><span class="p">,</span> <span class="n">new_cell</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">weights</span><span class="p">]</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="o">*</span><span class="n">variables</span><span class="p">)</span>
@@ -573,7 +578,7 @@ class citizens of PyTorch:</p>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_h</span><span class="p">,</span> <span class="n">grad_cell</span><span class="p">):</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">lltm</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">lltm_cpp</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span>
             <span class="n">grad_h</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="n">grad_cell</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="o">*</span><span class="n">ctx</span><span class="o">.</span><span class="n">saved_variables</span><span class="p">)</span>
         <span class="n">d_old_h</span><span class="p">,</span> <span class="n">d_input</span><span class="p">,</span> <span class="n">d_weights</span><span class="p">,</span> <span class="n">d_bias</span><span class="p">,</span> <span class="n">d_old_cell</span> <span class="o">=</span> <span class="n">outputs</span>
         <span class="k">return</span> <span class="n">d_input</span><span class="p">,</span> <span class="n">d_weights</span><span class="p">,</span> <span class="n">d_bias</span><span class="p">,</span> <span class="n">d_old_h</span><span class="p">,</span> <span class="n">d_old_cell</span>
@@ -715,7 +720,7 @@ function in PyTorch’s API called <code class="xref py py-func docutils literal
 the LLTM, this would look as simple as this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">load</span>
 
-<span class="n">lltm</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"lltm"</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s2">"lltm.cpp"</span><span class="p">])</span>
+<span class="n">lltm_cpp</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"lltm_cpp"</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s2">"lltm.cpp"</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Here, we provide the function with the same information as for
@@ -729,10 +734,9 @@ the LLTM, this would look as simple as this:</p>
 <p>In fact, if you pass <code class="docutils literal notranslate"><span class="pre">verbose=True</span></code> to <code class="xref py py-func docutils literal notranslate"><span class="pre">cpp_extension.load()</span></code>, you will
 be informed about the process:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Using</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span> <span class="k">as</span> <span class="n">PyTorch</span> <span class="n">extensions</span> <span class="n">root</span><span class="o">...</span>
-<span class="n">Creating</span> <span class="n">extension</span> <span class="n">directory</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span><span class="o">/</span><span class="n">lltm</span><span class="o">...</span>
-<span class="n">Emitting</span> <span class="n">ninja</span> <span class="n">build</span> <span class="n">file</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span><span class="o">/</span><span class="n">lltm</span><span class="o">/</span><span class="n">build</span><span class="o">.</span><span class="n">ninja</span><span class="o">...</span>
-<span class="n">Building</span> <span class="n">extension</span> <span class="n">module</span> <span class="n">lltm</span><span class="o">...</span>
-<span class="n">Loading</span> <span class="n">extension</span> <span class="n">module</span> <span class="n">lltm</span><span class="o">...</span>
+<span class="n">Emitting</span> <span class="n">ninja</span> <span class="n">build</span> <span class="n">file</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">torch_extensions</span><span class="o">/</span><span class="n">lltm_cpp</span><span class="o">/</span><span class="n">build</span><span class="o">.</span><span class="n">ninja</span><span class="o">...</span>
+<span class="n">Building</span> <span class="n">extension</span> <span class="n">module</span> <span class="n">lltm_cpp</span><span class="o">...</span>
+<span class="n">Loading</span> <span class="n">extension</span> <span class="n">module</span> <span class="n">lltm_cpp</span><span class="o">...</span>
 </pre></div>
 </div>
 <p>The resulting Python module will be exactly the same as produced by setuptools,
@@ -767,29 +771,29 @@ each compiler takes care of files it knows best to compile. Ultimately, they
 will be linked into one shared library that is available to us from Python
 code.</p>
 <p>We’ll start with the C++ file, which we’ll call <code class="docutils literal notranslate"><span class="pre">lltm_cuda.cpp</span></code>, for example:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/torch.h&gt;</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/extension.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
 
 <span class="c1">// CUDA forward declarations</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">);</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_backward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_backward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">);</span>
 
 <span class="c1">// C++ interface</span>
 
@@ -797,12 +801,12 @@ code.</p>
 <span class="cp">#define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")</span>
 <span class="cp">#define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_forward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_forward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">weights</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">bias</span><span class="p">);</span>
@@ -812,16 +816,16 @@ code.</p>
   <span class="k">return</span> <span class="nf">lltm_cuda_forward</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_backward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_backward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">grad_h</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">grad_cell</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">input_gate</span><span class="p">);</span>
@@ -858,7 +862,7 @@ with the same name but different extensions, so if you use the <code class="docu
 method instead of the JIT method, you must give your CUDA file a different name
 than your C++ file (for the JIT method, <code class="docutils literal notranslate"><span class="pre">lltm.cpp</span></code> and <code class="docutils literal notranslate"><span class="pre">lltm.cu</span></code> would work
 fine). Let’s take a small peek at what this file will look like:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ATen/ATen.h&gt;</span><span class="cp"></span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;torch/extension.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#include</span> <span class="cpf">&lt;cuda.h&gt;</span><span class="cp"></span>
 <span class="cp">#include</span> <span class="cpf">&lt;cuda_runtime.h&gt;</span><span class="cp"></span>
@@ -904,23 +908,23 @@ we’ll need:</p>
 that performs operations we don’t wish to explicitly write by hand and calls
 into CUDA kernels, and then the actual CUDA kernel for the parts we want to
 speed up. For the forward pass, the first function should look like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">auto</span> <span class="n">X</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">old_h</span><span class="p">,</span> <span class="n">input</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">gates</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">addmm</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">weights</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">old_h</span><span class="p">,</span> <span class="n">input</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">gates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">addmm</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">weights</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
 
   <span class="k">const</span> <span class="k">auto</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">old_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
   <span class="k">const</span> <span class="k">auto</span> <span class="n">state_size</span> <span class="o">=</span> <span class="n">old_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 
-  <span class="k">auto</span> <span class="n">new_h</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">new_cell</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">input_gate</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">output_gate</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">new_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">new_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">input_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">output_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
 
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
   <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
@@ -949,9 +953,9 @@ need a way of determining at runtime what type a tensor is and then selectively
 call functions with the corresponding correct type signature. Done manually,
 this would (conceptually) look something like this:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">switch</span> <span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">type</span><span class="p">().</span><span class="n">scalarType</span><span class="p">())</span> <span class="p">{</span>
-  <span class="k">case</span> <span class="n">at</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Double</span><span class="p">:</span>
+  <span class="k">case</span> <span class="n">torch</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Double</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">function</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">());</span>
-  <span class="k">case</span> <span class="n">at</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Float</span><span class="p">:</span>
+  <span class="k">case</span> <span class="n">torch</span><span class="o">::</span><span class="n">ScalarType</span><span class="o">::</span><span class="nl">Float</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">function</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
   <span class="p">...</span>
 <span class="p">}</span>
@@ -1009,60 +1013,183 @@ help.</p>
 pointwise operations entirely in parallel for each individual component in our
 gate matrices. If you imagine having to do this with a giant <code class="docutils literal notranslate"><span class="pre">for</span></code> loop over
 a million elements in serial, you can see why this would be much faster.</p>
+<div class="section" id="using-accessors">
+<h3>Using accessors<a class="headerlink" href="#using-accessors" title="Permalink to this headline">¶</a></h3>
+<p>You can see in the CUDA kernel that we work directly on pointers with the right
+type. Indeed, working directly with high level type agnostic tensors inside cuda
+kernels would be very inefficient.</p>
+<p>However, this comes at a cost of ease of use and readibility, especially for
+highly dimensional data. In our example, we know for example that the contiguous
+<code class="docutils literal notranslate"><span class="pre">gates</span></code> tensor has 3 dimensions:</p>
+<ol class="arabic simple">
+<li>batch, size of <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> and stride of <code class="docutils literal notranslate"><span class="pre">3*state_size</span></code></li>
+<li>row, size of <code class="docutils literal notranslate"><span class="pre">3</span></code> and stride of <code class="docutils literal notranslate"><span class="pre">state_size</span></code></li>
+<li>index, size  of <code class="docutils literal notranslate"><span class="pre">state_size</span></code> and stride of <code class="docutils literal notranslate"><span class="pre">1</span></code></li>
+</ol>
+<p>How can we access the element <code class="docutils literal notranslate"><span class="pre">gates[n][row][column]</span></code> inside the kernel then?
+It turns out that you need the strides to access your element with some simple
+arithmetic.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gates</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">()[</span><span class="n">n</span><span class="o">*</span><span class="mi">3</span><span class="o">*</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">row</span><span class="o">*</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">column</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>In addition to being verbose, this expression needs stride to be explicitely
+known, and thus passed to the kernel function within its arguments. You can see
+that in the case of kernel functions accepting multiple tensors with different
+sizes you will end up with a very long list of arguments.</p>
+<p>Fortunately for us, ATen provides accessors that are created with a single
+dynamic check that a Tensor is the type and number of dimensions.
+Accessors then expose an API for accessing the Tensor elements efficiently
+without having to convert to a single pointer:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">rand</span><span class="p">({</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">});</span>
+
+<span class="c1">// assert foo is 2-dimensional and holds floats.</span>
+<span class="k">auto</span> <span class="n">foo_a</span> <span class="o">=</span> <span class="n">foo</span><span class="p">.</span><span class="n">accessor</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span><span class="mi">2</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="kt">float</span> <span class="n">trace</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">foo_a</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// use the accessor foo_a to get tensor data.</span>
+  <span class="n">trace</span> <span class="o">+=</span> <span class="n">foo_a</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">i</span><span class="p">];</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Accessor objects have a relatively high level interface, with <code class="docutils literal notranslate"><span class="pre">.size()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">.stride()</span></code> methods and multi-dimensional indexing. The <code class="docutils literal notranslate"><span class="pre">.accessor&lt;&gt;</span></code>
+interface is designed to access data efficiently on cpu tensor. The equivalent
+for cuda tensors is the <code class="docutils literal notranslate"><span class="pre">packed_accessor&lt;&gt;</span></code>, which produces a Packed Accessor.</p>
+<p>The fundamental difference with Accessor is that a Packed Accessor copies size
+and stride data inside of its structure instead of pointing to it. It allows us
+to pass it to a CUDA kernel function and use its interface inside it.</p>
+<p>We can design a function that takes Packed Accessors instead of pointers.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">__global__</span> <span class="kt">void</span> <span class="n">lltm_cuda_forward_kernel</span><span class="p">(</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">gates</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">old_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">new_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">candidate_cell</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Let’s decompose the template used here. the first two arguments <code class="docutils literal notranslate"><span class="pre">scalar_t</span></code> and
+<code class="docutils literal notranslate"><span class="pre">2</span></code> are the same as regular Accessor. The argument
+<code class="docutils literal notranslate"><span class="pre">torch::RestrictPtrTraits</span></code> indicates that the <code class="docutils literal notranslate"><span class="pre">__restrict__</span></code> keyword must be
+used. Finally, the argument <code class="docutils literal notranslate"><span class="pre">size_t</span></code> indicates that sizes and strides must be
+stored in a <code class="docutils literal notranslate"><span class="pre">size_t</span></code> integer. This is important as by default <code class="docutils literal notranslate"><span class="pre">int64_t</span></code> is
+used and can make the kernel slower.</p>
+<p>The function declaration becomes</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
+<span class="n">__global__</span> <span class="kt">void</span> <span class="n">lltm_cuda_forward_kernel</span><span class="p">(</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">gates</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">old_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">new_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">candidate_cell</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//batch index</span>
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+  <span class="c1">// column index</span>
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">c</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">gates</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">)){</span>
+    <span class="n">input_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
+    <span class="n">output_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
+    <span class="n">candidate_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">elu</span><span class="p">(</span><span class="n">gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
+    <span class="n">new_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span>
+        <span class="n">old_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">+</span> <span class="n">candidate_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">input_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">];</span>
+    <span class="n">new_h</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="o">*</span> <span class="n">output_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">];</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The implementation is much more readable! This function is then called by
+creating Packed Accessors with the <code class="docutils literal notranslate"><span class="pre">.packed_accessor&lt;&gt;</span></code> method within the
+host function.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">bias</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">old_cell</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">cat</span><span class="p">({</span><span class="n">old_h</span><span class="p">,</span> <span class="n">input</span><span class="p">},</span> <span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">gate_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">addmm</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">weights</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+
+  <span class="k">const</span> <span class="k">auto</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">old_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="k">const</span> <span class="k">auto</span> <span class="n">state_size</span> <span class="o">=</span> <span class="n">old_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+  <span class="k">auto</span> <span class="n">gates</span> <span class="o">=</span> <span class="n">gate_weights</span><span class="p">.</span><span class="n">reshape</span><span class="p">({</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">state_size</span><span class="p">});</span>
+  <span class="k">auto</span> <span class="n">new_h</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">new_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">input_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">output_gate</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
+
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
+  <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
+
+  <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">gates</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">"lltm_forward_cuda"</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
+    <span class="n">lltm_cuda_forward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
+        <span class="n">gates</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">old_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">new_h</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">new_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">input_gate</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">output_gate</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">candidate_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">());</span>
+  <span class="p">}));</span>
+
+  <span class="k">return</span> <span class="p">{</span><span class="n">new_h</span><span class="p">,</span> <span class="n">new_cell</span><span class="p">,</span> <span class="n">input_gate</span><span class="p">,</span> <span class="n">output_gate</span><span class="p">,</span> <span class="n">candidate_cell</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">gates</span><span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 <p>The backwards pass follows much the same pattern and I won’t elaborate further
 on it:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">scalar_t</span><span class="o">&gt;</span>
 <span class="n">__global__</span> <span class="kt">void</span> <span class="n">lltm_cuda_backward_kernel</span><span class="p">(</span>
-    <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">d_old_cell</span><span class="p">,</span>
-    <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">d_gates</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">grad_h</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">grad_cell</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">new_cell</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">input_gate</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">output_gate</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">candidate_cell</span><span class="p">,</span>
-    <span class="k">const</span> <span class="n">scalar_t</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">gate_weights</span><span class="p">,</span>
-    <span class="kt">size_t</span> <span class="n">state_size</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">const</span> <span class="kt">int</span> <span class="n">column</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
-  <span class="k">const</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">state_size</span> <span class="o">+</span> <span class="n">column</span><span class="p">;</span>
-  <span class="k">const</span> <span class="kt">int</span> <span class="n">gates_row</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="p">(</span><span class="n">state_size</span> <span class="o">*</span> <span class="mi">3</span><span class="p">);</span>
-  <span class="k">if</span> <span class="p">(</span><span class="n">column</span> <span class="o">&lt;</span> <span class="n">state_size</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_output_gate</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_tanh_new_cell</span> <span class="o">=</span> <span class="n">output_gate</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">d_old_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">d_gates</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">grad_h</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">grad_cell</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">candidate_cell</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">torch</span><span class="o">::</span><span class="n">PackedTensorAccessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span> <span class="n">gate_weights</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">//batch index</span>
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+  <span class="c1">// column index</span>
+  <span class="k">const</span> <span class="kt">int</span> <span class="n">c</span> <span class="o">=</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">blockDim</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">c</span> <span class="o">&lt;</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">)){</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_output_gate</span> <span class="o">=</span> <span class="n">tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">];</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_tanh_new_cell</span> <span class="o">=</span> <span class="n">output_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">grad_h</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">];</span>
     <span class="k">const</span> <span class="k">auto</span> <span class="n">d_new_cell</span> <span class="o">=</span>
-        <span class="n">d_tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">*</span> <span class="n">d_tanh_new_cell</span> <span class="o">+</span> <span class="n">grad_cell</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+        <span class="n">d_tanh</span><span class="p">(</span><span class="n">new_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">])</span> <span class="o">*</span> <span class="n">d_tanh_new_cell</span> <span class="o">+</span> <span class="n">grad_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">];</span>
 
 
-    <span class="n">d_old_cell</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_new_cell</span><span class="p">;</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_candidate_cell</span> <span class="o">=</span> <span class="n">input_gate</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">*</span> <span class="n">d_new_cell</span><span class="p">;</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_input_gate</span> <span class="o">=</span> <span class="n">candidate_cell</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">*</span> <span class="n">d_new_cell</span><span class="p">;</span>
+    <span class="n">d_old_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">d_new_cell</span><span class="p">;</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_candidate_cell</span> <span class="o">=</span> <span class="n">input_gate</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">d_new_cell</span><span class="p">;</span>
+    <span class="k">const</span> <span class="k">auto</span> <span class="n">d_input_gate</span> <span class="o">=</span> <span class="n">candidate_cell</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">*</span> <span class="n">d_new_cell</span><span class="p">;</span>
 
-
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">input_gate_index</span> <span class="o">=</span> <span class="n">gates_row</span> <span class="o">+</span> <span class="n">column</span><span class="p">;</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">output_gate_index</span> <span class="o">=</span> <span class="n">gates_row</span> <span class="o">+</span> <span class="n">state_size</span> <span class="o">+</span> <span class="n">column</span><span class="p">;</span>
-    <span class="k">const</span> <span class="k">auto</span> <span class="n">candidate_cell_index</span> <span class="o">=</span> <span class="n">gates_row</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">state_size</span> <span class="o">+</span> <span class="n">column</span><span class="p">;</span>
-
-    <span class="n">d_gates</span><span class="p">[</span><span class="n">input_gate_index</span><span class="p">]</span> <span class="o">=</span>
-        <span class="n">d_input_gate</span> <span class="o">*</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">input_gate_index</span><span class="p">]);</span>
-    <span class="n">d_gates</span><span class="p">[</span><span class="n">output_gate_index</span><span class="p">]</span> <span class="o">=</span>
-        <span class="n">d_output_gate</span> <span class="o">*</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">output_gate_index</span><span class="p">]);</span>
-    <span class="n">d_gates</span><span class="p">[</span><span class="n">candidate_cell_index</span><span class="p">]</span> <span class="o">=</span>
-        <span class="n">d_candidate_cell</span> <span class="o">*</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">candidate_cell_index</span><span class="p">]);</span>
+    <span class="n">d_gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span>
+        <span class="n">d_input_gate</span> <span class="o">*</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
+    <span class="n">d_gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span>
+        <span class="n">d_output_gate</span> <span class="o">*</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
+    <span class="n">d_gates</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span>
+        <span class="n">d_candidate_cell</span> <span class="o">*</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="mi">2</span><span class="p">][</span><span class="n">c</span><span class="p">]);</span>
   <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_backward</span><span class="p">(</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gate_weights</span><span class="p">,</span>
-    <span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">auto</span> <span class="n">d_old_cell</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">new_cell</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">d_gates</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">);</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_cuda_backward</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_h</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">grad_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">new_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output_gate</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">candidate_cell</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">X</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">gates</span><span class="p">,</span>
+    <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">weights</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">d_old_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">new_cell</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">d_gates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">gates</span><span class="p">);</span>
 
   <span class="k">const</span> <span class="k">auto</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="n">new_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
   <span class="k">const</span> <span class="k">auto</span> <span class="n">state_size</span> <span class="o">=</span> <span class="n">new_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
@@ -1070,30 +1197,31 @@ on it:</p>
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
   <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
 
-  <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">"lltm_backward_cuda"</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
+  <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">"lltm_forward_cuda"</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
     <span class="n">lltm_cuda_backward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
-        <span class="n">d_old_cell</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">d_gates</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">grad_h</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">grad_cell</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">new_cell</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">input_gate</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">output_gate</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">candidate_cell</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">gate_weights</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">(),</span>
-        <span class="n">state_size</span><span class="p">);</span>
+        <span class="n">d_old_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">d_gates</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">grad_h</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">grad_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">new_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">input_gate</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">output_gate</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">candidate_cell</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(),</span>
+        <span class="n">gates</span><span class="p">.</span><span class="n">packed_accessor</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">torch</span><span class="o">::</span><span class="n">RestrictPtrTraits</span><span class="p">,</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">());</span>
   <span class="p">}));</span>
 
-  <span class="k">auto</span> <span class="n">d_weights</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">t</span><span class="p">().</span><span class="n">mm</span><span class="p">(</span><span class="n">X</span><span class="p">);</span>
-  <span class="k">auto</span> <span class="n">d_bias</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">sum</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">0</span><span class="p">,</span> <span class="cm">/*keepdim=*/</span><span class="nb">true</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">d_gate_weights</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">reshape</span><span class="p">({</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="o">*</span><span class="n">state_size</span><span class="p">});</span>
+  <span class="k">auto</span> <span class="n">d_weights</span> <span class="o">=</span> <span class="n">d_gate_weights</span><span class="p">.</span><span class="n">t</span><span class="p">().</span><span class="n">mm</span><span class="p">(</span><span class="n">X</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">d_bias</span> <span class="o">=</span> <span class="n">d_gate_weights</span><span class="p">.</span><span class="n">sum</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">0</span><span class="p">,</span> <span class="cm">/*keepdim=*/</span><span class="nb">true</span><span class="p">);</span>
 
-  <span class="k">auto</span> <span class="n">d_X</span> <span class="o">=</span> <span class="n">d_gates</span><span class="p">.</span><span class="n">mm</span><span class="p">(</span><span class="n">weights</span><span class="p">);</span>
+  <span class="k">auto</span> <span class="n">d_X</span> <span class="o">=</span> <span class="n">d_gate_weights</span><span class="p">.</span><span class="n">mm</span><span class="p">(</span><span class="n">weights</span><span class="p">);</span>
   <span class="k">auto</span> <span class="n">d_old_h</span> <span class="o">=</span> <span class="n">d_X</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">state_size</span><span class="p">);</span>
   <span class="k">auto</span> <span class="n">d_input</span> <span class="o">=</span> <span class="n">d_X</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span> <span class="n">state_size</span><span class="p">);</span>
 
   <span class="k">return</span> <span class="p">{</span><span class="n">d_old_h</span><span class="p">,</span> <span class="n">d_input</span><span class="p">,</span> <span class="n">d_weights</span><span class="p">,</span> <span class="n">d_bias</span><span class="p">,</span> <span class="n">d_old_cell</span><span class="p">,</span> <span class="n">d_gates</span><span class="p">};</span>
 <span class="p">}</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="integrating-a-c-cuda-operation-with-pytorch">
 <h3>Integrating a C++/CUDA Operation with PyTorch<a class="headerlink" href="#integrating-a-c-cuda-operation-with-pytorch" title="Permalink to this headline">¶</a></h3>
@@ -1199,6 +1327,7 @@ examples displayed in this note <a class="reference external" href="https://gith
 </ul>
 </li>
 <li><a class="reference internal" href="#writing-a-mixed-c-cuda-extension">Writing a Mixed C++/CUDA extension</a><ul>
+<li><a class="reference internal" href="#using-accessors">Using accessors</a></li>
 <li><a class="reference internal" href="#integrating-a-c-cuda-operation-with-pytorch">Integrating a C++/CUDA Operation with PyTorch</a><ul>
 <li><a class="reference internal" href="#id2">Performance Comparison</a></li>
 </ul>
