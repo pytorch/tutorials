@@ -132,7 +132,8 @@ print(x.item())
 # Converting a Torch Tensor to a NumPy array and vice versa is a breeze.
 #
 # The Torch Tensor and NumPy array will share their underlying memory
-# locations, and changing one will change the other.
+# locations (if the Torch Tensor is on CPU), and changing one will change
+# the other.
 #
 # Converting a Torch Tensor to a NumPy Array
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
