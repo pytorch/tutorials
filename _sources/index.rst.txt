@@ -7,7 +7,7 @@ starting point, and provides a broad view into how to use PyTorch from the basic
 
 Some considerations:
 
-* We’ve added a new feature to tutorials that allows users to open the notebook associated with a tutorial in Google Colab. 
+* We’ve added a new feature to tutorials that allows users to open the notebook associated with a tutorial in Google Colab.
   Visit `this page <https://pytorch.org/tutorials/beginner/colab.html>`_ for more information.
 * If you would like to do the tutorials interactively via IPython / Jupyter,
   each tutorial has a download link for a Jupyter Notebook and Python source code.
@@ -214,6 +214,11 @@ Production Usage
 .. customgalleryitem::
   :tooltip: Train large models with multiple GPUs using model parallel
   :description: :doc:`/intermediate/model_parallel_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
+  :tooltip: Getting started with DistributedDataParallel
+  :description: :doc:`/intermediate/ddp_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
