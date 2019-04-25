@@ -323,6 +323,8 @@ PyTorch in Other Languages
    :hidden:
    :caption: Production Usage
 
+   intermediate/model_parallel_tutorial
+   intermediate/ddp_tutorial
    intermediate/dist_tuto
    beginner/aws_distributed_training_tutorial
    advanced/ONNXLive
