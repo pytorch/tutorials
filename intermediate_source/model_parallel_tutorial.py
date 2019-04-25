@@ -4,15 +4,15 @@ Model Parallel Best Practices
 *************************************************************
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
-Data parallel and model parallel are widely-used distributed training
+Data parallel and model parallel are widely-used in distributed training
 techniques. Previous posts have explained how to use
 `DataParallel <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
 to train a neural network on multiple GPUs. ``DataParallel`` replicates the
 same model to all GPUs, where each GPU consumes a different partition of the
 input data. Although it can significantly accelerate the training process, it
-does not work for some use cases where the model is large to fit into a single
-GPU. This post shows how to solve that problem by using model parallel and also
-shares some insights on how to speed up model parallel training.
+does not work for some use cases where the model is too large to fit into a
+single GPU. This post shows how to solve that problem by using model parallel
+and also shares some insights on how to speed up model parallel training.
 
 The high-level idea of model parallel is to place different sub-networks of a
 model onto different devices, and implement the ``forward`` method accordingly
@@ -23,10 +23,20 @@ into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
-Let us start with a toy model that contains two linear layers. To run this
-model on two GPUs, simply put each linear layer on a different GPU, and move
-inputs and intermediate outputs to match the layer devices accordingly.
+**Recommended Reading:**
+
+-  https://pytorch.org/ For installation instructions
+-  :doc:`/beginner/blitz/data_parallel_tutorial` Single-Machine Data Parallel
+-  :doc:`/intermediate/ddp_tutorial` Combine Distributed Data Parallel and Model Parallel
 """
+
+######################################################################
+# Basic Usage
+# =======================
+#
+# Let us start with a toy model that contains two linear layers. To run this
+# model on two GPUs, simply put each linear layer on a different GPU, and move
+# inputs and intermediate outputs to match the layer devices accordingly.
 
 import torch
 import torch.nn as nn
