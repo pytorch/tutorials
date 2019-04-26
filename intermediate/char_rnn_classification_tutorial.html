@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Classifying Names with a Character-Level RNN — PyTorch Tutorials 1.1.0.dev20190424 documentation</title>
+<title>Classifying Names with a Character-Level RNN — PyTorch Tutorials 1.1.0.dev20190425 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -62,7 +62,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.1.0.dev20190424
+                  1.1.0.dev20190425
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -114,6 +114,8 @@
 </ul>
 <p class="caption"><span class="caption-text">Production Usage</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/ONNXLive.html">ONNX Live Tutorial</a></li>
@@ -400,9 +402,9 @@ pre-computing batches of Tensors.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-3.0196, -2.8704, -2.8709, -2.8186, -2.8209, -2.9143, -2.8217, -3.0019,
-         -2.9656, -2.8719, -2.8300, -2.9060, -2.8348, -2.9480, -3.0164, -2.8720,
-         -2.8413, -2.8428]], grad_fn=&lt;LogSoftmaxBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9215, -2.9250, -2.8991, -2.9030, -2.9308, -2.9330, -2.8744, -2.8444,
+         -2.9424, -2.8577, -2.8330, -2.9790, -2.8047, -2.8252, -2.8857, -2.9249,
+         -2.8806, -2.8805]], grad_fn=&lt;LogSoftmaxBackward&gt;)
 </pre></div>
 </div>
 <p>As you can see the output is a <code class="docutils literal notranslate"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_categories&gt;</span></code> Tensor, where
@@ -425,7 +427,7 @@ of the greatest value:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Polish', 3)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Korean', 12)
 </pre></div>
 </div>
 <p>We will also want a quick way to get a training example (a name and its
@@ -448,16 +450,16 @@ language):</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Spanish / line = Martell
-category = Scottish / line = Wilson
-category = Italian / line = Vigo
-category = Arabic / line = Awad
-category = Vietnamese / line = Thuy
-category = Irish / line = O'Mahoney
-category = German / line = Diefenbach
-category = Arabic / line = Attia
-category = Greek / line = Tsangaris
-category = Czech / line = Whitmire
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Greek / line = Kalakos
+category = Czech / line = Weichert
+category = Russian / line = Nesis
+category = Italian / line = Zino
+category = Russian / line = Dovgusha
+category = Greek / line = Gianakopulos
+category = Korean / line = Tsai
+category = Dutch / line = Roijakkers
+category = Arabic / line = Morcos
+category = Arabic / line = Botros
 </pre></div>
 </div>
 </div>
@@ -547,26 +549,26 @@ average of the loss.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 11s) 2.4477 Thao / Chinese ✗ (Vietnamese)
-10000 10% (0m 19s) 2.3707 Whyte / Irish ✗ (Scottish)
-15000 15% (0m 27s) 1.1579 Mclaughlin / Scottish ✓
-20000 20% (0m 35s) 2.9356 Aonghus / Greek ✗ (Irish)
-25000 25% (0m 43s) 2.3261 Messana / Japanese ✗ (Italian)
-30000 30% (0m 51s) 1.2002 Demas / Greek ✓
-35000 35% (0m 59s) 0.4392 Truong / Vietnamese ✓
-40000 40% (1m 7s) 1.9884 Schmeiser / Scottish ✗ (Czech)
-45000 45% (1m 15s) 0.9781 Ngo / Vietnamese ✓
-50000 50% (1m 24s) 0.0749 Kurosawa / Japanese ✓
-55000 55% (1m 32s) 0.1742 Anetakis / Greek ✓
-60000 60% (1m 40s) 3.1070 Suaird / Arabic ✗ (Irish)
-65000 65% (1m 48s) 0.5514 Kaminski / Polish ✓
-70000 70% (1m 56s) 0.0738 Nervetti / Italian ✓
-75000 75% (2m 4s) 0.5213 Sauvageot / French ✓
-80000 80% (2m 12s) 1.2137 Lobo / Portuguese ✓
-85000 85% (2m 20s) 4.7036 Mcguire / English ✗ (Irish)
-90000 90% (2m 28s) 0.7365 Lemaire / French ✓
-95000 95% (2m 37s) 1.0336 Flann / Irish ✓
-100000 100% (2m 45s) 1.3457 Klimes / Dutch ✗ (Czech)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 11s) 3.2417 Villalobos / Greek ✗ (Spanish)
+10000 10% (0m 19s) 2.1032 Travers / Portuguese ✗ (French)
+15000 15% (0m 27s) 1.0072 Quan / Chinese ✓
+20000 20% (0m 35s) 1.2563 Chung / Chinese ✗ (Vietnamese)
+25000 25% (0m 43s) 1.6462 Nunes / Portuguese ✓
+30000 30% (0m 51s) 0.5276 Pagani / Italian ✓
+35000 35% (0m 59s) 0.8012 Coelho / Portuguese ✓
+40000 40% (1m 7s) 1.4860 Mcnally / English ✓
+45000 45% (1m 15s) 1.0210 Mo / Vietnamese ✗ (Korean)
+50000 50% (1m 23s) 0.9554 Kikkert / Dutch ✓
+55000 55% (1m 31s) 1.3253 Alves / Portuguese ✓
+60000 60% (1m 39s) 0.8151 Geiszler / German ✓
+65000 65% (1m 48s) 0.9928 Zhebelev / Russian ✓
+70000 70% (1m 56s) 3.5161 Klerkx / Polish ✗ (Dutch)
+75000 75% (2m 4s) 0.3827 Suk / Korean ✓
+80000 80% (2m 12s) 0.0578 Stawski / Polish ✓
+85000 85% (2m 20s) 1.8486 Filipek / Czech ✗ (Polish)
+90000 90% (2m 28s) 2.7329 Tozer / German ✗ (English)
+95000 95% (2m 36s) 0.0220 Patrianakos / Greek ✓
+100000 100% (2m 44s) 3.5471 Gajos / Arabic ✗ (Polish)
 </pre></div>
 </div>
 </div>
@@ -663,19 +665,19 @@ English (perhaps because of overlap with other languages).</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; Dovesky
-(-0.43) Russian
-(-1.40) Czech
-(-2.99) English
+(-0.56) Czech
+(-1.25) Russian
+(-2.64) English
 
 &gt; Jackson
-(-0.24) Scottish
-(-2.34) English
-(-3.18) Dutch
+(-0.39) Scottish
+(-1.67) English
+(-3.16) Russian
 
 &gt; Satoshi
-(-1.20) Italian
-(-1.63) Arabic
-(-2.23) Japanese
+(-1.33) Japanese
+(-1.56) Italian
+(-2.16) Arabic
 </pre></div>
 </div>
 <p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
@@ -717,7 +719,7 @@ output of predictions.</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  53.793 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  52.447 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/ccb15f8365bdae22a0a019e57216d7c6/char_rnn_classification_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>
