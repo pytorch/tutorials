@@ -181,15 +181,15 @@
 <div class="sphx-glr-example-title section" id="model-parallel-best-practices">
 <span id="sphx-glr-intermediate-model-parallel-tutorial-py"></span><h1>Model Parallel Best Practices<a class="headerlink" href="#model-parallel-best-practices" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a></p>
-<p>Data parallel and model parallel are widely-used distributed training
+<p>Data parallel and model parallel are widely-used in distributed training
 techniques. Previous posts have explained how to use
 <a class="reference external" href="https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html">DataParallel</a>
 to train a neural network on multiple GPUs. <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> replicates the
 same model to all GPUs, where each GPU consumes a different partition of the
 input data. Although it can significantly accelerate the training process, it
-does not work for some use cases where the model is large to fit into a single
-GPU. This post shows how to solve that problem by using model parallel and also
-shares some insights on how to speed up model parallel training.</p>
+does not work for some use cases where the model is too large to fit into a
+single GPU. This post shows how to solve that problem by using model parallel
+and also shares some insights on how to speed up model parallel training.</p>
 <p>The high-level idea of model parallel is to place different sub-networks of a
 model onto different devices, and implement the <code class="docutils literal notranslate"><span class="pre">forward</span></code> method accordingly
 to move intermediate outputs across devices. As only part of a model operates
@@ -198,6 +198,14 @@ model. In this post, we will not try to construct huge models and squeeze them
 into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.</p>
+<p><strong>Recommended Reading:</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> For installation instructions</li>
+<li><a class="reference internal" href="../beginner/blitz/data_parallel_tutorial.html"><span class="doc">Optional: Data Parallelism</span></a> Single-Machine Data Parallel</li>
+<li><a class="reference internal" href="ddp_tutorial.html"><span class="doc">Getting Started with Distributed Data Parallel</span></a> Combine Distributed Data Parallel and Model Parallel</li>
+</ul>
+<div class="section" id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
 <p>Let us start with a toy model that contains two linear layers. To run this
 model on two GPUs, simply put each linear layer on a different GPU, and move
 inputs and intermediate outputs to match the layer devices accordingly.</p>
@@ -235,6 +243,7 @@ calling the loss function.</p>
 <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="apply-model-parallel-to-existing-modules">
 <h2>Apply Model Parallel to Existing Modules<a class="headerlink" href="#apply-model-parallel-to-existing-modules" title="Permalink to this headline">¶</a></h2>
@@ -483,7 +492,7 @@ implementation need to use multiple streams on both GPUs, and different
 sub-network structures require different stream management strategies. As no
 general multi-stream solution works for all model parallel use cases, we will
 not discuss it in this tutorial.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 6 minutes  3.407 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 6 minutes  8.169 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-model-parallel-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/d961a67e594a77a630ec636c89f84bb8/model_parallel_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">model_parallel_tutorial.py</span></code></a></div>
@@ -525,6 +534,7 @@ not discuss it in this tutorial.</p>
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">Model Parallel Best Practices</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
 <li><a class="reference internal" href="#apply-model-parallel-to-existing-modules">Apply Model Parallel to Existing Modules</a></li>
 <li><a class="reference internal" href="#speed-up-by-pipelining-inputs">Speed Up by Pipelining Inputs</a></li>
 </ul>
