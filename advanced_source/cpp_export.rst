@@ -216,8 +216,7 @@ structure:
 
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
-  build your project in debug mode, we recommend
-  `building PyTorch from source <https://github.com/pytorch/pytorch#from-source>`_.
+  build your project in debug mode, please try the debug version of LibTorch.
 
 The last step is building the application. For this, assume our example
 directory is laid out like this:
