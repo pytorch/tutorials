@@ -80,7 +80,7 @@ Image
    :description: :doc:`beginner/finetuning_torchvision_models_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/stn/five.gif
+   :figure: /_static/img/stn/Five.gif
    :tooltip: Learn how to augment your network using a visual attention mechanism called spatial transformer networks
    :description: :doc:`intermediate/spatial_transformer_tutorial`
 
