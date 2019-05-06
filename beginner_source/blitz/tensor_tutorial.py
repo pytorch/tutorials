@@ -13,8 +13,8 @@ audiences:
 Getting Started
 ---------------
 
-Tensors
-^^^^^^^
+### Tensors
+
 
 Tensors are similar to NumPy’s ndarrays, with the addition being that
 Tensors can also be used on a GPU to accelerate computing.
@@ -67,8 +67,7 @@ print(x.size())
 # .. note::
 #     ``torch.Size`` is in fact a tuple, so it supports all tuple operations.
 #
-# Operations
-# ^^^^^^^^^^
+# ### Operations
 # There are multiple syntaxes for operations. In the following
 # example, we will take a look at the addition operation.
 #
@@ -135,9 +134,7 @@ print(x.item())
 # locations (if the Torch Tensor is on CPU), and changing one will change
 # the other.
 #
-# Converting a Torch Tensor to a NumPy Array
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+# ### Converting a Torch Tensor to a NumPy Array
 a = torch.ones(5)
 print(a)
 
@@ -155,8 +152,7 @@ print(a)
 print(b)
 
 ###############################################################
-# Converting NumPy Array to Torch Tensor
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ### Converting NumPy Array to Torch Tensor
 # See how changing the np array changed the Torch Tensor automatically
 
 import numpy as np
