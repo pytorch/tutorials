@@ -374,7 +374,7 @@ if (device.type == 'cuda') and (ngpu > 1):
     netG = nn.DataParallel(netG, list(range(ngpu)))
 
 # Apply the weights_init function to randomly initialize all weights
-#  to mean=0, stdev=0.2.
+#  to mean=0, stdev=0.02.
 netG.apply(weights_init)
 
 # Print the model
