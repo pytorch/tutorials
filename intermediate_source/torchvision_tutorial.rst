@@ -97,7 +97,7 @@ So each image has a corresponding
 segmentation mask, where each color correspond to a different instance.
 Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
 
-::
+.. code:: python
 
    import os
    import numpy as np
@@ -208,7 +208,7 @@ Let’s suppose that you want to start from a model pre-trained on COCO
 and want to finetune it for your particular classes. Here is a possible
 way of doing it:
 
-::
+.. code:: python
 
    import torchvision
    from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -227,7 +227,7 @@ way of doing it:
 2 - Modifying the model to add a different backbone
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code:: python
 
    import torchvision
    from torchvision.models.detection import FasterRCNN
@@ -275,7 +275,7 @@ our dataset is very small, so we will be following approach number 1.
 Here we want to also compute the instance segmentation masks, so we will
 be using Mask R-CNN:
 
-::
+.. code:: python
 
    import torchvision
    from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
@@ -316,7 +316,7 @@ folder and use them here.
 Let’s write some helper functions for data augmentation /
 transformation:
 
-::
+.. code:: python
 
    import transforms as T
 
@@ -330,7 +330,7 @@ transformation:
 Let’s now write the main function which performs the training and the
 validation:
 
-::
+.. code:: python
 
    from engine import train_one_epoch, evaluate
    import utils
