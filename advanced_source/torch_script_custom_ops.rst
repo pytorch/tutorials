@@ -27,13 +27,6 @@ convert them to third party tensor formats (in this case, OpenCV ``Mat``s), how
 to register your operator with the TorchScript runtime and finally how to
 compile the operator and use it in Python and C++.
 
-This tutorial assumes you have the *preview release* of PyTorch 1.0 installed
-via ``pip`` or `conda`. See https://pytorch.org/get-started/locally for
-instructions on grabbing the latest release of PyTorch 1.0. Alternatively, you
-can compile PyTorch from source. The documentation in `this file
-<https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md>`_ will assist
-you with this.
-
 Implementing the Custom Operator in C++
 ---------------------------------------
 
