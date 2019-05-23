@@ -28,7 +28,7 @@ pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 pip uninstall -y torchvision || true
 pip uninstall -y torchvision || true
 # GPU, requires CUDA version 10.0
-conda install -c pytorch torchvision --no-deps
+conda install -y -c pytorch torchvision --no-deps
 
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
