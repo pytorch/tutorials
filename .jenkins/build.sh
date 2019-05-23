@@ -27,7 +27,8 @@ pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 # Install torchvision from conda
 pip uninstall -y torchvision || true
 pip uninstall -y torchvision || true
-conda install -c pytorch torchvision --no-deps
+# GPU, requires CUDA version 9.0
+conda install https://anaconda.org/pytorch/torchvision/0.3.0/download/linux-64/torchvision-0.3.0-py36_cu9.0.176_1.tar.bz2 --no-deps
 
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
@@ -44,7 +45,6 @@ if [[ $(pip show torch) ]]; then
 fi
 
 # Install a nightly build of pytorch
-
 # GPU, requires CUDA version 9.0
 pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
