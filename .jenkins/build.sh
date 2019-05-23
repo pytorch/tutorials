@@ -28,6 +28,7 @@ pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 # Install torchvision from source
 git clone https://github.com/pytorch/vision --quiet
 pushd vision
+git checkout 76b2667958f994b7d942645285f777046d7d2d16
 pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
 popd
 
