@@ -25,8 +25,11 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # this is a workaround to the issue.
 pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
-# Install torchvision from pip
-pip install torchvision --no-deps
+# Install torchvision from source
+git clone https://github.com/pytorch/vision --quiet
+pushd vision
+pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
+popd
 
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
