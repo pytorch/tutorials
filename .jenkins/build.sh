@@ -27,7 +27,7 @@ pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 # Install torchvision from conda
 pip uninstall -y torchvision || true
 pip uninstall -y torchvision || true
-conda install -c pytorch torchvision --no-deps
+conda install -c pytorch torchvision
 
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
