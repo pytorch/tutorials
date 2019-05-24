@@ -14,7 +14,6 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
-pip uninstall -y torchvision || true
 
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
@@ -25,12 +24,6 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # this is a workaround to the issue.
 pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
-# Install torchvision from source
-git clone https://github.com/pytorch/vision --quiet
-pushd vision
-pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
-popd
-
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
 pushd audio
@@ -38,17 +31,6 @@ python setup.py install
 popd
 
 aws configure set default.s3.multipart_threshold 5120MB
-
-if [[ $(pip show torch) ]]; then
-  # Clean up previous PyTorch installations
-  pip uninstall -y torch || true
-  pip uninstall -y torch || true
-fi
-
-# Install a nightly build of pytorch
-
-# GPU, requires CUDA version 9.0
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
