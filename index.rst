@@ -75,6 +75,11 @@ Image
 ----------------------
 
 .. customgalleryitem::
+   :figure: /_static/img/thumbnails/tv-img.png
+   :tooltip: Finetuning a pre-trained Mask R-CNN model
+   :description: :doc:`intermediate/torchvision_tutorial`
+
+.. customgalleryitem::
    :figure: /_static/img/thumbnails/eye.png
    :tooltip: Finetune and feature extract the torchvision models
    :description: :doc:`beginner/finetuning_torchvision_models_tutorial`
@@ -267,6 +272,7 @@ PyTorch in Other Languages
    :hidden:
    :caption: Image
 
+   intermediate/torchvision_tutorial
    beginner/finetuning_torchvision_models_tutorial
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
