@@ -56,12 +56,12 @@ Let’s define this network:
 
         def __init__(self):
             super(Net, self).__init__()
-            # 1 input image channel, 6 output channels, 5x5 square convolution
+            # 1 input image channel, 6 output channels, 3x3 square convolution
             # kernel
-            self.conv1 = nn.Conv2d(1, 6, 5)
-            self.conv2 = nn.Conv2d(6, 16, 5)
+            self.conv1 = nn.Conv2d(1, 6, 3)
+            self.conv2 = nn.Conv2d(6, 16, 3)
             # an affine operation: y = Wx + b
-            self.fc1 = nn.Linear(16 * 5 * 5, 120)
+            self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension 
             self.fc2 = nn.Linear(120, 84)
             self.fc3 = nn.Linear(84, 10)
 
@@ -98,9 +98,9 @@ Let’s define this network:
  .. code-block:: none
 
     Net(
-      (conv1): Conv2d(1, 6, kernel_size=(5, 5), stride=(1, 1))
-      (conv2): Conv2d(6, 16, kernel_size=(5, 5), stride=(1, 1))
-      (fc1): Linear(in_features=400, out_features=120, bias=True)
+      (conv1): Conv2d(1, 6, kernel_size=(3, 3), stride=(1, 1))
+      (conv2): Conv2d(6, 16, kernel_size=(3, 3), stride=(1, 1))
+      (fc1): Linear(in_features=576, out_features=120, bias=True)
       (fc2): Linear(in_features=120, out_features=84, bias=True)
       (fc3): Linear(in_features=84, out_features=10, bias=True)
     )
@@ -132,7 +132,7 @@ The learnable parameters of a model are returned by ``net.parameters()``
  .. code-block:: none
 
     10
-    torch.Size([6, 1, 5, 5])
+    torch.Size([6, 1, 3, 3])
 
 
 Let try a random 32x32 input.
@@ -157,8 +157,8 @@ MNIST dataset, please resize the images from the dataset to 32x32.
 
  .. code-block:: none
 
-    tensor([[ 0.0003, -0.0621, -0.0574, -0.0700, -0.0298,  0.0106, -0.1246,  0.1237,
-              0.0305,  0.0845]], grad_fn=<AddmmBackward>)
+    tensor([[-0.0857,  0.2079, -0.0736,  0.0362,  0.0162,  0.0091, -0.0941,  0.0206,
+              0.0256,  0.0006]], grad_fn=<AddmmBackward>)
 
 
 Zero the gradient buffers of all parameters and backprops with random
@@ -248,7 +248,7 @@ For example:
 
  .. code-block:: none
 
-    tensor(0.9211, grad_fn=<MseLossBackward>)
+    tensor(1.3090, grad_fn=<MseLossBackward>)
 
 
 Now, if you follow ``loss`` in the backward direction, using its
@@ -286,9 +286,9 @@ For illustration, let us follow a few steps backward:
 
  .. code-block:: none
 
-    <MseLossBackward object at 0x7fb309e61b38>
-    <AddmmBackward object at 0x7fb309e619e8>
-    <AccumulateGrad object at 0x7fb309e619e8>
+    <MseLossBackward object at 0x7f26ed1a8a90>
+    <AddmmBackward object at 0x7f26ed1a8b70>
+    <AccumulateGrad object at 0x7f26ed1a8b70>
 
 
 Backprop
@@ -329,7 +329,7 @@ gradients before and after the backward.
     conv1.bias.grad before backward
     tensor([0., 0., 0., 0., 0., 0.])
     conv1.bias.grad after backward
-    tensor([ 0.0129,  0.0075,  0.0104, -0.0132, -0.0071, -0.0275])
+    tensor([ 0.0033,  0.0030,  0.0089, -0.0153, -0.0164,  0.0194])
 
 
 Now, we have seen how to use loss functions.
@@ -396,7 +396,7 @@ implements all these methods. Using it is very simple:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  3.115 seconds)
+   **Total running time of the script:** ( 0 minutes  3.094 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_neural_networks_tutorial.py:
