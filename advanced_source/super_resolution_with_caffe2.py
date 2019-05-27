@@ -195,7 +195,7 @@ print("Exported model has been executed on Caffe2 backend, and the result looks 
 # devices <https://caffe2.ai/docs/mobile-integration.html>`__.
 #
 # We will use Caffe2's
-# `mobile\_exporter <https://github.com/caffe2/caffe2/blob/master/caffe2/python/predictor/mobile_exporter.py>`__
+# `mobile\_exporter <https://github.com/pytorch/pytorch/blob/master/caffe2/python/predictor/mobile_exporter.py>`__
 # to generate the two model protobufs that can run on mobile. The first is
 # used to initialize the network with the correct weights, and the second
 # actual runs executes the model. We will continue to use the small
