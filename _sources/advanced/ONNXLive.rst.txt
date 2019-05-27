@@ -63,7 +63,7 @@ For now, we'll just download pre-trained models with the script provided by the 
 
 .. code-block:: bash
 
-   ./download_saved_models.sh
+   python download_saved_models.py
 
 
 This script downloads the pre-trained PyTorch models and puts them into the ``saved_models`` folder.
