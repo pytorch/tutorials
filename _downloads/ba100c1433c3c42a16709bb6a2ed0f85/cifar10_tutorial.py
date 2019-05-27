@@ -160,7 +160,7 @@ for epoch in range(2):  # loop over the dataset multiple times
 
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
-        # get the inputs
+        # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
 
         # zero the parameter gradients
@@ -295,7 +295,7 @@ print(device)
 #
 # .. code:: python
 #
-#         inputs, labels = inputs.to(device), labels.to(device)
+#         inputs, labels = data[0].to(device), data[1].to(device)
 #
 # Why dont I notice MASSIVE speedup compared to CPU? Because your network
 # is realllly small.
