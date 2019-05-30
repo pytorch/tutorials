@@ -342,3 +342,12 @@ plt.close(fig)
 # sub-network structures require different stream management strategies. As no
 # general multi-stream solution works for all model parallel use cases, we will
 # not discuss it in this tutorial.
+#
+# **Note:**
+#
+# This post shows several performance measurements. You might see different
+# numbers when running the same code on your own machine, because the result
+# depends on the underlying hardware and software. To get the best performance
+# for your environment, a proper approach is to first generate the curve to
+# figure out the best split size, and then use that split size to pipeline
+# inputs.
