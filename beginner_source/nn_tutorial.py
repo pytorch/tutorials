@@ -838,6 +838,10 @@ valid_dl = WrappedDataLoader(valid_dl, preprocess)
 ###############################################################################
 # Finally, we can move our model to the GPU.
 
+# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
+del opt  # Manually delete `opt`, so that `model.to(dev)` doesn't complain about previous references to `model`'s parameters
+# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
+
 model.to(dev)
 opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
