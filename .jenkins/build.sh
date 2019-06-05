@@ -30,9 +30,6 @@ pushd audio
 python setup.py install
 popd
 
-# yf225 TODO: patching torch to test BC-breaking change
-wget https://ossci-linux.s3.amazonaws.com/tmp/module_v1.1.0_new.py -O /opt/conda/lib/python3.6/site-packages/torch/nn/modules/module.py
-
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
