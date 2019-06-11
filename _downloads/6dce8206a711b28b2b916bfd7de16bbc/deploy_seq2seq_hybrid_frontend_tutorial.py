@@ -811,8 +811,8 @@ print('Models built and ready to go!')
 
 ### Convert encoder model
 # Create artificial inputs
-test_seq = torch.LongTensor(MAX_LENGTH, 1).random_(0, voc.num_words)
-test_seq_length = torch.LongTensor([test_seq.size()[0]])
+test_seq = torch.LongTensor(MAX_LENGTH, 1).random_(0, voc.num_words).to(device)
+test_seq_length = torch.LongTensor([test_seq.size()[0]]).to(device)
 # Trace the model
 traced_encoder = torch.jit.trace(encoder, (test_seq, test_seq_length))
 
