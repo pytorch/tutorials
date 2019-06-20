@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Deploying PyTorch and Building a REST API using Flask
-==================================================
+=====================================================
 **Author**: `Avinash Sajjanshetty <https://avi.im>`_
 """
 
 
 ######################################################################
-# In this tutorial, we will deploy our PyTorch model using Flask and expose a
-# REST API for model inference. In particular, we will deploy DenseNet 121 model
-# which predicts the type of image uploaded.
+# In this tutorial, we will deploy a PyTorch model using Flask and expose a
+# REST API for model inference. In particular, we will deploy a pretrained
+# DenseNet 121 model which detects the image.
+#
+# .. tip:: All the code used here is released under MIT license and is available on `Github <https://github.com/avinassh/pytorch-flask-api>`_.
+#
 
 
 ######################################################################
@@ -19,7 +22,11 @@ Deploying PyTorch and Building a REST API using Flask
 # We will first define our API endpoints, the request and response types. Our
 # API endpoint will be at ``/predict`` which takes HTTP POST requests with a
 # ``file`` parameter which contains the image. The response will be of JSON
-# response containing the image class.
+# response containing the prediction:
+#
+# ::
+#
+#     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
 #
 
@@ -27,7 +34,7 @@ Deploying PyTorch and Building a REST API using Flask
 # Dependencies
 # ------------
 #
-# Install the required dependenices by running following commands
+# Install the required dependenices by running the following command:
 #
 # ::
 #
@@ -50,20 +57,20 @@ def hello():
     return 'Hello World!'
 
 ###############################################################################
-# save the above snippet in a file called ``app.py`` and you can now run a Flask
-# development server by
+# Save the above snippet in a file called ``app.py`` and you can now run a
+# Flask development server by typing:
 #
 # ::
 #
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
 ###############################################################################
-# You can visit ``http://localhost:5000/`` in your web browser, you will be
+# When you visit ``http://localhost:5000/`` in your web browser, you will be
 # greeted with ``Hello World!`` text
 
 ###############################################################################
-# We will make slight changes to above snippet, so that it suits our API
-# definition. First, we will rename the method to `predict`. We will update
+# We will make slight changes to the above snippet, so that it suits our API
+# definition. First, we will rename the method to ``predict``. We will update
 # the endpoint path to ``/predict`` and make it so that it also accepts POST
 # requests:
 
@@ -74,7 +81,7 @@ def predict():
 
 ###############################################################################
 # We will also change the response type, so that it returns a JSON response
-# containing ImageNet class id and name. The updated app.py file will
+# containing ImageNet class id and name. The updated ``app.py`` file will
 # be now:
 
 from flask import Flask, jsonify
@@ -91,19 +98,19 @@ def predict():
 #
 # In the next sections we will focus on writing the inference code. This will
 # involve two parts, one where we prepare the image so that it can be fed
-# to DenseNet and next, we will write the code to get the actual prediction from
-# the model.
+# to DenseNet and next, we will write the code to get the actual prediction
+# from the model.
 #
 # Preparing the image
 # ~~~~~~~~~~~~~~~~~~~
 #
 # DenseNet model requires the image to be of 3 channel RGB image of size
 # 224 x 224. We will also normalise the image tensor with the required mean
-# and standard deviation values. You can read about it more
+# and standard deviation values. You can read more about it
 # `here <https://pytorch.org/docs/stable/torchvision/models.html>`_.
 #
 # We will use ``transforms`` from ``torchvision`` library and build a
-# transform pipeline, which transforms our images to as per our liking. You
+# transform pipeline, which transforms our images as required. You
 # can read more about transforms `here <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
 
 import io
@@ -124,8 +131,8 @@ def transform_image(image_bytes):
 
 ######################################################################
 # Above method takes image data in bytes, applies the series of transforms
-# and returns the tensor. To test the above method, read an image file in
-# bytes mode and see if you get a tensor back
+# and returns a tensor. To test the above method, read an image file in
+# bytes mode and see if you get a tensor back:
 
 with open('sample_file.jpeg', 'rb') as f:
     image_bytes = f.read()
@@ -139,11 +146,13 @@ with open('sample_file.jpeg', 'rb') as f:
 # Now will use a pretrained DenseNet 121 model to predict the image class. We
 # will use one from ``torchvision`` library, load the model and get an
 # inference. Instead of using a pretrained model, you can also load your own
-# model, to learn more about it check this `tutorial <http://localhost:8000/beginner/saving_loading_models.html>`_.
+# model, to learn more about it check this `tutorial <https://pytorch.org/tutorials/beginner/saving_loading_models.html>`_.
 
 from torchvision import models
 
+# make sure to pass `pretrained` as `True` to use the pretrained weights
 model = models.densenet121(pretrained=True)
+# since we are using our model only for inference, switch to `eval` mode
 model.eval()
 
 
@@ -160,7 +169,7 @@ def get_prediction(image_bytes):
 # to name mapping. Download
 # `this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_ 
 # and place it in current directory as file ``imagenet_class_index.json``. We
-# will load this JSON file and get the class name of predicted index.
+# will load this JSON file and get the class name of the predicted index.
 
 import json
 
@@ -176,8 +185,9 @@ def get_prediction(image_bytes):
 
 ######################################################################
 # Before using ``imagenet_class_index`` dictionary, first we will convert
-# tensor value to a string value, since the keys in the dictionary are
-# strings. We will test our above method
+# tensor value to a string value, since the keys in the
+# ``imagenet_class_index`` dictionary are strings.
+# We will test our above method:
 
 
 with open('sample_file.jpeg', 'rb') as f:
@@ -196,7 +206,7 @@ with open('sample_file.jpeg', 'rb') as f:
 # .. Note ::
 #    Did you notice why ``model`` variable is not part of ``get_prediction``
 #    method? Or why it is a global variable? Loading a model can be an
-#    expensive operation memory, CPU wise. If we loaded the model in the
+#    expensive operation, memory, CPU wise. If we loaded the model in the
 #    ``get_prediction`` method, then it will get unnecessarily loaded every
 #    time the method is called. Since, we are building a web server, there
 #    could be thousands of requests per second and we cannot keep loading the
@@ -227,7 +237,7 @@ def predict():
         return jsonify({'class_id': class_id, 'class_name': class_name})
 
 ######################################################################
-# The ``app.py`` file is now complete. Following is the full version
+# The ``app.py`` file is now complete. Following is the full version:
 #
 
 import io
@@ -277,7 +287,7 @@ if __name__ == '__main__':
     app.run()
 
 ######################################################################
-# Let's test our web server! To run:
+# Let's test our web server! Run:
 #
 # ::
 #
@@ -289,7 +299,7 @@ if __name__ == '__main__':
 #
 # ::
 #
-#     $ curl -X POST -F file=@cat_pic.jpeg localhost:5000/predict
+#     $ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
 #
 # And you will get a response in the form
 #
@@ -298,4 +308,29 @@ if __name__ == '__main__':
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
 #
 #
+
+######################################################################
+# Next steps
+# --------------
 #
+# The server we wrote is quite triavial and is not ready for production. So,
+# here are some things you can do to make it better
+#
+# - The endpoint ``/predict`` assumes that always there will be a image file
+#   in the request. This may not hold true for all requests. Our user may
+#   send image with a different parameter or send no images at all.
+#
+# - User may send non-image type files too. Since we are not handling errors,
+#   this will break our server. Loading the image within an exception block
+#   is a good idea.
+#
+# - There is a possibility that the image sent by user may not get recoginzed
+#   by our model. Above code should be updated to handle this case.
+#
+# - We run the Flask server in a development mode, which not suitable for
+#   deploying in production. You may check `this tutorial <http://flask.pocoo.org/docs/1.0/tutorial/deploy/>`_ 
+#   for deploying a Flask server in production.
+#
+# - You can also add a welcome page with a form which takes the image and
+#   displays the prediction. Check the `demo <https://pytorch-imagenet.herokuapp.com/>`_ 
+#   of the same or its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
