@@ -146,7 +146,8 @@ with open('sample_file.jpeg', 'rb') as f:
 # Now will use a pretrained DenseNet 121 model to predict the image class. We
 # will use one from ``torchvision`` library, load the model and get an
 # inference. Instead of using a pretrained model, you can also load your own
-# model, to learn more about it check this `tutorial <https://pytorch.org/tutorials/beginner/saving_loading_models.html>`_.
+# model, to learn more about it check this
+# :doc:`tutorial </beginner/saving_loading_models>`.
 
 from torchvision import models
 
