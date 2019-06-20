@@ -210,7 +210,6 @@ Production Usage
    :description: :doc:`advanced/ONNXLive`
    :figure: _static/img/ONNXLive.png
 
-
 .. customgalleryitem::
    :tooltip: Parallelize computations across processes and clusters of machines
    :description: :doc:`/intermediate/dist_tuto`
@@ -234,7 +233,7 @@ Production Usage
 .. customgalleryitem::
    :tooltip: Deploying PyTorch and Building a REST API using Flask
    :description: :doc:`/beginner/flask_rest_api_tutorial`
-   :figure: _static/img/distributed/flask.png
+   :figure: _static/img/flask.png
 
 .. raw:: html
 
