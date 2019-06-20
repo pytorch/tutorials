@@ -1,17 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Deploying PyTorch and Building a REST API using Flask
-=====================================================
-
-**Author**: `Avinash Sajjanshetty <https://github.com/inkawhich>`_
-
+==================================================
+**Author**: `Avinash Sajjanshetty <https://avi.im>`_
 """
 
-######################################################################
-#
 
 ######################################################################
 # In this tutorial, we will deploy our PyTorch model using Flask and expose a
-# REST API for model inference. In particular, we will deploy Densenet 121 model
+# REST API for model inference. In particular, we will deploy DenseNet 121 model
 # which predicts the type of image uploaded.
 
 
@@ -94,13 +91,13 @@ def predict():
 #
 # In the next sections we will focus on writing the inference code. This will
 # involve two parts, one where we prepare the image so that it can be fed
-# to ResNet and next, we will write the code to get the actual prediction from
+# to DenseNet and next, we will write the code to get the actual prediction from
 # the model.
 #
 # Preparing the image
 # ~~~~~~~~~~~~~~~~~~~
 #
-# ResNet model requires the image to be of 3 channel RGB image of size
+# DenseNet model requires the image to be of 3 channel RGB image of size
 # 224 x 224. We will also normalise the image tensor with the required mean
 # and standard deviation values. You can read about it more
 # `here <https://pytorch.org/docs/stable/torchvision/models.html>`_.
