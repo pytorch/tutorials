@@ -20,3 +20,7 @@ Beginner Tutorials
 5. nlp/* and deep_learning_nlp_tutorial.rst
 	Deep Learning for NLP with Pytorch
 	https://pytorch.org/tutorials/beginner/deep_learning_nlp_tutorial.html
+
+6. flask_rest_api_tutorial.py
+	Deploying PyTorch and Building a REST API using Flask
+	https://pytorch.org/tutorials/beginner/flask_rest_api_tutorial.html
