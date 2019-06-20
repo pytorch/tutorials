@@ -3,16 +3,15 @@
 Deploying PyTorch and Building a REST API using Flask
 =====================================================
 **Author**: `Avinash Sajjanshetty <https://avi.im>`_
+
+
+In this tutorial, we will deploy a PyTorch model using Flask and expose a
+REST API for model inference. In particular, we will deploy a pretrained
+DenseNet 121 model which detects the image.
+
+.. tip:: All the code used here is released under MIT license and is available on `Github <https://github.com/avinassh/pytorch-flask-api>`_.
+
 """
-
-
-######################################################################
-# In this tutorial, we will deploy a PyTorch model using Flask and expose a
-# REST API for model inference. In particular, we will deploy a pretrained
-# DenseNet 121 model which detects the image.
-#
-# .. tip:: All the code used here is released under MIT license and is available on `Github <https://github.com/avinassh/pytorch-flask-api>`_.
-#
 
 
 ######################################################################
