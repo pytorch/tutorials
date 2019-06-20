@@ -228,7 +228,7 @@ Production Usage
 .. customgalleryitem::
    :tooltip: Deploying PyTorch and Building a REST API using Flask
    :description: :doc:`/beginner/flask_rest_api_tutorial`
-   :figure: _static/img/distributed/flask.png
+   :figure: _static/img/flask.png
 
 .. raw:: html
 
