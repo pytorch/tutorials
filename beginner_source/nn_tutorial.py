@@ -836,11 +836,6 @@ train_dl = WrappedDataLoader(train_dl, preprocess)
 valid_dl = WrappedDataLoader(valid_dl, preprocess)
 
 ###############################################################################
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
-del opt  # Manually delete `opt`, so that `model.to(dev)` doesn't complain about previous references to `model`'s parameters
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
-
-###############################################################################
 # Finally, we can move our model to the GPU.
 
 model.to(dev)
