@@ -233,7 +233,7 @@ PyTorch: Control Flow + Weight Sharing
 
 As an example of dynamic graphs and weight sharing, we implement a very
 strange model: a fully-connected ReLU network that on each forward pass
-chooses a random number between 1 and 4 and uses that many hidden
+chooses a random number between 0 and 3 and uses that many hidden
 layers, reusing the same weights multiple times to compute the innermost
 hidden layers.
 

@@ -5,7 +5,7 @@ PyTorch: Control Flow + Weight Sharing
 
 To showcase the power of PyTorch dynamic graphs, we will implement a very strange
 model: a fully-connected ReLU network that on each forward pass randomly chooses
-a number between 1 and 4 and has that many hidden layers, reusing the same
+a number between 0 and 3 and has that many hidden layers, reusing the same
 weights multiple times to compute the innermost hidden layers.
 """
 import random
