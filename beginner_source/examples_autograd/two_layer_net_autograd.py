@@ -27,6 +27,7 @@ N, D_in, H, D_out = 64, 1000, 100, 10
 # Create random Tensors to hold input and outputs.
 # Setting requires_grad=False indicates that we do not need to compute gradients
 # with respect to these Tensors during the backward pass.
+# (But by default, requres_grad has False so we do not need to specify in the code below.)
 x = torch.randn(N, D_in, device=device, dtype=dtype)
 y = torch.randn(N, D_out, device=device, dtype=dtype)
 
