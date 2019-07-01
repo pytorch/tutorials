@@ -1,5 +1,5 @@
 from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import StringList 
+from docutils.statemachine import StringList
 from docutils import nodes
 import re
 import os
@@ -40,12 +40,16 @@ class IncludeDirective(Directive):
         rel_filename, filename = env.relfn2path(self.arguments[0])
 
         try:
-            text = open(filename).read()
+            text = open(filename, encoding='UTF-8').read()
             text_no_docstring = self.docstring_regex.sub('', text, count=1)
 
             code_block = nodes.literal_block(text=text_no_docstring)
             return [code_block]
         except FileNotFoundError as e:
+            print(e)
+            return []
+        except UnicodeDecodeError as e:
+            print('UnicodeDecodeError in ' + filename)
             print(e)
             return []
 
@@ -142,7 +146,7 @@ class CustomGalleryItemDirective(Directive):
     """Create a sphinx gallery style thumbnail.
 
     tooltip and figure are self explanatory. Description could be a link to
-    a document like in below example. 
+    a document like in below example.
 
     Example usage:
 
