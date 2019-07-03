@@ -24,3 +24,7 @@ Intermediate tutorials
 6. spatial_transformer_tutorial
 	Spatial Transformer Networks Tutorial
 	https://pytorch.org/tutorials/intermediate/spatial_transformer_tutorial.html
+
+7. flask_rest_api_tutorial.py
+	Deploying PyTorch and Building a REST API using Flask
+	https://pytorch.org/tutorials/beginner/flask_rest_api_tutorial.html
