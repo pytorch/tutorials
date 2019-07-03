@@ -232,7 +232,7 @@ Production Usage
 
 .. customgalleryitem::
    :tooltip: Deploying PyTorch and Building a REST API using Flask
-   :description: :doc:`/beginner/flask_rest_api_tutorial`
+   :description: :doc:`/intermediate/flask_rest_api_tutorial`
    :figure: _static/img/flask.png
 
 .. raw:: html
@@ -335,7 +335,7 @@ PyTorch in Other Languages
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
-   beginner/flask_rest_api_tutorial
+   intermediate/flask_rest_api_tutorial
    beginner/aws_distributed_training_tutorial
    advanced/ONNXLive
    advanced/cpp_export
