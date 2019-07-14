@@ -292,7 +292,7 @@ class ToTensor(object):
 # Compose transforms
 # ~~~~~~~~~~~~~~~~~~
 #
-# Now, we apply the transforms on an sample.
+# Now, we apply the transforms on a sample.
 #
 # Let's say we want to rescale the shorter side of the image to 256 and
 # then randomly crop a square of size 224 from it. i.e, we want to compose
