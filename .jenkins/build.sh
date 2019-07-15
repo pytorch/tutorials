@@ -25,10 +25,10 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
 # Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
+# git clone https://github.com/pytorch/audio --quiet
+# pushd audio
+# python setup.py install
+# popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
