@@ -180,4 +180,4 @@ else
 fi
 
 rm -rf vision
-rm -rf audio
+# rm -rf audio
