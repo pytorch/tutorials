@@ -18,8 +18,8 @@ pip install -r $DIR/../requirements.txt
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
 
-sudo pip uninstall awscli
-sudo pip install awscli==1.16.35
+pip uninstall awscli
+pip install awscli==1.16.35
 
 # PyTorch Theme
 rm -rf src
