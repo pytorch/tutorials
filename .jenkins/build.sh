@@ -11,8 +11,8 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-sudo pip3 uninstall awscli
-sudo pip3 install awscli==1.16.35
+sudo pip uninstall awscli
+sudo pip install awscli==1.16.35
 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
