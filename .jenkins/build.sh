@@ -11,15 +11,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-sudo pip uninstall awscli
-sudo pip install awscli==1.16.35
-
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
+
+sudo pip uninstall awscli
+sudo pip install awscli==1.16.35
+
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
