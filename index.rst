@@ -101,8 +101,8 @@ Image
 
 .. customgalleryitem::
    :figure: /_static/img/cat.jpg
-   :tooltip: Use ONNX to convert a model defined in PyTorch into the ONNX format and then load it into Caffe2
-   :description: :doc:`advanced/super_resolution_with_caffe2`
+   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+   :description: :doc:`advanced/super_resolution_with_onnxruntime`
 
 .. raw:: html
 
@@ -277,7 +277,7 @@ PyTorch in Other Languages
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
-   advanced/super_resolution_with_caffe2
+   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
