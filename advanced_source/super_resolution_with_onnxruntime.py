@@ -1,6 +1,6 @@
 """
-Exporting aModel from PyTorch to ONNX and Running it using ONNXRuntime
-======================================================================
+Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+=======================================================================
 
 In this tutorial, we describe how to convert a model defined
 in PyTorch into the ONNX format and then run it with ONNXRuntime. 
@@ -268,7 +268,7 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 
 
 ######################################################################
-# .. figure:: /_static/img/cat_superres_with_ort.png
+# .. figure:: /_static/img/cat_superres_with_ort.jpg
 #    :alt: output\_cat
 #
 #
