@@ -275,12 +275,11 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 # ONNXRuntime being a cross platform engine, you can run it across
 # multiple platforms and on both CPUs and GPUs.
 # 
-# ONNXRuntime is high performant. 
-# More information `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
-
 # ONNXRuntime can also be deployed to the cloud for model inferencing
-# using Azure Machine Learning Services.
-# More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
+# using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
+#
+# More information about ONNXRuntime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
+#
 # 
 # For more information about ONNXRuntime `here <https://github.com/microsoft/onnxruntime>`__.
 #
