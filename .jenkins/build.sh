@@ -25,10 +25,10 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
 
 # Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
+# git clone https://github.com/pytorch/audio --quiet
+# pushd audio
+# python setup.py install
+# popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -36,9 +36,9 @@ aws configure set default.s3.multipart_threshold 5120MB
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # TODO: Fix bugs in these tutorials to make them runnable again
-  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
+  # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -180,4 +180,4 @@ else
 fi
 
 rm -rf vision
-rm -rf audio
+# rm -rf audio
