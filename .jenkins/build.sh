@@ -17,6 +17,11 @@ pip install -r $DIR/../requirements.txt
 
 export PATH=/opt/conda/bin:$PATH
 conda install -y sphinx==1.8.2 pandas
+
+# install awscli
+pip uninstall awscli
+pip install awscli==1.16.35
+
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
