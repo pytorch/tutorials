@@ -16,7 +16,7 @@ rm -rf src
 pip install -r $DIR/../requirements.txt
 
 export PATH=/opt/conda/bin:$PATH
-pip install -y sphinx==1.8.2 pandas
+pip install sphinx==1.8.2 pandas
 
 # install awscli
 pip uninstall awscli
