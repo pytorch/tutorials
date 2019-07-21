@@ -16,19 +16,24 @@ rm -rf src
 pip install -r $DIR/../requirements.txt
 
 export PATH=/opt/conda/bin:$PATH
-conda install -y sphinx==1.8.2 pandas
+pip install sphinx==1.8.2 pandas
+
+# install awscli
+# pip uninstall awscli
+# pip install awscli==1.16.35
+
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
 # Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
+# git clone https://github.com/pytorch/audio --quiet
+# pushd audio
+# python setup.py install
+# popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -36,9 +41,9 @@ aws configure set default.s3.multipart_threshold 5120MB
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # TODO: Fix bugs in these tutorials to make them runnable again
-  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -180,4 +185,4 @@ else
 fi
 
 rm -rf vision
-rm -rf audio
+# rm -rf audio
