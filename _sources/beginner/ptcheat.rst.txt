@@ -29,7 +29,7 @@ See `autograd <https://pytorch.org/docs/stable/autograd.html>`__,
 `functional <https://pytorch.org/docs/stable/nn.html#torch-nn-functional>`__
 and `optim <https://pytorch.org/docs/stable/optim.html>`__
 
-Hybrid frontend
+Torchscript and JIT
 ---------------
 
 .. code-block:: python
@@ -41,7 +41,7 @@ Hybrid frontend
     @script                   # decorator used to indicate data-dependent 
                               # control flow within the code being traced
 
-See `hybrid frontend <https://pytorch.org/docs/stable/hybridfrontend>`__
+See `Torchscript <https://pytorch.org/docs/stable/jit.html>`__
 
 ONNX
 ----
