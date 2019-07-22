@@ -54,13 +54,14 @@ It is aptly named BadFFTFunction
 
 
     class BadFFTFunction(Function):
-
-        def forward(self, input):
+        @staticmethod
+        def forward(ctx, input):
             numpy_input = input.detach().numpy()
             result = abs(rfft2(numpy_input))
             return input.new(result)
 
-        def backward(self, grad_output):
+        @staticmethod
+        def backward(ctx, grad_output):
             numpy_go = grad_output.numpy()
             result = irfft2(numpy_go)
             return grad_output.new(result)
@@ -70,7 +71,7 @@ It is aptly named BadFFTFunction
 
 
     def incorrect_fft(input):
-        return BadFFTFunction()(input)
+        return BadFFTFunction.apply(input)
 
 
 
@@ -108,7 +109,7 @@ It is aptly named BadFFTFunction
             [ 4.0054,  5.8267, 12.5935, 11.0283,  9.5643],
             [11.9083,  7.0578,  8.9575,  0.8138, 19.0580],
             [ 2.3966, 11.1555,  6.5373,  5.4814,  4.0304]],
-           grad_fn=<BadFFTFunction>)
+           grad_fn=<BadFFTFunctionBackward>)
     tensor([[-0.0705,  0.3470, -0.6537,  1.5586,  0.4001,  2.4423, -0.3818,  0.4327],
             [-2.0173,  0.4235,  0.5730, -1.7962, -0.3061, -0.4203,  0.2828,  0.3642],
             [ 2.6415, -0.9624, -0.2076, -1.3889,  0.0127, -1.8734,  1.7997,  0.2824],
@@ -280,7 +281,7 @@ The backward pass computes the gradient wrt the input and the gradient wrt the f
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.718 seconds)
+   **Total running time of the script:** ( 0 minutes  0.675 seconds)
 
 
 .. _sphx_glr_download_advanced_numpy_extensions_tutorial.py:

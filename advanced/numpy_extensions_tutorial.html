@@ -214,13 +214,14 @@ correct.</p>
 
 
 <span class="k">class</span> <span class="nc">BadFFTFunction</span><span class="p">(</span><span class="n">Function</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="n">numpy_input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rfft2</span><span class="p">(</span><span class="n">numpy_input</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
         <span class="n">numpy_go</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">irfft2</span><span class="p">(</span><span class="n">numpy_go</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
@@ -230,7 +231,7 @@ correct.</p>
 
 
 <span class="k">def</span> <span class="nf">incorrect_fft</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">BadFFTFunction</span><span class="p">()(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">BadFFTFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Example usage of the created layer:</strong></p>
@@ -250,7 +251,7 @@ correct.</p>
         [ 4.0054,  5.8267, 12.5935, 11.0283,  9.5643],
         [11.9083,  7.0578,  8.9575,  0.8138, 19.0580],
         [ 2.3966, 11.1555,  6.5373,  5.4814,  4.0304]],
-       grad_fn=&lt;BadFFTFunction&gt;)
+       grad_fn=&lt;BadFFTFunctionBackward&gt;)
 tensor([[-0.0705,  0.3470, -0.6537,  1.5586,  0.4001,  2.4423, -0.3818,  0.4327],
         [-2.0173,  0.4235,  0.5730, -1.7962, -0.3061, -0.4203,  0.2828,  0.3642],
         [ 2.6415, -0.9624, -0.2076, -1.3889,  0.0127, -1.8734,  1.7997,  0.2824],
@@ -381,7 +382,7 @@ Gradient for the input map:  tensor([[-0.5364,  0.1949, -1.2547, -0.7975,  0.367
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Are the gradients correct:  True
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.718 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.675 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-numpy-extensions-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/f90300e089ec4a4b37bb662251daec65/numpy_extensions_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numpy_extensions_tutorial.py</span></code></a></div>
