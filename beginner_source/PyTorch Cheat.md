@@ -26,13 +26,13 @@ from torch.jit import script, trace       # hybrid frontend decorator and tracin
 ```
 See [autograd](https://pytorch.org/docs/stable/autograd.html), [nn](https://pytorch.org/docs/stable/nn.html), [functional](https://pytorch.org/docs/stable/nn.html#torch-nn-functional) and [optim](https://pytorch.org/docs/stable/optim.html)
 
-### Hybrid frontend
+### Torchscript and JIT
 
 ```
 torch.jit.trace()         # takes your module or function and an example data input, and traces the computational steps that the data encounters as it progresses through the model
 @script                   # decorator used to indicate data-dependent control flow within the code being traced
 ```
-See [hybrid frontend](https://pytorch.org/docs/stable/hybridfrontend)
+See [Torchscript](https://pytorch.org/docs/stable/jit.html)
 
 ### ONNX
 
