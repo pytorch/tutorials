@@ -235,7 +235,7 @@ print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
 
 ########################################################################
-# That looks waaay better than chance, which is 10% accuracy (randomly picking
+# That looks way better than chance, which is 10% accuracy (randomly picking
 # a class out of 10 classes).
 # Seems like the network learnt something.
 #
@@ -298,7 +298,7 @@ print(device)
 #         inputs, labels = data[0].to(device), data[1].to(device)
 #
 # Why dont I notice MASSIVE speedup compared to CPU? Because your network
-# is realllly small.
+# is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
 # the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
