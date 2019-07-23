@@ -84,6 +84,11 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 # was not trained fully for good accuracy and is used here for
 # demonstration purposes only.
 #
+# It is important to call ``torch_model.eval()`` or ``torch_model.train(False)``
+# before exporting the model, to turn the model to inference mode.
+# This is required since operators like dropout or batchnorm behave
+# differently in inference and training mode. 
+#
 
 # Load pretrained model weights
 model_url = 'https://s3.amazonaws.com/pytorch/test_data/export/superres_epoch100-44c6958e.pth'
@@ -95,8 +100,8 @@ if torch.cuda.is_available():
     map_location = None
 torch_model.load_state_dict(model_zoo.load_url(model_url, map_location=map_location))
 
-# set the train mode to false since we will only run the forward pass.
-torch_model.train(False)
+# set the model to inference mode
+torch_model.eval()
 
 
 ######################################################################
@@ -142,7 +147,11 @@ torch.onnx.export(torch_model,               # model being run
 # the same values when run in onnxruntime.
 #
 # But before verifying the model's output with onnxruntime, we will check
-# the onnx model with onnx's API. This will verify the model's structure
+# the onnx model with onnx's API.
+# First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
+# will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
+# For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
+# Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 # and confirm that the model has a valid schema.
 # The validity of the ONNX graph is verified by checking the model's
 # version, the graph's structure, as well as the nodes and their inputs
@@ -196,28 +205,8 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 
 
 ######################################################################
-# Transfering SRResNet using ONNX
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-
-
-######################################################################
-# Using the same process as above, we also transferred an interesting new
-# model "SRResNet" for super-resolution presented in `this
-# paper <https://arxiv.org/pdf/1609.04802.pdf>`__ (thanks to the authors
-# at Twitter for providing us code and pretrained parameters for the
-# purpose of this tutorial). The model definition and a pre-trained model
-# can be found
-# `here <https://gist.github.com/prigoyal/b245776903efbac00ee89699e001c9bd>`__.
-# Below is what SRResNet model input, output looks like. |SRResNet|
-#
-# .. |SRResNet| image:: /_static/img/SRResNet.png
-#
-
-
-######################################################################
-# Running the model using ONNXRuntime
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Running the model on an image using ONNXRuntime
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
 
