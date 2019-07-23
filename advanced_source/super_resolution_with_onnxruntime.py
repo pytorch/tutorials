@@ -16,6 +16,7 @@ For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>
 and `onnxruntime <https://github.com/microsoft/onnxruntime>`__.
 You can get binary builds of onnx and onnxrunimte with
 ``pip install onnx onnxruntime``.
+Note that ONNXRuntime is compatible with Python versions 3.5 to 3.7.
 
 ``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
 the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
@@ -101,40 +102,52 @@ torch_model.train(False)
 ######################################################################
 # Exporting a model in PyTorch works via tracing or scripting. This
 # tutorial will use as an example a model exported by tracing. 
-# To export a model, you call the ``torch.onnx.export()`` function.
+# To export a model, we call the ``torch.onnx.export()`` function.
 # This will execute the model, recording a trace of what operators
 # are used to compute the outputs.
-# Because ``_export`` runs the model, we need to provide an input
+# Because ``export`` runs the model, we need to provide an input
 # tensor ``x``. The values in this can be random as long as it is the
 # right type and size.
-#
+# Note that the input size will be fixed in the exported ONNX graph for
+# all the input's dimensions, unless specified as a dynamic axes.
+# In this example we export the model with an input of batch_size 1,
+# but then specify the first dimension as dynamic in the ``dynamic_axes``
+# parameter in ``torch.onnx.export()``. 
+# The exported model will thus accept inputs of size [batch_size, 1, 224, 224]
+# where batch_size can be variable. 
+# 
 # To learn more details about PyTorch's export interface, check out the
 # `torch.onnx documentation <https://pytorch.org/docs/master/onnx.html>`__.
 #
 
 # Input to the model
 x = torch.randn(batch_size, 1, 224, 224, requires_grad=True)
+torch_out = torch_model(x)
 
 # Export the model
-torch_out = torch.onnx._export(torch_model,               # model being run
-                               x,                         # model input (or a tuple for multiple inputs)
-                               "super_resolution.onnx",   # where to save the model (can be a file or file-like object)
-                               export_params=True,        # store the trained parameter weights inside the model file
-                               opset_version=10,          # the onnx version to export the model to
-                               do_constant_folding=True,  # wether to execute constant folding for optimization
-                               input_names = ['input'],   # the model's input names
-                               output_names = ['output'], # the model's output names
-                               dynamic_axes={'input' : {0 : 'batch_size'},    # variable lenght axes
-                                             'output' : {0 : 'batch_size'}})
+torch.onnx.export(torch_model,               # model being run
+                  x,                         # model input (or a tuple for multiple inputs)
+                  "super_resolution.onnx",   # where to save the model (can be a file or file-like object)
+                  export_params=True,        # store the trained parameter weights inside the model file
+                  opset_version=10,          # the onnx version to export the model to
+                  do_constant_folding=True,  # wether to execute constant folding for optimization
+                  input_names = ['input'],   # the model's input names
+                  output_names = ['output'], # the model's output names
+                  dynamic_axes={'input' : {0 : 'batch_size'},    # variable lenght axes
+                                'output' : {0 : 'batch_size'}})
 
 ######################################################################
-# ``torch_out`` is the output after executing the model. Normally you can
-# ignore this output, but here we will use it to verify that the model we
-# exported computes the same values when run in onnxruntime.
+# We also computed ``torch_out``, the output after of the model,
+# which we will use to verify that the model we exported computes
+# the same values when run in onnxruntime.
 #
 # But before verifying the model's output with onnxruntime, we will check
 # the onnx model with onnx's API. This will verify the model's structure
-# and confirm that the model has a valid schema. 
+# and confirm that the model has a valid schema.
+# The validity of the ONNX graph is verified by checking the model's
+# version, the graph's structure, as well as the nodes and their inputs
+# and outputs.
+#
 
 import onnx
 
@@ -143,10 +156,18 @@ onnx.checker.check_model(onnx_model)
 
 
 ######################################################################
-# Now let's create an onnxruntime session. This part can normally be
-# done in a separate process or on another machine, but we will
-# continue in the same process so that we can verify that onnxruntime
-# and PyTorch are computing the same value for the network:
+# Now let's compute the output using ONNXRuntime's Python APIs.
+# This part can normally be done in a separate process or on another
+# machine, but we will continue in the same process so that we can
+# verify that onnxruntime and PyTorch are computing the same value
+# for the network.
+#
+# In order to run the model with ONNXRuntime, we need to create an
+# inference session for the model with the chosen configuration
+# parameters (here we use the default config).
+# Once the session is created, we evaluate the model using the run() api.
+# The output of this call is a list containing the outputs of the model
+# computed by ONNXRuntime. 
 #
 
 import onnxruntime
@@ -217,6 +238,15 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 # python library. Note that this preprocessing is the standard practice of
 # processing data for training/testing neural networks.
 #
+# We first resize the image to fit the size of the model's input (224x224).
+# Then we split the image into its Y, Cb, and Cr components.
+# These components represent a greyscale image (Y), and
+# the blue-difference (Cb) and red-difference (Cr) chroma components.
+# The Y component being more sensitive to the human eye, we are 
+# interested in this component which we will be transforming.
+# After extracting the Y component, we convert it to a tensor which
+# will be the input of our model.
+#
 
 from PIL import Image
 import torchvision.transforms as transforms
@@ -235,8 +265,9 @@ img_y.unsqueeze_(0)
 
 
 ######################################################################
-# Now, as a next step, let's take the resized cat image and run the
-# super-resolution model in ONNXRuntime.
+# Now, as a next step, let's take the tensor representing the
+# greyscale resized cat image and run the super-resolution model in
+# ONNXRuntime as explained previously.
 #
 
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(img_y)}
@@ -250,7 +281,7 @@ img_out_y = ort_outs[0]
 # final output image from the output tensor, and save the image.
 # The post-processing steps have been adopted from PyTorch
 # implementation of super-resolution model
-# `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__
+# `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__.
 # 
 
 img_out_y = Image.fromarray(np.uint8((img_out_y[0] * 255.0).clip(0, 255)[0]), mode='L')
