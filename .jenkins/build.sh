@@ -33,6 +33,7 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
 pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
+pip install torchvision
 
 # Install torchaudio from source
 # git clone https://github.com/pytorch/audio --quiet
