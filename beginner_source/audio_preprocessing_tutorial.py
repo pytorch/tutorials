@@ -29,14 +29,15 @@ import matplotlib.pyplot as plt
 
 
 ######################################################################
-# Torchaudio supports loading sound files in the wav and mp3 format.
+# Torchaudio supports loading sound files in the wav and mp3 format. We
+# call waveform the resulting raw audio signal.
 # 
 
 filename = "_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
-waveform, frequency = torchaudio.load(filename)
+waveform, sample_rate = torchaudio.load(filename)
 
 print("Shape of waveform: {}".format(waveform.size()))
-print("Frequency of waveform: {}".format(frequency))
+print("Sample rate of waveform: {}".format(sample_rate))
 
 plt.figure()
 plt.plot(waveform.transpose(0,1).numpy())
@@ -53,23 +54,18 @@ plt.plot(waveform.transpose(0,1).numpy())
 #    FloatTensor) to a floating point number between -1.0 and 1.0. Note
 #    the 16-bit number is called the “bit depth” or “precision”, not to be
 #    confused with “bit rate”.
-# -  **PadTrim**: PadTrim a 2d-Tensor
-# -  **Downmix**: Downmix any stereo signals to mono.
-# -  **LC2CL**: Permute a 2d tensor from samples (n x c) to (c x n).
-# -  **Resample**: Resample the signal to a different frequency.
-# -  **Spectrogram**: Create a spectrogram from a raw audio signal
-# -  **MelScale**: This turns a normal STFT into a mel frequency STFT,
-#    using a conversion matrix. This uses triangular filter banks.
+# -  **Resample**: Resample waveform to a different sample rate.
+# -  **Spectrogram**: Create a spectrogram from a waveform.
+# -  **MelScale**: This turns a normal STFT into a Mel-frequency STFT,
+#    using a conversion matrix.
 # -  **SpectrogramToDB**: This turns a spectrogram from the
 #    power/amplitude scale to the decibel scale.
-# -  **MFCC**: Create the Mel-frequency cepstrum coefficients from an
-#    audio signal
-# -  **MelSpectrogram**: Create MEL Spectrograms from a raw audio signal
-#    using the STFT function in PyTorch.
-# -  **BLC2CBL**: Permute a 3d tensor from Bands x Sample length x
-#    Channels to Channels x Bands x Samples length.
-# -  **MuLawEncoding**: Encode signal based on mu-law companding.
-# -  **MuLawExpanding**: Decode mu-law encoded signal.
+# -  **MFCC**: Create the Mel-frequency cepstrum coefficients from a
+#    waveform.
+# -  **MelSpectrogram**: Create MEL Spectrograms from a waveform using the
+#    STFT function in PyTorch.
+# -  **MuLawEncoding**: Encode waveform based on mu-law companding.
+# -  **MuLawDeconding**: Decode mu-law encoded waveform.
 # 
 # Since all transforms are nn.Modules or jit.ScriptModules, they can be
 # used as part of a neural network at any point.
@@ -85,7 +81,7 @@ specgram = torchaudio.transforms.Spectrogram()(waveform)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
-plt.imshow(specgram.log2().transpose(1,2)[0,:,:].numpy(), cmap='gray')
+plt.imshow(specgram.log2()[0,:,:].numpy(), cmap='gray')
 
 
 ######################################################################
@@ -97,36 +93,18 @@ specgram = torchaudio.transforms.MelSpectrogram()(waveform)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
-p = plt.imshow(specgram.log2().transpose(1,2)[0,:,:].detach().numpy(), cmap='gray')
+p = plt.imshow(specgram.log2()[0,:,:].detach().numpy(), cmap='gray')
 
 
 ######################################################################
-# We can resample the signal, one channel at a time.
+# We can resample the waveform, one channel at a time.
 # 
 
-new_frequency = frequency/10
+new_sample_rate = sample_rate/10
 
 # Since Resample applies to a single channel, we resample first channel here
 channel = 0
-transformed = torchaudio.transforms.Resample(frequency, new_frequency)(waveform[channel,:].view(1,-1))
-
-print("Shape of transformed waveform: {}".format(transformed.size()))
-
-plt.figure()
-plt.plot(transformed[0,:].numpy())
-
-
-######################################################################
-# Or we can first convert the stereo to mono, and resample, using
-# composition.
-# 
-
-transformed = torchaudio.transforms.Compose([
-    torchaudio.transforms.LC2CL(),
-    torchaudio.transforms.DownmixMono(),
-    torchaudio.transforms.LC2CL(),
-    torchaudio.transforms.Resample(frequency, new_frequency)
-])(waveform)
+transformed = torchaudio.transforms.Resample(sample_rate, new_sample_rate)(waveform[channel,:].view(1,-1))
 
 print("Shape of transformed waveform: {}".format(transformed.size()))
 
@@ -136,8 +114,8 @@ plt.plot(transformed[0,:].numpy())
 
 ######################################################################
 # As another example of transformations, we can encode the signal based on
-# the Mu-Law companding. But to do so, we need the signal to be between -1
-# and 1. Since the tensor is just a regular PyTorch tensor, we can apply
+# Mu-Law enconding. But to do so, we need the signal to be between -1 and
+# 1. Since the tensor is just a regular PyTorch tensor, we can apply
 # standard operators on it.
 # 
 
@@ -175,7 +153,7 @@ plt.plot(transformed[0,:].numpy())
 # And now decode.
 # 
 
-reconstructed = torchaudio.transforms.MuLawExpanding()(transformed)
+reconstructed = torchaudio.transforms.MuLawDecoding()(transformed)
 
 print("Shape of recovered waveform: {}".format(reconstructed.size()))
 
@@ -216,7 +194,7 @@ print("Median relative difference between original and MuLaw reconstucted signal
 # 
 
 n_fft = 400.0
-frame_length = n_fft / frequency * 1000.0
+frame_length = n_fft / sample_rate * 1000.0
 frame_shift = frame_length / 2.0
 
 params = {
@@ -227,7 +205,7 @@ params = {
     "frame_shift": frame_shift,
     "remove_dc_offset": False,
     "round_to_power_of_two": False,
-    "sample_frequency": frequency,
+    "sample_frequency": sample_rate,
 }
 
 specgram = torchaudio.compliance.kaldi.spectrogram(waveform, **params)
@@ -239,7 +217,7 @@ plt.imshow(specgram.transpose(0,1).numpy(), cmap='gray')
 
 
 ######################################################################
-# We also support computing the filterbank features from raw audio signal,
+# We also support computing the filterbank features from waveforms,
 # matching Kaldi’s implementation.
 # 
 
@@ -255,9 +233,9 @@ plt.imshow(fbank.transpose(0,1).numpy(), cmap='gray')
 # Conclusion
 # ----------
 # 
-# We used an example sound signal to illustrate how to open an audio file
-# or using Torchaudio, and how to pre-process and transform an audio
-# signal. Given that Torchaudio is built on PyTorch, these techniques can
-# be used as building blocks for more advanced audio applications, such as
-# speech recognition, while leveraging GPUs.
+# We used an example raw audio signal, or waveform, to illustrate how to
+# open an audio file using Torchaudio, and how to pre-process and
+# transform such waveform. Given that Torchaudio is built on PyTorch,
+# these techniques can be used as building blocks for more advanced audio
+# applications, such as speech recognition, while leveraging GPUs.
 # 
