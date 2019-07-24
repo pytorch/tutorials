@@ -18,8 +18,9 @@ pip install -r $DIR/../requirements.txt
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
-pip install pytorch-nightly 
-pip install cudatoolkit==9.0 -c pytorch
+# Temp for testing. 
+pip install numpy
+pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
 
 # install awscli
