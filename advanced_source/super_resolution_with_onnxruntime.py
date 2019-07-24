@@ -35,10 +35,17 @@ import torch.onnx
 ######################################################################
 # Super-resolution is a way of increasing the resolution of images, videos
 # and is widely used in image processing or video editing. For this
-# tutorial, we will first use a small super-resolution model with a dummy
-# input.
+# tutorial, we will use a small super-resolution model.
 #
-# First, let's create a SuperResolution model in PyTorch. `This
+# First, let's create a SuperResolution model in PyTorch. 
+# This model uses the efficient sub-pixel convolution layer described in
+# `"Real-Time Single Image and Video Super-Resolution Using an Efficient
+# Sub-Pixel Convolutional Neural Network" - Shi et al <https://arxiv.org/abs/1609.05158>`__
+# for increasing the resolution of an image by an upscale factor.
+# The model expects the Y component of the YCbCr of an image as an input, and
+# outputs the upscaled Y component in super resolution. 
+# 
+# `The
 # model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py>`__
 # comes directly from PyTorch's examples without modification:
 #
