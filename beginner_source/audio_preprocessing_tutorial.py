@@ -50,10 +50,6 @@ plt.plot(waveform.transpose(0,1).numpy())
 # Torchaudio supports a growing list of
 # `transformations <https://pytorch.org/audio/transforms.html>`_.
 # 
-# -  **Scale**: Scale audio tensor from a 16-bit integer (represented as a
-#    FloatTensor) to a floating point number between -1.0 and 1.0. Note
-#    the 16-bit number is called the “bit depth” or “precision”, not to be
-#    confused with “bit rate”.
 # -  **Resample**: Resample waveform to a different sample rate.
 # -  **Spectrogram**: Create a spectrogram from a waveform.
 # -  **MelScale**: This turns a normal STFT into a Mel-frequency STFT,
