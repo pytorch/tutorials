@@ -19,6 +19,7 @@ export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
 # Temp for testing. 
+pip uninstall torchvision -y
 pip uninstall torch -y
 pip install numpy
 pip install torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
