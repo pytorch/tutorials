@@ -18,6 +18,10 @@ pip install -r $DIR/../requirements.txt
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
+pip install pytorch-nightly 
+pip install cudatoolkit==9.0 -c pytorch
+
+
 # install awscli
 # pip uninstall awscli
 # pip install awscli==1.16.35
