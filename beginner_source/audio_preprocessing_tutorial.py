@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 # Torchaudio supports loading sound files in the wav and mp3 format.
 # 
 
-filename = "assets/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+filename = "_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
 waveform, frequency = torchaudio.load(filename)
 
 print("Shape of waveform: {}".format(waveform.size()))
