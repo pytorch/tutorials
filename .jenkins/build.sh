@@ -43,10 +43,10 @@ python setup.py install
 popd
 
 # Install torchaudio from source
-# git clone https://github.com/pytorch/audio --quiet
-# pushd audio
-# python setup.py install
-# popd
+git clone https://github.com/pytorch/audio --quiet
+pushd audio
+python setup.py install
+popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -198,4 +198,4 @@ else
 fi
 
 rm -rf vision
-# rm -rf audio
+rm -rf audio
