@@ -33,7 +33,7 @@ import matplotlib.pyplot as plt
 # call waveform the resulting raw audio signal.
 # 
 
-filename = "_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+filename = "../_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
 waveform, sample_rate = torchaudio.load(filename)
 
 print("Shape of waveform: {}".format(waveform.size()))
