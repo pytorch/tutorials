@@ -304,22 +304,22 @@ discuss the latter later.</p>
 <p>For the “ahead of time” flavor, we build our C++ extension by writing a
 <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script that uses setuptools to compile our C++ code. For the LLTM, it
 looks as simple as this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span>
-<span class="kn">from</span> <span class="nn">torch.utils.cpp_extension</span> <span class="k">import</span> <span class="n">CppExtension</span><span class="p">,</span> <span class="n">BuildExtension</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">setuptools</span> <span class="k">import</span> <span class="n">setup</span><span class="p">,</span> <span class="n">Extension</span>
+<span class="kn">from</span> <span class="nn">torch.utils</span> <span class="k">import</span> <span class="n">cpp_extension</span>
 
 <span class="n">setup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'lltm_cpp'</span><span class="p">,</span>
-      <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span><span class="n">CppExtension</span><span class="p">(</span><span class="s1">'lltm'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'lltm.cpp'</span><span class="p">])],</span>
-      <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">BuildExtension</span><span class="p">})</span>
+      <span class="n">ext_modules</span><span class="o">=</span><span class="p">[</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">CppExtension</span><span class="p">(</span><span class="s1">'lltm_cpp'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'lltm.cpp'</span><span class="p">])],</span>
+      <span class="n">cmdclass</span><span class="o">=</span><span class="p">{</span><span class="s1">'build_ext'</span><span class="p">:</span> <span class="n">cpp_extension</span><span class="o">.</span><span class="n">BuildExtension</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>In this code, <code class="xref py py-class docutils literal notranslate"><span class="pre">CppExtension</span></code> is a convenience wrapper around
 <code class="xref py py-class docutils literal notranslate"><span class="pre">setuptools.Extension</span></code> that passes the correct include paths and sets
 the language of the extension to C++. The equivalent vanilla <code class="xref py py-mod docutils literal notranslate"><span class="pre">setuptools</span></code>
 code would simply be:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setuptools</span><span class="o">.</span><span class="n">Extension</span><span class="p">(</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Extension</span><span class="p">(</span>
    <span class="n">name</span><span class="o">=</span><span class="s1">'lltm_cpp'</span><span class="p">,</span>
    <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s1">'lltm.cpp'</span><span class="p">],</span>
-   <span class="n">include_dirs</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">include_paths</span><span class="p">(),</span>
+   <span class="n">include_dirs</span><span class="o">=</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">include_paths</span><span class="p">(),</span>
    <span class="n">language</span><span class="o">=</span><span class="s1">'c++'</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -552,7 +552,7 @@ see:</p>
 </div>
 <p>If we call <code class="docutils literal notranslate"><span class="pre">help()</span></code> on the function or module, we can see that its signature
 matches our C++ code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">help</span><span class="p">(</span><span class="n">lltm</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">In</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="n">help</span><span class="p">(</span><span class="n">lltm_cpp</span><span class="o">.</span><span class="n">forward</span><span class="p">)</span>
 <span class="n">forward</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="n">method</span> <span class="n">of</span> <span class="n">builtins</span><span class="o">.</span><span class="n">PyCapsule</span> <span class="n">instance</span>
     <span class="n">forward</span><span class="p">(</span><span class="n">arg0</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg1</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg2</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg3</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">arg4</span><span class="p">:</span> <span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="p">::</span><span class="n">Tensor</span><span class="p">]</span>
 
@@ -611,7 +611,9 @@ class citizens of PyTorch:</p>
 small benchmark to see how much performance we gained from rewriting our op in
 C++. We’ll run the LLTM forwards and backwards a few times and measure the
 duration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">input_features</span> <span class="o">=</span> <span class="mi">32</span>
