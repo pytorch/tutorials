@@ -48,6 +48,9 @@ pushd audio
 python setup.py install
 popd
 
+# Install Torchtext
+pip install torchtext
+
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
