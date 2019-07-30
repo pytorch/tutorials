@@ -335,7 +335,7 @@ if __name__ == '__main__':
 #   to handle cases when the model does not recognize anything in the image.
 #
 # - We run the Flask server in the development mode, which is not suitable for
-#   deploying in production. You can check out `this tutorial <http://flask.pocoo.org/docs/1.0/tutorial/deploy/>`_
+#   deploying in production. You can check out `this tutorial <https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/>`_
 #   for deploying a Flask server in production.
 #
 # - You can also add a UI by creating a page with a form which takes the image and
