@@ -7,7 +7,7 @@ torchaudio.kaldi_io
 .. currentmodule:: torchaudio.kaldi_io
 
 To use this module, the dependency kaldi_io_ needs to be installed.
-This is a light wrapper around ``kaldi_io`` that returns :class:`torch.Tensors`.
+This is a light wrapper around ``kaldi_io`` that returns :class:`torch.Tensor`.
 
 .. _kaldi_io: https://github.com/vesis84/kaldi-io-for-python
 

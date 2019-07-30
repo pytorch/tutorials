@@ -1,24 +1,66 @@
+.. role:: hidden
+    :class: hidden-section
+
 torchaudio.transforms
 ======================
 
 .. currentmodule:: torchaudio.transforms
 
-Transforms are common audio transforms. They can be chained together using :class:`Compose`
+Transforms are common audio transforms. They can be chained together using :class:`torch.nn.Sequential`
 
-.. autoclass:: Compose
 
-.. autoclass:: Scale
+:hidden:`Spectrogram`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: PadTrim
+.. autoclass:: Spectrogram
 
-.. autoclass:: DownmixMono
+  .. automethod:: torchaudio._docs.Spectrogram.forward
 
-.. autoclass:: LC2CL
+:hidden:`AmplitudeToDB`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: MEL
+.. autoclass:: AmplitudeToDB
 
-.. autoclass:: BLC2CBL
+  .. automethod:: torchaudio._docs.AmplitudeToDB.forward
+
+:hidden:`MelScale`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MelScale
+
+  .. automethod:: torchaudio._docs.MelScale.forward
+
+:hidden:`MelSpectrogram`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MelSpectrogram
+
+  .. automethod:: torchaudio._docs.MelSpectrogram.forward
+
+:hidden:`MFCC`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MFCC
+
+  .. automethod:: torchaudio._docs.MFCC.forward
+
+:hidden:`MuLawEncoding`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: MuLawEncoding
 
-.. autoclass:: MuLawExpanding
+  .. automethod:: torchaudio._docs.MuLawEncoding.forward
+
+:hidden:`MuLawDecoding`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: MuLawDecoding
+
+  .. automethod:: torchaudio._docs.MuLawDecoding.forward
+
+:hidden:`Resample`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: Resample
+
+  .. automethod:: torchaudio._docs.Resample.forward
