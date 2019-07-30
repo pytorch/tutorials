@@ -70,11 +70,12 @@ def hello():
 ###############################################################################
 # We will make slight changes to the above snippet, so that it suits our API
 # definition. First, we will rename the method to ``predict``. We will update
-# the endpoint path to ``/predict`` and make it so that it also accepts POST
+# the endpoint path to ``/predict``. Since the image files will be sent via
+# HTTP POST requests, we will update it so that it also accepts only POST
 # requests:
 
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     return 'Hello World!'
 
@@ -86,7 +87,7 @@ def predict():
 from flask import Flask, jsonify
 app = Flask(__name__)
 
-@app.route('/predict', methods=['GET', 'POST'])
+@app.route('/predict', methods=['POST'])
 def predict():
     return jsonify({'class_id': 'IMAGE_NET_XXX', 'class_name': 'Cat'})
 
@@ -144,15 +145,15 @@ with open('sample_file.jpeg', 'rb') as f:
 #
 # Now will use a pretrained DenseNet 121 model to predict the image class. We
 # will use one from ``torchvision`` library, load the model and get an
-# inference. Instead of using a pretrained model, you can also load your own
-# model, to learn more about it check this
-# :doc:`tutorial </beginner/saving_loading_models>`.
+# inference. While we'll be using a pretrained model in this example, you can
+# use this same approach for your own models. See more about loading your
+# models in this :doc:`tutorial </beginner/saving_loading_models>`.
 
 from torchvision import models
 
-# make sure to pass `pretrained` as `True` to use the pretrained weights
+# Make sure to pass `pretrained` as `True` to use the pretrained weights:
 model = models.densenet121(pretrained=True)
-# since we are using our model only for inference, switch to `eval` mode
+# Since we are using our model only for inference, switch to `eval` mode:
 model.eval()
 
 
@@ -165,11 +166,13 @@ def get_prediction(image_bytes):
 
 ######################################################################
 # The tensor ``y_hat`` will contain the index of the predicted class id.
-# However we need a human readable class name. For that we need a class id
+# However, we need a human readable class name. For that we need a class id
 # to name mapping. Download
 # `this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_ 
-# and place it in current directory as file ``imagenet_class_index.json``. We
-# will load this JSON file and get the class name of the predicted index.
+# and place it in current directory as file ``imagenet_class_index.json``.
+# This file contains the mapping of ImageNet class id to ImageNet class
+# name. We will load this JSON file and get the class name of the
+# predicted index.
 
 import json
 
@@ -195,7 +198,7 @@ with open('sample_file.jpeg', 'rb') as f:
     print(get_prediction(image_bytes=image_bytes))
 
 ######################################################################
-# and you should get a response like this
+# You should get a response like this:
 
 ['n02124075', 'Egyptian_cat']
 
@@ -204,12 +207,12 @@ with open('sample_file.jpeg', 'rb') as f:
 # readable name.
 #
 # .. Note ::
-#    Did you notice why ``model`` variable is not part of ``get_prediction``
-#    method? Or why it is a global variable? Loading a model can be an
-#    expensive operation, memory, CPU wise. If we loaded the model in the
-#    ``get_prediction`` method, then it will get unnecessarily loaded every
+#    Did you notice that why ``model`` variable is not part of ``get_prediction``
+#    method? Or why is model a global variable? Loading a model can be an
+#    expensive operation in terms of memory and compute. If we loaded the model in the
+#    ``get_prediction`` method, then it would get unnecessarily loaded every
 #    time the method is called. Since, we are building a web server, there
-#    could be thousands of requests per second and we cannot keep loading the
+#    could be thousands of requests per second, and we cannot keep loading the
 #    model everytime. So, we keep the model loaded in memory once. In
 #    production systems it is a good idea to load the model first and then
 #    start serving the requests.
@@ -219,9 +222,8 @@ with open('sample_file.jpeg', 'rb') as f:
 # ---------------------------------------
 #
 # In this final part we will add our model to our Flask API server. Since
-# our API server supposed to take an image file, we will update our ``predict``
-# method to read files from the requests. We will also restrict this method
-# to POST requests for the sake of simplicity
+# our API server is supposed to take an image file, we will update our ``predict``
+# method to read files from the requests:
 
 from flask import request
 
@@ -295,13 +297,13 @@ if __name__ == '__main__':
 
 #######################################################################
 # We can use a command line tool like curl or Postman to send requests to
-# this webserver
+# this webserver:
 #
 # ::
 #
 #     $ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
 #
-# And you will get a response in the form
+# You will get a response in the form:
 #
 # ::
 #
@@ -313,24 +315,26 @@ if __name__ == '__main__':
 # Next steps
 # --------------
 #
-# The server we wrote is quite triavial and is not ready for production. So,
-# here are some things you can do to make it better
+# The server we wrote is quite trivial and and may not do everything
+# you need for your production application. So, here are some things you
+# can do to make it better:
 #
 # - The endpoint ``/predict`` assumes that always there will be a image file
 #   in the request. This may not hold true for all requests. Our user may
 #   send image with a different parameter or send no images at all.
 #
-# - User may send non-image type files too. Since we are not handling errors,
-#   this will break our server. Loading the image within an exception block
-#   is a good idea.
+# - The user may send non-image type files too. Since we are not handling
+#   errors, this will break our server. Loading the image within an
+#   exception block is a good idea.
 #
-# - There is a possibility that the image sent by user may not get recoginzed
-#   by our model. Above code should be updated to handle this case.
+# - Even though the model can recognize a large number of classes of images,
+#   it may not be able to recognize all images. Enhance the implementation
+#   to handle cases when the model does not recognize anything in the image.
 #
-# - We run the Flask server in a development mode, which not suitable for
-#   deploying in production. You may check `this tutorial <http://flask.pocoo.org/docs/1.0/tutorial/deploy/>`_ 
+# - We run the Flask server in the development mode, which is not suitable for
+#   deploying in production. You can check out `this tutorial <http://flask.pocoo.org/docs/1.0/tutorial/deploy/>`_
 #   for deploying a Flask server in production.
 #
-# - You can also add a welcome page with a form which takes the image and
-#   displays the prediction. Check the `demo <https://pytorch-imagenet.herokuapp.com/>`_ 
-#   of the same or its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
+# - You can also add a UI by creating a page with a form which takes the image and
+#   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
+#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
