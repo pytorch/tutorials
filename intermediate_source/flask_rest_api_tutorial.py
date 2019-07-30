@@ -212,10 +212,12 @@ with open('sample_file.jpeg', 'rb') as f:
 #    expensive operation in terms of memory and compute. If we loaded the model in the
 #    ``get_prediction`` method, then it would get unnecessarily loaded every
 #    time the method is called. Since, we are building a web server, there
-#    could be thousands of requests per second, and we cannot keep loading the
-#    model everytime. So, we keep the model loaded in memory once. In
-#    production systems it is a good idea to load the model first and then
-#    start serving the requests.
+#    could be thousands of requests per second, we should not waste time
+#    redundantly loading the model for every inference. So, we keep the model
+#    loaded in memory just once. In
+#    production systems, it's necessary to be efficient about your use of
+#    compute to be able to serve requests at scale, so you should generally
+#    load your model before serving requests.
 
 ######################################################################
 # Integrating the model in our API Server
@@ -296,7 +298,7 @@ if __name__ == '__main__':
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
 #######################################################################
-# We can use a command line tool like curl or Postman to send requests to
+# We can use a command line tool like curl or `Postman <https://www.getpostman.com/>`_ to send requests to
 # this webserver:
 #
 # ::
@@ -324,8 +326,9 @@ if __name__ == '__main__':
 #   send image with a different parameter or send no images at all.
 #
 # - The user may send non-image type files too. Since we are not handling
-#   errors, this will break our server. Loading the image within an
-#   exception block is a good idea.
+#   errors, this will break our server. Adding an explicit error handing
+#   path that will throw an exception would allow us to better handle
+#   the bad inputs
 #
 # - Even though the model can recognize a large number of classes of images,
 #   it may not be able to recognize all images. Enhance the implementation
