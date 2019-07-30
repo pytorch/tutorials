@@ -206,11 +206,6 @@ Production Usage
    :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
-   :tooltip: Convert a neural style transfer model that has been exported from PyTorch into the Apple CoreML format using ONNX
-   :description: :doc:`advanced/ONNXLive`
-   :figure: _static/img/ONNXLive.png
-
-.. customgalleryitem::
    :tooltip: Parallelize computations across processes and clusters of machines
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
