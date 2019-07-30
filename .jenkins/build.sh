@@ -29,7 +29,7 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # this is a workaround to the issue.
 pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
-Install torchaudio from source
+# Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
 pushd audio
 python setup.py install
