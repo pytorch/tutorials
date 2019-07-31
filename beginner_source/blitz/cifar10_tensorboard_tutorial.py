@@ -136,7 +136,6 @@ writer.add_image('four_cifar_images', grid)
 # 
 # .. figure:: /_static/img/tensorboard_first_view.png
 #   :width: 600
-#   A first view of Tensorboard, showing 
 # 
 # Now you know how to use Tensorboard! This example doesn't give a good
 # sense of what you might want to use Tensorboard *for*, however. One
@@ -246,10 +245,7 @@ print('Finished Training')
 #  
 # .. figure:: /_static/img/tensorboard_scalar_runs.png
 #   :width: 600
-#   The training loss plotted over time 
-#
-#
+
+########################################################################
 # .. figure:: /_static/img/tensorboard_figure.png
 #   :width: 600
-#   Four training images, with the probability the model assigns to the 
-#   most likely class, and the actual label
