@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Visualizing model training with Tensorboard
+Visualizing Model Training with Tensorboard
 =====================
 
 In the previous tutorial, we saw how to load in data, feed it through a model we defined as a subclass of ``nn.Module``, trained this model on training data, and tested it on testing data.
