@@ -14,7 +14,7 @@ Here are the steps we'll follow:
 1. Read in data and apply appropriate transforms (same as prior tutorial).
 2. Inspect the data by using `make_grid` to create a grid of images and log it to Tensorboard.
 3. Log the model and inspect it using Tensorboard.
-4. Log the model's loss as training proceeds 
+4. Log both the model's loss and the model's predictions on training batches as training proceeds 
 """
 # imports
 import matplotlib.pyplot as plt
@@ -67,10 +67,10 @@ dataiter = iter(trainloader)
 images, labels = dataiter.next()
 
 # show images
-imshow(torchvision.utils.make_grid(images))
+matplotlib_imshow(torchvision.utils.make_grid(images))
 
 ########################################################################
-# Define the same model from before
+# We'll define the same model from before.
 
 class Net(nn.Module):
     def __init__(self):
@@ -95,7 +95,7 @@ class Net(nn.Module):
 net = Net()
 
 ########################################################################
-# Define `optimizer` and `criterion`
+# We'll also define our `optimizer` and `criterion`
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
@@ -103,45 +103,107 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 ########################################################################
 # 1. Tensorboard setup
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We'll import `tensorboard` from `torch.utils` and define a `SummaryWriter`, 
-# our key object for writing information to Tensorboard.
+# Now we'll set up Tensorboard, importing `tensorboard` from `torch.utils` and defining a 
+# `SummaryWriter`, our key object for writing information to Tensorboard.
 from torch.utils.tensorboard import SummaryWriter
 
-# default is "runs"
+# default `log_dir` is "runs"
 writer = SummaryWriter(log_dir='runs/cifar_experiment_1')
 
 ########################################################################
-# 2. Define a Convolutional Neural Network
+# This line alone creates a `runs/cifar_experiment_1` folder.
+# 
+# 2. Writing to Tensorboard
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Copy the neural network from the Neural Networks section before and modify it to
-# take 3-channel images (instead of 1-channel images as it was defined).
+# Now let's write an image to our Tensorboard.
 
+# create grid of images
+grid = torchvision.utils.make_grid(images)
+    
+# show images
+matplotlib_imshow(grid)
 
-
-
-
-
-########################################################################
-# 3. Define a Loss function and optimizer
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Let's use a Classification Cross-Entropy loss and SGD with momentum.
-
-
-
-
+# write to tensorboard
+writer.add_image('four_cifar_images', grid)
 
 ########################################################################
-# 4. Train the network
-# ^^^^^^^^^^^^^^^^^^^^
+# Now running
+# ```
+# tensorboard --logdir=runs
+# ```
+# from the command line and then navigating to `https://localhost:6006`
+# should show the following.
+# 
+# .. figure:: /_static/img/tensorboard_first_view.png
+#   :width: 600
+# 
+# Now you know how to use Tensorboard! This example doesn't give a good
+# sense of what you might want to use Tensorboard *for*, however. One
+# of Tensorboard's strengths is its ability to visualize complex model
+# structures. Let's visualize the model we built.
+
+writer.add_graph(net, images)
+writer.close() # necessary to see Tensorboard refresh
+
+########################################################################
+# Now upon refreshing Tensorboard you should see a "Graphs" tab that
+# looks like this:
 #
-# This is when things start to get interesting.
-# We simply have to loop over our data iterator, and feed the inputs to the
-# network and optimize.
+# .. figure:: /_static/img/tensorboard_model_viz.png
+#    :width: 600
+#
+# Go ahead and double click on "Net" to see it expand, seeing a more 
+# detailed view of the structure of the get a deep dive  
+# look into the structure of the model.
+# 
+# Next, we'll see how to use Tensorboard to track the model as it trains. 
+# 
+# 3. Tracking model training with Tensorboard
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# In the previous example, we simply _printed_ the model's running loss 
+# every 2000 iterations. Now, we'll instead log the running loss to 
+# Tensorboard, along with a view into the predictions the model is 
+# making via the `plot_classes_preds` function.
 
+# Helper functions
+
+def images_to_probs(net, images):
+    '''
+    Generates predictions and corresponding probabilities from a trained 
+    network and a list of images
+    '''
+    output = net(images)
+    # convert output probabilities to predicted class
+    _, preds_tensor = torch.max(output, 1)
+    preds = np.squeeze(preds_tensor.numpy()) 
+    return preds, [F.softmax(el, dim=0)[i].item() for i, el in zip(preds, output)]
+
+
+def plot_classes_preds(net, images, labels):
+    '''
+    Generates matplotlib Figure using a trained network, along with images 
+    and labels from a batch. Uses the "images_to_probs" function above
+    '''
+    preds, probs = images_to_probs(net, images)
+    # plot the images in the batch, along with predicted and true labels
+    fig = plt.figure(figsize=(12, 48))
+    for idx in np.arange(4):
+        ax = fig.add_subplot(1, 4, idx+1, xticks=[], yticks=[])
+        matplotlib_imshow(images[idx])
+        ax.set_title("{0}, {1:.1f}% (label: {2})".format(classes[preds[idx]], probs[idx] * 100.0, classes[labels[idx]]),
+                     color=("green" if preds[idx]==labels[idx].item() else "red"))
+    return fig
+
+
+########################################################################
+# Go ahead and double click on "Net" to see it expand and get a deep dive  
+# look into the structure of the model.
+
+running_loss = 0.0
 for epoch in range(2):  # loop over the dataset multiple times
-
-    running_loss = 0.0
+    
     for i, data in enumerate(trainloader, 0):
+        
         # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
 
@@ -153,168 +215,34 @@ for epoch in range(2):  # loop over the dataset multiple times
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
-
-        # print statistics
+    
         running_loss += loss.item()
-        if i % 2000 == 1999:    # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            running_loss = 0.0
+        if i % 2000 == 1999:    # every 2000 mini-batches...
 
+            # log the running loss
+            writer.add_scalar('training loss',
+                              running_loss / 2000,
+                              epoch * len(trainloader) + i)
+
+            # log a Matplotlib Figure showing the model's predictions on a 
+            # random mini-batch             
+            writer.add_figure('predictions vs. actuals',
+                              plot_classes_preds(net, inputs, labels),
+                              global_step=epoch * len(trainloader) + i)
+            plot_classes_preds(net, inputs, labels)
+            running_loss = 0.0            
 print('Finished Training')
 
 ########################################################################
-# 5. Test the network on the test data
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# We have trained the network for 2 passes over the training dataset.
-# But we need to check if the network has learnt anything at all.
-#
-# We will check this by predicting the class label that the neural network
-# outputs, and checking it against the ground-truth. If the prediction is
-# correct, we add the sample to the list of correct predictions.
-#
-# Okay, first step. Let us display an image from the test set to get familiar.
+# You can now look at the scalars tab to see the running loss plotted 
+# over time, and the graphs tab to see the figure with the images, their
+# probabilities, and whether the image was classified correctly, plotted
+# as a function of the number of iterations (you may have to scroll
+# down to see the figure in the images tab)
+#  
+# .. figure:: /_static/img/tensorboard_scalar_runs.png
+#   :width: 600
+# 
+# .. figure:: /_static/img/tensorboard_figure.png
+#   :width: 600
 
-dataiter = iter(testloader)
-images, labels = dataiter.next()
-
-# print images
-imshow(torchvision.utils.make_grid(images))
-print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
-
-
-
-outputs = net(images)
-
-########################################################################
-# The outputs are energies for the 10 classes.
-# The higher the energy for a class, the more the network
-# thinks that the image is of the particular class.
-# So, let's get the index of the highest energy:
-_, predicted = torch.max(outputs, 1)
-
-print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
-                              for j in range(4)))
-
-########################################################################
-# The results seem pretty good.
-#
-# Let us look at how the network performs on the whole dataset.
-
-correct = 0
-total = 0
-with torch.no_grad():
-    for data in testloader:
-        images, labels = data
-        outputs = net(images)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-
-print('Accuracy of the network on the 10000 test images: %d %%' % (
-    100 * correct / total))
-
-########################################################################
-# That looks way better than chance, which is 10% accuracy (randomly picking
-# a class out of 10 classes).
-# Seems like the network learnt something.
-#
-# Hmmm, what are the classes that performed well, and the classes that did
-# not perform well:
-
-class_correct = list(0. for i in range(10))
-class_total = list(0. for i in range(10))
-with torch.no_grad():
-    for data in testloader:
-        images, labels = data
-        outputs = net(images)
-        _, predicted = torch.max(outputs, 1)
-        c = (predicted == labels).squeeze()
-        for i in range(4):
-            label = labels[i]
-            class_correct[label] += c[i].item()
-            class_total[label] += 1
-
-
-for i in range(10):
-    print('Accuracy of %5s : %2d %%' % (
-        classes[i], 100 * class_correct[i] / class_total[i]))
-
-########################################################################
-# Okay, so what next?
-#
-# How do we run these neural networks on the GPU?
-#
-# Training on GPU
-# ----------------
-# Just like how you transfer a Tensor onto the GPU, you transfer the neural
-# net onto the GPU.
-#
-# Let's first define our device as the first visible cuda device if we have
-# CUDA available:
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-# Assuming that we are on a CUDA machine, this should print a CUDA device:
-
-print(device)
-
-########################################################################
-# The rest of this section assumes that ``device`` is a CUDA device.
-#
-# Then these methods will recursively go over all modules and convert their
-# parameters and buffers to CUDA tensors:
-#
-# .. code:: python
-#
-#     net.to(device)
-#
-#
-# Remember that you will have to send the inputs and targets at every step
-# to the GPU too:
-#
-# .. code:: python
-#
-#         inputs, labels = data[0].to(device), data[1].to(device)
-#
-# Why dont I notice MASSIVE speedup compared to CPU? Because your network
-# is really small.
-#
-# **Exercise:** Try increasing the width of your network (argument 2 of
-# the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
-# they need to be the same number), see what kind of speedup you get.
-#
-# **Goals achieved**:
-#
-# - Understanding PyTorch's Tensor library and neural networks at a high level.
-# - Train a small neural network to classify images
-#
-# Training on multiple GPUs
-# -------------------------
-# If you want to see even more MASSIVE speedup using all of your GPUs,
-# please check out :doc:`data_parallel_tutorial`.
-#
-# Where do I go next?
-# -------------------
-#
-# -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
-# -  `Train a state-of-the-art ResNet network on imagenet`_
-# -  `Train a face generator using Generative Adversarial Networks`_
-# -  `Train a word-level language model using Recurrent LSTM networks`_
-# -  `More examples`_
-# -  `More tutorials`_
-# -  `Discuss PyTorch on the Forums`_
-# -  `Chat with other users on Slack`_
-#
-# .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
-# .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
-# .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
-# .. _More examples: https://github.com/pytorch/examples
-# .. _More tutorials: https://github.com/pytorch/tutorials
-# .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-# .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
-
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
-del dataiter
-# %%%%%%INVISIBLE_CODE_BLOCK%%%%%%
