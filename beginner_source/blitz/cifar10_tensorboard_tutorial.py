@@ -241,7 +241,7 @@ print('Finished Training')
 # over time, and the graphs tab to see the figure with the images, their
 # probabilities, and whether the image was classified correctly, plotted
 # as a function of the number of iterations (you may have to scroll
-# down to see the figure in the images tab)
+# down to see the figure in the images tab).
 #  
 # .. figure:: /_static/img/tensorboard_scalar_runs.png
 #   :width: 600
