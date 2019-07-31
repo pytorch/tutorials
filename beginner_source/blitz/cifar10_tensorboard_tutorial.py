@@ -5,7 +5,7 @@ Visualizing model training with Tensorboard
 
 In the previous tutorial, we saw how to load in data, feed it through a model we defined as a subclass of ``nn.Module``, trained this model on training data, and tested it on testing data.
 
-We were able to print out some statistics as the model was training to get a sense for whether training is progressing. However, we can do much better than that: PyTorch integrates with Tensorboard, a tool designed for visualizing the results of neural network training runs. Here we'll illustrate that functionality.  
+We were able to print out some statistics as the model was training to get a sense for whether training is progressing. However, we can do much better than that: PyTorch integrates with Tensorboard, a tool designed for visualizing the results of neural network training runs. This tutorial illustrates its basic functionality.
 
 ----------------
 
@@ -52,6 +52,7 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 # helper function to show an image
+# (used in the `plot_classes_preds` function below)
 def matplotlib_imshow(img):
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
@@ -61,13 +62,6 @@ def matplotlib_imshow(img):
     # present. See:
     # https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.imshow.html
     plt.show()
-
-# get some random training images
-dataiter = iter(trainloader)
-images, labels = dataiter.next()
-
-# show images
-matplotlib_imshow(torchvision.utils.make_grid(images))
 
 ########################################################################
 # We'll define the same model from before.
@@ -138,8 +132,12 @@ writer.add_image('four_cifar_images', grid)
 #   :width: 600
 # 
 # Now you know how to use Tensorboard! This example doesn't give a good
-# sense of what you might want to use Tensorboard *for*, however. One
-# of Tensorboard's strengths is its ability to visualize complex model
+# sense of what you might want to use Tensorboard *for*, however. That's
+# what we'll cover next.
+# 
+# 3. Inspect the model using Tensorboard
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# One of Tensorboard's strengths is its ability to visualize complex model
 # structures. Let's visualize the model we built.
 
 writer.add_graph(net, images)
@@ -158,7 +156,7 @@ writer.close() # necessary to see Tensorboard refresh
 # 
 # Next, we'll see how to use Tensorboard to track the model as it trains. 
 # 
-# 3. Tracking model training with Tensorboard
+# 4. Tracking model training with Tensorboard
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # In the previous example, we simply *printed* the model's running loss 
 # every 2000 iterations. Now, we'll instead log the running loss to 
@@ -245,6 +243,7 @@ print('Finished Training')
 #  
 # .. figure:: /_static/img/tensorboard_scalar_runs.png
 #   :width: 600
+#
 
 ########################################################################
 # .. figure:: /_static/img/tensorboard_figure.png
