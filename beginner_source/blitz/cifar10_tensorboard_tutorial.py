@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Training a Classifier
+Visualizing model training with Tensorboard
 =====================
 
 In the previous tutorial, we saw how to load in data, feed it through a model we defined as a subclass of ``nn.Module``, trained this model on training data, and tested it on testing data.
@@ -136,6 +136,7 @@ writer.add_image('four_cifar_images', grid)
 # 
 # .. figure:: /_static/img/tensorboard_first_view.png
 #   :width: 600
+#   A first view of Tensorboard, showing 
 # 
 # Now you know how to use Tensorboard! This example doesn't give a good
 # sense of what you might want to use Tensorboard *for*, however. One
@@ -160,7 +161,7 @@ writer.close() # necessary to see Tensorboard refresh
 # 
 # 3. Tracking model training with Tensorboard
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# In the previous example, we simply _printed_ the model's running loss 
+# In the previous example, we simply *printed* the model's running loss 
 # every 2000 iterations. Now, we'll instead log the running loss to 
 # Tensorboard, along with a view into the predictions the model is 
 # making via the `plot_classes_preds` function.
@@ -190,14 +191,18 @@ def plot_classes_preds(net, images, labels):
     for idx in np.arange(4):
         ax = fig.add_subplot(1, 4, idx+1, xticks=[], yticks=[])
         matplotlib_imshow(images[idx])
-        ax.set_title("{0}, {1:.1f}% (label: {2})".format(classes[preds[idx]], probs[idx] * 100.0, classes[labels[idx]]),
+        ax.set_title("{0}, {1:.1f}% (label: {2})".format(
+            classes[preds[idx]], 
+            probs[idx] * 100.0, 
+            classes[labels[idx]]),
                      color=("green" if preds[idx]==labels[idx].item() else "red"))
     return fig
 
 
 ########################################################################
-# Go ahead and double click on "Net" to see it expand and get a deep dive  
-# look into the structure of the model.
+# Finally, let's train the model using the same model training code from
+# the prior tutorial, but writing results to Tensorboard instead of 
+# printing to console
 
 running_loss = 0.0
 for epoch in range(2):  # loop over the dataset multiple times
@@ -219,17 +224,16 @@ for epoch in range(2):  # loop over the dataset multiple times
         running_loss += loss.item()
         if i % 2000 == 1999:    # every 2000 mini-batches...
 
-            # log the running loss
+            # ...log the running loss
             writer.add_scalar('training loss',
                               running_loss / 2000,
                               epoch * len(trainloader) + i)
 
-            # log a Matplotlib Figure showing the model's predictions on a 
+            # ...log a Matplotlib Figure showing the model's predictions on a 
             # random mini-batch             
             writer.add_figure('predictions vs. actuals',
                               plot_classes_preds(net, inputs, labels),
                               global_step=epoch * len(trainloader) + i)
-            plot_classes_preds(net, inputs, labels)
             running_loss = 0.0            
 print('Finished Training')
 
@@ -242,7 +246,10 @@ print('Finished Training')
 #  
 # .. figure:: /_static/img/tensorboard_scalar_runs.png
 #   :width: 600
-# 
+#   The training loss plotted over time 
+#
+#
 # .. figure:: /_static/img/tensorboard_figure.png
 #   :width: 600
-
+#   Four training images, with the probability the model assigns to the 
+#   most likely class, and the actual label
