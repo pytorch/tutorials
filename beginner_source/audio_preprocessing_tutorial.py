@@ -1,5 +1,5 @@
 """
-Torchaudio Tutorial
+torchaudio Tutorial
 ===================
 
 PyTorch is an open source deep learning platform that provides a
@@ -7,7 +7,7 @@ seamless path from research prototyping to production deployment with
 GPU support.
 
 Significant effort in solving machine learning problems goes into data
-preparation. Torchaudio leverages PyTorch’s GPU support, and provides
+preparation. torchaudio leverages PyTorch’s GPU support, and provides
 many tools to make data loading easy and more readable. In this
 tutorial, we will see how to load and preprocess data from a simple
 dataset.
@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 
 
 ######################################################################
-# Torchaudio supports loading sound files in the wav and mp3 format. We
+# torchaudio supports loading sound files in the wav and mp3 format. We
 # call waveform the resulting raw audio signal.
 # 
 
@@ -47,21 +47,21 @@ plt.plot(waveform.transpose(0,1).numpy())
 # Transformations
 # ---------------
 # 
-# Torchaudio supports a growing list of
+# torchaudio supports a growing list of
 # `transformations <https://pytorch.org/audio/transforms.html>`_.
 # 
 # -  **Resample**: Resample waveform to a different sample rate.
 # -  **Spectrogram**: Create a spectrogram from a waveform.
 # -  **MelScale**: This turns a normal STFT into a Mel-frequency STFT,
 #    using a conversion matrix.
-# -  **SpectrogramToDB**: This turns a spectrogram from the
+# -  **AmplitudeToDB**: This turns a spectrogram from the
 #    power/amplitude scale to the decibel scale.
 # -  **MFCC**: Create the Mel-frequency cepstrum coefficients from a
 #    waveform.
 # -  **MelSpectrogram**: Create MEL Spectrograms from a waveform using the
 #    STFT function in PyTorch.
 # -  **MuLawEncoding**: Encode waveform based on mu-law companding.
-# -  **MuLawDeconding**: Decode mu-law encoded waveform.
+# -  **MuLawDecoding**: Decode mu-law encoded waveform.
 # 
 # Since all transforms are nn.Modules or jit.ScriptModules, they can be
 # used as part of a neural network at any point.
@@ -169,12 +169,12 @@ print("Median relative difference between original and MuLaw reconstucted signal
 
 
 ######################################################################
-# Migrating to Torchaudio from Kaldi
+# Migrating to torchaudio from Kaldi
 # ----------------------------------
 # 
 # Users may be familiar with
 # `Kaldi <http://github.com/kaldi-asr/kaldi>`_, a toolkit for speech
-# recognition. Torchaudio offers compatibility with it in
+# recognition. torchaudio offers compatibility with it in
 # ``torchaudio.kaldi_io``. It can indeed read from kaldi scp, or ark file
 # or streams with:
 # 
@@ -184,7 +184,7 @@ print("Median relative difference between original and MuLaw reconstucted signal
 # -  read_mat_scp
 # -  read_mat_ark
 # 
-# Torchaudio provides Kaldi-compatible transforms for ``spectrogram`` and
+# torchaudio provides Kaldi-compatible transforms for ``spectrogram`` and
 # ``fbank`` with the benefit of GPU support, see
 # `here <compliance.kaldi.html>`__ for more information.
 # 
@@ -230,8 +230,8 @@ plt.imshow(fbank.transpose(0,1).numpy(), cmap='gray')
 # ----------
 # 
 # We used an example raw audio signal, or waveform, to illustrate how to
-# open an audio file using Torchaudio, and how to pre-process and
-# transform such waveform. Given that Torchaudio is built on PyTorch,
+# open an audio file using torchaudio, and how to pre-process and
+# transform such waveform. Given that torchaudio is built on PyTorch,
 # these techniques can be used as building blocks for more advanced audio
 # applications, such as speech recognition, while leveraging GPUs.
 # 
