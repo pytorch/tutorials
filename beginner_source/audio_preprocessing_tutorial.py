@@ -40,7 +40,7 @@ print("Shape of waveform: {}".format(waveform.size()))
 print("Sample rate of waveform: {}".format(sample_rate))
 
 plt.figure()
-plt.plot(waveform.transpose(0,1).numpy())
+plt.plot(waveform.t().numpy())
 
 
 ######################################################################
@@ -209,7 +209,7 @@ specgram = torchaudio.compliance.kaldi.spectrogram(waveform, **params)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
-plt.imshow(specgram.transpose(0,1).numpy(), cmap='gray')
+plt.imshow(specgram.t().numpy(), cmap='gray')
 
 
 ######################################################################
@@ -222,7 +222,7 @@ fbank = torchaudio.compliance.kaldi.fbank(waveform, **params)
 print("Shape of fbank: {}".format(fbank.size()))
 
 plt.figure()
-plt.imshow(fbank.transpose(0,1).numpy(), cmap='gray')
+plt.imshow(fbank.t().numpy(), cmap='gray')
 
 
 ######################################################################

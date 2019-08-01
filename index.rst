@@ -114,7 +114,7 @@ Audio
 
 .. customgalleryitem::
    :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
-   :tooltip: Preprocessing with Torchaudio Tutorial
+   :tooltip: Preprocessing with torchaudio Tutorial
    :description: :doc:`beginner/audio_preprocessing_tutorial`
 
 .. raw:: html
