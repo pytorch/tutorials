@@ -243,7 +243,9 @@ def predict():
 ######################################################################
 # The ``app.py`` file is now complete. Following is the full version:
 #
-# ::
+# .. code-block:: javascript
+#  :linenos:
+#  
 #   import io
 #   import json
 #   
