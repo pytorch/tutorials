@@ -134,7 +134,7 @@ def transform_image(image_bytes):
 # and returns a tensor. To test the above method, read an image file in
 # bytes mode and see if you get a tensor back:
 
-with open('sample_file.jpeg', 'rb') as f:
+with open('./_static/img/sample_file.jpeg', 'rb') as f:
     image_bytes = f.read()
     tensor = transform_image(image_bytes=image_bytes)
     print(tensor)
@@ -193,7 +193,7 @@ def get_prediction(image_bytes):
 # We will test our above method:
 
 
-with open('sample_file.jpeg', 'rb') as f:
+with open('./_static/img/sample_file.jpeg', 'rb') as f:
     image_bytes = f.read()
     print(get_prediction(image_bytes=image_bytes))
 
