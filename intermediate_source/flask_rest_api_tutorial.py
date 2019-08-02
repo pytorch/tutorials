@@ -207,7 +207,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # readable name.
 #
 # .. Note ::
-#    Did you notice that why ``model`` variable is not part of ``get_prediction``
+#    Did you notice that ``model`` variable is not part of ``get_prediction``
 #    method? Or why is model a global variable? Loading a model can be an
 #    expensive operation in terms of memory and compute. If we loaded the model in the
 #    ``get_prediction`` method, then it would get unnecessarily loaded every
@@ -243,8 +243,7 @@ def predict():
 ######################################################################
 # The ``app.py`` file is now complete. Following is the full version:
 #
-# .. code-block:: javascript
-#  :linenos:
+# .. code-block:: python
 #  
 #   import io
 #   import json
