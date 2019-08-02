@@ -226,19 +226,20 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # In this final part we will add our model to our Flask API server. Since
 # our API server is supposed to take an image file, we will update our ``predict``
 # method to read files from the requests:
-
-from flask import request
-
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    if request.method == 'POST':
-        # we will get the file from the request
-        file = request.files['file']
-        # convert that to bytes
-        img_bytes = file.read()
-        class_id, class_name = get_prediction(image_bytes=img_bytes)
-        return jsonify({'class_id': class_id, 'class_name': class_name})
+#
+# .. code-block:: python
+#  
+#    from flask import request
+#
+#    @app.route('/predict', methods=['POST'])
+#    def predict():
+#        if request.method == 'POST':
+#            # we will get the file from the request
+#            file = request.files['file']
+#            # convert that to bytes
+#            img_bytes = file.read()
+#            class_id, class_name = get_prediction(image_bytes=img_bytes)
+#            return jsonify({'class_id': class_id, 'class_name': class_name})
 
 ######################################################################
 # The ``app.py`` file is now complete. Following is the full version:
