@@ -176,7 +176,7 @@ def get_prediction(image_bytes):
 
 import json
 
-imagenet_class_index = json.load(open('imagenet_class_index.json'))
+imagenet_class_index = json.load(open('../_static/imagenet_class_index.json'))
 
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes=image_bytes)
