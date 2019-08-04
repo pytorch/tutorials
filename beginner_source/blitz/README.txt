@@ -21,8 +21,8 @@ Deep Learning with PyTorch: A 60 Minute Blitz
 	Training a Classifier
 	https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 
-6. cifar10_tensorboard_tutorial.py
-	Visualizing Model Training with Tensorboard
-	https://pytorch.org/tutorials/beginner/blitz/cifar10_tensorboard_tutorial.html
+6. tensorboard_tutorial.py
+	Visualizing Models, Data, and Training with TensorBoard
+	https://pytorch.org/tutorials/beginner/blitz/tensorboard_tutorial.html
 
 
