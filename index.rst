@@ -61,7 +61,7 @@ Getting Started
 .. .. galleryitem:: beginner/saving_loading_models.py
 
 .. customgalleryitem::
-   :figure: /_static/img/thumbnails/tensorboard_pytorch.png
+   :figure: /_static/img/thumbnails/pytorch_tensorboard.png
    :tooltip: Learn how to visualize PyTorch models with TensorBoard
    :description: :doc:`beginner/tensorboard_tutorial`   
 
