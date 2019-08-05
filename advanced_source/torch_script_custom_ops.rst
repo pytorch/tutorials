@@ -999,6 +999,11 @@ Naturally, it is best practice to only use
 ``torch.utils.cpp_extension.load_inline`` if your source code is reasonably
 short.
 
+Note that if you're using this in a Jupyter Notebook, you should not execute
+the cell with the registration multiple times because each execution registers
+a new library and re-registers the custom operator. If you need to re-execute it,
+you have to restart the Python kernel of your notebook beforehand.
+
 Building with Setuptools
 ************************
 
