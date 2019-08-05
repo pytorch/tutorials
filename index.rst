@@ -58,12 +58,12 @@ Getting Started
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
 
+.. .. galleryitem:: beginner/saving_loading_models.py
+
 .. customgalleryitem::
    :figure: /_static/img/thumbnails/tensorboard_pytorch.png
    :tooltip: Learn how to visualize PyTorch models with TensorBoard
    :description: :doc:`beginner/tensorboard_tutorial`   
-
-.. .. galleryitem:: beginner/saving_loading_models.py
 
 .. customgalleryitem::
    :figure: /_static/img/torch.nn.png
