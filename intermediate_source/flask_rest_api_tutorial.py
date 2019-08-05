@@ -130,7 +130,7 @@ def transform_image(image_bytes):
 
 
 ######################################################################
-# Above method takes image data in bytes, applies the series of transforms
+# The above method takes image data in bytes, applies the series of transforms
 # and returns a tensor. To test the above method, read an image file in
 # bytes mode (first replacing `../_static/img/sample_file.jpeg` with the actual
 # path to the file on your computer) and see if you get a tensor back:
@@ -349,4 +349,4 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # - You can also add a UI by creating a page with a form which takes the image and
 #   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
+#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_. 
