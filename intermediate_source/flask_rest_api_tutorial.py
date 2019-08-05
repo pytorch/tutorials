@@ -132,9 +132,10 @@ def transform_image(image_bytes):
 ######################################################################
 # Above method takes image data in bytes, applies the series of transforms
 # and returns a tensor. To test the above method, read an image file in
-# bytes mode and see if you get a tensor back:
+# bytes mode (first replacing `<PATH/TO/.jpeg/FILE>` with the actual path
+# to the file on your computer) and see if you get a tensor back:
 
-with open("../_static/img/sample_file.jpeg", 'rb') as f:
+with open("<PATH/TO/.jpeg/FILE>/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     tensor = transform_image(image_bytes=image_bytes)
     print(tensor)
@@ -169,14 +170,14 @@ def get_prediction(image_bytes):
 # However, we need a human readable class name. For that we need a class id
 # to name mapping. Download
 # `this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_ 
-# and place it in current directory as file ``imagenet_class_index.json``.
+# as ``imagenet_class_index.json`` and remember where you saved it.
 # This file contains the mapping of ImageNet class id to ImageNet class
 # name. We will load this JSON file and get the class name of the
 # predicted index.
 
 import json
 
-imagenet_class_index = json.load(open('../_static/imagenet_class_index.json'))
+imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
 
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes=image_bytes)
@@ -193,7 +194,7 @@ def get_prediction(image_bytes):
 # We will test our above method:
 
 
-with open("../_static/img/sample_file.jpeg", 'rb') as f:
+with open("<PATH/TO/.jpeg/FILE>/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     print(get_prediction(image_bytes=image_bytes))
 
@@ -256,7 +257,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #   
 #   
 #   app = Flask(__name__)
-#   imagenet_class_index = json.load(open('imagenet_class_index.json'))
+#   imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
 #   model = models.densenet121(pretrained=True)
 #   model.eval()
 #   
@@ -300,19 +301,23 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
 #######################################################################
-# We can use a command line tool like curl or `Postman <https://www.getpostman.com/>`_ to send requests to
-# this webserver:
+# We can use the 
+# `requests <https://pypi.org/project/requests/>`_   
+# library to send a POST request to our app:
 #
-# ::
-#
-#     $ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
-#
-# You will get a response in the form:
+# .. code-block:: python
+#  
+#   import requests
+# 
+#   resp = requests.post("http://localhost:5000/predict", 
+#                        files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+
+#######################################################################
+# Printing `resp.json()` will now show the following:
 #
 # ::
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
-#
 #
 
 ######################################################################
