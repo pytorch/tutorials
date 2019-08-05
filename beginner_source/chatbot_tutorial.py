@@ -195,7 +195,8 @@ def loadConversations(fileName, lines, fields):
             for i, field in enumerate(fields):
                 convObj[field] = values[i]
             # Convert string to list (convObj["utteranceIDs"] == "['L598485', 'L598486', ...]")
-            lineIds = eval(convObj["utteranceIDs"])
+            utterance_id_pattern = re.compile('L[0-9]+')
+            lineIds = utterance_id_pattern.findall(convObj["utteranceIDs"])
             # Reassemble lines
             convObj["lines"] = []
             for lineId in lineIds:

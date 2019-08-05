@@ -101,8 +101,8 @@ Image
 
 .. customgalleryitem::
    :figure: /_static/img/cat.jpg
-   :tooltip: Use ONNX to convert a model defined in PyTorch into the ONNX format and then load it into Caffe2
-   :description: :doc:`advanced/super_resolution_with_caffe2`
+   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+   :description: :doc:`advanced/super_resolution_with_onnxruntime`
 
 .. raw:: html
 
@@ -210,12 +210,6 @@ Production Usage
    :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
-   :tooltip: Convert a neural style transfer model that has been exported from PyTorch into the Apple CoreML format using ONNX
-   :description: :doc:`advanced/ONNXLive`
-   :figure: _static/img/ONNXLive.png
-
-
-.. customgalleryitem::
    :tooltip: Parallelize computations across processes and clusters of machines
    :description: :doc:`/intermediate/dist_tuto`
    :figure: _static/img/distributed/DistPyTorch.jpg
@@ -235,6 +229,10 @@ Production Usage
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
 
+.. customgalleryitem::
+   :tooltip: Deploying PyTorch and Building a REST API using Flask
+   :description: :doc:`/intermediate/flask_rest_api_tutorial`
+   :figure: _static/img/flask.png
 
 .. raw:: html
 
@@ -281,7 +279,7 @@ PyTorch in Other Languages
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
-   advanced/super_resolution_with_caffe2
+   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
@@ -338,8 +336,8 @@ PyTorch in Other Languages
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/flask_rest_api_tutorial
    beginner/aws_distributed_training_tutorial
-   advanced/ONNXLive
    advanced/cpp_export
 
 .. toctree::
