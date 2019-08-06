@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Visualizing Models, Data, and Training with TensorBoard
-=====================
+=======================================================
 
 In the previous tutorial, we saw how to load in data, feed it through a model we defined as a subclass of ``nn.Module``, trained this model on training data, and tested it on testing data. In addition, we were able to print out some statistics as the model was training to get a sense for whether training was progressing. However, we can do much better than that: PyTorch integrates with TensorBoard, a tool designed for visualizing the results of neural network training runs. This tutorial illustrates some of its functionality, using the `Fashion-MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`__ which can be read into PyTorch using `torchvision.dataset` just as the CIFAR-10 data can.
 
@@ -105,7 +105,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 ########################################################################
 # 1. TensorBoard setup
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^
 # Now we'll set up TensorBoard, importing `tensorboard` from `torch.utils` and defining a 
 # `SummaryWriter`, our key object for writing information to TensorBoard.
 from torch.utils.tensorboard import SummaryWriter
@@ -118,7 +118,7 @@ writer = SummaryWriter('runs/fashion_mnist_experiment_1')
 # folder.
 # 
 # 2. Writing to TensorBoard
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^
 # Now let's write an image to our TensorBoard - specifically, a grid - 
 # using `make_grid <https://pytorch.org/docs/stable/torchvision/utils.html#torchvision.utils.make_grid>`__
 
@@ -218,7 +218,7 @@ writer.close()
 # training.
 #
 # 5. Tracking model training with TensorBoard
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # In the previous example, we simply *printed* the model's running loss 
 # every 2000 iterations. Now, we'll instead log the running loss to 
 # TensorBoard, along with a view into the predictions the model is 
@@ -329,7 +329,7 @@ print('Finished Training')
 # for each class.
 #
 # 6. Assessing trained models with TensorBoard 
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We can plot these curves using the 
 # `add_pr_curve <https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter.add_pr_curve>`__ 
 # function:
