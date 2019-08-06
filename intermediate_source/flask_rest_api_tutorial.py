@@ -130,11 +130,12 @@ def transform_image(image_bytes):
 
 
 ######################################################################
-# Above method takes image data in bytes, applies the series of transforms
+# The above method takes image data in bytes, applies the series of transforms
 # and returns a tensor. To test the above method, read an image file in
-# bytes mode and see if you get a tensor back:
+# bytes mode (first replacing `../_static/img/sample_file.jpeg` with the actual
+# path to the file on your computer) and see if you get a tensor back:
 
-with open('sample_file.jpeg', 'rb') as f:
+with open("../_static/img/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     tensor = transform_image(image_bytes=image_bytes)
     print(tensor)
@@ -168,15 +169,16 @@ def get_prediction(image_bytes):
 # The tensor ``y_hat`` will contain the index of the predicted class id.
 # However, we need a human readable class name. For that we need a class id
 # to name mapping. Download
-# `this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_ 
-# and place it in current directory as file ``imagenet_class_index.json``.
-# This file contains the mapping of ImageNet class id to ImageNet class
-# name. We will load this JSON file and get the class name of the
-# predicted index.
+# `this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_
+# as ``imagenet_class_index.json`` and remember where you saved it (or, if you
+# are following the exact steps in this tutorial, save it in
+# `tutorials/_static`). This file contains the mapping of ImageNet class id to
+# ImageNet class name. We will load this JSON file and get the class name of
+# the predicted index.
 
 import json
 
-imagenet_class_index = json.load(open('imagenet_class_index.json'))
+imagenet_class_index = json.load(open('../_static/imagenet_class_index.json'))
 
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes=image_bytes)
@@ -193,7 +195,7 @@ def get_prediction(image_bytes):
 # We will test our above method:
 
 
-with open('sample_file.jpeg', 'rb') as f:
+with open("../_static/img/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     print(get_prediction(image_bytes=image_bytes))
 
@@ -207,7 +209,7 @@ with open('sample_file.jpeg', 'rb') as f:
 # readable name.
 #
 # .. Note ::
-#    Did you notice that why ``model`` variable is not part of ``get_prediction``
+#    Did you notice that ``model`` variable is not part of ``get_prediction``
 #    method? Or why is model a global variable? Loading a model can be an
 #    expensive operation in terms of memory and compute. If we loaded the model in the
 #    ``get_prediction`` method, then it would get unnecessarily loaded every
@@ -226,69 +228,72 @@ with open('sample_file.jpeg', 'rb') as f:
 # In this final part we will add our model to our Flask API server. Since
 # our API server is supposed to take an image file, we will update our ``predict``
 # method to read files from the requests:
-
-from flask import request
-
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    if request.method == 'POST':
-        # we will get the file from the request
-        file = request.files['file']
-        # convert that to bytes
-        img_bytes = file.read()
-        class_id, class_name = get_prediction(image_bytes=img_bytes)
-        return jsonify({'class_id': class_id, 'class_name': class_name})
+#
+# .. code-block:: python
+#
+#    from flask import request
+#
+#    @app.route('/predict', methods=['POST'])
+#    def predict():
+#        if request.method == 'POST':
+#            # we will get the file from the request
+#            file = request.files['file']
+#            # convert that to bytes
+#            img_bytes = file.read()
+#            class_id, class_name = get_prediction(image_bytes=img_bytes)
+#            return jsonify({'class_id': class_id, 'class_name': class_name})
 
 ######################################################################
-# The ``app.py`` file is now complete. Following is the full version:
+# The ``app.py`` file is now complete. Following is the full version; replace
+# the paths with the paths where you saved your files and it should run:
 #
-
-import io
-import json
-
-from torchvision import models
-import torchvision.transforms as transforms
-from PIL import Image
-from flask import Flask, jsonify, request
-
-
-app = Flask(__name__)
-imagenet_class_index = json.load(open('imagenet_class_index.json'))
-model = models.densenet121(pretrained=True)
-model.eval()
-
-
-def transform_image(image_bytes):
-    my_transforms = transforms.Compose([transforms.Resize(255),
-                                        transforms.CenterCrop(224),
-                                        transforms.ToTensor(),
-                                        transforms.Normalize(
-                                            [0.485, 0.456, 0.406],
-                                            [0.229, 0.224, 0.225])])
-    image = Image.open(io.BytesIO(image_bytes))
-    return my_transforms(image).unsqueeze(0)
-
-
-def get_prediction(image_bytes):
-    tensor = transform_image(image_bytes=image_bytes)
-    outputs = model.forward(tensor)
-    _, y_hat = outputs.max(1)
-    predicted_idx = str(y_hat.item())
-    return imagenet_class_index[predicted_idx]
-
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    if request.method == 'POST':
-        file = request.files['file']
-        img_bytes = file.read()
-        class_id, class_name = get_prediction(image_bytes=img_bytes)
-        return jsonify({'class_id': class_id, 'class_name': class_name})
-
-
-if __name__ == '__main__':
-    app.run()
+# .. code-block:: python
+#
+#   import io
+#   import json
+#
+#   from torchvision import models
+#   import torchvision.transforms as transforms
+#   from PIL import Image
+#   from flask import Flask, jsonify, request
+#
+#
+#   app = Flask(__name__)
+#   imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
+#   model = models.densenet121(pretrained=True)
+#   model.eval()
+#
+#
+#   def transform_image(image_bytes):
+#       my_transforms = transforms.Compose([transforms.Resize(255),
+#                                           transforms.CenterCrop(224),
+#                                           transforms.ToTensor(),
+#                                           transforms.Normalize(
+#                                               [0.485, 0.456, 0.406],
+#                                               [0.229, 0.224, 0.225])])
+#       image = Image.open(io.BytesIO(image_bytes))
+#       return my_transforms(image).unsqueeze(0)
+#
+#
+#   def get_prediction(image_bytes):
+#       tensor = transform_image(image_bytes=image_bytes)
+#       outputs = model.forward(tensor)
+#       _, y_hat = outputs.max(1)
+#       predicted_idx = str(y_hat.item())
+#       return imagenet_class_index[predicted_idx]
+#
+#
+#   @app.route('/predict', methods=['POST'])
+#   def predict():
+#       if request.method == 'POST':
+#           file = request.files['file']
+#           img_bytes = file.read()
+#           class_id, class_name = get_prediction(image_bytes=img_bytes)
+#           return jsonify({'class_id': class_id, 'class_name': class_name})
+#
+#
+#   if __name__ == '__main__':
+#       app.run()
 
 ######################################################################
 # Let's test our web server! Run:
@@ -298,19 +303,23 @@ if __name__ == '__main__':
 #     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
 #######################################################################
-# We can use a command line tool like curl or `Postman <https://www.getpostman.com/>`_ to send requests to
-# this webserver:
+# We can use the
+# `requests <https://pypi.org/project/requests/>`_
+# library to send a POST request to our app:
 #
-# ::
+# .. code-block:: python
 #
-#     $ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
+#   import requests
 #
-# You will get a response in the form:
+#   resp = requests.post("http://localhost:5000/predict",
+#                        files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+
+#######################################################################
+# Printing `resp.json()` will now show the following:
 #
 # ::
 #
 #     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
-#
 #
 
 ######################################################################
@@ -340,4 +349,4 @@ if __name__ == '__main__':
 #
 # - You can also add a UI by creating a page with a form which takes the image and
 #   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
+#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_. 

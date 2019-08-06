@@ -1,4 +1,4 @@
-TorchVision 0.3 Object Detection Finetuning Tutorial
+TorchVision Object Detection Finetuning Tutorial
 ====================================================
 
 .. tip::
