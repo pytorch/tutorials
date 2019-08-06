@@ -15,6 +15,9 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
+# For Tensorboard. Until 1.14 moves to the release channel.
+pip install tb-nightly  
+
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
@@ -30,10 +33,16 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
 # Install torchaudio from source
-# git clone https://github.com/pytorch/audio --quiet
-# pushd audio
-# python setup.py install
-# popd
+git clone https://github.com/pytorch/audio --quiet
+pushd audio
+python setup.py install
+popd
+
+# Install torchaudio from source
+git clone https://github.com/pytorch/text --quiet
+pushd text
+python setup.py install
+popd
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -185,4 +194,4 @@ else
 fi
 
 rm -rf vision
-# rm -rf audio
+rm -rf audio
