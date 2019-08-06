@@ -35,6 +35,12 @@ pushd audio
 python setup.py install
 popd
 
+# Install torchaudio from source
+git clone https://github.com/pytorch/text --quiet
+pushd text
+python setup.py install
+popd
+
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
