@@ -63,7 +63,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # the embeddings on the fly, ``nn.EmbeddingBag`` can enhance the
 # performance and memory efficiency to process a sequence of tensors.
 # 
-# 
+# .. image:: ../_static/img/text_sentiment_ngrams_model.png
 # 
 
 import torch.nn as nn
