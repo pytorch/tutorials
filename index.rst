@@ -143,6 +143,9 @@ Text
 
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
+  
+.. galleryitem:: beginner_source/text_sentiment_ngrams_tutorial.py
+  :figure: _static/img/text_sentiment_ngrams_model.png
 
 .. raw:: html
 
@@ -294,6 +297,7 @@ PyTorch in Other Languages
    intermediate/char_rnn_classification_tutorial
    beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
+   beginner_source/text_sentiment_ngrams_tutorial
 
 .. toctree::
    :maxdepth: 2
