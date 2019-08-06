@@ -3,7 +3,15 @@
 Visualizing Models, Data, and Training with TensorBoard
 =======================================================
 
-In the previous tutorial, we saw how to load in data, feed it through a model we defined as a subclass of ``nn.Module``, trained this model on training data, and tested it on testing data. In addition, we were able to print out some statistics as the model was training to get a sense for whether training was progressing. However, we can do much better than that: PyTorch integrates with TensorBoard, a tool designed for visualizing the results of neural network training runs. This tutorial illustrates some of its functionality, using the `Fashion-MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`__ which can be read into PyTorch using `torchvision.dataset` just as the CIFAR-10 data can.
+In the previous tutorial, we saw how to load in data, feed it through a model 
+we defined as a subclass of ``nn.Module``, trained this model on training data, 
+and tested it on testing data. In addition, we were able to print out some statistics 
+as the model was training to get a sense for whether training was progressing. 
+However, we can do much better than that: PyTorch integrates with TensorBoard, 
+a tool designed for visualizing the results of neural network training runs. 
+This tutorial illustrates some of its functionality, using the 
+`Fashion-MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`__ which
+ can be read into PyTorch using `torchvision.datasets` just as the CIFAR-10 data can.
 
 ----------------
 
