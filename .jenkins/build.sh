@@ -15,6 +15,9 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
+# For Tensorboard. Until 1.14 moves to the release channel.
+pip install tb-nightly  
+
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
