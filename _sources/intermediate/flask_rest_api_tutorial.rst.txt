@@ -165,9 +165,10 @@ can read more about transforms `here <https://pytorch.org/docs/stable/torchvisio
 
 
 
-Above method takes image data in bytes, applies the series of transforms
+The above method takes image data in bytes, applies the series of transforms
 and returns a tensor. To test the above method, read an image file in
-bytes mode and see if you get a tensor back:
+bytes mode (first replacing `../_static/img/sample_file.jpeg` with the actual
+path to the file on your computer) and see if you get a tensor back:
 
 
 .. code-block:: default
@@ -250,11 +251,12 @@ models in this :doc:`tutorial </beginner/saving_loading_models>`.
 The tensor ``y_hat`` will contain the index of the predicted class id.
 However, we need a human readable class name. For that we need a class id
 to name mapping. Download
-`this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_ 
-and place it in current directory as file ``imagenet_class_index.json``.
-This file contains the mapping of ImageNet class id to ImageNet class
-name. We will load this JSON file and get the class name of the
-predicted index.
+`this file <https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json>`_
+as ``imagenet_class_index.json`` and remember where you saved it (or, if you
+are following the exact steps in this tutorial, save it in
+`tutorials/_static`). This file contains the mapping of ImageNet class id to
+ImageNet class name. We will load this JSON file and get the class name of
+the predicted index.
 
 
 .. code-block:: default
@@ -356,7 +358,8 @@ method to read files from the requests:
            class_id, class_name = get_prediction(image_bytes=img_bytes)
            return jsonify({'class_id': class_id, 'class_name': class_name})
 
-The ``app.py`` file is now complete. Following is the full version:
+The ``app.py`` file is now complete. Following is the full version; replace
+the paths with the paths where you saved your files and it should run:
 
 .. code-block:: python
 
@@ -370,7 +373,7 @@ The ``app.py`` file is now complete. Following is the full version:
 
 
   app = Flask(__name__)
-  imagenet_class_index = json.load(open('imagenet_class_index.json'))
+  imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
   model = models.densenet121(pretrained=True)
   model.eval()
 
@@ -412,19 +415,22 @@ Let's test our web server! Run:
 
     $ FLASK_ENV=development FLASK_APP=app.py flask run
 
-We can use a command line tool like curl or `Postman <https://www.getpostman.com/>`_ to send requests to
-this webserver:
+We can use the
+`requests <https://pypi.org/project/requests/>`_
+library to send a POST request to our app:
 
-::
+.. code-block:: python
 
-    $ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
+  import requests
 
-You will get a response in the form:
+  resp = requests.post("http://localhost:5000/predict",
+                       files={"file": open('<PATH/TO/.jpg/FILE>/cat.jpg','rb')})
+
+Printing `resp.json()` will now show the following:
 
 ::
 
     {"class_id": "n02124075", "class_name": "Egyptian_cat"}
-
 
 
 Next steps
@@ -453,12 +459,12 @@ can do to make it better:
 
 - You can also add a UI by creating a page with a form which takes the image and
   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-  of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
+  of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_. 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.440 seconds)
+   **Total running time of the script:** ( 0 minutes  1.342 seconds)
 
 
 .. _sphx_glr_download_intermediate_flask_rest_api_tutorial.py:

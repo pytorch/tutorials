@@ -278,9 +278,10 @@ can read more about transforms <a class="reference external" href="https://pytor
     <span class="k">return</span> <span class="n">my_transforms</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Above method takes image data in bytes, applies the series of transforms
+<p>The above method takes image data in bytes, applies the series of transforms
 and returns a tensor. To test the above method, read an image file in
-bytes mode and see if you get a tensor back:</p>
+bytes mode (first replacing <cite>../_static/img/sample_file.jpeg</cite> with the actual
+path to the file on your computer) and see if you get a tensor back:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"../_static/img/sample_file.jpeg"</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">image_bytes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">transform_image</span><span class="p">(</span><span class="n">image_bytes</span><span class="o">=</span><span class="n">image_bytes</span><span class="p">)</span>
@@ -340,10 +341,11 @@ models in this <a class="reference internal" href="../beginner/saving_loading_mo
 However, we need a human readable class name. For that we need a class id
 to name mapping. Download
 <a class="reference external" href="https://s3.amazonaws.com/deep-learning-models/image-models/imagenet_class_index.json">this file</a>
-and place it in current directory as file <code class="docutils literal notranslate"><span class="pre">imagenet_class_index.json</span></code>.
-This file contains the mapping of ImageNet class id to ImageNet class
-name. We will load this JSON file and get the class name of the
-predicted index.</p>
+as <code class="docutils literal notranslate"><span class="pre">imagenet_class_index.json</span></code> and remember where you saved it (or, if you
+are following the exact steps in this tutorial, save it in
+<cite>tutorials/_static</cite>). This file contains the mapping of ImageNet class id to
+ImageNet class name. We will load this JSON file and get the class name of
+the predicted index.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">imagenet_class_index</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">'../_static/imagenet_class_index.json'</span><span class="p">))</span>
@@ -409,7 +411,8 @@ method to read files from the requests:</p>
         <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'class_id'</span><span class="p">:</span> <span class="n">class_id</span><span class="p">,</span> <span class="s1">'class_name'</span><span class="p">:</span> <span class="n">class_name</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">app.py</span></code> file is now complete. Following is the full version:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">app.py</span></code> file is now complete. Following is the full version; replace
+the paths with the paths where you saved your files and it should run:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
@@ -420,7 +423,7 @@ method to read files from the requests:</p>
 
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-<span class="n">imagenet_class_index</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">'imagenet_class_index.json'</span><span class="p">))</span>
+<span class="n">imagenet_class_index</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">'&lt;PATH/TO/.json/FILE&gt;/imagenet_class_index.json'</span><span class="p">))</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet121</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
@@ -461,12 +464,16 @@ method to read files from the requests:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ FLASK_ENV=development FLASK_APP=app.py flask run
 </pre></div>
 </div>
-<p>We can use a command line tool like curl or <a class="reference external" href="https://www.getpostman.com/">Postman</a> to send requests to
-this webserver:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST -F file=@cat_pic.jpeg http://localhost:5000/predict
+<p>We can use the
+<a class="reference external" href="https://pypi.org/project/requests/">requests</a>
+library to send a POST request to our app:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">"http://localhost:5000/predict"</span><span class="p">,</span>
+                     <span class="n">files</span><span class="o">=</span><span class="p">{</span><span class="s2">"file"</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'&lt;PATH/TO/.jpg/FILE&gt;/cat.jpg'</span><span class="p">,</span><span class="s1">'rb'</span><span class="p">)})</span>
 </pre></div>
 </div>
-<p>You will get a response in the form:</p>
+<p>Printing <cite>resp.json()</cite> will now show the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">"class_id"</span><span class="p">:</span> <span class="s2">"n02124075"</span><span class="p">,</span> <span class="s2">"class_name"</span><span class="p">:</span> <span class="s2">"Egyptian_cat"</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -494,7 +501,7 @@ for deploying a Flask server in production.</li>
 displays the prediction. Check out the <a class="reference external" href="https://pytorch-imagenet.herokuapp.com/">demo</a>
 of a similar project and its <a class="reference external" href="https://github.com/avinassh/pytorch-flask-api-heroku">source code</a>.</li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.440 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.342 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-flask-rest-api-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/146c514e84d7e33f2a302bcc3ae793cb/flask_rest_api_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">flask_rest_api_tutorial.py</span></code></a></div>
