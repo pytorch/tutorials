@@ -61,6 +61,11 @@ Getting Started
 .. .. galleryitem:: beginner/saving_loading_models.py
 
 .. customgalleryitem::
+   :figure: /_static/img/thumbnails/pytorch_tensorboard.png
+   :tooltip: Learn to use TensorBoard to visualize data and model training
+   :description: :doc:`intermediate/tensorboard_tntorial`
+
+.. customgalleryitem::
    :figure: /_static/img/torch.nn.png
    :tooltip: Use torch.nn to create and train a neural network
    :description: :doc:`beginner/nn_tutorial`
@@ -201,6 +206,11 @@ Production Usage
 ----------------------
 
 .. customgalleryitem::
+   :tooltip: Introduction to TorchScript
+   :description: :doc:`beginner/Intro_to_TorchScript`
+   :figure: _static/img/torchscript.png
+
+.. customgalleryitem::
    :tooltip: Loading a PyTorch model in C++
    :description: :doc:`advanced/cpp_export`
    :figure: _static/img/cpp_logo.png
@@ -261,6 +271,7 @@ PyTorch in Other Languages
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
    beginner/deploy_seq2seq_hybrid_frontend_tutorial
+   intermediate/tensorboard_tutorial
    beginner/saving_loading_models
    beginner/nn_tutorial
 
