@@ -23,12 +23,6 @@ pip uninstall torchvision -y
 pip uninstall torch -y
 pip install --pre torch==1.2.0 torchvision -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
 
-# Temp for testing. 
-pip uninstall torchvision -y
-pip uninstall torch -y
-pip install numpy
-pip install --pre torch==1.2.0 torchvision -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
-
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
