@@ -19,7 +19,7 @@ pip install -r $DIR/../requirements.txt
 pip install tb-nightly  
 
 # Temporary install of 1.2 until release is ready
-pip install torch==1.2.0 -f https://download.pytorch.org/whl/nightly/cu100/
+pip install torch==1.2.0 -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
 
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
