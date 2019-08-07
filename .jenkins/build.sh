@@ -18,6 +18,9 @@ pip install -r $DIR/../requirements.txt
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly  
 
+# Temporary install of 1.2 until release is ready
+pip install https://download.pytorch.org/whl/nightly/cu100/torch-1.2.0-cp37-cp37m-linux_x86_64.whl
+
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
