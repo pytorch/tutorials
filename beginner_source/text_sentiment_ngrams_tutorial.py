@@ -42,7 +42,7 @@ import torch
 import torchtext
 from torchtext.datasets import text_classification
 NGRAMS = 2
-mport os
+import os
 if not os.path.isdir('./.data'):
 	os.mkdir('./.data')
 train_dataset, test_dataset = text_classification.DATASETS['AG_NEWS'](
