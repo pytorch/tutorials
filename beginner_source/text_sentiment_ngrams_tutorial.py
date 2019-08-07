@@ -251,10 +251,6 @@ for epoch in range(N_EPOCHS):
     print(f'\tLoss: {train_loss:.4f}(train)\t|\tAcc: {train_acc * 100:.1f}%(train)')
     print(f'\tLoss: {valid_loss:.4f}(valid)\t|\tAcc: {valid_acc * 100:.1f}%(valid)')
               
-    if valid_loss < min_valid_loss:
-        min_valid_loss = valid_loss
-        torch.save(model, 'text_classification.pt')
-
 
 ######################################################################
 # Running the model on GPU with the following information:
@@ -358,10 +354,12 @@ ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
     front nine at TPC Southwind."
 
 vocab = train_dataset.get_vocab()
-with open("text_classification.pt", 'rb') as f:
-    model = torch.load(f).to("cpu")
-    print("This is a %s news" %ag_news_label[predict(ex_text_str, model, vocab, 2)])
+`
+model = model.to("cpu")
 
+print("This is a %s news" %ag_news_label[predict(ex_text_str, model, vocab, 2)])
+
+`
 
 ######################################################################
 # This is a Sports news
