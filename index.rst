@@ -63,7 +63,7 @@ Getting Started
 .. customgalleryitem::
    :figure: /_static/img/thumbnails/pytorch_tensorboard.png
    :tooltip: Learn to use TensorBoard to visualize data and model training
-   :description: :doc:`intermediate/tensorboard_tntorial`
+   :description: :doc:`intermediate/tensorboard_tutorial`
 
 .. customgalleryitem::
    :figure: /_static/img/torch.nn.png
