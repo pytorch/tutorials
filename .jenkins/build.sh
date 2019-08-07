@@ -15,6 +15,9 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
+export PATH=/opt/conda/bin:$PATH
+pip install sphinx==1.8.2 pandas
+
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly  
 
@@ -22,9 +25,6 @@ pip install tb-nightly
 pip uninstall torchvision -y
 pip uninstall torch -y
 pip install --pre torch==1.2.0 torchvision -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
-
-export PATH=/opt/conda/bin:$PATH
-pip install sphinx==1.8.2 pandas
 
 # install awscli
 # pip uninstall awscli
