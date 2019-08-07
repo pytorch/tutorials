@@ -261,28 +261,29 @@ vanilla Pytorch model:</p>
 </div>
 <p>Because the <code class="docutils literal notranslate"><span class="pre">forward</span></code> method of this module uses control flow that is
 dependent on the input, it is not suitable for tracing. Instead, we can convert
-it to a <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code> by subclassing it from <code class="docutils literal notranslate"><span class="pre">torch.jit.ScriptModule</span></code> and
-adding a <code class="docutils literal notranslate"><span class="pre">@torch.jit.script_method</span></code> annotation to the model’s <code class="docutils literal notranslate"><span class="pre">forward</span></code>
-method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
+it to a <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code>.
+In order to convert the module to the <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code>, one needs to
+compile the module with <code class="docutils literal notranslate"><span class="pre">torch.jit.script</span></code> as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">MyModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">))</span>
 
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script_method</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
           <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
           <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">+</span> <span class="nb">input</span>
         <span class="k">return</span> <span class="n">output</span>
 
-<span class="n">my_script_module</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">my_module</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">sm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">my_module</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Creating a new <code class="docutils literal notranslate"><span class="pre">MyModule</span></code> object now directly produces an instance of
+<p>If you need to exclude some methods in your <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>
+because they use Python features that TorchScript doesn’t support yet,
+you could annotate those with <code class="docutils literal notranslate"><span class="pre">@torch.jit.ignore</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">my_module</span></code> is an instance of
 <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code> that is ready for serialization.</p>
 </div>
 </div>
@@ -326,10 +327,17 @@ do:</p>
     <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
   <span class="p">}</span>
 
-  <span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
-  <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span><span class="o">&gt;</span> <span class="n">module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
 
-  <span class="n">assert</span><span class="p">(</span><span class="n">module</span> <span class="o">!=</span> <span class="k">nullptr</span><span class="p">);</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span> <span class="n">module</span><span class="p">;</span>
+  <span class="k">try</span> <span class="p">{</span>
+    <span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+  <span class="p">}</span>
+  <span class="k">catch</span> <span class="p">(</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">Error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">"error loading the model</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+  <span class="p">}</span>
+
   <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"ok</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
@@ -338,10 +346,8 @@ do:</p>
 LibTorch library necessary to run the example. Our application accepts the file
 path to a serialized PyTorch <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code> as its only command line argument
 and then proceeds to deserialize the module using the <code class="docutils literal notranslate"><span class="pre">torch::jit::load()</span></code>
-function, which takes this file path as input. In return we receive a shared
-pointer to a <code class="docutils literal notranslate"><span class="pre">torch::jit::script::Module</span></code>, the equivalent to a
-<code class="docutils literal notranslate"><span class="pre">torch.jit.ScriptModule</span></code> in C++. For now, we only verify that this pointer is
-not null. We will examine how to execute it in a moment.</p>
+function, which takes this file path as input. In return we receive a <code class="docutils literal notranslate"><span class="pre">torch::jit::script::Module</span></code>
+object. We will examine how to execute it in a moment.</p>
 </div>
 <div class="section" id="depending-on-libtorch-and-building-the-application">
 <h3>Depending on LibTorch and Building the Application<a class="headerlink" href="#depending-on-libtorch-and-building-the-application" title="Permalink to this headline">¶</a></h3>
@@ -451,8 +457,7 @@ application’s <code class="docutils literal notranslate"><span class="pre">mai
 <span class="n">inputs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">ones</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">}));</span>
 
 <span class="c1">// Execute the model and turn its output into a tensor.</span>
-<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output</span> <span class="o">=</span> <span class="n">module</span><span class="o">-&gt;</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">).</span><span class="n">toTensor</span><span class="p">();</span>
-
+<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">output</span> <span class="o">=</span> <span class="n">module</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">).</span><span class="n">toTensor</span><span class="p">();</span>
 <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">output</span><span class="p">.</span><span class="n">slice</span><span class="p">(</span><span class="cm">/*dim=*/</span><span class="mi">1</span><span class="p">,</span> <span class="cm">/*start=*/</span><span class="mi">0</span><span class="p">,</span> <span class="cm">/*end=*/</span><span class="mi">5</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="sc">'\n'</span><span class="p">;</span>
 </pre></div>
 </div>
@@ -491,7 +496,7 @@ root@4b5a67132e81:/example-app/build# ./example-app model.pt
 <p>Looks like a good match!</p>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
-<p class="last">To move your model to GPU memory, you can write <code class="docutils literal notranslate"><span class="pre">model-&gt;to(at::kCUDA);</span></code>.
+<p class="last">To move your model to GPU memory, you can write <code class="docutils literal notranslate"><span class="pre">model.to(at::kCUDA);</span></code>.
 Make sure the inputs to a model living in CUDA memory are also in CUDA memory
 by calling <code class="docutils literal notranslate"><span class="pre">tensor.to(at::kCUDA)</span></code>, which will return a new tensor in CUDA
 memory.</p>
