@@ -206,6 +206,11 @@ Production Usage
 ----------------------
 
 .. customgalleryitem::
+   :tooltip: Introduction to TorchScript
+   :description: :doc:`beginner/Intro_to_TorchScript`
+   :figure: _static/img/torchscript.png
+
+.. customgalleryitem::
    :tooltip: Loading a PyTorch model in C++
    :description: :doc:`advanced/cpp_export`
    :figure: _static/img/cpp_logo.png
