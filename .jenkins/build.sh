@@ -19,7 +19,15 @@ pip install -r $DIR/../requirements.txt
 pip install tb-nightly  
 
 # Temporary install of 1.2 until release is ready
-pip install torch==1.2.0 -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
+pip uninstall torchvision -y
+pip uninstall torch -y
+pip install --pre torch==1.2.0 torchvision -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
+
+# Temp for testing. 
+pip uninstall torchvision -y
+pip uninstall torch -y
+pip install numpy
+pip install --pre torch==1.2.0 torchvision -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
 
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
@@ -41,7 +49,7 @@ pushd audio
 python setup.py install
 popd
 
-# Install torchaudio from source
+# Install torchtext from source
 git clone https://github.com/pytorch/text --quiet
 pushd text
 python setup.py install
