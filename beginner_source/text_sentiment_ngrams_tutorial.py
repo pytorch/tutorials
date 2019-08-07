@@ -354,12 +354,9 @@ ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
     front nine at TPC Southwind."
 
 vocab = train_dataset.get_vocab()
-`
 model = model.to("cpu")
 
 print("This is a %s news" %ag_news_label[predict(ex_text_str, model, vocab, 2)])
-
-`
 
 ######################################################################
 # This is a Sports news
