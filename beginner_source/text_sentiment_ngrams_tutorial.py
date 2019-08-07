@@ -1,6 +1,6 @@
 """
-Text Classification Tutorial:
-=============================
+Text Classification Tutorial
+============================
 
 This tutorial shows how to use the text classification datasets,
 including
