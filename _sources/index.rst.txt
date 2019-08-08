@@ -49,11 +49,6 @@ Getting Started
    :description: :doc:`beginner/transfer_learning_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/hybrid.png
-   :tooltip: Experiment with some of the key features of the PyTorch hybrid frontend
-   :description: :doc:`beginner/deploy_seq2seq_hybrid_frontend_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/thumbnails/floppy.png
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
@@ -209,6 +204,11 @@ Production Usage
    :tooltip: Introduction to TorchScript
    :description: :doc:`beginner/Intro_to_TorchScript`
    :figure: _static/img/torchscript.png
+
+.. customgalleryitem::
+   :figure: /_static/img/torchscript.png
+   :tooltip: Experiment with some of the key features of the TorchScript
+   :description: :doc:`beginner/deploy_seq2seq_hybrid_frontend_tutorial`
 
 .. customgalleryitem::
    :tooltip: Loading a PyTorch model in C++

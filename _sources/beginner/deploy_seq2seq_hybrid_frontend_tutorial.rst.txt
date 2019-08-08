@@ -7,14 +7,14 @@
 .. _sphx_glr_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:
 
 
-Deploying a Seq2Seq Model with the Hybrid Frontend
+Deploying a Seq2Seq Model with TorchScript
 ==================================================
 **Author:** `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
 
 This tutorial will walk through the process of transitioning a
-sequence-to-sequence model to Torch Script using PyTorch’s Hybrid
-Frontend. The model that we will convert is the chatbot model from the
-`Chatbot tutorial <https://pytorch.org/tutorials/beginner/chatbot_tutorial.html>`__. 
+sequence-to-sequence model to TorchScript using the TorchScript
+API. The model that we will convert is the chatbot model from the
+`Chatbot tutorial <https://pytorch.org/tutorials/beginner/chatbot_tutorial.html>`__.
 You can either treat this tutorial as a “Part 2” to the Chatbot tutorial
 and deploy your own pretrained model, or you can start with this
 document and use a pretrained model that we host. In the latter case,
@@ -22,7 +22,7 @@ you can reference the original Chatbot tutorial for details
 regarding data preprocessing, model theory and definition, and model
 training.
 
-What is the Hybrid Frontend?
+What is TorchScript?
 ----------------------------
 
 During the research and development phase of a deep learning-based
@@ -38,13 +38,13 @@ allows for optimizations such as out-of-order execution, and the ability
 to target highly optimized hardware architectures. Also, a graph-based
 representation enables framework-agnostic model exportation. PyTorch
 provides mechanisms for incrementally converting eager-mode code into
-Torch Script, a statically analyzable and optimizable subset of Python
+TorchScript, a statically analyzable and optimizable subset of Python
 that Torch uses to represent deep learning programs independently from
 the Python runtime.
 
-The API for converting eager-mode PyTorch programs into Torch Script is
+The API for converting eager-mode PyTorch programs into TorchScript is
 found in the torch.jit module. This module has two core modalities for
-converting an eager-mode model to a Torch Script graph representation:
+converting an eager-mode model to a TorchScript graph representation:
 **tracing** and **scripting**. The ``torch.jit.trace`` function takes a
 module or function and a set of example inputs. It then runs the example
 input through the function or module while tracing the computational
@@ -56,19 +56,19 @@ with data-dependent if statements and loops is traced, only the
 operations called along the execution route taken by the example input
 will be recorded. In other words, the control flow itself is not
 captured. To convert modules and functions containing data-dependent
-control flow, a **scripting** mechanism is provided. Scripting
-explicitly converts the module or function code to Torch Script,
-including all possible control flow routes. To use script mode, be sure
-to inherit from the the ``torch.jit.ScriptModule`` base class (instead
-of ``torch.nn.Module``) and add a ``torch.jit.script`` decorator to your
-Python function or a ``torch.jit.script_method`` decorator to your
-module’s methods. The one caveat with using scripting is that it only
-supports a restricted subset of Python. For all details relating to the
-supported features, see the Torch Script `language
-reference <https://pytorch.org/docs/master/jit.html>`__. To provide the
-maximum flexibility, the modes of Torch Script can be composed to
-represent your whole program, and these techniques can be applied
-incrementally.
+control flow, a **scripting** mechanism is provided. The
+``torch.jit.script`` function/decorator takes a module or function and
+does not requires example inputs. Scripting then explicitly converts
+the module or function code to TorchScript, including all control flows.
+One caveat with using scripting is that it only supports a subset of
+Python, so you might need to rewrite the code to make it compatible
+with the TorchScript syntax.
+
+For all details relating to the supported features, see the `TorchScript
+language reference <https://pytorch.org/docs/master/jit.html>`__.
+To provide the maximum flexibility, you can also mix tracing and scripting
+modes together to represent your whole program, and these techniques can
+be applied incrementally.
 
 .. figure:: /_static/img/chatbot/pytorch_workflow.png
    :align: center
@@ -288,7 +288,7 @@ which contains the length of each sentence in the batch. This input is
 used by the ``torch.nn.utils.rnn.pack_padded_sequence`` function when
 padding.
 
-Hybrid Frontend Notes:
+TorchScript Notes:
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Since the encoder’s ``forward`` function does not contain any
@@ -315,6 +315,7 @@ before we run evaluations.
                               dropout=(0 if n_layers == 1 else dropout), bidirectional=True)
 
         def forward(self, input_seq, input_lengths, hidden=None):
+            # type: (Tensor, Tensor, Optional[Tensor]) -> Tuple[Tensor, Tensor]
             # Convert word indexes to embeddings
             embedded = self.embedding(input_seq)
             # Pack padded batch of sequences for RNN module
@@ -353,7 +354,7 @@ of the query sentence at a particular time-step of decoding.
 
 
     # Luong attention layer
-    class Attn(torch.nn.Module):
+    class Attn(nn.Module):
         def __init__(self, method, hidden_size):
             super(Attn, self).__init__()
             self.method = method
@@ -361,10 +362,10 @@ of the query sentence at a particular time-step of decoding.
                 raise ValueError(self.method, "is not an appropriate attention method.")
             self.hidden_size = hidden_size
             if self.method == 'general':
-                self.attn = torch.nn.Linear(self.hidden_size, hidden_size)
+                self.attn = nn.Linear(self.hidden_size, hidden_size)
             elif self.method == 'concat':
-                self.attn = torch.nn.Linear(self.hidden_size * 2, hidden_size)
-                self.v = torch.nn.Parameter(torch.FloatTensor(hidden_size))
+                self.attn = nn.Linear(self.hidden_size * 2, hidden_size)
+                self.v = nn.Parameter(torch.FloatTensor(hidden_size))
 
         def dot_score(self, hidden, encoder_output):
             return torch.sum(hidden * encoder_output, dim=2)
@@ -417,18 +418,18 @@ weighted sum indicating what parts of the encoder’s output to pay
 attention to. From here, we use a linear layer and softmax normalization
 to select the next word in the output sequence.
 
-Hybrid Frontend Notes:
-~~~~~~~~~~~~~~~~~~~~~~
-
-Similarly to the ``EncoderRNN``, this module does not contain any
-data-dependent control flow. Therefore, we can once again use
-**tracing** to convert this model to Torch Script after it is
-initialized and its parameters are loaded.
-
-
 
 .. code-block:: default
 
+
+    # TorchScript Notes:
+    # ~~~~~~~~~~~~~~~~~~~~~~
+    #
+    # Similarly to the ``EncoderRNN``, this module does not contain any
+    # data-dependent control flow. Therefore, we can once again use
+    # **tracing** to convert this model to TorchScript after it
+    # is initialized and its parameters are loaded.
+    #
 
     class LuongAttnDecoderRNN(nn.Module):
         def __init__(self, attn_model, embedding, hidden_size, output_size, n_layers=1, dropout=0.1):
@@ -507,18 +508,18 @@ as the ``decoder_input`` for the next iteration. The decoding process
 terminates either if the ``decoded_words`` list has reached a length of
 *MAX_LENGTH* or if the predicted word is the *EOS_token*.
 
-Hybrid Frontend Notes:
+TorchScript Notes:
 ~~~~~~~~~~~~~~~~~~~~~~
 
 The ``forward`` method of this module involves iterating over the range
 of :math:`[0, max\_length)` when decoding an output sequence one word at
 a time. Because of this, we should use **scripting** to convert this
-module to Torch Script. Unlike with our encoder and decoder models,
+module to TorchScript. Unlike with our encoder and decoder models,
 which we can trace, we must make some necessary changes to the
 ``GreedySearchDecoder`` module in order to initialize an object without
 error. In other words, we must ensure that our module adheres to the
-rules of the scripting mechanism, and does not utilize any language
-features outside of the subset of Python that Torch Script includes.
+rules of the TorchScript mechanism, and does not utilize any language
+features outside of the subset of Python that TorchScript includes.
 
 To get an idea of some manipulations that may be required, we will go
 over the diffs between the ``GreedySearchDecoder`` implementation from
@@ -532,12 +533,6 @@ original implementation and the lines highlighted in green are new.
 
 Changes:
 ^^^^^^^^
-
--  ``nn.Module`` -> ``torch.jit.ScriptModule``
-
-   -  In order to use PyTorch’s scripting mechanism on a module, that
-      module must inherit from the ``torch.jit.ScriptModule``.
-
 
 -  Added ``decoder_n_layers`` to the constructor arguments
 
@@ -565,16 +560,9 @@ Changes:
       ``self._SOS_token``.
 
 
--  Add the ``torch.jit.script_method`` decorator to the ``forward``
-   method
-
-   -  Adding this decorator lets the JIT compiler know that the function
-      that it is decorating should be scripted.
-
-
 -  Enforce types of ``forward`` method arguments
 
-   -  By default, all parameters to a Torch Script function are assumed
+   -  By default, all parameters to a TorchScript function are assumed
       to be Tensor. If we need to pass an argument of a different type,
       we can use function type annotations as introduced in `PEP
       3107 <https://www.python.org/dev/peps/pep-3107/>`__. In addition,
@@ -599,7 +587,7 @@ Changes:
 .. code-block:: default
 
 
-    class GreedySearchDecoder(torch.jit.ScriptModule):
+    class GreedySearchDecoder(nn.Module):
         def __init__(self, encoder, decoder, decoder_n_layers):
             super(GreedySearchDecoder, self).__init__()
             self.encoder = encoder
@@ -610,7 +598,6 @@ Changes:
 
         __constants__ = ['_device', '_SOS_token', '_decoder_n_layers']
 
-        @torch.jit.script_method
         def forward(self, input_seq : torch.Tensor, input_length : torch.Tensor, max_length : int):
             # Forward input through encoder model
             encoder_outputs, encoder_hidden = self.encoder(input_seq, input_length)
@@ -668,7 +655,7 @@ an argument, normalizes it, evaluates it, and prints the response.
 .. code-block:: default
 
 
-    def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
+    def evaluate(searcher, voc, sentence, max_length=MAX_LENGTH):
         ### Format input sentence as a batch
         # words -> indexes
         indexes_batch = [indexesFromSentence(voc, sentence)]
@@ -687,7 +674,7 @@ an argument, normalizes it, evaluates it, and prints the response.
 
 
     # Evaluate inputs from user input (stdin)
-    def evaluateInput(encoder, decoder, searcher, voc):
+    def evaluateInput(searcher, voc):
         input_sentence = ''
         while(1):
             try:
@@ -698,7 +685,7 @@ an argument, normalizes it, evaluates it, and prints the response.
                 # Normalize sentence
                 input_sentence = normalizeString(input_sentence)
                 # Evaluate sentence
-                output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
+                output_words = evaluate(searcher, voc, input_sentence)
                 # Format and print response sentence
                 output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
                 print('Bot:', ' '.join(output_words))
@@ -707,12 +694,12 @@ an argument, normalizes it, evaluates it, and prints the response.
                 print("Error: Encountered unknown word.")
 
     # Normalize input sentence and call evaluate()
-    def evaluateExample(sentence, encoder, decoder, searcher, voc):
+    def evaluateExample(sentence, searcher, voc):
         print("> " + sentence)
         # Normalize sentence
         input_sentence = normalizeString(sentence)
         # Evaluate sentence
-        output_words = evaluate(encoder, decoder, searcher, voc, input_sentence)
+        output_words = evaluate(searcher, voc, input_sentence)
         output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
         print('Bot:', ' '.join(output_words))
 
@@ -760,14 +747,17 @@ To load your own pre-trained model:
    ``checkpoint = torch.load(loadFilename, map_location=torch.device('cpu'))``
    line.
 
-Hybrid Frontend Notes:
+TorchScript Notes:
 ~~~~~~~~~~~~~~~~~~~~~~
 
 Notice that we initialize and load parameters into our encoder and
-decoder models as usual. Also, we must call ``.to(device)`` to set the
-device options of the models and ``.eval()`` to set the dropout layers
-to test mode **before** we trace the models. ``TracedModule`` objects do
-not inherit the ``to`` or ``eval`` methods.
+decoder models as usual. If you are using tracing mode(`torch.jit.trace`)
+for some part of your models, you must call .to(device) to set the device
+options of the models and .eval() to set the dropout layers to test mode
+**before** tracing the models. `TracedModule` objects do not inherit the
+``to`` or ``eval`` methods. Since in this tutorial we are only using
+scripting instead of tracing, we only need to do this before we do
+evaluation (which is the same as we normally do in eager mode).
 
 
 
@@ -843,16 +833,14 @@ not inherit the ``to`` or ``eval`` methods.
     Models built and ready to go!
 
 
-Convert Model to Torch Script
+Convert Model to TorchScript
 -----------------------------
 
 Encoder
 ~~~~~~~
 
-As previously mentioned, to convert the encoder model to Torch Script,
-we use **tracing**. Tracing any module requires running an example input
-through the model’s ``forward`` method and trace the computational graph
-that the data encounters. The encoder model takes an input sequence and
+As previously mentioned, to convert the encoder model to TorchScript,
+we use **scripting**. The encoder model takes an input sequence and
 a corresponding lengths tensor. Therefore, we create an example input
 sequence tensor ``test_seq``, which is of appropriate size (MAX_LENGTH,
 1), contains numbers in the appropriate range
@@ -880,17 +868,17 @@ GreedySearchDecoder
 ~~~~~~~~~~~~~~~~~~~
 
 Recall that we scripted our searcher module due to the presence of
-data-dependent control flow. In the case of scripting, we do the
-conversion work up front by adding the decorator and making sure the
-implementation complies with scripting rules. We initialize the scripted
-searcher the same way that we would initialize an un-scripted variant.
+data-dependent control flow. In the case of scripting, we do necessary
+language changes to make sure the implementation complies with
+TorchScript. We initialize the scripted searcher the same way that we
+would initialize an un-scripted variant.
 
 
 
 .. code-block:: default
 
 
-    ### Convert encoder model
+    ### Compile the whole greedy search model to TorchScript model
     # Create artificial inputs
     test_seq = torch.LongTensor(MAX_LENGTH, 1).random_(0, voc.num_words).to(device)
     test_seq_length = torch.LongTensor([test_seq.size()[0]]).to(device)
@@ -905,8 +893,10 @@ searcher the same way that we would initialize an un-scripted variant.
     # Trace the model
     traced_decoder = torch.jit.trace(decoder, (test_decoder_input, test_decoder_hidden, test_encoder_outputs))
 
-    ### Initialize searcher module
-    scripted_searcher = GreedySearchDecoder(traced_encoder, traced_decoder, decoder.n_layers)
+    ### Initialize searcher module by wrapping ``torch.jit.script`` call
+    scripted_searcher = torch.jit.script(GreedySearchDecoder(traced_encoder, traced_decoder, decoder.n_layers))
+
+
 
 
 
@@ -918,11 +908,11 @@ searcher the same way that we would initialize an un-scripted variant.
 Print Graphs
 ------------
 
-Now that our models are in Torch Script form, we can print the graphs of
+Now that our models are in TorchScript form, we can print the graphs of
 each to ensure that we captured the computational graph appropriately.
-Since our ``scripted_searcher`` contains our ``traced_encoder`` and
-``traced_decoder``, these graphs will print inline.
-
+Since TorchScript allow us to recursively compile the whole model
+hierarchy and inline the ``encoder`` and ``decoder`` graph into a single
+graph, we just need to print the `scripted_searcher` graph
 
 
 .. code-block:: default
@@ -948,7 +938,7 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
           %max_length.1 : int):
       %23 : bool? = prim::Constant()
       %21 : int? = prim::Constant()
-      %161 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
+      %161 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
       %156 : float = prim::Constant[value=0](), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:322:0
       %146 : float = prim::Constant[value=0.1](), scope: EncoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:209:0
       %145 : int = prim::Constant[value=2](), scope: EncoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:209:0
@@ -959,8 +949,8 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
       %126 : Device = prim::Constant[value="cpu"](), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:265:0
       %123 : bool = prim::Constant[value=0](), scope: EncoderRNN/Embedding[embedding] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1467:0
       %122 : int = prim::Constant[value=-1](), scope: EncoderRNN/Embedding[embedding] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1467:0
-      %12 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
-      %14 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
+      %12 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
+      %14 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
       %4 : ClassType<EncoderRNN> = prim::GetAttr[name="encoder"](%self)
       %103 : ClassType<Embedding> = prim::GetAttr[name="embedding"](%4)
       %weight.3 : Tensor = prim::GetAttr[name="weight"](%103)
@@ -992,22 +982,22 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
       %max_seq_length : Long() = prim::NumToTensor(%152), scope: EncoderRNN
       %154 : int = aten::Int(%max_seq_length), scope: EncoderRNN
       %outputs : Float(10, 1, 1000), %158 : Long(1) = aten::_pad_packed_sequence(%149, %batch_sizes, %123, %156, %154), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:322:0
-      %163 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %168 : Float(10, 1, 1000) = aten::slice(%163, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %173 : Float(10, 1!, 500) = aten::slice(%168, %145, %12, %136, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %178 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %183 : Float(10, 1, 1000) = aten::slice(%178, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %188 : Float(10, 1!, 500) = aten::slice(%183, %145, %136, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %190 : Float(10, 1, 500) = aten::add(%173, %188, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-      %decoder_hidden.1 : Tensor = aten::slice(%150, %12, %12, %145, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
+      %163 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %168 : Float(10, 1, 1000) = aten::slice(%163, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %173 : Float(10, 1!, 500) = aten::slice(%168, %145, %12, %136, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %178 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %183 : Float(10, 1, 1000) = aten::slice(%178, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %188 : Float(10, 1!, 500) = aten::slice(%183, %145, %136, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %190 : Float(10, 1, 500) = aten::add(%173, %188, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+      %decoder_hidden.1 : Tensor = aten::slice(%150, %12, %12, %145, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
       %19 : int[] = prim::ListConstruct(%14, %14)
-      %24 : Tensor = aten::ones(%19, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:574:25
-      %decoder_input.1 : Tensor = aten::mul(%24, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:574:25
+      %24 : Tensor = aten::ones(%19, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:25
+      %decoder_input.1 : Tensor = aten::mul(%24, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:25
       %27 : int[] = prim::ListConstruct(%12)
-      %all_tokens.1 : Tensor = aten::zeros(%27, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:576:22
+      %all_tokens.1 : Tensor = aten::zeros(%27, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:22
       %35 : int[] = prim::ListConstruct(%12)
-      %all_scores.1 : Tensor = aten::zeros(%35, %21, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:577:22
-      %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %144, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:579:9
+      %all_scores.1 : Tensor = aten::zeros(%35, %21, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:22
+      %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %144, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:9
         block0(%48 : int, %all_tokens.6 : Tensor, %all_scores.6 : Tensor, %decoder_hidden.5 : Tensor, %decoder_input.9 : Tensor):
           %49 : ClassType<LuongAttnDecoderRNN> = prim::GetAttr[name="decoder"](%self)
           %192 : ClassType<Embedding> = prim::GetAttr[name="embedding"](%49)
@@ -1031,30 +1021,30 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
           %input.3 : Float(1, 1, 500) = aten::dropout(%input.2, %146, %123), scope: LuongAttnDecoderRNN/Dropout[embedding_dropout] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:806:0
           %216 : Tensor[] = prim::ListConstruct(%195, %196, %197, %198, %199, %200, %201, %202), scope: LuongAttnDecoderRNN/GRU[gru]
           %hidden : Float(1, 1, 500), %224 : Float(2, 1, 500) = aten::gru(%input.3, %decoder_hidden.5, %216, %144, %145, %146, %123, %123, %123), scope: LuongAttnDecoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:206:0
-          %225 : Float(10, 1, 500) = aten::mul(%hidden, %190), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:342:0
+          %225 : Float(10, 1, 500) = aten::mul(%hidden, %190), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:343:0
           %227 : int[] = prim::ListConstruct(%145), scope: LuongAttnDecoderRNN/Attn[attn]
-          %attn_energies : Float(10, 1) = aten::sum(%225, %227, %123, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:342:0
-          %input.4 : Float(1!, 10) = aten::t(%attn_energies), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:362:0
+          %attn_energies : Float(10, 1) = aten::sum(%225, %227, %123, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:343:0
+          %input.4 : Float(1!, 10) = aten::t(%attn_energies), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:363:0
           %234 : Float(1, 10) = aten::softmax(%input.4, %14, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1230:0
-          %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%234, %14), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:365:0
-          %239 : Float(1!, 10, 500) = aten::transpose(%190, %12, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:426:0
-          %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %239), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:426:0
-          %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %12), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:428:0
-          %context : Float(1, 500) = aten::squeeze(%context.1, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:429:0
+          %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%234, %14), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:366:0
+          %239 : Float(1!, 10, 500) = aten::transpose(%190, %12, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:427:0
+          %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %239), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:427:0
+          %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %12), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:429:0
+          %context : Float(1, 500) = aten::squeeze(%context.1, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:430:0
           %245 : Tensor[] = prim::ListConstruct(%rnn_output, %context), scope: LuongAttnDecoderRNN
-          %input.5 : Float(1, 1000) = aten::cat(%245, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:430:0
+          %input.5 : Float(1, 1000) = aten::cat(%245, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:431:0
           %248 : Float(1000!, 500!) = aten::t(%weight.2), scope: LuongAttnDecoderRNN/Linear[concat] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
           %251 : Float(1, 500) = aten::addmm(%bias.1, %input.5, %248, %14, %14), scope: LuongAttnDecoderRNN/Linear[concat] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
-          %input.6 : Float(1, 500) = aten::tanh(%251), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:431:0
+          %input.6 : Float(1, 500) = aten::tanh(%251), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:432:0
           %253 : Float(500!, 7826!) = aten::t(%weight), scope: LuongAttnDecoderRNN/Linear[out] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
           %input : Float(1, 7826) = aten::addmm(%bias, %input.6, %253, %14, %14), scope: LuongAttnDecoderRNN/Linear[out] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
           %259 : Float(1, 7826) = aten::softmax(%input, %14, %21), scope: LuongAttnDecoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1230:0
-          %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%259, %14, %123) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:583:45
+          %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%259, %14, %123) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:45
           %66 : Tensor[] = prim::ListConstruct(%all_tokens.6, %decoder_input.3)
-          %all_tokens.3 : Tensor = aten::cat(%66, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:585:26
+          %all_tokens.3 : Tensor = aten::cat(%66, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
           %72 : Tensor[] = prim::ListConstruct(%all_scores.6, %decoder_scores.1)
-          %all_scores.3 : Tensor = aten::cat(%72, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:586:26
-          %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:588:29
+          %all_scores.3 : Tensor = aten::cat(%72, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:26
+          %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:29
           -> (%144, %all_tokens.3, %all_scores.3, %224, %decoder_input.7)
       %80 : (Tensor, Tensor) = prim::TupleConstruct(%all_tokens, %all_scores)
       return (%80)
@@ -1063,9 +1053,9 @@ Since our ``scripted_searcher`` contains our ``traced_encoder`` and
 Run Evaluation
 --------------
 
-Finally, we will run evaluation of the chatbot model using the Torch
-Script models. If converted correctly, the models will behave exactly as
-they would in their eager-mode representation.
+Finally, we will run evaluation of the chatbot model using the TorchScript
+models. If converted correctly, the models will behave exactly as they
+would in their eager-mode representation.
 
 By default, we evaluate a few common query sentences. If you want to
 chat with the bot yourself, uncomment the ``evaluateInput`` line and
@@ -1076,10 +1066,16 @@ give it a spin.
 .. code-block:: default
 
 
+
+    # Use appropriate device
+    scripted_searcher.to(device)
+    # Set dropout layers to eval mode
+    scripted_searcher.eval()
+
     # Evaluate examples
     sentences = ["hello", "what's up?", "who are you?", "where am I?", "where are you from?"]
     for s in sentences:
-        evaluateExample(s, traced_encoder, traced_decoder, scripted_searcher, voc)
+        evaluateExample(s, scripted_searcher, voc)
 
     # Evaluate your input
     #evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)
@@ -1110,7 +1106,7 @@ give it a spin.
 Save Model
 ----------
 
-Now that we have successfully converted our model to Torch Script, we
+Now that we have successfully converted our model to TorchScript, we
 will serialize it for use in a non-Python deployment environment. To do
 this, we can simply save our ``scripted_searcher`` module, as this is
 the user-facing interface for running inference against the chatbot
@@ -1132,7 +1128,7 @@ of torch.save(model, PATH).
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.210 seconds)
+   **Total running time of the script:** ( 0 minutes  1.430 seconds)
 
 
 .. _sphx_glr_download_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:

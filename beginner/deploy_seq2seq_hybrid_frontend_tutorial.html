@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Deploying a Seq2Seq Model with the Hybrid Frontend — PyTorch Tutorials 1.2.0 documentation</title>
+<title>Deploying a Seq2Seq Model with TorchScript — PyTorch Tutorials 1.2.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -78,7 +78,7 @@
 <li class="toctree-l1"><a class="reference internal" href="data_loading_tutorial.html">Data Loading and Processing Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transfer_learning_tutorial.html">Transfer Learning Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Deploying a Seq2Seq Model with the Hybrid Frontend</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Deploying a Seq2Seq Model with TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="saving_loading_models.html">Saving and Loading Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
 </ul>
@@ -142,7 +142,7 @@
           
         </a> &gt;
       </li>
-<li>Deploying a Seq2Seq Model with the Hybrid Frontend</li>
+<li>Deploying a Seq2Seq Model with TorchScript</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/beginner/deploy_seq2seq_hybrid_frontend_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -180,12 +180,12 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="deploying-a-seq2seq-model-with-the-hybrid-frontend">
-<span id="sphx-glr-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py"></span><h1>Deploying a Seq2Seq Model with the Hybrid Frontend<a class="headerlink" href="#deploying-a-seq2seq-model-with-the-hybrid-frontend" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="deploying-a-seq2seq-model-with-torchscript">
+<span id="sphx-glr-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py"></span><h1>Deploying a Seq2Seq Model with TorchScript<a class="headerlink" href="#deploying-a-seq2seq-model-with-torchscript" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author:</strong> <a class="reference external" href="https://github.com/MatthewInkawhich">Matthew Inkawhich</a></p>
 <p>This tutorial will walk through the process of transitioning a
-sequence-to-sequence model to Torch Script using PyTorch’s Hybrid
-Frontend. The model that we will convert is the chatbot model from the
+sequence-to-sequence model to TorchScript using the TorchScript
+API. The model that we will convert is the chatbot model from the
 <a class="reference external" href="https://pytorch.org/tutorials/beginner/chatbot_tutorial.html">Chatbot tutorial</a>.
 You can either treat this tutorial as a “Part 2” to the Chatbot tutorial
 and deploy your own pretrained model, or you can start with this
@@ -193,8 +193,8 @@ document and use a pretrained model that we host. In the latter case,
 you can reference the original Chatbot tutorial for details
 regarding data preprocessing, model theory and definition, and model
 training.</p>
-<div class="section" id="what-is-the-hybrid-frontend">
-<h2>What is the Hybrid Frontend?<a class="headerlink" href="#what-is-the-hybrid-frontend" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="what-is-torchscript">
+<h2>What is TorchScript?<a class="headerlink" href="#what-is-torchscript" title="Permalink to this headline">¶</a></h2>
 <p>During the research and development phase of a deep learning-based
 project, it is advantageous to interact with an <strong>eager</strong>, imperative
 interface like PyTorch’s. This gives users the ability to write
@@ -208,12 +208,12 @@ allows for optimizations such as out-of-order execution, and the ability
 to target highly optimized hardware architectures. Also, a graph-based
 representation enables framework-agnostic model exportation. PyTorch
 provides mechanisms for incrementally converting eager-mode code into
-Torch Script, a statically analyzable and optimizable subset of Python
+TorchScript, a statically analyzable and optimizable subset of Python
 that Torch uses to represent deep learning programs independently from
 the Python runtime.</p>
-<p>The API for converting eager-mode PyTorch programs into Torch Script is
+<p>The API for converting eager-mode PyTorch programs into TorchScript is
 found in the torch.jit module. This module has two core modalities for
-converting an eager-mode model to a Torch Script graph representation:
+converting an eager-mode model to a TorchScript graph representation:
 <strong>tracing</strong> and <strong>scripting</strong>. The <code class="docutils literal notranslate"><span class="pre">torch.jit.trace</span></code> function takes a
 module or function and a set of example inputs. It then runs the example
 input through the function or module while tracing the computational
@@ -225,19 +225,18 @@ with data-dependent if statements and loops is traced, only the
 operations called along the execution route taken by the example input
 will be recorded. In other words, the control flow itself is not
 captured. To convert modules and functions containing data-dependent
-control flow, a <strong>scripting</strong> mechanism is provided. Scripting
-explicitly converts the module or function code to Torch Script,
-including all possible control flow routes. To use script mode, be sure
-to inherit from the the <code class="docutils literal notranslate"><span class="pre">torch.jit.ScriptModule</span></code> base class (instead
-of <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>) and add a <code class="docutils literal notranslate"><span class="pre">torch.jit.script</span></code> decorator to your
-Python function or a <code class="docutils literal notranslate"><span class="pre">torch.jit.script_method</span></code> decorator to your
-module’s methods. The one caveat with using scripting is that it only
-supports a restricted subset of Python. For all details relating to the
-supported features, see the Torch Script <a class="reference external" href="https://pytorch.org/docs/master/jit.html">language
-reference</a>. To provide the
-maximum flexibility, the modes of Torch Script can be composed to
-represent your whole program, and these techniques can be applied
-incrementally.</p>
+control flow, a <strong>scripting</strong> mechanism is provided. The
+<code class="docutils literal notranslate"><span class="pre">torch.jit.script</span></code> function/decorator takes a module or function and
+does not requires example inputs. Scripting then explicitly converts
+the module or function code to TorchScript, including all control flows.
+One caveat with using scripting is that it only supports a subset of
+Python, so you might need to rewrite the code to make it compatible
+with the TorchScript syntax.</p>
+<p>For all details relating to the supported features, see the <a class="reference external" href="https://pytorch.org/docs/master/jit.html">TorchScript
+language reference</a>.
+To provide the maximum flexibility, you can also mix tracing and scripting
+modes together to represent your whole program, and these techniques can
+be applied incrementally.</p>
 <div class="figure align-center">
 <img alt="workflow" src="../_images/pytorch_workflow.png"/>
 </div>
@@ -418,8 +417,8 @@ Note that the <code class="docutils literal notranslate"><span class="pre">forwa
 which contains the length of each sentence in the batch. This input is
 used by the <code class="docutils literal notranslate"><span class="pre">torch.nn.utils.rnn.pack_padded_sequence</span></code> function when
 padding.</p>
-<div class="section" id="hybrid-frontend-notes">
-<h3>Hybrid Frontend Notes:<a class="headerlink" href="#hybrid-frontend-notes" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="torchscript-notes">
+<h3>TorchScript Notes:<a class="headerlink" href="#torchscript-notes" title="Permalink to this headline">¶</a></h3>
 <p>Since the encoder’s <code class="docutils literal notranslate"><span class="pre">forward</span></code> function does not contain any
 data-dependent control flow, we will use <strong>tracing</strong> to convert it to
 script mode. When tracing a module, we can leave the module definition
@@ -438,6 +437,7 @@ before we run evaluations.</p>
                           <span class="n">dropout</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="k">if</span> <span class="n">n_layers</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">dropout</span><span class="p">),</span> <span class="n">bidirectional</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_seq</span><span class="p">,</span> <span class="n">input_lengths</span><span class="p">,</span> <span class="n">hidden</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># type: (Tensor, Tensor, Optional[Tensor]) -&gt; Tuple[Tensor, Tensor]</span>
         <span class="c1"># Convert word indexes to embeddings</span>
         <span class="n">embedded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">input_seq</span><span class="p">)</span>
         <span class="c1"># Pack padded batch of sequences for RNN module</span>
@@ -465,7 +465,7 @@ encoder output, and the two are ultimately multiplied, resulting in a
 weighted tensor whose largest values represent the most important parts
 of the query sentence at a particular time-step of decoding.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Luong attention layer</span>
-<span class="k">class</span> <span class="nc">Attn</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Attn</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Attn</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">method</span>
@@ -473,10 +473,10 @@ of the query sentence at a particular time-step of decoding.</p>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="s2">"is not an appropriate attention method."</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">'general'</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">attn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">'concat'</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">attn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">v</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">dot_score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden</span><span class="p">,</span> <span class="n">encoder_output</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">hidden</span> <span class="o">*</span> <span class="n">encoder_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -522,13 +522,16 @@ attended encoder output as our <code class="docutils literal notranslate"><span 
 weighted sum indicating what parts of the encoder’s output to pay
 attention to. From here, we use a linear layer and softmax normalization
 to select the next word in the output sequence.</p>
-<div class="section" id="id1">
-<h3>Hybrid Frontend Notes:<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>Similarly to the <code class="docutils literal notranslate"><span class="pre">EncoderRNN</span></code>, this module does not contain any
-data-dependent control flow. Therefore, we can once again use
-<strong>tracing</strong> to convert this model to Torch Script after it is
-initialized and its parameters are loaded.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LuongAttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># TorchScript Notes:</span>
+<span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~</span>
+<span class="c1">#</span>
+<span class="c1"># Similarly to the ``EncoderRNN``, this module does not contain any</span>
+<span class="c1"># data-dependent control flow. Therefore, we can once again use</span>
+<span class="c1"># **tracing** to convert this model to TorchScript after it</span>
+<span class="c1"># is initialized and its parameters are loaded.</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">LuongAttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attn_model</span><span class="p">,</span> <span class="n">embedding</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">n_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">LuongAttnDecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -572,7 +575,6 @@ initialized and its parameters are loaded.</p>
 </pre></div>
 </div>
 </div>
-</div>
 <div class="section" id="define-evaluation">
 <h2>Define Evaluation<a class="headerlink" href="#define-evaluation" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="greedy-search-decoder">
@@ -598,17 +600,17 @@ as the <code class="docutils literal notranslate"><span class="pre">decoder_inpu
 terminates either if the <code class="docutils literal notranslate"><span class="pre">decoded_words</span></code> list has reached a length of
 <em>MAX_LENGTH</em> or if the predicted word is the <em>EOS_token</em>.</p>
 </div>
-<div class="section" id="id2">
-<h3>Hybrid Frontend Notes:<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>TorchScript Notes:<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">forward</span></code> method of this module involves iterating over the range
 of <span class="math notranslate nohighlight">\([0, max\_length)\)</span> when decoding an output sequence one word at
 a time. Because of this, we should use <strong>scripting</strong> to convert this
-module to Torch Script. Unlike with our encoder and decoder models,
+module to TorchScript. Unlike with our encoder and decoder models,
 which we can trace, we must make some necessary changes to the
 <code class="docutils literal notranslate"><span class="pre">GreedySearchDecoder</span></code> module in order to initialize an object without
 error. In other words, we must ensure that our module adheres to the
-rules of the scripting mechanism, and does not utilize any language
-features outside of the subset of Python that Torch Script includes.</p>
+rules of the TorchScript mechanism, and does not utilize any language
+features outside of the subset of Python that TorchScript includes.</p>
 <p>To get an idea of some manipulations that may be required, we will go
 over the diffs between the <code class="docutils literal notranslate"><span class="pre">GreedySearchDecoder</span></code> implementation from
 the chatbot tutorial and the implementation that we use in the cell
@@ -620,11 +622,6 @@ original implementation and the lines highlighted in green are new.</p>
 <div class="section" id="changes">
 <h4>Changes:<a class="headerlink" href="#changes" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">torch.jit.ScriptModule</span></code><ul>
-<li>In order to use PyTorch’s scripting mechanism on a module, that
-module must inherit from the <code class="docutils literal notranslate"><span class="pre">torch.jit.ScriptModule</span></code>.</li>
-</ul>
-</li>
 <li>Added <code class="docutils literal notranslate"><span class="pre">decoder_n_layers</span></code> to the constructor arguments<ul>
 <li>This change stems from the fact that the encoder and decoder
 models that we pass to this module will be a child of
@@ -649,14 +646,8 @@ values, we use our constant attributes <code class="docutils literal notranslate
 <code class="docutils literal notranslate"><span class="pre">self._SOS_token</span></code>.</li>
 </ul>
 </li>
-<li>Add the <code class="docutils literal notranslate"><span class="pre">torch.jit.script_method</span></code> decorator to the <code class="docutils literal notranslate"><span class="pre">forward</span></code>
-method<ul>
-<li>Adding this decorator lets the JIT compiler know that the function
-that it is decorating should be scripted.</li>
-</ul>
-</li>
 <li>Enforce types of <code class="docutils literal notranslate"><span class="pre">forward</span></code> method arguments<ul>
-<li>By default, all parameters to a Torch Script function are assumed
+<li>By default, all parameters to a TorchScript function are assumed
 to be Tensor. If we need to pass an argument of a different type,
 we can use function type annotations as introduced in <a class="reference external" href="https://www.python.org/dev/peps/pep-3107/">PEP
 3107</a>. In addition,
@@ -677,7 +668,7 @@ by multiplying 1 by our SOS_token value stored in the constant
 </ul>
 </li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GreedySearchDecoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">ScriptModule</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">GreedySearchDecoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">decoder_n_layers</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">GreedySearchDecoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
@@ -688,7 +679,6 @@ by multiplying 1 by our SOS_token value stored in the constant
 
     <span class="n">__constants__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'_device'</span><span class="p">,</span> <span class="s1">'_SOS_token'</span><span class="p">,</span> <span class="s1">'_decoder_n_layers'</span><span class="p">]</span>
 
-    <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script_method</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_seq</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">input_length</span> <span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">max_length</span> <span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="c1"># Forward input through encoder model</span>
         <span class="n">encoder_outputs</span><span class="p">,</span> <span class="n">encoder_hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">input_seq</span><span class="p">,</span> <span class="n">input_length</span><span class="p">)</span>
@@ -732,7 +722,7 @@ it. It will continue to ask for another input until the user enters ‘q’
 or ‘quit’.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">evaluateExample</span></code> function simply takes a string input sentence as
 an argument, normalizes it, evaluates it, and prints the response.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
     <span class="c1">### Format input sentence as a batch</span>
     <span class="c1"># words -&gt; indexes</span>
     <span class="n">indexes_batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">indexesFromSentence</span><span class="p">(</span><span class="n">voc</span><span class="p">,</span> <span class="n">sentence</span><span class="p">)]</span>
@@ -751,7 +741,7 @@ an argument, normalizes it, evaluates it, and prints the response.</p>
 
 
 <span class="c1"># Evaluate inputs from user input (stdin)</span>
-<span class="k">def</span> <span class="nf">evaluateInput</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">evaluateInput</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">):</span>
     <span class="n">input_sentence</span> <span class="o">=</span> <span class="s1">''</span>
     <span class="k">while</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -762,7 +752,7 @@ an argument, normalizes it, evaluates it, and prints the response.</p>
             <span class="c1"># Normalize sentence</span>
             <span class="n">input_sentence</span> <span class="o">=</span> <span class="n">normalizeString</span><span class="p">(</span><span class="n">input_sentence</span><span class="p">)</span>
             <span class="c1"># Evaluate sentence</span>
-            <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
+            <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
             <span class="c1"># Format and print response sentence</span>
             <span class="n">output_words</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">output_words</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="s1">'EOS'</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">'PAD'</span><span class="p">)]</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
@@ -771,12 +761,12 @@ an argument, normalizes it, evaluates it, and prints the response.</p>
             <span class="nb">print</span><span class="p">(</span><span class="s2">"Error: Encountered unknown word."</span><span class="p">)</span>
 
 <span class="c1"># Normalize input sentence and call evaluate()</span>
-<span class="k">def</span> <span class="nf">evaluateExample</span><span class="p">(</span><span class="n">sentence</span><span class="p">,</span> <span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">evaluateExample</span><span class="p">(</span><span class="n">sentence</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"&gt; "</span> <span class="o">+</span> <span class="n">sentence</span><span class="p">)</span>
     <span class="c1"># Normalize sentence</span>
     <span class="n">input_sentence</span> <span class="o">=</span> <span class="n">normalizeString</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
     <span class="c1"># Evaluate sentence</span>
-    <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">encoder</span><span class="p">,</span> <span class="n">decoder</span><span class="p">,</span> <span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
+    <span class="n">output_words</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">,</span> <span class="n">input_sentence</span><span class="p">)</span>
     <span class="n">output_words</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">output_words</span> <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="s1">'EOS'</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">'PAD'</span><span class="p">)]</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Bot:'</span><span class="p">,</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_words</span><span class="p">))</span>
 </pre></div>
@@ -815,13 +805,16 @@ CPU, uncomment the
 line.</li>
 </ol>
 </div>
-<div class="section" id="id3">
-<h3>Hybrid Frontend Notes:<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>TorchScript Notes:<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Notice that we initialize and load parameters into our encoder and
-decoder models as usual. Also, we must call <code class="docutils literal notranslate"><span class="pre">.to(device)</span></code> to set the
-device options of the models and <code class="docutils literal notranslate"><span class="pre">.eval()</span></code> to set the dropout layers
-to test mode <strong>before</strong> we trace the models. <code class="docutils literal notranslate"><span class="pre">TracedModule</span></code> objects do
-not inherit the <code class="docutils literal notranslate"><span class="pre">to</span></code> or <code class="docutils literal notranslate"><span class="pre">eval</span></code> methods.</p>
+decoder models as usual. If you are using tracing mode(<cite>torch.jit.trace</cite>)
+for some part of your models, you must call .to(device) to set the device
+options of the models and .eval() to set the dropout layers to test mode
+<strong>before</strong> tracing the models. <cite>TracedModule</cite> objects do not inherit the
+<code class="docutils literal notranslate"><span class="pre">to</span></code> or <code class="docutils literal notranslate"><span class="pre">eval</span></code> methods. Since in this tutorial we are only using
+scripting instead of tracing, we only need to do this before we do
+evaluation (which is the same as we normally do in eager mode).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="s2">"save"</span><span class="p">)</span>
 <span class="n">corpus_name</span> <span class="o">=</span> <span class="s2">"cornell movie-dialogs corpus"</span>
 
@@ -884,14 +877,12 @@ Models built and ready to go!
 </div>
 </div>
 </div>
-<div class="section" id="convert-model-to-torch-script">
-<h2>Convert Model to Torch Script<a class="headerlink" href="#convert-model-to-torch-script" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id4">
-<h3>Encoder<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
-<p>As previously mentioned, to convert the encoder model to Torch Script,
-we use <strong>tracing</strong>. Tracing any module requires running an example input
-through the model’s <code class="docutils literal notranslate"><span class="pre">forward</span></code> method and trace the computational graph
-that the data encounters. The encoder model takes an input sequence and
+<div class="section" id="convert-model-to-torchscript">
+<h2>Convert Model to TorchScript<a class="headerlink" href="#convert-model-to-torchscript" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id3">
+<h3>Encoder<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>As previously mentioned, to convert the encoder model to TorchScript,
+we use <strong>scripting</strong>. The encoder model takes an input sequence and
 a corresponding lengths tensor. Therefore, we create an example input
 sequence tensor <code class="docutils literal notranslate"><span class="pre">test_seq</span></code>, which is of appropriate size (MAX_LENGTH,
 1), contains numbers in the appropriate range
@@ -903,8 +894,8 @@ Notice that the first argument we pass is the module that we want to
 trace, and the second is a tuple of arguments to the module’s
 <code class="docutils literal notranslate"><span class="pre">forward</span></code> method.</p>
 </div>
-<div class="section" id="id5">
-<h3>Decoder<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id4">
+<h3>Decoder<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
 <p>We perform the same process for tracing the decoder as we did for the
 encoder. Notice that we call forward on a set of random inputs to the
 traced_encoder to get the output that we need for the decoder. This is
@@ -917,11 +908,11 @@ inputs.</p>
 <div class="section" id="greedysearchdecoder">
 <h3>GreedySearchDecoder<a class="headerlink" href="#greedysearchdecoder" title="Permalink to this headline">¶</a></h3>
 <p>Recall that we scripted our searcher module due to the presence of
-data-dependent control flow. In the case of scripting, we do the
-conversion work up front by adding the decorator and making sure the
-implementation complies with scripting rules. We initialize the scripted
-searcher the same way that we would initialize an un-scripted variant.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">### Convert encoder model</span>
+data-dependent control flow. In the case of scripting, we do necessary
+language changes to make sure the implementation complies with
+TorchScript. We initialize the scripted searcher the same way that we
+would initialize an un-scripted variant.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">### Compile the whole greedy search model to TorchScript model</span>
 <span class="c1"># Create artificial inputs</span>
 <span class="n">test_seq</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">MAX_LENGTH</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">random_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">voc</span><span class="o">.</span><span class="n">num_words</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 <span class="n">test_seq_length</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">test_seq</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -936,18 +927,19 @@ searcher the same way that we would initialize an un-scripted variant.</p>
 <span class="c1"># Trace the model</span>
 <span class="n">traced_decoder</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">decoder</span><span class="p">,</span> <span class="p">(</span><span class="n">test_decoder_input</span><span class="p">,</span> <span class="n">test_decoder_hidden</span><span class="p">,</span> <span class="n">test_encoder_outputs</span><span class="p">))</span>
 
-<span class="c1">### Initialize searcher module</span>
-<span class="n">scripted_searcher</span> <span class="o">=</span> <span class="n">GreedySearchDecoder</span><span class="p">(</span><span class="n">traced_encoder</span><span class="p">,</span> <span class="n">traced_decoder</span><span class="p">,</span> <span class="n">decoder</span><span class="o">.</span><span class="n">n_layers</span><span class="p">)</span>
+<span class="c1">### Initialize searcher module by wrapping ``torch.jit.script`` call</span>
+<span class="n">scripted_searcher</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">GreedySearchDecoder</span><span class="p">(</span><span class="n">traced_encoder</span><span class="p">,</span> <span class="n">traced_decoder</span><span class="p">,</span> <span class="n">decoder</span><span class="o">.</span><span class="n">n_layers</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="print-graphs">
 <h2>Print Graphs<a class="headerlink" href="#print-graphs" title="Permalink to this headline">¶</a></h2>
-<p>Now that our models are in Torch Script form, we can print the graphs of
+<p>Now that our models are in TorchScript form, we can print the graphs of
 each to ensure that we captured the computational graph appropriately.
-Since our <code class="docutils literal notranslate"><span class="pre">scripted_searcher</span></code> contains our <code class="docutils literal notranslate"><span class="pre">traced_encoder</span></code> and
-<code class="docutils literal notranslate"><span class="pre">traced_decoder</span></code>, these graphs will print inline.</p>
+Since TorchScript allow us to recursively compile the whole model
+hierarchy and inline the <code class="docutils literal notranslate"><span class="pre">encoder</span></code> and <code class="docutils literal notranslate"><span class="pre">decoder</span></code> graph into a single
+graph, we just need to print the <cite>scripted_searcher</cite> graph</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'scripted_searcher graph:</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -959,7 +951,7 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
       %max_length.1 : int):
   %23 : bool? = prim::Constant()
   %21 : int? = prim::Constant()
-  %161 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
+  %161 : int = prim::Constant[value=9223372036854775807](), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
   %156 : float = prim::Constant[value=0](), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:322:0
   %146 : float = prim::Constant[value=0.1](), scope: EncoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:209:0
   %145 : int = prim::Constant[value=2](), scope: EncoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:209:0
@@ -970,8 +962,8 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
   %126 : Device = prim::Constant[value="cpu"](), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:265:0
   %123 : bool = prim::Constant[value=0](), scope: EncoderRNN/Embedding[embedding] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1467:0
   %122 : int = prim::Constant[value=-1](), scope: EncoderRNN/Embedding[embedding] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1467:0
-  %12 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
-  %14 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
+  %12 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
+  %14 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
   %4 : ClassType&lt;EncoderRNN&gt; = prim::GetAttr[name="encoder"](%self)
   %103 : ClassType&lt;Embedding&gt; = prim::GetAttr[name="embedding"](%4)
   %weight.3 : Tensor = prim::GetAttr[name="weight"](%103)
@@ -1003,22 +995,22 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
   %max_seq_length : Long() = prim::NumToTensor(%152), scope: EncoderRNN
   %154 : int = aten::Int(%max_seq_length), scope: EncoderRNN
   %outputs : Float(10, 1, 1000), %158 : Long(1) = aten::_pad_packed_sequence(%149, %batch_sizes, %123, %156, %154), scope: EncoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/utils/rnn.py:322:0
-  %163 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %168 : Float(10, 1, 1000) = aten::slice(%163, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %173 : Float(10, 1!, 500) = aten::slice(%168, %145, %12, %136, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %178 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %183 : Float(10, 1, 1000) = aten::slice(%178, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %188 : Float(10, 1!, 500) = aten::slice(%183, %145, %136, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %190 : Float(10, 1, 500) = aten::add(%173, %188, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:308:0
-  %decoder_hidden.1 : Tensor = aten::slice(%150, %12, %12, %145, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
+  %163 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %168 : Float(10, 1, 1000) = aten::slice(%163, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %173 : Float(10, 1!, 500) = aten::slice(%168, %145, %12, %136, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %178 : Float(10, 1, 1000) = aten::slice(%outputs, %12, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %183 : Float(10, 1, 1000) = aten::slice(%178, %14, %12, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %188 : Float(10, 1!, 500) = aten::slice(%183, %145, %136, %161, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %190 : Float(10, 1, 500) = aten::add(%173, %188, %14), scope: EncoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:309:0
+  %decoder_hidden.1 : Tensor = aten::slice(%150, %12, %12, %145, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:26
   %19 : int[] = prim::ListConstruct(%14, %14)
-  %24 : Tensor = aten::ones(%19, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:574:25
-  %decoder_input.1 : Tensor = aten::mul(%24, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:574:25
+  %24 : Tensor = aten::ones(%19, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:25
+  %decoder_input.1 : Tensor = aten::mul(%24, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:25
   %27 : int[] = prim::ListConstruct(%12)
-  %all_tokens.1 : Tensor = aten::zeros(%27, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:576:22
+  %all_tokens.1 : Tensor = aten::zeros(%27, %127, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:22
   %35 : int[] = prim::ListConstruct(%12)
-  %all_scores.1 : Tensor = aten::zeros(%35, %21, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:577:22
-  %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %144, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:579:9
+  %all_scores.1 : Tensor = aten::zeros(%35, %21, %21, %126, %23) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:22
+  %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %144, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:9
     block0(%48 : int, %all_tokens.6 : Tensor, %all_scores.6 : Tensor, %decoder_hidden.5 : Tensor, %decoder_input.9 : Tensor):
       %49 : ClassType&lt;LuongAttnDecoderRNN&gt; = prim::GetAttr[name="decoder"](%self)
       %192 : ClassType&lt;Embedding&gt; = prim::GetAttr[name="embedding"](%49)
@@ -1042,30 +1034,30 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
       %input.3 : Float(1, 1, 500) = aten::dropout(%input.2, %146, %123), scope: LuongAttnDecoderRNN/Dropout[embedding_dropout] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:806:0
       %216 : Tensor[] = prim::ListConstruct(%195, %196, %197, %198, %199, %200, %201, %202), scope: LuongAttnDecoderRNN/GRU[gru]
       %hidden : Float(1, 1, 500), %224 : Float(2, 1, 500) = aten::gru(%input.3, %decoder_hidden.5, %216, %144, %145, %146, %123, %123, %123), scope: LuongAttnDecoderRNN/GRU[gru] # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/rnn.py:206:0
-      %225 : Float(10, 1, 500) = aten::mul(%hidden, %190), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:342:0
+      %225 : Float(10, 1, 500) = aten::mul(%hidden, %190), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:343:0
       %227 : int[] = prim::ListConstruct(%145), scope: LuongAttnDecoderRNN/Attn[attn]
-      %attn_energies : Float(10, 1) = aten::sum(%225, %227, %123, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:342:0
-      %input.4 : Float(1!, 10) = aten::t(%attn_energies), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:362:0
+      %attn_energies : Float(10, 1) = aten::sum(%225, %227, %123, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:343:0
+      %input.4 : Float(1!, 10) = aten::t(%attn_energies), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:363:0
       %234 : Float(1, 10) = aten::softmax(%input.4, %14, %21), scope: LuongAttnDecoderRNN/Attn[attn] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1230:0
-      %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%234, %14), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:365:0
-      %239 : Float(1!, 10, 500) = aten::transpose(%190, %12, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:426:0
-      %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %239), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:426:0
-      %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %12), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:428:0
-      %context : Float(1, 500) = aten::squeeze(%context.1, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:429:0
+      %attn_weights : Float(1, 1, 10) = aten::unsqueeze(%234, %14), scope: LuongAttnDecoderRNN/Attn[attn] # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:366:0
+      %239 : Float(1!, 10, 500) = aten::transpose(%190, %12, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:427:0
+      %context.1 : Float(1, 1, 500) = aten::bmm(%attn_weights, %239), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:427:0
+      %rnn_output : Float(1, 500) = aten::squeeze(%hidden, %12), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:429:0
+      %context : Float(1, 500) = aten::squeeze(%context.1, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:430:0
       %245 : Tensor[] = prim::ListConstruct(%rnn_output, %context), scope: LuongAttnDecoderRNN
-      %input.5 : Float(1, 1000) = aten::cat(%245, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:430:0
+      %input.5 : Float(1, 1000) = aten::cat(%245, %14), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:431:0
       %248 : Float(1000!, 500!) = aten::t(%weight.2), scope: LuongAttnDecoderRNN/Linear[concat] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
       %251 : Float(1, 500) = aten::addmm(%bias.1, %input.5, %248, %14, %14), scope: LuongAttnDecoderRNN/Linear[concat] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
-      %input.6 : Float(1, 500) = aten::tanh(%251), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:431:0
+      %input.6 : Float(1, 500) = aten::tanh(%251), scope: LuongAttnDecoderRNN # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:432:0
       %253 : Float(500!, 7826!) = aten::t(%weight), scope: LuongAttnDecoderRNN/Linear[out] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
       %input : Float(1, 7826) = aten::addmm(%bias, %input.6, %253, %14, %14), scope: LuongAttnDecoderRNN/Linear[out] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
       %259 : Float(1, 7826) = aten::softmax(%input, %14, %21), scope: LuongAttnDecoderRNN # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1230:0
-      %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%259, %14, %123) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:583:45
+      %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%259, %14, %123) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:45
       %66 : Tensor[] = prim::ListConstruct(%all_tokens.6, %decoder_input.3)
-      %all_tokens.3 : Tensor = aten::cat(%66, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:585:26
+      %all_tokens.3 : Tensor = aten::cat(%66, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:26
       %72 : Tensor[] = prim::ListConstruct(%all_scores.6, %decoder_scores.1)
-      %all_scores.3 : Tensor = aten::cat(%72, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:586:26
-      %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:588:29
+      %all_scores.3 : Tensor = aten::cat(%72, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:26
+      %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:29
       -&gt; (%144, %all_tokens.3, %all_scores.3, %224, %decoder_input.7)
   %80 : (Tensor, Tensor) = prim::TupleConstruct(%all_tokens, %all_scores)
   return (%80)
@@ -1074,16 +1066,21 @@ Since our <code class="docutils literal notranslate"><span class="pre">scripted_
 </div>
 <div class="section" id="run-evaluation">
 <h2>Run Evaluation<a class="headerlink" href="#run-evaluation" title="Permalink to this headline">¶</a></h2>
-<p>Finally, we will run evaluation of the chatbot model using the Torch
-Script models. If converted correctly, the models will behave exactly as
-they would in their eager-mode representation.</p>
+<p>Finally, we will run evaluation of the chatbot model using the TorchScript
+models. If converted correctly, the models will behave exactly as they
+would in their eager-mode representation.</p>
 <p>By default, we evaluate a few common query sentences. If you want to
 chat with the bot yourself, uncomment the <code class="docutils literal notranslate"><span class="pre">evaluateInput</span></code> line and
 give it a spin.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate examples</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use appropriate device</span>
+<span class="n">scripted_searcher</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="c1"># Set dropout layers to eval mode</span>
+<span class="n">scripted_searcher</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="c1"># Evaluate examples</span>
 <span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"hello"</span><span class="p">,</span> <span class="s2">"what's up?"</span><span class="p">,</span> <span class="s2">"who are you?"</span><span class="p">,</span> <span class="s2">"where am I?"</span><span class="p">,</span> <span class="s2">"where are you from?"</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sentences</span><span class="p">:</span>
-    <span class="n">evaluateExample</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">traced_encoder</span><span class="p">,</span> <span class="n">traced_decoder</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">)</span>
+    <span class="n">evaluateExample</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="p">,</span> <span class="n">voc</span><span class="p">)</span>
 
 <span class="c1"># Evaluate your input</span>
 <span class="c1">#evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)</span>
@@ -1105,7 +1102,7 @@ Bot: south america .
 </div>
 <div class="section" id="save-model">
 <h2>Save Model<a class="headerlink" href="#save-model" title="Permalink to this headline">¶</a></h2>
-<p>Now that we have successfully converted our model to Torch Script, we
+<p>Now that we have successfully converted our model to TorchScript, we
 will serialize it for use in a non-Python deployment environment. To do
 this, we can simply save our <code class="docutils literal notranslate"><span class="pre">scripted_searcher</span></code> module, as this is
 the user-facing interface for running inference against the chatbot
@@ -1114,7 +1111,7 @@ of torch.save(model, PATH).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_searcher</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"scripted_chatbot.pth"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.210 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.430 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6dce8206a711b28b2b916bfd7de16bbc/deploy_seq2seq_hybrid_frontend_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_seq2seq_hybrid_frontend_tutorial.py</span></code></a></div>
@@ -1155,8 +1152,8 @@ of torch.save(model, PATH).</p>
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Deploying a Seq2Seq Model with the Hybrid Frontend</a><ul>
-<li><a class="reference internal" href="#what-is-the-hybrid-frontend">What is the Hybrid Frontend?</a></li>
+<li><a class="reference internal" href="#">Deploying a Seq2Seq Model with TorchScript</a><ul>
+<li><a class="reference internal" href="#what-is-torchscript">What is TorchScript?</a></li>
 <li><a class="reference internal" href="#acknowledgements">Acknowledgements</a></li>
 <li><a class="reference internal" href="#prepare-environment">Prepare Environment</a></li>
 <li><a class="reference internal" href="#model-overview">Model Overview</a><ul>
@@ -1166,17 +1163,14 @@ of torch.save(model, PATH).</p>
 </li>
 <li><a class="reference internal" href="#data-handling">Data Handling</a></li>
 <li><a class="reference internal" href="#define-encoder">Define Encoder</a><ul>
-<li><a class="reference internal" href="#hybrid-frontend-notes">Hybrid Frontend Notes:</a></li>
+<li><a class="reference internal" href="#torchscript-notes">TorchScript Notes:</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#define-decoders-attention-module">Define Decoder’s Attention Module</a></li>
-<li><a class="reference internal" href="#define-decoder">Define Decoder</a><ul>
-<li><a class="reference internal" href="#id1">Hybrid Frontend Notes:</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#define-decoder">Define Decoder</a></li>
 <li><a class="reference internal" href="#define-evaluation">Define Evaluation</a><ul>
 <li><a class="reference internal" href="#greedy-search-decoder">Greedy Search Decoder</a></li>
-<li><a class="reference internal" href="#id2">Hybrid Frontend Notes:</a><ul>
+<li><a class="reference internal" href="#id1">TorchScript Notes:</a><ul>
 <li><a class="reference internal" href="#changes">Changes:</a></li>
 </ul>
 </li>
@@ -1186,12 +1180,12 @@ of torch.save(model, PATH).</p>
 <li><a class="reference internal" href="#load-pretrained-parameters">Load Pretrained Parameters</a><ul>
 <li><a class="reference internal" href="#use-hosted-model">Use hosted model</a></li>
 <li><a class="reference internal" href="#use-your-own-model">Use your own model</a></li>
-<li><a class="reference internal" href="#id3">Hybrid Frontend Notes:</a></li>
+<li><a class="reference internal" href="#id2">TorchScript Notes:</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#convert-model-to-torch-script">Convert Model to Torch Script</a><ul>
-<li><a class="reference internal" href="#id4">Encoder</a></li>
-<li><a class="reference internal" href="#id5">Decoder</a></li>
+<li><a class="reference internal" href="#convert-model-to-torchscript">Convert Model to TorchScript</a><ul>
+<li><a class="reference internal" href="#id3">Encoder</a></li>
+<li><a class="reference internal" href="#id4">Decoder</a></li>
 <li><a class="reference internal" href="#greedysearchdecoder">GreedySearchDecoder</a></li>
 </ul>
 </li>
