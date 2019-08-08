@@ -15,11 +15,16 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
+export PATH=/opt/conda/bin:$PATH
+pip install sphinx==1.8.2 pandas
+
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly  
 
-export PATH=/opt/conda/bin:$PATH
-pip install sphinx==1.8.2 pandas
+# Temporary install of 1.2 until release is ready
+pip uninstall torchvision -y
+pip uninstall torch -y
+pip install --pre torch==1.2.0 -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
 
 # install awscli
 # pip uninstall awscli
@@ -32,13 +37,19 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # this is a workaround to the issue.
 pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
+# Install torchvision from source
+git clone https://github.com/pytorch/vision --quiet
+pushd vision
+python setup.py install
+popd
+
 # Install torchaudio from source
 git clone https://github.com/pytorch/audio --quiet
 pushd audio
 python setup.py install
 popd
 
-# Install torchaudio from source
+# Install torchtext from source
 git clone https://github.com/pytorch/text --quiet
 pushd text
 python setup.py install
