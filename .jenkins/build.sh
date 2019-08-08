@@ -26,7 +26,7 @@ pip uninstall torchvision -y
 pip uninstall torch -y
 pip install torch
 pip install torchvision
-pip intstall torchtext
+pip install torchtext
 pip install torchaudio
 
 # install awscli
