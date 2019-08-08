@@ -60,8 +60,8 @@ Deploying a Seq2Seq Model with TorchScript
 # Python, so you might need to rewrite the code to make it compatible
 # with the TorchScript syntax.
 #
-# For all details relating to the supported features, see the TorchScript
-#  `language reference <https://pytorch.org/docs/master/jit.html>`__.
+# For all details relating to the supported features, see the `TorchScript
+# language reference <https://pytorch.org/docs/master/jit.html>`__.
 # To provide the maximum flexibility, you can also mix tracing and scripting
 # modes together to represent your whole program, and these techniques can
 # be applied incrementally.
