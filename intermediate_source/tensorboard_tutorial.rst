@@ -11,8 +11,7 @@ TensorBoard, a tool designed for visualizing the results of neural
 network training runs. This tutorial illustrates some of its
 functionality, using the
 `Fashion-MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`__
-which can be read into PyTorch using `torchvision.dataset` just as
-the CIFAR-10 data can.
+which can be read into PyTorch using `torchvision.datasets`.
 
 In this tutorial, we'll learn how to:
 
@@ -28,7 +27,7 @@ Specifically, on point #5, we'll see:
     * How to track our model's performance as it trains
     * How to assess our model's performance once it is trained.
 
-We'll begin with similar boilerplate code as in the prior tutorial:
+We'll begin with similar boilerplate code as in the `CIFAR-10 tutorial <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`__:
 
 .. code:: python
 
@@ -83,7 +82,7 @@ We'll begin with similar boilerplate code as in the prior tutorial:
         else:
             plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-We'll define a similar model architecture from before, making only
+We'll define a similar model architecture from that tutorial, making only
 minor modifications to account for the fact that the images are now
 one channel instead of three and 28x28 instead of 32x32:
 
