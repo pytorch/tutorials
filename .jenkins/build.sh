@@ -24,7 +24,10 @@ pip install tb-nightly
 # Temporary install of 1.2 until release is ready
 pip uninstall torchvision -y
 pip uninstall torch -y
-pip install --pre torch==1.2.0 -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
+pip install torch
+pip install torchvision
+pip intstall torchtext
+pip install torchaudio
 
 # install awscli
 # pip uninstall awscli
@@ -35,25 +38,7 @@ rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
-
-# Install torchvision from source
-git clone https://github.com/pytorch/vision --quiet
-pushd vision
-python setup.py install
-popd
-
-# Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
-
-# Install torchtext from source
-git clone https://github.com/pytorch/text --quiet
-pushd text
-python setup.py install
-popd
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -204,5 +189,3 @@ else
   make docs
 fi
 
-rm -rf vision
-rm -rf audio
