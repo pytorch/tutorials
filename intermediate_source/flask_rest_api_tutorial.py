@@ -135,7 +135,7 @@ def transform_image(image_bytes):
 # bytes mode (first replacing `../_static/img/sample_file.jpeg` with the actual
 # path to the file on your computer) and see if you get a tensor back:
 
-with open("../_static/img/sample_file.jpeg", 'rb') as f:
+with open("<PATH/TO/.jpeg/FILE>/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     tensor = transform_image(image_bytes=image_bytes)
     print(tensor)
@@ -178,7 +178,7 @@ def get_prediction(image_bytes):
 
 import json
 
-imagenet_class_index = json.load(open('../_static/imagenet_class_index.json'))
+imagenet_class_index = json.load(open('<PATH/TO/.json/FILE>/imagenet_class_index.json'))
 
 def get_prediction(image_bytes):
     tensor = transform_image(image_bytes=image_bytes)
@@ -195,7 +195,7 @@ def get_prediction(image_bytes):
 # We will test our above method:
 
 
-with open("../_static/img/sample_file.jpeg", 'rb') as f:
+with open("<PATH/TO/.jpeg/FILE>/sample_file.jpeg", 'rb') as f:
     image_bytes = f.read()
     print(get_prediction(image_bytes=image_bytes))
 
