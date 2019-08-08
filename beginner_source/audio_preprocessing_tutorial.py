@@ -40,6 +40,7 @@ print("Shape of waveform: {}".format(waveform.size()))
 print("Sample rate of waveform: {}".format(sample_rate))
 
 plt.figure()
+plt.tight_layout()
 plt.plot(waveform.t().numpy())
 
 
@@ -77,6 +78,7 @@ specgram = torchaudio.transforms.Spectrogram()(waveform)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.imshow(specgram.log2()[0,:,:].numpy(), cmap='gray')
 
 
@@ -89,6 +91,7 @@ specgram = torchaudio.transforms.MelSpectrogram()(waveform)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
+plt.tight_layout()
 p = plt.imshow(specgram.log2()[0,:,:].detach().numpy(), cmap='gray')
 
 
@@ -105,6 +108,7 @@ transformed = torchaudio.transforms.Resample(sample_rate, new_sample_rate)(wavef
 print("Shape of transformed waveform: {}".format(transformed.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.plot(transformed[0,:].numpy())
 
 
@@ -142,6 +146,7 @@ transformed = torchaudio.transforms.MuLawEncoding()(waveform)
 print("Shape of transformed waveform: {}".format(transformed.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.plot(transformed[0,:].numpy())
 
 
@@ -154,6 +159,7 @@ reconstructed = torchaudio.transforms.MuLawDecoding()(transformed)
 print("Shape of recovered waveform: {}".format(reconstructed.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.plot(reconstructed[0,:].numpy())
 
 
@@ -209,6 +215,7 @@ specgram = torchaudio.compliance.kaldi.spectrogram(waveform, **params)
 print("Shape of spectrogram: {}".format(specgram.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.imshow(specgram.t().numpy(), cmap='gray')
 
 
@@ -222,6 +229,7 @@ fbank = torchaudio.compliance.kaldi.fbank(waveform, **params)
 print("Shape of fbank: {}".format(fbank.size()))
 
 plt.figure()
+plt.tight_layout()
 plt.imshow(fbank.t().numpy(), cmap='gray')
 
 
