@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>torchvision &mdash; PyTorch Tutorials 1.1.0.dev20190507 documentation</title>
+  <title>torchvision &mdash; PyTorch Tutorials 1.2.0 documentation</title>
   
 
   
@@ -104,7 +104,7 @@
               
               
                 <div class="version">
-                  1.1.0.dev20190507
+                  1.2.0
                 </div>
               
             
@@ -144,11 +144,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Image</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/finetuning_torchvision_models_tutorial.html">Finetuning Torchvision Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_caffe2.html">Transfering a Model from PyTorch to Caffe2 and Mobile using ONNX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
@@ -157,6 +158,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text Classification Tutorial</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Generative</span></p>
 <ul>
@@ -177,8 +179,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch and Building a REST API using Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/ONNXLive.html">ONNX Live Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a PyTorch Model in C++</a></li>
 </ul>
 <p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
@@ -288,6 +290,7 @@
 </div>
 <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>TorchVision requires PyTorch 1.1 or newer.</p>
 <p>Anaconda:</p>
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="n">torchvision</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span>
 </pre></div>
@@ -298,8 +301,13 @@
 </div>
 <p>From source:</p>
 <div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+<span class="c1"># or, for OSX</span>
+<span class="c1"># MACOSX_DEPLOYMENT_TARGET=10.9 CC=clang CXX=clang++ python setup.py install</span>
 </pre></div>
 </div>
+<p>By default, GPU support is built if CUDA is found and <code class="docutils literal notranslate"><span class="pre">torch.cuda.is_available()</span></code> is true.
+It’s possible to force building GPU support by setting <code class="docutils literal notranslate"><span class="pre">FORCE_CUDA=1</span></code> environment variable,
+which is useful when building a docker image.</p>
 </div>
 <div class="section" id="image-backend">
 <h1>Image Backend<a class="headerlink" href="#image-backend" title="Permalink to this headline">¶</a></h1>
@@ -309,6 +317,18 @@
 <li><a class="reference external" href="https://github.com/uploadcare/pillow-simd">Pillow-SIMD</a> - a <strong>much faster</strong> drop-in replacement for Pillow with SIMD. If installed will be used as the default.</li>
 <li><a class="reference external" href="https://github.com/pytorch/accimage">accimage</a> - if installed can be activated by calling <code class="code docutils literal notranslate"><span class="pre">torchvision.set_image_backend('accimage')</span></code></li>
 </ul>
+</div>
+<div class="section" id="c-api">
+<h1>C++ API<a class="headerlink" href="#c-api" title="Permalink to this headline">¶</a></h1>
+<p>TorchVision also offers a C++ API that contains C++ equivalent of python models.</p>
+<p>Installation From source:</p>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">build</span>
+<span class="n">cd</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="o">..</span>
+<span class="n">make</span>
+<span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="documentation">
 <h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
@@ -363,6 +383,7 @@
 <li><a class="reference internal" href="#">torchvision</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#image-backend">Image Backend</a></li>
+<li><a class="reference internal" href="#c-api">C++ API</a></li>
 <li><a class="reference internal" href="#documentation">Documentation</a></li>
 <li><a class="reference internal" href="#contributing">Contributing</a></li>
 </ul>
