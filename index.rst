@@ -283,6 +283,7 @@ PyTorch in Other Languages
    intermediate/tensorboard_tutorial
    beginner/saving_loading_models
    beginner/nn_tutorial
+   beginner/Intro_to_TorchScript
 
 .. toctree::
    :maxdepth: 2
