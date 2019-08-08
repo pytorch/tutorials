@@ -104,11 +104,15 @@ Image
     <div style='clear:both'></div>
 
 
-.. Audio
-.. ----------------------
+Audio
+----------------------
 
-.. Uncomment below when adding content
-.. .. raw:: html
+.. customgalleryitem::
+   :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
+   :tooltip: Preprocessing with torchaudio Tutorial
+   :description: :doc:`beginner/audio_preprocessing_tutorial`
+
+.. raw:: html
 
     <div style='clear:both'></div>
 
@@ -292,6 +296,8 @@ PyTorch in Other Languages
    :includehidden:
    :hidden:
    :caption: Audio
+
+   beginner/audio_preprocessing_tutorial
 
 .. toctree::
    :maxdepth: 2
