@@ -211,7 +211,7 @@ Production Usage
 
 .. customgalleryitem::
    :tooltip: Introduction to TorchScript
-   :description: :doc:`beginner/Intro_to_TorchScript`
+   :description: :doc:`beginner/Intro_to_TorchScript_tutorial`
    :figure: _static/img/torchscript.png
 
 .. customgalleryitem::
@@ -283,7 +283,7 @@ PyTorch in Other Languages
    intermediate/tensorboard_tutorial
    beginner/saving_loading_models
    beginner/nn_tutorial
-   beginner/Intro_to_TorchScript
+   beginner/Intro_to_TorchScript_tutorial
 
 .. toctree::
    :maxdepth: 2
