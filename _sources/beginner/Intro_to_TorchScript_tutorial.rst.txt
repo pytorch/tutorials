@@ -1,0 +1,791 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_beginner_Intro_to_TorchScript_tutorial.py:
+
+
+Introduction to TorchScript
+===========================
+
+*James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
+
+In this tutorial we will cover:
+
+1. The basics of model authoring in PyTorch, including:
+
+-  Modules
+-  Defining ``forward`` functions
+-  Composing modules into a hierarchy of modules
+
+2. Methods for converting PyTorch modules to TorchScript, our
+   high-performance deployment runtime
+
+-  Tracing an existing module
+-  Using scripting to directly compile a module
+-  How to compose both approaches
+-  Saving and loading TorchScript modules
+
+
+
+.. code-block:: default
+
+
+    import torch # This is all you need to use both PyTorch and TorchScript!
+    print(torch.__version__)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    1.2.0
+
+
+Basics of PyTorch Model Authoring
+---------------------------------
+
+Let’s start out be defining a simple ``Module``. A ``Module`` is the
+basic unit of composition in PyTorch. It contains:
+
+1. A constructor, which prepares the module for invocation
+2. A set of ``Parameters`` and sub-\ ``Modules``. These are initialized
+   by the constructor and can be used by the module during invocation.
+3. A ``forward`` function. This is the code that is run when the module
+   is invoked.
+
+Let’s examine a small example:
+
+
+
+.. code-block:: default
+
+
+    class MyCell(torch.nn.Module):
+        def __init__(self):
+            super(MyCell, self).__init__()
+
+        def forward(self, x, h):
+            new_h = torch.tanh(x + h)
+            return new_h, new_h
+      
+    my_cell = MyCell()
+    x = torch.rand(3, 4)
+    h = torch.rand(3, 4)
+    print(my_cell(x, h))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (tensor([[0.8801, 0.8803, 0.1133, 0.6119],
+            [0.7531, 0.8261, 0.8724, 0.9083],
+            [0.9110, 0.8529, 0.8802, 0.6860]]), tensor([[0.8801, 0.8803, 0.1133, 0.6119],
+            [0.7531, 0.8261, 0.8724, 0.9083],
+            [0.9110, 0.8529, 0.8802, 0.6860]]))
+
+
+So we’ve:
+
+1. Created a class that subclasses ``torch.nn.Module``.
+2. Defined a constructor. The constructor doesn’t do much, just calls
+   the constructor for ``super``.
+3. Defined a ``forward`` function, which takes two inputs and returns
+   two outputs. The actual contents of the ``forward`` function are not
+   really important, but it’s sort of a fake `RNN
+   cell <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__–that
+   is–it’s a function that is applied on a loop.
+
+We instantiated the module, and made ``x`` and ``y``, which are just 3x4
+matrices of random values. Then we invoked the cell with
+``my_cell(x, h)``. This in turn calls our ``forward`` function.
+
+Let’s do something a little more interesting:
+
+
+
+.. code-block:: default
+
+
+    class MyCell(torch.nn.Module):
+        def __init__(self):
+            super(MyCell, self).__init__()
+            self.linear = torch.nn.Linear(4, 4)
+
+        def forward(self, x, h):
+            new_h = torch.tanh(self.linear(x) + h)
+            return new_h, new_h
+
+    my_cell = MyCell()
+    print(my_cell)
+    print(my_cell(x, h))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    MyCell(
+      (linear): Linear(in_features=4, out_features=4, bias=True)
+    )
+    (tensor([[0.8248, 0.7935, 0.6757, 0.0171],
+            [0.7914, 0.5110, 0.9328, 0.6330],
+            [0.9364, 0.4226, 0.9169, 0.1044]], grad_fn=<TanhBackward>), tensor([[0.8248, 0.7935, 0.6757, 0.0171],
+            [0.7914, 0.5110, 0.9328, 0.6330],
+            [0.9364, 0.4226, 0.9169, 0.1044]], grad_fn=<TanhBackward>))
+
+
+We’ve redefined our module ``MyCell``, but this time we’ve added a
+``self.linear`` attribute, and we invoke ``self.linear`` in the forward
+function.
+
+What exactly is happening here? ``torch.nn.Linear`` is a ``Module`` from
+the PyTorch standard library. Just like ``MyCell``, it can be invoked
+using the call syntax. We are building a hierarchy of ``Module``\ s.
+
+``print`` on a ``Module`` will give a visual representation of the
+``Module``\ ’s subclass hierarchy. In our example, we can see our
+``Linear`` subclass and its parameters.
+
+By composing ``Module``\ s in this way, we can succintly and readably
+author models with reusable components.
+
+You may have noticed ``grad_fn`` on the outputs. This is a detail of
+PyTorch’s method of automatic differentiation, called
+`autograd <https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html>`__.
+In short, this system allows us to compute derivatives through
+potentially complex programs. The design allows for a massive amount of
+flexibility in model authoring.
+
+Now let’s examine said flexibility:
+
+
+
+.. code-block:: default
+
+
+    class MyDecisionGate(torch.nn.Module):
+      def forward(self, x):
+        if x.sum() > 0:
+          return x
+        else:
+          return -x
+
+    class MyCell(torch.nn.Module):
+        def __init__(self):
+            super(MyCell, self).__init__()
+            self.dg = MyDecisionGate()
+            self.linear = torch.nn.Linear(4, 4)
+
+        def forward(self, x, h):
+            new_h = torch.tanh(self.dg(self.linear(x)) + h)
+            return new_h, new_h
+
+    my_cell = MyCell()
+    print(my_cell)
+    print(my_cell(x, h))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    MyCell(
+      (dg): MyDecisionGate()
+      (linear): Linear(in_features=4, out_features=4, bias=True)
+    )
+    (tensor([[0.5491, 0.8560, 0.5604, 0.4455],
+            [0.6693, 0.7026, 0.8666, 0.8139],
+            [0.8946, 0.7035, 0.7885, 0.3605]], grad_fn=<TanhBackward>), tensor([[0.5491, 0.8560, 0.5604, 0.4455],
+            [0.6693, 0.7026, 0.8666, 0.8139],
+            [0.8946, 0.7035, 0.7885, 0.3605]], grad_fn=<TanhBackward>))
+
+
+We’ve once again redefined our MyCell class, but here we’ve defined
+``MyDecisionGate``. This module utilizes **control flow**. Control flow
+consists of things like loops and ``if``-statements.
+
+Many frameworks take the approach of computing symbolic derivatives
+given a full program representation. However, in PyTorch, we use a
+gradient tape. We record operations as they occur, and replay them
+backwards in computing derivatives. In this way, the framework does not
+have to explicitly define derivatives for all constructs in the
+language.
+
+.. figure:: https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/dynamic_graph.gif
+   :alt: How autograd works
+
+   How autograd works
+
+
+Basics of TorchScript
+---------------------
+
+Now let’s take our running example and see how we can apply TorchScript.
+
+In short, TorchScript provides tools to capture the definition of your
+model, even in light of the flexible and dynamic nature of PyTorch.
+Let’s begin by examining what we call **tracing**.
+
+Tracing ``Modules``
+~~~~~~~~~~~~~~~~~~~
+
+
+
+.. code-block:: default
+
+
+    class MyCell(torch.nn.Module):
+        def __init__(self):
+            super(MyCell, self).__init__()
+            self.linear = torch.nn.Linear(4, 4)
+
+        def forward(self, x, h):
+            new_h = torch.tanh(self.linear(x) + h)
+            return new_h, new_h
+      
+    my_cell = MyCell()
+    x, h = torch.rand(3, 4), torch.rand(3, 4)
+    traced_cell = torch.jit.trace(my_cell, (x, h))
+    print(traced_cell)
+    traced_cell(x, h)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    TracedModule[MyCell](
+      (linear): TracedModule[Linear]()
+    )
+
+
+We’ve rewinded a bit and taken the second version of our ``MyCell``
+class. As before, we’ve instantiated it, but this time, we’ve called
+``torch.jit.trace``, passed in the ``Module``, and passed in *example
+inputs* the network might see.
+
+What exactly has this done? It has invoked the ``Module``, recorded the
+operations that occured when the ``Module`` was run, and created an
+instance of ``torch.jit.ScriptModule`` (of which ``TracedModule`` is an
+instance)
+
+TorchScript records its definitions in an Intermediate Representation
+(or IR), commonly referred to in Deep learning as a *graph*. We can
+examine the graph with the ``.graph`` property:
+
+
+
+.. code-block:: default
+
+
+    print(traced_cell.graph)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    graph(%self : ClassType<MyCell>,
+          %input : Float(3, 4),
+          %h : Float(3, 4)):
+      %1 : ClassType<Linear> = prim::GetAttr[name="linear"](%self)
+      %weight : Tensor = prim::GetAttr[name="weight"](%1)
+      %bias : Tensor = prim::GetAttr[name="bias"](%1)
+      %6 : Float(4!, 4!) = aten::t(%weight), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
+      %7 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
+      %8 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
+      %9 : Float(3, 4) = aten::addmm(%bias, %input, %6, %7, %8), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
+      %10 : int = prim::Constant[value=1](), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
+      %11 : Float(3, 4) = aten::add(%9, %h, %10), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
+      %12 : Float(3, 4) = aten::tanh(%11), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
+      %13 : (Float(3, 4), Float(3, 4)) = prim::TupleConstruct(%12, %12)
+      return (%13)
+
+
+However, this is a very low-level representation and most of the
+information contained in the graph is not useful for end users. Instead,
+we can use the ``.code`` property to give a Python-syntax interpretation
+of the code:
+
+
+
+.. code-block:: default
+
+
+    print(traced_cell.code)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    def forward(self,
+        input: Tensor,
+        h: Tensor) -> Tuple[Tensor, Tensor]:
+      _0 = self.linear
+      weight = _0.weight
+      bias = _0.bias
+      _1 = torch.addmm(bias, input, torch.t(weight), beta=1, alpha=1)
+      _2 = torch.tanh(torch.add(_1, h, alpha=1))
+      return (_2, _2)
+
+
+So **why** did we do all this? There are several reasons:
+
+1. TorchScript code can be invoked in its own interpreter, which is
+   basically a restricted Python interpreter. This interpreter does not
+   acquire the Global Interpreter Lock, and so many requests can be
+   processed on the same instance simultaneously.
+2. This format allows us to save the whole model to disk and load it
+   into another environment, such as in a server written in a language
+   other than Python
+3. TorchScript gives us a representation in which we can do compiler
+   optimizations on the code to provide more efficient execution
+4. TorchScript allows us to interface with many backend/device runtimes
+   that require a broader view of the program than individual operators.
+
+We can see that invoking ``traced_cell`` produces the same results as
+the Python module:
+
+
+
+.. code-block:: default
+
+
+    print(my_cell(x, h))
+    print(traced_cell(x, h))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (tensor([[ 0.7272,  0.8204, -0.0134, -0.0048],
+            [ 0.3123,  0.7337, -0.1781, -0.1747],
+            [ 0.3770,  0.7669, -0.6083,  0.4478]], grad_fn=<TanhBackward>), tensor([[ 0.7272,  0.8204, -0.0134, -0.0048],
+            [ 0.3123,  0.7337, -0.1781, -0.1747],
+            [ 0.3770,  0.7669, -0.6083,  0.4478]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.7272,  0.8204, -0.0134, -0.0048],
+            [ 0.3123,  0.7337, -0.1781, -0.1747],
+            [ 0.3770,  0.7669, -0.6083,  0.4478]],
+           grad_fn=<DifferentiableGraphBackward>), tensor([[ 0.7272,  0.8204, -0.0134, -0.0048],
+            [ 0.3123,  0.7337, -0.1781, -0.1747],
+            [ 0.3770,  0.7669, -0.6083,  0.4478]],
+           grad_fn=<DifferentiableGraphBackward>))
+
+
+Using Scripting to Convert Modules
+----------------------------------
+
+There’s a reason we used version two of our module, and not the one with
+the control-flow-laden submodule. Let’s examine that now:
+
+
+
+.. code-block:: default
+
+
+    class MyDecisionGate(torch.nn.Module):
+      def forward(self, x):
+        if x.sum() > 0:
+          return x
+        else:
+          return -x
+
+    class MyCell(torch.nn.Module):
+        def __init__(self, dg):
+            super(MyCell, self).__init__()
+            self.dg = dg
+            self.linear = torch.nn.Linear(4, 4)
+
+        def forward(self, x, h):
+            new_h = torch.tanh(self.dg(self.linear(x)) + h)
+            return new_h, new_h
+      
+    my_cell = MyCell(MyDecisionGate())
+    traced_cell = torch.jit.trace(my_cell, (x, h))
+    print(traced_cell.code)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    def forward(self,
+        input: Tensor,
+        h: Tensor) -> Tuple[Tensor, Tensor]:
+      _0 = self.linear
+      weight = _0.weight
+      bias = _0.bias
+      x = torch.addmm(bias, input, torch.t(weight), beta=1, alpha=1)
+      _1 = torch.tanh(torch.add(torch.neg(x), h, alpha=1))
+      return (_1, _1)
+
+
+Looking at the ``.code`` output, we can see that the ``if-else`` branch
+is nowhere to be found! Why? Tracing does exactly what we said it would:
+run the code, record the operations *that happen* and construct a
+ScriptModule that does exactly that. Unfortunately, things like control
+flow are erased.
+
+How can we faithfully represent this module in TorchScript? We provide a
+**script compiler**, which does direct analysis of your Python source
+code to transform it into TorchScript. Let’s convert ``MyDecisionGate``
+using the script compiler:
+
+
+
+.. code-block:: default
+
+
+    scripted_gate = torch.jit.script(MyDecisionGate())
+
+    my_cell = MyCell(scripted_gate)
+    traced_cell = torch.jit.script(my_cell)
+    print(traced_cell.code)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    def forward(self,
+        x: Tensor,
+        h: Tensor) -> Tuple[Tensor, Tensor]:
+      _0 = self.linear
+      _1 = _0.weight
+      _2 = _0.bias
+      if torch.eq(torch.dim(x), 2):
+        _3 = torch.__isnot__(_2, None)
+      else:
+        _3 = False
+      if _3:
+        bias = ops.prim.unchecked_unwrap_optional(_2)
+        ret = torch.addmm(bias, x, torch.t(_1), beta=1, alpha=1)
+      else:
+        output = torch.matmul(x, torch.t(_1))
+        if torch.__isnot__(_2, None):
+          bias0 = ops.prim.unchecked_unwrap_optional(_2)
+          output0 = torch.add_(output, bias0, alpha=1)
+        else:
+          output0 = output
+        ret = output0
+      _4 = torch.gt(torch.sum(ret, dtype=None), 0)
+      if bool(_4):
+        _5 = ret
+      else:
+        _5 = torch.neg(ret)
+      new_h = torch.tanh(torch.add(_5, h, alpha=1))
+      return (new_h, new_h)
+
+
+Hooray! We’ve now faithfully captured the behavior of our program in
+TorchScript. Let’s now try running the program:
+
+
+
+.. code-block:: default
+
+
+    # New inputs
+    x, h = torch.rand(3, 4), torch.rand(3, 4)
+    traced_cell(x, h)
+
+
+
+
+
+
+
+
+Mixing Scripting and Tracing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some situations call for using tracing rather than scripting (e.g. a
+module has many architectural decisions that are made based on constant
+Python values that we would like to not appear in TorchScript). In this
+case, scripting can be composed with tracing: ``torch.jit.script`` will
+inline the code for a traced module, and tracing will inline the code
+for a scripted module.
+
+An example of the first case:
+
+
+
+.. code-block:: default
+
+
+    class MyRNNLoop(torch.nn.Module):
+        def __init__(self):
+            super(MyRNNLoop, self).__init__()
+            self.cell = torch.jit.trace(MyCell(scripted_gate), (x, h))
+
+        def forward(self, xs):
+            h, y = torch.zeros(3, 4), torch.zeros(3, 4)
+            for i in range(xs.size(0)):
+                y, h = self.cell(xs[i], h)
+            return y, h
+      
+    rnn_loop = torch.jit.script(MyRNNLoop())
+    print(rnn_loop.code)
+
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    def forward(self,
+        xs: Tensor) -> Tuple[Tensor, Tensor]:
+      h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
+      y = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
+      y0, h0 = y, h
+      for i in range(torch.size(xs, 0)):
+        _0 = self.cell
+        _1 = torch.select(xs, 0, i)
+        _2 = _0.linear
+        weight = _2.weight
+        bias = _2.bias
+        _3 = torch.addmm(bias, _1, torch.t(weight), beta=1, alpha=1)
+        _4 = torch.gt(torch.sum(_3, dtype=None), 0)
+        if bool(_4):
+          _5 = _3
+        else:
+          _5 = torch.neg(_3)
+        _6 = torch.tanh(torch.add(_5, h0, alpha=1))
+        y0, h0 = _6, _6
+      return (y0, h0)
+
+
+And an example of the second case:
+
+
+
+.. code-block:: default
+
+
+    class WrapRNN(torch.nn.Module):
+      def __init__(self):
+        super(WrapRNN, self).__init__()
+        self.loop = torch.jit.script(MyRNNLoop())
+    
+      def forward(self, xs):
+        y, h = self.loop(xs)
+        return torch.relu(y)
+  
+    traced = torch.jit.trace(WrapRNN(), (torch.rand(10, 3, 4)))
+    print(traced.code)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    def forward(self,
+        argument_1: Tensor) -> Tensor:
+      _0 = self.loop
+      h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
+      h0 = h
+      for i in range(torch.size(argument_1, 0)):
+        _1 = _0.cell
+        _2 = torch.select(argument_1, 0, i)
+        _3 = _1.linear
+        weight = _3.weight
+        bias = _3.bias
+        _4 = torch.addmm(bias, _2, torch.t(weight), beta=1, alpha=1)
+        _5 = torch.gt(torch.sum(_4, dtype=None), 0)
+        if bool(_5):
+          _6 = _4
+        else:
+          _6 = torch.neg(_4)
+        h0 = torch.tanh(torch.add(_6, h0, alpha=1))
+      return torch.relu(h0)
+
+
+This way, scripting and tracing can be used when the situation calls for
+each of them and used together.
+
+Saving and Loading models
+-------------------------
+
+We provide APIs to save and load TorchScript modules to/from disk in an
+archive format. This format includes code, parameters, attributes, and
+debug information, meaning that the archive is a freestanding
+representation of the model that can be loaded in an entirely separate
+process. Let’s save and load our wrapped RNN module:
+
+
+
+.. code-block:: default
+
+
+    traced.save('wrapped_rnn.zip')
+
+    loaded = torch.jit.load('wrapped_rnn.zip')
+
+    print(loaded)
+    print(loaded.code)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ScriptModule(
+      (loop): ScriptModule(
+        (cell): ScriptModule(
+          (dg): ScriptModule()
+          (linear): ScriptModule()
+        )
+      )
+    )
+    def forward(self,
+        argument_1: Tensor) -> Tensor:
+      _0 = self.loop
+      h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
+      h0 = h
+      for i in range(torch.size(argument_1, 0)):
+        _1 = _0.cell
+        _2 = torch.select(argument_1, 0, i)
+        _3 = _1.linear
+        weight = _3.weight
+        bias = _3.bias
+        _4 = torch.addmm(bias, _2, torch.t(weight), beta=1, alpha=1)
+        _5 = torch.gt(torch.sum(_4, dtype=None), 0)
+        if bool(_5):
+          _6 = _4
+        else:
+          _6 = torch.neg(_4)
+        h0 = torch.tanh(torch.add(_6, h0, alpha=1))
+      return torch.relu(h0)
+
+
+As you can see, serialization preserves the module hierarchy and the
+code we’ve been examining throughout. The model can also be loaded, for
+example, `into
+C++ <https://pytorch.org/tutorials/advanced/cpp_export.html>`__ for
+python-free execution.
+
+Further Reading
+~~~~~~~~~~~~~~~
+
+We’ve completed our tutorial! For a more involved demonstration, check
+out the NeurIPS demo for converting machine translation models using
+TorchScript:
+https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  0.252 seconds)
+
+
+.. _sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: Intro_to_TorchScript_tutorial.py <Intro_to_TorchScript_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: Intro_to_TorchScript_tutorial.ipynb <Intro_to_TorchScript_tutorial.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
