@@ -342,7 +342,7 @@ application and running it with the same serialized model:
   [ 50%] Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
   [100%] Linking CXX executable example-app
   [100%] Built target example-app
-  root@4b5a67132e81:/example-app/build# ./example-app model.pt
+  root@4b5a67132e81:/example-app/build# ./example-app traced_resnet_model.pt
   -0.2698 -0.0381  0.4023 -0.3010 -0.0448
   [ Variable[CPUFloatType]{1,5} ]
 
