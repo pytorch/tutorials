@@ -184,6 +184,7 @@
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="loading-a-pytorch-model-in-c">
 <h1>Loading a PyTorch Model in C++<a class="headerlink" href="#loading-a-pytorch-model-in-c" title="Permalink to this headline">¶</a></h1>
+<p><strong>This tutorial was updated to work with PyTorch 1.2</strong></p>
 <p>As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
@@ -303,11 +304,12 @@ any dependency on Python. Say we want to serialize the <code class="docutils lit
 earlier in the tracing example. To perform this serialization, simply call
 <a class="reference external" href="https://pytorch.org/docs/master/jit.html#torch.jit.ScriptModule.save">save</a>
 on the module and pass it a filename:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_script_module</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"model.pt"</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_script_module</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"traced_resnet_model.pt"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will produce a <code class="docutils literal notranslate"><span class="pre">model.pt</span></code> file in your working directory. We have now
-officially left the realm of Python and are ready to cross over to the sphere
+<p>This will produce a <code class="docutils literal notranslate"><span class="pre">traced_resnet_model.pt</span></code> file in your working directory.
+If you also would like to serialize <code class="docutils literal notranslate"><span class="pre">my_module</span></code>, call <code class="docutils literal notranslate"><span class="pre">my_module.save("my_module_model.pt")</span></code>
+We have now officially left the realm of Python and are ready to cross over to the sphere
 of C++.</p>
 </div>
 <div class="section" id="step-3-loading-your-script-module-in-c">
@@ -445,10 +447,11 @@ Scanning dependencies of target example-app
 <span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example-app
 </pre></div>
 </div>
-<p>If we supply the path to the serialized <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model we created earlier
+<p>If we supply the path to the traced <code class="docutils literal notranslate"><span class="pre">ResNet18</span></code> model <code class="docutils literal notranslate"><span class="pre">traced_resnet_model.pt</span></code>  we created earlier
 to the resulting <code class="docutils literal notranslate"><span class="pre">example-app</span></code> binary, we should be rewarded with a friendly
-“ok”:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build# ./example-app model.pt
+“ok”. Please note, if try to run this example with <code class="docutils literal notranslate"><span class="pre">my_module_model.pt</span></code> you will get an error saying that
+your input is of an incompatible shape. <code class="docutils literal notranslate"><span class="pre">my_module_model.pt</span></code> expects 1D instead of 4D.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>root@4b5a67132e81:/example-app/build# ./example-app &lt;path_to_model&gt;/traced_resnet_model.pt
 ok
 </pre></div>
 </div>
@@ -491,7 +494,7 @@ Scanning dependencies of target example-app
 <span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
 <span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example-app
 <span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example-app
-root@4b5a67132e81:/example-app/build# ./example-app model.pt
+root@4b5a67132e81:/example-app/build# ./example-app traced_resnet_model.pt
 -0.2698 -0.0381  <span class="m">0</span>.4023 -0.3010 -0.0448
 <span class="o">[</span> Variable<span class="o">[</span>CPUFloatType<span class="o">]{</span><span class="m">1</span>,5<span class="o">}</span> <span class="o">]</span>
 </pre></div>
