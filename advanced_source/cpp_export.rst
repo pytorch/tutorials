@@ -1,6 +1,8 @@
 Loading a PyTorch Model in C++
 ==============================
 
+**This tutorial was updated to work with PyTorch 1.2**
+
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
@@ -129,10 +131,11 @@ earlier in the tracing example. To perform this serialization, simply call
 `save <https://pytorch.org/docs/master/jit.html#torch.jit.ScriptModule.save>`_
 on the module and pass it a filename::
 
-  traced_script_module.save("model.pt")
+  my_module.save("custom_model.pt")
 
-This will produce a ``model.pt`` file in your working directory. We have now
-officially left the realm of Python and are ready to cross over to the sphere
+This will produce a ``custom_model.pt`` file in your working directory. 
+If you also would like to save our traced version of ``ResNet18``, call ``traced_script_module.save("traced_resnet_model.pt")``
+We have now officially left the realm of Python and are ready to cross over to the sphere
 of C++.
 
 Step 3: Loading Your Script Module in C++
@@ -285,13 +288,13 @@ distribution. If all goes well, it will look something like this:
   [100%] Linking CXX executable example-app
   [100%] Built target example-app
 
-If we supply the path to the serialized ``ResNet18`` model we created earlier
+If we supply the path to the serialized custom model ``custom_model.pt``  we created earlier
 to the resulting ``example-app`` binary, we should be rewarded with a friendly
 "ok":
 
 .. code-block:: sh
 
-  root@4b5a67132e81:/example-app/build# ./example-app model.pt
+  root@4b5a67132e81:/example-app/build# ./example-app <path_to_model>/custom_model.pt
   ok
 
 Step 4: Executing the Script Module in C++
