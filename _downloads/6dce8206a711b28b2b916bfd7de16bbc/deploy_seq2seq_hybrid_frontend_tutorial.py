@@ -3,6 +3,7 @@
 Deploying a Seq2Seq Model with TorchScript
 ==================================================
 **Author:** `Matthew Inkawhich <https://github.com/MatthewInkawhich>`_
+1.2, this tutorial was updated to work with PyTorch 1.2
 """
 
 
