@@ -136,6 +136,9 @@ class FaceLandmarksDataset(Dataset):
         return len(self.landmarks_frame)
 
     def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
         img_name = os.path.join(self.root_dir,
                                 self.landmarks_frame.iloc[idx, 0])
         image = io.imread(img_name)
