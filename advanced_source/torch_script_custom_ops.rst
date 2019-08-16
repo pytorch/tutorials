@@ -170,7 +170,7 @@ Registration is very simple. For our case, we need to write:
 .. code-block:: cpp
 
   static auto registry =
-    torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
 
 somewhere in the global scope of our ``op.cpp`` file. This creates a global
 variable ``registry``, which will register our operator with TorchScript in its
@@ -188,7 +188,7 @@ operator name are separated by two colons (``::``).
   .. code-block:: cpp
 
     static auto registry =
-      torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective)
+      torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective)
       .op("my_ops::another_op", &another_op)
       .op("my_ops::and_another_op", &and_another_op);
 
@@ -982,7 +982,7 @@ custom TorchScript operator as a string. For this, use
   }
 
   static auto registry =
-    torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
   """
 
   torch.utils.cpp_extension.load_inline(
