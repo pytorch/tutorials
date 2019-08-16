@@ -115,6 +115,9 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
            self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
 
        def __getitem__(self, idx):
+           if torch.is_tensor(idx):
+               idx = idx.tolist()
+
            # load images ad masks
            img_path = os.path.join(self.root, "PNGImages", self.imgs[idx])
            mask_path = os.path.join(self.root, "PedMasks", self.masks[idx])
