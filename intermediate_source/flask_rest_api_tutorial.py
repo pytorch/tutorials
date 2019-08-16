@@ -336,7 +336,7 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # you will solve these issues with a few lines of code.
 #
 # .. Note ::
-#    `service-streamer` <https://github.com/ShannonAI/service-streamer>`_ is a middleware for web service
+#    `service-streamer <https://github.com/ShannonAI/service-streamer>`_ is a middleware for web service
 #    of machine learning applications. Queued requests from users are sampled into mini-batches. Service-streamer 
 #    can significantly enhance the overall performance of the web server by improving GPU utilization.
 #
