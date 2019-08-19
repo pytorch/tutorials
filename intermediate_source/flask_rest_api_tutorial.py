@@ -326,21 +326,6 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # Next steps
 # --------------
 #
-# Before putting the server into production, we need to solve two issues:
-# 
-# - One request is served at a time, it is much slower compared to a local batch prediction 
-# - It will cause CUDA out-of-memory error on GPU when there are large concurrent requests
-#
-# We can cache user requests in batches and schedule the prediction process. 
-# Follow `service-streamer tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_
-# you will solve these issues with a few lines of code.
-#
-# .. Note ::
-#    `service-streamer <https://github.com/ShannonAI/service-streamer>`_ is a middleware for web service
-#    of machine learning applications. Queued requests from users are sampled into mini-batches. Service-streamer 
-#    can significantly enhance the overall performance of the web server by improving GPU utilization.
-#
-#
 # The server we wrote is quite trivial and and may not do everything
 # you need for your production application. So, here are some things you
 # can do to make it better:
@@ -365,3 +350,9 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 # - You can also add a UI by creating a page with a form which takes the image and
 #   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
 #   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_. 
+#
+# - In this tutorial, we only showed how to build a service that could return predictions for 
+#   a single image at a time. We could modify our service to be able to return predictions for 
+#   multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
+#   library automatically queues requests to your service and samples them into mini-batches 
+#   that can be fed into your model. You can check out `this tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_.
