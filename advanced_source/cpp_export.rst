@@ -356,7 +356,7 @@ Looks like a good match!
 .. tip::
 
   To move your model to GPU memory, you can write ``model.to(at::kCUDA);``.
-  Make sure the inputs to a model living in CUDA memory are also in CUDA memory
+  Make sure the inputs to a model are also living in CUDA memory
   by calling ``tensor.to(at::kCUDA)``, which will return a new tensor in CUDA
   memory.
 
