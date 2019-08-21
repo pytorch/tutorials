@@ -2,6 +2,12 @@ Deep Learning with PyTorch: A 60 Minute Blitz
 ---------------------------------------------
 **Author**: `Soumith Chintala <http://soumith.ch>`_
 
+.. raw:: html
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/u7x8RXwLKcA" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
+
 Goal of this tutorial:
 
 -  Understand PyTorch’s Tensor library and neural networks at a high
