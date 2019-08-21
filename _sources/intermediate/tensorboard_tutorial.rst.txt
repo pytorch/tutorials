@@ -1,11 +1,12 @@
 Visualizing Models, Data, and Training with TensorBoard
 ====================================================
 
-In the previous tutorial, we saw how to load in data,
-feed it through a model we defined as a subclass of ``nn.Module``,
-trained this model on training data, and tested it on testing data.
-In addition, we were able to print out some statistics as the model
-was training to get a sense for whether training was progressing.
+In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_, 
+we show you how to load in data,
+feed it through a model we define as a subclass of ``nn.Module``,
+train this model on training data, and test it on test data.
+To see what's happening, we print out some statistics as the model
+is training to get a sense for whether training is progressing.
 However, we can do much better than that: PyTorch integrates with
 TensorBoard, a tool designed for visualizing the results of neural
 network training runs. This tutorial illustrates some of its
