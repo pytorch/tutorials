@@ -182,7 +182,7 @@ structures. Let's visualize the model we built.
 Now upon refreshing TensorBoard you should see a "Graphs" tab that
 looks like this:
 
-.. image:: ../../_static/img/tensorboard_first_view.png
+.. image:: ../../_static/img/tensorboard_model_viz.png
 
 Go ahead and double click on "Net" to see it expand, seeing a
 detailed view of the individual operations that make up the model.
@@ -394,7 +394,7 @@ curves for each class. Go ahead and poke around; you'll see that on
 some classes the model has nearly 100% "area under the curve",
 whereas on others this area is lower:
 
-.. image:: ../../_static/img/tensorboard_images.png
+.. image:: ../../_static/img/tensorboard_pr_curves.png
 
 And that's an intro to TensorBoard and PyTorch's integration with it.
 Of course, you could do everything TensorBoard does in your Jupyter
