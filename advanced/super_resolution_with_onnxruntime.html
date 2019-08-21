@@ -6,14 +6,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime — PyTorch Tutorials 1.2.0 documentation</title>
+<title>Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime — PyTorch Tutorials 1.2.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="../beginner/audio_preprocessing_tutorial.html" rel="next" title="torchaudio Tutorial"/>
-<link href="../beginner/fgsm_tutorial.html" rel="prev" title="Adversarial Example Generation"/>
+<link href="cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend"/>
+<link href="cpp_export.html" rel="prev" title="Loading a PyTorch Model in C++"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -101,13 +101,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Image</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/finetuning_torchvision_models_tutorial.html">Finetuning Torchvision Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Audio</span></p>
 <ul>
@@ -137,13 +136,14 @@
 <li class="toctree-l1"><a class="reference internal" href="torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Production Usage</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch and Building a REST API using Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_export.html">Loading a PyTorch Model in C++</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
 </ul>
 <p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
 <ul>
@@ -164,7 +164,7 @@
           
         </a> &gt;
       </li>
-<li>Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime</li>
+<li>Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/advanced/super_resolution_with_onnxruntime.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -202,20 +202,20 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-advanced-super-resolution-with-onnxruntime-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnxruntime">
-<span id="sphx-glr-advanced-super-resolution-with-onnxruntime-py"></span><h1>Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime<a class="headerlink" href="#exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnxruntime" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnx-runtime">
+<span id="sphx-glr-advanced-super-resolution-with-onnxruntime-py"></span><h1>Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime<a class="headerlink" href="#exporting-a-model-from-pytorch-to-onnx-and-running-it-using-onnx-runtime" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format and then run it with ONNXRuntime.</p>
-<p>ONNXRuntime is a performance-focused engine for ONNX models,
+in PyTorch into the ONNX format and then run it with ONNX Runtime.</p>
+<p>ONNX Runtime is a performance-focused engine for ONNX models,
 which inferences efficiently across multiple platforms and hardware
 (Windows, Linux, and Mac and on both CPUs and GPUs).
-ONNXRuntime has proved to considerably increase performance over
+ONNX Runtime has proved to considerably increase performance over
 multiple models as explained <a class="reference external" href="https://cloudblogs.microsoft.com/opensource/2019/05/22/onnx-runtime-machine-learning-inferencing-0-4-release">here</a></p>
-<p>For this tutorial, you will need to install <a class="reference external" href="https://github.com/onnx/onnx">onnx</a>
-and <a class="reference external" href="https://github.com/microsoft/onnxruntime">onnxruntime</a>.
-You can get binary builds of onnx and onnxrunimte with
+<p>For this tutorial, you will need to install <a class="reference external" href="https://github.com/onnx/onnx">ONNX</a>
+and <a class="reference external" href="https://github.com/microsoft/onnxruntime">ONNX Runtime</a>.
+You can get binary builds of ONNX and ONNX Runtime with
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">onnx</span> <span class="pre">onnxruntime</span></code>.
-Note that ONNXRuntime is compatible with Python versions 3.5 to 3.7.</p>
+Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.</p>
 <p><code class="docutils literal notranslate"><span class="pre">NOTE</span></code>: This tutorial needs PyTorch master branch which can be installed by following
 the instructions <a class="reference external" href="https://github.com/pytorch/pytorch#from-source">here</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Some standard imports</span>
@@ -323,7 +323,7 @@ where batch_size can be variable.</p>
                   <span class="n">x</span><span class="p">,</span>                         <span class="c1"># model input (or a tuple for multiple inputs)</span>
                   <span class="s2">"super_resolution.onnx"</span><span class="p">,</span>   <span class="c1"># where to save the model (can be a file or file-like object)</span>
                   <span class="n">export_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>        <span class="c1"># store the trained parameter weights inside the model file</span>
-                  <span class="n">opset_version</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>          <span class="c1"># the onnx version to export the model to</span>
+                  <span class="n">opset_version</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>          <span class="c1"># the ONNX version to export the model to</span>
                   <span class="n">do_constant_folding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># wether to execute constant folding for optimization</span>
                   <span class="n">input_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'input'</span><span class="p">],</span>   <span class="c1"># the model's input names</span>
                   <span class="n">output_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'output'</span><span class="p">],</span> <span class="c1"># the model's output names</span>
@@ -333,9 +333,9 @@ where batch_size can be variable.</p>
 </div>
 <p>We also computed <code class="docutils literal notranslate"><span class="pre">torch_out</span></code>, the output after of the model,
 which we will use to verify that the model we exported computes
-the same values when run in onnxruntime.</p>
-<p>But before verifying the model’s output with onnxruntime, we will check
-the onnx model with onnx’s API.
+the same values when run in ONNX Runtime.</p>
+<p>But before verifying the model’s output with ONNX Runtime, we will check
+the ONNX model with ONNX’s API.
 First, <code class="docutils literal notranslate"><span class="pre">onnx.load("super_resolution.onnx")</span></code> will load the saved model and
 will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
 For more information <a class="reference external" href="https://github.com/onnx/onnx/blob/master/onnx/onnx.proto">onnx.proto documentation</a>.).
@@ -350,17 +350,17 @@ and outputs.</p>
 <span class="n">onnx</span><span class="o">.</span><span class="n">checker</span><span class="o">.</span><span class="n">check_model</span><span class="p">(</span><span class="n">onnx_model</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Now let’s compute the output using ONNXRuntime’s Python APIs.
+<p>Now let’s compute the output using ONNX Runtime’s Python APIs.
 This part can normally be done in a separate process or on another
 machine, but we will continue in the same process so that we can
-verify that onnxruntime and PyTorch are computing the same value
+verify that ONNX Runtime and PyTorch are computing the same value
 for the network.</p>
-<p>In order to run the model with ONNXRuntime, we need to create an
+<p>In order to run the model with ONNX Runtime, we need to create an
 inference session for the model with the chosen configuration
 parameters (here we use the default config).
 Once the session is created, we evaluate the model using the run() api.
 The output of this call is a list containing the outputs of the model
-computed by ONNXRuntime.</p>
+computed by ONNX Runtime.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">onnxruntime</span>
 
 <span class="n">ort_session</span> <span class="o">=</span> <span class="n">onnxruntime</span><span class="o">.</span><span class="n">InferenceSession</span><span class="p">(</span><span class="s2">"super_resolution.onnx"</span><span class="p">)</span>
@@ -368,24 +368,24 @@ computed by ONNXRuntime.</p>
 <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">requires_grad</span> <span class="k">else</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
-<span class="c1"># compute onnxruntime output prediction</span>
+<span class="c1"># compute ONNX Runtime output prediction</span>
 <span class="n">ort_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">x</span><span class="p">)}</span>
 <span class="n">ort_outs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">ort_inputs</span><span class="p">)</span>
 
-<span class="c1"># compare onnxruntime and PyTorch results</span>
+<span class="c1"># compare ONNX Runtime and PyTorch results</span>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">to_numpy</span><span class="p">(</span><span class="n">torch_out</span><span class="p">),</span> <span class="n">ort_outs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-03</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Exported model has been tested with ONNXRuntime, and the result looks good!"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We should see that the output of PyTorch and onnxruntime runs match
+<p>We should see that the output of PyTorch and ONNX Runtime runs match
 numerically with the given precision (rtol=1e-03 and atol=1e-05).
 As a side-note, if they do not match then there is an issue in the
-onnx exporter, so please contact us in that case.</p>
-<div class="section" id="running-the-model-on-an-image-using-onnxruntime">
-<h2>Running the model on an image using ONNXRuntime<a class="headerlink" href="#running-the-model-on-an-image-using-onnxruntime" title="Permalink to this headline">¶</a></h2>
+ONNX exporter, so please contact us in that case.</p>
+<div class="section" id="running-the-model-on-an-image-using-onnx-runtime">
+<h2>Running the model on an image using ONNX Runtime<a class="headerlink" href="#running-the-model-on-an-image-using-onnx-runtime" title="Permalink to this headline">¶</a></h2>
 <p>So far we have exported a model from PyTorch and shown how to load it
-and run it in onnxruntime with a dummy tensor as an input.</p>
+and run it in ONNX Runtime with a dummy tensor as an input.</p>
 <p>For this tutorial, we will use a famous cat image used widely which
 looks like below</p>
 <div class="figure">
@@ -420,7 +420,7 @@ will be the input of our model.</p>
 </div>
 <p>Now, as a next step, let’s take the tensor representing the
 greyscale resized cat image and run the super-resolution model in
-ONNXRuntime as explained previously.</p>
+ONNX Runtime as explained previously.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ort_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">ort_session</span><span class="o">.</span><span class="n">get_inputs</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">to_numpy</span><span class="p">(</span><span class="n">img_y</span><span class="p">)}</span>
 <span class="n">ort_outs</span> <span class="o">=</span> <span class="n">ort_session</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">ort_inputs</span><span class="p">)</span>
 <span class="n">img_out_y</span> <span class="o">=</span> <span class="n">ort_outs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -449,12 +449,12 @@ implementation of super-resolution model
 <div class="figure">
 <img alt="output\_cat" src="../_images/cat_superres_with_ort.jpg"/>
 </div>
-<p>ONNXRuntime being a cross platform engine, you can run it across
+<p>ONNX Runtime being a cross platform engine, you can run it across
 multiple platforms and on both CPUs and GPUs.</p>
-<p>ONNXRuntime can also be deployed to the cloud for model inferencing
+<p>ONNX Runtime can also be deployed to the cloud for model inferencing
 using Azure Machine Learning Services. More information <a class="reference external" href="https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx">here</a>.</p>
-<p>More information about ONNXRuntime’s performance <a class="reference external" href="https://github.com/microsoft/onnxruntime#high-performance">here</a>.</p>
-<p>For more information about ONNXRuntime <a class="reference external" href="https://github.com/microsoft/onnxruntime">here</a>.</p>
+<p>More information about ONNX Runtime’s performance <a class="reference external" href="https://github.com/microsoft/onnxruntime#high-performance">here</a>.</p>
+<p>For more information about ONNX Runtime <a class="reference external" href="https://github.com/microsoft/onnxruntime">here</a>.</p>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-super-resolution-with-onnxruntime-py">
 <div class="sphx-glr-download docutils container">
@@ -469,8 +469,8 @@ using Azure Machine Learning Services. More information <a class="reference exte
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/audio_preprocessing_tutorial.html" rel="next" title="torchaudio Tutorial">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../beginner/fgsm_tutorial.html" rel="prev" title="Adversarial Example Generation"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="n" class="btn btn-neutral float-right" href="cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="cpp_export.html" rel="prev" title="Loading a PyTorch Model in C++"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="helpful-hr hr-top"/>
 <div class="helpful-container">
@@ -496,8 +496,8 @@ using Azure Machine Learning Services. More information <a class="reference exte
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime</a><ul>
-<li><a class="reference internal" href="#running-the-model-on-an-image-using-onnxruntime">Running the model on an image using ONNXRuntime</a></li>
+<li><a class="reference internal" href="#">Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a><ul>
+<li><a class="reference internal" href="#running-the-model-on-an-image-using-onnx-runtime">Running the model on an image using ONNX Runtime</a></li>
 </ul>
 </li>
 </ul>
