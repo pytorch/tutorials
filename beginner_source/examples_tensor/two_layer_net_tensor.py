@@ -46,7 +46,8 @@ for t in range(500):
 
     # Compute and print loss
     loss = (y_pred - y).pow(2).sum().item()
-    print(t, loss)
+    if t % 100 == 99:
+        print(t, loss)
 
     # Backprop to compute gradients of w1 and w2 with respect to loss
     grad_y_pred = 2.0 * (y_pred - y)
