@@ -99,10 +99,6 @@ Image
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
 
-.. customgalleryitem::
-   :figure: /_static/img/cat.jpg
-   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
-   :description: :doc:`advanced/super_resolution_with_onnxruntime`
 
 .. raw:: html
 
@@ -249,6 +245,12 @@ Production Usage
    :description: :doc:`/intermediate/flask_rest_api_tutorial`
    :figure: _static/img/flask.png
 
+.. customgalleryitem::
+   :figure: /_static/img/cat.jpg
+   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+   :description: :doc:`advanced/super_resolution_with_onnxruntime`
+
+
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -296,7 +298,6 @@ PyTorch in Other Languages
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
-   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
@@ -357,6 +358,7 @@ PyTorch in Other Languages
    intermediate/flask_rest_api_tutorial
    beginner/aws_distributed_training_tutorial
    advanced/cpp_export
+   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
