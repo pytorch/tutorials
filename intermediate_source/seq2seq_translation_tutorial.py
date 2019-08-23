@@ -372,7 +372,7 @@ class EncoderRNN(nn.Module):
 # At every step of decoding, the decoder is given an input token and
 # hidden state. The initial input token is the start-of-string ``<SOS>``
 # token, and the first hidden state is the context vector (the encoder's
-# last hidden state).
+# last output).
 #
 # .. figure:: /_static/img/seq-seq-images/decoder-network.png
 #    :alt:
