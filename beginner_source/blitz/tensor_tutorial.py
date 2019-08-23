@@ -29,6 +29,8 @@ import torch
 x = torch.empty(5, 3)
 print(x)
 
+# Note: An uninitialized matrix is declared, but does not contain definite known values before it is used.
+# When an uninitialized matrix is created, whatever values were in the allocated memory at the time will appear as the initial values.  
 ###############################################################
 # Construct a randomly initialized matrix:
 
