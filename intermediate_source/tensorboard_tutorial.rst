@@ -1,11 +1,12 @@
 Visualizing Models, Data, and Training with TensorBoard
 ====================================================
 
-In the previous tutorial, we saw how to load in data,
-feed it through a model we defined as a subclass of ``nn.Module``,
-trained this model on training data, and tested it on testing data.
-In addition, we were able to print out some statistics as the model
-was training to get a sense for whether training was progressing.
+In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_, 
+we show you how to load in data,
+feed it through a model we define as a subclass of ``nn.Module``,
+train this model on training data, and test it on test data.
+To see what's happening, we print out some statistics as the model
+is training to get a sense for whether training is progressing.
 However, we can do much better than that: PyTorch integrates with
 TensorBoard, a tool designed for visualizing the results of neural
 network training runs. This tutorial illustrates some of its
@@ -182,7 +183,7 @@ structures. Let's visualize the model we built.
 Now upon refreshing TensorBoard you should see a "Graphs" tab that
 looks like this:
 
-.. image:: ../../_static/img/tensorboard_first_view.png
+.. image:: ../../_static/img/tensorboard_model_viz.png
 
 Go ahead and double click on "Net" to see it expand, seeing a
 detailed view of the individual operations that make up the model.
@@ -394,7 +395,7 @@ curves for each class. Go ahead and poke around; you'll see that on
 some classes the model has nearly 100% "area under the curve",
 whereas on others this area is lower:
 
-.. image:: ../../_static/img/tensorboard_images.png
+.. image:: ../../_static/img/tensorboard_pr_curves.png
 
 And that's an intro to TensorBoard and PyTorch's integration with it.
 Of course, you could do everything TensorBoard does in your Jupyter

@@ -1,22 +1,22 @@
 """
-Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
-=======================================================================
+Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+========================================================================
 
 In this tutorial, we describe how to convert a model defined
-in PyTorch into the ONNX format and then run it with ONNXRuntime. 
+in PyTorch into the ONNX format and then run it with ONNX Runtime.
 
-ONNXRuntime is a performance-focused engine for ONNX models,
+ONNX Runtime is a performance-focused engine for ONNX models,
 which inferences efficiently across multiple platforms and hardware
 (Windows, Linux, and Mac and on both CPUs and GPUs).
-ONNXRuntime has proved to considerably increase performance over
+ONNX Runtime has proved to considerably increase performance over
 multiple models as explained `here
 <https://cloudblogs.microsoft.com/opensource/2019/05/22/onnx-runtime-machine-learning-inferencing-0-4-release>`__
 
-For this tutorial, you will need to install `onnx <https://github.com/onnx/onnx>`__
-and `onnxruntime <https://github.com/microsoft/onnxruntime>`__.
-You can get binary builds of onnx and onnxrunimte with
+For this tutorial, you will need to install `ONNX <https://github.com/onnx/onnx>`__
+and `ONNX Runtime <https://github.com/microsoft/onnxruntime>`__.
+You can get binary builds of ONNX and ONNX Runtime with
 ``pip install onnx onnxruntime``.
-Note that ONNXRuntime is compatible with Python versions 3.5 to 3.7.
+Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.
 
 ``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
 the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
@@ -141,7 +141,7 @@ torch.onnx.export(torch_model,               # model being run
                   x,                         # model input (or a tuple for multiple inputs)
                   "super_resolution.onnx",   # where to save the model (can be a file or file-like object)
                   export_params=True,        # store the trained parameter weights inside the model file
-                  opset_version=10,          # the onnx version to export the model to
+                  opset_version=10,          # the ONNX version to export the model to
                   do_constant_folding=True,  # wether to execute constant folding for optimization
                   input_names = ['input'],   # the model's input names
                   output_names = ['output'], # the model's output names
@@ -151,10 +151,10 @@ torch.onnx.export(torch_model,               # model being run
 ######################################################################
 # We also computed ``torch_out``, the output after of the model,
 # which we will use to verify that the model we exported computes
-# the same values when run in onnxruntime.
+# the same values when run in ONNX Runtime.
 #
-# But before verifying the model's output with onnxruntime, we will check
-# the onnx model with onnx's API.
+# But before verifying the model's output with ONNX Runtime, we will check
+# the ONNX model with ONNX's API.
 # First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
 # will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
 # For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
@@ -172,18 +172,18 @@ onnx.checker.check_model(onnx_model)
 
 
 ######################################################################
-# Now let's compute the output using ONNXRuntime's Python APIs.
+# Now let's compute the output using ONNX Runtime's Python APIs.
 # This part can normally be done in a separate process or on another
 # machine, but we will continue in the same process so that we can
-# verify that onnxruntime and PyTorch are computing the same value
+# verify that ONNX Runtime and PyTorch are computing the same value
 # for the network.
 #
-# In order to run the model with ONNXRuntime, we need to create an
+# In order to run the model with ONNX Runtime, we need to create an
 # inference session for the model with the chosen configuration
 # parameters (here we use the default config).
 # Once the session is created, we evaluate the model using the run() api.
 # The output of this call is a list containing the outputs of the model
-# computed by ONNXRuntime. 
+# computed by ONNX Runtime.
 #
 
 import onnxruntime
@@ -193,33 +193,33 @@ ort_session = onnxruntime.InferenceSession("super_resolution.onnx")
 def to_numpy(tensor):
     return tensor.detach().cpu().numpy() if tensor.requires_grad else tensor.cpu().numpy()
 
-# compute onnxruntime output prediction
+# compute ONNX Runtime output prediction
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(x)}
 ort_outs = ort_session.run(None, ort_inputs)
 
-# compare onnxruntime and PyTorch results
+# compare ONNX Runtime and PyTorch results
 np.testing.assert_allclose(to_numpy(torch_out), ort_outs[0], rtol=1e-03, atol=1e-05)
 
 print("Exported model has been tested with ONNXRuntime, and the result looks good!")
 
 
 ######################################################################
-# We should see that the output of PyTorch and onnxruntime runs match
+# We should see that the output of PyTorch and ONNX Runtime runs match
 # numerically with the given precision (rtol=1e-03 and atol=1e-05).
 # As a side-note, if they do not match then there is an issue in the
-# onnx exporter, so please contact us in that case.
+# ONNX exporter, so please contact us in that case.
 #
 
 
 ######################################################################
-# Running the model on an image using ONNXRuntime
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Running the model on an image using ONNX Runtime
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 
 
 ######################################################################
 # So far we have exported a model from PyTorch and shown how to load it
-# and run it in onnxruntime with a dummy tensor as an input.
+# and run it in ONNX Runtime with a dummy tensor as an input.
 
 ######################################################################
 # For this tutorial, we will use a famous cat image used widely which
@@ -263,7 +263,7 @@ img_y.unsqueeze_(0)
 ######################################################################
 # Now, as a next step, let's take the tensor representing the
 # greyscale resized cat image and run the super-resolution model in
-# ONNXRuntime as explained previously.
+# ONNX Runtime as explained previously.
 #
 
 ort_inputs = {ort_session.get_inputs()[0].name: to_numpy(img_y)}
@@ -299,14 +299,14 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 #    :alt: output\_cat
 #
 #
-# ONNXRuntime being a cross platform engine, you can run it across
+# ONNX Runtime being a cross platform engine, you can run it across
 # multiple platforms and on both CPUs and GPUs.
 # 
-# ONNXRuntime can also be deployed to the cloud for model inferencing
+# ONNX Runtime can also be deployed to the cloud for model inferencing
 # using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
 #
-# More information about ONNXRuntime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
+# More information about ONNX Runtime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
 #
 # 
-# For more information about ONNXRuntime `here <https://github.com/microsoft/onnxruntime>`__.
+# For more information about ONNX Runtime `here <https://github.com/microsoft/onnxruntime>`__.
 #
