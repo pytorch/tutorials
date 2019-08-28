@@ -127,14 +127,14 @@ Text
    :description: :doc:`beginner/chatbot_tutorial`
 
 .. customgalleryitem::
+   :figure: /_static/img/rnnclass.png
+   :tooltip: Build and train a basic character-level RNN to classify words
+   :description: :doc:`intermediate/char_rnn_classification_tutorial`   
+
+.. customgalleryitem::
    :figure: /_static/img/char_rnn_generation.png
    :tooltip: Generate names from languages
    :description: :doc:`intermediate/char_rnn_generation_tutorial`
-
-.. customgalleryitem::
-   :figure: /_static/img/rnnclass.png
-   :tooltip: Build and train a basic character-level RNN to classify words
-   :description: :doc:`intermediate/char_rnn_classification_tutorial`
 
 .. customgalleryitem::
     :tooltip: Explore the key concepts of deep learning programming using Pytorch
@@ -314,8 +314,8 @@ PyTorch in Other Languages
    :caption: Text
 
    beginner/chatbot_tutorial
+   intermediate/char_rnn_classification_tutorial   
    intermediate/char_rnn_generation_tutorial
-   intermediate/char_rnn_classification_tutorial
    beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
