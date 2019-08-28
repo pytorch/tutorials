@@ -316,7 +316,7 @@ batch.
 
                 # ...log the running loss
                 writer.add_scalar('training loss',
-                                running_loss / 2000,
+                                running_loss / 1000,
                                 epoch * len(trainloader) + i)
 
                 # ...log a Matplotlib Figure showing the model's predictions on a
