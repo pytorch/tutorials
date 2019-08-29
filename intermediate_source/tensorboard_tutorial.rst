@@ -109,9 +109,11 @@ one channel instead of three and 28x28 instead of 32x32:
             return x
 
 
-        net = Net()
+    net = Net()
 
 We'll define the same ``optimizer`` and ``criterion`` from before:
+
+.. code:: python
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
@@ -136,7 +138,7 @@ folder.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now let's write an image to our TensorBoard - specifically, a grid -
-using `make_grid <https://pytorch.org/docs/stable/torchvision/utils.html#torchvision.utils.make_grid>`__
+using `make_grid <https://pytorch.org/docs/stable/torchvision/utils.html#torchvision.utils.make_grid>`__.
 
 .. code:: python
 
@@ -157,9 +159,9 @@ Now running
 
 ::
 
-    `tensorboard --logdir=runs`
+    tensorboard --logdir=runs
 
-from the command line and then navigating to `https://localhost:6006`
+from the command line and then navigating to `https://localhost:6006 <https://localhost:6006>`_
 should show the following.
 
 .. image:: ../../_static/img/tensorboard_first_view.png
