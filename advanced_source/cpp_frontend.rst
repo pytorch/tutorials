@@ -769,24 +769,24 @@ modules in the ``forward()`` method of a module we define ourselves:
 .. code-block:: cpp
 
   struct GeneratorImpl : nn::Module {
-    GeneratorImpl()
-        : conv1(nn::Conv2dOptions(kNoiseSize, 512, 4)
+    GeneratorImpl(int kNoiseSize)
+        : conv1(nn::Conv2dOptions(kNoiseSize, 256, 4)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm1(512),
-          conv2(nn::Conv2dOptions(512, 256, 4)
+          batch_norm1(256),
+          conv2(nn::Conv2dOptions(256, 128, 3)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm2(256),
-          conv3(nn::Conv2dOptions(256, 128, 4)
+          batch_norm2(128),
+          conv3(nn::Conv2dOptions(128, 64, 4)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm3(128),
-          conv4(nn::Conv2dOptions(128, 64, 4)
+          batch_norm3(64),
+          conv4(nn::Conv2dOptions(64, 1, 4)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
@@ -796,19 +796,28 @@ modules in the ``forward()`` method of a module we define ourselves:
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
-                    .transposed(true)) {}
+                    .transposed(true))
+   {
+     // register_module() is needed if we want to use the parameters() method later on
+     register_module("conv1", conv1);
+     register_module("conv2", conv2);
+     register_module("conv3", conv3);
+     register_module("conv4", conv4);
+     register_module("batch_norm1", batch_norm1);
+     register_module("batch_norm2", batch_norm1);
+     register_module("batch_norm3", batch_norm1);
+   }
 
-    torch::Tensor forward(torch::Tensor x) {
-      x = torch::relu(batch_norm1(conv1(x)));
-      x = torch::relu(batch_norm2(conv2(x)));
-      x = torch::relu(batch_norm3(conv3(x)));
-      x = torch::relu(batch_norm4(conv4(x)));
-      x = torch::tanh(conv5(x));
-      return x;
-    }
+   torch::Tensor forward(torch::Tensor x) {
+     x = torch::relu(batch_norm1(conv1(x)));
+     x = torch::relu(batch_norm2(conv2(x)));
+     x = torch::relu(batch_norm3(conv3(x)));
+     x = torch::tanh(conv4(x));
+     return x;
+   }
 
-    nn::Conv2d conv1, conv2, conv3, conv4, conv5;
-    nn::BatchNorm batch_norm1, batch_norm2, batch_norm3, batch_norm4;
+   nn::Conv2d conv1, conv2, conv3, conv4;
+   nn::BatchNorm batch_norm1, batch_norm2, batch_norm3;
   };
   TORCH_MODULE(Generator);
 
