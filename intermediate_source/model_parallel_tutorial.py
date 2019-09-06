@@ -23,22 +23,33 @@ into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
-**Note**: you may be wondering when you should use `DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_
-vs.
+**Comparison between DataParallel and DistributedDataParallel**
+
+You may be wondering what the differences between
+`DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_
+(covered in this tutorial) and
 `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel>`_
-(covered in the next tutorial) - and when should I use neither? At a high level, the answer is:
+(covered in the next tutorial) are. First, the similarity: both ``DataParallel``
+and ``DistributedDataParallel``` implement data parallel training.
 
-- If your **model** is small enough to fit on one GPU, don't use either; using ``DataParallel``
-  in this case will actually make your training go slower.
-- If your model is too large for one GPU, use ``DataParallel``
-- If your **data** is too large for one machine, use ``DistributedDataParallel`` (DDP)
-- DDP also allows for multiple processes to be run at once,
-  where each process uses multiple GPUs; if you are comfortable with multiprocessing,
-  using DDP even if your data is just on one machine can still be faster than using
-  ``DataParallel``.
+- The difference is that ``DataParallel`` is single-process multi-thread,
+  and only works on a single machine, while ``DistributedDataParallel`` is
+  multi-process and works for both single- and multi- machine training.
+  Thus, even for single machine training, ``DistributedDataParallel``
+  is expected to be faster than ``DataParallel``.
 
-We exclusively cover `DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_ here;
-DDP is covered in the `next tutorial <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`_.
+Here's our guideline on when to use each:
+
+- If your **model** is too large to fit on one GPU, use model parallel -
+  that is, splitting your model across multiple GPUs as described
+  `here <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
+- If your data is too large and thus makes your model take too long to
+  train, use data parallel (DataParallel or DistributedDataParallel).
+- If both your model and your data are too large, combine model parallel
+  (training across multiple GPUs) with ``DistributedDataParallel``. More
+  specifically, in this scenario, each ``DistributedDataParallel`` process
+  can use model parallel, and all processes collectively would use data
+  parallel.
 """
 
 ######################################################################

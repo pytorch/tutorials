@@ -1,15 +1,8 @@
-3. Writing Distributed Applications with PyTorch using torch.distributed
-========================================================================
+Writing Distributed Applications with PyTorch
+=============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
 In this short tutorial, we will be going over the distributed package of PyTorch. We'll see how to set up the distributed setting, use the different communication strategies, and go over some the internals of the package.
-
-Why would you use this material? In general, you use
-`torch.distributed <https://pytorch.org/docs/stable/distributed.html>`_
-when you want to not only train a large model in a parallel way, but also
-use a specific feature not implemented in `torch.distributed <https://pytorch.org/docs/stable/distributed.html>`_,
-such as distributed model averaging (essentially, a form of ensembling in
-which the weights of the model are averaged instead of the predictions).
 
 Setup
 -----
@@ -52,7 +45,7 @@ the following template.
         """ Distributed function to be implemented later. """
         pass
 
-    def init_processes(rank, size, fn, backend='gloo'):
+    def init_processes(rank, size, fn, backend='tcp'):
         """ Initialize the distributed environment. """
         os.environ['MASTER_ADDR'] = '127.0.0.1'
         os.environ['MASTER_PORT'] = '29500'
@@ -449,8 +442,20 @@ Communication Backends
 ~~~~~~~~~~~~~~~~~~~~~~
 
 One of the most elegant aspects of ``torch.distributed`` is its ability
-to abstract and build on top of different backends. The
-Gloo backend is the one currently recommended by PyTorch.
+to abstract and build on top of different backends. As mentioned before,
+there are currently three backends implemented in PyTorch: TCP, MPI, and
+Gloo. They each have different specifications and tradeoffs, depending
+on the desired use-case. A comparative table of supported functions can
+be found
+`here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
+
+**TCP Backend**
+
+So far we have made extensive usage of the TCP backend. It is quite
+handy as a development platform, as it is guaranteed to work on most
+machines and operating systems. It also supports all point-to-point and
+collective functions on CPU. However, there is no support for GPUs and
+its communication routines are not as optimized as the MPI one.
 
 **Gloo Backend**
 
@@ -465,18 +470,76 @@ algorithms <https://github.com/facebookincubator/gloo/blob/master/docs/algorithm
 for inter-node routines.
 
 Since version 0.2.0, the Gloo backend is automatically included with the
-pre-compiled binaries of PyTorch. When we run
-``init_processes(rank, size, fn, backend='gloo')``, the
+pre-compiled binaries of PyTorch. As you have surely noticed, our
+distributed SGD example does not work if you put ``model`` on the GPU.
+Let's fix it by first replacing ``backend='gloo'`` in
+``init_processes(rank, size, fn, backend='tcp')``. At this point, the
 script will still run on CPU but uses the Gloo backend behind the
 scenes. In order to use multiple GPUs, let us also do the following
 modifications:
 
+0. ``init_processes(rank, size, fn, backend='tcp')`` :math:`\rightarrow`
+   ``init_processes(rank, size, fn, backend='gloo')``
 1.  Use ``device = torch.device("cuda:{}".format(rank))``
 2. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
 3.  Use ``data, target = data.to(device), target.to(device)``
 
 With the above modifications, our model is now training on two GPUs and
 you can monitor their utilization with ``watch nvidia-smi``.
+
+**MPI Backend**
+
+The Message Passing Interface (MPI) is a standardized tool from the
+field of high-performance computing. It allows to do point-to-point and
+collective communications and was the main inspiration for the API of
+``torch.distributed``. Several implementations of MPI exist (e.g.
+`Open-MPI <https://www.open-mpi.org/>`__,
+`MVAPICH2 <http://mvapich.cse.ohio-state.edu/>`__, `Intel
+MPI <https://software.intel.com/en-us/intel-mpi-library>`__) each
+optimized for different purposes. The advantage of using the MPI backend
+lies in MPI's wide availability - and high-level of optimization - on
+large computer clusters. `Some <https://developer.nvidia.com/mvapich>`__
+`recent <https://developer.nvidia.com/ibm-spectrum-mpi>`__
+`implementations <https://www.open-mpi.org/>`__ are also able to take
+advantage of CUDA IPC and GPU Direct technologies in order to avoid
+memory copies through the CPU.
+
+Unfortunately, PyTorch's binaries can not include an MPI implementation
+and we'll have to recompile it by hand. Fortunately, this process is
+fairly simple given that upon compilation, PyTorch will look *by itself*
+for an available MPI implementation. The following steps install the MPI
+backend, by installing PyTorch `from
+source <https://github.com/pytorch/pytorch#from-source>`__.
+
+1. Create and activate your Anaconda environment, install all the
+   pre-requisites following `the
+   guide <https://github.com/pytorch/pytorch#from-source>`__, but do
+   **not** run ``python setup.py install`` yet.
+2. Choose and install your favorite MPI implementation. Note that
+   enabling CUDA-aware MPI might require some additional steps. In our
+   case, we'll stick to Open-MPI *without* GPU support:
+   ``conda install -c conda-forge openmpi``
+3. Now, go to your cloned PyTorch repo and execute
+   ``python setup.py install``.
+
+In order to test our newly installed backend, a few modifications are
+required.
+
+1. Replace the content under ``if __name__ == '__main__':`` with
+   ``init_processes(0, 0, run, backend='mpi')``.
+2. Run ``mpirun -n 4 python myscript.py``.
+
+The reason for these changes is that MPI needs to create its own
+environment before spawning the processes. MPI will also spawn its own
+processes and perform the handshake described in `Initialization
+Methods <#initialization-methods>`__, making the ``rank``\ and ``size``
+arguments of ``init_process_group`` superfluous. This is actually quite
+powerful as you can pass additional arguments to ``mpirun`` in order to
+tailor computational resources for each process. (Things like number of
+cores per process, hand-assigning machines to specific ranks, and `some
+more <https://www.open-mpi.org/faq/?category=running#mpirun-hostfile>`__)
+Doing so, you should obtain the same familiar output as with the other
+communication backends.
 
 Initialization Methods
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -568,7 +631,7 @@ with rank 0 and follow the procedure described above.
 
 .. code:: python
 
-    dist.init_process_group(init_method='gloo://10.1.1.20:23456', rank=args.rank, world_size=4)
+    dist.init_process_group(init_method='tcp://10.1.1.20:23456', rank=args.rank, world_size=4)
 
 In the second case, the multicast address specifies the group of nodes
 who might potentially be active and the coordination can be handled by
@@ -579,7 +642,7 @@ multiple jobs to be scheduled on the same cluster.
 
 .. code:: python
 
-    dist.init_process_group(init_method='gloo://[ff15:1e18:5d4c:4cf0:d02d:b659:53ba:b0a7]:23456',
+    dist.init_process_group(init_method='tcp://[ff15:1e18:5d4c:4cf0:d02d:b659:53ba:b0a7]:23456',
                             world_size=4)
 
 .. raw:: html
