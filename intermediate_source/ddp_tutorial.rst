@@ -19,13 +19,33 @@ every module replica, i.e., no module replication within a process. The code in
 this tutorial runs on an 8-GPU server, but it can be easily generalized to
 other environments.
 
+Comparison between ``DataParallel`` and ``DistributedDataParallel``
+-------------------------------------------------------------------
+
+Before we dive in, let's clarify why, despite the added complexity, you would
+consider using ``DistributedDataParallel`` over ``DataParallel``, remembering
+that **model parallel** (covered in the
+`prior tutorial <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__)
+is necessary to use in either case if your model is too large to fit on a single
+GPU.
+
+- ``DataParallel`` is single-process, multi-thread, and only works on a single
+  machine, while ``DistributedDataParallel`` is multi-process and works for both
+  single- and multi- machine training. Thus, even for single machine training,
+  where your **data** is small enough to fit on a single machine, ``DistributedDataParallel``
+  is expected to be faster than ``DataParallel``.
+- If both your data is too large to fit on one machine **and** your
+  model is too large to fit on a single GPU, you can combine model parallel
+  (splitting a single model across multiple GPUs) with ``DistributedDataParallel``.
+  Under this regime, each ``DistributedDataParallel`` process could use model parallel,
+  and all processes collectively would use data parallel.
 
 Basic Use Case
 --------------
 
 To create DDP modules, first set up process groups properly. More details can
 be found in
-`WRITING DISTRIBUTED APPLICATIONS WITH PYTORCH <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
+`Writing Distributed Applications with PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
 
 .. code:: python
 

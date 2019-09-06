@@ -193,7 +193,7 @@ Deploying PyTorch Models in Production
 .. customgalleryitem::
    :tooltip: Loading a PyTorch model in C++
    :description: :doc:`advanced/cpp_export`
-   :figure: _static/img/cpp_logo.png
+   :figure: _static/img/torchscript_to_cpp.png
 
 .. customgalleryitem::
    :figure: /_static/img/cat.jpg

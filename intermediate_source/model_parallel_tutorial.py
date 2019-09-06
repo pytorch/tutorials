@@ -4,15 +4,19 @@
 ================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
-Data parallel and model parallel are widely-used in distributed training
+Model parallel is widely-used in distributed training
 techniques. Previous posts have explained how to use
 `DataParallel <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
-to train a neural network on multiple GPUs. ``DataParallel`` replicates the
+to train a neural network on multiple GPUs; this feature replicates the
 same model to all GPUs, where each GPU consumes a different partition of the
 input data. Although it can significantly accelerate the training process, it
 does not work for some use cases where the model is too large to fit into a
-single GPU. This post shows how to solve that problem by using model parallel
-and also shares some insights on how to speed up model parallel training.
+single GPU. This post shows how to solve that problem by using **model parallel**,
+which, in contrast to ``DataParallel``, splits a single model onto different GPUs,
+rather than replicating the entire model on each GPU (to be concrete, say a model
+``m`` contains 10 layers: when using ``DataParallel``, each GPU will have a
+replica of each of these 10 layers, whereas when using model parallel on two GPUs,
+each GPU could host 5 layers).
 
 The high-level idea of model parallel is to place different sub-networks of a
 model onto different devices, and implement the ``forward`` method accordingly
@@ -23,42 +27,15 @@ into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
-**Comparison between DataParallel and DistributedDataParallel**
-
-You may be wondering what the differences between
-`DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_
-(covered in this tutorial) and
-`DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel>`_
-(covered in the next tutorial) are. First, the similarity: both ``DataParallel``
-and ``DistributedDataParallel``` implement data parallel training.
-
-- The difference is that ``DataParallel`` is single-process multi-thread,
-  and only works on a single machine, while ``DistributedDataParallel`` is
-  multi-process and works for both single- and multi- machine training.
-  Thus, even for single machine training, ``DistributedDataParallel``
-  is expected to be faster than ``DataParallel``.
-
-Here's our guideline on when to use each:
-
-- If your **model** is too large to fit on one GPU, use model parallel -
-  that is, splitting your model across multiple GPUs as described
-  `here <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
-- If your data is too large and thus makes your model take too long to
-  train, use data parallel (DataParallel or DistributedDataParallel).
-- If both your model and your data are too large, combine model parallel
-  (training across multiple GPUs) with ``DistributedDataParallel``. More
-  specifically, in this scenario, each ``DistributedDataParallel`` process
-  can use model parallel, and all processes collectively would use data
-  parallel.
+Basic Usage
+================================
 """
 
 ######################################################################
-# Basic Usage
-# =======================
-#
 # Let us start with a toy model that contains two linear layers. To run this
 # model on two GPUs, simply put each linear layer on a different GPU, and move
 # inputs and intermediate outputs to match the layer devices accordingly.
+#
 
 import torch
 import torch.nn as nn
