@@ -276,14 +276,14 @@ def train():
             total_loss = 0
             start_time = time.time()
 
-def evaluate(data_source):
-    model.eval() # Turn on the evaluation mode
+def evaluate(eval_model, data_source):
+    eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
     ntokens = len(TEXT.vocab.stoi)
     with torch.no_grad():
         for i in range(0, data_source.size(0) - 1, bptt):
             data, targets = get_batch(data_source, i)
-            output = model(data)
+            output = eval_model(data)
             output_flat = output.view(-1, ntokens)
             total_loss += len(data) * criterion(output_flat, targets).item()
     return total_loss / (len(data_source) - 1)
@@ -294,11 +294,12 @@ def evaluate(data_source):
 
 best_val_loss = float("inf")
 epochs = 3 # The number of epochs
+best_model = None
 
 for epoch in range(1, epochs + 1):
     epoch_start_time = time.time()
     train()
-    val_loss = evaluate(val_data)
+    val_loss = evaluate(model, val_data)
     print('-' * 89)
     print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | '
           'valid ppl {:8.2f}'.format(epoch, (time.time() - epoch_start_time),
@@ -306,9 +307,8 @@ for epoch in range(1, epochs + 1):
     print('-' * 89)
     
     if val_loss < best_val_loss:
-        with open("model.pt", 'wb') as f:
-            torch.save(model, f)
         best_val_loss = val_loss
+        best_model = model
 
     scheduler.step()
 
@@ -317,11 +317,9 @@ for epoch in range(1, epochs + 1):
 # Evaluate the model with the test dataset
 # -------------------------------------
 # 
-# Load the best saved model and check the result with the test dataset.
+# Apply the best model to check the result with the test dataset.
 
-with open("model.pt", 'rb') as f:
-    model = torch.load(f)
-test_loss = evaluate(test_data)
+test_loss = evaluate(best_model, test_data)
 print('=' * 89)
 print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
     test_loss, math.exp(test_loss)))
