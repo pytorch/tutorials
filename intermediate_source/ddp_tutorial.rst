@@ -1,5 +1,5 @@
-Getting Started with Distributed Data Parallel
-=============================================
+2. Getting Started with Distributed Data Parallel
+=================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Model Parallel Best Practices
-*************************************************************
+1. Model Parallel Best Practices
+================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 Data parallel and model parallel are widely-used in distributed training
@@ -23,11 +23,22 @@ into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
-**Recommended Reading:**
+**Note**: you may be wondering when you should use `DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_
+vs.
+`DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel>`_
+(covered in the next tutorial) - and when should I use neither? At a high level, the answer is:
 
--  https://pytorch.org/ For installation instructions
--  :doc:`/beginner/blitz/data_parallel_tutorial` Single-Machine Data Parallel
--  :doc:`/intermediate/ddp_tutorial` Combine Distributed Data Parallel and Model Parallel
+- If your **model** is small enough to fit on one GPU, don't use either; using ``DataParallel``
+  in this case will actually make your training go slower.
+- If your model is too large for one GPU, use ``DataParallel``
+- If your **data** is too large for one machine, use ``DistributedDataParallel`` (DDP)
+- DDP also allows for multiple processes to be run at once,
+  where each process uses multiple GPUs; if you are comfortable with multiprocessing,
+  using DDP even if your data is just on one machine can still be faster than using
+  ``DataParallel``.
+
+We exclusively cover `DataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.DataParallel>`_ here;
+DDP is covered in the `next tutorial <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`_.
 """
 
 ######################################################################
