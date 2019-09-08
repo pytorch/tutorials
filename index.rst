@@ -129,7 +129,7 @@ Text
 .. customgalleryitem::
    :figure: /_static/img/rnnclass.png
    :tooltip: Build and train a basic character-level RNN to classify words
-   :description: :doc:`intermediate/char_rnn_classification_tutorial`   
+   :description: :doc:`intermediate/char_rnn_classification_tutorial`
 
 .. customgalleryitem::
    :figure: /_static/img/char_rnn_generation.png
@@ -143,6 +143,11 @@ Text
 
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
+
+.. customgalleryitem::
+    :tooltip: Language Translation with Torchtext
+    :figure: /_static/img/thumbnails/torchtext.png
+    :description: :doc:`/beginner/translation_torchtext_tutorial`
 
 .. customgalleryitem::
     :tooltip: Sentiment Ngrams with Torchtext
@@ -314,10 +319,11 @@ PyTorch in Other Languages
    :caption: Text
 
    beginner/chatbot_tutorial
-   intermediate/char_rnn_classification_tutorial   
+   intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
+   beginner/translation_torchtext_tutorial
    beginner/text_sentiment_ngrams_tutorial
 
 .. toctree::
