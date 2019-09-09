@@ -23,17 +23,20 @@ Comparison between ``DataParallel`` and ``DistributedDataParallel``
 -------------------------------------------------------------------
 
 Before we dive in, let's clarify why, despite the added complexity, you would
-consider using ``DistributedDataParallel`` over ``DataParallel``, remembering
-that **model parallel** (covered in the
-`prior tutorial <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__)
-is necessary to use in either case if your model is too large to fit on a single
-GPU.
+consider using ``DistributedDataParallel`` over ``DataParallel``:
 
+- First, recall from the
+  `prior tutorial <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__
+  that if your model is too large to fit on a single GPU, you must use **model parallel**
+  to split it across multiple GPUs. ``DistributedDataParallel`` works with
+  **model parallel**; ``DataParallel`` does not at this time.
 - ``DataParallel`` is single-process, multi-thread, and only works on a single
   machine, while ``DistributedDataParallel`` is multi-process and works for both
   single- and multi- machine training. Thus, even for single machine training,
   where your **data** is small enough to fit on a single machine, ``DistributedDataParallel``
-  is expected to be faster than ``DataParallel``.
+  is expected to be faster than ``DataParallel``. ``DistributedDataParallel``
+  also replicates models upfront instead of on each iteration and gets Global
+  Interpreter Lock out of the way.
 - If both your data is too large to fit on one machine **and** your
   model is too large to fit on a single GPU, you can combine model parallel
   (splitting a single model across multiple GPUs) with ``DistributedDataParallel``.
