@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-Model Parallel Best Practices
-*************************************************************
+1. Model Parallel Best Practices
+================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
-Data parallel and model parallel are widely-used in distributed training
+Model parallel is widely-used in distributed training
 techniques. Previous posts have explained how to use
 `DataParallel <https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html>`_
-to train a neural network on multiple GPUs. ``DataParallel`` replicates the
+to train a neural network on multiple GPUs; this feature replicates the
 same model to all GPUs, where each GPU consumes a different partition of the
 input data. Although it can significantly accelerate the training process, it
 does not work for some use cases where the model is too large to fit into a
-single GPU. This post shows how to solve that problem by using model parallel
-and also shares some insights on how to speed up model parallel training.
+single GPU. This post shows how to solve that problem by using **model parallel**,
+which, in contrast to ``DataParallel``, splits a single model onto different GPUs,
+rather than replicating the entire model on each GPU (to be concrete, say a model
+``m`` contains 10 layers: when using ``DataParallel``, each GPU will have a
+replica of each of these 10 layers, whereas when using model parallel on two GPUs,
+each GPU could host 5 layers).
 
 The high-level idea of model parallel is to place different sub-networks of a
 model onto different devices, and implement the ``forward`` method accordingly
@@ -23,20 +27,15 @@ into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
-**Recommended Reading:**
-
--  https://pytorch.org/ For installation instructions
--  :doc:`/beginner/blitz/data_parallel_tutorial` Single-Machine Data Parallel
--  :doc:`/intermediate/ddp_tutorial` Combine Distributed Data Parallel and Model Parallel
+Basic Usage
+================================
 """
 
 ######################################################################
-# Basic Usage
-# =======================
-#
 # Let us start with a toy model that contains two linear layers. To run this
 # model on two GPUs, simply put each linear layer on a different GPU, and move
 # inputs and intermediate outputs to match the layer devices accordingly.
+#
 
 import torch
 import torch.nn as nn
