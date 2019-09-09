@@ -49,16 +49,16 @@ Getting Started
    :description: :doc:`beginner/transfer_learning_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/hybrid.png
-   :tooltip: Experiment with some of the key features of the PyTorch hybrid frontend
-   :description: :doc:`beginner/deploy_seq2seq_hybrid_frontend_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/thumbnails/floppy.png
    :tooltip: Explore use cases for the saving and loading of PyTorch models
    :description: :doc:`beginner/saving_loading_models`
 
 .. .. galleryitem:: beginner/saving_loading_models.py
+
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/pytorch_tensorboard.png
+   :tooltip: Learn to use TensorBoard to visualize data and model training
+   :description: :doc:`intermediate/tensorboard_tutorial`
 
 .. customgalleryitem::
    :figure: /_static/img/torch.nn.png
@@ -73,6 +73,11 @@ Getting Started
 
 Image
 ----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/tv-img.png
+   :tooltip: Finetuning a pre-trained Mask R-CNN model
+   :description: :doc:`intermediate/torchvision_tutorial`
 
 .. customgalleryitem::
    :figure: /_static/img/thumbnails/eye.png
@@ -94,21 +99,21 @@ Image
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
 
-.. customgalleryitem::
-   :figure: /_static/img/cat.jpg
-   :tooltip: Use ONNX to convert a model defined in PyTorch into the ONNX format and then load it into Caffe2
-   :description: :doc:`advanced/super_resolution_with_caffe2`
 
 .. raw:: html
 
     <div style='clear:both'></div>
 
 
-.. Audio
-.. ----------------------
+Audio
+----------------------
 
-.. Uncomment below when adding content
-.. .. raw:: html
+.. customgalleryitem::
+   :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
+   :tooltip: Preprocessing with torchaudio Tutorial
+   :description: :doc:`beginner/audio_preprocessing_tutorial`
+
+.. raw:: html
 
     <div style='clear:both'></div>
 
@@ -122,14 +127,14 @@ Text
    :description: :doc:`beginner/chatbot_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/char_rnn_generation.png
-   :tooltip: Generate names from languages
-   :description: :doc:`intermediate/char_rnn_generation_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/rnnclass.png
    :tooltip: Build and train a basic character-level RNN to classify words
    :description: :doc:`intermediate/char_rnn_classification_tutorial`
+
+.. customgalleryitem::
+   :figure: /_static/img/char_rnn_generation.png
+   :tooltip: Generate names from languages
+   :description: :doc:`intermediate/char_rnn_generation_tutorial`
 
 .. customgalleryitem::
     :tooltip: Explore the key concepts of deep learning programming using Pytorch
@@ -138,6 +143,11 @@ Text
 
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
+
+.. customgalleryitem::
+    :tooltip: Sentiment Ngrams with Torchtext
+    :figure: /_static/img/text_sentiment_ngrams_model.png
+    :description: :doc:`/beginner/text_sentiment_ngrams_tutorial`
 
 .. raw:: html
 
@@ -155,7 +165,6 @@ Generative
 
     <div style='clear:both'></div>
 
-
 Reinforcement Learning
 ----------------------
 
@@ -168,48 +177,35 @@ Reinforcement Learning
 
     <div style='clear:both'></div>
 
-Extending PyTorch
-----------------------
+Deploying PyTorch Models in Production
+--------------------------------------
 
 .. customgalleryitem::
-    :tooltip: Create extensions using numpy and scipy
-    :figure: /_static/img/scipynumpy.png
-    :description: :doc:`advanced/numpy_extensions_tutorial`
+   :tooltip: Deploying PyTorch and Building a REST API using Flask
+   :description: :doc:`/intermediate/flask_rest_api_tutorial`
+   :figure: _static/img/flask.png
 
 .. customgalleryitem::
-   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
-   :description: :doc:`/advanced/cpp_extension`
-   :figure: _static/img/cpp_logo.png
+   :tooltip: Introduction to TorchScript
+   :description: :doc:`beginner/Intro_to_TorchScript_tutorial`
+   :figure: _static/img/torchscript.png
 
 .. customgalleryitem::
-   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
-   :description: :doc:`/advanced/torch_script_custom_ops`
-   :figure: _static/img/cpp_logo.png
+   :tooltip: Loading a PyTorch model in C++
+   :description: :doc:`advanced/cpp_export`
+   :figure: _static/img/torchscript_to_cpp.png
 
+.. customgalleryitem::
+   :figure: /_static/img/cat.jpg
+   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+   :description: :doc:`advanced/super_resolution_with_onnxruntime`
 
 .. raw:: html
 
     <div style='clear:both'></div>
 
-
-Production Usage
-----------------------
-
-.. customgalleryitem::
-   :tooltip: Loading a PyTorch model in C++
-   :description: :doc:`advanced/cpp_export`
-   :figure: _static/img/cpp_logo.png
-
-.. customgalleryitem::
-   :tooltip: Convert a neural style transfer model that has been exported from PyTorch into the Apple CoreML format using ONNX
-   :description: :doc:`advanced/ONNXLive`
-   :figure: _static/img/ONNXLive.png
-
-
-.. customgalleryitem::
-   :tooltip: Parallelize computations across processes and clusters of machines
-   :description: :doc:`/intermediate/dist_tuto`
-   :figure: _static/img/distributed/DistPyTorch.jpg
+Parallel and Distributed Training
+---------------------------------
 
 .. customgalleryitem::
   :tooltip: Train large models with multiple GPUs using model parallel
@@ -222,15 +218,40 @@ Production Usage
   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
+   :tooltip: Parallelize computations across processes and clusters of machines
+   :description: :doc:`/intermediate/dist_tuto`
+   :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
-
 
 .. raw:: html
 
     <div style='clear:both'></div>
 
+Extending PyTorch
+----------------------
+
+.. customgalleryitem::
+   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_ops`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+    :tooltip: Create extensions using numpy and scipy
+    :figure: /_static/img/scipynumpy.png
+    :description: :doc:`advanced/numpy_extensions_tutorial`
+
+.. customgalleryitem::
+   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
+   :description: :doc:`/advanced/cpp_extension`
+   :figure: _static/img/cpp_logo.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 PyTorch in Other Languages
 -------------
@@ -258,6 +279,7 @@ PyTorch in Other Languages
    beginner/pytorch_with_examples
    beginner/transfer_learning_tutorial
    beginner/deploy_seq2seq_hybrid_frontend_tutorial
+   intermediate/tensorboard_tutorial
    beginner/saving_loading_models
    beginner/nn_tutorial
 
@@ -267,17 +289,19 @@ PyTorch in Other Languages
    :hidden:
    :caption: Image
 
+   intermediate/torchvision_tutorial
    beginner/finetuning_torchvision_models_tutorial
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
-   advanced/super_resolution_with_caffe2
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
    :caption: Audio
+
+   beginner/audio_preprocessing_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -286,10 +310,11 @@ PyTorch in Other Languages
    :caption: Text
 
    beginner/chatbot_tutorial
-   intermediate/char_rnn_generation_tutorial
    intermediate/char_rnn_classification_tutorial
+   intermediate/char_rnn_generation_tutorial
    beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
+   beginner/text_sentiment_ngrams_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -311,24 +336,33 @@ PyTorch in Other Languages
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Extending PyTorch
+   :caption: Deploying PyTorch Models in Production
 
-   advanced/numpy_extensions_tutorial
-   advanced/cpp_extension
-   advanced/torch_script_custom_ops
+   intermediate/flask_rest_api_tutorial
+   beginner/Intro_to_TorchScript_tutorial
+   advanced/cpp_export
+   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Production Usage
+   :caption: Parallel and Distributed Training
 
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    beginner/aws_distributed_training_tutorial
-   advanced/ONNXLive
-   advanced/cpp_export
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Extending PyTorch
+
+   advanced/torch_script_custom_ops
+   advanced/numpy_extensions_tutorial
+   advanced/cpp_extension
 
 .. toctree::
    :maxdepth: 2

@@ -26,13 +26,13 @@ from torch.jit import script, trace       # hybrid frontend decorator and tracin
 ```
 See [autograd](https://pytorch.org/docs/stable/autograd.html), [nn](https://pytorch.org/docs/stable/nn.html), [functional](https://pytorch.org/docs/stable/nn.html#torch-nn-functional) and [optim](https://pytorch.org/docs/stable/optim.html)
 
-### Hybrid frontend
+### Torchscript and JIT
 
 ```
 torch.jit.trace()         # takes your module or function and an example data input, and traces the computational steps that the data encounters as it progresses through the model
 @script                   # decorator used to indicate data-dependent control flow within the code being traced
 ```
-See [hybrid frontend](https://pytorch.org/docs/stable/hybridfrontend)
+See [Torchscript](https://pytorch.org/docs/stable/jit.html)
 
 ### ONNX
 
@@ -133,14 +133,14 @@ See [nn](https://pytorch.org/docs/stable/nn.html)
 ### Loss Functions
 
 ```
-nn.X where for example X is ...       # BCELoss, CrossEntropyLoss, L1Loss, MSELoss, NLLLoss, SoftMarginLoss, MultiLabelSoftMarginLoss, CosineEmbeddingLoss, KLDivLoss, MarginRankingLoss, HingeEmbeddingLoss or CosineEmbeddingLoss
+nn.X                                        # where X is BCELoss, CrossEntropyLoss, L1Loss, MSELoss, NLLLoss, SoftMarginLoss, MultiLabelSoftMarginLoss, CosineEmbeddingLoss, KLDivLoss, MarginRankingLoss, HingeEmbeddingLoss or CosineEmbeddingLoss
 ```
 See [loss functions](https://pytorch.org/docs/stable/nn.html#loss-functions)
 
 ### Activation Functions
 
 ```
-nn.X where for example X is ...       # ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, Threshold, HardTanh, Sigmoid, Tanh, LogSigmoid, Softplus, SoftShrink, Softsign, TanhShrink, Softmin, Softmax, Softmax2d or LogSoftmax
+nn.X                                  # where X is ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, Threshold, HardTanh, Sigmoid, Tanh, LogSigmoid, Softplus, SoftShrink, Softsign, TanhShrink, Softmin, Softmax, Softmax2d or LogSoftmax
 ```
 See [activation functions](https://pytorch.org/docs/stable/nn.html#non-linear-activations-weighted-sum-nonlinearity)
 
@@ -149,7 +149,7 @@ See [activation functions](https://pytorch.org/docs/stable/nn.html#non-linear-ac
 ```
 opt = optim.x(model.parameters(), ...)      # create optimizer
 opt.step()                                  # update weights
-optim.X where for example X is ...          # SGD, Adadelta, Adagrad, Adam, SparseAdam, Adamax, ASGD, LBFGS, RMSProp or Rprop
+optim.X                                     # where X is SGD, Adadelta, Adagrad, Adam, SparseAdam, Adamax, ASGD, LBFGS, RMSProp or Rprop
 ```
 See [optimizers](https://pytorch.org/docs/stable/optim.html)
 
@@ -158,7 +158,7 @@ See [optimizers](https://pytorch.org/docs/stable/optim.html)
 ```
 scheduler = optim.X(optimizer,...)      # create lr scheduler
 scheduler.step()                        # update lr at start of epoch
-optim.lr_scheduler.X where ...          # LambdaLR, StepLR, MultiStepLR, ExponentialLR or ReduceLROnPLateau
+optim.lr_scheduler.X                    # where X is LambdaLR, StepLR, MultiStepLR, ExponentialLR or ReduceLROnPLateau
 ```
 See [learning rate scheduler](https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate)
 
@@ -179,7 +179,7 @@ See [datasets](https://pytorch.org/docs/stable/data.html?highlight=dataset#torch
 ```
 DataLoader(dataset, batch_size=1, ...)      # loads data batches agnostic of structure of individual data points
 sampler.Sampler(dataset,...)                # abstract class dealing with ways to sample from dataset
-sampler.XSampler where ...                  # Sequential, Random, Subset, WeightedRandom or Distributed
+sampler.XSampler                            # where X is Sequential, Random, Subset, WeightedRandom or Distributed
 ```
 See [dataloader](https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader)
 

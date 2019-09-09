@@ -14,49 +14,29 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
-pip uninstall -y torchvision || true
 
 export PATH=/opt/conda/bin:$PATH
-conda install -y sphinx==1.8.2 pandas
+pip install sphinx==1.8.2 pandas
+
+# For Tensorboard. Until 1.14 moves to the release channel.
+pip install tb-nightly  
+
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
-
-# Install torchvision from source
-git clone https://github.com/pytorch/vision --quiet
-pushd vision
-pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
-popd
-
-# Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
 aws configure set default.s3.multipart_threshold 5120MB
-
-if [[ $(pip show torch) ]]; then
-  # Clean up previous PyTorch installations
-  pip uninstall -y torch || true
-  pip uninstall -y torch || true
-fi
-
-# Install a nightly build of pytorch
-
-# GPU, requires CUDA version 9.0
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # TODO: Fix bugs in these tutorials to make them runnable again
-  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -196,6 +176,3 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 else
   make docs
 fi
-
-rm -rf vision
-rm -rf audio

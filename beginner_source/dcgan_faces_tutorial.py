@@ -53,7 +53,7 @@ DCGAN Tutorial
 # :math:`D(x)` is the discriminator network which outputs the (scalar)
 # probability that :math:`x` came from training data rather than the
 # generator. Here, since we are dealing with images the input to
-# :math:`D(x)` is an image of HWC size 3x64x64. Intuitively, :math:`D(x)`
+# :math:`D(x)` is an image of CHW size 3x64x64. Intuitively, :math:`D(x)`
 # should be HIGH when :math:`x` comes from training data and LOW when
 # :math:`x` comes from the generator. :math:`D(x)` can also be thought of
 # as a traditional binary classifier.
@@ -131,7 +131,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
-# Set random seem for reproducibility
+# Set random seed for reproducibility
 manualSeed = 999
 #manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)

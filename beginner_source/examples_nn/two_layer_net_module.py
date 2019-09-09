@@ -56,7 +56,8 @@ for t in range(500):
 
     # Compute and print loss
     loss = criterion(y_pred, y)
-    print(t, loss.item())
+    if t % 100 == 99:
+        print(t, loss.item())
 
     # Zero gradients, perform a backward pass, and update the weights.
     optimizer.zero_grad()

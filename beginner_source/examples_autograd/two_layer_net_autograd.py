@@ -46,9 +46,10 @@ for t in range(500):
 
     # Compute and print loss using operations on Tensors.
     # Now loss is a Tensor of shape (1,)
-    # loss.item() gets the a scalar value held in the loss.
+    # loss.item() gets the scalar value held in the loss.
     loss = (y_pred - y).pow(2).sum()
-    print(t, loss.item())
+    if t % 100 == 99:
+        print(t, loss.item())
 
     # Use autograd to compute the backward pass. This call will compute the
     # gradient of loss with respect to all Tensors with requires_grad=True.

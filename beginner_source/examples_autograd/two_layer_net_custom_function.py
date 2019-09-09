@@ -73,7 +73,8 @@ for t in range(500):
 
     # Compute and print loss
     loss = (y_pred - y).pow(2).sum()
-    print(t, loss.item())
+    if t % 100 == 99:
+        print(t, loss.item())
 
     # Use autograd to compute the backward pass.
     loss.backward()
