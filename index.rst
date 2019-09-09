@@ -154,6 +154,11 @@ Text
     :figure: /_static/img/text_sentiment_ngrams_model.png
     :description: :doc:`/beginner/text_sentiment_ngrams_tutorial`
 
+.. customgalleryitem::
+    :tooltip: Transformer Transformer Tutorial 
+    :figure: /_static/img/transformer_architecture.jpg
+    :description: :doc:`/beginner/transformer_tutorial`
+
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -321,6 +326,7 @@ PyTorch in Other Languages
    intermediate/seq2seq_translation_tutorial
    beginner/translation_torchtext_tutorial
    beginner/text_sentiment_ngrams_tutorial
+   beginner/transformer_tutorial
 
 .. toctree::
    :maxdepth: 2
