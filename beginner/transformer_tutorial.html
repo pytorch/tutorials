@@ -1,0 +1,842 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>nn.Transformer Tutorial — PyTorch Tutorials 1.2.0 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="dcgan_faces_tutorial.html" rel="next" title="DCGAN Tutorial"/>
+<link href="text_sentiment_ngrams_tutorial.html" rel="prev" title="Text Classification Tutorial"/>
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">Features</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.2.0
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_loading_tutorial.html">Data Loading and Processing Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning_tutorial.html">Transfer Learning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deploy_seq2seq_hybrid_frontend_tutorial.html">Deploying a Seq2Seq Model with TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="saving_loading_models.html">Saving and Loading Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="finetuning_torchvision_models_tutorial.html">Finetuning Torchvision Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fgsm_tutorial.html">Adversarial Example Generation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">torchaudio Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="chatbot_tutorial.html">Chatbot Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text Classification Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">nn.Transformer Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Generative</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">1. Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">2. Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">3. Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">4. (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">1. Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html#basic-usage">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html#apply-model-parallel-to-existing-modules">Apply Model Parallel to Existing Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html#speed-up-by-pipelining-inputs">Speed Up by Pipelining Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">2. Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aws_distributed_training_tutorial.html">4. (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>nn.Transformer Tutorial</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/beginner/transformer_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">beginner/transformer_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-transformer-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="nn-transformer-tutorial">
+<span id="sphx-glr-beginner-transformer-tutorial-py"></span><h1>nn.Transformer Tutorial<a class="headerlink" href="#nn-transformer-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>This is a tutorial to show how to implement <a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=nn%20transformer#torch.nn.Transformer">nn.Transformer</a> module.</p>
+<p>PyTorch 1.2 release includes a standard transformer module based on the
+paper <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">Attention is All You
+Need</a>. The transformer model
+has been proved to be superior in quality for many sequence-to-sequence
+problems while being more parallelizable. The <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> module
+relies entirely on an attention mechanism (another module recently
+implemented as <a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=multiheadattention#torch.nn.MultiheadAttention">nn.MultiheadAttention</a>) to draw global dependencies
+between input and output. The <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> module is now highly
+modularized such that a single component (like <a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=nn%20transformerencoder#torch.nn.TransformerEncoder">nn.TransformerEncoder</a>
+in this tutorial) can be easily adapted/composed.</p>
+<img alt="../_images/transformer_architecture.jpg" src="../_images/transformer_architecture.jpg"/>
+<div class="section" id="define-the-model">
+<h2>Define the model<a class="headerlink" href="#define-the-model" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we train <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> model on a
+language modeling task. The language modeling task is to assign a
+probability for the likelihood of a given word (or a sequence of words)
+to follow a sequence of words. A sequence of tokens are passed to the embedding
+layer first, followed by a positional encoding layer to account for the order
+of the word (see the next paragraph for more details). The
+<code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> consists of multiple layers of
+<a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=transformerencoderlayer#torch.nn.TransformerEncoderLayer">nn.TransformerEncoderLayer</a>. Along with the input sequence, a square
+attention mask is required because the self-attention layers in
+<code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> are only allowed to attend the earlier positions in
+the sequence. For the language modeling task, any tokens on the future
+positions should be masked. To have the actual words, the output
+of <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> model is sent to the final Linear
+layer, which is followed by a log-Softmax function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="k">class</span> <span class="nc">TransformerModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">,</span> <span class="n">nhead</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TransformerModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="k">import</span> <span class="n">TransformerEncoder</span><span class="p">,</span> <span class="n">TransformerEncoderLayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="s1">'Transformer'</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
+        <span class="n">encoder_layers</span> <span class="o">=</span> <span class="n">TransformerEncoderLayer</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">nhead</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span> <span class="o">=</span> <span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">encoder_layers</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ninp</span> <span class="o">=</span> <span class="n">ninp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_generate_square_subsequent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sz</span><span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">mask</span>
+
+    <span class="k">def</span> <span class="nf">init_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">initrange</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">device</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_square_subsequent_mask</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">src</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="n">mask</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ninp</span><span class="p">)</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">PositionalEncoding</span></code> module injects some information about the
+relative or absolute position of the tokens in the sequence. The
+positional encodings have the same dimension as the embeddings so that
+the two can be summed. Here, we use <code class="docutils literal notranslate"><span class="pre">sine</span></code> and <code class="docutils literal notranslate"><span class="pre">cosine</span></code> functions of
+different frequencies.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PositionalEncoding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PositionalEncoding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="n">pe</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">max_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">div_term</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">))</span>
+        <span class="n">pe</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+        <span class="n">pe</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">)</span>
+        <span class="n">pe</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">'pe'</span><span class="p">,</span> <span class="n">pe</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pe</span><span class="p">[:</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-and-batch-data">
+<h2>Load and batch data<a class="headerlink" href="#load-and-batch-data" title="Permalink to this headline">¶</a></h2>
+<p>The training process uses Wikitext-2 dataset from <code class="docutils literal notranslate"><span class="pre">torchtext</span></code>. The
+vocab object is built based on the train dataset and is used to numericalize
+tokens into tensors. Starting from sequential data, the <code class="docutils literal notranslate"><span class="pre">batchify()</span></code>
+function arranges the dataset into columns. For instance, with the
+alphabet as the sequence and a batch size of 4, we have the following
+arrangement:</p>
+<p>┌ A   G   M   S   ┐</p>
+<p>│ B   H   N   T   │</p>
+<p>│ C   I   O   U   |</p>
+<p>│ D   J   P   V   |</p>
+<p>│ E   K   Q   W   |</p>
+<p>└ F   L   R   X   ┘</p>
+<p>These columns are treated as independent by the model, which means that
+the dependence of <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> can not be learned, but allows more
+efficient batch processing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchtext</span>
+<span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="k">import</span> <span class="n">get_tokenizer</span>
+<span class="n">TEXT</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Field</span><span class="p">(</span><span class="n">tokenize</span><span class="o">=</span><span class="n">get_tokenizer</span><span class="p">(</span><span class="s2">"basic_english"</span><span class="p">),</span>
+                            <span class="n">init_token</span><span class="o">=</span><span class="s1">'&lt;sos&gt;'</span><span class="p">,</span>
+                            <span class="n">eos_token</span><span class="o">=</span><span class="s1">'&lt;eos&gt;'</span><span class="p">,</span>
+                            <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">train_txt</span><span class="p">,</span> <span class="n">val_txt</span><span class="p">,</span> <span class="n">test_txt</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">WikiText2</span><span class="o">.</span><span class="n">splits</span><span class="p">(</span><span class="n">TEXT</span><span class="p">)</span>
+<span class="n">TEXT</span><span class="o">.</span><span class="n">build_vocab</span><span class="p">(</span><span class="n">train_txt</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">batchify</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">bsz</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">TEXT</span><span class="o">.</span><span class="n">numericalize</span><span class="p">([</span><span class="n">data</span><span class="o">.</span><span class="n">examples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">])</span>
+    <span class="c1"># Divide the dataset into bsz parts.</span>
+    <span class="n">nbatch</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">//</span> <span class="n">bsz</span>
+    <span class="c1"># Trim off any extra elements that wouldn't cleanly fit (remainders).</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">narrow</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbatch</span> <span class="o">*</span> <span class="n">bsz</span><span class="p">)</span>
+    <span class="c1"># Evenly divide the data across the bsz batches.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">bsz</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">eval_batch_size</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">batchify</span><span class="p">(</span><span class="n">train_txt</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+<span class="n">val_data</span> <span class="o">=</span> <span class="n">batchify</span><span class="p">(</span><span class="n">val_txt</span><span class="p">,</span> <span class="n">eval_batch_size</span><span class="p">)</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="n">batchify</span><span class="p">(</span><span class="n">test_txt</span><span class="p">,</span> <span class="n">eval_batch_size</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>downloading wikitext-2-v1.zip
+extracting
+</pre></div>
+</div>
+<div class="section" id="functions-to-generate-input-and-target-sequence">
+<h3>Functions to generate input and target sequence<a class="headerlink" href="#functions-to-generate-input-and-target-sequence" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">get_batch()</span></code> function generates the input and target sequence for
+the transformer model. It subdivides the source data into chunks of
+length <code class="docutils literal notranslate"><span class="pre">bptt</span></code>. For the language modeling task, the model needs the
+following words as <code class="docutils literal notranslate"><span class="pre">Target</span></code>. For example, with a <code class="docutils literal notranslate"><span class="pre">bptt</span></code> value of 2,
+we’d get the following two Variables for <code class="docutils literal notranslate"><span class="pre">i</span></code> = 0:</p>
+<blockquote>
+<div>Input     |             Target</div></blockquote>
+<p>┌ A   G   M   S   ┐ ┌ B   H   N   T   ┐</p>
+<p>└ B   H   N   T   ┘ └ C   I   O   U   ┘</p>
+<p>It should be noted that the chunks are along dimension 0, consistent
+with the <code class="docutils literal notranslate"><span class="pre">S</span></code> dimension in the Transformer model. The batch dimension
+<code class="docutils literal notranslate"><span class="pre">N</span></code> is along dimension 1.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bptt</span> <span class="o">=</span> <span class="mi">35</span>
+<span class="k">def</span> <span class="nf">get_batch</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+    <span class="n">seq_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">bptt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="initiate-an-instance">
+<h2>Initiate an instance<a class="headerlink" href="#initiate-an-instance" title="Permalink to this headline">¶</a></h2>
+<p>The model is set up with the hyperparameter below. The vocab size is
+equal to the length of the vocab object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TEXT</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
+<span class="n">emsize</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># embedding dimension</span>
+<span class="n">nhid</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># the dimension of the feedforward network model in nn.TransformerEncoder</span>
+<span class="n">nlayers</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># the number of nn.TransformerEncoderLayer in nn.TransformerEncoder</span>
+<span class="n">nhead</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># the number of heads in the multiheadattention models</span>
+<span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.2</span> <span class="c1"># the dropout value</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">TransformerModel</span><span class="p">(</span><span class="n">ntokens</span><span class="p">,</span> <span class="n">emsize</span><span class="p">,</span> <span class="n">nhead</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-model">
+<h2>Run the model<a class="headerlink" href="#run-the-model" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss">CrossEntropyLoss</a>
+is applied to track the loss and
+<a class="reference external" href="https://pytorch.org/docs/master/optim.html?highlight=sgd#torch.optim.SGD">SGD</a>
+implements stochastic gradient descent method as the optimizer. The initial
+learning rate is set to 5.0. <a class="reference external" href="https://pytorch.org/docs/master/optim.html?highlight=steplr#torch.optim.lr_scheduler.StepLR">StepLR</a> is
+applied to adjust the learn rate through epochs. During the
+training, we use
+<a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=nn%20utils%20clip_grad_norm#torch.nn.utils.clip_grad_norm_">nn.utils.clip_grad_norm_</a>
+function to scale all the gradient together to prevent exploding.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">lr</span> <span class="o">=</span> <span class="mf">5.0</span> <span class="c1"># learning rate</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.95</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="k">def</span> <span class="nf">train</span><span class="p">():</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span> <span class="c1"># Turn on the train mode</span>
+    <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TEXT</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">train_data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">)):</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">get_batch</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">),</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="n">total_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">log_interval</span> <span class="o">=</span> <span class="mi">200</span>
+        <span class="k">if</span> <span class="n">batch</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">batch</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cur_loss</span> <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="n">log_interval</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'| epoch </span><span class="si">{:3d}</span><span class="s1"> | </span><span class="si">{:5d}</span><span class="s1">/</span><span class="si">{:5d}</span><span class="s1"> batches | '</span>
+                  <span class="s1">'lr </span><span class="si">{:02.2f}</span><span class="s1"> | ms/batch </span><span class="si">{:5.2f}</span><span class="s1"> | '</span>
+                  <span class="s1">'loss </span><span class="si">{:5.2f}</span><span class="s1"> | ppl </span><span class="si">{:8.2f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">epoch</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span> <span class="o">//</span> <span class="n">bptt</span><span class="p">,</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">get_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">elapsed</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">/</span> <span class="n">log_interval</span><span class="p">,</span>
+                    <span class="n">cur_loss</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">cur_loss</span><span class="p">)))</span>
+            <span class="n">total_loss</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">eval_model</span><span class="p">,</span> <span class="n">data_source</span><span class="p">):</span>
+    <span class="n">eval_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="c1"># Turn on the evaluation mode</span>
+    <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TEXT</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data_source</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">):</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">get_batch</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">output_flat</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">)</span>
+            <span class="n">total_loss</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output_flat</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Loop over epochs. Save the model if the validation loss is the best
+we’ve seen so far. Adjust the learning rate after each epoch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">best_val_loss</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># The number of epochs</span>
+<span class="n">best_model</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">epoch_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">train</span><span class="p">()</span>
+    <span class="n">val_loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">val_data</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">89</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'| end of epoch </span><span class="si">{:3d}</span><span class="s1"> | time: </span><span class="si">{:5.2f}</span><span class="s1">s | valid loss </span><span class="si">{:5.2f}</span><span class="s1"> | '</span>
+          <span class="s1">'valid ppl </span><span class="si">{:8.2f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">epoch_start_time</span><span class="p">),</span>
+                                     <span class="n">val_loss</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">val_loss</span><span class="p">)))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">89</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">val_loss</span> <span class="o">&lt;</span> <span class="n">best_val_loss</span><span class="p">:</span>
+        <span class="n">best_val_loss</span> <span class="o">=</span> <span class="n">val_loss</span>
+        <span class="n">best_model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   200/ 2981 batches | lr 5.00 | ms/batch 35.62 | loss  7.98 | ppl  2922.14
+| epoch   1 |   400/ 2981 batches | lr 5.00 | ms/batch 34.53 | loss  6.76 | ppl   859.25
+| epoch   1 |   600/ 2981 batches | lr 5.00 | ms/batch 34.56 | loss  6.37 | ppl   581.39
+| epoch   1 |   800/ 2981 batches | lr 5.00 | ms/batch 34.54 | loss  6.23 | ppl   509.61
+| epoch   1 |  1000/ 2981 batches | lr 5.00 | ms/batch 34.55 | loss  6.12 | ppl   453.37
+| epoch   1 |  1200/ 2981 batches | lr 5.00 | ms/batch 34.54 | loss  6.09 | ppl   439.65
+| epoch   1 |  1400/ 2981 batches | lr 5.00 | ms/batch 34.56 | loss  6.04 | ppl   419.54
+| epoch   1 |  1600/ 2981 batches | lr 5.00 | ms/batch 34.58 | loss  6.05 | ppl   422.22
+| epoch   1 |  1800/ 2981 batches | lr 5.00 | ms/batch 34.57 | loss  5.96 | ppl   385.89
+| epoch   1 |  2000/ 2981 batches | lr 5.00 | ms/batch 34.58 | loss  5.96 | ppl   386.53
+| epoch   1 |  2200/ 2981 batches | lr 5.00 | ms/batch 34.57 | loss  5.85 | ppl   346.93
+| epoch   1 |  2400/ 2981 batches | lr 5.00 | ms/batch 34.56 | loss  5.90 | ppl   363.84
+| epoch   1 |  2600/ 2981 batches | lr 5.00 | ms/batch 34.59 | loss  5.90 | ppl   363.69
+| epoch   1 |  2800/ 2981 batches | lr 5.00 | ms/batch 34.58 | loss  5.79 | ppl   328.40
+-----------------------------------------------------------------------------------------
+| end of epoch   1 | time: 107.57s | valid loss  5.77 | valid ppl   319.56
+-----------------------------------------------------------------------------------------
+| epoch   2 |   200/ 2981 batches | lr 4.75 | ms/batch 34.77 | loss  5.79 | ppl   328.04
+| epoch   2 |   400/ 2981 batches | lr 4.75 | ms/batch 34.59 | loss  5.76 | ppl   318.50
+| epoch   2 |   600/ 2981 batches | lr 4.75 | ms/batch 34.59 | loss  5.59 | ppl   267.95
+| epoch   2 |   800/ 2981 batches | lr 4.75 | ms/batch 34.58 | loss  5.63 | ppl   279.05
+| epoch   2 |  1000/ 2981 batches | lr 4.75 | ms/batch 34.57 | loss  5.58 | ppl   264.57
+| epoch   2 |  1200/ 2981 batches | lr 4.75 | ms/batch 34.60 | loss  5.61 | ppl   274.08
+| epoch   2 |  1400/ 2981 batches | lr 4.75 | ms/batch 34.60 | loss  5.62 | ppl   275.13
+| epoch   2 |  1600/ 2981 batches | lr 4.75 | ms/batch 34.58 | loss  5.65 | ppl   283.76
+| epoch   2 |  1800/ 2981 batches | lr 4.75 | ms/batch 34.59 | loss  5.58 | ppl   264.81
+| epoch   2 |  2000/ 2981 batches | lr 4.75 | ms/batch 34.58 | loss  5.60 | ppl   270.75
+| epoch   2 |  2200/ 2981 batches | lr 4.75 | ms/batch 34.59 | loss  5.50 | ppl   244.28
+| epoch   2 |  2400/ 2981 batches | lr 4.75 | ms/batch 34.56 | loss  5.57 | ppl   261.20
+| epoch   2 |  2600/ 2981 batches | lr 4.75 | ms/batch 34.57 | loss  5.57 | ppl   263.58
+| epoch   2 |  2800/ 2981 batches | lr 4.75 | ms/batch 34.58 | loss  5.50 | ppl   245.11
+-----------------------------------------------------------------------------------------
+| end of epoch   2 | time: 107.45s | valid loss  5.55 | valid ppl   257.13
+-----------------------------------------------------------------------------------------
+| epoch   3 |   200/ 2981 batches | lr 4.51 | ms/batch 34.77 | loss  5.53 | ppl   251.64
+| epoch   3 |   400/ 2981 batches | lr 4.51 | ms/batch 34.58 | loss  5.53 | ppl   251.35
+| epoch   3 |   600/ 2981 batches | lr 4.51 | ms/batch 34.57 | loss  5.34 | ppl   209.52
+| epoch   3 |   800/ 2981 batches | lr 4.51 | ms/batch 34.58 | loss  5.40 | ppl   222.26
+| epoch   3 |  1000/ 2981 batches | lr 4.51 | ms/batch 34.57 | loss  5.36 | ppl   212.00
+| epoch   3 |  1200/ 2981 batches | lr 4.51 | ms/batch 34.58 | loss  5.39 | ppl   220.10
+| epoch   3 |  1400/ 2981 batches | lr 4.51 | ms/batch 34.57 | loss  5.41 | ppl   224.61
+| epoch   3 |  1600/ 2981 batches | lr 4.51 | ms/batch 34.59 | loss  5.45 | ppl   233.55
+| epoch   3 |  1800/ 2981 batches | lr 4.51 | ms/batch 34.58 | loss  5.39 | ppl   218.39
+| epoch   3 |  2000/ 2981 batches | lr 4.51 | ms/batch 34.57 | loss  5.42 | ppl   224.83
+| epoch   3 |  2200/ 2981 batches | lr 4.51 | ms/batch 34.57 | loss  5.31 | ppl   201.57
+| epoch   3 |  2400/ 2981 batches | lr 4.51 | ms/batch 34.59 | loss  5.38 | ppl   217.44
+| epoch   3 |  2600/ 2981 batches | lr 4.51 | ms/batch 34.59 | loss  5.40 | ppl   220.76
+| epoch   3 |  2800/ 2981 batches | lr 4.51 | ms/batch 34.59 | loss  5.32 | ppl   203.64
+-----------------------------------------------------------------------------------------
+| end of epoch   3 | time: 107.45s | valid loss  5.51 | valid ppl   247.20
+-----------------------------------------------------------------------------------------
+</pre></div>
+</div>
+</div>
+<div class="section" id="evaluate-the-model-with-the-test-dataset">
+<h2>Evaluate the model with the test dataset<a class="headerlink" href="#evaluate-the-model-with-the-test-dataset" title="Permalink to this headline">¶</a></h2>
+<p>Apply the best model to check the result with the test dataset.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test_loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">best_model</span><span class="p">,</span> <span class="n">test_data</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'='</span> <span class="o">*</span> <span class="mi">89</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'| End of training | test loss </span><span class="si">{:5.2f}</span><span class="s1"> | test ppl </span><span class="si">{:8.2f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">test_loss</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">test_loss</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'='</span> <span class="o">*</span> <span class="mi">89</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
+| End of training | test loss  5.42 | test ppl   225.30
+=========================================================================================
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  38.798 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-transformer-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/f53285338820248a7c04a947c5110f7b/transformer_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/dca13261bbb4e9809d1a3aa521d22dd7/transformer_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">transformer_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="dcgan_faces_tutorial.html" rel="next" title="DCGAN Tutorial">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="text_sentiment_ngrams_tutorial.html" rel="prev" title="Text Classification Tutorial"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="helpful-hr hr-top"/>
+<div class="helpful-container">
+<div class="helpful-question">Was this helpful?</div>
+<div class="helpful-question yes-link" data-behavior="was-this-helpful-event" data-response="yes">Yes</div>
+<div class="helpful-question no-link" data-behavior="was-this-helpful-event" data-response="no">No</div>
+<div class="was-helpful-thank-you">Thank you</div>
+</div>
+<hr class="helpful-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2017, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">nn.Transformer Tutorial</a><ul>
+<li><a class="reference internal" href="#define-the-model">Define the model</a></li>
+<li><a class="reference internal" href="#load-and-batch-data">Load and batch data</a><ul>
+<li><a class="reference internal" href="#functions-to-generate-input-and-target-sequence">Functions to generate input and target sequence</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#initiate-an-instance">Initiate an instance</a></li>
+<li><a class="reference internal" href="#run-the-model">Run the model</a></li>
+<li><a class="reference internal" href="#evaluate-the-model-with-the-test-dataset">Evaluate the model with the test dataset</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-90545585-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'UA-117752657-2');
+
+</script>
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Download',
+      eventAction: 'click',
+      eventLabel: $(this).attr("data-response")
+    });
+   });
+
+   $("[data-behavior='was-this-helpful-event']").on('click', function(){
+    $(".helpful-question").hide();
+    $(".was-helpful-thank-you").show();
+    fbq('trackCustom', "Was this Helpful?", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      helpful: $(this).attr("data-response")
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Was this Helpful?',
+      eventAction: 'click',
+      eventLabel: $(this).attr("data-response")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".helpful-container").hide();
+     $(".hr-bottom").hide();
+   }
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://pytorch.org/resources">Resources</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/support">Support</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.slack.com" target="_blank">Slack</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Follow Us</li>
+<li>
+<div id="mc_embed_signup">
+<form action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&amp;id=91d0dccd39" class="email-subscribe-form validate" id="mc-embedded-subscribe-form" method="post" name="mc-embedded-subscribe-form" novalidate="" target="_blank">
+<div class="email-subscribe-form-fields-wrapper" id="mc_embed_signup_scroll">
+<div class="mc-field-group">
+<label for="mce-EMAIL" style="display:none;">Email Address</label>
+<input class="required email" id="mce-EMAIL" name="EMAIL" placeholder="Email Address" type="email" value=""/>
+</div>
+<div class="clear" id="mce-responses">
+<div class="response" id="mce-error-response" style="display:none"></div>
+<div class="response" id="mce-success-response" style="display:none"></div>
+</div> <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+<div aria-hidden="true" style="position: absolute; left: -5000px;"><input name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" type="text" value=""/></div>
+<div class="clear">
+<input class="button email-subscribe-button" id="mc-embedded-subscribe" name="subscribe" type="submit" value=""/>
+</div>
+</div>
+</form>
+</div>
+</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="#">Get Started</a>
+</li>
+<li>
+<a href="#">Features</a>
+</li>
+<li>
+<a href="#">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body></html>
