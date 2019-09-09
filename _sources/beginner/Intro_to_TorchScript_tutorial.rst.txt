@@ -7,10 +7,14 @@
 .. _sphx_glr_beginner_Intro_to_TorchScript_tutorial.py:
 
 
-Introduction to TorchScript
+2. Introduction to TorchScript
 ===========================
 
 *James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
+
+This tutorial is an introduction to TorchScript, an intermediate
+representation of a PyTorch model (subclass of ``nn.Module``) that
+can then be run in a high-performance environment such as C++.
 
 In this tutorial we will cover:
 
@@ -20,13 +24,18 @@ In this tutorial we will cover:
 -  Defining ``forward`` functions
 -  Composing modules into a hierarchy of modules
 
-2. Methods for converting PyTorch modules to TorchScript, our
+2. Specific methods for converting PyTorch modules to TorchScript, our
    high-performance deployment runtime
 
 -  Tracing an existing module
 -  Using scripting to directly compile a module
 -  How to compose both approaches
 -  Saving and loading TorchScript modules
+
+We hope that after you complete this tutorial, you proceed to go through
+`the follow-on tutorial <https://pytorch.org/tutorials/advanced/cpp_export.html>`_
+which will walk you through an example of actually calling a TorchScript
+model from C++.
 
 
 
@@ -76,7 +85,7 @@ Let’s examine a small example:
         def forward(self, x, h):
             new_h = torch.tanh(x + h)
             return new_h, new_h
-      
+
     my_cell = MyCell()
     x = torch.rand(3, 4)
     h = torch.rand(3, 4)
@@ -93,11 +102,11 @@ Let’s examine a small example:
 
  .. code-block:: none
 
-    (tensor([[0.5517, 0.7420, 0.8300, 0.9137],
-            [0.7174, 0.5652, 0.8563, 0.9500],
-            [0.9335, 0.8149, 0.4769, 0.6660]]), tensor([[0.5517, 0.7420, 0.8300, 0.9137],
-            [0.7174, 0.5652, 0.8563, 0.9500],
-            [0.9335, 0.8149, 0.4769, 0.6660]]))
+    (tensor([[0.7492, 0.8565, 0.9155, 0.8526],
+            [0.8066, 0.9480, 0.7635, 0.8423],
+            [0.9466, 0.7030, 0.6742, 0.6182]]), tensor([[0.7492, 0.8565, 0.9155, 0.8526],
+            [0.8066, 0.9480, 0.7635, 0.8423],
+            [0.9466, 0.7030, 0.6742, 0.6182]]))
 
 
 So we’ve:
@@ -149,11 +158,11 @@ Let’s do something a little more interesting:
     MyCell(
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[ 0.2902,  0.7907,  0.7021,  0.4805],
-            [ 0.2603,  0.7806,  0.8722,  0.3810],
-            [ 0.8013,  0.8374,  0.4016, -0.2593]], grad_fn=<TanhBackward>), tensor([[ 0.2902,  0.7907,  0.7021,  0.4805],
-            [ 0.2603,  0.7806,  0.8722,  0.3810],
-            [ 0.8013,  0.8374,  0.4016, -0.2593]], grad_fn=<TanhBackward>))
+    (tensor([[0.8504, 0.6278, 0.7686, 0.3622],
+            [0.4811, 0.8525, 0.7937, 0.6500],
+            [0.7749, 0.5095, 0.4802, 0.1188]], grad_fn=<TanhBackward>), tensor([[0.8504, 0.6278, 0.7686, 0.3622],
+            [0.4811, 0.8525, 0.7937, 0.6500],
+            [0.7749, 0.5095, 0.4802, 0.1188]], grad_fn=<TanhBackward>))
 
 
 We’ve redefined our module ``MyCell``, but this time we’ve added a
@@ -221,11 +230,11 @@ Now let’s examine said flexibility:
       (dg): MyDecisionGate()
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[0.4211, 0.2194, 0.7949, 0.8033],
-            [0.2348, 0.3305, 0.8112, 0.8455],
-            [0.8101, 0.4339, 0.4514, 0.3644]], grad_fn=<TanhBackward>), tensor([[0.4211, 0.2194, 0.7949, 0.8033],
-            [0.2348, 0.3305, 0.8112, 0.8455],
-            [0.8101, 0.4339, 0.4514, 0.3644]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.5777,  0.8651,  0.7031,  0.5811],
+            [ 0.2329,  0.8733,  0.4695,  0.7119],
+            [ 0.6938,  0.6550, -0.0514,  0.3213]], grad_fn=<TanhBackward>), tensor([[ 0.5777,  0.8651,  0.7031,  0.5811],
+            [ 0.2329,  0.8733,  0.4695,  0.7119],
+            [ 0.6938,  0.6550, -0.0514,  0.3213]], grad_fn=<TanhBackward>))
 
 
 We’ve once again redefined our MyCell class, but here we’ve defined
@@ -270,7 +279,7 @@ Tracing ``Modules``
         def forward(self, x, h):
             new_h = torch.tanh(self.linear(x) + h)
             return new_h, new_h
-      
+
     my_cell = MyCell()
     x, h = torch.rand(3, 4), torch.rand(3, 4)
     traced_cell = torch.jit.trace(my_cell, (x, h))
@@ -335,9 +344,9 @@ examine the graph with the ``.graph`` property:
       %7 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
       %8 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
       %9 : Float(3, 4) = aten::addmm(%bias, %input, %6, %7, %8), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1369:0
-      %10 : int = prim::Constant[value=1](), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
-      %11 : Float(3, 4) = aten::add(%9, %h, %10), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
-      %12 : Float(3, 4) = aten::tanh(%11), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:179:0
+      %10 : int = prim::Constant[value=1](), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %11 : Float(3, 4) = aten::add(%9, %h, %10), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %12 : Float(3, 4) = aten::tanh(%11), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
       %13 : (Float(3, 4), Float(3, 4)) = prim::TupleConstruct(%12, %12)
       return (%13)
 
@@ -412,17 +421,17 @@ the Python module:
 
  .. code-block:: none
 
-    (tensor([[0.5882, 0.7580, 0.6405, 0.0319],
-            [0.4965, 0.7646, 0.6271, 0.0475],
-            [0.4142, 0.6977, 0.7084, 0.6087]], grad_fn=<TanhBackward>), tensor([[0.5882, 0.7580, 0.6405, 0.0319],
-            [0.4965, 0.7646, 0.6271, 0.0475],
-            [0.4142, 0.6977, 0.7084, 0.6087]], grad_fn=<TanhBackward>))
-    (tensor([[0.5882, 0.7580, 0.6405, 0.0319],
-            [0.4965, 0.7646, 0.6271, 0.0475],
-            [0.4142, 0.6977, 0.7084, 0.6087]],
-           grad_fn=<DifferentiableGraphBackward>), tensor([[0.5882, 0.7580, 0.6405, 0.0319],
-            [0.4965, 0.7646, 0.6271, 0.0475],
-            [0.4142, 0.6977, 0.7084, 0.6087]],
+    (tensor([[ 0.4822,  0.6315,  0.3279,  0.7743],
+            [ 0.5245,  0.8587,  0.3361,  0.5143],
+            [-0.5445,  0.6596,  0.1238,  0.3596]], grad_fn=<TanhBackward>), tensor([[ 0.4822,  0.6315,  0.3279,  0.7743],
+            [ 0.5245,  0.8587,  0.3361,  0.5143],
+            [-0.5445,  0.6596,  0.1238,  0.3596]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.4822,  0.6315,  0.3279,  0.7743],
+            [ 0.5245,  0.8587,  0.3361,  0.5143],
+            [-0.5445,  0.6596,  0.1238,  0.3596]],
+           grad_fn=<DifferentiableGraphBackward>), tensor([[ 0.4822,  0.6315,  0.3279,  0.7743],
+            [ 0.5245,  0.8587,  0.3361,  0.5143],
+            [-0.5445,  0.6596,  0.1238,  0.3596]],
            grad_fn=<DifferentiableGraphBackward>))
 
 
@@ -453,7 +462,7 @@ the control-flow-laden submodule. Let’s examine that now:
         def forward(self, x, h):
             new_h = torch.tanh(self.dg(self.linear(x)) + h)
             return new_h, new_h
-      
+
     my_cell = MyCell(MyDecisionGate())
     traced_cell = torch.jit.trace(my_cell, (x, h))
     print(traced_cell.code)
@@ -476,7 +485,7 @@ the control-flow-laden submodule. Let’s examine that now:
       weight = _0.weight
       bias = _0.bias
       x = torch.addmm(bias, input, torch.t(weight), beta=1, alpha=1)
-      _1 = torch.tanh(torch.add(x, h, alpha=1))
+      _1 = torch.tanh(torch.add(torch.neg(x), h, alpha=1))
       return (_1, _1)
 
 
@@ -589,7 +598,7 @@ An example of the first case:
             for i in range(xs.size(0)):
                 y, h = self.cell(xs[i], h)
             return y, h
-      
+
     rnn_loop = torch.jit.script(MyRNNLoop())
     print(rnn_loop.code)
 
@@ -638,11 +647,11 @@ And an example of the second case:
       def __init__(self):
         super(WrapRNN, self).__init__()
         self.loop = torch.jit.script(MyRNNLoop())
-    
+
       def forward(self, xs):
         y, h = self.loop(xs)
         return torch.relu(y)
-  
+
     traced = torch.jit.trace(WrapRNN(), (torch.rand(10, 3, 4)))
     print(traced.code)
 
@@ -760,7 +769,7 @@ https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.259 seconds)
+   **Total running time of the script:** ( 0 minutes  0.252 seconds)
 
 
 .. _sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py:
