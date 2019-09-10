@@ -147,7 +147,7 @@ Text
 .. customgalleryitem::
     :tooltip: Language Translation with Torchtext
     :figure: /_static/img/thumbnails/torchtext.png
-    :description: :doc:`/beginner/translation_torchtext_tutorial`
+    :description: :doc:`/beginner/torchtext_translation_tutorial`
 
 .. customgalleryitem::
     :tooltip: Sentiment Ngrams with Torchtext
