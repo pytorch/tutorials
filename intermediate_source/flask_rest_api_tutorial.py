@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Deploying PyTorch and Building a REST API using Flask
-=====================================================
+1. Deploying PyTorch in Python via a REST API with Flask
+========================================================
 **Author**: `Avinash Sajjanshetty <https://avi.im>`_
-
 
 In this tutorial, we will deploy a PyTorch model using Flask and expose a
 REST API for model inference. In particular, we will deploy a pretrained
@@ -11,6 +10,16 @@ DenseNet 121 model which detects the image.
 
 .. tip:: All the code used here is released under MIT license and is available on `Github <https://github.com/avinassh/pytorch-flask-api>`_.
 
+This represents the first in a series of tutorials on deploying PyTorch models
+in production. Using Flask in this way is by far the easiest way to start
+serving your PyTorch models, but it will not work for a use case
+with high performance requirements. For that:
+
+    - If you're already familiar with TorchScript, you can jump straight into our
+      `Loading a TorchScript Model in C++ <https://pytorch.org/tutorials/advanced/cpp_export.html>`_ tutorial.
+
+    - If you first need a refresher on TorchScript, check out our
+      `Intro a TorchScript <https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html>`_ tutorial.
 """
 
 
@@ -349,10 +358,13 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #
 # - You can also add a UI by creating a page with a form which takes the image and
 #   displays the prediction. Check out the `demo <https://pytorch-imagenet.herokuapp.com/>`_
-#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_. 
+#   of a similar project and its `source code <https://github.com/avinassh/pytorch-flask-api-heroku>`_.
 #
-# - In this tutorial, we only showed how to build a service that could return predictions for 
-#   a single image at a time. We could modify our service to be able to return predictions for 
+# - In this tutorial, we only showed how to build a service that could return predictions for
+#   a single image at a time. We could modify our service to be able to return predictions for
 #   multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
-#   library automatically queues requests to your service and samples them into mini-batches 
+#   library automatically queues requests to your service and samples them into mini-batches
 #   that can be fed into your model. You can check out `this tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_.
+#
+# - Finally, we encourage you to check out our other tutorials on deploying PyTorch models
+#   linked-to at the top of the page.
