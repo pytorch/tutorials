@@ -133,13 +133,13 @@ train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
 # `here <https://arxiv.org/abs/1409.0473>`__ (you can find a
 # significantly more commented version
 # `here <https://github.com/SethHWeidman/pytorch-seq2seq/blob/master/3%20-%20Neural%20Machine%20Translation%20by%20Jointly%20Learning%20to%20Align%20and%20Translate.ipynb>`__).
-# 
-# Note: this model is just an example model that can be used for language 
-# translation; we choose it because it is a standard model for the task, 
-# not because it is the recommended model to use for translation. As you're 
+#
+# Note: this model is just an example model that can be used for language
+# translation; we choose it because it is a standard model for the task,
+# not because it is the recommended model to use for translation. As you're
 # likely aware, state-of-the-art models are currently based on Transformers;
-# you can see PyTorch's capabilities for implementing Transformer layers 
-# `here <https://pytorch.org/docs/stable/nn.html#transformer-layers>`__; and 
+# you can see PyTorch's capabilities for implementing Transformer layers
+# `here <https://pytorch.org/docs/stable/nn.html#transformer-layers>`__; and
 # in particular, the "attention" used in the model below is different from
 # the multi-headed self-attention present in a transformer model.
 
@@ -493,3 +493,4 @@ print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')
 #   `here <https://github.com/bentrevett/>`__
 # - Stay tuned for a tutorial using other ``torchtext`` features along
 #   with ``nn.Transformer`` for language modeling via next word prediction!
+#
