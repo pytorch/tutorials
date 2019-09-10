@@ -1,5 +1,5 @@
-Loading a PyTorch Model in C++
-==============================
+3. Loading a TorchScript Model in C++
+=====================================
 
 **This tutorial was updated to work with PyTorch 1.2**
 
@@ -94,8 +94,8 @@ vanilla Pytorch model::
 
 Because the ``forward`` method of this module uses control flow that is
 dependent on the input, it is not suitable for tracing. Instead, we can convert
-it to a ``ScriptModule``. 
-In order to convert the module to the ``ScriptModule``, one needs to 
+it to a ``ScriptModule``.
+In order to convert the module to the ``ScriptModule``, one needs to
 compile the module with ``torch.jit.script`` as follows::
 
     class MyModule(torch.nn.Module):
@@ -133,7 +133,7 @@ on the module and pass it a filename::
 
   traced_script_module.save("traced_resnet_model.pt")
 
-This will produce a ``traced_resnet_model.pt`` file in your working directory. 
+This will produce a ``traced_resnet_model.pt`` file in your working directory.
 If you also would like to serialize ``my_module``, call ``my_module.save("my_module_model.pt")``
 We have now officially left the realm of Python and are ready to cross over to the sphere
 of C++.
@@ -168,7 +168,7 @@ do:
         return -1;
       }
 
-      
+
       torch::jit::script::Module module;
       try {
         // Deserialize the ScriptModule from a file using torch::jit::load().
