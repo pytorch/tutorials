@@ -126,21 +126,23 @@ class PositionalEncoding(nn.Module):
 # The training process uses Wikitext-2 dataset from ``torchtext``. The
 # vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
-# function arranges the dataset into columns. For instance, with the
-# alphabet as the sequence and a batch size of 4, we have the following
-# arrangement:
+# function arranges the dataset into columns, trimming off any tokens remaining
+# after the data has been divided into batches of size ``batch_size``.
+# For instance, with the alphabet as the sequence (total length of 26)
+# and a batch size of 4, we would divide the alphabet into 4 sequences of
+# length 6:
 #
-# ┌ A   G   M   S   ┐
-#
-# │ B   H   N   T   │
-#
-# │ C   I   O   U   |
-#
-# │ D   J   P   V   |
-#
-# │ E   K   Q   W   |
-#
-# └ F   L   R   X   ┘
+# .. math::
+#   \begin{bmatrix}
+#   \text{A} & \text{B} & \text{C} & \ldots & \text{X} & \text{Y} & \text{Z}
+#   \end{bmatrix}
+#   \Rightarrow
+#   \begin{bmatrix}
+#   \begin{bmatrix}\text{A} \\ \text{B} \\ \text{C} \\ \text{D} \\ \text{E} \\ \text{F}\end{bmatrix} &
+#   \begin{bmatrix}\text{G} \\ \text{H} \\ \text{I} \\ \text{J} \\ \text{K} \\ \text{L}\end{bmatrix} &
+#   \begin{bmatrix}\text{M} \\ \text{N} \\ \text{O} \\ \text{P} \\ \text{Q} \\ \text{R}\end{bmatrix} &
+#   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
+#   \end{bmatrix}
 #
 # These columns are treated as independent by the model, which means that
 # the dependence of ``G`` and ``F`` can not be learned, but allows more
@@ -187,11 +189,7 @@ test_data = batchify(test_txt, eval_batch_size)
 # following words as ``Target``. For example, with a ``bptt`` value of 2,
 # we’d get the following two Variables for ``i`` = 0:
 #
-#     Input     |             Target
-#
-# ┌ A   G   M   S   ┐ ┌ B   H   N   T   ┐
-#
-# └ B   H   N   T   ┘ └ C   I   O   U   ┘
+# .. image:: ../_static/img/transformer_input_target.png
 #
 # It should be noted that the chunks are along dimension 0, consistent
 # with the ``S`` dimension in the Transformer model. The batch dimension

@@ -16,8 +16,8 @@ in ``torchtext``, including
    - AmazonReviewPolarity,
    - AmazonReviewFull
 
-This example shows how to train a supervised learning algorithm on
-one of these ``TextClassification`` datasets.
+This example shows how to train a supervised learning algorithm for
+classification using one of these ``TextClassification`` datasets.
 
 Load data with ngrams
 ---------------------
