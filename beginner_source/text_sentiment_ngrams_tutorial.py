@@ -1,23 +1,23 @@
 """
-Text Classification Tutorial
-============================
+Text Classification with TorchText
+==================================
 
-This tutorial shows how to use the text classification datasets,
-including
+This tutorial shows how to use the text classification datasets
+in ``torchtext``, including
 
 ::
 
    - AG_NEWS,
-   - SogouNews, 
-   - DBpedia, 
+   - SogouNews,
+   - DBpedia,
    - YelpReviewPolarity,
-   - YelpReviewFull, 
-   - YahooAnswers, 
+   - YelpReviewFull,
+   - YahooAnswers,
    - AmazonReviewPolarity,
    - AmazonReviewFull
 
-This example shows the application of ``TextClassification`` Dataset for
-supervised learning analysis.
+This example shows how to train a supervised learning algorithm on
+one of these ``TextClassification`` datasets.
 
 Load data with ngrams
 ---------------------
@@ -54,20 +54,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ######################################################################
 # Define the model
 # ----------------
-# 
+#
 # The model is composed of the
 # `EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__
 # layer and the linear layer (see the figure below). ``nn.EmbeddingBag``
 # computes the mean value of a “bag” of embeddings. The text entries here
 # have different lengths. ``nn.EmbeddingBag`` requires no padding here
 # since the text lengths are saved in offsets.
-# 
+#
 # Additionally, since ``nn.EmbeddingBag`` accumulates the average across
 # the embeddings on the fly, ``nn.EmbeddingBag`` can enhance the
 # performance and memory efficiency to process a sequence of tensors.
-# 
+#
 # .. image:: ../_static/img/text_sentiment_ngrams_model.png
-# 
+#
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -83,7 +83,7 @@ class TextSentiment(nn.Module):
         self.embedding.weight.data.uniform_(-initrange, initrange)
         self.fc.weight.data.uniform_(-initrange, initrange)
         self.fc.bias.data.zero_()
-        
+
     def forward(self, text, offsets):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
@@ -92,21 +92,21 @@ class TextSentiment(nn.Module):
 ######################################################################
 # Initiate an instance
 # --------------------
-# 
+#
 # The AG_NEWS dataset has four labels and therefore the number of classes
 # is four.
-# 
+#
 # ::
-# 
+#
 #    1 : World
 #    2 : Sports
 #    3 : Business
 #    4 : Sci/Tec
-# 
+#
 # The vocab size is equal to the length of vocab (including single word
 # and ngrams). The number of classes is equal to the number of labels,
 # which is four in AG_NEWS case.
-# 
+#
 
 VOCAB_SIZE = len(train_dataset.get_vocab())
 EMBED_DIM = 32
@@ -117,7 +117,7 @@ model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUN_CLASS).to(device)
 ######################################################################
 # Functions used to generate batch
 # --------------------------------
-# 
+#
 
 
 ######################################################################
@@ -129,13 +129,13 @@ model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUN_CLASS).to(device)
 # mini-batch. Pay attention here and make sure that ``collate_fn`` is
 # declared as a top level def. This ensures that the function is available
 # in each worker.
-# 
+#
 # The text entries in the original data batch input are packed into a list
 # and concatenated as a single tensor as the input of ``nn.EmbeddingBag``.
 # The offsets is a tensor of delimiters to represent the beginning index
 # of the individual sequence in the text tensor. Label is a tensor saving
 # the labels of individual text entries.
-# 
+#
 
 def generate_batch(batch):
     label = torch.tensor([entry[0] for entry in batch])
@@ -144,7 +144,7 @@ def generate_batch(batch):
     # torch.Tensor.cumsum returns the cumulative sum
     # of elements in the dimension dim.
     # torch.Tensor([1.0, 2.0, 3.0]).cumsum(dim=0)
-    
+
     offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
     text = torch.cat(text)
     return text, offsets, label
@@ -153,7 +153,7 @@ def generate_batch(batch):
 ######################################################################
 # Define functions to train the model and evaluate results.
 # ---------------------------------------------------------
-# 
+#
 
 
 ######################################################################
@@ -163,7 +163,7 @@ def generate_batch(batch):
 # `here <https://pytorch.org/tutorials/beginner/data_loading_tutorial.html>`__).
 # We use ``DataLoader`` here to load AG_NEWS datasets and send it to the
 # model for training/validation.
-# 
+#
 
 from torch.utils.data import DataLoader
 
@@ -186,7 +186,7 @@ def train_func(sub_train_):
 
     # Adjust the learning rate
     scheduler.step()
-    
+
     return train_loss / len(sub_train_), train_acc / len(sub_train_)
 
 def test(data_):
@@ -207,13 +207,13 @@ def test(data_):
 ######################################################################
 # Split the dataset and run the model
 # -----------------------------------
-# 
+#
 # Since the original AG_NEWS has no valid dataset, we split the training
 # dataset into train/valid sets with a split ratio of 0.95 (train) and
 # 0.05 (valid). Here we use
 # `torch.utils.data.dataset.random_split <https://pytorch.org/docs/stable/data.html?highlight=random_split#torch.utils.data.random_split>`__
 # function in PyTorch core library.
-# 
+#
 # `CrossEntropyLoss <https://pytorch.org/docs/stable/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
 # criterion combines nn.LogSoftmax() and nn.NLLLoss() in a single class.
 # It is useful when training a classification problem with C classes.
@@ -222,7 +222,7 @@ def test(data_):
 # learning rate is set to 4.0.
 # `StepLR <https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR>`__
 # is used here to adjust the learning rate through epochs.
-# 
+#
 
 import time
 from torch.utils.data.dataset import random_split
@@ -250,56 +250,56 @@ for epoch in range(N_EPOCHS):
     print('Epoch: %d' %(epoch + 1), " | time in %d minutes, %d seconds" %(mins, secs))
     print(f'\tLoss: {train_loss:.4f}(train)\t|\tAcc: {train_acc * 100:.1f}%(train)')
     print(f'\tLoss: {valid_loss:.4f}(valid)\t|\tAcc: {valid_acc * 100:.1f}%(valid)')
-              
+
 
 ######################################################################
 # Running the model on GPU with the following information:
-# 
+#
 # Epoch: 1 \| time in 0 minutes, 11 seconds
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0263(train)     |       Acc: 84.5%(train)
 #        Loss: 0.0001(valid)     |       Acc: 89.0%(valid)
-#        
-# 
+#
+#
 # Epoch: 2 \| time in 0 minutes, 10 seconds
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0119(train)     |       Acc: 93.6%(train)
 #        Loss: 0.0000(valid)     |       Acc: 89.6%(valid)
-#        
-# 
+#
+#
 # Epoch: 3 \| time in 0 minutes, 9 seconds
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0069(train)     |       Acc: 96.4%(train)
 #        Loss: 0.0000(valid)     |       Acc: 90.5%(valid)
-#        
-# 
+#
+#
 # Epoch: 4 \| time in 0 minutes, 11 seconds
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0038(train)     |       Acc: 98.2%(train)
 #        Loss: 0.0000(valid)     |       Acc: 90.4%(valid)
-#        
-# 
+#
+#
 # Epoch: 5 \| time in 0 minutes, 11 seconds
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0022(train)     |       Acc: 99.0%(train)
-#        Loss: 0.0000(valid)     |       Acc: 91.0%(valid)        
-# 
+#        Loss: 0.0000(valid)     |       Acc: 91.0%(valid)
+#
 
 
 ######################################################################
 # Evaluate the model with test dataset
 # ------------------------------------
-# 
+#
 
 print('Checking the results of test dataset...')
 test_loss, test_acc = test(test_dataset)
@@ -308,21 +308,21 @@ print(f'\tLoss: {test_loss:.4f}(test)\t|\tAcc: {test_acc * 100:.1f}%(test)')
 
 ######################################################################
 # Checking the results of test dataset…
-# 
+#
 # ::
-# 
+#
 #        Loss: 0.0237(test)      |       Acc: 90.5%(test)
-# 
+#
 
 
 ######################################################################
 # Test on a random news
 # ---------------------
-# 
+#
 # Use the best model so far and test a golf news. The label information is
 # available
 # `here <https://pytorch.org/text/datasets.html?highlight=ag_news#torchtext.datasets.AG_NEWS>`__.
-# 
+#
 
 import re
 from torchtext.data.utils import ngrams_iterator
@@ -360,10 +360,10 @@ print("This is a %s news" %ag_news_label[predict(ex_text_str, model, vocab, 2)])
 
 ######################################################################
 # This is a Sports news
-# 
+#
 
 
 ######################################################################
 # You can find the code examples displayed in this note
 # `here <https://github.com/pytorch/text/tree/master/examples/text_classification>`__.
-# 
+#

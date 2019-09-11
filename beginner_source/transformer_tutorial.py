@@ -1,8 +1,10 @@
 """
-nn.Transformer Tutorial
-============================
+Sequence-to-Sequence Modeling with nn.Transformer and TorchText
+===============================================================
 
-This is a tutorial to show how to implement `nn.Transformer <https://pytorch.org/docs/master/nn.html?highlight=nn%20transformer#torch.nn.Transformer>`__ module.
+This is a tutorial on how to train a sequence-to-sequence model
+that uses the
+`nn.Transformer <https://pytorch.org/docs/master/nn.html?highlight=nn%20transformer#torch.nn.Transformer>`__ module.
 
 PyTorch 1.2 release includes a standard transformer module based on the
 paper `Attention is All You
@@ -22,7 +24,7 @@ in this tutorial) can be easily adapted/composed.
 ######################################################################
 # Define the model
 # ----------------
-# 
+#
 
 
 ######################################################################
@@ -40,7 +42,7 @@ in this tutorial) can be easily adapted/composed.
 # positions should be masked. To have the actual words, the output
 # of ``nn.TransformerEncoder`` model is sent to the final Linear
 # layer, which is followed by a log-Softmax function.
-# 
+#
 
 import math
 import torch
@@ -93,7 +95,7 @@ class TransformerModel(nn.Module):
 # positional encodings have the same dimension as the embeddings so that
 # the two can be summed. Here, we use ``sine`` and ``cosine`` functions of
 # different frequencies.
-# 
+#
 
 class PositionalEncoding(nn.Module):
 
@@ -117,33 +119,33 @@ class PositionalEncoding(nn.Module):
 ######################################################################
 # Load and batch data
 # -------------------
-# 
+#
 
 
 ######################################################################
 # The training process uses Wikitext-2 dataset from ``torchtext``. The
-# vocab object is built based on the train dataset and is used to numericalize 
+# vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
 # function arranges the dataset into columns. For instance, with the
 # alphabet as the sequence and a batch size of 4, we have the following
 # arrangement:
-# 
+#
 # ┌ A   G   M   S   ┐
-# 
+#
 # │ B   H   N   T   │
 #
 # │ C   I   O   U   |
-# 
+#
 # │ D   J   P   V   |
-# 
+#
 # │ E   K   Q   W   |
-# 
+#
 # └ F   L   R   X   ┘
-# 
+#
 # These columns are treated as independent by the model, which means that
 # the dependence of ``G`` and ``F`` can not be learned, but allows more
 # efficient batch processing.
-# 
+#
 
 import torchtext
 from torchtext.data.utils import get_tokenizer
@@ -175,7 +177,7 @@ test_data = batchify(test_txt, eval_batch_size)
 ######################################################################
 # Functions to generate input and target sequence
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 
 
 ######################################################################
@@ -184,42 +186,42 @@ test_data = batchify(test_txt, eval_batch_size)
 # length ``bptt``. For the language modeling task, the model needs the
 # following words as ``Target``. For example, with a ``bptt`` value of 2,
 # we’d get the following two Variables for ``i`` = 0:
-# 
+#
 #     Input     |             Target
-# 
+#
 # ┌ A   G   M   S   ┐ ┌ B   H   N   T   ┐
-# 
+#
 # └ B   H   N   T   ┘ └ C   I   O   U   ┘
-# 
+#
 # It should be noted that the chunks are along dimension 0, consistent
 # with the ``S`` dimension in the Transformer model. The batch dimension
 # ``N`` is along dimension 1.
-# 
+#
 
 bptt = 35
 def get_batch(source, i):
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]
     target = source[i+1:i+1+seq_len].view(-1)
-    return data, target  
+    return data, target
 
 
 ######################################################################
 # Initiate an instance
 # --------------------
-# 
+#
 
 
 ######################################################################
 # The model is set up with the hyperparameter below. The vocab size is
 # equal to the length of the vocab object.
-# 
+#
 
 ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
 emsize = 200 # embedding dimension
 nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-nhead = 2 # the number of heads in the multiheadattention models 
+nhead = 2 # the number of heads in the multiheadattention models
 dropout = 0.2 # the dropout value
 model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
 
@@ -227,7 +229,7 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 ######################################################################
 # Run the model
 # -------------
-# 
+#
 
 
 ######################################################################
@@ -240,7 +242,7 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 # training, we use
 # `nn.utils.clip_grad_norm\_ <https://pytorch.org/docs/master/nn.html?highlight=nn%20utils%20clip_grad_norm#torch.nn.utils.clip_grad_norm_>`__
 # function to scale all the gradient together to prevent exploding.
-# 
+#
 
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
@@ -289,7 +291,7 @@ def evaluate(eval_model, data_source):
     return total_loss / (len(data_source) - 1)
 
 ######################################################################
-# Loop over epochs. Save the model if the validation loss is the best 
+# Loop over epochs. Save the model if the validation loss is the best
 # we've seen so far. Adjust the learning rate after each epoch.
 
 best_val_loss = float("inf")
@@ -305,7 +307,7 @@ for epoch in range(1, epochs + 1):
           'valid ppl {:8.2f}'.format(epoch, (time.time() - epoch_start_time),
                                      val_loss, math.exp(val_loss)))
     print('-' * 89)
-    
+
     if val_loss < best_val_loss:
         best_val_loss = val_loss
         best_model = model
@@ -316,7 +318,7 @@ for epoch in range(1, epochs + 1):
 ######################################################################
 # Evaluate the model with the test dataset
 # -------------------------------------
-# 
+#
 # Apply the best model to check the result with the test dataset.
 
 test_loss = evaluate(best_model, test_data)
