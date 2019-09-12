@@ -6,14 +6,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Classifying Names with a Character-Level RNN — PyTorch Tutorials 1.2.0 documentation</title>
+<title>NLP From Scratch: Classifying Names with a Character-Level RNN — PyTorch Tutorials 1.2.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="char_rnn_generation_tutorial.html" rel="next" title="Generating Names with a Character-Level RNN"/>
-<link href="../beginner/chatbot_tutorial.html" rel="prev" title="Chatbot Tutorial"/>
+<link href="char_rnn_generation_tutorial.html" rel="next" title="NLP From Scratch: Generating Names with a Character-Level RNN"/>
+<link href="../beginner/audio_preprocessing_tutorial.html" rel="prev" title="torchaudio Tutorial"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -113,13 +113,11 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../beginner/chatbot_tutorial.html">Chatbot Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Classifying Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">Generating Names with a Character-Level RNN</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_nlp_tutorial.html">Deep Learning for NLP with Pytorch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text Classification Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">nn.Transformer Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text Classification with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Generative</span></p>
 <ul>
@@ -171,7 +169,7 @@
           
         </a> &gt;
       </li>
-<li>Classifying Names with a Character-Level RNN</li>
+<li>NLP From Scratch: Classifying Names with a Character-Level RNN</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/intermediate/char_rnn_classification_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -209,11 +207,15 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-intermediate-char-rnn-classification-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="classifying-names-with-a-character-level-rnn">
-<span id="sphx-glr-intermediate-char-rnn-classification-tutorial-py"></span><h1>Classifying Names with a Character-Level RNN<a class="headerlink" href="#classifying-names-with-a-character-level-rnn" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="nlp-from-scratch-classifying-names-with-a-character-level-rnn">
+<span id="sphx-glr-intermediate-char-rnn-classification-tutorial-py"></span><h1>NLP From Scratch: Classifying Names with a Character-Level RNN<a class="headerlink" href="#nlp-from-scratch-classifying-names-with-a-character-level-rnn" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/spro/practical-pytorch">Sean Robertson</a></p>
 <p>We will be building and training a basic character-level RNN to classify
-words. A character-level RNN reads words as a series of characters -
+words. This tutorial, along with the following two, show how to do
+preprocess data for NLP modeling “from scratch”, in particular not using
+many of the convenience functions of <cite>torchtext</cite>, so you can see how
+preprocessing for NLP modeling works at a low level.</p>
+<p>A character-level RNN reads words as a series of characters -
 outputting a prediction and “hidden state” at each step, feeding its
 previous hidden state into each next step. We take the final prediction
 to be the output, i.e. which class the word belongs to.</p>
@@ -433,9 +435,9 @@ pre-computing batches of Tensors.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9356, -2.8955, -2.8327, -2.8160, -3.0124, -3.0017, -2.8905, -2.8613,
-         -2.8005, -2.9536, -2.9148, -2.8486, -2.8866, -2.7935, -2.8963, -2.9713,
-         -2.9364, -2.8176]], grad_fn=&lt;LogSoftmaxBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8364, -2.8875, -2.8935, -2.8789, -2.8351, -2.8712, -2.8985, -2.8754,
+         -3.0308, -2.9122, -2.9395, -2.9576, -2.8880, -2.7814, -2.9144, -2.7668,
+         -2.8880, -3.0093]], grad_fn=&lt;LogSoftmaxBackward&gt;)
 </pre></div>
 </div>
 <p>As you can see the output is a <code class="docutils literal notranslate"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_categories&gt;</span></code> Tensor, where
@@ -458,7 +460,7 @@ of the greatest value:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Arabic', 13)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Vietnamese', 15)
 </pre></div>
 </div>
 <p>We will also want a quick way to get a training example (a name and its
@@ -481,16 +483,16 @@ language):</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Japanese / line = Kagawa
-category = Korean / line = Shin
-category = French / line = Chevrolet
-category = German / line = Bruhn
-category = Portuguese / line = Rios
-category = Chinese / line = Yan
-category = Polish / line = Janowski
-category = Polish / line = Rudawski
-category = Japanese / line = Fugunaga
-category = Spanish / line = Espina
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Czech / line = Prchal
+category = Russian / line = Tzebrikov
+category = Scottish / line = Hamilton
+category = Korean / line = Chang
+category = Chinese / line = Shuai
+category = Vietnamese / line = Kim
+category = Vietnamese / line = Quang
+category = Arabic / line = Gaber
+category = Japanese / line = Eda
+category = Russian / line = Vesner
 </pre></div>
 </div>
 </div>
@@ -580,26 +582,26 @@ average of the loss.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 8s) 2.9395 St pierre / Polish ✗ (French)
-10000 10% (0m 16s) 1.9483 Mendes / Portuguese ✓
-15000 15% (0m 24s) 2.7446 Hamer / German ✗ (English)
-20000 20% (0m 32s) 1.2295 Thuy / Chinese ✗ (Vietnamese)
-25000 25% (0m 40s) 2.1114 Walentowicz / Irish ✗ (Polish)
-30000 30% (0m 48s) 1.0753 Gil / Chinese ✗ (Korean)
-35000 35% (0m 57s) 1.7369 Unterbrink / Czech ✗ (German)
-40000 40% (1m 5s) 0.8410 Couture / French ✓
-45000 45% (1m 13s) 3.3321 Awduewski / Polish ✗ (Russian)
-50000 50% (1m 21s) 1.5452 Brian / Irish ✓
-55000 55% (1m 29s) 0.8850 Rodriquez / Spanish ✓
-60000 60% (1m 38s) 1.0792 Haenraats / Dutch ✓
-65000 65% (1m 46s) 1.8092 Barros / Portuguese ✗ (Spanish)
-70000 70% (1m 54s) 1.9601 Clark / Scottish ✗ (English)
-75000 75% (2m 2s) 0.0510 Mccallum / Scottish ✓
-80000 80% (2m 10s) 0.0186 Sadowski / Polish ✓
-85000 85% (2m 18s) 1.6733 Goodson / English ✓
-90000 90% (2m 26s) 0.0279 Paraskevopoulos / Greek ✓
-95000 95% (2m 34s) 0.5754 Mcgregor / Scottish ✓
-100000 100% (2m 43s) 0.9540 Doan / Vietnamese ✓
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 7s) 2.1209 Trang / Korean ✗ (Vietnamese)
+10000 10% (0m 15s) 2.4709 Kazimor / Russian ✗ (Czech)
+15000 15% (0m 22s) 3.1010 Whitmire / French ✗ (Czech)
+20000 20% (0m 30s) 2.6145 Espinosa / Czech ✗ (Spanish)
+25000 25% (0m 38s) 1.7832 Macdonald / Irish ✗ (Scottish)
+30000 30% (0m 46s) 1.6763 Finnegan / Irish ✓
+35000 35% (0m 55s) 2.1832 Teterin / Irish ✗ (Russian)
+40000 40% (1m 3s) 2.0826 Adsett / French ✗ (English)
+45000 45% (1m 10s) 1.1444 Bruce / Scottish ✓
+50000 50% (1m 18s) 4.4221 Zaloumi / Italian ✗ (Greek)
+55000 55% (1m 25s) 0.5709 Sergeant / French ✓
+60000 60% (1m 33s) 1.6695 Winder / German ✗ (English)
+65000 65% (1m 40s) 3.4051 Mcguire / French ✗ (Irish)
+70000 70% (1m 48s) 1.3073 Abramo / Italian ✓
+75000 75% (1m 56s) 1.1522 Souza / Portuguese ✓
+80000 80% (2m 3s) 2.0391 Robert / Dutch ✗ (French)
+85000 85% (2m 11s) 0.1272 Slaski / Polish ✓
+90000 90% (2m 18s) 1.9349 Shige / English ✗ (Japanese)
+95000 95% (2m 26s) 2.9170 Abbate / German ✗ (Italian)
+100000 100% (2m 33s) 0.0133 Antoniadis / Greek ✓
 </pre></div>
 </div>
 </div>
@@ -696,19 +698,19 @@ English (perhaps because of overlap with other languages).</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; Dovesky
-(-0.55) Russian
-(-1.11) Czech
-(-3.75) Polish
+(-0.82) Czech
+(-0.82) Russian
+(-3.15) English
 
 &gt; Jackson
-(-1.29) Scottish
-(-1.43) English
-(-1.66) Russian
+(-0.16) Scottish
+(-2.43) English
+(-4.15) German
 
 &gt; Satoshi
-(-0.79) Arabic
-(-1.42) Japanese
-(-2.06) Italian
+(-1.08) Japanese
+(-1.73) Arabic
+(-1.84) Italian
 </pre></div>
 </div>
 <p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
@@ -750,7 +752,7 @@ output of predictions.</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  53.032 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  42.483 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/ccb15f8365bdae22a0a019e57216d7c6/char_rnn_classification_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>
@@ -764,8 +766,8 @@ output of predictions.</p>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="char_rnn_generation_tutorial.html" rel="next" title="Generating Names with a Character-Level RNN">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="../beginner/chatbot_tutorial.html" rel="prev" title="Chatbot Tutorial"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="n" class="btn btn-neutral float-right" href="char_rnn_generation_tutorial.html" rel="next" title="NLP From Scratch: Generating Names with a Character-Level RNN">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="../beginner/audio_preprocessing_tutorial.html" rel="prev" title="torchaudio Tutorial"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="helpful-hr hr-top"/>
 <div class="helpful-container">
@@ -791,7 +793,7 @@ output of predictions.</p>
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Classifying Names with a Character-Level RNN</a><ul>
+<li><a class="reference internal" href="#">NLP From Scratch: Classifying Names with a Character-Level RNN</a><ul>
 <li><a class="reference internal" href="#preparing-the-data">Preparing the Data</a><ul>
 <li><a class="reference internal" href="#turning-names-into-tensors">Turning Names into Tensors</a></li>
 </ul>

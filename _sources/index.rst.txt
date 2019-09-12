@@ -122,11 +122,6 @@ Text
 ----------------------
 
 .. customgalleryitem::
-   :figure: /_static/img/chat.png
-   :tooltip: Train a simple chatbot using movie scripts
-   :description: :doc:`beginner/chatbot_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/rnnclass.png
    :tooltip: Build and train a basic character-level RNN to classify words
    :description: :doc:`intermediate/char_rnn_classification_tutorial`
@@ -136,18 +131,8 @@ Text
    :tooltip: Generate names from languages
    :description: :doc:`intermediate/char_rnn_generation_tutorial`
 
-.. customgalleryitem::
-    :tooltip: Explore the key concepts of deep learning programming using Pytorch
-    :figure: /_static/img/thumbnails/babel.jpg
-    :description: :doc:`/beginner/deep_learning_nlp_tutorial`
-
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
-
-.. customgalleryitem::
-    :tooltip: Language Translation with Torchtext
-    :figure: /_static/img/thumbnails/torchtext.png
-    :description: :doc:`/beginner/torchtext_translation_tutorial`
 
 .. customgalleryitem::
     :tooltip: Sentiment Ngrams with Torchtext
@@ -155,7 +140,12 @@ Text
     :description: :doc:`/beginner/text_sentiment_ngrams_tutorial`
 
 .. customgalleryitem::
-    :tooltip: Transformer Transformer Tutorial 
+    :tooltip: Language Translation with Torchtext
+    :figure: /_static/img/thumbnails/german_to_english_translation.png
+    :description: :doc:`/beginner/torchtext_translation_tutorial`
+
+.. customgalleryitem::
+    :tooltip: Transformer Tutorial
     :figure: /_static/img/transformer_architecture.jpg
     :description: :doc:`/beginner/transformer_tutorial`
 
@@ -319,13 +309,11 @@ PyTorch in Other Languages
    :hidden:
    :caption: Text
 
-   beginner/chatbot_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
-   beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
-   beginner/translation_torchtext_tutorial
    beginner/text_sentiment_ngrams_tutorial
+   beginner/translation_torchtext_tutorial
    beginner/transformer_tutorial
 
 .. toctree::

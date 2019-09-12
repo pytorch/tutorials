@@ -7,12 +7,17 @@
 .. _sphx_glr_intermediate_char_rnn_classification_tutorial.py:
 
 
-Classifying Names with a Character-Level RNN
-*********************************************
+NLP From Scratch: Classifying Names with a Character-Level RNN
+**************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
 
 We will be building and training a basic character-level RNN to classify
-words. A character-level RNN reads words as a series of characters -
+words. This tutorial, along with the following two, show how to do
+preprocess data for NLP modeling "from scratch", in particular not using
+many of the convenience functions of `torchtext`, so you can see how
+preprocessing for NLP modeling works at a low level.
+
+A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
 previous hidden state into each next step. We take the final prediction
 to be the output, i.e. which class the word belongs to.
@@ -326,9 +331,9 @@ pre-computing batches of Tensors.
 
  .. code-block:: none
 
-    tensor([[-2.9356, -2.8955, -2.8327, -2.8160, -3.0124, -3.0017, -2.8905, -2.8613,
-             -2.8005, -2.9536, -2.9148, -2.8486, -2.8866, -2.7935, -2.8963, -2.9713,
-             -2.9364, -2.8176]], grad_fn=<LogSoftmaxBackward>)
+    tensor([[-2.8364, -2.8875, -2.8935, -2.8789, -2.8351, -2.8712, -2.8985, -2.8754,
+             -3.0308, -2.9122, -2.9395, -2.9576, -2.8880, -2.7814, -2.9144, -2.7668,
+             -2.8880, -3.0093]], grad_fn=<LogSoftmaxBackward>)
 
 
 As you can see the output is a ``<1 x n_categories>`` Tensor, where
@@ -368,7 +373,7 @@ of the greatest value:
 
  .. code-block:: none
 
-    ('Arabic', 13)
+    ('Vietnamese', 15)
 
 
 We will also want a quick way to get a training example (a name and its
@@ -406,16 +411,16 @@ language):
 
  .. code-block:: none
 
-    category = Japanese / line = Kagawa
-    category = Korean / line = Shin
-    category = French / line = Chevrolet
-    category = German / line = Bruhn
-    category = Portuguese / line = Rios
-    category = Chinese / line = Yan
-    category = Polish / line = Janowski
-    category = Polish / line = Rudawski
-    category = Japanese / line = Fugunaga
-    category = Spanish / line = Espina
+    category = Czech / line = Prchal
+    category = Russian / line = Tzebrikov
+    category = Scottish / line = Hamilton
+    category = Korean / line = Chang
+    category = Chinese / line = Shuai
+    category = Vietnamese / line = Kim
+    category = Vietnamese / line = Quang
+    category = Arabic / line = Gaber
+    category = Japanese / line = Eda
+    category = Russian / line = Vesner
 
 
 Training the Network
@@ -544,26 +549,26 @@ average of the loss.
 
  .. code-block:: none
 
-    5000 5% (0m 8s) 2.9395 St pierre / Polish ✗ (French)
-    10000 10% (0m 16s) 1.9483 Mendes / Portuguese ✓
-    15000 15% (0m 24s) 2.7446 Hamer / German ✗ (English)
-    20000 20% (0m 32s) 1.2295 Thuy / Chinese ✗ (Vietnamese)
-    25000 25% (0m 40s) 2.1114 Walentowicz / Irish ✗ (Polish)
-    30000 30% (0m 48s) 1.0753 Gil / Chinese ✗ (Korean)
-    35000 35% (0m 57s) 1.7369 Unterbrink / Czech ✗ (German)
-    40000 40% (1m 5s) 0.8410 Couture / French ✓
-    45000 45% (1m 13s) 3.3321 Awduewski / Polish ✗ (Russian)
-    50000 50% (1m 21s) 1.5452 Brian / Irish ✓
-    55000 55% (1m 29s) 0.8850 Rodriquez / Spanish ✓
-    60000 60% (1m 38s) 1.0792 Haenraats / Dutch ✓
-    65000 65% (1m 46s) 1.8092 Barros / Portuguese ✗ (Spanish)
-    70000 70% (1m 54s) 1.9601 Clark / Scottish ✗ (English)
-    75000 75% (2m 2s) 0.0510 Mccallum / Scottish ✓
-    80000 80% (2m 10s) 0.0186 Sadowski / Polish ✓
-    85000 85% (2m 18s) 1.6733 Goodson / English ✓
-    90000 90% (2m 26s) 0.0279 Paraskevopoulos / Greek ✓
-    95000 95% (2m 34s) 0.5754 Mcgregor / Scottish ✓
-    100000 100% (2m 43s) 0.9540 Doan / Vietnamese ✓
+    5000 5% (0m 7s) 2.1209 Trang / Korean ✗ (Vietnamese)
+    10000 10% (0m 15s) 2.4709 Kazimor / Russian ✗ (Czech)
+    15000 15% (0m 22s) 3.1010 Whitmire / French ✗ (Czech)
+    20000 20% (0m 30s) 2.6145 Espinosa / Czech ✗ (Spanish)
+    25000 25% (0m 38s) 1.7832 Macdonald / Irish ✗ (Scottish)
+    30000 30% (0m 46s) 1.6763 Finnegan / Irish ✓
+    35000 35% (0m 55s) 2.1832 Teterin / Irish ✗ (Russian)
+    40000 40% (1m 3s) 2.0826 Adsett / French ✗ (English)
+    45000 45% (1m 10s) 1.1444 Bruce / Scottish ✓
+    50000 50% (1m 18s) 4.4221 Zaloumi / Italian ✗ (Greek)
+    55000 55% (1m 25s) 0.5709 Sergeant / French ✓
+    60000 60% (1m 33s) 1.6695 Winder / German ✗ (English)
+    65000 65% (1m 40s) 3.4051 Mcguire / French ✗ (Irish)
+    70000 70% (1m 48s) 1.3073 Abramo / Italian ✓
+    75000 75% (1m 56s) 1.1522 Souza / Portuguese ✓
+    80000 80% (2m 3s) 2.0391 Robert / Dutch ✗ (French)
+    85000 85% (2m 11s) 0.1272 Slaski / Polish ✓
+    90000 90% (2m 18s) 1.9349 Shige / English ✗ (Japanese)
+    95000 95% (2m 26s) 2.9170 Abbate / German ✗ (Italian)
+    100000 100% (2m 33s) 0.0133 Antoniadis / Greek ✓
 
 
 Plotting the Results
@@ -704,19 +709,19 @@ Running on User Input
  .. code-block:: none
 
     > Dovesky
-    (-0.55) Russian
-    (-1.11) Czech
-    (-3.75) Polish
+    (-0.82) Czech
+    (-0.82) Russian
+    (-3.15) English
 
     > Jackson
-    (-1.29) Scottish
-    (-1.43) English
-    (-1.66) Russian
+    (-0.16) Scottish
+    (-2.43) English
+    (-4.15) German
 
     > Satoshi
-    (-0.79) Arabic
-    (-1.42) Japanese
-    (-2.06) Italian
+    (-1.08) Japanese
+    (-1.73) Arabic
+    (-1.84) Italian
 
 
 The final versions of the scripts `in the Practical PyTorch
@@ -764,7 +769,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  53.032 seconds)
+   **Total running time of the script:** ( 2 minutes  42.483 seconds)
 
 
 .. _sphx_glr_download_intermediate_char_rnn_classification_tutorial.py:
