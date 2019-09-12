@@ -145,7 +145,7 @@ Text
     :description: :doc:`/beginner/torchtext_translation_tutorial`
 
 .. customgalleryitem::
-    :tooltip: Transformer Transformer Tutorial
+    :tooltip: Transformer Tutorial
     :figure: /_static/img/transformer_architecture.jpg
     :description: :doc:`/beginner/transformer_tutorial`
 
