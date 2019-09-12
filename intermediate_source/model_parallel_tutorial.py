@@ -28,7 +28,7 @@ of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
 
 Basic Usage
-================================
+-----------
 """
 
 ######################################################################
@@ -75,7 +75,7 @@ optimizer.step()
 
 ######################################################################
 # Apply Model Parallel to Existing Modules
-# =======================
+# ----------------------------------------
 #
 # It is also possible to run an existing single-GPU module on multiple GPUs
 # with just a few lines of changes. The code below shows how to decompose
@@ -235,7 +235,7 @@ plot([mp_mean, rn_mean],
 
 ######################################################################
 # Speed Up by Pipelining Inputs
-# =======================
+# -----------------------------
 #
 # In the following experiments, we further divide each 120-image batch into
 # 20-image splits. As PyTorch launches CUDA operations asynchronizely, the
@@ -350,3 +350,4 @@ plt.close(fig)
 # for your environment, a proper approach is to first generate the curve to
 # figure out the best split size, and then use that split size to pipeline
 # inputs.
+#
