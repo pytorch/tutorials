@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Translation with a Sequence to Sequence Network and Attention
-*************************************************************
+NLP From Scratch: Translation with a Sequence to Sequence Network and Attention
+*******************************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+
+This is the third and final tutorial on doing "NLP From Scratch", where we
+write our own classes and functions to preprocess the data to do our NLP
+modeling tasks. We hope after you complete this tutorial that you'll proceed to
+learn how `torchtext` can handle much of this preprocessing for you in the
+three tutorials immediately following this one.
 
 In this project we will be teaching a neural network to translate from
 French to English.
