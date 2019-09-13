@@ -99,6 +99,10 @@ Image
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
 
+.. customgalleryitem::
+    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
+    :figure: /_static/img/dcgan_generator.png
+    :description: :doc:`beginner/dcgan_faces_tutorial`
 
 .. raw:: html
 
@@ -153,17 +157,6 @@ Text
 
     <div style='clear:both'></div>
 
-Generative
-----------------------
-
-.. customgalleryitem::
-    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
-    :figure: /_static/img/dcgan_generator.png
-    :description: :doc:`beginner/dcgan_faces_tutorial`
-
-.. raw:: html
-
-    <div style='clear:both'></div>
 
 Reinforcement Learning
 ----------------------
@@ -294,6 +287,7 @@ PyTorch in Other Languages
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
+   beginner/dcgan_faces_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -315,14 +309,6 @@ PyTorch in Other Languages
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_torchtext_tutorial
    beginner/transformer_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Generative
-
-   beginner/dcgan_faces_tutorial
 
 .. toctree::
    :maxdepth: 2
