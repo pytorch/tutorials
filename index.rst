@@ -313,7 +313,7 @@ PyTorch in Other Languages
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/translation_torchtext_tutorial
+   beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
 
 .. toctree::
