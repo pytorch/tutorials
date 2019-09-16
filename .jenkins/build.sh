@@ -19,7 +19,11 @@ export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
 
 # For Tensorboard. Until 1.14 moves to the release channel.
-pip install tb-nightly  
+pip install tb-nightly
+
+# Install two language tokenizers for Translation with TorchText tutorial
+python -m spacy download en
+python -m spacy download de
 
 # PyTorch Theme
 rm -rf src
