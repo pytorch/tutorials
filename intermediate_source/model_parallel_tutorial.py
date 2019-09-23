@@ -129,7 +129,7 @@ class ModelParallelResNet50(ResNet):
 #
 # Let us run an experiment to get a more quantitative view of the execution
 # time. In this experiment, we train ``ModelParallelResNet50`` and the existing
-# ``torchvision.models.reset50()`` by running random inputs and labels through
+# ``torchvision.models.resnet50()`` by running random inputs and labels through
 # them. After the training, the models will not produce any useful predictions,
 # but we can get a reasonable understanding of the execution times.
 
