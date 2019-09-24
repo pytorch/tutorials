@@ -1,5 +1,5 @@
 """
-2. Introduction to TorchScript
+Introduction to TorchScript
 ===========================
 
 *James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2

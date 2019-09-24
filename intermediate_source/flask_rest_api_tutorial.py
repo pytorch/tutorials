@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-1. Deploying PyTorch in Python via a REST API with Flask
+Deploying PyTorch in Python via a REST API with Flask
 ========================================================
 **Author**: `Avinash Sajjanshetty <https://avi.im>`_
 
