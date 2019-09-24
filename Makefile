@@ -81,6 +81,10 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth -P $(DATADIR)
 	cp $(DATADIR)/lenet_mnist_model.pth ./beginner_source/data/lenet_mnist_model.pth
 
+	# Download model for dynamic quantization tutorial
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/dq_mnist_cnn.pt -P $(DATADIR)
+	cp $(DATADIR)/dq_mnist_cnn.pt ./intermediate_source/data/dq_mnist_cnn.pt
+
 docs:
 	make download
 	make html

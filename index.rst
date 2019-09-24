@@ -258,6 +258,18 @@ PyTorch in Other Languages
 
     <div style='clear:both'></div>
 
+Quantization
+------------
+
+.. customgalleryitem::
+    :tooltip: Dynamic
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`intermediate/dynamic_quantization_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
@@ -357,3 +369,11 @@ PyTorch in Other Languages
    :caption: PyTorch in Other Languages
 
    advanced/cpp_frontend
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Quantization
+
+   intermediate/dynamic_quantization_tutorial
