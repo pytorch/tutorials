@@ -64,7 +64,16 @@ Getting Started
    :figure: /_static/img/torch.nn.png
    :tooltip: Use torch.nn to create and train a neural network
    :description: :doc:`beginner/nn_tutorial`
+   
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/net_analysis.png
+   :tooltip: Analyze the inner workings of a neural network
+   :description: :doc:`beginner/network_analysis_tutorial`
 
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/weight_transfer.png
+   :tooltip: Easily transfer weights from one network to another
+   :description: :doc:`beginner/weight_transfer_tutorial`
 
 .. raw:: html
 
@@ -275,6 +284,8 @@ PyTorch in Other Languages
    intermediate/tensorboard_tutorial
    beginner/saving_loading_models
    beginner/nn_tutorial
+   beginner/network_analysis_tutorial
+   beginner/weight_transfer_tutorial
 
 .. toctree::
    :maxdepth: 2
