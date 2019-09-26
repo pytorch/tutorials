@@ -325,7 +325,7 @@ plt.tight_layout()
 plt.savefig("split_size_tradeoff.png")
 plt.close(fig)
 
-######################################################################
+########################################################################
 #
 # .. figure:: /_static/img/model-parallel-images/split_size_tradeoff.png
 #    :alt:
