@@ -1,5 +1,5 @@
 """
-2. Introduction to TorchScript
+Introduction to TorchScript
 ===========================
 
 *James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
@@ -24,7 +24,7 @@ In this tutorial we will cover:
 -  How to compose both approaches
 -  Saving and loading TorchScript modules
 
-We hope that after you complete this tutorial, you proceed to go through
+We hope that after you complete this tutorial, you will proceed to go through
 `the follow-on tutorial <https://pytorch.org/tutorials/advanced/cpp_export.html>`_
 which will walk you through an example of actually calling a TorchScript
 model from C++.
