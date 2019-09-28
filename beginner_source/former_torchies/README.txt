@@ -9,9 +9,9 @@
 	Autograd
 	https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial_old.html
 
-3. nn_tutorial.py
+3. nnft_tutorial.py
 	nn package
-	https://pytorch.org/tutorials/beginner/former_torchies/nn_tutorial.html
+	https://pytorch.org/tutorials/beginner/former_torchies/nnft_tutorial.html
 
 4. parallelism_tutorial.py
 	Multi-GPU examples

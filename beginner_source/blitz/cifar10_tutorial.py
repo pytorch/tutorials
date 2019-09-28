@@ -62,6 +62,9 @@ import torchvision.transforms as transforms
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
 # We transform them to Tensors of normalized range [-1, 1].
+# .. note::
+#     If running on Windows and you get a BrokenPipeError, try setting
+#     the num_worker of torch.utils.data.DataLoader() to 0.
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -160,7 +163,7 @@ for epoch in range(2):  # loop over the dataset multiple times
 
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
-        # get the inputs
+        # get the inputs; data is a list of [inputs, labels]
         inputs, labels = data
 
         # zero the parameter gradients
@@ -235,7 +238,7 @@ print('Accuracy of the network on the 10000 test images: %d %%' % (
     100 * correct / total))
 
 ########################################################################
-# That looks waaay better than chance, which is 10% accuracy (randomly picking
+# That looks way better than chance, which is 10% accuracy (randomly picking
 # a class out of 10 classes).
 # Seems like the network learnt something.
 #
@@ -295,10 +298,10 @@ print(device)
 #
 # .. code:: python
 #
-#         inputs, labels = inputs.to(device), labels.to(device)
+#         inputs, labels = data[0].to(device), data[1].to(device)
 #
 # Why dont I notice MASSIVE speedup compared to CPU? Because your network
-# is realllly small.
+# is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
 # the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –

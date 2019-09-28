@@ -6,7 +6,7 @@ by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and 
 """
 ###############################################################################
 # We recommend running this tutorial as a notebook, not a script. To download the notebook (.ipynb) file,
-# click `here <https://pytorch.org/tutorials/beginner/nn_tutorial.html#sphx-glr-download-beginner-nn-tutorial-py>`_ .
+# click the link at the top of the page.
 #
 # PyTorch provides the elegantly designed modules and classes `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ ,
 # `torch.optim <https://pytorch.org/docs/stable/optim.html>`_ ,
@@ -811,7 +811,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # ---------------
 #
 # If you're lucky enough to have access to a CUDA-capable GPU (you can
-# rent one for about about $0.50/hour from most cloud providers) you can
+# rent one for about $0.50/hour from most cloud providers) you can
 # use it to speed up your code. First check that your GPU is working in
 # Pytorch:
 

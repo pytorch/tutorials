@@ -24,11 +24,20 @@ from __future__ import print_function
 import torch
 
 ###############################################################
+# .. note::
+#     An uninitialized matrix is declared,
+#     but does not contain definite known
+#     values before it is used. When an
+#     uninitialized matrix is created,
+#     whatever values were in the allocated
+#     memory at the time will appear as the initial values.
+
+###############################################################
 # Construct a 5x3 matrix, uninitialized:
 
 x = torch.empty(5, 3)
 print(x)
-
+ 
 ###############################################################
 # Construct a randomly initialized matrix:
 
@@ -132,7 +141,8 @@ print(x.item())
 # Converting a Torch Tensor to a NumPy array and vice versa is a breeze.
 #
 # The Torch Tensor and NumPy array will share their underlying memory
-# locations, and changing one will change the other.
+# locations (if the Torch Tensor is on CPU), and changing one will change
+# the other.
 #
 # Converting a Torch Tensor to a NumPy Array
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

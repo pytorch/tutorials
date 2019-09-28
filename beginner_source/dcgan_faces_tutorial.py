@@ -53,7 +53,7 @@ DCGAN Tutorial
 # :math:`D(x)` is the discriminator network which outputs the (scalar)
 # probability that :math:`x` came from training data rather than the
 # generator. Here, since we are dealing with images the input to
-# :math:`D(x)` is an image of HWC size 3x64x64. Intuitively, :math:`D(x)`
+# :math:`D(x)` is an image of CHW size 3x64x64. Intuitively, :math:`D(x)`
 # should be HIGH when :math:`x` comes from training data and LOW when
 # :math:`x` comes from the generator. :math:`D(x)` can also be thought of
 # as a traditional binary classifier.
@@ -74,7 +74,7 @@ DCGAN Tutorial
 # :math:`D` will predict its outputs are fake (:math:`log(1-D(G(x)))`).
 # From the paper, the GAN loss function is
 # 
-# .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(x)))\big]
+# .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
 # 
 # In theory, the solution to this minimax game is where
 # :math:`p_g = p_{data}`, and the discriminator guesses randomly if the
@@ -131,7 +131,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
-# Set random seem for reproducibility
+# Set random seed for reproducibility
 manualSeed = 999
 #manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)
@@ -218,7 +218,7 @@ ngpu = 1
 # ----
 # 
 # In this tutorial we will use the `Celeb-A Faces
-# dataset <https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
+# dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
 # The dataset will download as a file named *img_align_celeba.zip*. Once
@@ -283,7 +283,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # 
 # From the DCGAN paper, the authors specify that all model weights shall
 # be randomly initialized from a Normal distribution with mean=0,
-# stdev=0.2. The ``weights_init`` function takes an initialized model as
+# stdev=0.02. The ``weights_init`` function takes an initialized model as
 # input and reinitializes all convolutional, convolutional-transpose, and
 # batch normalization layers to meet this criteria. This function is
 # applied to the models immediately after initialization.

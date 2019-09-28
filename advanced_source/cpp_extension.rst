@@ -79,15 +79,15 @@ look something like this::
           # Split the combined gate weight matrix into its components.
           gates = gate_weights.chunk(3, dim=1)
 
-          input_gate = F.sigmoid(gates[0])
-          output_gate = F.sigmoid(gates[1])
+          input_gate = torch.sigmoid(gates[0])
+          output_gate = torch.sigmoid(gates[1])
           # Here we use an ELU instead of the usual tanh.
           candidate_cell = F.elu(gates[2])
 
           # Compute the new cell state.
           new_cell = old_cell + candidate_cell * input_gate
           # Compute the new hidden state and output.
-          new_h = F.tanh(new_cell) * output_gate
+          new_h = torch.tanh(new_cell) * output_gate
 
           return new_h, new_cell
 
@@ -147,23 +147,22 @@ For the "ahead of time" flavor, we build our C++ extension by writing a
 ``setup.py`` script that uses setuptools to compile our C++ code. For the LLTM, it
 looks as simple as this::
 
-  from setuptools import setup
-  from torch.utils.cpp_extension import CppExtension, BuildExtension
+  from setuptools import setup, Extension
+  from torch.utils import cpp_extension
 
-  setup(name='lltm',
-        ext_modules=[CppExtension('lltm', ['lltm.cpp'])],
-        cmdclass={'build_ext': BuildExtension})
-
+  setup(name='lltm_cpp',
+        ext_modules=[cpp_extension.CppExtension('lltm_cpp', ['lltm.cpp'])],
+        cmdclass={'build_ext': cpp_extension.BuildExtension})
 
 In this code, :class:`CppExtension` is a convenience wrapper around
 :class:`setuptools.Extension` that passes the correct include paths and sets
 the language of the extension to C++. The equivalent vanilla :mod:`setuptools`
 code would simply be::
 
-  setuptools.Extension(
-     name='lltm',
+  Extension(
+     name='lltm_cpp',
      sources=['lltm.cpp'],
-     include_dirs=torch.utils.cpp_extension.include_paths(),
+     include_dirs=cpp_extension.include_paths(),
      language='c++')
 
 :class:`BuildExtension` performs a number of required configuration steps and
@@ -182,16 +181,16 @@ extensions:
 
 .. code-block:: cpp
 
-  #include <torch/torch.h>
+  #include <torch/extension.h>
 
   #include <iostream>
 
-  at::Tensor d_sigmoid(at::Tensor z) {
-    auto s = at::sigmoid(z);
+  torch::Tensor d_sigmoid(torch::Tensor z) {
+    auto s = torch::sigmoid(z);
     return (1 - s) * s;
   }
 
-``<torch/torch.h>`` is the one-stop header to include all the necessary PyTorch
+``<torch/extension.h>`` is the one-stop header to include all the necessary PyTorch
 bits to write C++ extensions. It includes:
 
 - The ATen library, which is our primary API for tensor computation,
@@ -202,7 +201,7 @@ The implementation of :func:`d_sigmoid` shows how to use the ATen API.
 PyTorch's tensor and variable interface is generated automatically from the
 ATen library, so we can more or less translate our Python implementation 1:1
 into C++. Our primary datatype for all computations will be
-:class:`at::Tensor`. Its full API can be inspected `here
+:class:`torch::Tensor`. Its full API can be inspected `here
 <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html>`_. Notice
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
 the full power of C++11 at our disposal.
@@ -217,22 +216,22 @@ Next we can port our entire forward pass to C++:
   #include <vector>
 
   std::vector<at::Tensor> lltm_forward(
-      at::Tensor input,
-      at::Tensor weights,
-      at::Tensor bias,
-      at::Tensor old_h,
-      at::Tensor old_cell) {
-    auto X = at::cat({old_h, input}, /*dim=*/1);
+      torch::Tensor input,
+      torch::Tensor weights,
+      torch::Tensor bias,
+      torch::Tensor old_h,
+      torch::Tensor old_cell) {
+    auto X = torch::cat({old_h, input}, /*dim=*/1);
 
-    auto gate_weights = at::addmm(bias, X, weights.transpose(0, 1));
+    auto gate_weights = torch::addmm(bias, X, weights.transpose(0, 1));
     auto gates = gate_weights.chunk(3, /*dim=*/1);
 
-    auto input_gate = at::sigmoid(gates[0]);
-    auto output_gate = at::sigmoid(gates[1]);
-    auto candidate_cell = at::elu(gates[2], /*alpha=*/1.0);
+    auto input_gate = torch::sigmoid(gates[0]);
+    auto output_gate = torch::sigmoid(gates[1]);
+    auto candidate_cell = torch::elu(gates[2], /*alpha=*/1.0);
 
     auto new_cell = old_cell + candidate_cell * input_gate;
-    auto new_h = at::tanh(new_cell) * output_gate;
+    auto new_h = torch::tanh(new_cell) * output_gate;
 
     return {new_h,
             new_cell,
@@ -259,28 +258,28 @@ information on this):
 .. code-block:: cpp
 
   // tanh'(z) = 1 - tanh^2(z)
-  at::Tensor d_tanh(at::Tensor z) {
+  torch::Tensor d_tanh(torch::Tensor z) {
     return 1 - z.tanh().pow(2);
   }
 
   // elu'(z) = relu'(z) + { alpha * exp(z) if (alpha * (exp(z) - 1)) < 0, else 0}
-  at::Tensor d_elu(at::Tensor z, at::Scalar alpha = 1.0) {
+  torch::Tensor d_elu(torch::Tensor z, torch::Scalar alpha = 1.0) {
     auto e = z.exp();
     auto mask = (alpha * (e - 1)) < 0;
     return (z > 0).type_as(z) + mask.type_as(z) * (alpha * e);
   }
 
-  std::vector<at::Tensor> lltm_backward(
-      at::Tensor grad_h,
-      at::Tensor grad_cell,
-      at::Tensor new_cell,
-      at::Tensor input_gate,
-      at::Tensor output_gate,
-      at::Tensor candidate_cell,
-      at::Tensor X,
-      at::Tensor gate_weights,
-      at::Tensor weights) {
-    auto d_output_gate = at::tanh(new_cell) * grad_h;
+  std::vector<torch::Tensor> lltm_backward(
+      torch::Tensor grad_h,
+      torch::Tensor grad_cell,
+      torch::Tensor new_cell,
+      torch::Tensor input_gate,
+      torch::Tensor output_gate,
+      torch::Tensor candidate_cell,
+      torch::Tensor X,
+      torch::Tensor gate_weights,
+      torch::Tensor weights) {
+    auto d_output_gate = torch::tanh(new_cell) * grad_h;
     auto d_tanh_new_cell = output_gate * grad_h;
     auto d_new_cell = d_tanh(new_cell) * d_tanh_new_cell + grad_cell;
 
@@ -294,7 +293,7 @@ information on this):
     d_candidate_cell *= d_elu(gates[2]);
 
     auto d_gates =
-        at::cat({d_input_gate, d_output_gate, d_candidate_cell}, /*dim=*/1);
+        torch::cat({d_input_gate, d_output_gate, d_candidate_cell}, /*dim=*/1);
 
     auto d_weights = d_gates.t().mm(X);
     auto d_bias = d_gates.sum(/*dim=*/0, /*keepdim=*/true);
@@ -349,42 +348,48 @@ should look something like this::
   running install
   running bdist_egg
   running egg_info
-  writing lltm.egg-info/PKG-INFO
-  writing dependency_links to lltm.egg-info/dependency_links.txt
-  writing top-level names to lltm.egg-info/top_level.txt
-  reading manifest file 'lltm.egg-info/SOURCES.txt'
-  writing manifest file 'lltm.egg-info/SOURCES.txt'
+  creating lltm_cpp.egg-info
+  writing lltm_cpp.egg-info/PKG-INFO
+  writing dependency_links to lltm_cpp.egg-info/dependency_links.txt
+  writing top-level names to lltm_cpp.egg-info/top_level.txt
+  writing manifest file 'lltm_cpp.egg-info/SOURCES.txt'
+  reading manifest file 'lltm_cpp.egg-info/SOURCES.txt'
+  writing manifest file 'lltm_cpp.egg-info/SOURCES.txt'
   installing library code to build/bdist.linux-x86_64/egg
   running install_lib
   running build_ext
-  building 'lltm' extension
-  gcc -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include/TH -I~/local/miniconda/lib/python3.6/site-packages/torch/lib/include/THC -I~/local/miniconda/include/python3.6m -c lltm.cpp -o build/temp.linux-x86_64-3.6/lltm.o -DTORCH_EXTENSION_NAME=lltm -std=c++11
+  building 'lltm_cpp' extension
+  creating build
+  creating build/temp.linux-x86_64-3.7
+  gcc -pthread -B ~/local/miniconda/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.7/site-packages/torch/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/torch/csrc/api/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/TH -I~/local/miniconda/lib/python3.7/site-packages/torch/include/THC -I~/local/miniconda/include/python3.7m -c lltm.cpp -o build/temp.linux-x86_64-3.7/lltm.o -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME=lltm_cpp -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++11
   cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid for C/ObjC but not for C++
-  g++ -pthread -shared -B ~/local/miniconda/compiler_compat -L~/local/miniconda/lib -Wl,-rpath=~/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot=/ build/temp.linux-x86_64-3.6/lltm.o -o build/lib.linux-x86_64-3.6/lltm.cpython-36m-x86_64-linux-gnu.so
+  creating build/lib.linux-x86_64-3.7
+  g++ -pthread -shared -B ~/local/miniconda/compiler_compat -L~/local/miniconda/lib -Wl,-rpath=~/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot=/ build/temp.linux-x86_64-3.7/lltm.o -o build/lib.linux-x86_64-3.7/lltm_cpp.cpython-37m-x86_64-linux-gnu.so
+  creating build/bdist.linux-x86_64
   creating build/bdist.linux-x86_64/egg
-  copying build/lib.linux-x86_64-3.6/lltm_cuda.cpython-36m-x86_64-linux-gnu.so -> build/bdist.linux-x86_64/egg
-  copying build/lib.linux-x86_64-3.6/lltm.cpython-36m-x86_64-linux-gnu.so -> build/bdist.linux-x86_64/egg
-  creating stub loader for lltm.cpython-36m-x86_64-linux-gnu.so
-  byte-compiling build/bdist.linux-x86_64/egg/lltm.py to lltm.cpython-36.pyc
+  copying build/lib.linux-x86_64-3.7/lltm_cpp.cpython-37m-x86_64-linux-gnu.so -> build/bdist.linux-x86_64/egg
+  creating stub loader for lltm_cpp.cpython-37m-x86_64-linux-gnu.so
+  byte-compiling build/bdist.linux-x86_64/egg/lltm_cpp.py to lltm_cpp.cpython-37.pyc
   creating build/bdist.linux-x86_64/egg/EGG-INFO
-  copying lltm.egg-info/PKG-INFO -> build/bdist.linux-x86_64/egg/EGG-INFO
-  copying lltm.egg-info/SOURCES.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
-  copying lltm.egg-info/dependency_links.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
-  copying lltm.egg-info/top_level.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+  copying lltm_cpp.egg-info/PKG-INFO -> build/bdist.linux-x86_64/egg/EGG-INFO
+  copying lltm_cpp.egg-info/SOURCES.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+  copying lltm_cpp.egg-info/dependency_links.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
+  copying lltm_cpp.egg-info/top_level.txt -> build/bdist.linux-x86_64/egg/EGG-INFO
   writing build/bdist.linux-x86_64/egg/EGG-INFO/native_libs.txt
   zip_safe flag not set; analyzing archive contents...
-  __pycache__.lltm.cpython-36: module references __file__
-  creating 'dist/lltm-0.0.0-py3.6-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
+  __pycache__.lltm_cpp.cpython-37: module references __file__
+  creating 'dist/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg' and adding 'build/bdist.linux-x86_64/egg' to it
   removing 'build/bdist.linux-x86_64/egg' (and everything under it)
-  Processing lltm-0.0.0-py3.6-linux-x86_64.egg
-  removing '~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg' (and everything under it)
-  creating ~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg
-  Extracting lltm-0.0.0-py3.6-linux-x86_64.egg to ~/local/miniconda/lib/python3.6/site-packages
-  lltm 0.0.0 is already the active version in easy-install.pth
+  Processing lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+  removing '~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg' (and everything under it)
+  creating ~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+  Extracting lltm_cpp-0.0.0-py3.7-linux-x86_64.egg to ~/local/miniconda/lib/python3.7/site-packages
+  lltm-cpp 0.0.0 is already the active version in easy-install.pth
 
-  Installed ~/local/miniconda/lib/python3.6/site-packages/lltm-0.0.0-py3.6-linux-x86_64.egg
-  Processing dependencies for lltm==0.0.0
-  Finished processing dependencies for lltm==0.0.0
+  Installed ~/local/miniconda/lib/python3.7/site-packages/lltm_cpp-0.0.0-py3.7-linux-x86_64.egg
+  Processing dependencies for lltm-cpp==0.0.0
+  Finished processing dependencies for lltm-cpp==0.0.0
+
 
 A small note on compilers: Due to ABI versioning issues, the compiler you use to
 build your C++ extension must be *ABI-compatible* with the compiler PyTorch was
@@ -400,16 +405,16 @@ torch`` first, as this will resolve some symbols that the dynamic linker must
 see::
 
   In [1]: import torch
-  In [2]: import lltm
-  In [3]: lltm.forward
+  In [2]: import lltm_cpp
+  In [3]: lltm_cpp.forward
   Out[3]: <function lltm.PyCapsule.forward>
 
 If we call ``help()`` on the function or module, we can see that its signature
 matches our C++ code::
 
-  In[4] help(lltm.forward)
+  In[4] help(lltm_cpp.forward)
   forward(...) method of builtins.PyCapsule instance
-      forward(arg0: at::Tensor, arg1: at::Tensor, arg2: at::Tensor, arg3: at::Tensor, arg4: at::Tensor) -> List[at::Tensor]
+      forward(arg0: torch::Tensor, arg1: torch::Tensor, arg2: torch::Tensor, arg3: torch::Tensor, arg4: torch::Tensor) -> List[torch::Tensor]
 
       LLTM forward
 
@@ -421,12 +426,12 @@ class citizens of PyTorch::
   import torch
 
   # Our module!
-  import lltm
+  import lltm_cpp
 
   class LLTMFunction(torch.autograd.Function):
       @staticmethod
       def forward(ctx, input, weights, bias, old_h, old_cell):
-          outputs = lltm.forward(input, weights, bias, old_h, old_cell)
+          outputs = lltm_cpp.forward(input, weights, bias, old_h, old_cell)
           new_h, new_cell = outputs[:2]
           variables = outputs[1:] + [weights]
           ctx.save_for_backward(*variables)
@@ -435,7 +440,7 @@ class citizens of PyTorch::
 
       @staticmethod
       def backward(ctx, grad_h, grad_cell):
-          outputs = lltm.backward(
+          outputs = lltm_cpp.backward(
               grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_variables)
           d_old_h, d_input, d_weights, d_bias, d_old_cell = outputs
           return d_input, d_weights, d_bias, d_old_h, d_old_cell
@@ -466,6 +471,8 @@ Now that we are able to use and call our C++ code from PyTorch, we can run a
 small benchmark to see how much performance we gained from rewriting our op in
 C++. We'll run the LLTM forwards and backwards a few times and measure the
 duration::
+
+  import time
 
   import torch
 
@@ -579,7 +586,7 @@ the LLTM, this would look as simple as this::
 
   from torch.utils.cpp_extension import load
 
-  lltm = load(name="lltm", sources=["lltm.cpp"])
+  lltm_cpp = load(name="lltm_cpp", sources=["lltm.cpp"])
 
 Here, we provide the function with the same information as for
 :mod:`setuptools`. In the background, this will do the following:
@@ -593,10 +600,9 @@ In fact, if you pass ``verbose=True`` to :func:`cpp_extension.load`, you will
 be informed about the process::
 
   Using /tmp/torch_extensions as PyTorch extensions root...
-  Creating extension directory /tmp/torch_extensions/lltm...
-  Emitting ninja build file /tmp/torch_extensions/lltm/build.ninja...
-  Building extension module lltm...
-  Loading extension module lltm...
+  Emitting ninja build file /tmp/torch_extensions/lltm_cpp/build.ninja...
+  Building extension module lltm_cpp...
+  Loading extension module lltm_cpp...
 
 The resulting Python module will be exactly the same as produced by setuptools,
 but removes the requirement of having to maintain a separate ``setup.py`` build
@@ -635,29 +641,29 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
 
 .. code-block:: cpp
 
-  #include <torch/torch.h>
+  #include <torch/extension.h>
 
   #include <vector>
 
   // CUDA forward declarations
 
-  std::vector<at::Tensor> lltm_cuda_forward(
-      at::Tensor input,
-      at::Tensor weights,
-      at::Tensor bias,
-      at::Tensor old_h,
-      at::Tensor old_cell);
+  std::vector<torch::Tensor> lltm_cuda_forward(
+      torch::Tensor input,
+      torch::Tensor weights,
+      torch::Tensor bias,
+      torch::Tensor old_h,
+      torch::Tensor old_cell);
 
-  std::vector<at::Tensor> lltm_cuda_backward(
-      at::Tensor grad_h,
-      at::Tensor grad_cell,
-      at::Tensor new_cell,
-      at::Tensor input_gate,
-      at::Tensor output_gate,
-      at::Tensor candidate_cell,
-      at::Tensor X,
-      at::Tensor gate_weights,
-      at::Tensor weights);
+  std::vector<torch::Tensor> lltm_cuda_backward(
+      torch::Tensor grad_h,
+      torch::Tensor grad_cell,
+      torch::Tensor new_cell,
+      torch::Tensor input_gate,
+      torch::Tensor output_gate,
+      torch::Tensor candidate_cell,
+      torch::Tensor X,
+      torch::Tensor gate_weights,
+      torch::Tensor weights);
 
   // C++ interface
 
@@ -665,12 +671,12 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
   #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
   #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
-  std::vector<at::Tensor> lltm_forward(
-      at::Tensor input,
-      at::Tensor weights,
-      at::Tensor bias,
-      at::Tensor old_h,
-      at::Tensor old_cell) {
+  std::vector<torch::Tensor> lltm_forward(
+      torch::Tensor input,
+      torch::Tensor weights,
+      torch::Tensor bias,
+      torch::Tensor old_h,
+      torch::Tensor old_cell) {
     CHECK_INPUT(input);
     CHECK_INPUT(weights);
     CHECK_INPUT(bias);
@@ -680,16 +686,16 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
     return lltm_cuda_forward(input, weights, bias, old_h, old_cell);
   }
 
-  std::vector<at::Tensor> lltm_backward(
-      at::Tensor grad_h,
-      at::Tensor grad_cell,
-      at::Tensor new_cell,
-      at::Tensor input_gate,
-      at::Tensor output_gate,
-      at::Tensor candidate_cell,
-      at::Tensor X,
-      at::Tensor gate_weights,
-      at::Tensor weights) {
+  std::vector<torch::Tensor> lltm_backward(
+      torch::Tensor grad_h,
+      torch::Tensor grad_cell,
+      torch::Tensor new_cell,
+      torch::Tensor input_gate,
+      torch::Tensor output_gate,
+      torch::Tensor candidate_cell,
+      torch::Tensor X,
+      torch::Tensor gate_weights,
+      torch::Tensor weights) {
     CHECK_INPUT(grad_h);
     CHECK_INPUT(grad_cell);
     CHECK_INPUT(input_gate);
@@ -728,7 +734,7 @@ fine). Let's take a small peek at what this file will look like:
 
 .. code-block:: cpp
 
-  #include <ATen/ATen.h>
+  #include <torch/extension.h>
 
   #include <cuda.h>
   #include <cuda_runtime.h>
@@ -778,23 +784,23 @@ speed up. For the forward pass, the first function should look like this:
 
 .. code-block:: cpp
 
-  std::vector<at::Tensor> lltm_cuda_forward(
-      at::Tensor input,
-      at::Tensor weights,
-      at::Tensor bias,
-      at::Tensor old_h,
-      at::Tensor old_cell) {
-    auto X = at::cat({old_h, input}, /*dim=*/1);
-    auto gates = at::addmm(bias, X, weights.transpose(0, 1));
+  std::vector<torch::Tensor> lltm_cuda_forward(
+      torch::Tensor input,
+      torch::Tensor weights,
+      torch::Tensor bias,
+      torch::Tensor old_h,
+      torch::Tensor old_cell) {
+    auto X = torch::cat({old_h, input}, /*dim=*/1);
+    auto gates = torch::addmm(bias, X, weights.transpose(0, 1));
 
     const auto batch_size = old_cell.size(0);
     const auto state_size = old_cell.size(1);
 
-    auto new_h = at::zeros_like(old_cell);
-    auto new_cell = at::zeros_like(old_cell);
-    auto input_gate = at::zeros_like(old_cell);
-    auto output_gate = at::zeros_like(old_cell);
-    auto candidate_cell = at::zeros_like(old_cell);
+    auto new_h = torch::zeros_like(old_cell);
+    auto new_cell = torch::zeros_like(old_cell);
+    auto input_gate = torch::zeros_like(old_cell);
+    auto output_gate = torch::zeros_like(old_cell);
+    auto candidate_cell = torch::zeros_like(old_cell);
 
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
@@ -825,9 +831,9 @@ this would (conceptually) look something like this:
 .. code-block:: cpp
 
   switch (tensor.type().scalarType()) {
-    case at::ScalarType::Double:
+    case torch::ScalarType::Double:
       return function<double>(tensor.data<double>());
-    case at::ScalarType::Float:
+    case torch::ScalarType::Float:
       return function<float>(tensor.data<float>());
     ...
   }
@@ -890,6 +896,151 @@ pointwise operations entirely in parallel for each individual component in our
 gate matrices. If you imagine having to do this with a giant ``for`` loop over
 a million elements in serial, you can see why this would be much faster.
 
+Using accessors
+^^^^^^^^^^^^^^^
+
+You can see in the CUDA kernel that we work directly on pointers with the right
+type. Indeed, working directly with high level type agnostic tensors inside cuda
+kernels would be very inefficient.
+
+However, this comes at a cost of ease of use and readibility, especially for
+highly dimensional data. In our example, we know for example that the contiguous
+``gates`` tensor has 3 dimensions:
+
+1. batch, size of ``batch_size`` and stride of ``3*state_size``
+2. row, size of ``3`` and stride of ``state_size``
+3. index, size  of ``state_size`` and stride of ``1``
+
+How can we access the element ``gates[n][row][column]`` inside the kernel then?
+It turns out that you need the strides to access your element with some simple
+arithmetic.
+
+.. code-block:: cpp
+
+  gates.data<scalar_t>()[n*3*state_size + row*state_size + column]
+
+
+In addition to being verbose, this expression needs stride to be explicitely
+known, and thus passed to the kernel function within its arguments. You can see
+that in the case of kernel functions accepting multiple tensors with different
+sizes you will end up with a very long list of arguments.
+
+Fortunately for us, ATen provides accessors that are created with a single
+dynamic check that a Tensor is the type and number of dimensions.
+Accessors then expose an API for accessing the Tensor elements efficiently
+without having to convert to a single pointer:
+
+.. code-block:: cpp
+
+  torch::Tensor foo = torch::rand({12, 12});
+
+  // assert foo is 2-dimensional and holds floats.
+  auto foo_a = foo.accessor<float,2>();
+  float trace = 0;
+
+  for(int i = 0; i < foo_a.size(0); i++) {
+    // use the accessor foo_a to get tensor data.
+    trace += foo_a[i][i];
+  }
+
+Accessor objects have a relatively high level interface, with ``.size()`` and
+``.stride()`` methods and multi-dimensional indexing. The ``.accessor<>``
+interface is designed to access data efficiently on cpu tensor. The equivalent
+for cuda tensors is the ``packed_accessor<>``, which produces a Packed Accessor.
+
+The fundamental difference with Accessor is that a Packed Accessor copies size
+and stride data inside of its structure instead of pointing to it. It allows us
+to pass it to a CUDA kernel function and use its interface inside it.
+
+We can design a function that takes Packed Accessors instead of pointers.
+
+.. code-block:: cpp
+
+  __global__ void lltm_cuda_forward_kernel(
+      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gates,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> old_cell,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_h,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell)
+
+Let's decompose the template used here. the first two arguments ``scalar_t`` and
+``2`` are the same as regular Accessor. The argument
+``torch::RestrictPtrTraits`` indicates that the ``__restrict__`` keyword must be
+used. Finally, the argument ``size_t`` indicates that sizes and strides must be
+stored in a ``size_t`` integer. This is important as by default ``int64_t`` is
+used and can make the kernel slower.
+
+The function declaration becomes
+
+.. code-block:: cpp
+
+  template <typename scalar_t>
+  __global__ void lltm_cuda_forward_kernel(
+      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gates,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> old_cell,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_h,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell) {
+    //batch index
+    const int n = blockIdx.y;
+    // column index
+    const int c = blockIdx.x * blockDim.x + threadIdx.x;
+    if (c < gates.size(2)){
+      input_gate[n][c] = sigmoid(gates[n][0][c]);
+      output_gate[n][c] = sigmoid(gates[n][1][c]);
+      candidate_cell[n][c] = elu(gates[n][2][c]);
+      new_cell[n][c] =
+          old_cell[n][c] + candidate_cell[n][c] * input_gate[n][c];
+      new_h[n][c] = tanh(new_cell[n][c]) * output_gate[n][c];
+    }
+  }
+
+The implementation is much more readable! This function is then called by
+creating Packed Accessors with the ``.packed_accessor<>`` method within the
+host function.
+
+.. code-block:: cpp
+
+  std::vector<torch::Tensor> lltm_cuda_forward(
+      torch::Tensor input,
+      torch::Tensor weights,
+      torch::Tensor bias,
+      torch::Tensor old_h,
+      torch::Tensor old_cell) {
+    auto X = torch::cat({old_h, input}, /*dim=*/1);
+    auto gate_weights = torch::addmm(bias, X, weights.transpose(0, 1));
+
+    const auto batch_size = old_cell.size(0);
+    const auto state_size = old_cell.size(1);
+
+    auto gates = gate_weights.reshape({batch_size, 3, state_size});
+    auto new_h = torch::zeros_like(old_cell);
+    auto new_cell = torch::zeros_like(old_cell);
+    auto input_gate = torch::zeros_like(old_cell);
+    auto output_gate = torch::zeros_like(old_cell);
+    auto candidate_cell = torch::zeros_like(old_cell);
+
+    const int threads = 1024;
+    const dim3 blocks((state_size + threads - 1) / threads, batch_size);
+
+    AT_DISPATCH_FLOATING_TYPES(gates.type(), "lltm_forward_cuda", ([&] {
+      lltm_cuda_forward_kernel<scalar_t><<<blocks, threads>>>(
+          gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
+          old_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          new_h.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          new_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          input_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          output_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          candidate_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>());
+    }));
+
+    return {new_h, new_cell, input_gate, output_gate, candidate_cell, X, gates};
+  }
+
 The backwards pass follows much the same pattern and I won't elaborate further
 on it:
 
@@ -897,56 +1048,51 @@ on it:
 
   template <typename scalar_t>
   __global__ void lltm_cuda_backward_kernel(
-      scalar_t* __restrict__ d_old_cell,
-      scalar_t* __restrict__ d_gates,
-      const scalar_t* __restrict__ grad_h,
-      const scalar_t* __restrict__ grad_cell,
-      const scalar_t* __restrict__ new_cell,
-      const scalar_t* __restrict__ input_gate,
-      const scalar_t* __restrict__ output_gate,
-      const scalar_t* __restrict__ candidate_cell,
-      const scalar_t* __restrict__ gate_weights,
-      size_t state_size) {
-    const int column = blockIdx.x * blockDim.x + threadIdx.x;
-    const int index = blockIdx.y * state_size + column;
-    const int gates_row = blockIdx.y * (state_size * 3);
-    if (column < state_size) {
-      const auto d_output_gate = tanh(new_cell[index]) * grad_h[index];
-      const auto d_tanh_new_cell = output_gate[index] * grad_h[index];
+      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> d_old_cell,
+      torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> d_gates,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> grad_h,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> grad_cell,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
+      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell,
+      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gate_weights) {
+    //batch index
+    const int n = blockIdx.y;
+    // column index
+    const int c = blockIdx.x * blockDim.x + threadIdx.x;
+    if (c < d_gates.size(2)){
+      const auto d_output_gate = tanh(new_cell[n][c]) * grad_h[n][c];
+      const auto d_tanh_new_cell = output_gate[n][c] * grad_h[n][c];
       const auto d_new_cell =
-          d_tanh(new_cell[index]) * d_tanh_new_cell + grad_cell[index];
+          d_tanh(new_cell[n][c]) * d_tanh_new_cell + grad_cell[n][c];
 
 
-      d_old_cell[index] = d_new_cell;
-      const auto d_candidate_cell = input_gate[index] * d_new_cell;
-      const auto d_input_gate = candidate_cell[index] * d_new_cell;
+      d_old_cell[n][c] = d_new_cell;
+      const auto d_candidate_cell = input_gate[n][c] * d_new_cell;
+      const auto d_input_gate = candidate_cell[n][c] * d_new_cell;
 
-
-      const auto input_gate_index = gates_row + column;
-      const auto output_gate_index = gates_row + state_size + column;
-      const auto candidate_cell_index = gates_row + 2 * state_size + column;
-
-      d_gates[input_gate_index] =
-          d_input_gate * d_sigmoid(gate_weights[input_gate_index]);
-      d_gates[output_gate_index] =
-          d_output_gate * d_sigmoid(gate_weights[output_gate_index]);
-      d_gates[candidate_cell_index] =
-          d_candidate_cell * d_elu(gate_weights[candidate_cell_index]);
+      d_gates[n][0][c] =
+          d_input_gate * d_sigmoid(gate_weights[n][0][c]);
+      d_gates[n][1][c] =
+          d_output_gate * d_sigmoid(gate_weights[n][1][c]);
+      d_gates[n][2][c] =
+          d_candidate_cell * d_elu(gate_weights[n][2][c]);
     }
   }
 
-  std::vector<at::Tensor> lltm_cuda_backward(
-      at::Tensor grad_h,
-      at::Tensor grad_cell,
-      at::Tensor new_cell,
-      at::Tensor input_gate,
-      at::Tensor output_gate,
-      at::Tensor candidate_cell,
-      at::Tensor X,
-      at::Tensor gate_weights,
-      at::Tensor weights) {
-    auto d_old_cell = at::zeros_like(new_cell);
-    auto d_gates = at::zeros_like(gate_weights);
+  std::vector<torch::Tensor> lltm_cuda_backward(
+      torch::Tensor grad_h,
+      torch::Tensor grad_cell,
+      torch::Tensor new_cell,
+      torch::Tensor input_gate,
+      torch::Tensor output_gate,
+      torch::Tensor candidate_cell,
+      torch::Tensor X,
+      torch::Tensor gates,
+      torch::Tensor weights) {
+    auto d_old_cell = torch::zeros_like(new_cell);
+    auto d_gates = torch::zeros_like(gates);
 
     const auto batch_size = new_cell.size(0);
     const auto state_size = new_cell.size(1);
@@ -954,29 +1100,30 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
-          d_old_cell.data<scalar_t>(),
-          d_gates.data<scalar_t>(),
-          grad_h.contiguous().data<scalar_t>(),
-          grad_cell.contiguous().data<scalar_t>(),
-          new_cell.contiguous().data<scalar_t>(),
-          input_gate.contiguous().data<scalar_t>(),
-          output_gate.contiguous().data<scalar_t>(),
-          candidate_cell.contiguous().data<scalar_t>(),
-          gate_weights.contiguous().data<scalar_t>(),
-          state_size);
+          d_old_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          d_gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
+          grad_h.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          grad_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          new_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          input_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          output_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          candidate_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
+          gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>());
     }));
 
-    auto d_weights = d_gates.t().mm(X);
-    auto d_bias = d_gates.sum(/*dim=*/0, /*keepdim=*/true);
+    auto d_gate_weights = d_gates.reshape({batch_size, 3*state_size});
+    auto d_weights = d_gate_weights.t().mm(X);
+    auto d_bias = d_gate_weights.sum(/*dim=*/0, /*keepdim=*/true);
 
-    auto d_X = d_gates.mm(weights);
+    auto d_X = d_gate_weights.mm(weights);
     auto d_old_h = d_X.slice(/*dim=*/1, 0, state_size);
     auto d_input = d_X.slice(/*dim=*/1, state_size);
 
     return {d_old_h, d_input, d_weights, d_bias, d_old_cell, d_gates};
   }
+
 
 Integrating a C++/CUDA Operation with PyTorch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

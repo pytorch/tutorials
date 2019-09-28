@@ -18,7 +18,7 @@ Neural Network API
 .. code-block:: python
 
     import torch.autograd as autograd         # computation graph
-    from torch.autograd import Variable       # variable node in computation graph
+    from torch import Tensor                  # tensor node in the computation graph
     import torch.nn as nn                     # neural networks
     import torch.nn.functional as F           # layers, activations and more
     import torch.optim as optim               # optimizers e.g. gradient descent, ADAM, etc.
@@ -29,7 +29,7 @@ See `autograd <https://pytorch.org/docs/stable/autograd.html>`__,
 `functional <https://pytorch.org/docs/stable/nn.html#torch-nn-functional>`__
 and `optim <https://pytorch.org/docs/stable/optim.html>`__
 
-Hybrid frontend
+Torchscript and JIT
 ---------------
 
 .. code-block:: python
@@ -41,7 +41,7 @@ Hybrid frontend
     @script                   # decorator used to indicate data-dependent 
                               # control flow within the code being traced
 
-See `hybrid frontend <https://pytorch.org/docs/stable/hybridfrontend>`__
+See `Torchscript <https://pytorch.org/docs/stable/jit.html>`__
 
 ONNX
 ----
@@ -189,7 +189,7 @@ Loss Functions
 
 .. code-block:: python
 
-    nn.X where for example X is ...       # BCELoss, CrossEntropyLoss, 
+    nn.X                                  # where X is BCELoss, CrossEntropyLoss, 
                                           # L1Loss, MSELoss, NLLLoss, SoftMarginLoss,
                                           # MultiLabelSoftMarginLoss, CosineEmbeddingLoss, 
                                           # KLDivLoss, MarginRankingLoss, HingeEmbeddingLoss 
@@ -203,7 +203,7 @@ Activation Functions
 
 .. code-block:: python
 
-    nn.X where for example X is ...       # ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, 
+    nn.X                                  # where X is ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU, 
                                           # Threshold, HardTanh, Sigmoid, Tanh, 
                                           # LogSigmoid, Softplus, SoftShrink, 
                                           # Softsign, TanhShrink, Softmin, Softmax, 
@@ -219,7 +219,7 @@ Optimizers
 
     opt = optim.x(model.parameters(), ...)      # create optimizer
     opt.step()                                  # update weights
-    optim.X where for example X is ...          # SGD, Adadelta, Adagrad, Adam, 
+    optim.X                                     # where X is SGD, Adadelta, Adagrad, Adam, 
                                                 # SparseAdam, Adamax, ASGD, 
                                                 # LBFGS, RMSProp or Rprop
 
@@ -232,8 +232,8 @@ Learning rate scheduling
 
     scheduler = optim.X(optimizer,...)      # create lr scheduler
     scheduler.step()                        # update lr at start of epoch
-    optim.lr_scheduler.X where ...          # LambdaLR, StepLR, MultiStepLR, 
-    					    # ExponentialLR or ReduceLROnPLateau
+    optim.lr_scheduler.X                    # where X is LambdaLR, StepLR, MultiStepLR, 
+                  # ExponentialLR or ReduceLROnPLateau
 
 See `learning rate
 scheduler <https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate>`__

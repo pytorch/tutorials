@@ -185,5 +185,5 @@ with torch.no_grad():
 ###############################################################
 # **Read Later:**
 #
-# Documentation of ``autograd`` and ``Function`` is at
-# https://pytorch.org/docs/autograd
+# Document about ``autograd.Function`` is at
+# https://pytorch.org/docs/stable/autograd.html#function

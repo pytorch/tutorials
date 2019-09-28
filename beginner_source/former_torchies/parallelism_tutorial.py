@@ -11,6 +11,7 @@ Data Parallelism is implemented using ``torch.nn.DataParallel``.
 One can wrap a Module in ``DataParallel`` and it will be parallelized
 over multiple GPUs in the batch dimension.
 
+
 DataParallel
 -------------
 """
@@ -41,7 +42,20 @@ class DataParallelModel(nn.Module):
 #
 # The documentation for DataParallel can be found
 # `here <https://pytorch.org/docs/nn.html#dataparallel>`_.
-#
+# 
+# **Attributes of the wrapped module**
+# 
+# After wrapping a Module with ``DataParallel``, the attributes of the module
+# (e.g. custom methods) became inaccessible. This is because ``DataParallel``
+# defines a few new members, and allowing other attributes might lead to 
+# clashes in their names. For those who still want to access the attributes, 
+# a workaround is to use a subclass of ``DataParallel`` as below.
+
+class MyDataParallel(nn.DataParallel):
+    def __getattr__(self, name):
+        return getattr(self.module, name)
+    
+########################################################################
 # **Primitives on which DataParallel is implemented upon:**
 #
 #
