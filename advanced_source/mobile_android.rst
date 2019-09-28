@@ -10,4 +10,12 @@ tutorial will provide a simple example of:
 * Loading a serialized PyTorch model into an Android app from Java
 * Use the new PyTorch Java API to define a ``Tensor`` to be fed through the
   model
-*
+
+Key links:
+
+* `GitHub repo for working Android app:
+<https://github.com/pytorch/android-demo-app>`_
+* `Mobile OSS Guide:
+<https://docs.google.com/document/d/1J_thSxEsABO_ggh7Wlqx1wSsIIcggQdcviyoZpQlUnM/edit#>`_
+
+Status: mostly ready to fill in tutorial details once final links are received from Ivan.
