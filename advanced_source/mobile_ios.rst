@@ -1,7 +1,5 @@
-Image Classification on iOS
-===============================
-
-[Intro to PyTorch on mobile]
+Image Classification from an iOS App
+====================================
 
 Starting with PyTorch 1.3, you will be able to use PyTorch models that have
 been serialized via TorchScript directly from within iOS apps. This

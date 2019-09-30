@@ -170,6 +170,23 @@ Reinforcement Learning
 
     <div style='clear:both'></div>
 
+Mobile
+----------------------
+
+.. customgalleryitem::
+    :tooltip: Short PyTorch Android tutorial
+    :figure: /_static/img/pytorch_android.png
+    :description: :doc:`advanced/mobile_android`
+
+.. customgalleryitem::
+    :tooltip: Short PyTorch iOS tutorial
+    :figure: /_static/img/pytorch_android.png
+    :description: :doc:`advanced/mobile_android`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 Deploying PyTorch Models in Production
 --------------------------------------
 
@@ -317,6 +334,15 @@ PyTorch in Other Languages
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Mobile
+
+   advanced/mobile_android
+   advanced/mobile_ios
 
 .. toctree::
    :maxdepth: 2
