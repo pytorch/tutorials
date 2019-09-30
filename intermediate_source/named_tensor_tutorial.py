@@ -8,17 +8,17 @@ Introduction to Named Tensors in PyTorch
 `named tensors <http://nlp.seas.harvard.edu/NamedTensor>`_ in a January 2019 blog post as a
 way to enable more readable code when writing with the manipulations of multidimensional
 arrays necessary for coding up Transformer and Convolutional architectures. With PyTorch 1.3,
-we begin supporting the concept of named tensors by allowing ``Tensor``s to have **named
+we begin supporting the concept of named tensors by allowing a ``Tensor`` to have **named
 dimensions**; this tutorial is intended as a guide to the functionality that will
 be included with the 1.3 launch. By the end of it, you will be able to:
 
-- Initiate ``Tensor``s with named dimensions, as well as removing or renmaing those dimensions
+- Initiate a ``Tensor`` with named dimensions, as well as removing or renmaing those dimensions
 - Understand the basics of how dimension names are propagated through operations
 - See how naming dimensions enables clearer code in two key areas:
     - Broadcasting operations
     - Flattening and unflattening dimensions
 
-Finally, we'll put this into practice by coding the operations of Multiheaded Attention
+Finally, we'll put this into practice by coding the operations of multi-headed attention
 using named tensors, and see that the code is significantly more readable than it would
 be with regular, "unnamed" tensors!
 """
@@ -27,7 +27,7 @@ be with regular, "unnamed" tensors!
 # Basics: named dimensions
 # ------------------------
 #
-# Tensors now take a new `names` argument that represents a name for each dimension.
+# Tensors now take a new ``names`` argument that represents a name for each dimension.
 # Here we construct a tensor with names:
 #
 
@@ -56,7 +56,7 @@ imgs.rename(channel='C', width='W', height='H')
 print(imgs.names)
 
 ######################################################################
-# The preferred way to remove names is to call `tensor.rename(None)``:
+# The preferred way to remove names is to call ``tensor.rename(None)``:
 
 imgs.rename(None)
 
@@ -101,7 +101,8 @@ print(catch_error(lambda: imgs.refine_names('batch', 'channel', 'height', 'width
 ######################################################################
 # Most simple operations propagate names. The ultimate goal for named tensors is
 # for all operations to propagate names in a reasonable, intuitive manner. Many
-# common operations have been implemented at the time of the 1.3 release:
+# common operations have been implemented at the time of the 1.3 release; here,
+# for example, is `.abs()`:
 
 named_imgs = imgs.refine_names('N', 'C', 'H', 'W')
 print(named_imgs.abs().names)
@@ -173,8 +174,7 @@ imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
 per_batch_scale = torch.rand(6, names=('N',))
 catch_error(lambda: imgs * per_batch_scale)
 
-# Explicit broadcasting: the names check out and the more refined names are
-# propagated.
+# Explicit broadcasting: the names check out and the more refined names are propagated.
 imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
 per_batch_scale_4d = torch.rand(6, 1, 1, 1, names=('N', None, None, None))
 print((imgs * per_batch_scale_4d).names)
@@ -187,7 +187,7 @@ print((imgs * per_batch_scale_4d).names)
 # matrix multiplication. ``torch.mm(A, B)`` contracts away the second dimension
 # of ``A`` with the first dimension of ``B``, returning a tensor with the first
 # dim of ``A`` and the second dim of ``B``. (the other matmul functions,
-# ``torch.matmul``, ``torch.mv``, ``torch.dot``, behave similarly).
+# ``torch.matmul``, ``torch.mv``, ``torch.dot``, behave similarly):
 
 markov_states = torch.randn(128, 5, names=('batch', 'D'))
 transition_matrix = torch.randn(5, 5, names=('in', 'out'))
@@ -201,7 +201,7 @@ print(new_state.names)
 # --------------------------------------------
 #
 # One of the main complaints about working with multiple dimensions is the need
-# to unsqueeze "dummy" dimensions so that operations can occur. For example, in
+# to ``unsqueeze`` "dummy" dimensions so that operations can occur. For example, in
 # our per-batch-scale example before, with unnamed tensors we'd do the
 # following:
 
@@ -239,7 +239,7 @@ assert torch.allclose(named_result.rename(None), correct_result)
 # ``flatten`` to work with names: ``tensor.flatten(dims, new_dim)``.
 #
 # ``flatten`` can only flatten adjacent dimensions but also works on
-# non-contiguous dims. One must pass into ``unflatten`` a **namedshape**, which
+# non-contiguous dims. One must pass into ``unflatten`` a **named shape**, which
 # is a list of ``(dim, size)`` tuples, to specify how to unflatten the dim. It
 # is possible to save the sizes during a ``flatten`` for ``unflatten`` but we
 # do not yet do that.
@@ -278,7 +278,7 @@ print(weight.grad)  # Unnamed for now. Will be named in the future
 # In particular, three important features that we do not have plans to support
 # soon are:
 #
-# - Retaining names when serializing or loading serialized ``Tensor``s via
+# - Retaining names when serializing or loading a serialized ``Tensor`` via
 #   ``torch.save``
 # - Multi-processing via ``torch.multiprocessing``
 # - JIT support; for example, the following will error
@@ -302,8 +302,8 @@ catch_error(lambda: fn(named_tensor))
 # `ParlAI <https://github.com/facebookresearch/ParlAI>`_; specifically
 # `here <https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L907>`_.
 # Read through the code at that example; then, compare with the code below,
-# noting that there are four places labeled (I), (II), (III), and (IV) where
-# using named tensors enables significantly more readable code.
+# noting that there are four places labeled (I), (II), (III), and (IV), where
+# using named tensors enables more readable code.
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -466,4 +466,4 @@ print(output.names)
 #
 # Thank you for reading! Named tensors are still very much in development;
 # if you have feedback and/or suggestions for improvement, please let us
-# know by creating an issue `here <https://github.com/pytorch/pytorch/issues>`_.
+# know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
