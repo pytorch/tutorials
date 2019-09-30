@@ -99,6 +99,10 @@ Image
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
 
+.. customgalleryitem::
+    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
+    :figure: /_static/img/dcgan_generator.png
+    :description: :doc:`beginner/dcgan_faces_tutorial`
 
 .. raw:: html
 
@@ -122,11 +126,6 @@ Text
 ----------------------
 
 .. customgalleryitem::
-   :figure: /_static/img/chat.png
-   :tooltip: Train a simple chatbot using movie scripts
-   :description: :doc:`beginner/chatbot_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/rnnclass.png
    :tooltip: Build and train a basic character-level RNN to classify words
    :description: :doc:`intermediate/char_rnn_classification_tutorial`
@@ -135,11 +134,6 @@ Text
    :figure: /_static/img/char_rnn_generation.png
    :tooltip: Generate names from languages
    :description: :doc:`intermediate/char_rnn_generation_tutorial`
-
-.. customgalleryitem::
-    :tooltip: Explore the key concepts of deep learning programming using Pytorch
-    :figure: /_static/img/thumbnails/babel.jpg
-    :description: :doc:`/beginner/deep_learning_nlp_tutorial`
 
 .. galleryitem:: intermediate/seq2seq_translation_tutorial.py
   :figure: _static/img/seq2seq_flat.png
@@ -150,7 +144,12 @@ Text
     :description: :doc:`/beginner/text_sentiment_ngrams_tutorial`
 
 .. customgalleryitem::
-    :tooltip: Transformer Transformer Tutorial 
+    :tooltip: Language Translation with Torchtext
+    :figure: /_static/img/thumbnails/german_to_english_translation.png
+    :description: :doc:`/beginner/torchtext_translation_tutorial`
+
+.. customgalleryitem::
+    :tooltip: Transformer Tutorial
     :figure: /_static/img/transformer_architecture.jpg
     :description: :doc:`/beginner/transformer_tutorial`
 
@@ -158,17 +157,6 @@ Text
 
     <div style='clear:both'></div>
 
-Generative
-----------------------
-
-.. customgalleryitem::
-    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
-    :figure: /_static/img/dcgan_generator.png
-    :description: :doc:`beginner/dcgan_faces_tutorial`
-
-.. raw:: html
-
-    <div style='clear:both'></div>
 
 Reinforcement Learning
 ----------------------
@@ -299,6 +287,7 @@ PyTorch in Other Languages
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
+   beginner/dcgan_faces_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -314,21 +303,12 @@ PyTorch in Other Languages
    :hidden:
    :caption: Text
 
-   beginner/chatbot_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
-   beginner/deep_learning_nlp_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
+   beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Generative
-
-   beginner/dcgan_faces_tutorial
 
 .. toctree::
    :maxdepth: 2
