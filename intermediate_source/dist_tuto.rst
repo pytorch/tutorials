@@ -574,15 +574,14 @@ that each process will open the file, write its information, and wait
 until everybody did so. After what all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
-`fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__. Note that
-you can specify ranks manually or let the processes figure it out by
-themselves. Be defining a unique ``groupname`` per job you can use the
-same file path for multiple jobs and safely avoid collision.
+`fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__.
 
 .. code:: python
 
-    dist.init_process_group(init_method='file:///mnt/nfs/sharedfile', world_size=4,
-                            group_name='mygroup')
+    dist.init_process_group(
+        init_method='file:///mnt/nfs/sharedfile',
+        rank=args.rank,
+        world_size=4)
 
 **TCP**
 
