@@ -584,34 +584,18 @@ same file path for multiple jobs and safely avoid collision.
     dist.init_process_group(init_method='file:///mnt/nfs/sharedfile', world_size=4,
                             group_name='mygroup')
 
-**TCP Init & Multicast**
+**TCP**
 
-Initializing via TCP can be achieved in two different ways:
-
-1. By providing the IP address of the process with rank 0 and the world
-   size.
-2. By providing *any* valid IP `multicast
-   address <https://en.wikipedia.org/wiki/Multicast_address>`__ and the
-   world size.
-
-In the first case, all workers will be able to connect to the process
-with rank 0 and follow the procedure described above.
+Initializing via TCP can be achieved by providing the IP address of the process with rank 0 and a reachable port number.
+Here, all workers will be able to connect to the process
+with rank 0 and exchange information on how to reach each other.
 
 .. code:: python
 
-    dist.init_process_group(init_method='tcp://10.1.1.20:23456', rank=args.rank, world_size=4)
-
-In the second case, the multicast address specifies the group of nodes
-who might potentially be active and the coordination can be handled by
-allowing each process to have an initial handshake before following the
-above procedure. In addition TCP multicast initialization also supports
-a ``group_name`` argument (as with the shared file method) allowing
-multiple jobs to be scheduled on the same cluster.
-
-.. code:: python
-
-    dist.init_process_group(init_method='tcp://[ff15:1e18:5d4c:4cf0:d02d:b659:53ba:b0a7]:23456',
-                            world_size=4)
+    dist.init_process_group(
+        init_method='tcp://10.1.1.20:23456',
+        rank=args.rank,
+        world_size=4)
 
 .. raw:: html
 
