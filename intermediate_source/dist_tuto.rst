@@ -122,7 +122,7 @@ order to store the data it will receive.
 Also notice that ``send``/``recv`` are **blocking**: both processes stop
 until the communication is completed. On the other hand immediates are
 **non-blocking**; the script continues its execution and the methods
-return a ``DistributedRequest`` object upon which we can choose to
+return a ``Work`` object upon which we can choose to
 ``wait()``.
 
 .. code:: python
