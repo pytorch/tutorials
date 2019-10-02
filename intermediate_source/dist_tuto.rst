@@ -549,33 +549,6 @@ naturally more suitable than the others. In addition to the following
 sections, you should also have a look at the `official
 documentation <https://pytorch.org/docs/stable/distributed.html#initialization>`__.
 
-Before diving into the initialization methods, let's have a quick look
-at what happens behind ``init_process_group`` from the C/C++
-perspective.
-
-1. First, the arguments are parsed and validated.
-2. The backend is resolved via the ``name2channel.at()`` function. A
-   ``Channel`` class is returned, and will be used to perform the data
-   transmission.
-3. The GIL is dropped, and ``THDProcessGroupInit()`` is called. This
-   instantiates the channel and adds the address of the master node.
-4. The process with rank 0 will execute the ``master`` procedure, while
-   all other ranks will be ``workers``.
-5. The master
-
-   a. Creates sockets for all workers.
-   b. Waits for all workers to connect.
-   c. Sends them information about the location of the other processes.
-
-6. Each worker
-
-   a. Creates a socket to the master.
-   b. Sends their own location information.
-   c. Receives information about the other workers.
-   d. Opens a socket and handshakes with all other workers.
-
-7. The initialization is done, and everyone is connected to everyone.
-
 **Environment Variable**
 
 We have been using the environment variable initialization method
