@@ -446,43 +446,27 @@ Communication Backends
 
 One of the most elegant aspects of ``torch.distributed`` is its ability
 to abstract and build on top of different backends. As mentioned before,
-there are currently three backends implemented in PyTorch: TCP, MPI, and
-Gloo. They each have different specifications and tradeoffs, depending
+there are currently three backends implemented in PyTorch: Gloo, NCCL, and
+MPI. They each have different specifications and tradeoffs, depending
 on the desired use-case. A comparative table of supported functions can
 be found
-`here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__. Note that a fourth backend, NCCL, has been added since the creation of this tutorial.  See `this section <https://pytorch.org/docs/stable/distributed.html#multi-gpu-collective-functions>`__ of the ``torch.distributed`` docs for more information about its use and value.
-
-**TCP Backend**
-
-So far we have made extensive usage of the TCP backend. It is quite
-handy as a development platform, as it is guaranteed to work on most
-machines and operating systems. It also supports all point-to-point and
-collective functions on CPU. However, there is no support for GPUs and
-its communication routines are not as optimized as the MPI one.
+`here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__.
 
 **Gloo Backend**
 
-The `Gloo backend <https://github.com/facebookincubator/gloo>`__
-provides an optimized implementation of *collective* communication
-procedures, both for CPUs and GPUs. It particularly shines on GPUs as it
-can perform communication without transferring data to the CPU's memory
-using `GPUDirect <https://developer.nvidia.com/gpudirect>`__. It is also
-capable of using `NCCL <https://github.com/NVIDIA/nccl>`__ to perform
-fast intra-node communication and implements its `own
-algorithms <https://github.com/facebookincubator/gloo/blob/master/docs/algorithms.md>`__
-for inter-node routines.
+So far we have made extensive usage of the `Gloo backend <https://github.com/facebookincubator/gloo>`__.
+It is quite handy as a development platform, as it is included in
+the pre-compiled PyTorch binaries and works on both Linux (since 0.2)
+and macOS (since 1.3). It supports all point-to-point and collective
+operations on CPU, and all collective operations on GPU. The
+implementation of the collective operations for CUDA tensors is not as
+optimized as the ones provided by the NCCL backend.
 
-Since version 0.2.0, the Gloo backend is automatically included with the
-pre-compiled binaries of PyTorch. As you have surely noticed, our
+As you have surely noticed, our
 distributed SGD example does not work if you put ``model`` on the GPU.
-Let's fix it by first replacing ``backend='gloo'`` in
-``init_processes(rank, size, fn, backend='tcp')``. At this point, the
-script will still run on CPU but uses the Gloo backend behind the
-scenes. In order to use multiple GPUs, let us also do the following
+In order to use multiple GPUs, let us also do the following
 modifications:
 
-0. ``init_processes(rank, size, fn, backend='tcp')`` :math:`\rightarrow`
-   ``init_processes(rank, size, fn, backend='gloo')``
 1.  Use ``device = torch.device("cuda:{}".format(rank))``
 2. ``model = Net()`` :math:`\rightarrow` ``model = Net().to(device)``
 3.  Use ``data, target = data.to(device), target.to(device)``
@@ -543,6 +527,14 @@ cores per process, hand-assigning machines to specific ranks, and `some
 more <https://www.open-mpi.org/faq/?category=running#mpirun-hostfile>`__)
 Doing so, you should obtain the same familiar output as with the other
 communication backends.
+
+**NCCL Backend**
+
+The `NCCL backend <https://github.com/nvidia/nccl>`__ provides an
+optimized implementation of collective operations against CUDA
+tensors. If you only use CUDA tensors for your collective operations,
+consider using this backend for the best in class performance. The
+NCCL backend is included in the pre-built binaries with CUDA support.
 
 Initialization Methods
 ~~~~~~~~~~~~~~~~~~~~~~
