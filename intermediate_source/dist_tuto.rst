@@ -20,7 +20,7 @@ Setup
 The distributed package included in PyTorch (i.e.,
 ``torch.distributed``) enables researchers and practitioners to easily
 parallelize their computations across processes and clusters of
-machines. To do so, it leverages the messaging passing semantics
+machines. To do so, it leverages messaging passing semantics
 allowing each process to communicate data to any of the other processes.
 As opposed to the multiprocessing (``torch.multiprocessing``) package,
 processes can use different communication backends and are not
