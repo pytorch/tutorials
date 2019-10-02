@@ -48,7 +48,7 @@ the following template.
         """ Distributed function to be implemented later. """
         pass
 
-    def init_processes(rank, size, fn, backend='tcp'):
+    def init_process(rank, size, fn, backend='tcp'):
         """ Initialize the distributed environment. """
         os.environ['MASTER_ADDR'] = '127.0.0.1'
         os.environ['MASTER_PORT'] = '29500'
@@ -60,7 +60,7 @@ the following template.
         size = 2
         processes = []
         for rank in range(size):
-            p = Process(target=init_processes, args=(rank, size, run))
+            p = Process(target=init_process, args=(rank, size, run))
             p.start()
             processes.append(p)
 
@@ -72,7 +72,7 @@ distributed environment, initialize the process group
 (``dist.init_process_group``), and finally execute the given ``run``
 function.
 
-Let's have a look at the ``init_processes`` function. It ensures that
+Let's have a look at the ``init_process`` function. It ensures that
 every process will be able to coordinate through a master, using the
 same ip address and port. Note that we used the TCP backend, but we
 could have used
@@ -513,7 +513,7 @@ In order to test our newly installed backend, a few modifications are
 required.
 
 1. Replace the content under ``if __name__ == '__main__':`` with
-   ``init_processes(0, 0, run, backend='mpi')``.
+   ``init_process(0, 0, run, backend='mpi')``.
 2. Run ``mpirun -n 4 python myscript.py``.
 
 The reason for these changes is that MPI needs to create its own
