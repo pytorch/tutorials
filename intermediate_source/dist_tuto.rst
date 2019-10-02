@@ -260,7 +260,7 @@ something useful with it. Our goal will be to replicate the
 functionality of
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 Of course, this will be a didactic example and in a real-world
-situtation you should use the official, well-tested and well-optimized
+situation you should use the official, well-tested and well-optimized
 version linked above.
 
 Quite simply we want to implement a distributed version of stochastic
