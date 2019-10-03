@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Data Loading and Processing Tutorial
-====================================
+Writing Custom Datasets, DataLoaders and Transforms
+===================================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
 A lot of effort in solving any machine learning problem goes in to
