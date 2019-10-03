@@ -91,18 +91,13 @@
 <p class="caption"><span class="caption-text">Getting Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../data_loading_tutorial.html">Data Loading and Processing Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../transfer_learning_tutorial.html">Transfer Learning Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../deploy_seq2seq_hybrid_frontend_tutorial.html">Deploying a Seq2Seq Model with TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../data_loading_tutorial.html">Writing Custom Datasets, DataLoaders and Transforms</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../saving_loading_models.html">Saving and Loading Models</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Image</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../finetuning_torchvision_models_tutorial.html">Finetuning Torchvision Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../fgsm_tutorial.html">Adversarial Example Generation</a></li>
@@ -148,6 +143,11 @@
 <p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyTorch Fundamentals In-Depth</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
 </ul>
 </div>
 </div>
@@ -307,8 +307,8 @@ MNIST dataset, please resize the images from the dataset to 32x32.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-0.0097,  0.0843,  0.0208, -0.0123,  0.0632,  0.0915,  0.0103, -0.0427,
-         -0.1399,  0.0142]], grad_fn=&lt;AddmmBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-0.1274,  0.0012, -0.0690,  0.0030, -0.0856,  0.1587, -0.0297, -0.0069,
+          0.0647, -0.0579]], grad_fn=&lt;AddmmBackward&gt;)
 </pre></div>
 </div>
 <p>Zero the gradient buffers of all parameters and backprops with random
@@ -380,7 +380,7 @@ between the input and the target.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.3632, grad_fn=&lt;MseLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.9118, grad_fn=&lt;MseLossBackward&gt;)
 </pre></div>
 </div>
 <p>Now, if you follow <code class="docutils literal notranslate"><span class="pre">loss</span></code> in the backward direction, using its
@@ -402,9 +402,9 @@ will have their <code class="docutils literal notranslate"><span class="pre">.gr
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;MseLossBackward object at 0x7f6ca958df98&gt;
-&lt;AddmmBackward object at 0x7f6ca958df60&gt;
-&lt;AccumulateGrad object at 0x7f6ca958df60&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;MseLossBackward object at 0x7ff87f489ba8&gt;
+&lt;AddmmBackward object at 0x7ff87f489d30&gt;
+&lt;AccumulateGrad object at 0x7ff87f489d30&gt;
 </pre></div>
 </div>
 </div>
@@ -430,7 +430,7 @@ gradients before and after the backward.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.bias.grad before backward
 tensor([0., 0., 0., 0., 0., 0.])
 conv1.bias.grad after backward
-tensor([ 0.0045, -0.0018,  0.0003,  0.0059, -0.0021, -0.0107])
+tensor([ 0.0216,  0.0174, -0.0086,  0.0028, -0.0231,  0.0012])
 </pre></div>
 </div>
 <p>Now, we have seen how to use loss functions.</p>
@@ -481,7 +481,7 @@ implements all these methods. Using it is very simple:</p>
 <code class="docutils literal notranslate"><span class="pre">optimizer.zero_grad()</span></code>. This is because gradients are accumulated
 as explained in <a class="reference internal" href="#backprop">Backprop</a> section.</p>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.083 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.071 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-neural-networks-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/3665741da15f111de82da3227a615699/neural_networks_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_networks_tutorial.py</span></code></a></div>
