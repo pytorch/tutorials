@@ -187,7 +187,7 @@ print('Finished Training')
 ########################################################################
 # Let's quickly save our trained model:
 
-PATH = './data'
+PATH = './cifar_net.pth'
 torch.save(net.state_dict(), PATH)
 
 ########################################################################
