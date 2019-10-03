@@ -446,7 +446,7 @@ One of the most elegant aspects of ``torch.distributed`` is its ability
 to abstract and build on top of different backends. As mentioned before,
 there are currently three backends implemented in PyTorch: Gloo, NCCL, and
 MPI. They each have different specifications and tradeoffs, depending
-on the desired use-case. A comparative table of supported functions can
+on the desired use case. A comparative table of supported functions can
 be found
 `here <https://pytorch.org/docs/stable/distributed.html#module-torch.distributed>`__.
 
