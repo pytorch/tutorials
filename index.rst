@@ -223,6 +223,18 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
+Quantization
+----------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 PyTorch in Other Languages
 --------------------------
 
