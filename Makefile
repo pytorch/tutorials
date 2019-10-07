@@ -83,11 +83,11 @@ download:
 
 	# Download model for advanced_source/dynamic_quantization_tutorial.py
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth -P $(DATADIR)
-	cp $(DATADIR)/lenet_mnist_model.pth ./advanced_source/data/word_language_model_quantize.pth
+	cp $(DATADIR)/lenet_mnist_model.pth advanced_source/data/word_language_model_quantize.pth
 
 	# Download data for advanced_source/dynamic_quantization_tutorial.py
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext.zip -P $(DATADIR)
-	cp $(DATADIR)/wikitext.zip ./advanced_source/data/wikitext.zip
+	unzip -q -o $(DATADIR)/wikitext.zip -d advanced_source/data/wikitext.zip
 
 docs:
 	make download
