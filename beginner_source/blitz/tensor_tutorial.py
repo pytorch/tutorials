@@ -74,7 +74,7 @@ print(x.size())
 
 ###############################################################
 # .. note::
-#     ``torch.Size`` is in fact a tuple, so it supports all tuple operations.
+#     ``torch.size`` is in fact a tuple, so it supports all tuple operations.
 #
 # Operations
 # ^^^^^^^^^^
