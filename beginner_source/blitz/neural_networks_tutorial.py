@@ -51,7 +51,7 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(1, 6, 3)
         self.conv2 = nn.Conv2d(6, 16, 3)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension 
+        self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
@@ -91,8 +91,8 @@ print(params[0].size())  # conv1's .weight
 
 ########################################################################
 # Let try a random 32x32 input.
-# Note: expected input size of this net (LeNet) is 32x32. To use this net on
-# MNIST dataset, please resize the images from the dataset to 32x32.
+# Note: expected input size of this net (LeNet) is 32x32.
+# To use this net on MNIST dataset, please resize the images from the dataset to 32x32.
 
 input = torch.randn(1, 1, 32, 32)
 out = net(input)
@@ -197,7 +197,7 @@ print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 # gradients before and after the backward.
 
 
-net.zero_grad()     # zeroes the gradient buffers of all parameters
+net.zero_grad()  # zeroes the gradient buffers of all parameters
 
 print('conv1.bias.grad before backward')
 print(net.conv1.bias.grad)
@@ -246,12 +246,11 @@ import torch.optim as optim
 optimizer = optim.SGD(net.parameters(), lr=0.01)
 
 # in your training loop:
-optimizer.zero_grad()   # zero the gradient buffers
+optimizer.zero_grad()  # zero the gradient buffers
 output = net(input)
 loss = criterion(output, target)
 loss.backward()
-optimizer.step()    # Does the update
-
+optimizer.step()  # Does the update
 
 ###############################################################
 # .. Note::
