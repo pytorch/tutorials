@@ -790,12 +790,6 @@ modules in the ``forward()`` method of a module we define ourselves:
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
-                    .transposed(true)),
-          batch_norm4(64),
-          conv5(nn::Conv2dOptions(64, 1, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
                     .transposed(true))
    {
      // register_module() is needed if we want to use the parameters() method later on
