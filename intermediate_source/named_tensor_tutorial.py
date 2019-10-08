@@ -42,6 +42,10 @@ imgs = torch.randn(1, 2, 2, 3 , names=('N', 'C', 'H', 'W'))
 # -  ``ones``
 # -  ``zeros``
 #
+# Unlike in
+# `the original named tensors blogpost <http://nlp.seas.harvard.edu/NamedTensor>`_,
+# named dimensions are ordered. `tensor.names[i]` is the name of the `i`th dimension of `tensor`.
+#
 # There are two ways rename a ``Tensor``'s names:
 #
 
@@ -113,7 +117,8 @@ print(named_imgs.abs().names)
 #
 # One can use dimension names to refer to dimensions instead of the positional
 # dimension. These operations also propagate names. Indexing (basic and
-# advanced) has not been implemented yet but is on the roadmap.
+# advanced) has not been implemented yet but is on the roadmap. Using the `named_imgs`
+# tensor from above, we can do:
 
 output = named_imgs.sum(['C'])  # Perform a sum over the channel dimension
 print(output.names)
@@ -125,8 +130,8 @@ print(img0.names)
 # Name inference
 # --------------
 #
-# Names are propagated on operations in a process called **name inference**. Name
-# inference works in a two step process:
+# Names are propagated on operations in a two step process called **name inference**. It
+# works as follows:
 #
 # - **Check names**: an operator may check that certain dimensions must match.
 # - **Propagate names**: name inference computes and propagates output names to
@@ -166,8 +171,8 @@ print((x + y).names)
 #
 # We do not support **automatic broadcasting** by names because the output
 # ordering is ambiguous and does not work well with unnamed dimensions. However,
-# we support **explicit broadcasting** by names. The two examples below help
-# clarify this.
+# we support **explicit broadcasting** by names, which is introduced in a later
+# section. The two examples below help clarify this.
 
 # Automatic broadcasting: expected to fail
 imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
@@ -268,8 +273,8 @@ loss.backward(grad_loss)
 print(weight.grad)  # Unnamed for now. Will be named in the future
 
 ######################################################################
-# Other supported features
-# ------------------------
+# Other supported (and unsupported) features
+# ------------------------------------------
 #
 # See here (link to be included) for a detailed breakdown of what is
 # supported with the 1.3 release, what is on the roadmap to be supported soon,
@@ -283,13 +288,18 @@ print(weight.grad)  # Unnamed for now. Will be named in the future
 # - Multi-processing via ``torch.multiprocessing``
 # - JIT support; for example, the following will error
 
+imgs_named = torch.randn(1, 2, 2, 3 , names=('N', 'C', 'H', 'W'))
+
 @torch.jit.script
 def fn(x):
     return x
 
-catch_error(lambda: fn(named_tensor))
+catch_error(lambda: fn(imgs_named))
 
 ######################################################################
+# As a workaround, please drop names via `tensor = tensor.rename(None)`
+# before using anything that does not yet support named tensors.
+#
 # Longer example: Multi-headed attention
 # --------------------------------------
 #
@@ -327,47 +337,47 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, query, key=None, value=None, mask=None):
         # (I)
-        query = query.refine_names('N', 'T', 'D')
-        if mask.dim() is 2:
-            mask = mask.refine_names('N', 'T')  # selfattn
+        query = query.refine_names(..., 'T', 'D')
+        self_attn = key is None and value is None
+        if self_attn:
+            mask = mask.refine_names(..., 'T')
         else:
-            mask = mask.refine_names('N', 'T', 'T_key')  # enc attn
+            mask = mask.refine_names(..., 'T', 'T_key')  # enc attn
 
-        batch_size, query_len, dim = query.size()
+        dim = query.size('D')
         assert dim == self.dim, \
-            f'Dimensions do not match: {dim} query vs {self.dim} configured'
+            f'Dimensions do not match: {embedding_dim} query vs {self.dim} configured'
         assert mask is not None, 'Mask is None, please specify a mask'
         n_heads = self.n_heads
         dim_per_head = dim // n_heads
         scale = math.sqrt(dim_per_head)
 
+        # (II)
         def prepare_head(tensor):
-            # (II)
-            tensor = tensor.refine_names('N', 'T', 'D')
+            tensor = tensor.refine_names(..., 'T', 'D')
             return (tensor.unflatten('D', [('H', n_heads), ('D_head', dim_per_head)])
-                          .align_to('N', 'H', 'T', 'D_head').contiguous())
+                          .align_to(..., 'H', 'T', 'D_head'))
 
-        if key is None and value is None:
-            # self attention
+        if self_attn:
             key = value = query
         elif value is None:
             # key and value are the same, but query differs
-            key = key.refine_names('N', 'T', 'D')
+            key = key.refine_names(..., 'T', 'D')
             value = key
         key_len = key.size('T')
         dim = key.size('D')
 
         # Distinguish between query_len (T) and key_len (T_key) dims.
-        k = prepare_head(self.k_lin(key)).renamed(T='T_key')
-        v = prepare_head(self.v_lin(value)).renamed(T='T_key')
+        k = prepare_head(self.k_lin(key)).rename(T='T_key')
+        v = prepare_head(self.v_lin(value)).rename(T='T_key')
         q = prepare_head(self.q_lin(query))
 
-        dot_prod = q.matmul(k.transpose('D_head', 'T_key'))
-        dot_prod.refine_names('N', 'H', 'T', 'T_key')  # just a check.
+        dot_prod = q.div_(scale).matmul(k.align_to(..., 'D_head', 'T_key'))
+        dot_prod.refine_names(..., 'H', 'T', 'T_key')  # just a check
 
         # (III)
-        # Named tensors doesn't support == yet; the following is a workaround.
-        attn_mask = (mask.renamed(None) == 0).refine_names(*mask.names)
+        # Named tensors doesn't support `==` yet; the following is a workaround.
+        attn_mask = (mask.rename(None) == 0).refine_names(*mask.names)
         attn_mask = attn_mask.align_as(dot_prod)
         dot_prod.masked_fill_(attn_mask, -float(1e20))
 
@@ -375,12 +385,12 @@ class MultiHeadAttention(nn.Module):
 
         # (IV)
         attentioned = (
-            attn_weights.matmul(v).refine_names('N', 'H', 'T', 'D_head')
-            .align_to('N', 'T', 'H', 'D_head')
+            attn_weights.matmul(v).refine_names(..., 'H', 'T', 'D_head')
+            .align_to(..., 'T', 'H', 'D_head')
             .flatten(['H', 'D_head'], 'D')
         )
 
-        return self.out_lin(attentioned).refine_names('N', 'T', 'D')
+        return self.out_lin(attentioned).refine_names(..., 'T', 'D')
 
 ######################################################################
 # Let's dive into each of these areas in turn:
@@ -389,12 +399,13 @@ class MultiHeadAttention(nn.Module):
 
 def forward(self, query, key=None, value=None, mask=None):
     # (I)
-    query = query.refine_names('N', 'T', 'D')
+    query = query.refine_names(..., 'T', 'D')
 
 ######################################################################
-# The ``query = query.refine_names('N', 'T', 'D')`` serves as error checking and
-# asserts that the the dimensions can be refined to ['N', 'T', 'D']. This prevents
-# potentially silent or confusing size mismatch errors later down the line.
+# The ``query = query.refine_names(..., 'T', 'D')`` serves as enforcable documentation
+# and lifts input dimensions to being named. It checks that the last two dimensions
+# can be refined to `['T', 'D']`, preventing potentially silent or confusing size
+# mismatch errors later down the line.
 #
 # **(II)  Manipulating dimensions in ``prepare_head``**
 
@@ -410,15 +421,41 @@ def prepare_head(tensor):
 # ``['N', 'H', 'T', 'D_head']``. We can achieve something similar using view
 # and transpose operations like the following:
 
+# (II)
 def prepare_head(tensor):
-    batch_size, seq_len, _ = tensor.size()  # N, T, D
-    tensor = tensor.view(batch_size, seq_len, n_heads, dim_per_head)  # N, T, H, D
-    return tensor.transpose(1, 2).contiguous()  # N, H, T, D
+    tensor = tensor.refine_names(..., 'T', 'D')
+    return (tensor.unflatten('D', [('H', n_heads), ('D_head', dim_per_head)])
+                  .align_to(..., 'H', 'T', 'D_head'))
 
 ######################################################################
-# but our named tensor variant provides ops that, although are more verbose, have
-# more semantic meaning than ``view`` and "enforcable" documentation in the form
-# of names.
+# The first thing to note is how the code clearly states the input and
+# output dimensions: the input tensor must end with the `T` and `D` dims
+# and the output tensor ends in `H`, `T`, and `D_head` dims.
+#
+# The second thing to note is how clearly the code describes what is going on.
+# prepare_head takes the key, query, and value and splits the embedding dim into
+# multiple heads, finally rearranging the dim order to be `[..., 'H', 'T', 'D_head']`.
+# ParlAI implements prepare_head as the following, using `view` and `transpose`
+# operations:
+#
+# **(III) Explicit broadcasting by names**
+
+def prepare_head(tensor):
+    # input is [batch_size, seq_len, n_heads * dim_per_head]
+    # output is [batch_size * n_heads, seq_len, dim_per_head]
+    batch_size, seq_len, _ = tensor.size()
+    tensor = tensor.view(batch_size, tensor.size(1), n_heads, dim_per_head)
+    tensor = (
+        tensor.transpose(1, 2)
+        .contiguous()
+        .view(batch_size * n_heads, seq_len, dim_per_head)
+    )
+    return tensor
+
+######################################################################
+# Our named tensor variant uses ops that, though more verbose, also have
+# more semantic meaning than `view` and `transpose` and include enforcable
+# documentation in the form of names.
 #
 # **(III) Explicit broadcasting by names**
 
@@ -426,29 +463,35 @@ def ignore():
     # (III)
     # Named tensors doesn't support == yet; the following is a workaround.
     attn_mask = (mask.renamed(None) == 0).refine_names(*mask.names)
+
+    # recall that we had dot_prod.refine_names(..., 'H', 'T', 'T_key')
     attn_mask = attn_mask.align_as(dot_prod)
+
     dot_prod.masked_fill_(attn_mask, -float(1e20))
 
 ######################################################################
-# ``mask`` usually has dims ``[N, T]`` or ``[N, T, T_key]``, while ``dot_prod``
+# ``mask`` usually has dims ``[N, T]`` (in the case of self-attention) or
+# ``[N, T, T_key]`` (in the case of encoder attention) while ``dot_prod``
 # has dims ``[N, H, T, T_key]``. To make ``mask`` broadcast correctly with
-# ``dot_prod``, we would usually ``unsqueeze`` dim 1 (and also the last dim
-# in the former). Using named tensors, we can simply align the two tensors a
-# nd stop worrying about where to ``unsqueeze`` dims.
+# ``dot_prod``, we would usually `unsqueeze` dims `1` and `-1` in the case of self
+# attention or `unsqueeze` dim `1` in the case of encoder attention. Using
+# named tensors, we can simply align the two tensors and stop worrying about
+# where to ``unsqueeze`` dims. Using named tensors, we simply align `attn_mask`
+# to `dot_prod` using `align_as` and stop worrying about where to `unsqueeze` dims.
 #
 # **(IV) More dimension manipulation using ``align_to`` and ``flatten``**
 
 def ignore():
     # (IV)
     attentioned = (
-        attn_weights.matmul(v).refine_names('N', 'H', 'T', 'D_head')
-        .align_to('N', 'T', 'H', 'D_head')
+        attn_weights.matmul(v).refine_names(..., 'H', 'T', 'D_head')
+        .align_to(..., 'T', 'H', 'D_head')
         .flatten(['H', 'D_head'], 'D')
     )
 
 ######################################################################
 # (IV): Like (II), using ``align_to`` and ``flatten`` are more semantically
-# meaningful than view.
+# meaningful than `view`.
 #
 # Running the example
 # -------------------
