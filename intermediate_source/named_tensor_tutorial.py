@@ -62,7 +62,7 @@ print(imgs.names)
 imgs.names = ['batch', 'channel', 'width', 'height']
 print(imgs.names)
 
-# Method #2: specify new names:
+# Method #2: specify new names (note: this changes names out-of-place)
 imgs = imgs.rename(channel='C', width='W', height='H')
 print(imgs.names)
 
@@ -88,7 +88,7 @@ print(imgs.names)
 
 ######################################################################
 # Because named tensors coexist with unnamed tensors, we need a nice way to
-# write named-tensor-aware code that works with both named and unnamed tensors.
+# write named tensor-aware code that works with both named and unnamed tensors.
 # Use ``tensor.refine_names(*names)`` to refine dimensions and lift unnamed dims
 # to named dims. Refining a dimension is defined as a "rename" with the following
 # constraints:
@@ -97,8 +97,7 @@ print(imgs.names)
 # - A named dim can only be refined to have the same name.
 
 imgs = torch.randn(3, 1, 1, 2)
-imgs = imgs.refine_names('N', 'C', 'H', 'W')
-print(imgs.names)
+print(imgs.refine_names('N', 'C', 'H', 'W'))
 
 # Coerces the last two dims to 'H' and 'W'. In Python 2, use the string '...' instead of ...
 print(imgs.refine_names(..., 'H', 'W').names)
@@ -116,34 +115,12 @@ catch_error(lambda: imgs.refine_names('batch', 'channel', 'height', 'width'))
 # Most simple operations propagate names. The ultimate goal for named tensors is
 # for all operations to propagate names in a reasonable, intuitive manner. Many
 # common operations have been added at the time of the 1.3 release; here,
-# for example, is `.abs()`:
+# for example, is ``.abs()``:
 
 named_imgs = imgs.refine_names('N', 'C', 'H', 'W')
 print(named_imgs.abs().names)
 
 ######################################################################
-# Speaking of operations propogating names, let's quickly cover one
-# of the most important operations in PyTorch.
-#
-# Matrix multiply
-# ---------------
-#
-# ``torch.mm(A, B)`` performs a dot product between the second dim of `A`
-# and the first dim of `B`, returning a tensor with the first dim of `A`
-# and the second dim of `B`. (the other matmul functions, such as ``torch.matmul``,
-# ``torch.mv``, ``torch.dot``, behave similarly).
-
-markov_states = torch.randn(128, 5, names=('batch', 'D'))
-transition_matrix = torch.randn(5, 5, names=('in', 'out'))
-
-# Apply one transition
-new_state = markov_states @ transition_matrix
-print(new_state.names)
-
-######################################################################
-# As you can see, matrix multiply does not check if the contracted dimensions
-# have the same name.
-#
 # Accessors and Reduction
 # -----------------------
 #
@@ -179,23 +156,23 @@ z = torch.randn(3, names=('Z',))
 ######################################################################
 # **Check names**: first, we will check whether the names of these two tensors
 # match. Two names match if and only if they are equal (string equality) or at
-# least one is ``None`` (``None``s are essentially a special wildcard name).
-# The only one of these three that will error, therefore, is ``x+z``:
+# least one is ``None`` (``None`` is essentially a special wildcard name).
+# The only one of these three that will error, therefore, is ``x + z``:
 
 catch_error(lambda: x + z)
 
 ######################################################################
-# **Propagate names**: _unify_ the two names by returning the most refined name of
-# the two. With `x + y,  `X` is more refined than `None`.
+# **Propagate names**: `unify` the two names by returning the most refined name of
+# the two. With ``x + y``,  ``X`` is more refined than ``None``.
 
 print((x + y).names)
 
 ######################################################################
 # Most name inference rules are straightforward but some of them can have
-# unexpected semantics. Let's go through a few more of them.
+# unexpected semantics. Let's go through a couple you're likely to encounter:
+# broadcasting and matrix multiply.
 #
-# Broadcasting
-# ------------
+# **Broadcasting**
 #
 # Named tensors do not change broadcasting behavior; they still broadcast by
 # position. However, when checking two dimensions for if they can be
@@ -203,7 +180,7 @@ print((x + y).names)
 #
 # Furthermore, broadcasting with named tensors can prevent incorrect behavior.
 # The following code will error, whereas without `names` it would add
-# `per_batch_scale` to the last dimension of `imgs`.
+# ``per_batch_scale`` to the last dimension of ``imgs``.
 
 # Automatic broadcasting: expected to fail
 imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
@@ -212,17 +189,37 @@ catch_error(lambda: imgs * per_batch_scale)
 
 ######################################################################
 # How `should` we perform this broadcasting operation along the first
-# dimension? One way, involving names, would be to explicitly initialize
-# the ``per_batch_scale`` tensor as four dimensional, and give it names
-# (such as ``('N', None, None, None)`` below) so that name inference will
-# work.
+# dimension? One way, involving names, would be to name the ``per_batch_scale``
+# tensor such that it matches ``imgs.names``, as shown below.
 
 imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
-per_batch_scale_4d = torch.rand(6, 1, 1, 1, names=('N', None, None, None))
+per_batch_scale_4d = torch.rand(6, 1, 1, 1, names=('N', 'C', 'H', 'W'))
 print((imgs * per_batch_scale_4d).names)
 
 ######################################################################
-# However, named tensors enable an even better way, which we'll cover next.
+# Another way would be to use the new explicit broadcasting by names
+# functionality, covered below.
+#
+# **Matrix multiply**
+#
+# ``torch.mm(A, B)`` performs a dot product between the second dim of ``A``
+# and the first dim of ``B``, returning a tensor with the first dim of ``A``
+# and the second dim of ``B``. (the other matmul functions, such as ``torch.matmul``,
+# ``torch.mv``, ``torch.dot``, behave similarly).
+
+markov_states = torch.randn(128, 5, names=('batch', 'D'))
+transition_matrix = torch.randn(5, 5, names=('in', 'out'))
+
+# Apply one transition
+new_state = markov_states @ transition_matrix
+print(new_state.names)
+
+######################################################################
+# As you can see, matrix multiply does not check if the contracted dimensions
+# have the same name.
+#
+# Next, we'll cover two new behaviors that named tensors enable: explicit
+# broadcasting by names.
 #
 # New behavior: Explicit broadcasting by names
 # --------------------------------------------
@@ -250,6 +247,7 @@ imgs = imgs.refine_names('N', 'C', 'H', 'W')
 per_batch_scale = per_batch_scale.refine_names('N')
 
 named_result = imgs * per_batch_scale.align_as(imgs)
+# note: named tensors do not yet work with allclose
 assert torch.allclose(named_result.rename(None), correct_result)
 
 ######################################################################
@@ -307,14 +305,12 @@ print(weight.grad)  # still unnamed
 # ------------------------------------------
 #
 # See here (link to be included) for a detailed breakdown of what is
-# supported with the 1.3 release, what is on the roadmap to be supported soon,
-# and what will be supported in the future but not soon.
+# supported with the 1.3 release.
 #
 # In particular, we want to call out three important features that are not
 # currently supported:
 #
-# - Retaining names when serializing or loading a serialized ``Tensor`` via
-#   ``torch.save``
+# - Saving or loading named tensors via ``torch.save`` or ``torch.load``
 # - Multi-processing via ``torch.multiprocessing``
 # - JIT support; for example, the following will error
 
@@ -330,15 +326,15 @@ catch_error(lambda: fn(imgs_named))
 # As a workaround, please drop names via ``tensor = tensor.rename(None)``
 # before using anything that does not yet support named tensors.
 #
-# Longer example: Multi-headed attention
+# Longer example: Multi-head attention
 # --------------------------------------
 #
 # Now we'll go through a complete example of implementing a common
-# PyTorch ``nn.Module``: multi-headed attention. We assume the reader is already
-# familiar with multi-headed attention; for a refresher, check out
+# PyTorch ``nn.Module``: multi-head attention. We assume the reader is already
+# familiar with multi-head attention; for a refresher, check out
 # `this explanation <http://jalammar.github.io/illustrated-transformer/>`_.
 #
-# We adapt the implementation of multi-headed attention from
+# We adapt the implementation of multi-head attention from
 # `ParlAI <https://github.com/facebookresearch/ParlAI>`_; specifically
 # `here <https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L907>`_.
 # Read through the code at that example; then, compare with the code below,
@@ -431,7 +427,7 @@ def forward(self, query, key=None, value=None, mask=None):
 # can be refined to ``['T', 'D']``, preventing potentially silent or confusing size
 # mismatch errors later down the line.
 #
-# **(II)  Manipulating dimensions in ``prepare_head``**
+# **(II)  Manipulating dimensions in prepare_head**
 
 # (II)
 def prepare_head(tensor):
@@ -449,8 +445,6 @@ def prepare_head(tensor):
 # multiple heads, finally rearranging the dim order to be ``[..., 'H', 'T', 'D_head']``.
 # ParlAI implements ``prepare_head`` as the following, using ``view`` and ``transpose``
 # operations:
-#
-# **(III) Explicit broadcasting by names**
 
 def prepare_head(tensor):
     # input is [batch_size, seq_len, n_heads * dim_per_head]
@@ -486,7 +480,7 @@ def ignore():
 # named tensors, we simply align ``attn_mask`` to ``dot_prod`` using ``align_as``
 # and stop worrying about where to ``unsqueeze`` dims.
 #
-# **(IV) More dimension manipulation using ``align_to`` and ``flatten``**
+# **(IV) More dimension manipulation using align_to and flatten**
 
 def ignore():
     # (IV)
@@ -497,8 +491,8 @@ def ignore():
     )
 
 ######################################################################
-# (IV): Like (II), ``align_to`` and ``flatten`` are more semantically
-# meaningful than `view` (despite being more verbose).
+# Here, as in (II), ``align_to`` and ``flatten`` are more semantically
+# meaningful than ``view`` (despite being more verbose).
 #
 # Running the example
 # -------------------
@@ -507,6 +501,18 @@ n, t, d, h = 7, 5, 2 * 3, 3
 query = torch.randn(n, t, d, names=('N', 'T', 'D'))
 mask = torch.ones(n, t, names=('N', 'T'))
 attn = MultiHeadAttention(h, d)
+output = attn(query, mask=mask)
+# works as expected!
+print(output.names)
+
+######################################################################
+# The above works as expected. Furthermore, note that in the code we
+# did not mention the name of the batch dimension at all. In fact,
+# the code is agnostic to the existence of the batch dimensions, so
+# that we can run the following example-level code:
+
+query = torch.randn(t, d, names=('T', 'D'))
+mask = torch.ones(t, names=('T',))
 output = attn(query, mask=mask)
 print(output.names)
 
