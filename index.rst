@@ -223,7 +223,7 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
-Quantization
+Quantization (experimental)
 ----------------------
 
 .. customgalleryitem::
@@ -351,6 +351,14 @@ PyTorch Fundamentals In-Depth
    advanced/torch_script_custom_ops
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Quantization (experimental)
+
+   advanced/dynamic_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2

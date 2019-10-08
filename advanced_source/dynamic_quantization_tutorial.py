@@ -1,6 +1,6 @@
 """
-Dynamic Quantization on an LSTM Word Language Model
-===================================================
+(experimental) Dynamic Quantization on an LSTM Word Language Model
+==================================================================
 
 **Author**: `James Reed <https://github.com/jamesr66a>`_
 
@@ -177,7 +177,7 @@ with open(model_data_filepath + 'out.txt', 'w') as outf:
 
             word = corpus.dictionary.idx2word[word_idx]
 
-            outf.write(word + ('\n' if i % 20 == 19 else ' '))
+            outf.write(str(word.encode('utf-8')) + ('\n' if i % 20 == 19 else ' '))
 
             if i % 100 == 0:
                 print('| Generated {}/{} words'.format(i, 1000))
