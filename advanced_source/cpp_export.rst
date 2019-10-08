@@ -1,4 +1,4 @@
-3. Loading a TorchScript Model in C++
+Loading a TorchScript Model in C++
 =====================================
 
 **This tutorial was updated to work with PyTorch 1.2**

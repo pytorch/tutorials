@@ -1,5 +1,5 @@
 """
-4. (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
 ========================================================================
 
 In this tutorial, we describe how to convert a model defined
