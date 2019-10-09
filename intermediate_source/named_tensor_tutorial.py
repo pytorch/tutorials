@@ -4,18 +4,20 @@
 *******************************************************
 **Author**: `Richard Zou <https://github.com/zou3519>`_
 
-Named Tensors aim to make tensors easier to use by allowing users to associate explicit names
-with tensor dimensions. In most cases, operations that take dimension parameters will accept
-dimension names, avoiding the need to track dimensions by position. In addition, named tensors
-use names to automatically check that APIs are being used correctly at runtime, providing extra
-safety. Names can also be used to rearrange dimensions, for example, to support
+Named Tensors aim to make tensors easier to use by allowing users to associate
+explicit names with tensor dimensions. In most cases, operations that take
+dimension parameters will accept dimension names, avoiding the need to track
+dimensions by position. In addition, named tensors use names to automatically
+check that APIs are being used correctly at runtime, providing extra safety.
+Names can also be used to rearrange dimensions, for example, to support
 "broadcasting by name" rather than "broadcasting by position".
 
 This tutorial is intended as a guide to the functionality that will
 be included with the 1.3 launch. By the end of it, you will be able to:
 
-- Initiate a ``Tensor`` with named dimensions, as well as removing or renmaing those dimensions
-- Understand the basics of how dimension names are propagated through operations
+- Create ``Tensor``s with named dimensions, as well as remove or rename those
+  dimensions
+- Understand the basics of how operations propagate dimension names
 - See how naming dimensions enables clearer code in two key areas:
     - Broadcasting operations
     - Flattening and unflattening dimensions
@@ -25,14 +27,14 @@ using named tensors.
 
 Named tensors in PyTorch are inspired by and done in collaboration with
 `Sasha Rush <https://tech.cornell.edu/people/alexander-rush/>`_.
-The original idea and proof of concept were proposed in his
+Sasha proposed the original idea and proof of concept in his
 `January 2019 blog post <http://nlp.seas.harvard.edu/NamedTensor>`_.
 
 Basics: named dimensions
 ========================
 
 PyTorch now allows Tensors to have named dimensions; factory functions
-now take a new `names` argument that associates a name with each dimension.
+take a new `names` argument that associates a name with each dimension.
 This works with most factory functions, such as
 
 - `tensor`
@@ -46,21 +48,22 @@ Here we construct a tensor with names:
 """
 
 import torch
-imgs = torch.randn(1, 2, 2, 3 , names=('N', 'C', 'H', 'W'))
+imgs = torch.randn(1, 2, 2, 3, names=('N', 'C', 'H', 'W'))
 print(imgs.names)
 
 ######################################################################
 # Unlike in
 # `the original named tensors blogpost <http://nlp.seas.harvard.edu/NamedTensor>`_,
-# named dimensions are ordered: ``tensor.names[i]`` is the name of the ``i`` th dimension of ``tensor``.
+# named dimensions are ordered: ``tensor.names[i]`` is the name of the ``i`` th
+# dimension of ``tensor``.
 #
-# There are two ways rename a ``Tensor``'s dimensions:
+# There are two ways to rename a ``Tensor``'s dimensions:
 
-# Method #1: set .names attribute
+# Method #1: set the .names attribute (this changes name in-place)
 imgs.names = ['batch', 'channel', 'width', 'height']
 print(imgs.names)
 
-# Method #2: specify new names (note: this changes names out-of-place)
+# Method #2: specify new names (this changes names out-of-place)
 imgs = imgs.rename(channel='C', width='W', height='H')
 print(imgs.names)
 
@@ -71,8 +74,8 @@ imgs = imgs.rename(None)
 print(imgs.names)
 
 ######################################################################
-# Unnamed tensors (tensors with no named dimensions) still work as normal and do
-# not have names in their ``repr``.
+# Unnamed tensors (tensors with no named dimensions) still work as
+# normal and do not have names in their ``repr``.
 
 unnamed = torch.randn(2, 1, 3)
 print(unnamed)
@@ -85,38 +88,47 @@ imgs = torch.randn(3, 1, 1, 2, names=('N', None, None, None))
 print(imgs.names)
 
 ######################################################################
-# Because named tensors coexist with unnamed tensors, we need a nice way to
+# Because named tensors can coexist with unnamed tensors, we need a nice way to
 # write named tensor-aware code that works with both named and unnamed tensors.
-# Use ``tensor.refine_names(*names)`` to refine dimensions and lift unnamed dims
-# to named dims. Refining a dimension is defined as a "rename" with the following
-# constraints:
+# Use ``tensor.refine_names(*names)`` to refine dimensions and lift unnamed
+# dims to named dims. Refining a dimension is defined as a "rename" with the
+# following constraints:
 #
 # - A ``None`` dim can be refined to have any name
 # - A named dim can only be refined to have the same name.
 
 imgs = torch.randn(3, 1, 1, 2)
-print(imgs.refine_names('N', 'C', 'H', 'W'))
+named_imgs = imgs.refine_names('N', 'C', 'H', 'W')
+print(named_imgs.names)
 
-# Coerces the last two dims to 'H' and 'W'. In Python 2, use the string '...' instead of ...
-print(imgs.refine_names(..., 'H', 'W').names)
+# Refine the last two dims to 'H' and 'W'. In Python 2, use the string '...'
+# instead of ...
+named_imgs = imgs.refine_names(..., 'H', 'W')
+print(named_imgs.names)
+
 
 def catch_error(fn):
-    fn()
-    assert False
+    try:
+        fn()
+        assert False
+    except RuntimeError as err:
+        err = str(err)
+        if len(err) > 180:
+            err = err[:180] + "..."
+        print(err)
 
-# Actually name 'imgs' using 'refine_names'
-imgs = imgs.refine_names('N', 'C', 'H', 'W')
-
-# Tried to refine an existing name to a different name
-catch_error(lambda: imgs.refine_names('batch', 'channel', 'height', 'width'))
-
-######################################################################
-# Most simple operations propagate names. The ultimate goal for named tensors is
-# for all operations to propagate names in a reasonable, intuitive manner. Many
-# common operations have been added at the time of the 1.3 release; here,
-# for example, is ``.abs()``:
 
 named_imgs = imgs.refine_names('N', 'C', 'H', 'W')
+
+# Tried to refine an existing name to a different name
+catch_error(lambda: named_imgs.refine_names('N', 'C', 'H', 'width'))
+
+######################################################################
+# Most simple operations propagate names. The ultimate goal for named tensors
+# is for all operations to propagate names in a reasonable, intuitive manner.
+# Support for many common operations has been added at the time of the 1.3
+# release; here, for example, is ``.abs()``:
+
 print(named_imgs.abs().names)
 
 ######################################################################
@@ -125,8 +137,8 @@ print(named_imgs.abs().names)
 #
 # One can use dimension names to refer to dimensions instead of the positional
 # dimension. These operations also propagate names. Indexing (basic and
-# advanced) has not been implemented yet but is on the roadmap. Using the ``named_imgs``
-# tensor from above, we can do:
+# advanced) has not been implemented yet but is on the roadmap. Using the
+# ``named_imgs`` tensor from above, we can do:
 
 output = named_imgs.sum('C')  # Perform a sum over the channel dimension
 print(output.names)
@@ -138,12 +150,13 @@ print(img0.names)
 # Name inference
 # --------------
 #
-# Names are propagated on operations in a two step process called **name inference**.
-# The two steps are:
+# Names are propagated on operations in a two step process called
+# **name inference**:
 #
 # 1. **Check names**: an operator may perform automatic checks at runtime that
 #    check that certain dimension names must match.
-# 2. **Propagate names**: name inference propagates output names to output tensors.
+# 2. **Propagate names**: name inference propagates output names to output
+#    tensors.
 #
 # Let's go through the very small example of adding 2 one-dim tensors with no
 # broadcasting.
@@ -154,15 +167,15 @@ z = torch.randn(3, names=('Z',))
 
 ######################################################################
 # **Check names**: first, we will check whether the names of these two tensors
-# match. Two names match if and only if they are equal (string equality) or at
-# least one is ``None`` (``None`` is essentially a special wildcard name).
+# *match*. Two names match if and only if they are equal (string equality) or
+# at least one is ``None`` (``None`` is essentially a special wildcard name).
 # The only one of these three that will error, therefore, is ``x + z``:
 
 catch_error(lambda: x + z)
 
 ######################################################################
-# **Propagate names**: `unify` the two names by returning the most refined name of
-# the two. With ``x + y``,  ``X`` is more refined than ``None``.
+# **Propagate names**: *unify* the two names by returning the most refined name
+# of the two. With ``x + y``,  ``X`` is more refined than ``None``.
 
 print((x + y).names)
 
@@ -176,37 +189,29 @@ print((x + y).names)
 #
 # Named tensors do not change broadcasting behavior; they still broadcast by
 # position. However, when checking two dimensions for if they can be
-# broadcasted, the names of those dimensions must match.
+# broadcasted, PyTorch also checks that the names of those dimensions match.
 #
-# Furthermore, broadcasting with named tensors can prevent incorrect behavior.
-# The following code will error, whereas without `names` it would add
-# ``per_batch_scale`` to the last dimension of ``imgs``.
+# This results in named tensors preventing unintended alignment during
+# operations that broadcast. Without ``names``, ``per_batch_scale`` would be
+# aligned with the last dimension of ``imgs``, which is what we intended.
 
-# Automatic broadcasting: expected to fail
-imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
-per_batch_scale = torch.rand(6, names=('N',))
+imgs = torch.randn(2, 2, 2, 2, names=('N', 'C', 'H', 'W'))
+per_batch_scale = torch.rand(2, names=('N',))
 catch_error(lambda: imgs * per_batch_scale)
 
 ######################################################################
-# How `should` we perform this broadcasting operation along the first
-# dimension? One way, involving names, would be to name the ``per_batch_scale``
-# tensor such that it matches ``imgs.names``, as shown below.
-
-imgs = torch.randn(6, 6, 6, 6, names=('N', 'C', 'H', 'W'))
-per_batch_scale_4d = torch.rand(6, 1, 1, 1, names=('N', 'C', 'H', 'W'))
-print((imgs * per_batch_scale_4d).names)
-
-######################################################################
-# Another way would be to use the new explicit broadcasting by names
-# functionality, covered below.
+# However, we really wanted to perform the operation by aligning
+# ``per_batch_scale`` with the batch dimension of ``imgs``.
+# See the new explicit broadcasting by names functionality for how to
+# align tensors by name, covered below.
 #
 # Matrix multiply
 # ^^^^^^^^^^^^^^^
 #
 # ``torch.mm(A, B)`` performs a dot product between the second dim of ``A``
 # and the first dim of ``B``, returning a tensor with the first dim of ``A``
-# and the second dim of ``B``. (the other matmul functions, such as ``torch.matmul``,
-# ``torch.mv``, ``torch.dot``, behave similarly).
+# and the second dim of ``B``. (other matmul functions, such as
+# ``torch.matmul``, ``torch.mv``, and ``torch.dot``, behave similarly).
 
 markov_states = torch.randn(128, 5, names=('batch', 'D'))
 transition_matrix = torch.randn(5, 5, names=('in', 'out'))
@@ -226,9 +231,9 @@ print(new_state.names)
 # --------------------------------------------
 #
 # One of the main complaints about working with multiple dimensions is the need
-# to ``unsqueeze`` "dummy" dimensions so that operations can occur. For example, in
-# our per-batch-scale example before, with unnamed tensors we'd do the
-# following:
+# to ``unsqueeze`` "dummy" dimensions so that operations can occur.
+# For example, in our per-batch-scale example before, with unnamed tensors
+# we'd do the following:
 
 imgs = torch.randn(2, 2, 2, 2)  # N, C, H, W
 per_batch_scale = torch.rand(2)  # N
@@ -239,9 +244,9 @@ assert not torch.allclose(correct_result, incorrect_result)
 
 ######################################################################
 # We can make these operations safer (and easily agnostic to the number of
-# dimensions) by using names. We provide a new ``tensor.align_as(other)`` operation
-# that permutes the dimensions of tensor to match the order specified in
-# ``other.names``, adding one-sized dimensions where appropriate
+# dimensions) by using names. We provide a new ``tensor.align_as(other)``
+# operation that permutes the dimensions of tensor to match the order specified
+# in ``other.names``, adding one-sized dimensions where appropriate
 # (``tensor.align_to(*names)`` works as well):
 
 imgs = imgs.refine_names('N', 'C', 'H', 'W')
@@ -258,17 +263,18 @@ assert torch.allclose(named_result.rename(None), correct_result)
 # One common operation is flattening and unflattening dimensions. Right now,
 # users perform this using either ``view``, ``reshape``, or ``flatten``; use
 # cases include flattening batch dimensions to send tensors into operators that
-# must take inputs with a certain number of dimensions (i.e., conv2d takes 4D input).
+# must take inputs with a certain number of dimensions (i.e., conv2d takes 4D
+# input).
 #
 # To make these operation more semantically meaningful than view or reshape, we
 # introduce a new ``tensor.unflatten(dim, namedshape)`` method and update
 # ``flatten`` to work with names: ``tensor.flatten(dims, new_dim)``.
 #
 # ``flatten`` can only flatten adjacent dimensions but also works on
-# non-contiguous dims. One must pass into ``unflatten`` a **named shape**, which
-# is a list of ``(dim, size)`` tuples, to specify how to unflatten the dim. It
-# is possible to save the sizes during a ``flatten`` for ``unflatten`` but we
-# do not yet do that.
+# non-contiguous dims. One must pass into ``unflatten`` a **named shape**,
+# which is a list of ``(dim, size)`` tuples, to specify how to unflatten the
+# dim. It is possible to save the sizes during a ``flatten`` for ``unflatten``
+# but we do not yet do that.
 
 imgs = imgs.flatten(['C', 'H', 'W'], 'features')
 print(imgs.names)
@@ -282,8 +288,8 @@ print(imgs.names)
 #
 # Autograd currently supports named tensors in a limited manner: autograd
 # ignores names on all tensors. Gradient computation is still correct but we
-# lose the safety that names give us. It is on the roadmap to introduce handling
-# of names to autograd.
+# lose the safety that names give us. It is on the roadmap to introduce
+# handling of names to autograd.
 
 x = torch.randn(3, names=('D',))
 weight = torch.randn(3, names=('D',), requires_grad=True)
@@ -291,15 +297,18 @@ loss = (x - weight).abs()
 grad_loss = torch.randn(3)
 loss.backward(grad_loss)
 
-print(weight.grad)  # Unnamed for now. Will be named in the future
+correct_grad = weight.grad.clone()
+print(correct_grad)  # Unnamed for now. Will be named in the future
 
 weight.grad.zero_()
 grad_loss = grad_loss.refine_names('C')
 loss = (x - weight).abs()
-# Ideally we'd check that the names of loss and grad_loss match but we don't yet.
+# Ideally we'd check that the names of loss and grad_loss match, but we don't
+# yet
 loss.backward(grad_loss)
 
 print(weight.grad)  # still unnamed
+assert torch.allclose(weight.grad, correct_grad)
 
 ######################################################################
 # Other supported (and unsupported) features
@@ -315,11 +324,13 @@ print(weight.grad)  # still unnamed
 # - Multi-processing via ``torch.multiprocessing``
 # - JIT support; for example, the following will error
 
-imgs_named = torch.randn(1, 2, 2, 3 , names=('N', 'C', 'H', 'W'))
+imgs_named = torch.randn(1, 2, 2, 3, names=('N', 'C', 'H', 'W'))
+
 
 @torch.jit.script
 def fn(x):
     return x
+
 
 catch_error(lambda: fn(imgs_named))
 
@@ -333,6 +344,8 @@ catch_error(lambda: fn(imgs_named))
 # Now we'll go through a complete example of implementing a common
 # PyTorch ``nn.Module``: multi-head attention. We assume the reader is already
 # familiar with multi-head attention; for a refresher, check out
+# `this explanation <https://nlp.seas.harvard.edu/2018/04/03/attention.html>` _
+# or
 # `this explanation <http://jalammar.github.io/illustrated-transformer/>`_.
 #
 # We adapt the implementation of multi-head attention from
@@ -340,12 +353,13 @@ catch_error(lambda: fn(imgs_named))
 # `here <https://github.com/facebookresearch/ParlAI/blob/f7db35cba3f3faf6097b3e6b208442cd564783d9/parlai/agents/transformer/modules.py#L907>`_.
 # Read through the code at that example; then, compare with the code below,
 # noting that there are four places labeled (I), (II), (III), and (IV), where
-# using named tensors enables more readable code; we will dive into each of these
-# after the code block.
+# using named tensors enables more readable code; we will dive into each of
+# these after the code block.
 
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, n_heads, dim, dropout=0):
@@ -374,7 +388,7 @@ class MultiHeadAttention(nn.Module):
 
         dim = query.size('D')
         assert dim == self.dim, \
-            f'Dimensions do not match: {embedding_dim} query vs {self.dim} configured'
+            f'Dimensions do not match: {dim} query vs {self.dim} configured'
         assert mask is not None, 'Mask is None, please specify a mask'
         n_heads = self.n_heads
         dim_per_head = dim // n_heads
@@ -393,7 +407,6 @@ class MultiHeadAttention(nn.Module):
             # key and value are the same, but query differs
             key = key.refine_names(..., 'T', 'D')
             value = key
-        key_len = key.size('T')
         dim = key.size('D')
 
         # Distinguish between query_len (T) and key_len (T_key) dims.
@@ -408,7 +421,8 @@ class MultiHeadAttention(nn.Module):
         attn_mask = (mask == 0).align_as(dot_prod)
         dot_prod.masked_fill_(attn_mask, -float(1e20))
 
-        attn_weights = self.attn_dropout(F.softmax(dot_prod / scale, dim='T_key'))
+        attn_weights = self.attn_dropout(F.softmax(dot_prod / scale,
+                                                   dim='T_key'))
 
         # (IV)
         attentioned = (
@@ -473,17 +487,16 @@ def prepare_head(tensor):
 def ignore():
     # (III)
     attn_mask = (mask == 0).align_as(dot_prod)
-
     dot_prod.masked_fill_(attn_mask, -float(1e20))
 
 ######################################################################
 # ``mask`` usually has dims ``[N, T]`` (in the case of self attention) or
 # ``[N, T, T_key]`` (in the case of encoder attention) while ``dot_prod``
 # has dims ``[N, H, T, T_key]``. To make ``mask`` broadcast correctly with
-# ``dot_prod``, we would usually `unsqueeze` dims ``1`` and ``-1`` in the case of self
-# attention or ``unsqueeze`` dim ``1`` in the case of encoder attention. Using
-# named tensors, we simply align ``attn_mask`` to ``dot_prod`` using ``align_as``
-# and stop worrying about where to ``unsqueeze`` dims.
+# ``dot_prod``, we would usually `unsqueeze` dims ``1`` and ``-1`` in the case
+# of self attention or ``unsqueeze`` dim ``1`` in the case of encoder
+# attention. Using named tensors, we simply align ``attn_mask`` to ``dot_prod``
+# using ``align_as`` and stop worrying about where to ``unsqueeze`` dims.
 #
 # **(IV) More dimension manipulation using align_to and flatten**
 
