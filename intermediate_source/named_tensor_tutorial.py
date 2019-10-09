@@ -15,7 +15,7 @@ Names can also be used to rearrange dimensions, for example, to support
 This tutorial is intended as a guide to the functionality that will
 be included with the 1.3 launch. By the end of it, you will be able to:
 
-- Create ``Tensor``s with named dimensions, as well as remove or rename those
+- Create Tensors with named dimensions, as well as remove or rename those
   dimensions
 - Understand the basics of how operations propagate dimension names
 - See how naming dimensions enables clearer code in two key areas:
@@ -192,17 +192,19 @@ print((x + y).names)
 # broadcasted, PyTorch also checks that the names of those dimensions match.
 #
 # This results in named tensors preventing unintended alignment during
-# operations that broadcast. Without ``names``, ``per_batch_scale`` would be
-# aligned with the last dimension of ``imgs``, which is not what we intended.
+# operations that broadcast. In the below example, we apply a
+# ``per_batch_scale`` to ``imgs``.
 
 imgs = torch.randn(2, 2, 2, 2, names=('N', 'C', 'H', 'W'))
 per_batch_scale = torch.rand(2, names=('N',))
 catch_error(lambda: imgs * per_batch_scale)
 
 ######################################################################
-# We really wanted to perform the operation by aligning ``per_batch_scale``
-# with the batch dimension of ``imgs``.
-# See the new explicit broadcasting by names functionality for how to
+# Without ``names``, the ``per_batch_scale`` tensor is aligned with the last
+# dimension of ``imgs``, which is not what we intended. We really wanted to
+# perform the operation by aligning ``per_batch_scale`` with the batch
+# dimension of ``imgs``.
+# See the new "explicit broadcasting by names" functionality for how to
 # align tensors by name, covered below.
 #
 # Matrix multiply
