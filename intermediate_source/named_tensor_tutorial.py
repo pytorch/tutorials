@@ -4,8 +4,6 @@
 *******************************************************
 **Author**: `Richard Zou <https://github.com/zou3519>`_
 
-**Editor**: `Seth Weidman <https://github.com/SethHWeidman>`_
-
 Named Tensors aim to make tensors easier to use by allowing users to associate explicit names
 with tensor dimensions. In most cases, operations that take dimension parameters will accept
 dimension names, avoiding the need to track dimensions by position. In addition, named tensors
@@ -103,10 +101,11 @@ print(imgs.refine_names('N', 'C', 'H', 'W'))
 print(imgs.refine_names(..., 'H', 'W').names)
 
 def catch_error(fn):
-    try:
-        fn()
-    except RuntimeError as err:
-        print(err)
+    fn()
+    assert False
+
+# Actually name 'imgs' using 'refine_names'
+imgs = imgs.refine_names('N', 'C', 'H', 'W')
 
 # Tried to refine an existing name to a different name
 catch_error(lambda: imgs.refine_names('batch', 'channel', 'height', 'width'))
@@ -129,7 +128,7 @@ print(named_imgs.abs().names)
 # advanced) has not been implemented yet but is on the roadmap. Using the ``named_imgs``
 # tensor from above, we can do:
 
-output = named_imgs.sum(['C'])  # Perform a sum over the channel dimension
+output = named_imgs.sum('C')  # Perform a sum over the channel dimension
 print(output.names)
 
 img0 = named_imgs.select('N', 0)  # get one image
@@ -172,7 +171,8 @@ print((x + y).names)
 # unexpected semantics. Let's go through a couple you're likely to encounter:
 # broadcasting and matrix multiply.
 #
-# **Broadcasting**
+# Broadcasting
+# ^^^^^^^^^^^^
 #
 # Named tensors do not change broadcasting behavior; they still broadcast by
 # position. However, when checking two dimensions for if they can be
@@ -200,7 +200,8 @@ print((imgs * per_batch_scale_4d).names)
 # Another way would be to use the new explicit broadcasting by names
 # functionality, covered below.
 #
-# **Matrix multiply**
+# Matrix multiply
+# ^^^^^^^^^^^^^^^
 #
 # ``torch.mm(A, B)`` performs a dot product between the second dim of ``A``
 # and the first dim of ``B``, returning a tensor with the first dim of ``A``
@@ -219,7 +220,7 @@ print(new_state.names)
 # have the same name.
 #
 # Next, we'll cover two new behaviors that named tensors enable: explicit
-# broadcasting by names.
+# broadcasting by names and flattening and unflattening dimensions by names
 #
 # New behavior: Explicit broadcasting by names
 # --------------------------------------------
@@ -388,6 +389,10 @@ class MultiHeadAttention(nn.Module):
         assert value is None
         if self_attn:
             key = value = query
+        elif value is None:
+            # key and value are the same, but query differs
+            key = key.refine_names(..., 'T', 'D')
+            value = key
         key_len = key.size('T')
         dim = key.size('D')
 
@@ -400,7 +405,7 @@ class MultiHeadAttention(nn.Module):
         dot_prod.refine_names(..., 'H', 'T', 'T_key')  # just a check
 
         # (III)
-        attn_mask = (attn_mask == 0).align_as(dot_prod)
+        attn_mask = (mask == 0).align_as(dot_prod)
         dot_prod.masked_fill_(attn_mask, -float(1e20))
 
         attn_weights = self.attn_dropout(F.softmax(dot_prod / scale, dim='T_key'))
@@ -467,7 +472,7 @@ def prepare_head(tensor):
 
 def ignore():
     # (III)
-    attn_mask = (attn_mask == 0).align_as(dot_prod)
+    attn_mask = (mask == 0).align_as(dot_prod)
 
     dot_prod.masked_fill_(attn_mask, -float(1e20))
 
@@ -508,8 +513,8 @@ print(output.names)
 ######################################################################
 # The above works as expected. Furthermore, note that in the code we
 # did not mention the name of the batch dimension at all. In fact,
-# the code is agnostic to the existence of the batch dimensions, so
-# that we can run the following example-level code:
+# our ``MultiHeadAttention`` module is agnostic to the existence of batch
+# dimensions.
 
 query = torch.randn(t, d, names=('T', 'D'))
 mask = torch.ones(t, names=('T',))

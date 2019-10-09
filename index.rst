@@ -98,7 +98,7 @@ Audio
 
     <div style='clear:both'></div>
 
-Named Tensor
+(experimental) Named Tensor
 ----------------------
 
 .. customgalleryitem::
@@ -302,7 +302,7 @@ PyTorch Fundamentals In-Depth
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Named Tensor
+   :caption: (experimental) Named Tensor
 
    intermediate/named_tensor_tutorial
 
