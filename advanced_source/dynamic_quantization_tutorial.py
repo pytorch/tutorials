@@ -241,7 +241,12 @@ def evaluate(model_, data_source):
 # 4. Test dynamic quantization
 # ----------------------------
 #
-# Finally, we can call `torch.quantization.quantize_dynamic` on the model!
+# Finally, we can call ``torch.quantization.quantize_dynamic`` on the model!
+# Specifically,
+#
+# - We specify that we want the ``nn.LSTM`` and ``nn.Linear`` modules in our
+#   model to be quantized
+# - We specify that we want weights to be converted to ``int8`` values
 
 import torch.quantization
 
@@ -251,10 +256,8 @@ quantized_model = torch.quantization.quantize_dynamic(
 print(quantized_model)
 
 ######################################################################
-# Note that we specify that we want to quantize `nn.LSTM` and `nn.Linear` modules, with a
-# bit width of `int8`.
-#
-# How has this benefitted us? First, we see a significant reduction in model size:
+# The model looks the same; how has this benefited us? First, we see a
+# significant reduction in model size:
 
 def print_size_of_model(model):
     torch.save(model.state_dict(), "temp.p")
