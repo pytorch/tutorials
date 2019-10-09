@@ -34,6 +34,10 @@ pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 
 aws configure set default.s3.multipart_threshold 5120MB
 
+# install nightly PyTorch 1.3
+# TODO: remove after 1.3 release
+pip install torch==1.3.0 -f https://download.pytorch.org/whl/nightly/cu100/torch_nightly.html
+
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
