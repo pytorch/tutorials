@@ -288,10 +288,10 @@ print(imgs.names)
 # Autograd support
 # ----------------
 #
-# Autograd currently supports named tensors in a limited manner: autograd
-# ignores names on all tensors. Gradient computation is still correct but we
-# lose the safety that names give us. It is on the roadmap to introduce
-# handling of names to autograd.
+# Autograd currently ignores names on all tensors and just treats them like
+# regular tensors. Gradient computation is correct but we lose the safety that
+# names give us. It is on the roadmap to introduce handling of names to
+# autograd.
 
 x = torch.randn(3, names=('D',))
 weight = torch.randn(3, names=('D',), requires_grad=True)
@@ -316,8 +316,8 @@ assert torch.allclose(weight.grad, correct_grad)
 # Other supported (and unsupported) features
 # ------------------------------------------
 #
-# See here (link to be included) for a detailed breakdown of what is
-# supported with the 1.3 release.
+# `See here <https://pytorch.org/docs/stable/named_tensor.html>`_ for a
+# detailed breakdown of what is supported with the 1.3 release.
 #
 # In particular, we want to call out three important features that are not
 # currently supported:
@@ -346,7 +346,7 @@ catch_error(lambda: fn(imgs_named))
 # Now we'll go through a complete example of implementing a common
 # PyTorch ``nn.Module``: multi-head attention. We assume the reader is already
 # familiar with multi-head attention; for a refresher, check out
-# `this explanation <https://nlp.seas.harvard.edu/2018/04/03/attention.html>` _
+# `this explanation <https://nlp.seas.harvard.edu/2018/04/03/attention.html>`_
 # or
 # `this explanation <http://jalammar.github.io/illustrated-transformer/>`_.
 #
