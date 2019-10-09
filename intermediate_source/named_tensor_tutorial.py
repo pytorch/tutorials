@@ -193,15 +193,15 @@ print((x + y).names)
 #
 # This results in named tensors preventing unintended alignment during
 # operations that broadcast. Without ``names``, ``per_batch_scale`` would be
-# aligned with the last dimension of ``imgs``, which is what we intended.
+# aligned with the last dimension of ``imgs``, which is not what we intended.
 
 imgs = torch.randn(2, 2, 2, 2, names=('N', 'C', 'H', 'W'))
 per_batch_scale = torch.rand(2, names=('N',))
 catch_error(lambda: imgs * per_batch_scale)
 
 ######################################################################
-# However, we really wanted to perform the operation by aligning
-# ``per_batch_scale`` with the batch dimension of ``imgs``.
+# We really wanted to perform the operation by aligning ``per_batch_scale``
+# with the batch dimension of ``imgs``.
 # See the new explicit broadcasting by names functionality for how to
 # align tensors by name, covered below.
 #
