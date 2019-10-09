@@ -480,8 +480,8 @@ def prepare_head(tensor):
     return tensor
 
 ######################################################################
-# Our named tensor variant uses ops that, though more verbose, also have
-# more semantic meaning than ``view`` and ``transpose`` and include enforcable
+# Our named tensor variant uses ops that, though more verbose, have more
+# semantic meaning than ``view`` and ``transpose`` and includes enforcable
 # documentation in the form of names.
 #
 # **(III) Explicit broadcasting by names**
@@ -512,7 +512,7 @@ def ignore():
 
 ######################################################################
 # Here, as in (II), ``align_to`` and ``flatten`` are more semantically
-# meaningful than ``view`` (despite being more verbose).
+# meaningful than ``view`` and ``transpose`` (despite being more verbose).
 #
 # Running the example
 # -------------------
