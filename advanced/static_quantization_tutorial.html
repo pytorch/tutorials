@@ -1,0 +1,1605 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>(experimental) Static Quantization with Eager Mode in PyTorch — PyTorch Tutorials 1.3.0 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend"/>
+<link href="dynamic_quantization_tutorial.html" rel="prev" title="(experimental) Dynamic Quantization on an LSTM Word Language Model"/>
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">Features</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.3.0
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/data_loading_tutorial.html">Writing Custom Datasets, DataLoaders and Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="neural_style_tutorial.html">Neural Transfer Using PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text Classification with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_translation_tutorial.html">Language Translation with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+</ul>
+<p class="caption"><span class="caption-text">(experimental) Named Tensor</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/named_tensor_tutorial.html">(experimental) Introduction to Named Tensors in PyTorch</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Quantization (experimental)</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_tutorial.html">(experimental) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">(experimental) Static Quantization with Eager Mode in PyTorch</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+</ul>
+<p class="caption"><span class="caption-text">PyTorch Fundamentals In-Depth</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>(experimental) Static Quantization with Eager Mode in PyTorch</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/advanced/static_quantization_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">advanced/static_quantization_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-advanced-static-quantization-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="experimental-static-quantization-with-eager-mode-in-pytorch">
+<span id="sphx-glr-advanced-static-quantization-tutorial-py"></span><h1>(experimental) Static Quantization with Eager Mode in PyTorch<a class="headerlink" href="#experimental-static-quantization-with-eager-mode-in-pytorch" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/raghuramank100">Raghuraman Krishnamoorthi</a></p>
+<p><strong>Edited by</strong>: <a class="reference external" href="https://github.com/SethHWeidman/">Seth Weidman</a></p>
+<p>This tutorial shows how to do post-training static quantization, as well as illustrating
+two more advanced techniques - per-channel quantization and quantization-aware training -
+to further improve the model’s accuracy.</p>
+<p>By the end of this tutorial, you will see how quantization in PyTorch can result in
+significant decreases in model size while increasing speed. Furthermore, you’ll see how
+to easily apply some advanced quantization techniques shown
+<a class="reference external" href="https://arxiv.org/abs/1806.08342">here</a> so that your quantized models take much less
+of an accuracy hit than they would otherwise.</p>
+<p>Warning: we use a lot of boilerplate code from other PyTorch repos to, for example,
+define the <code class="docutils literal notranslate"><span class="pre">MobileNetV2</span></code> model archtecture, define data loaders, and so on. We of course
+encourage you to read it; but if you want to get to the quantization features, feel free
+to skip to the “4. Post-training static quantization” section.</p>
+<p>We’ll start by doing the necessary imports:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torchvision</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="k">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="k">import</span> <span class="n">datasets</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">torch.quantization</span>
+
+<span class="c1"># # Setup warnings</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="s1">'ignore'</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="sa">r</span><span class="s1">'.*'</span>
+<span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span>
+    <span class="n">action</span><span class="o">=</span><span class="s1">'default'</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="sa">r</span><span class="s1">'torch.quantization'</span>
+<span class="p">)</span>
+
+<span class="c1"># Specify random seed for repeatable results</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">191009</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="model-architecture">
+<h2>1. Model architecture<a class="headerlink" href="#model-architecture" title="Permalink to this headline">¶</a></h2>
+<p>We first define the MobileNetV2 model architecture, with several notable modifications
+to enable quantization:</p>
+<ul class="simple">
+<li>Replacing addition with <code class="docutils literal notranslate"><span class="pre">nn.quantized.FloatFunctional</span></code></li>
+<li>Insert <code class="docutils literal notranslate"><span class="pre">QuantStub</span></code> and <code class="docutils literal notranslate"><span class="pre">DeQuantStub</span></code> at the beginning and end of the network.</li>
+<li>Replace ReLU6 with ReLU</li>
+</ul>
+<p>Note that this code is taken from
+<a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py">here</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.quantization</span> <span class="k">import</span> <span class="n">QuantStub</span><span class="p">,</span> <span class="n">DeQuantStub</span>
+
+<span class="k">def</span> <span class="nf">_make_divisible</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">divisor</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    This function is taken from the original tf repo.</span>
+<span class="sd">    It ensures that all layers have a channel number that is divisible by 8</span>
+<span class="sd">    It can be seen here:</span>
+<span class="sd">    https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py</span>
+<span class="sd">    :param v:</span>
+<span class="sd">    :param divisor:</span>
+<span class="sd">    :param min_value:</span>
+<span class="sd">    :return:</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">min_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">min_value</span> <span class="o">=</span> <span class="n">divisor</span>
+    <span class="n">new_v</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_value</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span> <span class="o">+</span> <span class="n">divisor</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="n">divisor</span> <span class="o">*</span> <span class="n">divisor</span><span class="p">)</span>
+    <span class="c1"># Make sure that round down does not go down by more than 10%.</span>
+    <span class="k">if</span> <span class="n">new_v</span> <span class="o">&lt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">v</span><span class="p">:</span>
+        <span class="n">new_v</span> <span class="o">+=</span> <span class="n">divisor</span>
+    <span class="k">return</span> <span class="n">new_v</span>
+
+
+<span class="k">class</span> <span class="nc">ConvBNReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_planes</span><span class="p">,</span> <span class="n">out_planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvBNReLU</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_planes</span><span class="p">,</span> <span class="n">out_planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_planes</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+            <span class="c1"># Replace with ReLU</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">InvertedResidual</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">expand_ratio</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InvertedResidual</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+        <span class="k">assert</span> <span class="n">stride</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">inp</span> <span class="o">*</span> <span class="n">expand_ratio</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_res_connect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">inp</span> <span class="o">==</span> <span class="n">oup</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">expand_ratio</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># pw</span>
+            <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ConvBNReLU</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
+            <span class="c1"># dw</span>
+            <span class="n">ConvBNReLU</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="c1"># pw-linear</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+        <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+        <span class="c1"># Replace torch.add with floatfunctional</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skip_add</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">FloatFunctional</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_res_connect</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">skip_add</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MobileNetV2</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">width_mult</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">inverted_residual_setting</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">round_nearest</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        MobileNet V2 main class</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_classes (int): Number of classes</span>
+<span class="sd">            width_mult (float): Width multiplier - adjusts number of channels in each layer by this amount</span>
+<span class="sd">            inverted_residual_setting: Network structure</span>
+<span class="sd">            round_nearest (int): Round the number of channels in each layer to be a multiple of this number</span>
+<span class="sd">            Set to 1 to turn off rounding</span>
+<span class="sd">        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MobileNetV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">InvertedResidual</span>
+        <span class="n">input_channel</span> <span class="o">=</span> <span class="mi">32</span>
+        <span class="n">last_channel</span> <span class="o">=</span> <span class="mi">1280</span>
+
+        <span class="k">if</span> <span class="n">inverted_residual_setting</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inverted_residual_setting</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="c1"># t, c, n, s</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">96</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="p">]</span>
+
+        <span class="c1"># only check the first element, assuming user knows t,c,n,s are required</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inverted_residual_setting</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">inverted_residual_setting</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"inverted_residual_setting should be non-empty "</span>
+                             <span class="s2">"or a 4-element list, got </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inverted_residual_setting</span><span class="p">))</span>
+
+        <span class="c1"># building first layer</span>
+        <span class="n">input_channel</span> <span class="o">=</span> <span class="n">_make_divisible</span><span class="p">(</span><span class="n">input_channel</span> <span class="o">*</span> <span class="n">width_mult</span><span class="p">,</span> <span class="n">round_nearest</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_channel</span> <span class="o">=</span> <span class="n">_make_divisible</span><span class="p">(</span><span class="n">last_channel</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">width_mult</span><span class="p">),</span> <span class="n">round_nearest</span><span class="p">)</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">ConvBNReLU</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">input_channel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)]</span>
+        <span class="c1"># building inverted residual blocks</span>
+        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">inverted_residual_setting</span><span class="p">:</span>
+            <span class="n">output_channel</span> <span class="o">=</span> <span class="n">_make_divisible</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">width_mult</span><span class="p">,</span> <span class="n">round_nearest</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="n">stride</span> <span class="o">=</span> <span class="n">s</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+                <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="n">output_channel</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">expand_ratio</span><span class="o">=</span><span class="n">t</span><span class="p">))</span>
+                <span class="n">input_channel</span> <span class="o">=</span> <span class="n">output_channel</span>
+        <span class="c1"># building last several layers</span>
+        <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ConvBNReLU</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># make it nn.Sequential</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quant</span> <span class="o">=</span> <span class="n">QuantStub</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dequant</span> <span class="o">=</span> <span class="n">DeQuantStub</span><span class="p">()</span>
+        <span class="c1"># building classifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_channel</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># weight initialization</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">):</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'fan_out'</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">):</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">ones_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">):</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dequant</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="c1"># Fuse Conv+BN and Conv+BN+Relu modules prior to quantization</span>
+    <span class="c1"># This operation does not change the numerics</span>
+    <span class="k">def</span> <span class="nf">fuse_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="n">ConvBNReLU</span><span class="p">:</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">[</span><span class="s1">'0'</span><span class="p">,</span> <span class="s1">'1'</span><span class="p">,</span> <span class="s1">'2'</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="n">InvertedResidual</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">conv</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">conv</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">==</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">:</span>
+                        <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">conv</span><span class="p">,</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">idx</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="helper-functions">
+<h2>2. Helper functions<a class="headerlink" href="#helper-functions" title="Permalink to this headline">¶</a></h2>
+<p>We next define several helper functions to help with model evaluation. These mostly come from
+<a class="reference external" href="https://github.com/pytorch/examples/blob/master/imagenet/main.py">here</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AverageMeter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">"""Computes and stores the average and current value"""</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">':f'</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fmt</span> <span class="o">=</span> <span class="n">fmt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">+=</span> <span class="n">val</span> <span class="o">*</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+=</span> <span class="n">n</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">avg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fmtstr</span> <span class="o">=</span> <span class="s1">'</span><span class="si">{name}</span><span class="s1"> {val'</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmt</span> <span class="o">+</span> <span class="s1">'} ({avg'</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmt</span> <span class="o">+</span> <span class="s1">'})'</span>
+        <span class="k">return</span> <span class="n">fmtstr</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)):</span>
+    <span class="sd">"""Computes the accuracy over the k top predictions for the specified values of k"""</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">maxk</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">topk</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">maxk</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+        <span class="n">correct</span> <span class="o">=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span>
+    <span class="c1">#    print(target.view(1, -1).expand_as(pred), pred)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">topk</span><span class="p">:</span>
+            <span class="n">correct_k</span> <span class="o">=</span> <span class="n">correct</span><span class="p">[:</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">correct_k</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">neval_batches</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">(</span><span class="s1">'Acc@1'</span><span class="p">,</span> <span class="s1">':6.2f'</span><span class="p">)</span>
+    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">(</span><span class="s1">'Acc@5'</span><span class="p">,</span> <span class="s1">':6.2f'</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">acc1</span><span class="p">,</span> <span class="n">acc5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">''</span><span class="p">)</span>
+            <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">acc1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">acc5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;=</span> <span class="n">neval_batches</span><span class="p">:</span>
+                 <span class="k">return</span> <span class="n">top1</span><span class="p">,</span> <span class="n">top5</span>
+
+    <span class="k">return</span> <span class="n">top1</span><span class="p">,</span> <span class="n">top5</span>
+
+<span class="k">def</span> <span class="nf">load_model</span><span class="p">(</span><span class="n">model_file</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">MobileNetV2</span><span class="p">()</span>
+    <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+
+<span class="k">def</span> <span class="nf">print_size_of_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">"temp.p"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Size (MB):'</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="s2">"temp.p"</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">'temp.p'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="define-dataset-and-data-loaders">
+<h2>3. Define dataset and data loaders<a class="headerlink" href="#define-dataset-and-data-loaders" title="Permalink to this headline">¶</a></h2>
+<p>As our last major setup step, we define our dataloaders for our training and testing set.
+The specific dataset we’ve created for this tutorial contains just 1000 images, one from
+each class (this dataset, at just over 250 MB, is small enough that it can be downloaded
+relatively easily). These functions mostly come from
+<a class="reference external" href="https://github.com/pytorch/vision/blob/master/references/detection/train.py">here</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_data_loaders</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
+
+    <span class="n">traindir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">'train'</span><span class="p">)</span>
+    <span class="n">valdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">'val'</span><span class="p">)</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span>
+                                     <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span>
+        <span class="n">traindir</span><span class="p">,</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+            <span class="n">normalize</span><span class="p">,</span>
+        <span class="p">]))</span>
+
+    <span class="n">dataset_test</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span>
+        <span class="n">valdir</span><span class="p">,</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+            <span class="n">normalize</span><span class="p">,</span>
+        <span class="p">]))</span>
+
+    <span class="n">train_sampler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">RandomSampler</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="n">test_sampler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">SequentialSampler</span><span class="p">(</span><span class="n">dataset_test</span><span class="p">)</span>
+
+    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">train_batch_size</span><span class="p">,</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">train_sampler</span><span class="p">)</span>
+
+    <span class="n">data_loader_test</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset_test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">eval_batch_size</span><span class="p">,</span>
+        <span class="n">sampler</span><span class="o">=</span><span class="n">test_sampler</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">data_loader_test</span>
+</pre></div>
+</div>
+<p>Next, we’ll load in the pre-trained MobileNetV2 model</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="s1">'data/imagenet_1k'</span>
+<span class="n">saved_model_dir</span> <span class="o">=</span> <span class="s1">'data/'</span>
+<span class="n">float_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization.pth'</span>
+<span class="n">scripted_float_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization_scripted.pth'</span>
+<span class="n">scripted_quantized_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization_scripted_quantized.pth'</span>
+
+<span class="n">train_batch_size</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">eval_batch_size</span> <span class="o">=</span> <span class="mi">30</span>
+
+<span class="n">data_loader</span><span class="p">,</span> <span class="n">data_loader_test</span> <span class="o">=</span> <span class="n">prepare_data_loaders</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">float_model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we’ll “fuse modules”; this can both make the model faster by saving on memory access
+while also improving numerical accuracy. While this can be used with any model, this is
+especially common with quantized models.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> Inverted Residual Block: Before fusion </span><span class="se">\n\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">float_model</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">conv</span><span class="p">)</span>
+<span class="n">float_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="c1"># Fuses modules</span>
+<span class="n">float_model</span><span class="o">.</span><span class="n">fuse_model</span><span class="p">()</span>
+
+<span class="c1"># Note fusion of Conv+BN+Relu and Conv+Relu</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> Inverted Residual Block: After fusion</span><span class="se">\n\n</span><span class="s1">'</span><span class="p">,</span><span class="n">float_model</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">conv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Inverted Residual Block: Before fusion
+
+ Sequential(
+  (0): ConvBNReLU(
+    (0): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+    (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (2): ReLU()
+  )
+  (1): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), bias=False)
+  (2): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+)
+
+ Inverted Residual Block: After fusion
+
+ Sequential(
+  (0): ConvBNReLU(
+    (0): ConvReLU2d(
+      (0): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32)
+      (1): ReLU()
+    )
+    (1): Identity()
+    (2): Identity()
+  )
+  (1): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+  (2): Identity()
+)
+</pre></div>
+</div>
+<p>Finally to get a “baseline” accuracy, let’s see the accuracy of our un-quantized model
+with fused modules</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_eval_batches</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Size of baseline model"</span><span class="p">)</span>
+<span class="n">print_size_of_model</span><span class="p">(</span><span class="n">float_model</span><span class="p">)</span>
+
+<span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">neval_batches</span><span class="o">=</span><span class="n">num_eval_batches</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Evaluation accuracy on </span><span class="si">%d</span><span class="s1"> images, </span><span class="si">%2.2f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">num_eval_batches</span> <span class="o">*</span> <span class="n">eval_batch_size</span><span class="p">,</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">float_model</span><span class="p">),</span> <span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">scripted_float_model_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Size of baseline model
+Size (MB): 13.98112
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Evaluation accuracy on 300 images, 78.00
+</pre></div>
+</div>
+<p>You should see 78% accuracy on 300 images, a solid baseline for ImageNet,
+especially considering our model is just 14.0 MB.</p>
+<p>This will be our baseline to compare to. Next, let’s try different quantization methods</p>
+</div>
+<div class="section" id="post-training-static-quantization">
+<h2>4. Post-training static quantization<a class="headerlink" href="#post-training-static-quantization" title="Permalink to this headline">¶</a></h2>
+<p>Post-training static quantization involves not just converting the weights from float to int,
+as in dynamic quantization, but also performing the additional step of first feeding batches
+of data through the network and computing the resulting distributions of the different activations
+(specifically, this is done by inserting <cite>observer</cite> modules at different points that record this
+data). These distributions are then used to determine how the specifically the different activations
+should be quantized at inference time (a simple technique would be to simply divide the entire range
+of activations into 256 levels, but we support more sophisticated methods as well). Importantly,
+this additional step allows us to pass quantized values between operations instead of converting these values to floats - and then back to ints - between every operation, resulting in a significant speed-up.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_calibration_batches</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">myModel</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="c1"># Fuse Conv, bn and relu</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">fuse_model</span><span class="p">()</span>
+
+<span class="c1"># Specify quantization configuration</span>
+<span class="c1"># Start with simple min/max range estimation and per-tensor quantization of weights</span>
+<span class="n">myModel</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">default_qconfig</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">myModel</span><span class="o">.</span><span class="n">qconfig</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Calibrate first</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Post Training Quantization Prepare: Inserting Observers'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> Inverted Residual Block:After observer insertion </span><span class="se">\n\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">myModel</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">conv</span><span class="p">)</span>
+
+<span class="c1"># Calibrate with the training set</span>
+<span class="n">evaluate</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">neval_batches</span><span class="o">=</span><span class="n">num_calibration_batches</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Post Training Quantization: Calibration done'</span><span class="p">)</span>
+
+<span class="c1"># Convert to quantized model</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Post Training Quantization: Convert done'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1"> Inverted Residual Block: After fusion and quantization, note fused modules: </span><span class="se">\n\n</span><span class="s1">'</span><span class="p">,</span><span class="n">myModel</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">conv</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Size of model after quantization"</span><span class="p">)</span>
+<span class="n">print_size_of_model</span><span class="p">(</span><span class="n">myModel</span><span class="p">)</span>
+
+<span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">myModel</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">neval_batches</span><span class="o">=</span><span class="n">num_eval_batches</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Evaluation accuracy on </span><span class="si">%d</span><span class="s1"> images, </span><span class="si">%2.2f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">num_eval_batches</span> <span class="o">*</span> <span class="n">eval_batch_size</span><span class="p">,</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>QConfig(activation=functools.partial(&lt;class 'torch.quantization.observer.MinMaxObserver'&gt;, reduce_range=True), weight=functools.partial(&lt;class 'torch.quantization.observer.MinMaxObserver'&gt;, dtype=torch.qint8, qscheme=torch.per_tensor_symmetric))
+Post Training Quantization Prepare: Inserting Observers
+
+ Inverted Residual Block:After observer insertion
+
+ Sequential(
+  (0): ConvBNReLU(
+    (0): ConvReLU2d(
+      (0): Conv2d(
+        32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32
+        (observer): MinMaxObserver(min_val=None, max_val=None)
+      )
+      (1): ReLU(
+        (observer): MinMaxObserver(min_val=None, max_val=None)
+      )
+    )
+    (1): Identity()
+    (2): Identity()
+  )
+  (1): Conv2d(
+    32, 16, kernel_size=(1, 1), stride=(1, 1)
+    (observer): MinMaxObserver(min_val=None, max_val=None)
+  )
+  (2): Identity()
+)
+tensor([122, 387, 716, 843, 582, 344, 530, 506, 380, 737, 260, 650,  84, 587,
+        285,  60, 359, 480, 120, 240, 519,  61, 384, 176, 712, 973, 849, 856,
+        526, 368])
+.tensor([942, 992, 396, 103, 692, 703, 482, 290, 896, 448,  88, 394, 962, 328,
+        905, 756, 301, 562, 305, 696, 946, 140, 898, 481, 392, 688, 881, 375,
+        619, 883])
+.tensor([477, 627, 237, 345, 573, 577,  57, 651, 537, 338, 505, 168, 779, 575,
+        698, 540, 420, 584, 643, 709,  73,  25, 110, 906, 229, 899, 198, 422,
+        370, 124])
+.tensor([829, 131, 500, 797, 993, 932, 149, 508, 981, 365, 254, 352, 406, 219,
+        369, 127, 291, 313, 362, 862, 618, 116, 873, 163,  20, 546, 831, 647,
+        322, 105])
+.tensor([799, 842, 943, 476, 770, 348, 298, 280, 888,  23, 275, 214, 997, 113,
+        585, 664, 600, 409,  21, 315, 473, 900, 741, 183, 728, 952, 485, 539,
+        964, 908])
+.tensor([444, 819, 281, 385, 126,  62, 917, 822, 244, 404, 297, 889,  31, 837,
+        438,   2, 155,  82, 523, 717, 768, 561, 704, 165, 940, 397,  47, 284,
+        225, 722])
+.tensor([662, 963, 317, 252, 216, 517, 450, 853, 536,   8, 346, 743, 924, 588,
+         78, 522, 624, 272, 621, 487, 278, 274, 556,  50, 554, 614, 263, 713,
+        724, 439])
+.tensor([708, 892, 353, 603, 953, 146, 834, 232, 283, 893, 154, 736, 714, 995,
+        192, 730, 557, 416, 785, 337, 503, 246, 319, 816, 383, 645, 357, 330,
+        996, 949])
+.tensor([ 11, 824, 864,   9, 691,  38, 169, 933, 307, 931, 983, 794, 707, 681,
+        145, 818,  13, 356, 871, 655,  42,  19, 454, 936,  77, 185, 374, 812,
+        104, 449])
+.tensor([747, 489, 201, 865, 711, 193, 630, 761, 579, 267, 428, 656, 203, 202,
+        172, 990, 652, 975, 139, 504, 860,  18, 316, 535, 308,  37, 156, 813,
+        620, 179])
+.Post Training Quantization: Calibration done
+Post Training Quantization: Convert done
+
+ Inverted Residual Block: After fusion and quantization, note fused modules:
+
+ Sequential(
+  (0): ConvBNReLU(
+    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.16678406298160553, zero_point=0, padding=(1, 1), groups=32)
+    (1): Identity()
+    (2): Identity()
+  )
+  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.22515465319156647, zero_point=71)
+  (2): Identity()
+)
+Size of model after quantization
+Size (MB): 3.588979
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Evaluation accuracy on 300 images, 64.67
+</pre></div>
+</div>
+<p>For this quantized model, we see a significantly lower accuracy of just 62.33% on these same 30
+images. Nevertheless, we did reduce the size of our model down to just under 3.6 MB, almost a 4x
+decrease.</p>
+<p>In addition, we can significantly improve on the accuracy simply by using a different
+quantization configuration. We repeat the same exercise with the recommended configuration for
+quantizing for x86 architectures. This configuration does the following:</p>
+<ul class="simple">
+<li>Quantizes weights on a per-channel basis</li>
+<li>Uses a histogram observer that collects a histogram of activations and then picks
+quantization parameters in an optimal manner.</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">per_channel_quantized_model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span>
+<span class="n">per_channel_quantized_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">per_channel_quantized_model</span><span class="o">.</span><span class="n">fuse_model</span><span class="p">()</span>
+<span class="n">per_channel_quantized_model</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qconfig</span><span class="p">(</span><span class="s1">'fbgemm'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="o">.</span><span class="n">qconfig</span><span class="p">)</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">evaluate</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="p">,</span><span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">num_calibration_batches</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">neval_batches</span><span class="o">=</span><span class="n">num_eval_batches</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Evaluation accuracy on </span><span class="si">%d</span><span class="s1"> images, </span><span class="si">%2.2f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">num_eval_batches</span> <span class="o">*</span> <span class="n">eval_batch_size</span><span class="p">,</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">per_channel_quantized_model</span><span class="p">),</span> <span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">scripted_quantized_model_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>QConfig(activation=functools.partial(&lt;class 'torch.quantization.observer.HistogramObserver'&gt;, reduce_range=True), weight=functools.partial(&lt;class 'torch.quantization.observer.PerChannelMinMaxObserver'&gt;, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
+tensor([584, 465, 952, 511, 443, 570,  95, 158, 826,  35, 838, 769, 104, 782,
+        133,  97, 819, 703, 577, 978, 586, 526, 678, 775, 934, 578, 647, 837,
+        227, 116])
+.tensor([850,  22, 230, 348, 923, 513, 191, 723, 890, 846, 644, 377,  29, 476,
+         83, 143, 725, 257, 392, 406, 352, 564, 209, 840, 496, 103, 994, 351,
+        414, 375])
+.tensor([ 55, 291, 821, 625, 609, 453, 855, 832, 434,  85, 404, 160, 240, 745,
+        976, 784, 957, 672, 985, 931, 901, 700,  19, 184, 122, 105, 340, 988,
+        179, 341])
+.tensor([303, 283, 847, 646, 483, 289,  65, 471, 288, 808, 484, 373, 941, 698,
+        435, 346,  62, 153,   5, 946,  26, 138, 494, 286, 549,   9, 458, 756,
+        924, 654])
+.tensor([328, 556, 802, 399, 967,  28, 910, 297, 330, 449, 425, 938, 343, 735,
+        331, 472,  23, 140, 618, 468, 779, 608, 381, 173, 114, 372, 585, 566,
+        848, 430])
+.tensor([ 40, 791, 363, 661, 135, 181, 882, 937, 522, 900, 523, 968, 681,  20,
+        495,  79, 432, 963, 740, 797, 207, 628, 859, 951, 510, 768, 650, 991,
+        886, 255])
+.tensor([673, 353, 954, 865, 800, 559, 407, 266, 834,  27, 928, 195, 939, 699,
+        420, 926, 204, 313, 711, 332, 831, 541, 518, 127, 115, 836, 659, 444,
+        117, 338])
+.tensor([ 70, 751, 182, 894, 256, 989,   8, 871, 786, 645, 603,  32, 873, 696,
+        357, 358, 185, 427, 987, 649, 841, 796, 932, 285, 857, 302, 959, 953,
+        159, 264])
+.tensor([706, 109, 152,  77, 273,  98, 638, 759, 171, 773, 736,  24, 811, 417,
+         69, 112, 807, 478, 307, 306, 551, 490, 707, 310, 591, 145, 883, 944,
+        292, 335])
+.tensor([416, 241, 641, 593, 296, 339, 809, 580, 246, 998,  61, 684, 758,  53,
+        965, 527, 121, 766, 287, 130, 774, 582, 657, 388,  47, 124, 733,  99,
+        216,  91])
+.tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Evaluation accuracy on 300 images, 77.00
+</pre></div>
+</div>
+<p>Changing just this quantization configuration method resulted in an increase
+of the accuracy to 74%! Still, this is 4% worse than the baseline of 78% achieved above.
+So lets try quantization aware training.</p>
+</div>
+<div class="section" id="quantization-aware-training">
+<h2>5. Quantization-aware training<a class="headerlink" href="#quantization-aware-training" title="Permalink to this headline">¶</a></h2>
+<p>Quantization-aware training (QAT) is the quantization method that typically results in the highest accuracy.
+With QAT, all weights and activations are “fake quantized” during both the forward and backward passes of
+training: that is, float values are rounded to mimic int8 values, but all computations are still done with
+floating point numbers. Thus, all the weight adjustments during training are made while “aware” of the fact
+that the model will ultimately be quantized; after quantizing, therefore, this method will usually yield
+higher accuracy than either dynamic quantization or post-training static quantization.</p>
+<p>The overall workflow for actually performing QAT is very similar to before:</p>
+<ul class="simple">
+<li>We can use the same model as before: there is no additional preparation needed for quantization-aware
+training.</li>
+<li>We need to use a <code class="docutils literal notranslate"><span class="pre">qconfig</span></code> specifying what kind of fake-quantization is to be inserted after weights
+and activations, instead of specifying observers</li>
+</ul>
+<p>We first define a training function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_one_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">ntrain_batches</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="n">top1</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">(</span><span class="s1">'Acc@1'</span><span class="p">,</span> <span class="s1">':6.2f'</span><span class="p">)</span>
+    <span class="n">top5</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">(</span><span class="s1">'Acc@5'</span><span class="p">,</span> <span class="s1">':6.2f'</span><span class="p">)</span>
+    <span class="n">avgloss</span> <span class="o">=</span> <span class="n">AverageMeter</span><span class="p">(</span><span class="s1">'Loss'</span><span class="p">,</span> <span class="s1">'1.5f'</span><span class="p">)</span>
+
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">''</span><span class="p">)</span>
+        <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">acc1</span><span class="p">,</span> <span class="n">acc5</span> <span class="o">=</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="n">top1</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">acc1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">top5</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">acc5</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">avgloss</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">cnt</span> <span class="o">&gt;=</span> <span class="n">ntrain_batches</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Loss'</span><span class="p">,</span> <span class="n">avgloss</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'Training: * Acc@1 </span><span class="si">{top1.avg:.3f}</span><span class="s1"> Acc@5 </span><span class="si">{top5.avg:.3f}</span><span class="s1">'</span>
+                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
+            <span class="k">return</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Full imagenet train set:  * Acc@1 </span><span class="si">{top1.global_avg:.3f}</span><span class="s1"> Acc@5 </span><span class="si">{top5.global_avg:.3f}</span><span class="s1">'</span>
+          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1</span><span class="o">=</span><span class="n">top1</span><span class="p">,</span> <span class="n">top5</span><span class="o">=</span><span class="n">top5</span><span class="p">))</span>
+    <span class="k">return</span>
+</pre></div>
+</div>
+<p>We fuse modules as before</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">qat_model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span>
+<span class="n">qat_model</span><span class="o">.</span><span class="n">fuse_model</span><span class="p">()</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">qat_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">)</span>
+<span class="n">qat_model</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qat_qconfig</span><span class="p">(</span><span class="s1">'fbgemm'</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">prepare_qat</span></code> performs the “fake quantization”, preparing the model for quantization-aware
+training</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare_qat</span><span class="p">(</span><span class="n">qat_model</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Inverted Residual Block: After preparation for QAT, note fake-quantization modules </span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span><span class="n">qat_model</span><span class="o">.</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">conv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Inverted Residual Block: After preparation for QAT, note fake-quantization modules
+ Sequential(
+  (0): ConvBNReLU(
+    (0): ConvBnReLU2d(
+      32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False
+      (observer): FakeQuantize(
+        fake_quant_enabled=True, observer_enabled=True,            scale=None, zero_point=None
+        (observer): MovingAverageMinMaxObserver(min_val=None, max_val=None)
+      )
+      (weight_fake_quant): FakeQuantize(
+        fake_quant_enabled=True, observer_enabled=True,            scale=None, zero_point=None
+        (observer): MovingAveragePerChannelMinMaxObserver(min_val=None, max_val=None)
+      )
+    )
+    (1): Identity()
+    (2): Identity()
+  )
+  (1): ConvBn2d(
+    32, 16, kernel_size=(1, 1), stride=(1, 1), bias=False
+    (observer): FakeQuantize(
+      fake_quant_enabled=True, observer_enabled=True,            scale=None, zero_point=None
+      (observer): MovingAverageMinMaxObserver(min_val=None, max_val=None)
+    )
+    (weight_fake_quant): FakeQuantize(
+      fake_quant_enabled=True, observer_enabled=True,            scale=None, zero_point=None
+      (observer): MovingAveragePerChannelMinMaxObserver(min_val=None, max_val=None)
+    )
+  )
+  (2): Identity()
+)
+</pre></div>
+</div>
+<p>Training a quantized model with high accuracy requires accurate modeling of numerics at
+inference. For quantization aware training, therefore, we modify the training loop by:</p>
+<ul class="simple">
+<li>Switch batch norm to use running mean and variance towards the end of training to better
+match inference numerics.</li>
+<li>We also freeze the quantizer parameters (scale and zero-point) and fine tune the weights.</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_train_batches</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="c1"># Train and check accuracy after each epoch</span>
+<span class="k">for</span> <span class="n">nepoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">train_one_epoch</span><span class="p">(</span><span class="n">qat_model</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">),</span> <span class="n">num_train_batches</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nepoch</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="c1"># Freeze quantizer parameters</span>
+        <span class="n">qat_model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">disable_observer</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">nepoch</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># Freeze batch norm mean and variance estimates</span>
+        <span class="n">qat_model</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">intrinsic</span><span class="o">.</span><span class="n">qat</span><span class="o">.</span><span class="n">freeze_bn_stats</span><span class="p">)</span>
+
+    <span class="c1"># Check the accuracy after each epoch</span>
+    <span class="n">quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">qat_model</span><span class="o">.</span><span class="n">eval</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">quantized_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">top1</span><span class="p">,</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span><span class="n">criterion</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">,</span> <span class="n">neval_batches</span><span class="o">=</span><span class="n">num_eval_batches</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Epoch </span><span class="si">%d</span><span class="s1"> :Evaluation accuracy on </span><span class="si">%d</span><span class="s1"> images, </span><span class="si">%2.2f</span><span class="s1">'</span><span class="o">%</span><span class="p">(</span><span class="n">nepoch</span><span class="p">,</span> <span class="n">num_eval_batches</span> <span class="o">*</span> <span class="n">eval_batch_size</span><span class="p">,</span> <span class="n">top1</span><span class="o">.</span><span class="n">avg</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(2.3555, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 48.667 Acc@5 72.000
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 0 :Evaluation accuracy on 300 images, 73.33
+....................Loss tensor(2.1775, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 52.000 Acc@5 75.667
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 1 :Evaluation accuracy on 300 images, 75.00
+....................Loss tensor(2.2601, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 52.333 Acc@5 73.667
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 2 :Evaluation accuracy on 300 images, 75.00
+....................Loss tensor(2.0853, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 52.500 Acc@5 77.667
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 3 :Evaluation accuracy on 300 images, 76.33
+....................Loss tensor(1.9736, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 57.500 Acc@5 78.500
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 4 :Evaluation accuracy on 300 images, 76.67
+....................Loss tensor(1.9349, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 57.667 Acc@5 78.833
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 5 :Evaluation accuracy on 300 images, 77.00
+....................Loss tensor(1.9763, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 55.667 Acc@5 78.167
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 6 :Evaluation accuracy on 300 images, 76.67
+....................Loss tensor(1.9253, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.167 Acc@5 80.333
+tensor([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+.tensor([30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+        48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59])
+.tensor([60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+        78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89])
+.tensor([ 90,  91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119])
+.tensor([120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147,
+        148, 149])
+.tensor([150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163,
+        164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,
+        178, 179])
+.tensor([180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193,
+        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207,
+        208, 209])
+.tensor([210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+        224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237,
+        238, 239])
+.tensor([240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
+        254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267,
+        268, 269])
+.tensor([270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283,
+        284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297,
+        298, 299])
+.Epoch 7 :Evaluation accuracy on 300 images, 76.00
+</pre></div>
+</div>
+<p>Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
+quantization-aware training yields an accuracy of over 71% on the entire imagenet dataset,
+which is close to the floating point accuracy of 71.9%.</p>
+<p>More on quantization-aware training:</p>
+<ul class="simple">
+<li>QAT is a super-set of post training quant techniques that allows for more debugging.
+For example, we can analyze if the accuracy of the model is limited by weight or activation
+quantization.</li>
+<li>We can also simulate the accuracy of a quantized model in floating point since
+we are using fake-quantization to model the numerics of actual quantized arithmetic.</li>
+<li>We can mimic post training quantization easily too.</li>
+</ul>
+<div class="section" id="speedup-from-quantization">
+<h3>Speedup from quantization<a class="headerlink" href="#speedup-from-quantization" title="Permalink to this headline">¶</a></h3>
+<p>Finally, let’s confirm something we alluded to above: do our quantized models actually perform inference
+faster? Let’s test:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run_benchmark</span><span class="p">(</span><span class="n">model_file</span><span class="p">,</span> <span class="n">img_loader</span><span class="p">):</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">num_batches</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="c1"># Run the scripted model on a few batches of images</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">img_loader</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_batches</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">elapsed</span> <span class="o">+</span> <span class="p">(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="n">num_images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_batches</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'Elapsed time: </span><span class="si">%3.0f</span><span class="s1"> ms'</span> <span class="o">%</span> <span class="p">(</span><span class="n">elapsed</span><span class="o">/</span><span class="n">num_images</span><span class="o">*</span><span class="mi">1000</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">elapsed</span>
+
+<span class="n">run_benchmark</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">scripted_float_model_file</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>
+
+<span class="n">run_benchmark</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">scripted_quantized_model_file</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  11 ms
+Elapsed time:   9 ms
+</pre></div>
+</div>
+<p>Running this locally on a MacBook pro yielded 61 ms for the regular model, and
+just 20 ms for the quantized model, illustrating the typical 2-4x speedup
+we see for quantized models compared to floating point ones.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we showed two quantization methods - post-training static quantization,
+and quantization-aware training - describing what they do “under the hood” and how to use
+them in PyTorch.</p>
+<p>Thanks for reading! As always, we welcome any feedback, so please create an issue
+<a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 11 minutes  15.362 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-static-quantization-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/bd7ace4f5df8c6f747eadb10a7f737cd/static_quantization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">static_quantization_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/03ac9a8e1176f5e39736885e8c439a82/static_quantization_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">static_quantization_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="dynamic_quantization_tutorial.html" rel="prev" title="(experimental) Dynamic Quantization on an LSTM Word Language Model"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="helpful-hr hr-top"/>
+<div class="helpful-container">
+<div class="helpful-question">Was this helpful?</div>
+<div class="helpful-question yes-link" data-behavior="was-this-helpful-event" data-response="yes">Yes</div>
+<div class="helpful-question no-link" data-behavior="was-this-helpful-event" data-response="no">No</div>
+<div class="was-helpful-thank-you">Thank you</div>
+</div>
+<hr class="helpful-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2017, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">(experimental) Static Quantization with Eager Mode in PyTorch</a><ul>
+<li><a class="reference internal" href="#model-architecture">1. Model architecture</a></li>
+<li><a class="reference internal" href="#helper-functions">2. Helper functions</a></li>
+<li><a class="reference internal" href="#define-dataset-and-data-loaders">3. Define dataset and data loaders</a></li>
+<li><a class="reference internal" href="#post-training-static-quantization">4. Post-training static quantization</a></li>
+<li><a class="reference internal" href="#quantization-aware-training">5. Quantization-aware training</a><ul>
+<li><a class="reference internal" href="#speedup-from-quantization">Speedup from quantization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-90545585-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'UA-117752657-2');
+
+</script>
+<script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Download',
+      eventAction: 'click',
+      eventLabel: $(this).attr("data-response")
+    });
+   });
+
+   $("[data-behavior='was-this-helpful-event']").on('click', function(){
+    $(".helpful-question").hide();
+    $(".was-helpful-thank-you").show();
+    fbq('trackCustom', "Was this Helpful?", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      helpful: $(this).attr("data-response")
+    });
+    ga('send', {
+      hitType: 'event',
+      eventCategory: 'Was this Helpful?',
+      eventAction: 'click',
+      eventLabel: $(this).attr("data-response")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".helpful-container").hide();
+     $(".hr-bottom").hide();
+   }
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://pytorch.org/resources">Resources</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/support">Support</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.slack.com" target="_blank">Slack</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Follow Us</li>
+<li>
+<div id="mc_embed_signup">
+<form action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&amp;id=91d0dccd39" class="email-subscribe-form validate" id="mc-embedded-subscribe-form" method="post" name="mc-embedded-subscribe-form" novalidate="" target="_blank">
+<div class="email-subscribe-form-fields-wrapper" id="mc_embed_signup_scroll">
+<div class="mc-field-group">
+<label for="mce-EMAIL" style="display:none;">Email Address</label>
+<input class="required email" id="mce-EMAIL" name="EMAIL" placeholder="Email Address" type="email" value=""/>
+</div>
+<div class="clear" id="mce-responses">
+<div class="response" id="mce-error-response" style="display:none"></div>
+<div class="response" id="mce-success-response" style="display:none"></div>
+</div> <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+<div aria-hidden="true" style="position: absolute; left: -5000px;"><input name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" type="text" value=""/></div>
+<div class="clear">
+<input class="button email-subscribe-button" id="mc-embedded-subscribe" name="subscribe" type="submit" value=""/>
+</div>
+</div>
+</form>
+</div>
+</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="#">Get Started</a>
+</li>
+<li>
+<a href="#">Features</a>
+</li>
+<li>
+<a href="#">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+</li>
+<li>
+<a href="https://pytorch.org/resources">Resources</a>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body></html>
