@@ -210,6 +210,18 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
+Quantization (experimental)
+----------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 PyTorch in Other Languages
 --------------------------
 
@@ -318,6 +330,14 @@ PyTorch Fundamentals In-Depth
    advanced/torch_script_custom_ops
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Quantization (experimental)
+
+   advanced/dynamic_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2

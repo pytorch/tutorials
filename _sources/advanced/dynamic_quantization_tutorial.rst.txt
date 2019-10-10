@@ -1,0 +1,519 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_advanced_dynamic_quantization_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_advanced_dynamic_quantization_tutorial.py:
+
+
+(experimental) Dynamic Quantization on an LSTM Word Language Model
+==================================================================
+
+**Author**: `James Reed <https://github.com/jamesr66a>`_
+
+**Edited by**: `Seth Weidman <https://github.com/SethHWeidman/>`_
+
+Introduction
+------------
+
+Quantization involves converting the weights and activations of your model from float
+to int, which can result in smaller model size and faster inference with only a small
+hit to accuracy.
+
+In this tutorial, we'll apply the easiest form of quantization - _dynamic quantization_ -
+to an LSTM-based next word-prediction model, closely following the
+`word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
+from the PyTorch examples.
+
+
+.. code-block:: default
+
+
+    # imports
+    import os
+    from io import open
+    import time
+
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+
+
+
+
+
+
+
+1. Define the model
+-------------------
+
+Here we define the LSTM model architecture, following the
+`model <https://github.com/pytorch/examples/blob/master/word_language_model/model.py>`_
+from the word language model example.
+
+
+.. code-block:: default
+
+
+    class LSTMModel(nn.Module):
+        """Container module with an encoder, a recurrent module, and a decoder."""
+
+        def __init__(self, ntoken, ninp, nhid, nlayers, dropout=0.5):
+            super(LSTMModel, self).__init__()
+            self.drop = nn.Dropout(dropout)
+            self.encoder = nn.Embedding(ntoken, ninp)
+            self.rnn = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
+            self.decoder = nn.Linear(nhid, ntoken)
+
+            self.init_weights()
+
+            self.nhid = nhid
+            self.nlayers = nlayers
+
+        def init_weights(self):
+            initrange = 0.1
+            self.encoder.weight.data.uniform_(-initrange, initrange)
+            self.decoder.bias.data.zero_()
+            self.decoder.weight.data.uniform_(-initrange, initrange)
+
+        def forward(self, input, hidden):
+            emb = self.drop(self.encoder(input))
+            output, hidden = self.rnn(emb, hidden)
+            output = self.drop(output)
+            decoded = self.decoder(output)
+            return decoded, hidden
+
+        def init_hidden(self, bsz):
+            weight = next(self.parameters())
+            return (weight.new_zeros(self.nlayers, bsz, self.nhid),
+                    weight.new_zeros(self.nlayers, bsz, self.nhid))
+
+
+
+
+
+
+
+2. Load in the text data
+------------------------
+
+Next, we load the
+`Wikitext-2 dataset <https://www.google.com/search?q=wikitext+2+data>`_ into a `Corpus`,
+again following the
+`preprocessing <https://github.com/pytorch/examples/blob/master/word_language_model/data.py>`_
+from the word language model example.
+
+
+.. code-block:: default
+
+
+    class Dictionary(object):
+        def __init__(self):
+            self.word2idx = {}
+            self.idx2word = []
+
+        def add_word(self, word):
+            if word not in self.word2idx:
+                self.idx2word.append(word)
+                self.word2idx[word] = len(self.idx2word) - 1
+            return self.word2idx[word]
+
+        def __len__(self):
+            return len(self.idx2word)
+
+
+    class Corpus(object):
+        def __init__(self, path):
+            self.dictionary = Dictionary()
+            self.train = self.tokenize(os.path.join(path, 'train.txt'))
+            self.valid = self.tokenize(os.path.join(path, 'valid.txt'))
+            self.test = self.tokenize(os.path.join(path, 'test.txt'))
+
+        def tokenize(self, path):
+            """Tokenizes a text file."""
+            assert os.path.exists(path)
+            # Add words to the dictionary
+            with open(path, 'r', encoding="utf8") as f:
+                for line in f:
+                    words = line.split() + ['<eos>']
+                    for word in words:
+                        self.dictionary.add_word(word)
+
+            # Tokenize file content
+            with open(path, 'r', encoding="utf8") as f:
+                idss = []
+                for line in f:
+                    words = line.split() + ['<eos>']
+                    ids = []
+                    for word in words:
+                        ids.append(self.dictionary.word2idx[word])
+                    idss.append(torch.tensor(ids).type(torch.int64))
+                ids = torch.cat(idss)
+
+            return ids
+
+    model_data_filepath = 'data/'
+
+    corpus = Corpus(model_data_filepath + 'wikitext-2')
+
+
+
+
+
+
+
+3. Load the pre-trained model
+-----------------------------
+
+This is a tutorial on dynamic quantization, a quantization technique
+that is applied after a model has been trained. Therefore, we'll simply load some
+pre-trained weights into this model architecture; these weights were obtained
+by training for five epochs using the default settings in the word language model
+example.
+
+
+.. code-block:: default
+
+
+    ntokens = len(corpus.dictionary)
+
+    model = LSTMModel(
+        ntoken = ntokens,
+        ninp = 512,
+        nhid = 256,
+        nlayers = 5,
+    )
+
+    model.load_state_dict(
+        torch.load(
+            model_data_filepath + 'word_language_model_quantize.pth',
+            map_location=torch.device('cpu')
+            )
+        )
+
+    model.eval()
+    print(model)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    LSTMModel(
+      (drop): Dropout(p=0.5, inplace=False)
+      (encoder): Embedding(33278, 512)
+      (rnn): LSTM(512, 256, num_layers=5, dropout=0.5)
+      (decoder): Linear(in_features=256, out_features=33278, bias=True)
+    )
+
+
+Now let's generate some text to ensure that the pre-trained model is working
+properly - similarly to before, we follow
+`here <https://github.com/pytorch/examples/blob/master/word_language_model/generate.py>`_
+
+
+.. code-block:: default
+
+
+    input_ = torch.randint(ntokens, (1, 1), dtype=torch.long)
+    hidden = model.init_hidden(1)
+    temperature = 1.0
+    num_words = 1000
+
+    with open(model_data_filepath + 'out.txt', 'w') as outf:
+        with torch.no_grad():  # no tracking history
+            for i in range(num_words):
+                output, hidden = model(input_, hidden)
+                word_weights = output.squeeze().div(temperature).exp().cpu()
+                word_idx = torch.multinomial(word_weights, 1)[0]
+                input_.fill_(word_idx)
+
+                word = corpus.dictionary.idx2word[word_idx]
+
+                outf.write(str(word.encode('utf-8')) + ('\n' if i % 20 == 19 else ' '))
+
+                if i % 100 == 0:
+                    print('| Generated {}/{} words'.format(i, 1000))
+
+    with open(model_data_filepath + 'out.txt', 'r') as outf:
+        all_output = outf.read()
+        print(all_output)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    | Generated 0/1000 words
+    | Generated 100/1000 words
+    | Generated 200/1000 words
+    | Generated 300/1000 words
+    | Generated 400/1000 words
+    | Generated 500/1000 words
+    | Generated 600/1000 words
+    | Generated 700/1000 words
+    | Generated 800/1000 words
+    | Generated 900/1000 words
+    b'On' b'25' b'January' b'1990s' b'.' b'<eos>' b'<eos>' b'=' b'=' b'=' b'<unk>' b'activities' b'=' b'=' b'=' b'<eos>' b'<eos>' b'Because' b'of' b'all'
+    b'eight' b'or' b'five' b'point' b'in' b'the' b'English' b'Cardinals' b',' b'Mandy' b'Moment' b'introduced' b'the' b'moody' b'd' b'Training' b'6' b',' b'but' b'musket'
+    b'valued' b',' b'made' b'by' b'his' b'experiences' b'.' b'There' b'is' b'two' b'thirds' b'of' b'stories' b'who' b'were' b'one' b'Tallest' b'or' b'are' b'homes'
+    b'hold' b'standout' b',' b'Bate' b'are' b'the' b'only' b'pre' b'@-@' b'planet' b'.' b'By' b'his' b'martial' b'season' b'fatality' b'at' b'office' b'that' b','
+    b'4' b'\xe2\x80\x93' b'3' b'the' b'play' b'is' b'moved' b'to' b'differently' b'in' b'August' b',' b'giving' b'it' b'Souness' b',' b'a' b'few' b'rational' b'avatars'
+    b',' b'and' b'a' b'large' b'record' b'of' b'Ceres' b'being' b'built' b'.' b'Stromeyer' b'spent' b'carved' b'structures' b'to' b'be' b'conflicts' b'in' b'these' b'languages'
+    b',' b'with' b'about' b'300' b'%' b'of' b'subjects' b'.' b'The' b'studies' b'were' b'Iguanodon' b'named' b'Yeah' b'following' b'agonistic' b'Aleister' b'asceticism' b'and' b'@-@'
+    b'daughter' b',' b'and' b'the' b'country' b'Pollard' b'Patents' b'anxious' b'arrived' b'(' b'3' b'in' b')' b'in' b'diameter' b'Coral' b'du' b'Carroll' b':' b'the'
+    b'Wild' b'of' b'Force' b'AL' b',' b'Kentucky' b'.' b'"' b'If' b'you' b'got' b'<unk>' b'or' b'just' b'certain' b'planet' b'in' b'missionaries' b',' b'we'
+    b'have' b'been' b'the' b'brilliant' b'idea' b'that' b'Division' b'...' b'"' b'whereby' b'references' b'an' b'entrance' b'like' b'"' b'citations' b',' b'<unk>' b',' b'blasted'
+    b'<unk>' b'1' b'\xe2\x80\x93' b'15' b',' b'books' b'and' b'fans' b'...' b'I' b"'ve" b'been' b'known' b'receipts' b'in' b'trying' b'to' b'purchase' b'their' b'irregular'
+    b'and' b'less' b'advanced' b'and' b'enjoyable' b'head' b'.' b'"' b'In' b'January' b'1905' b',' b'it' b'was' b'sticky' b'after' b'being' b'noted' b'in' b'Montreal'
+    b'.' b'Journey' b'\xe2\x99\xaf' b'blames' b'cats' b'to' b'collects' b'<unk>' b'@-@' b'like' b'Strategic' b'Nine' b'Johnny' b'Kennedy' b'or' b'Lewis' b'Abbey' b',' b'who' b'had'
+    b'introduced' b'just' b'up' b'a' b'studied' b'orbit' b'of' b'Jordan' b"'s" b'Single' b'and' b'basketball' b'car' b'in' b'Atlanta' b',' b'a' b'week' b'from' b'II'
+    b'in' b'2006' b'.' b'In' b'a' b'book' b'that' b'sold' b'their' b'achievements' b'behind' b'Cathedral' b'are' b'arriving' b'in' b'other' b'locations' b'in' b'the' b'language'
+    b',' b'they' b'do' b'not' b'do' b'of' b'the' b'county' b'characters' b'.' b'O' b"'Malley" b'won' b'Argentina' b'of' b'a' b'million' b'@-@' b'series' b','
+    b'Harbour' b':' b'"' b'sandwiches' b'stuff' b'face' b'<unk>' b',' b'b' b'anger' b',' b'explosive' b'or' b'somebody' b'to' b'bring' b'.' b'And' b'Lesson' b'we'
+    b'think' b',' b'even' b'after' b'easy' b'generally' b'doing' b'Naruhod\xc5\x8d' b'onto' b'a' b'passion' b'for' b'the' b'planet' b'in' b'1938' b'.' b'"' b'With' b'these'
+    b'a' b'little' b'aspect' b'or' b'different' b'ScrewAttack' b',' b'Paula' b'Wood' b',' b'acknowledged' b'Erik' b'Mayer' b',' b'an' b'member' b'of' b'evaporation' b'based' b'at'
+    b'a' b'two' b'@-@' b'year' b'explorer' b'decrease' b'the' b'263' b',' b'simply' b'accepted' b'his' b'eldest' b'length' b'production' b'on' b'a' b'28' b'@-@' b'CD'
+    b'bubble' b'ovation' b',' b'when' b'he' b'married' b'"' b'Moment' b'during' b'"' b'.' b'In' b'October' b'1943' b',' b'Alexander' b'Jimmy' b'differs' b'that' b'the'
+    b'paternal' b'gentleman' b'script' b'has' b'been' b'described' b'as' b'president' b'from' b'Broadcasting' b"'s" b'policies' b'on' b'September' b'4' b',' b'1922' b'and' b'a' b'ad'
+    b'City' b'in' b'NBA' b'City' b'in' b'her' b'next' b'year' b',' b'before' b'handheld' b'in' b'March' b'2008' b'to' b'become' b'a' b'nomination' b'at' b'Chrono'
+    b'One' b'Chronicles' b'Beverly' b'Patricia' b'(' b'<unk>' b';' b'The' b'pastoral' b'film' b'would' b'be' b'attended' b'by' b'Cambridge' b',' b'helping' b'by' b'hearts' b'that'
+    b'30' b'years' b'given' b'in' b'shows' b')' b'instead' b'of' b'other' b'songs' b'was' b'depressed' b'.' b'Eight' b'separate' b'novels' b'increases' b'was' b'announced' b'they'
+    b'his' b'other' b'Zygoballus' b'stories' b"'" b'AoT' b'Tuff' b'Race' b'was' b'fused' b'@-@' b'platinum' b'.' b'Both' b'by' b'Constantinople' b'Scotti' b'swing' b'F.' b'Dareus'
+    b'interest' b'to' b'Conference' b',' b'driving' b',' b'was' b'ordered' b'to' b'interest' b',' b'but' b'when' b'to' b'score' b'that' b'aid' b'themselves' b'never' b'experienced'
+    b'light' b'in' b'the' b'1966' b'election' b',' b'he' b'appeared' b'but' b'failed' b'to' b'belong' b'to' b'a' b'wing' b'when' b'Chen' b'gave' b'a' b'member'
+    b'of' b'protects' b'in' b'reference' b'to' b'relaxed' b',' b'but' b'knew' b'fumble' b'as' b'that' b'(' b'as' b'and' b'this' b'was' b'negotiated' b'by' b'traded'
+    b'only' b'in' b'temporary' b'teams' b')' b',' b'greatly' b'performed' b'characters' b'in' b'involved' b'.' b'"' b'<unk>' b'put' b'to' b'those' b'of' b'<unk>' b','
+    b'"' b'and' b'Bennett' b'found' b'the' b'race' b'an' b'high' b'version' b'with' b'the' b'driver' b',' b'including' b'winds' b'that' b'"' b'two' b'innovative' b'<unk>'
+    b'which' b'adopted' b'more' b'event' b'when' b'you' b'was' b'Lohan' b"'s" b'son' b'.' b'"' b'Mosley' b"'s" b'parents' b'wrote' b'that' b'Raffles' b'coincided' b'suddenly'
+    b'to' b'deal' b'in' b'his' b'fiction' b'chess' b'Club' b'.' b'<eos>' b'<eos>' b'=' b'=' b'=' b'O' b'One' b'=' b'=' b'=' b'<eos>' b'<eos>'
+    b'Little' b'society' b'aviation' b'due' b'to' b'a' b'<unk>' b'coach' b'game' b'Martyn' b'Stewart' b',' b'leading' b'on' b'to' b'Myers' b'flag' b',' b'as' b'lobbied'
+    b'to' b'slide' b',' b'despite' b'the' b'NHA' b'"' b'two' b'<unk>' b'"' b'.' b'At' b'its' b'favorite' b'@-@' b'Bar' b',' b'Johnston' b'announced' b'standards'
+    b'for' b'a' b'short' b'sum' b'of' b'foreigner' b',' b'introduced' b'over' b'Atherton' b'on' b'six' b'occasions' b'of' b'some' b'@-@' b'age' b'works' b'.' b'The'
+    b'public' b'were' b'effectively' b'overcome' b'by' b'official' b'God' b'species' b'Agust\xc3\xadn' b'Williams' b'in' b'May' b'1902' b'.' b'The' b'semi' b'@-@' b'romance' b'opposed' b'the'
+    b'Herschel' b'Down' b'of' b'FIA' b'und' b'J.' b'J.' b'!' b'judoka' b'.' b'The' b'novel' b'was' b'introduced' b'to' b'light' b'final' b'of' b'two' b'members'
+    b'by' b'his' b'previous' b'overall' b'letters' b',' b'including' b'their' b'works' b'to' b'1991' b'<unk>' b'in' b'Stacy' b'in' b'Vanderbilt' b'.' b'Throughout' b'the' b'2015'
+    b'series' b'Depot' b',' b'Alexander' b'on' b'his' b'fiction' b'was' b'Hokie' b',' b'but' b'was' b'defeated' b'in' b'general' b'@-@' b'scale' b'recording' b',' b'and'
+    b'after' b'being' b'considered' b'to' b'make' b'another' b'book' b'after' b'one' b'of' b'its' b'personal' b'private' b'fiction' b',' b'including' b'crime' b'and' b'sovereignty' b'governments'
+    b'is' b'very' b'straight' b'in' b'not' b'.' b'The' b'final' b'half' b'of' b'Ceres' b'was' b'widely' b'to' b'be' b'done' b'by' b'coordinator' b'teams' b'from'
+    b'<unk>' b',' b'1960' b'.' b'The' b'"' b'repetition' b'for' b'these' b'issues' b"'s" b'commitment' b'was' b'yuan' b'by' b'Geoff' b'"' b',' b'as' b'that'
+    b'their' b'heirs' b'for' b'a' b'association' b'between' b'a' b'number' b'of' b'teams' b'made' b'together' b'.' b'In' b'April' b'1996' b',' b'Raffles' b'moved' b'to'
+    b'the' b'Ocean' b'Of' b'"' b"'s" b'The' b'Even' b'"' b'and' b'"' b'The' b"'" b'Big' b'Is' b'Bang' b'"' b'developed' b'in' b'the' b'Art'
+    b'Day' b'alloy' b'in' b'the' b'summer' b'of' b'a' b'<unk>' b'<unk>' b'Summit' b'.' b'The' b'singer' b'was' b'inspired' b'outside' b'critics' b'on' b'the' b'Thirty'
+    b'@-@' b'play' b'dated' b'series' b',' b'known' b'as' b'the' b'Whole' b'Force' b'of' b'Literary' b'Union' b',' b'where' b'the' b'book' b'"' b'goes' b'away'
+    b'@-@' b'out' b',' b'and' b'boyfriend' b'say' b'what' b'not' b'that' b'whoever' b'are' b'pretty' b'good' b'.' b'"' b'Also' b'after' b'a' b'early' b'sewer'
+    b'disc' b',' b'Walpole' b'began' b'writing' b'to' b'have' b'appeared' b'with' b'<unk>' b'@-@' b'Smith' b',' b'Foundation' b'.' b'O' b"'Malley" b'passed' b'<unk>' b'book'
+    b',' b'but' b'Rob' b'Carter' b'(' b'Tony' b'rufipes' b')' b'eliminated' b'Newell' b'Hornung' b'at' b'the' b'240s' b',' b'the' b'general' b'role' b'from' b'selected'
+
+
+It's no GPT-2, but it looks like the model has started to learn the structure of
+language!
+
+We're almost ready to demonstrate dynamic quantization. We just need to define a few more
+helper functions:
+
+
+.. code-block:: default
+
+
+    bptt = 25
+    criterion = nn.CrossEntropyLoss()
+    eval_batch_size = 1
+
+    # create test data set
+    def batchify(data, bsz):
+        # Work out how cleanly we can divide the dataset into bsz parts.
+        nbatch = data.size(0) // bsz
+        # Trim off any extra elements that wouldn't cleanly fit (remainders).
+        data = data.narrow(0, 0, nbatch * bsz)
+        # Evenly divide the data across the bsz batches.
+        return data.view(bsz, -1).t().contiguous()
+
+    test_data = batchify(corpus.test, eval_batch_size)
+
+    # Evaluation functions
+    def get_batch(source, i):
+        seq_len = min(bptt, len(source) - 1 - i)
+        data = source[i:i+seq_len]
+        target = source[i+1:i+1+seq_len].view(-1)
+        return data, target
+
+    def repackage_hidden(h):
+      """Wraps hidden states in new Tensors, to detach them from their history."""
+
+      if isinstance(h, torch.Tensor):
+          return h.detach()
+      else:
+          return tuple(repackage_hidden(v) for v in h)
+
+    def evaluate(model_, data_source):
+        # Turn on evaluation mode which disables dropout.
+        model_.eval()
+        total_loss = 0.
+        hidden = model_.init_hidden(eval_batch_size)
+        with torch.no_grad():
+            for i in range(0, data_source.size(0) - 1, bptt):
+                data, targets = get_batch(data_source, i)
+                output, hidden = model_(data, hidden)
+                hidden = repackage_hidden(hidden)
+                output_flat = output.view(-1, ntokens)
+                total_loss += len(data) * criterion(output_flat, targets).item()
+        return total_loss / (len(data_source) - 1)
+
+
+
+
+
+
+
+4. Test dynamic quantization
+----------------------------
+
+Finally, we can call ``torch.quantization.quantize_dynamic`` on the model!
+Specifically,
+
+- We specify that we want the ``nn.LSTM`` and ``nn.Linear`` modules in our
+  model to be quantized
+- We specify that we want weights to be converted to ``int8`` values
+
+
+.. code-block:: default
+
+
+    import torch.quantization
+
+    quantized_model = torch.quantization.quantize_dynamic(
+        model, {nn.LSTM, nn.Linear}, dtype=torch.qint8
+    )
+    print(quantized_model)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    LSTMModel(
+      (drop): Dropout(p=0.5, inplace=False)
+      (encoder): Embedding(33278, 512)
+      (rnn): DynamicQuantizedLSTM(512, 256, num_layers=5, dropout=0.5)
+      (decoder): DynamicQuantizedLinear(in_features=256, out_features=33278, scale=1.0, zero_point=0)
+    )
+
+
+The model looks the same; how has this benefited us? First, we see a
+significant reduction in model size:
+
+
+.. code-block:: default
+
+
+    def print_size_of_model(model):
+        torch.save(model.state_dict(), "temp.p")
+        print('Size (MB):', os.path.getsize("temp.p")/1e6)
+        os.remove('temp.p')
+
+    print_size_of_model(model)
+    print_size_of_model(quantized_model)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size (MB): 113.941574
+    Size (MB): 76.80671
+
+
+Second, we see faster inference time, with no difference in evaluation loss:
+
+
+.. code-block:: default
+
+
+    def time_model_evaluation(model, test_data):
+        s = time.time()
+        loss = evaluate(model, test_data)
+        elapsed = time.time() - s
+        print('''loss: {0:.3f}\nelapsed time (seconds): {1:.1f}'''.format(loss, elapsed))
+
+    time_model_evaluation(model, test_data)
+    time_model_evaluation(quantized_model, test_data)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    loss: 5.167
+    elapsed time (seconds): 116.7
+    loss: 5.168
+    elapsed time (seconds): 172.6
+
+
+Conclusion
+----------
+
+Dynamic quantization can be an easy way to reduce model size while only
+having a limited effect on accuracy.
+
+Thanks for reading! As always, we welcome any feedback, so please create an issue
+`here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 4 minutes  54.320 seconds)
+
+
+.. _sphx_glr_download_advanced_dynamic_quantization_tutorial.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: dynamic_quantization_tutorial.py <dynamic_quantization_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: dynamic_quantization_tutorial.ipynb <dynamic_quantization_tutorial.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
