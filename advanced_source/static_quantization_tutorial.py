@@ -339,11 +339,11 @@ def prepare_data_loaders(data_path):
 
     data_loader = torch.utils.data.DataLoader(
         dataset, batch_size=train_batch_size,
-        sampler=train_sampler, num_workers=1)
+        sampler=train_sampler)
 
     data_loader_test = torch.utils.data.DataLoader(
         dataset_test, batch_size=eval_batch_size,
-        sampler=test_sampler, num_workers=4, pin_memory=True)
+        sampler=test_sampler)
 
     return data_loader, data_loader_test
 
@@ -455,7 +455,7 @@ print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_s
 #   quantization parameters in an optimal manner.
 #
 
-per_channel_quantized_model = load_model(saved_model_dir+float_model_file)
+per_channel_quantized_model = load_model(saved_model_dir + float_model_file)
 per_channel_quantized_model.eval()
 per_channel_quantized_model.fuse_model()
 per_channel_quantized_model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
