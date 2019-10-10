@@ -85,6 +85,17 @@ Image
 
     <div style='clear:both'></div>
 
+(experimental) Named Tensor
+----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Named Tensor
+   :description: :doc:`intermediate/named_tensor_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Text
 ----------------------
@@ -165,6 +176,11 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
+  :tooltip: Model parallel training on multiple GPUs
+  :description: :doc:`/intermediate/model_parallel_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
   :tooltip: Getting started with DistributedDataParallel
   :description: :doc:`/intermediate/ddp_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
@@ -200,6 +216,18 @@ Extending PyTorch
    :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
    :description: :doc:`/advanced/cpp_extension`
    :figure: _static/img/cpp_logo.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+Quantization (experimental)
+----------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
 
 .. raw:: html
 
@@ -273,6 +301,14 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: (experimental) Named Tensor
+
+   intermediate/named_tensor_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -299,6 +335,7 @@ PyTorch Fundamentals In-Depth
    :hidden:
    :caption: Parallel and Distributed Training
 
+   intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    beginner/aws_distributed_training_tutorial
@@ -312,6 +349,14 @@ PyTorch Fundamentals In-Depth
    advanced/torch_script_custom_ops
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Quantization (experimental)
+
+   advanced/dynamic_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
