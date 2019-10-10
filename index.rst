@@ -86,19 +86,6 @@ Image
     <div style='clear:both'></div>
 
 
-Audio
-----------------------
-
-.. customgalleryitem::
-   :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
-   :tooltip: Preprocessing with torchaudio Tutorial
-   :description: :doc:`beginner/audio_preprocessing_tutorial`
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-
 Text
 ----------------------
 
@@ -278,14 +265,6 @@ PyTorch Fundamentals In-Depth
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Audio
-
-   beginner/audio_preprocessing_tutorial
 
 .. toctree::
    :maxdepth: 2
