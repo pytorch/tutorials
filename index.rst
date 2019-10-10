@@ -165,7 +165,7 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
-  :tooltip: Train large models with multiple GPUs using model parallel
+  :tooltip: Model parallel training on multiple GPUs
   :description: :doc:`/intermediate/model_parallel_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
