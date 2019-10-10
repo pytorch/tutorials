@@ -28,6 +28,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# Disable OMP 
+# Set number of threads to one for single threaded comparison, quantized models run single threaded
+import ctypes
+gomp_file = ctypes.util.find_library('gomp')
+gomp = ctypes.cdll.LoadLibrary(gomp_file)
+gomp.omp_set_num_threads(1)
+torch.set_num_threads(1)
+
 ######################################################################
 # 1. Define the model
 # -------------------
