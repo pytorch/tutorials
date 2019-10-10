@@ -13,7 +13,7 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
-pip install -r $DIR/../requirements.txt
+pip install -r $DIR/../requirements.txt torch==1.3.0+cu92 -f https://download.pytorch.org/whl/torch_stable.html
 
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
