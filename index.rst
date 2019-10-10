@@ -85,6 +85,17 @@ Image
 
     <div style='clear:both'></div>
 
+(experimental) Named Tensor
+----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Named Tensor
+   :description: :doc:`intermediate/named_tensor_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Text
 ----------------------
@@ -290,6 +301,14 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: (experimental) Named Tensor
+
+   intermediate/named_tensor_tutorial
 
 .. toctree::
    :maxdepth: 2
