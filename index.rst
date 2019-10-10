@@ -176,6 +176,11 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
+  :tooltip: Model parallel training on multiple GPUs
+  :description: :doc:`/intermediate/model_parallel_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
   :tooltip: Getting started with DistributedDataParallel
   :description: :doc:`/intermediate/ddp_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
@@ -318,6 +323,7 @@ PyTorch Fundamentals In-Depth
    :hidden:
    :caption: Parallel and Distributed Training
 
+   intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    beginner/aws_distributed_training_tutorial
