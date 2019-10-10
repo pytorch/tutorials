@@ -550,7 +550,7 @@ print('Inverted Residual Block: After preparation for QAT, note fake-quantizatio
 
 num_train_batches = 20
 
-Train and check accuracy after each epoch
+# Train and check accuracy after each epoch
 for nepoch in range(8):
     train_one_epoch(qat_model, criterion, optimizer, data_loader, torch.device('cpu'), num_train_batches)
     if nepoch > 3:
