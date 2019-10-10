@@ -85,19 +85,6 @@ Image
 
     <div style='clear:both'></div>
 
-
-Audio
-----------------------
-
-.. customgalleryitem::
-   :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
-   :tooltip: Preprocessing with torchaudio Tutorial
-   :description: :doc:`beginner/audio_preprocessing_tutorial`
-
-.. raw:: html
-
-    <div style='clear:both'></div>
-
 (experimental) Named Tensor
 ----------------------
 
@@ -294,22 +281,6 @@ PyTorch Fundamentals In-Depth
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Audio
-
-   beginner/audio_preprocessing_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: (experimental) Named Tensor
-
-   intermediate/named_tensor_tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
    :caption: Text
 
    intermediate/char_rnn_classification_tutorial
@@ -318,6 +289,14 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: (experimental) Named Tensor
+
+   intermediate/named_tensor_tutorial
 
 .. toctree::
    :maxdepth: 2
