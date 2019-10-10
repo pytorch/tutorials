@@ -89,6 +89,15 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext-2.zip -P $(DATADIR)
 	unzip -q -o $(DATADIR)/wikitext-2.zip -d advanced_source/data/
 
+	# Download model for advanced_source/static_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/mobilenet_quantization.pth -P $(DATADIR)
+	cp $(DATADIR)/mobilenet_quantization.pth advanced_source/data/mobilenet_quantization.pth
+
+	# Download dataset for advanced_source/static_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/imagenet_1k.zip -d advanced_source/data/
+
+
 docs:
 	make download
 	make html
