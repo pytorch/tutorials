@@ -371,7 +371,7 @@ float_model = load_model(saved_model_dir + float_model_file).to('cpu')
 print('\n Inverted Residual Block: Before fusion \n\n', float_model.features[1].conv)
 float_model.eval()
 
-# Fusion is optional
+# Fuses modules
 float_model.fuse_model()
 
 # Note fusion of Conv+BN+Relu and Conv+Relu
@@ -567,6 +567,10 @@ for nepoch in range(8):
     print('Epoch %d :Evaluation accuracy on %d images, %2.2f'%(nepoch, num_eval_batches * eval_batch_size, top1.avg))
 
 #####################################################################
+# Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
+# quantization-aware training yields an accuracy of over 71% on the entire imagenet dataset,
+# which is close to the floating point accuracy of 71.9%.
+#
 # More on quantization-aware training:
 #
 # - QAT is a super-set of post training quant techniques that allows for more debugging.
