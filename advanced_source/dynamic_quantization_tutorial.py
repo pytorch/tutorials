@@ -269,6 +269,11 @@ print_size_of_model(quantized_model)
 
 ######################################################################
 # Second, we see faster inference time, with no difference in evaluation loss:
+#
+# Note: we number of threads to one for single threaded comparison, since quantized
+# models run single threaded.
+
+torch.set_num_threads(1)
 
 def time_model_evaluation(model, test_data):
     s = time.time()
@@ -280,6 +285,9 @@ time_model_evaluation(model, test_data)
 time_model_evaluation(quantized_model, test_data)
 
 ######################################################################
+# Running this locally on a MacBook Pro, without quantization, inference takes about 200 seconds,
+# and with quantization it takes just about 100 seconds.
+#
 # Conclusion
 # ----------
 #
