@@ -1,4 +1,4 @@
-2. Getting Started with Distributed Data Parallel
+Getting Started with Distributed Data Parallel
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
