@@ -222,16 +222,22 @@ Extending PyTorch
     <div style='clear:both'></div>
 
 Quantization (experimental)
-----------------------
+---------------------------
 
 .. customgalleryitem::
    :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
    :description: :doc:`/advanced/dynamic_quantization_tutorial`
    :figure: _static/img/quant_asym.png
 
+.. customgalleryitem::
+    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
+    :figure: /_static/img/qat.png
+    :description: :doc:`advanced/static_quantization_tutorial`
+
 .. raw:: html
 
     <div style='clear:both'></div>
+
 
 PyTorch in Other Languages
 --------------------------
@@ -357,6 +363,7 @@ PyTorch Fundamentals In-Depth
    :caption: Quantization (experimental)
 
    advanced/dynamic_quantization_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
