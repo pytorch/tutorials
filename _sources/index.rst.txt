@@ -85,7 +85,7 @@ Image
 
     <div style='clear:both'></div>
 
-(experimental) Named Tensor
+Named Tensor (experimental)
 ----------------------
 
 .. customgalleryitem::
@@ -312,7 +312,7 @@ PyTorch Fundamentals In-Depth
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: (experimental) Named Tensor
+   :caption: Named Tensor (experimental)
 
    intermediate/named_tensor_tutorial
 
