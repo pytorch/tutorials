@@ -85,6 +85,18 @@ Image
 
     <div style='clear:both'></div>
 
+Video
+----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Video
+   :description: :doc:`beginner/torchvision_video_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 (experimental) Named Tensor
 ----------------------
 
@@ -294,6 +306,14 @@ PyTorch Fundamentals In-Depth
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Video
+
+   beginner/torchvision_video_tutorial
 
 .. toctree::
    :maxdepth: 2
