@@ -8,7 +8,8 @@
 
 This tutorial shows how to do post-training static quantization, as well as illustrating
 two more advanced techniques - per-channel quantization and quantization-aware training -
-to further improve the model's accuracy.
+to further improve the model's accuracy. Note that quantization is currently only supported
+for CPUs, so we will not be utilizing GPUs / CUDA in this tutorial.
 
 By the end of this tutorial, you will see how quantization in PyTorch can result in
 significant decreases in model size while increasing speed. Furthermore, you'll see how
