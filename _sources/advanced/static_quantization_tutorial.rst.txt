@@ -16,7 +16,8 @@
 
 This tutorial shows how to do post-training static quantization, as well as illustrating
 two more advanced techniques - per-channel quantization and quantization-aware training -
-to further improve the model's accuracy.
+to further improve the model's accuracy. Note that quantization is currently only supported
+for CPUs, so we will not be utilizing GPUs / CUDA in this tutorial.
 
 By the end of this tutorial, you will see how quantization in PyTorch can result in
 significant decreases in model size while increasing speed. Furthermore, you'll see how
@@ -597,16 +598,16 @@ this additional step allows us to pass quantized values between operations inste
 
      Sequential(
       (0): ConvBNReLU(
-        (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.1497533619403839, zero_point=0, padding=(1, 1), groups=32)
+        (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.176099956035614, zero_point=0, padding=(1, 1), groups=32)
         (1): Identity()
         (2): Identity()
       )
-      (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.19892171025276184, zero_point=70)
+      (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.18581779301166534, zero_point=70)
       (2): Identity()
     )
     Size of model after quantization
     Size (MB): 3.588979
-    ..........Evaluation accuracy on 300 images, 64.33
+    ..........Evaluation accuracy on 300 images, 68.67
 
 
 For this quantized model, we see a significantly lower accuracy of just 62.33% on these same 30
@@ -650,7 +651,7 @@ quantizing for x86 architectures. This configuration does the following:
  .. code-block:: none
 
     QConfig(activation=functools.partial(<class 'torch.quantization.observer.HistogramObserver'>, reduce_range=True), weight=functools.partial(<class 'torch.quantization.observer.PerChannelMinMaxObserver'>, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
-    ....................Evaluation accuracy on 300 images, 76.00
+    ....................Evaluation accuracy on 300 images, 74.00
 
 
 Changing just this quantization configuration method resulted in an increase
@@ -827,30 +828,30 @@ inference. For quantization aware training, therefore, we modify the training lo
 
  .. code-block:: none
 
-    ....................Loss tensor(2.0757, grad_fn=<DivBackward0>)
-    Training: * Acc@1 53.333 Acc@5 77.667
+    ....................Loss tensor(2.2123, grad_fn=<DivBackward0>)
+    Training: * Acc@1 52.500 Acc@5 74.833
     ..........Epoch 0 :Evaluation accuracy on 300 images, 77.00
-    ....................Loss tensor(1.9336, grad_fn=<DivBackward0>)
-    Training: * Acc@1 56.500 Acc@5 78.667
-    ..........Epoch 1 :Evaluation accuracy on 300 images, 75.00
-    ....................Loss tensor(2.0892, grad_fn=<DivBackward0>)
-    Training: * Acc@1 55.500 Acc@5 76.333
-    ..........Epoch 2 :Evaluation accuracy on 300 images, 78.33
-    ....................Loss tensor(1.9993, grad_fn=<DivBackward0>)
-    Training: * Acc@1 55.333 Acc@5 77.167
-    ..........Epoch 3 :Evaluation accuracy on 300 images, 77.00
-    ....................Loss tensor(1.8121, grad_fn=<DivBackward0>)
-    Training: * Acc@1 59.000 Acc@5 82.000
-    ..........Epoch 4 :Evaluation accuracy on 300 images, 76.00
-    ....................Loss tensor(1.8445, grad_fn=<DivBackward0>)
-    Training: * Acc@1 58.167 Acc@5 81.000
-    ..........Epoch 5 :Evaluation accuracy on 300 images, 75.00
-    ....................Loss tensor(1.8686, grad_fn=<DivBackward0>)
-    Training: * Acc@1 55.667 Acc@5 80.333
-    ..........Epoch 6 :Evaluation accuracy on 300 images, 75.67
-    ....................Loss tensor(1.8857, grad_fn=<DivBackward0>)
-    Training: * Acc@1 59.500 Acc@5 81.500
-    ..........Epoch 7 :Evaluation accuracy on 300 images, 76.33
+    ....................Loss tensor(2.0773, grad_fn=<DivBackward0>)
+    Training: * Acc@1 54.167 Acc@5 76.667
+    ..........Epoch 1 :Evaluation accuracy on 300 images, 75.33
+    ....................Loss tensor(2.1399, grad_fn=<DivBackward0>)
+    Training: * Acc@1 54.000 Acc@5 74.833
+    ..........Epoch 2 :Evaluation accuracy on 300 images, 75.33
+    ....................Loss tensor(2.0873, grad_fn=<DivBackward0>)
+    Training: * Acc@1 54.000 Acc@5 76.167
+    ..........Epoch 3 :Evaluation accuracy on 300 images, 75.67
+    ....................Loss tensor(1.9479, grad_fn=<DivBackward0>)
+    Training: * Acc@1 55.333 Acc@5 80.333
+    ..........Epoch 4 :Evaluation accuracy on 300 images, 76.67
+    ....................Loss tensor(1.8364, grad_fn=<DivBackward0>)
+    Training: * Acc@1 56.167 Acc@5 81.167
+    ..........Epoch 5 :Evaluation accuracy on 300 images, 76.00
+    ....................Loss tensor(1.8387, grad_fn=<DivBackward0>)
+    Training: * Acc@1 56.500 Acc@5 81.167
+    ..........Epoch 6 :Evaluation accuracy on 300 images, 76.67
+    ....................Loss tensor(1.8756, grad_fn=<DivBackward0>)
+    Training: * Acc@1 56.333 Acc@5 79.833
+    ..........Epoch 7 :Evaluation accuracy on 300 images, 76.00
 
 
 Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -930,7 +931,7 @@ Thanks for reading! As always, we welcome any feedback, so please create an issu
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 11 minutes  11.772 seconds)
+   **Total running time of the script:** ( 11 minutes  20.570 seconds)
 
 
 .. _sphx_glr_download_advanced_static_quantization_tutorial.py:
