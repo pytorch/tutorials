@@ -21,6 +21,9 @@ pip install sphinx==1.8.2 pandas
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
 
+# Add sox install to get torchaudio to work
+pip install sox
+
 # Install two language tokenizers for Translation with TorchText tutorial
 python -m spacy download en
 python -m spacy download de
