@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Data Loading and Processing Tutorial
-====================================
+Writing Custom Datasets, DataLoaders and Transforms
+===================================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
 A lot of effort in solving any machine learning problem goes in to
@@ -136,10 +136,14 @@ class FaceLandmarksDataset(Dataset):
         return len(self.landmarks_frame)
 
     def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
         img_name = os.path.join(self.root_dir,
                                 self.landmarks_frame.iloc[idx, 0])
         image = io.imread(img_name)
-        landmarks = self.landmarks_frame.iloc[idx, 1:].as_matrix()
+        landmarks = self.landmarks_frame.iloc[idx, 1:]
+        landmarks = np.array([landmarks])
         landmarks = landmarks.astype('float').reshape(-1, 2)
         sample = {'image': image, 'landmarks': landmarks}
 
@@ -291,7 +295,7 @@ class ToTensor(object):
 # Compose transforms
 # ~~~~~~~~~~~~~~~~~~
 #
-# Now, we apply the transforms on an sample.
+# Now, we apply the transforms on a sample.
 #
 # Let's say we want to rescale the shorter side of the image to 256 and
 # then randomly crop a square of size 224 from it. i.e, we want to compose
@@ -379,13 +383,14 @@ def show_landmarks_batch(sample_batched):
             sample_batched['image'], sample_batched['landmarks']
     batch_size = len(images_batch)
     im_size = images_batch.size(2)
+    grid_border_size = 2
 
     grid = utils.make_grid(images_batch)
     plt.imshow(grid.numpy().transpose((1, 2, 0)))
 
     for i in range(batch_size):
-        plt.scatter(landmarks_batch[i, :, 0].numpy() + i * im_size,
-                    landmarks_batch[i, :, 1].numpy(),
+        plt.scatter(landmarks_batch[i, :, 0].numpy() + i * im_size + (i + 1) * grid_border_size,
+                    landmarks_batch[i, :, 1].numpy() + grid_border_size,
                     s=10, marker='.', c='r')
 
         plt.title('Batch from dataloader')

@@ -27,13 +27,6 @@ convert them to third party tensor formats (in this case, OpenCV ``Mat``s), how
 to register your operator with the TorchScript runtime and finally how to
 compile the operator and use it in Python and C++.
 
-This tutorial assumes you have the *preview release* of PyTorch 1.0 installed
-via ``pip`` or `conda`. See https://pytorch.org/get-started/locally for
-instructions on grabbing the latest release of PyTorch 1.0. Alternatively, you
-can compile PyTorch from source. The documentation in `this file
-<https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md>`_ will assist
-you with this.
-
 Implementing the Custom Operator in C++
 ---------------------------------------
 
@@ -177,7 +170,7 @@ Registration is very simple. For our case, we need to write:
 .. code-block:: cpp
 
   static auto registry =
-    torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
 
 somewhere in the global scope of our ``op.cpp`` file. This creates a global
 variable ``registry``, which will register our operator with TorchScript in its
@@ -195,7 +188,7 @@ operator name are separated by two colons (``::``).
   .. code-block:: cpp
 
     static auto registry =
-      torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective)
+      torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective)
       .op("my_ops::another_op", &another_op)
       .op("my_ops::and_another_op", &and_another_op);
 
@@ -989,7 +982,7 @@ custom TorchScript operator as a string. For this, use
   }
 
   static auto registry =
-    torch::jit::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
   """
 
   torch.utils.cpp_extension.load_inline(
@@ -1005,6 +998,11 @@ custom TorchScript operator as a string. For this, use
 Naturally, it is best practice to only use
 ``torch.utils.cpp_extension.load_inline`` if your source code is reasonably
 short.
+
+Note that if you're using this in a Jupyter Notebook, you should not execute
+the cell with the registration multiple times because each execution registers
+a new library and re-registers the custom operator. If you need to re-execute it,
+please restart the Python kernel of your notebook beforehand.
 
 Building with Setuptools
 ************************
