@@ -54,7 +54,7 @@ plt.ion()   # interactive mode
 # ---------
 #
 # We will use torchvision and torch.utils.data packages for loading the
-# data.
+# data. Testing...
 #
 # The problem we're going to solve today is to train a model to classify
 # **ants** and **bees**. We have about 120 training images each for ants and bees.
