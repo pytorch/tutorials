@@ -102,7 +102,7 @@ print(x.grad)
 # You should have got a matrix of ``4.5``. Let’s call the ``out``
 # *Tensor* “:math:`o`”.
 # We have that :math:`o = \frac{1}{4}\sum_i z_i`,
-# :math:`z_i = 3(x_i+2)^2` and :math:`z_i\bigr\rvert_{x_i=1} = 27`.
+# :math:`z_i = \frac{3}{4}(x_i+2)^2` and :math:`z_i\bigr\rvert_{x_i=1} = 27`.
 # Therefore,
 # :math:`\frac{\partial o}{\partial x_i} = \frac{3}{2}(x_i+2)`, hence
 # :math:`\frac{\partial o}{\partial x_i}\bigr\rvert_{x_i=1} = \frac{9}{2} = 4.5`.
