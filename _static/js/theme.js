@@ -1,1 +1,897 @@
-require=function l(s,r,a){function c(t,e){if(!r[t]){if(!s[t]){var n="function"==typeof require&&require;if(!e&&n)return n(t,!0);if(d)return d(t,!0);var i=new Error("Cannot find module '"+t+"'");throw i.code="MODULE_NOT_FOUND",i}var o=r[t]={exports:{}};s[t][0].call(o.exports,function(e){return c(s[t][1][e]||e)},o,o.exports,l,s,r,a)}return r[t].exports}for(var d="function"==typeof require&&require,e=0;e<a.length;e++)c(a[e]);return c}({1:[function(e,t,n){window.utilities={scrollTop:function(){var e=window.pageXOffset!==undefined,t="CSS1Compat"===(document.compatMode||"");e?window.pageXOffset:t?document.documentElement.scrollLeft:document.body.scrollLeft;return e?window.pageYOffset:t?document.documentElement.scrollTop:document.body.scrollTop},throttle:function(n,i,o){var l,s,r,a=null,c=0;o||(o={});var d=function(){c=!1===o.leading?0:Date.now(),a=null,r=n.apply(l,s),a||(l=s=null)};return function(){var e=Date.now();c||!1!==o.leading||(c=e);var t=i-(e-c);return l=this,s=arguments,t<=0||i<t?(a&&(clearTimeout(a),a=null),c=e,r=n.apply(l,s),a||(l=s=null)):a||!1===o.trailing||(a=setTimeout(d,t)),r}},closest:function(e,t){var n,i;for(["matches","webkitMatchesSelector","mozMatchesSelector","msMatchesSelector","oMatchesSelector"].some(function(e){return"function"==typeof document.body[e]&&(n=e,!0)});e;){if((i=e.parentElement)&&i[n](t))return i;e=i}return null},offset:function(e){if(e&&(rect=e.getBoundingClientRect(),rect.width||rect.height||e.getClientRects().length)){var t=e.ownerDocument.documentElement;return{top:rect.top+window.pageYOffset-t.clientTop,left:rect.left+window.pageXOffset-t.clientLeft}}},headersHeight:function(){return document.getElementById("pytorch-left-menu").classList.contains("make-fixed")?document.getElementById("pytorch-page-level-bar").offsetHeight:document.getElementById("header-holder").offsetHeight+document.getElementById("pytorch-page-level-bar").offsetHeight},windowHeight:function(){return window.innerHeight||document.documentElement.clientHeight||document.body.clientHeight}}},{}],2:[function(e,t,n){var i={init:function(){i.bind(),i.cookieExists()||(i.setCookie(),i.showCookieNotice())},bind:function(){$(".close-button").on("click",i.hideCookieNotice)},cookieExists:function(){return!!localStorage.getItem("returningPytorchUser")},setCookie:function(){localStorage.setItem("returningPytorchUser",!0)},showCookieNotice:function(){$(".cookie-banner-wrapper").addClass("is-visible")},hideCookieNotice:function(){$(".cookie-banner-wrapper").removeClass("is-visible")}};$(function(){i.init()})},{}],3:[function(e,t,n){window.highlightNavigation={navigationListItems:document.querySelectorAll("#pytorch-right-menu li"),sections:document.querySelectorAll(".pytorch-article .section"),sectionIdTonavigationLink:{},bind:function(){if(sideMenus.displayRightMenu){for(var e=0;e<highlightNavigation.sections.length;e++){var t=highlightNavigation.sections[e].id;highlightNavigation.sectionIdTonavigationLink[t]=document.querySelectorAll('#pytorch-right-menu li a[href="#'+t+'"]')[0]}$(window).scroll(utilities.throttle(highlightNavigation.highlight,100))}},highlight:function(){var e=document.getElementById("pytorch-right-menu");if(0!==e.offsetWidth||0!==e.offsetHeight)for(var t=utilities.scrollTop(),n=document.getElementById("header-holder").offsetHeight+document.getElementById("pytorch-page-level-bar").offsetHeight+25,i=highlightNavigation.sections,o=i.length-1;0<=o;o--){var l=i[o];if(utilities.offset(l).top-n<=t){var s=highlightNavigation.sectionIdTonavigationLink[l.id],r=utilities.closest(s,"li");if(r&&!r.classList.contains("active")){for(o=0;o<highlightNavigation.navigationListItems.length;o++){var a=highlightNavigation.navigationListItems[o];a.classList.contains("active")&&a.classList.remove("active")}r.classList.add("active")}break}}}}},{}],4:[function(e,t,n){window.mobileMenu={bind:function(){$("[data-behavior='open-mobile-menu']").on("click",function(e){e.preventDefault(),$(".mobile-main-menu").addClass("open"),$("body").addClass("no-scroll"),mobileMenu.listenForResize()}),$("[data-behavior='close-mobile-menu']").on("click",function(e){e.preventDefault(),mobileMenu.close()})},listenForResize:function(){$(window).on("resize.ForMobileMenu",function(){768<$(this).width()&&mobileMenu.close()})},close:function(){$(".mobile-main-menu").removeClass("open"),$("body").removeClass("no-scroll"),$(window).off("resize.ForMobileMenu")}}},{}],5:[function(e,t,n){window.mobileTOC={bind:function(){$("[data-behavior='toggle-table-of-contents']").on("click",function(e){e.preventDefault();var t=$(this).parent();t.hasClass("is-open")?(t.removeClass("is-open"),$(".pytorch-left-menu").slideUp(200,function(){$(this).css({display:""})})):(t.addClass("is-open"),$(".pytorch-left-menu").slideDown(200))})}}},{}],6:[function(e,t,n){window.pytorchAnchors={bind:function(){$(".headerlink").text(""),window.anchors.add(".pytorch-article .headerlink"),$(".anchorjs-link").each(function(){var e=$(this).closest(".headerlink"),t=e.attr("href"),n=this.outerHTML;$clone=$(n).attr("href",t),e.before($clone),e.remove()})}}},{}],7:[function(e,t,n){window.scrollToAnchor={bind:function(){var o=window.document,l=window.history,s=window.location,r=!(!l||!l.pushState),e={ANCHOR_REGEX:/^#[^ ]+$/,offsetHeightPx:function(){return utilities.headersHeight()+20},init:function(){this.scrollToCurrent(),$("body").on("click","a",$.proxy(this,"delegateAnchors")),$("body").on("click","#pytorch-right-menu li span",$.proxy(this,"delegateSpans"))},getFixedOffset:function(){return this.offsetHeightPx()},scrollIfAnchor:function(e,t){var n;if(!this.ANCHOR_REGEX.test(e))return!1;if(n=o.getElementById(e.slice(1))){var i=$(n).offset().top-this.getFixedOffset();$("html, body").scrollTop(i),r&&t&&l.pushState({},o.title,s.pathname+e)}return!!n},scrollToCurrent:function(e){this.scrollIfAnchor(window.location.hash)&&e&&e.preventDefault()},delegateSpans:function(e){var t=utilities.closest(e.target,"a");this.scrollIfAnchor(t.getAttribute("href"),!0)&&e.preventDefault()},delegateAnchors:function(e){var t=e.target;this.scrollIfAnchor(t.getAttribute("href"),!0)&&e.preventDefault()}};$(o).ready($.proxy(e,"init"))}}},{}],8:[function(e,t,n){window.sideMenus={rightMenuIsOnScreen:function(){return null!==document.getElementById("pytorch-content-right").offsetParent},isFixedToBottom:!1,bind:function(){sideMenus.handleLeftMenu();var e=document.querySelectorAll("#pytorch-right-menu li"),t=1<e.length;if(!t)for(var n=0;n<e.length;n++)e[n].style.display="none";if(t){document.getElementById("pytorch-shortcuts-wrapper").style.display="block";var i=document.querySelectorAll("#pytorch-right-menu #pytorch-side-scroll-right          > ul > li > a.reference.internal");for(n=0;n<i.length;n++){var o=i[n];o.classList.add("title-link"),o.nextElementSibling&&"UL"===o.nextElementSibling.tagName&&0<o.nextElementSibling.children.length&&o.classList.add("has-children")}var l=document.querySelectorAll("#pytorch-right-menu ul li ul li a.reference.internal");for(n=0;n<l.length;n++)l[n].nextElementSibling&&"UL"===l[n].nextElementSibling.tagName&&l[n].classList.add("not-expanded");var s=document.querySelector('#pytorch-right-menu a[href="'+window.location.hash+'"]');s&&(s.nextElementSibling&&"UL"===s.nextElementSibling.tagName&&0<s.nextElementSibling.children.length&&(s.nextElementSibling.style.display="block",s.classList.add("expanded")),sideMenus.expandClosestUnexpandedParentList(s)),$("#pytorch-right-menu a.reference.internal").on("click",function(){this.classList.contains("expanded")?(this.nextElementSibling.style.display="none",this.classList.remove("expanded"),this.classList.add("not-expanded")):this.classList.contains("not-expanded")&&(this.nextElementSibling.style.display="block",this.classList.remove("not-expanded"),this.classList.add("expanded"))}),sideMenus.handleRightMenu()}$(window).on("resize scroll",function(e){sideMenus.handleNavBar(),sideMenus.handleLeftMenu(),sideMenus.rightMenuIsOnScreen()&&sideMenus.handleRightMenu()})},leftMenuIsFixed:function(){return document.getElementById("pytorch-left-menu").classList.contains("make-fixed")},handleNavBar:function(){var e=document.getElementById("header-holder").offsetHeight;utilities.scrollTop()>=e?(document.getElementById("pytorch-left-menu").classList.add("make-fixed"),document.getElementById("pytorch-page-level-bar").classList.add("left-menu-is-fixed")):(document.getElementById("pytorch-left-menu").classList.remove("make-fixed"),document.getElementById("pytorch-page-level-bar").classList.remove("left-menu-is-fixed"))},expandClosestUnexpandedParentList:function(e){var t=utilities.closest(e,"ul");if(t){var n=t.previousElementSibling;if(n&&"A"===n.tagName&&n.classList.contains("reference")){if(n.classList.contains("title-link"))return;t.style.display="block",n.classList.remove("not-expanded"),n.classList.add("expanded"),sideMenus.expandClosestUnexpandedParentList(n)}}},handleLeftMenu:function(){var e=utilities.windowHeight(),t=document.getElementById("docs-tutorials-resources").getBoundingClientRect().top;if(e<=t)document.getElementById("pytorch-left-menu").style.height="100%";else{var n=e-t;document.getElementById("pytorch-left-menu").style.height=e-n+"px"}},handleRightMenu:function(){var e=document.getElementById("pytorch-content-right"),t=document.getElementById("pytorch-right-menu"),n=t.getElementsByTagName("ul")[0],i=document.getElementById("pytorch-article"),o=i.offsetHeight,l=utilities.offset(i).top+o,s=document.getElementById("header-holder").offsetHeight;if(utilities.scrollTop()<s)e.style.height="100%",t.style.top=0,t.classList.remove("scrolling-fixed"),t.classList.remove("scrolling-absolute");else{if(t.classList.contains("scrolling-fixed"))l<=utilities.offset(n).top+n.offsetHeight&&(e.style.height=o+s+"px",t.style.top=utilities.scrollTop()-s+"px",t.classList.add("scrolling-absolute"),t.classList.remove("scrolling-fixed"));else e.style.height=o+s+"px",t.style.top=l-s-n.offsetHeight+"px",t.classList.add("scrolling-absolute");utilities.scrollTop()<l-n.offsetHeight&&(e.style.height="100%",t.style.top="",t.classList.remove("scrolling-absolute"),t.classList.add("scrolling-fixed"))}var r=document.getElementById("pytorch-side-scroll-right"),a=r.getBoundingClientRect().top;r.style.height=utilities.windowHeight()-a+"px"}}},{}],"pytorch-sphinx-theme":[function(e,t,n){var jQuery="undefined"!=typeof window?window.jQuery:e("jquery");if(t.exports.ThemeNav={navBar:null,win:null,winScroll:!1,winResize:!1,linkScroll:!1,winPosition:0,winHeight:null,docHeight:null,isRunning:!1,enable:function(t){var n=this;void 0===t&&(t=!0),n.isRunning||(n.isRunning=!0,jQuery(function(e){n.init(e),n.reset(),n.win.on("hashchange",n.reset),t&&n.win.on("scroll",function(){n.linkScroll||n.winScroll||(n.winScroll=!0,requestAnimationFrame(function(){n.onScroll()}))}),n.win.on("resize",function(){n.winResize||(n.winResize=!0,requestAnimationFrame(function(){n.onResize()}))}),n.onResize()}))},enableSticky:function(){this.enable(!0)},init:function(n){n(document);var i=this;this.navBar=n("div.pytorch-side-scroll:first"),this.win=n(window),n(document).on("click","[data-toggle='pytorch-left-menu-nav-top']",function(){n("[data-toggle='wy-nav-shift']").toggleClass("shift"),n("[data-toggle='rst-versions']").toggleClass("shift")}).on("click",".pytorch-menu-vertical .current ul li a",function(){var e=n(this);n("[data-toggle='wy-nav-shift']").removeClass("shift"),n("[data-toggle='rst-versions']").toggleClass("shift"),i.toggleCurrent(e),i.hashChange()}).on("click","[data-toggle='rst-current-version']",function(){n("[data-toggle='rst-versions']").toggleClass("shift-up")}),n("table.docutils:not(.field-list,.footnote,.citation)").wrap("<div class='wy-table-responsive'></div>"),n("table.docutils.footnote").wrap("<div class='wy-table-responsive footnote'></div>"),n("table.docutils.citation").wrap("<div class='wy-table-responsive citation'></div>"),n(".pytorch-menu-vertical ul").not(".simple").siblings("a").each(function(){var t=n(this);expand=n('<span class="toctree-expand"></span>'),expand.on("click",function(e){return i.toggleCurrent(t),e.stopPropagation(),!1}),t.prepend(expand)})},reset:function(){var e=encodeURI(window.location.hash)||"#";try{var t=$(".pytorch-menu-vertical"),n=t.find('[href="'+e+'"]');if(0===n.length){var i=$('.document [id="'+e.substring(1)+'"]').closest("div.section");0===(n=t.find('[href="#'+i.attr("id")+'"]')).length&&(n=t.find('[href="#"]'))}0<n.length&&($(".pytorch-menu-vertical .current").removeClass("current"),n.addClass("current"),n.closest("li.toctree-l1").addClass("current"),n.closest("li.toctree-l1").parent().addClass("current"),n.closest("li.toctree-l1").addClass("current"),n.closest("li.toctree-l2").addClass("current"),n.closest("li.toctree-l3").addClass("current"),n.closest("li.toctree-l4").addClass("current"))}catch(o){console.log("Error expanding nav for anchor",o)}},onScroll:function(){this.winScroll=!1;var e=this.win.scrollTop(),t=e+this.winHeight,n=this.navBar.scrollTop()+(e-this.winPosition);e<0||t>this.docHeight||(this.navBar.scrollTop(n),this.winPosition=e)},onResize:function(){this.winResize=!1,this.winHeight=this.win.height(),this.docHeight=$(document).height()},hashChange:function(){this.linkScroll=!0,this.win.one("hashchange",function(){this.linkScroll=!1})},toggleCurrent:function(e){var t=e.closest("li");t.siblings("li.current").removeClass("current"),t.siblings().find("li.current").removeClass("current"),t.find("> ul li.current").removeClass("current"),t.toggleClass("current")}},"undefined"!=typeof window&&(window.SphinxRtdTheme={Navigation:t.exports.ThemeNav,StickyNav:t.exports.ThemeNav}),function(){for(var l=0,e=["ms","moz","webkit","o"],t=0;t<e.length&&!window.requestAnimationFrame;++t)window.requestAnimationFrame=window[e[t]+"RequestAnimationFrame"],window.cancelAnimationFrame=window[e[t]+"CancelAnimationFrame"]||window[e[t]+"CancelRequestAnimationFrame"];window.requestAnimationFrame||(window.requestAnimationFrame=function(e,t){var n=(new Date).getTime(),i=Math.max(0,16-(n-l)),o=window.setTimeout(function(){e(n+i)},i);return l=n+i,o}),window.cancelAnimationFrame||(window.cancelAnimationFrame=function(e){clearTimeout(e)})}(),$(".sphx-glr-thumbcontainer").removeAttr("tooltip"),$("table").removeAttr("border"),1<=$(".sphx-glr-download-link-note.admonition.note").length){var i=$("#tutorial-type").text().split("/");i[0]=i[0]+"_source";var o="https://github.com/pytorch/tutorials/blob/master/"+i.join("/")+".py",l=$(".reference.download")[1].href,s="https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/"+l.split("_downloads")[1].split("/").pop();$("#google-colab-link").wrap("<a href="+s+" data-behavior='call-to-action-event' data-response='Run in Google Colab' target='_blank'/>"),$("#download-notebook-link").wrap("<a href="+l+" data-behavior='call-to-action-event' data-response='Download Notebook'/>"),$("#github-view-link").wrap("<a href="+o+" data-behavior='call-to-action-event' data-response='View on Github' target='_blank'/>")}else $(".pytorch-call-to-action-links").hide()},{jquery:"jquery"}]},{},[1,2,3,4,5,6,7,8,"pytorch-sphinx-theme"]);
+require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+window.utilities = {
+  scrollTop: function() {
+    var supportPageOffset = window.pageXOffset !== undefined;
+    var isCSS1Compat = ((document.compatMode || "") === "CSS1Compat");
+    var scrollLeft = supportPageOffset ? window.pageXOffset : isCSS1Compat ? document.documentElement.scrollLeft : document.body.scrollLeft;
+    return supportPageOffset ? window.pageYOffset : isCSS1Compat ? document.documentElement.scrollTop : document.body.scrollTop;
+  },
+
+  // Modified from https://stackoverflow.com/a/27078401
+  throttle: function(func, wait, options) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    if (!options) options = {};
+    var later = function() {
+      previous = options.leading === false ? 0 : Date.now();
+      timeout = null;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    };
+    return function() {
+      var now = Date.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+        previous = now;
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+  },
+
+  closest: function (el, selector) {
+    var matchesFn;
+
+    // find vendor prefix
+    ['matches','webkitMatchesSelector','mozMatchesSelector','msMatchesSelector','oMatchesSelector'].some(function(fn) {
+      if (typeof document.body[fn] == 'function') {
+        matchesFn = fn;
+        return true;
+      }
+      return false;
+    });
+
+    var parent;
+
+    // traverse parents
+    while (el) {
+      parent = el.parentElement;
+      if (parent && parent[matchesFn](selector)) {
+        return parent;
+      }
+      el = parent;
+    }
+
+    return null;
+  },
+
+  // Modified from https://stackoverflow.com/a/18953277
+  offset: function(elem) {
+    if (!elem) {
+      return;
+    }
+
+    rect = elem.getBoundingClientRect();
+
+    // Make sure element is not hidden (display: none) or disconnected
+    if (rect.width || rect.height || elem.getClientRects().length) {
+      var doc = elem.ownerDocument;
+      var docElem = doc.documentElement;
+
+      return {
+        top: rect.top + window.pageYOffset - docElem.clientTop,
+        left: rect.left + window.pageXOffset - docElem.clientLeft
+      };
+    }
+  },
+
+  headersHeight: function() {
+    if (document.getElementById("pytorch-left-menu").classList.contains("make-fixed")) {
+      return document.getElementById("pytorch-page-level-bar").offsetHeight;
+    } else {
+      return document.getElementById("header-holder").offsetHeight +
+             document.getElementById("pytorch-page-level-bar").offsetHeight;
+    }
+  },
+
+  windowHeight: function() {
+    return window.innerHeight ||
+           document.documentElement.clientHeight ||
+           document.body.clientHeight;
+  }
+}
+
+},{}],2:[function(require,module,exports){
+var cookieBanner = {
+  init: function() {
+    cookieBanner.bind();
+
+    var cookieExists = cookieBanner.cookieExists();
+
+    if (!cookieExists) {
+      cookieBanner.setCookie();
+      cookieBanner.showCookieNotice();
+    }
+  },
+
+  bind: function() {
+    $(".close-button").on("click", cookieBanner.hideCookieNotice);
+  },
+
+  cookieExists: function() {
+    var cookie = localStorage.getItem("returningPytorchUser");
+
+    if (cookie) {
+      return true;
+    } else {
+      return false;
+    }
+  },
+
+  setCookie: function() {
+    localStorage.setItem("returningPytorchUser", true);
+  },
+
+  showCookieNotice: function() {
+    $(".cookie-banner-wrapper").addClass("is-visible");
+  },
+
+  hideCookieNotice: function() {
+    $(".cookie-banner-wrapper").removeClass("is-visible");
+  }
+};
+
+$(function() {
+  cookieBanner.init();
+});
+
+},{}],3:[function(require,module,exports){
+// Modified from https://stackoverflow.com/a/32396543
+window.highlightNavigation = {
+  navigationListItems: document.querySelectorAll("#pytorch-right-menu li"),
+  sections: document.querySelectorAll(".pytorch-article .section"),
+  sectionIdTonavigationLink: {},
+
+  bind: function() {
+    if (!sideMenus.displayRightMenu) {
+      return;
+    };
+
+    for (var i = 0; i < highlightNavigation.sections.length; i++) {
+      var id = highlightNavigation.sections[i].id;
+      highlightNavigation.sectionIdTonavigationLink[id] =
+        document.querySelectorAll('#pytorch-right-menu li a[href="#' + id + '"]')[0];
+    }
+
+    $(window).scroll(utilities.throttle(highlightNavigation.highlight, 100));
+  },
+
+  highlight: function() {
+    var rightMenu = document.getElementById("pytorch-right-menu");
+
+    // If right menu is not on the screen don't bother
+    if (rightMenu.offsetWidth === 0 && rightMenu.offsetHeight === 0) {
+      return;
+    }
+
+    var scrollPosition = utilities.scrollTop();
+    var OFFSET_TOP_PADDING = 25;
+    var offset = document.getElementById("header-holder").offsetHeight +
+                 document.getElementById("pytorch-page-level-bar").offsetHeight +
+                 OFFSET_TOP_PADDING;
+
+    var sections = highlightNavigation.sections;
+
+    for (var i = (sections.length - 1); i >= 0; i--) {
+      var currentSection = sections[i];
+      var sectionTop = utilities.offset(currentSection).top;
+
+      if (scrollPosition >= sectionTop - offset) {
+        var navigationLink = highlightNavigation.sectionIdTonavigationLink[currentSection.id];
+        var navigationListItem = utilities.closest(navigationLink, "li");
+
+        if (navigationListItem && !navigationListItem.classList.contains("active")) {
+          for (var i = 0; i < highlightNavigation.navigationListItems.length; i++) {
+            var el = highlightNavigation.navigationListItems[i];
+            if (el.classList.contains("active")) {
+              el.classList.remove("active");
+            }
+          }
+
+          navigationListItem.classList.add("active");
+
+          // Scroll to active item. Not a requested feature but we could revive it. Needs work.
+
+          // var menuTop = $("#pytorch-right-menu").position().top;
+          // var itemTop = navigationListItem.getBoundingClientRect().top;
+          // var TOP_PADDING = 20
+          // var newActiveTop = $("#pytorch-side-scroll-right").scrollTop() + itemTop - menuTop - TOP_PADDING;
+
+          // $("#pytorch-side-scroll-right").animate({
+          //   scrollTop: newActiveTop
+          // }, 100);
+        }
+
+        break;
+      }
+    }
+  }
+};
+
+},{}],4:[function(require,module,exports){
+window.mainMenuDropdown = {
+  bind: function() {
+    $("[data-toggle='ecosystem-dropdown']").on("click", function() {
+      toggleDropdown($(this).attr("data-toggle"));
+    });
+
+    $("[data-toggle='resources-dropdown']").on("click", function() {
+      toggleDropdown($(this).attr("data-toggle"));
+    });
+
+    function toggleDropdown(menuToggle) {
+      var showMenuClass = "show-menu";
+      var menuClass = "." + menuToggle + "-menu";
+
+      if ($(menuClass).hasClass(showMenuClass)) {
+        $(menuClass).removeClass(showMenuClass);
+      } else {
+        $("[data-toggle=" + menuToggle + "].show-menu").removeClass(
+          showMenuClass
+        );
+        $(menuClass).addClass(showMenuClass);
+      }
+    }
+  }
+};
+
+},{}],5:[function(require,module,exports){
+window.mobileMenu = {
+  bind: function() {
+    $("[data-behavior='open-mobile-menu']").on('click', function(e) {
+      e.preventDefault();
+      $(".mobile-main-menu").addClass("open");
+      $("body").addClass('no-scroll');
+
+      mobileMenu.listenForResize();
+    });
+
+    $("[data-behavior='close-mobile-menu']").on('click', function(e) {
+      e.preventDefault();
+      mobileMenu.close();
+    });
+  },
+
+  listenForResize: function() {
+    $(window).on('resize.ForMobileMenu', function() {
+      if ($(this).width() > 768) {
+        mobileMenu.close();
+      }
+    });
+  },
+
+  close: function() {
+    $(".mobile-main-menu").removeClass("open");
+    $("body").removeClass('no-scroll');
+    $(window).off('resize.ForMobileMenu');
+  }
+};
+
+},{}],6:[function(require,module,exports){
+window.mobileTOC = {
+  bind: function() {
+    $("[data-behavior='toggle-table-of-contents']").on("click", function(e) {
+      e.preventDefault();
+
+      var $parent = $(this).parent();
+
+      if ($parent.hasClass("is-open")) {
+        $parent.removeClass("is-open");
+        $(".pytorch-left-menu").slideUp(200, function() {
+          $(this).css({display: ""});
+        });
+      } else {
+        $parent.addClass("is-open");
+        $(".pytorch-left-menu").slideDown(200);
+      }
+    });
+  }
+}
+
+},{}],7:[function(require,module,exports){
+window.pytorchAnchors = {
+  bind: function() {
+    // Replace Sphinx-generated anchors with anchorjs ones
+    $(".headerlink").text("");
+
+    window.anchors.add(".pytorch-article .headerlink");
+
+    $(".anchorjs-link").each(function() {
+      var $headerLink = $(this).closest(".headerlink");
+      var href = $headerLink.attr("href");
+      var clone = this.outerHTML;
+
+      $clone = $(clone).attr("href", href);
+      $headerLink.before($clone);
+      $headerLink.remove();
+    });
+  }
+};
+
+},{}],8:[function(require,module,exports){
+// Modified from https://stackoverflow.com/a/13067009
+// Going for a JS solution to scrolling to an anchor so we can benefit from
+// less hacky css and smooth scrolling.
+
+window.scrollToAnchor = {
+  bind: function() {
+    var document = window.document;
+    var history = window.history;
+    var location = window.location
+    var HISTORY_SUPPORT = !!(history && history.pushState);
+
+    var anchorScrolls = {
+      ANCHOR_REGEX: /^#[^ ]+$/,
+      offsetHeightPx: function() {
+        var OFFSET_HEIGHT_PADDING = 20;
+        // TODO: this is a little janky. We should try to not rely on JS for this
+        return utilities.headersHeight() + OFFSET_HEIGHT_PADDING;
+      },
+
+      /**
+       * Establish events, and fix initial scroll position if a hash is provided.
+       */
+      init: function() {
+        this.scrollToCurrent();
+        // This interferes with clicks below it, causing a double fire
+        // $(window).on('hashchange', $.proxy(this, 'scrollToCurrent'));
+        $('body').on('click', 'a', $.proxy(this, 'delegateAnchors'));
+        $('body').on('click', '#pytorch-right-menu li span', $.proxy(this, 'delegateSpans'));
+      },
+
+      /**
+       * Return the offset amount to deduct from the normal scroll position.
+       * Modify as appropriate to allow for dynamic calculations
+       */
+      getFixedOffset: function() {
+        return this.offsetHeightPx();
+      },
+
+      /**
+       * If the provided href is an anchor which resolves to an element on the
+       * page, scroll to it.
+       * @param  {String} href
+       * @return {Boolean} - Was the href an anchor.
+       */
+      scrollIfAnchor: function(href, pushToHistory) {
+        var match, anchorOffset;
+
+        if(!this.ANCHOR_REGEX.test(href)) {
+          return false;
+        }
+
+        match = document.getElementById(href.slice(1));
+
+        if(match) {
+          var anchorOffset = $(match).offset().top - this.getFixedOffset();
+
+          $('html, body').scrollTop(anchorOffset);
+
+          // Add the state to history as-per normal anchor links
+          if(HISTORY_SUPPORT && pushToHistory) {
+            history.pushState({}, document.title, location.pathname + href);
+          }
+        }
+
+        return !!match;
+      },
+
+      /**
+       * Attempt to scroll to the current location's hash.
+       */
+      scrollToCurrent: function(e) {
+        if(this.scrollIfAnchor(window.location.hash) && e) {
+          e.preventDefault();
+        }
+      },
+
+      delegateSpans: function(e) {
+        var elem = utilities.closest(e.target, "a");
+
+        if(this.scrollIfAnchor(elem.getAttribute('href'), true)) {
+          e.preventDefault();
+        }
+      },
+
+      /**
+       * If the click event's target was an anchor, fix the scroll position.
+       */
+      delegateAnchors: function(e) {
+        var elem = e.target;
+
+        if(this.scrollIfAnchor(elem.getAttribute('href'), true)) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    $(document).ready($.proxy(anchorScrolls, 'init'));
+  }
+};
+
+},{}],9:[function(require,module,exports){
+window.sideMenus = {
+  rightMenuIsOnScreen: function() {
+    return document.getElementById("pytorch-content-right").offsetParent !== null;
+  },
+
+  isFixedToBottom: false,
+
+  bind: function() {
+    sideMenus.handleLeftMenu();
+
+    var rightMenuLinks = document.querySelectorAll("#pytorch-right-menu li");
+    var rightMenuHasLinks = rightMenuLinks.length > 1;
+
+    if (!rightMenuHasLinks) {
+      for (var i = 0; i < rightMenuLinks.length; i++) {
+        rightMenuLinks[i].style.display = "none";
+      }
+    }
+
+    if (rightMenuHasLinks) {
+      // Don't show the Shortcuts menu title text unless there are menu items
+      document.getElementById("pytorch-shortcuts-wrapper").style.display = "block";
+
+      // We are hiding the titles of the pages in the right side menu but there are a few
+      // pages that include other pages in the right side menu (see 'torch.nn' in the docs)
+      // so if we exclude those it looks confusing. Here we add a 'title-link' class to these
+      // links so we can exclude them from normal right side menu link operations
+      var titleLinks = document.querySelectorAll(
+        "#pytorch-right-menu #pytorch-side-scroll-right \
+         > ul > li > a.reference.internal"
+      );
+
+      for (var i = 0; i < titleLinks.length; i++) {
+        var link = titleLinks[i];
+
+        link.classList.add("title-link");
+
+        if (
+          link.nextElementSibling &&
+          link.nextElementSibling.tagName === "UL" &&
+          link.nextElementSibling.children.length > 0
+        ) {
+          link.classList.add("has-children");
+        }
+      }
+
+      // Add + expansion signifiers to normal right menu links that have sub menus
+      var menuLinks = document.querySelectorAll(
+        "#pytorch-right-menu ul li ul li a.reference.internal"
+      );
+
+      for (var i = 0; i < menuLinks.length; i++) {
+        if (
+          menuLinks[i].nextElementSibling &&
+          menuLinks[i].nextElementSibling.tagName === "UL"
+        ) {
+          menuLinks[i].classList.add("not-expanded");
+        }
+      }
+
+      // If a hash is present on page load recursively expand menu items leading to selected item
+      var linkWithHash =
+        document.querySelector(
+          "#pytorch-right-menu a[href=\"" + window.location.hash + "\"]"
+        );
+
+      if (linkWithHash) {
+        // Expand immediate sibling list if present
+        if (
+          linkWithHash.nextElementSibling &&
+          linkWithHash.nextElementSibling.tagName === "UL" &&
+          linkWithHash.nextElementSibling.children.length > 0
+        ) {
+          linkWithHash.nextElementSibling.style.display = "block";
+          linkWithHash.classList.add("expanded");
+        }
+
+        // Expand ancestor lists if any
+        sideMenus.expandClosestUnexpandedParentList(linkWithHash);
+      }
+
+      // Bind click events on right menu links
+      $("#pytorch-right-menu a.reference.internal").on("click", function() {
+        if (this.classList.contains("expanded")) {
+          this.nextElementSibling.style.display = "none";
+          this.classList.remove("expanded");
+          this.classList.add("not-expanded");
+        } else if (this.classList.contains("not-expanded")) {
+          this.nextElementSibling.style.display = "block";
+          this.classList.remove("not-expanded");
+          this.classList.add("expanded");
+        }
+      });
+
+      sideMenus.handleRightMenu();
+    }
+
+    $(window).on('resize scroll', function(e) {
+      sideMenus.handleNavBar();
+
+      sideMenus.handleLeftMenu();
+
+      if (sideMenus.rightMenuIsOnScreen()) {
+        sideMenus.handleRightMenu();
+      }
+    });
+  },
+
+  leftMenuIsFixed: function() {
+    return document.getElementById("pytorch-left-menu").classList.contains("make-fixed");
+  },
+
+  handleNavBar: function() {
+    var mainHeaderHeight = document.getElementById('header-holder').offsetHeight;
+
+    // If we are scrolled past the main navigation header fix the sub menu bar to top of page
+    if (utilities.scrollTop() >= mainHeaderHeight) {
+      document.getElementById("pytorch-left-menu").classList.add("make-fixed");
+      document.getElementById("pytorch-page-level-bar").classList.add("left-menu-is-fixed");
+    } else {
+      document.getElementById("pytorch-left-menu").classList.remove("make-fixed");
+      document.getElementById("pytorch-page-level-bar").classList.remove("left-menu-is-fixed");
+    }
+  },
+
+  expandClosestUnexpandedParentList: function (el) {
+    var closestParentList = utilities.closest(el, "ul");
+
+    if (closestParentList) {
+      var closestParentLink = closestParentList.previousElementSibling;
+      var closestParentLinkExists = closestParentLink &&
+                                    closestParentLink.tagName === "A" &&
+                                    closestParentLink.classList.contains("reference");
+
+      if (closestParentLinkExists) {
+        // Don't add expansion class to any title links
+         if (closestParentLink.classList.contains("title-link")) {
+           return;
+         }
+
+        closestParentList.style.display = "block";
+        closestParentLink.classList.remove("not-expanded");
+        closestParentLink.classList.add("expanded");
+        sideMenus.expandClosestUnexpandedParentList(closestParentLink);
+      }
+    }
+  },
+
+  handleLeftMenu: function () {
+    var windowHeight = utilities.windowHeight();
+    var topOfFooterRelativeToWindow = document.getElementById("docs-tutorials-resources").getBoundingClientRect().top;
+
+    if (topOfFooterRelativeToWindow >= windowHeight) {
+      document.getElementById("pytorch-left-menu").style.height = "100%";
+    } else {
+      var howManyPixelsOfTheFooterAreInTheWindow = windowHeight - topOfFooterRelativeToWindow;
+      var leftMenuDifference = howManyPixelsOfTheFooterAreInTheWindow;
+      document.getElementById("pytorch-left-menu").style.height = (windowHeight - leftMenuDifference) + "px";
+    }
+  },
+
+  handleRightMenu: function() {
+    var rightMenuWrapper = document.getElementById("pytorch-content-right");
+    var rightMenu = document.getElementById("pytorch-right-menu");
+    var rightMenuList = rightMenu.getElementsByTagName("ul")[0];
+    var article = document.getElementById("pytorch-article");
+    var articleHeight = article.offsetHeight;
+    var articleBottom = utilities.offset(article).top + articleHeight;
+    var mainHeaderHeight = document.getElementById('header-holder').offsetHeight;
+
+    if (utilities.scrollTop() < mainHeaderHeight) {
+      rightMenuWrapper.style.height = "100%";
+      rightMenu.style.top = 0;
+      rightMenu.classList.remove("scrolling-fixed");
+      rightMenu.classList.remove("scrolling-absolute");
+    } else {
+      if (rightMenu.classList.contains("scrolling-fixed")) {
+        var rightMenuBottom =
+          utilities.offset(rightMenuList).top + rightMenuList.offsetHeight;
+
+        if (rightMenuBottom >= articleBottom) {
+          rightMenuWrapper.style.height = articleHeight + mainHeaderHeight + "px";
+          rightMenu.style.top = utilities.scrollTop() - mainHeaderHeight + "px";
+          rightMenu.classList.add("scrolling-absolute");
+          rightMenu.classList.remove("scrolling-fixed");
+        }
+      } else {
+        rightMenuWrapper.style.height = articleHeight + mainHeaderHeight + "px";
+        rightMenu.style.top =
+          articleBottom - mainHeaderHeight - rightMenuList.offsetHeight + "px";
+        rightMenu.classList.add("scrolling-absolute");
+      }
+
+      if (utilities.scrollTop() < articleBottom - rightMenuList.offsetHeight) {
+        rightMenuWrapper.style.height = "100%";
+        rightMenu.style.top = "";
+        rightMenu.classList.remove("scrolling-absolute");
+        rightMenu.classList.add("scrolling-fixed");
+      }
+    }
+
+    var rightMenuSideScroll = document.getElementById("pytorch-side-scroll-right");
+    var sideScrollFromWindowTop = rightMenuSideScroll.getBoundingClientRect().top;
+
+    rightMenuSideScroll.style.height = utilities.windowHeight() - sideScrollFromWindowTop + "px";
+  }
+};
+
+},{}],"pytorch-sphinx-theme":[function(require,module,exports){
+var jQuery = (typeof(window) != 'undefined') ? window.jQuery : require('jquery');
+
+// Sphinx theme nav state
+function ThemeNav () {
+
+    var nav = {
+        navBar: null,
+        win: null,
+        winScroll: false,
+        winResize: false,
+        linkScroll: false,
+        winPosition: 0,
+        winHeight: null,
+        docHeight: null,
+        isRunning: false
+    };
+
+    nav.enable = function (withStickyNav) {
+        var self = this;
+
+        // TODO this can likely be removed once the theme javascript is broken
+        // out from the RTD assets. This just ensures old projects that are
+        // calling `enable()` get the sticky menu on by default. All other cals
+        // to `enable` should include an argument for enabling the sticky menu.
+        if (typeof(withStickyNav) == 'undefined') {
+            withStickyNav = true;
+        }
+
+        if (self.isRunning) {
+            // Only allow enabling nav logic once
+            return;
+        }
+
+        self.isRunning = true;
+        jQuery(function ($) {
+            self.init($);
+
+            self.reset();
+            self.win.on('hashchange', self.reset);
+
+            if (withStickyNav) {
+                // Set scroll monitor
+                self.win.on('scroll', function () {
+                    if (!self.linkScroll) {
+                        if (!self.winScroll) {
+                            self.winScroll = true;
+                            requestAnimationFrame(function() { self.onScroll(); });
+                        }
+                    }
+                });
+            }
+
+            // Set resize monitor
+            self.win.on('resize', function () {
+                if (!self.winResize) {
+                    self.winResize = true;
+                    requestAnimationFrame(function() { self.onResize(); });
+                }
+            });
+
+            self.onResize();
+        });
+
+    };
+
+    // TODO remove this with a split in theme and Read the Docs JS logic as
+    // well, it's only here to support 0.3.0 installs of our theme.
+    nav.enableSticky = function() {
+        this.enable(true);
+    };
+
+    nav.init = function ($) {
+        var doc = $(document),
+            self = this;
+
+        this.navBar = $('div.pytorch-side-scroll:first');
+        this.win = $(window);
+
+        // Set up javascript UX bits
+        $(document)
+            // Shift nav in mobile when clicking the menu.
+            .on('click', "[data-toggle='pytorch-left-menu-nav-top']", function() {
+                $("[data-toggle='wy-nav-shift']").toggleClass("shift");
+                $("[data-toggle='rst-versions']").toggleClass("shift");
+            })
+
+            // Nav menu link click operations
+            .on('click', ".pytorch-menu-vertical .current ul li a", function() {
+                var target = $(this);
+                // Close menu when you click a link.
+                $("[data-toggle='wy-nav-shift']").removeClass("shift");
+                $("[data-toggle='rst-versions']").toggleClass("shift");
+                // Handle dynamic display of l3 and l4 nav lists
+                self.toggleCurrent(target);
+                self.hashChange();
+            })
+            .on('click', "[data-toggle='rst-current-version']", function() {
+                $("[data-toggle='rst-versions']").toggleClass("shift-up");
+            })
+
+        // Make tables responsive
+        $("table.docutils:not(.field-list,.footnote,.citation)")
+            .wrap("<div class='wy-table-responsive'></div>");
+
+        // Add extra class to responsive tables that contain
+        // footnotes or citations so that we can target them for styling
+        $("table.docutils.footnote")
+            .wrap("<div class='wy-table-responsive footnote'></div>");
+        $("table.docutils.citation")
+            .wrap("<div class='wy-table-responsive citation'></div>");
+
+        // Add expand links to all parents of nested ul
+        $('.pytorch-menu-vertical ul').not('.simple').siblings('a').each(function () {
+            var link = $(this);
+                expand = $('<span class="toctree-expand"></span>');
+            expand.on('click', function (ev) {
+                self.toggleCurrent(link);
+                ev.stopPropagation();
+                return false;
+            });
+            link.prepend(expand);
+        });
+    };
+
+    nav.reset = function () {
+        // Get anchor from URL and open up nested nav
+        var anchor = encodeURI(window.location.hash) || '#';
+
+        try {
+            var vmenu = $('.pytorch-menu-vertical');
+            var link = vmenu.find('[href="' + anchor + '"]');
+            if (link.length === 0) {
+                // this link was not found in the sidebar.
+                // Find associated id element, then its closest section
+                // in the document and try with that one.
+                var id_elt = $('.document [id="' + anchor.substring(1) + '"]');
+                var closest_section = id_elt.closest('div.section');
+                link = vmenu.find('[href="#' + closest_section.attr("id") + '"]');
+                if (link.length === 0) {
+                    // still not found in the sidebar. fall back to main section
+                    link = vmenu.find('[href="#"]');
+                }
+            }
+            // If we found a matching link then reset current and re-apply
+            // otherwise retain the existing match
+            if (link.length > 0) {
+                $('.pytorch-menu-vertical .current').removeClass('current');
+                link.addClass('current');
+                link.closest('li.toctree-l1').addClass('current');
+                link.closest('li.toctree-l1').parent().addClass('current');
+                link.closest('li.toctree-l1').addClass('current');
+                link.closest('li.toctree-l2').addClass('current');
+                link.closest('li.toctree-l3').addClass('current');
+                link.closest('li.toctree-l4').addClass('current');
+            }
+        }
+        catch (err) {
+            console.log("Error expanding nav for anchor", err);
+        }
+
+    };
+
+    nav.onScroll = function () {
+        this.winScroll = false;
+        var newWinPosition = this.win.scrollTop(),
+            winBottom = newWinPosition + this.winHeight,
+            navPosition = this.navBar.scrollTop(),
+            newNavPosition = navPosition + (newWinPosition - this.winPosition);
+        if (newWinPosition < 0 || winBottom > this.docHeight) {
+            return;
+        }
+        this.navBar.scrollTop(newNavPosition);
+        this.winPosition = newWinPosition;
+    };
+
+    nav.onResize = function () {
+        this.winResize = false;
+        this.winHeight = this.win.height();
+        this.docHeight = $(document).height();
+    };
+
+    nav.hashChange = function () {
+        this.linkScroll = true;
+        this.win.one('hashchange', function () {
+            this.linkScroll = false;
+        });
+    };
+
+    nav.toggleCurrent = function (elem) {
+        var parent_li = elem.closest('li');
+        parent_li.siblings('li.current').removeClass('current');
+        parent_li.siblings().find('li.current').removeClass('current');
+        parent_li.find('> ul li.current').removeClass('current');
+        parent_li.toggleClass('current');
+    }
+
+    return nav;
+};
+
+module.exports.ThemeNav = ThemeNav();
+
+if (typeof(window) != 'undefined') {
+    window.SphinxRtdTheme = {
+        Navigation: module.exports.ThemeNav,
+        // TODO remove this once static assets are split up between the theme
+        // and Read the Docs. For now, this patches 0.3.0 to be backwards
+        // compatible with a pre-0.3.0 layout.html
+        StickyNav: module.exports.ThemeNav,
+    };
+}
+
+
+// requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
+// https://gist.github.com/paulirish/1579671
+// MIT license
+
+(function() {
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+    }
+
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
+
+$(".sphx-glr-thumbcontainer").removeAttr("tooltip");
+$("table").removeAttr("border");
+
+// This code replaces the default sphinx gallery download buttons
+// with the 3 download buttons at the top of the page
+
+var downloadNote = $(".sphx-glr-download-link-note.admonition.note");
+if (downloadNote.length >= 1) {
+    var tutorialUrlArray = $("#tutorial-type").text().split('/');
+        tutorialUrlArray[0] = tutorialUrlArray[0] + "_source"
+
+    var githubLink = "https://github.com/pytorch/tutorials/blob/master/" + tutorialUrlArray.join("/") + ".py",
+        notebookLink = $(".reference.download")[1].href,
+        notebookDownloadPath = notebookLink.split('_downloads')[1].split('/').pop(),
+        colabLink = "https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/" + notebookDownloadPath;
+
+    $("#google-colab-link").wrap("<a href=" + colabLink + " data-behavior='call-to-action-event' data-response='Run in Google Colab' target='_blank'/>");
+    $("#download-notebook-link").wrap("<a href=" + notebookLink + " data-behavior='call-to-action-event' data-response='Download Notebook'/>");
+    $("#github-view-link").wrap("<a href=" + githubLink + " data-behavior='call-to-action-event' data-response='View on Github' target='_blank'/>");
+} else {
+    $(".pytorch-call-to-action-links").hide();
+}
+
+},{"jquery":"jquery"}]},{},[1,2,3,4,5,6,7,8,9,"pytorch-sphinx-theme"]);
