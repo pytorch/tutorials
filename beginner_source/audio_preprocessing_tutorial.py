@@ -7,7 +7,7 @@ seamless path from research prototyping to production deployment with
 GPU support.
 
 Significant effort in solving machine learning problems goes into data
-preparation. torchaudio leverages PyTorch’s GPU support, and provides
+preparation. ``torchaudio`` leverages PyTorch’s GPU support, and provides
 many tools to make data loading easy and more readable. In this
 tutorial, we will see how to load and preprocess data from a simple
 dataset.
