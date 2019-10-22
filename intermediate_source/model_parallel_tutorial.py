@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-1. Model Parallel Best Practices
+Model Parallel Best Practices
 ================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 

@@ -81,6 +81,23 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/lenet_mnist_model.pth -P $(DATADIR)
 	cp $(DATADIR)/lenet_mnist_model.pth ./beginner_source/data/lenet_mnist_model.pth
 
+	# Download model for advanced_source/dynamic_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/word_language_model_quantize.pth -P $(DATADIR)
+	cp $(DATADIR)/word_language_model_quantize.pth advanced_source/data/word_language_model_quantize.pth
+
+	# Download data for advanced_source/dynamic_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/wikitext-2.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/wikitext-2.zip -d advanced_source/data/
+
+	# Download model for advanced_source/static_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/mobilenet_quantization.pth -P $(DATADIR)
+	cp $(DATADIR)/mobilenet_quantization.pth advanced_source/data/mobilenet_quantization.pth
+
+	# Download dataset for advanced_source/static_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/imagenet_1k.zip -d advanced_source/data/
+
+
 docs:
 	make download
 	make html

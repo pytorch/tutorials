@@ -39,32 +39,9 @@ Getting Started
    :description: :doc:`/beginner/data_loading_tutorial`
 
 .. customgalleryitem::
-   :tooltip: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples
-   :figure: /_static/img/thumbnails/examples.png
-   :description: :doc:`/beginner/pytorch_with_examples`
-
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/sphx_glr_transfer_learning_tutorial_001.png
-   :tooltip: In transfer learning, a model created from one task is used in another
-   :description: :doc:`beginner/transfer_learning_tutorial`
-
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/floppy.png
-   :tooltip: Explore use cases for the saving and loading of PyTorch models
-   :description: :doc:`beginner/saving_loading_models`
-
-.. .. galleryitem:: beginner/saving_loading_models.py
-
-.. customgalleryitem::
    :figure: /_static/img/thumbnails/pytorch_tensorboard.png
    :tooltip: Learn to use TensorBoard to visualize data and model training
    :description: :doc:`intermediate/tensorboard_tutorial`
-
-.. customgalleryitem::
-   :figure: /_static/img/torch.nn.png
-   :tooltip: Use torch.nn to create and train a neural network
-   :description: :doc:`beginner/nn_tutorial`
-
 
 .. raw:: html
 
@@ -80,9 +57,9 @@ Image
    :description: :doc:`intermediate/torchvision_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/thumbnails/eye.png
-   :tooltip: Finetune and feature extract the torchvision models
-   :description: :doc:`beginner/finetuning_torchvision_models_tutorial`
+   :figure: /_static/img/thumbnails/sphx_glr_transfer_learning_tutorial_001.png
+   :tooltip: In transfer learning, a model created from one task is used in another
+   :description: :doc:`beginner/transfer_learning_tutorial`
 
 .. customgalleryitem::
    :figure: /_static/img/stn/Five.gif
@@ -99,11 +76,26 @@ Image
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
 
+.. customgalleryitem::
+    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
+    :figure: /_static/img/dcgan_generator.png
+    :description: :doc:`beginner/dcgan_faces_tutorial`
 
 .. raw:: html
 
     <div style='clear:both'></div>
 
+Named Tensor (experimental)
+----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Named Tensor
+   :description: :doc:`intermediate/named_tensor_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Audio
 ----------------------
@@ -153,17 +145,6 @@ Text
 
     <div style='clear:both'></div>
 
-Generative
-----------------------
-
-.. customgalleryitem::
-    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
-    :figure: /_static/img/dcgan_generator.png
-    :description: :doc:`beginner/dcgan_faces_tutorial`
-
-.. raw:: html
-
-    <div style='clear:both'></div>
 
 Reinforcement Learning
 ----------------------
@@ -208,7 +189,7 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
-  :tooltip: Train large models with multiple GPUs using model parallel
+  :tooltip: Model parallel training on multiple GPUs
   :description: :doc:`/intermediate/model_parallel_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
@@ -253,8 +234,26 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
+Quantization (experimental)
+---------------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. customgalleryitem::
+    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
+    :figure: /_static/img/qat.png
+    :description: :doc:`advanced/static_quantization_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
 PyTorch in Other Languages
--------------
+--------------------------
 
 .. customgalleryitem::
     :tooltip: Using the PyTorch C++ Frontend
@@ -264,6 +263,24 @@ PyTorch in Other Languages
 .. raw:: html
 
     <div style='clear:both'></div>
+
+PyTorch Fundamentals In-Depth
+-----------------------------
+
+.. customgalleryitem::
+   :tooltip: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples
+   :figure: /_static/img/thumbnails/examples.png
+   :description: :doc:`/beginner/pytorch_with_examples`
+
+.. customgalleryitem::
+   :figure: /_static/img/torch.nn.png
+   :tooltip: Use torch.nn to create and train a neural network
+   :description: :doc:`beginner/nn_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 
 .. -----------------------------------------
 .. Page TOC
@@ -276,12 +293,7 @@ PyTorch in Other Languages
 
    beginner/deep_learning_60min_blitz
    beginner/data_loading_tutorial
-   beginner/pytorch_with_examples
-   beginner/transfer_learning_tutorial
-   beginner/deploy_seq2seq_hybrid_frontend_tutorial
    intermediate/tensorboard_tutorial
-   beginner/saving_loading_models
-   beginner/nn_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -290,10 +302,11 @@ PyTorch in Other Languages
    :caption: Image
 
    intermediate/torchvision_tutorial
-   beginner/finetuning_torchvision_models_tutorial
+   beginner/transfer_learning_tutorial
    intermediate/spatial_transformer_tutorial
    advanced/neural_style_tutorial
    beginner/fgsm_tutorial
+   beginner/dcgan_faces_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -315,14 +328,14 @@ PyTorch in Other Languages
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
-
+   
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Generative
+   :caption: Named Tensor (experimental)
 
-   beginner/dcgan_faces_tutorial
+   intermediate/named_tensor_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -368,6 +381,24 @@ PyTorch in Other Languages
    :maxdepth: 2
    :includehidden:
    :hidden:
+   :caption: Quantization (experimental)
+
+   advanced/dynamic_quantization_tutorial
+   advanced/static_quantization_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
    :caption: PyTorch in Other Languages
 
    advanced/cpp_frontend
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: PyTorch Fundamentals In-Depth
+
+   beginner/pytorch_with_examples
+   beginner/nn_tutorial
