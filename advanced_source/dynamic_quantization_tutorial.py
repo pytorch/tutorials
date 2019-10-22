@@ -13,7 +13,8 @@ Quantization involves converting the weights and activations of your model from 
 to int, which can result in smaller model size and faster inference with only a small
 hit to accuracy.
 
-In this tutorial, we'll apply the easiest form of quantization - _dynamic quantization_ -
+In this tutorial, we'll apply the easiest form of quantization - 
+`dynamic quantization <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_ -
 to an LSTM-based next word-prediction model, closely following the
 `word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
 from the PyTorch examples.
