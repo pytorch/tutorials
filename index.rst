@@ -85,6 +85,17 @@ Image
 
     <div style='clear:both'></div>
 
+Named Tensor (experimental)
+----------------------
+
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Named Tensor
+   :description: :doc:`intermediate/named_tensor_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Audio
 ----------------------
@@ -178,7 +189,7 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
-  :tooltip: Train large models with multiple GPUs using model parallel
+  :tooltip: Model parallel training on multiple GPUs
   :description: :doc:`/intermediate/model_parallel_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
@@ -222,6 +233,24 @@ Extending PyTorch
 .. raw:: html
 
     <div style='clear:both'></div>
+
+Quantization (experimental)
+---------------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. customgalleryitem::
+    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
+    :figure: /_static/img/qat.png
+    :description: :doc:`advanced/static_quantization_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 
 PyTorch in Other Languages
 --------------------------
@@ -299,6 +328,14 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Named Tensor (experimental)
+
+   intermediate/named_tensor_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -339,6 +376,15 @@ PyTorch Fundamentals In-Depth
    advanced/torch_script_custom_ops
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Quantization (experimental)
+
+   advanced/dynamic_quantization_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
