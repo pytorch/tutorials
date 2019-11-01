@@ -304,7 +304,11 @@ def print_size_of_model(model):
 # ----------------------------------
 #
 # As our last major setup step, we define our dataloaders for our training and testing set.
-# The specific dataset we've created for this tutorial contains just 1000 images, one from
+#
+# ImageNet Data
+# ^^^^^^^^^^^^^
+#
+# The specific dataset we've created for this tutorial contains just 1000 images from the ImageNet data, one from
 # each class (this dataset, at just over 250 MB, is small enough that it can be downloaded
 # relatively easily). The URL for this custom dataset is:
 #
@@ -312,7 +316,7 @@ def print_size_of_model(model):
 #
 #     https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip
 #
-# To download this data locally using Python, then, you could use:
+# To download this data locally using Python, you could use:
 #
 # .. code:: python
 #
@@ -326,10 +330,31 @@ def print_size_of_model(model):
 #     with open(filename, 'wb') as f:
 #         f.write(r.content)
 #
-#
 # For this tutorial to run, we download this data and move it to the right place using
 # `these lines <https://github.com/pytorch/tutorials/blob/master/Makefile#L97-L98>`_
 # from the `Makefile <https://github.com/pytorch/tutorials/blob/master/Makefile>`_.
+#
+# To run the code in this tutorial using the entire ImageNet dataset, on the other hand, you could download
+# the data using ``torchvision`` following
+# `here <https://pytorch.org/docs/stable/torchvision/datasets.html#imagenet>`_. For example,
+# to download the training set and apply some standard transformations to it, you could use:
+#
+# .. code:: python
+#
+#     import torchvision
+#     import torchvision.transforms as transforms
+#
+#     imagenet_dataset = torchvision.datasets.ImageNet(
+#         '~/.data/imagenet',
+#         split='train',
+#         download=True,
+#         transforms.Compose([
+#             transforms.RandomResizedCrop(224),
+#             transforms.RandomHorizontalFlip(),
+#             transforms.ToTensor(),
+#             transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                  std=[0.229, 0.224, 0.225]),
+#         ])
 #
 # With the data downloaded, we show functions below that define dataloaders we'll use to read
 # in this data. These functions mostly come from
@@ -374,12 +399,12 @@ def prepare_data_loaders(data_path):
     return data_loader, data_loader_test
 
 ######################################################################
-# Next, we'll load in the pre-trained MobileNetV2 model. Similarly to the data about, the file with the pre-trained
-# weights is stored at ``https://s3.amazonaws.com/pytorch-tutorial-assets/mobilenet_quantization.pth``:
+# Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``
+# `here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_.
 
 data_path = 'data/imagenet_1k'
 saved_model_dir = 'data/'
-float_model_file = 'mobilenet_quantization.pth'
+float_model_file = 'mobilenet_pretrained_float.pth'
 scripted_float_model_file = 'mobilenet_quantization_scripted.pth'
 scripted_quantized_model_file = 'mobilenet_quantization_scripted_quantized.pth'
 
