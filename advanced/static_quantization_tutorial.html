@@ -294,8 +294,8 @@ to enable quantization:</p>
 <li>Insert <code class="docutils literal notranslate"><span class="pre">QuantStub</span></code> and <code class="docutils literal notranslate"><span class="pre">DeQuantStub</span></code> at the beginning and end of the network.</li>
 <li>Replace ReLU6 with ReLU</li>
 </ul>
-<p>Note that this code is taken from
-<a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py">here</a></p>
+<p>Note: this code is taken from
+<a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py">here</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.quantization</span> <span class="k">import</span> <span class="n">QuantStub</span><span class="p">,</span> <span class="n">DeQuantStub</span>
 
 <span class="k">def</span> <span class="nf">_make_divisible</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">divisor</span><span class="p">,</span> <span class="n">min_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -533,10 +533,52 @@ to enable quantization:</p>
 </div>
 <div class="section" id="define-dataset-and-data-loaders">
 <h2>3. Define dataset and data loaders<a class="headerlink" href="#define-dataset-and-data-loaders" title="Permalink to this headline">¶</a></h2>
-<p>As our last major setup step, we define our dataloaders for our training and testing set.
-The specific dataset we’ve created for this tutorial contains just 1000 images, one from
+<p>As our last major setup step, we define our dataloaders for our training and testing set.</p>
+<div class="section" id="imagenet-data">
+<h3>ImageNet Data<a class="headerlink" href="#imagenet-data" title="Permalink to this headline">¶</a></h3>
+<p>The specific dataset we’ve created for this tutorial contains just 1000 images from the ImageNet data, one from
 each class (this dataset, at just over 250 MB, is small enough that it can be downloaded
-relatively easily). These functions mostly come from
+relatively easily). The URL for this custom dataset is:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">s3</span><span class="o">.</span><span class="n">amazonaws</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">pytorch</span><span class="o">-</span><span class="n">tutorial</span><span class="o">-</span><span class="n">assets</span><span class="o">/</span><span class="n">imagenet_1k</span><span class="o">.</span><span class="n">zip</span>
+</pre></div>
+</div>
+<p>To download this data locally using Python, you could use:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s1">'https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip`</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">'~/Downloads/imagenet_1k_data.zip'</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For this tutorial to run, we download this data and move it to the right place using
+<a class="reference external" href="https://github.com/pytorch/tutorials/blob/master/Makefile#L97-L98">these lines</a>
+from the <a class="reference external" href="https://github.com/pytorch/tutorials/blob/master/Makefile">Makefile</a>.</p>
+<p>To run the code in this tutorial using the entire ImageNet dataset, on the other hand, you could download
+the data using <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> following
+<a class="reference external" href="https://pytorch.org/docs/stable/torchvision/datasets.html#imagenet">here</a>. For example,
+to download the training set and apply some standard transformations to it, you could use:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchvision</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+
+<span class="n">imagenet_dataset</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">ImageNet</span><span class="p">(</span>
+    <span class="s1">'~/.data/imagenet'</span><span class="p">,</span>
+    <span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span>
+    <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">RandomResizedCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span>
+                             <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]),</span>
+    <span class="p">])</span>
+</pre></div>
+</div>
+<p>With the data downloaded, we show functions below that define dataloaders we’ll use to read
+in this data. These functions mostly come from
 <a class="reference external" href="https://github.com/pytorch/vision/blob/master/references/detection/train.py">here</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_data_loaders</span><span class="p">(</span><span class="n">data_path</span><span class="p">):</span>
 
@@ -577,10 +619,11 @@ relatively easily). These functions mostly come from
     <span class="k">return</span> <span class="n">data_loader</span><span class="p">,</span> <span class="n">data_loader_test</span>
 </pre></div>
 </div>
-<p>Next, we’ll load in the pre-trained MobileNetV2 model</p>
+<p>Next, we’ll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in <code class="docutils literal notranslate"><span class="pre">torchvision</span></code>
+<a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9">here</a>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="s1">'data/imagenet_1k'</span>
 <span class="n">saved_model_dir</span> <span class="o">=</span> <span class="s1">'data/'</span>
-<span class="n">float_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization.pth'</span>
+<span class="n">float_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_pretrained_float.pth'</span>
 <span class="n">scripted_float_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization_scripted.pth'</span>
 <span class="n">scripted_quantized_model_file</span> <span class="o">=</span> <span class="s1">'mobilenet_quantization_scripted_quantized.pth'</span>
 
@@ -652,9 +695,10 @@ Size (MB): 13.98112
 ..........Evaluation accuracy on 300 images, 78.00
 </pre></div>
 </div>
-<p>You should see 78% accuracy on 300 images, a solid baseline for ImageNet,
+<p>We see 78% accuracy on 300 images, a solid baseline for ImageNet,
 especially considering our model is just 14.0 MB.</p>
 <p>This will be our baseline to compare to. Next, let’s try different quantization methods</p>
+</div>
 </div>
 <div class="section" id="post-training-static-quantization">
 <h2>4. Post-training static quantization<a class="headerlink" href="#post-training-static-quantization" title="Permalink to this headline">¶</a></h2>
@@ -665,7 +709,8 @@ of data through the network and computing the resulting distributions of the dif
 data). These distributions are then used to determine how the specifically the different activations
 should be quantized at inference time (a simple technique would be to simply divide the entire range
 of activations into 256 levels, but we support more sophisticated methods as well). Importantly,
-this additional step allows us to pass quantized values between operations instead of converting these values to floats - and then back to ints - between every operation, resulting in a significant speed-up.</p>
+this additional step allows us to pass quantized values between operations instead of converting these
+values to floats - and then back to ints - between every operation, resulting in a significant speed-up.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">num_calibration_batches</span> <span class="o">=</span> <span class="mi">10</span>
 
 <span class="n">myModel</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="n">saved_model_dir</span> <span class="o">+</span> <span class="n">float_model_file</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>
@@ -733,19 +778,19 @@ Post Training Quantization: Convert done
 
  Sequential(
   (0): ConvBNReLU(
-    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.18111377954483032, zero_point=0, padding=(1, 1), groups=32)
+    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.1951829195022583, zero_point=0, padding=(1, 1), groups=32)
     (1): Identity()
     (2): Identity()
   )
-  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.20002125203609467, zero_point=72)
+  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.2472527176141739, zero_point=75)
   (2): Identity()
 )
 Size of model after quantization
 Size (MB): 3.588979
-..........Evaluation accuracy on 300 images, 61.67
+..........Evaluation accuracy on 300 images, 60.67
 </pre></div>
 </div>
-<p>For this quantized model, we see a significantly lower accuracy of just 62.33% on these same 30
+<p>For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
 images. Nevertheless, we did reduce the size of our model down to just under 3.6 MB, almost a 4x
 decrease.</p>
 <p>In addition, we can significantly improve on the accuracy simply by using a different
@@ -772,11 +817,11 @@ quantization parameters in an optimal manner.</li>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>QConfig(activation=functools.partial(&lt;class 'torch.quantization.observer.HistogramObserver'&gt;, reduce_range=True), weight=functools.partial(&lt;class 'torch.quantization.observer.PerChannelMinMaxObserver'&gt;, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
-....................Evaluation accuracy on 300 images, 76.67
+....................Evaluation accuracy on 300 images, 74.33
 </pre></div>
 </div>
 <p>Changing just this quantization configuration method resulted in an increase
-of the accuracy to 74%! Still, this is 4% worse than the baseline of 78% achieved above.
+of the accuracy to over 76%! Still, this is 1-2% worse than the baseline of 78% achieved above.
 So lets try quantization aware training.</p>
 </div>
 <div class="section" id="quantization-aware-training">
@@ -902,30 +947,30 @@ match inference numerics.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(2.2437, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 52.667 Acc@5 76.167
-..........Epoch 0 :Evaluation accuracy on 300 images, 75.00
-....................Loss tensor(2.1261, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 51.833 Acc@5 76.167
-..........Epoch 1 :Evaluation accuracy on 300 images, 73.67
-....................Loss tensor(2.1162, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 53.167 Acc@5 75.000
-..........Epoch 2 :Evaluation accuracy on 300 images, 76.67
-....................Loss tensor(2.0894, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 54.167 Acc@5 75.833
-..........Epoch 3 :Evaluation accuracy on 300 images, 75.67
-....................Loss tensor(1.9466, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 56.833 Acc@5 79.500
-..........Epoch 4 :Evaluation accuracy on 300 images, 73.33
-....................Loss tensor(1.9467, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 57.000 Acc@5 79.167
-..........Epoch 5 :Evaluation accuracy on 300 images, 77.33
-....................Loss tensor(1.8526, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.500 Acc@5 80.833
-..........Epoch 6 :Evaluation accuracy on 300 images, 78.33
-....................Loss tensor(1.9085, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 55.833 Acc@5 81.000
-..........Epoch 7 :Evaluation accuracy on 300 images, 75.67
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(2.2036, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 53.167 Acc@5 74.167
+..........Epoch 0 :Evaluation accuracy on 300 images, 77.33
+....................Loss tensor(2.1227, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 54.167 Acc@5 76.167
+..........Epoch 1 :Evaluation accuracy on 300 images, 74.33
+....................Loss tensor(2.1273, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 53.833 Acc@5 77.333
+..........Epoch 2 :Evaluation accuracy on 300 images, 78.00
+....................Loss tensor(2.0112, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 53.167 Acc@5 77.000
+..........Epoch 3 :Evaluation accuracy on 300 images, 77.00
+....................Loss tensor(1.8188, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.667 Acc@5 81.333
+..........Epoch 4 :Evaluation accuracy on 300 images, 76.00
+....................Loss tensor(1.8949, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.167 Acc@5 80.833
+..........Epoch 5 :Evaluation accuracy on 300 images, 75.00
+....................Loss tensor(1.9152, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.333 Acc@5 79.167
+..........Epoch 6 :Evaluation accuracy on 300 images, 75.00
+....................Loss tensor(1.8991, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.000 Acc@5 81.167
+..........Epoch 7 :Evaluation accuracy on 300 images, 77.33
 </pre></div>
 </div>
 <p>Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -970,7 +1015,7 @@ faster? Let’s test:</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  11 ms
-Elapsed time:  11 ms
+Elapsed time:  10 ms
 </pre></div>
 </div>
 <p>Running this locally on a MacBook pro yielded 61 ms for the regular model, and
@@ -985,7 +1030,7 @@ and quantization-aware training - describing what they do “under the hood” a
 them in PyTorch.</p>
 <p>Thanks for reading! As always, we welcome any feedback, so please create an issue
 <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 11 minutes  11.648 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 11 minutes  12.689 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-static-quantization-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/bd7ace4f5df8c6f747eadb10a7f737cd/static_quantization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">static_quantization_tutorial.py</span></code></a></div>
@@ -1029,7 +1074,10 @@ them in PyTorch.</p>
 <li><a class="reference internal" href="#">(experimental) Static Quantization with Eager Mode in PyTorch</a><ul>
 <li><a class="reference internal" href="#model-architecture">1. Model architecture</a></li>
 <li><a class="reference internal" href="#helper-functions">2. Helper functions</a></li>
-<li><a class="reference internal" href="#define-dataset-and-data-loaders">3. Define dataset and data loaders</a></li>
+<li><a class="reference internal" href="#define-dataset-and-data-loaders">3. Define dataset and data loaders</a><ul>
+<li><a class="reference internal" href="#imagenet-data">ImageNet Data</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#post-training-static-quantization">4. Post-training static quantization</a></li>
 <li><a class="reference internal" href="#quantization-aware-training">5. Quantization-aware training</a><ul>
 <li><a class="reference internal" href="#speedup-from-quantization">Speedup from quantization</a></li>

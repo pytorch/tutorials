@@ -78,8 +78,8 @@ to enable quantization:
 - Insert ``QuantStub`` and ``DeQuantStub`` at the beginning and end of the network.
 - Replace ReLU6 with ReLU
 
-Note that this code is taken from
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_
+Note: this code is taken from
+`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.
 
 
 .. code-block:: default
@@ -338,9 +338,60 @@ We next define several helper functions to help with model evaluation. These mos
 ----------------------------------
 
 As our last major setup step, we define our dataloaders for our training and testing set.
-The specific dataset we've created for this tutorial contains just 1000 images, one from
+
+ImageNet Data
+^^^^^^^^^^^^^
+
+The specific dataset we've created for this tutorial contains just 1000 images from the ImageNet data, one from
 each class (this dataset, at just over 250 MB, is small enough that it can be downloaded
-relatively easily). These functions mostly come from
+relatively easily). The URL for this custom dataset is:
+
+.. code::
+
+    https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip
+
+To download this data locally using Python, you could use:
+
+.. code:: python
+
+    import requests
+
+    url = 'https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip`
+    filename = '~/Downloads/imagenet_1k_data.zip'
+
+    r = requests.get(url)
+
+    with open(filename, 'wb') as f:
+        f.write(r.content)
+
+For this tutorial to run, we download this data and move it to the right place using
+`these lines <https://github.com/pytorch/tutorials/blob/master/Makefile#L97-L98>`_
+from the `Makefile <https://github.com/pytorch/tutorials/blob/master/Makefile>`_.
+
+To run the code in this tutorial using the entire ImageNet dataset, on the other hand, you could download
+the data using ``torchvision`` following
+`here <https://pytorch.org/docs/stable/torchvision/datasets.html#imagenet>`_. For example,
+to download the training set and apply some standard transformations to it, you could use:
+
+.. code:: python
+
+    import torchvision
+    import torchvision.transforms as transforms
+
+    imagenet_dataset = torchvision.datasets.ImageNet(
+        '~/.data/imagenet',
+        split='train',
+        download=True,
+        transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]),
+        ])
+
+With the data downloaded, we show functions below that define dataloaders we'll use to read
+in this data. These functions mostly come from
 `here <https://github.com/pytorch/vision/blob/master/references/detection/train.py>`_.
 
 
@@ -391,7 +442,8 @@ relatively easily). These functions mostly come from
 
 
 
-Next, we'll load in the pre-trained MobileNetV2 model
+Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``
+`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_.
 
 
 .. code-block:: default
@@ -399,7 +451,7 @@ Next, we'll load in the pre-trained MobileNetV2 model
 
     data_path = 'data/imagenet_1k'
     saved_model_dir = 'data/'
-    float_model_file = 'mobilenet_quantization.pth'
+    float_model_file = 'mobilenet_pretrained_float.pth'
     scripted_float_model_file = 'mobilenet_quantization_scripted.pth'
     scripted_quantized_model_file = 'mobilenet_quantization_scripted_quantized.pth'
 
@@ -502,7 +554,7 @@ with fused modules
     ..........Evaluation accuracy on 300 images, 78.00
 
 
-You should see 78% accuracy on 300 images, a solid baseline for ImageNet,
+We see 78% accuracy on 300 images, a solid baseline for ImageNet,
 especially considering our model is just 14.0 MB.
 
 This will be our baseline to compare to. Next, let's try different quantization methods
@@ -517,7 +569,8 @@ of data through the network and computing the resulting distributions of the dif
 data). These distributions are then used to determine how the specifically the different activations
 should be quantized at inference time (a simple technique would be to simply divide the entire range
 of activations into 256 levels, but we support more sophisticated methods as well). Importantly,
-this additional step allows us to pass quantized values between operations instead of converting these values to floats - and then back to ints - between every operation, resulting in a significant speed-up.
+this additional step allows us to pass quantized values between operations instead of converting these
+values to floats - and then back to ints - between every operation, resulting in a significant speed-up.
 
 
 .. code-block:: default
@@ -598,19 +651,19 @@ this additional step allows us to pass quantized values between operations inste
 
      Sequential(
       (0): ConvBNReLU(
-        (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.18111377954483032, zero_point=0, padding=(1, 1), groups=32)
+        (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.1951829195022583, zero_point=0, padding=(1, 1), groups=32)
         (1): Identity()
         (2): Identity()
       )
-      (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.20002125203609467, zero_point=72)
+      (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.2472527176141739, zero_point=75)
       (2): Identity()
     )
     Size of model after quantization
     Size (MB): 3.588979
-    ..........Evaluation accuracy on 300 images, 61.67
+    ..........Evaluation accuracy on 300 images, 60.67
 
 
-For this quantized model, we see a significantly lower accuracy of just 62.33% on these same 30
+For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
 images. Nevertheless, we did reduce the size of our model down to just under 3.6 MB, almost a 4x
 decrease.
 
@@ -651,11 +704,11 @@ quantizing for x86 architectures. This configuration does the following:
  .. code-block:: none
 
     QConfig(activation=functools.partial(<class 'torch.quantization.observer.HistogramObserver'>, reduce_range=True), weight=functools.partial(<class 'torch.quantization.observer.PerChannelMinMaxObserver'>, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
-    ....................Evaluation accuracy on 300 images, 76.67
+    ....................Evaluation accuracy on 300 images, 74.33
 
 
 Changing just this quantization configuration method resulted in an increase
-of the accuracy to 74%! Still, this is 4% worse than the baseline of 78% achieved above.
+of the accuracy to over 76%! Still, this is 1-2% worse than the baseline of 78% achieved above.
 So lets try quantization aware training.
 
 5. Quantization-aware training
@@ -828,30 +881,30 @@ inference. For quantization aware training, therefore, we modify the training lo
 
  .. code-block:: none
 
-    ....................Loss tensor(2.2437, grad_fn=<DivBackward0>)
-    Training: * Acc@1 52.667 Acc@5 76.167
-    ..........Epoch 0 :Evaluation accuracy on 300 images, 75.00
-    ....................Loss tensor(2.1261, grad_fn=<DivBackward0>)
-    Training: * Acc@1 51.833 Acc@5 76.167
-    ..........Epoch 1 :Evaluation accuracy on 300 images, 73.67
-    ....................Loss tensor(2.1162, grad_fn=<DivBackward0>)
-    Training: * Acc@1 53.167 Acc@5 75.000
-    ..........Epoch 2 :Evaluation accuracy on 300 images, 76.67
-    ....................Loss tensor(2.0894, grad_fn=<DivBackward0>)
-    Training: * Acc@1 54.167 Acc@5 75.833
-    ..........Epoch 3 :Evaluation accuracy on 300 images, 75.67
-    ....................Loss tensor(1.9466, grad_fn=<DivBackward0>)
-    Training: * Acc@1 56.833 Acc@5 79.500
-    ..........Epoch 4 :Evaluation accuracy on 300 images, 73.33
-    ....................Loss tensor(1.9467, grad_fn=<DivBackward0>)
-    Training: * Acc@1 57.000 Acc@5 79.167
-    ..........Epoch 5 :Evaluation accuracy on 300 images, 77.33
-    ....................Loss tensor(1.8526, grad_fn=<DivBackward0>)
-    Training: * Acc@1 58.500 Acc@5 80.833
-    ..........Epoch 6 :Evaluation accuracy on 300 images, 78.33
-    ....................Loss tensor(1.9085, grad_fn=<DivBackward0>)
-    Training: * Acc@1 55.833 Acc@5 81.000
-    ..........Epoch 7 :Evaluation accuracy on 300 images, 75.67
+    ....................Loss tensor(2.2036, grad_fn=<DivBackward0>)
+    Training: * Acc@1 53.167 Acc@5 74.167
+    ..........Epoch 0 :Evaluation accuracy on 300 images, 77.33
+    ....................Loss tensor(2.1227, grad_fn=<DivBackward0>)
+    Training: * Acc@1 54.167 Acc@5 76.167
+    ..........Epoch 1 :Evaluation accuracy on 300 images, 74.33
+    ....................Loss tensor(2.1273, grad_fn=<DivBackward0>)
+    Training: * Acc@1 53.833 Acc@5 77.333
+    ..........Epoch 2 :Evaluation accuracy on 300 images, 78.00
+    ....................Loss tensor(2.0112, grad_fn=<DivBackward0>)
+    Training: * Acc@1 53.167 Acc@5 77.000
+    ..........Epoch 3 :Evaluation accuracy on 300 images, 77.00
+    ....................Loss tensor(1.8188, grad_fn=<DivBackward0>)
+    Training: * Acc@1 58.667 Acc@5 81.333
+    ..........Epoch 4 :Evaluation accuracy on 300 images, 76.00
+    ....................Loss tensor(1.8949, grad_fn=<DivBackward0>)
+    Training: * Acc@1 58.167 Acc@5 80.833
+    ..........Epoch 5 :Evaluation accuracy on 300 images, 75.00
+    ....................Loss tensor(1.9152, grad_fn=<DivBackward0>)
+    Training: * Acc@1 58.333 Acc@5 79.167
+    ..........Epoch 6 :Evaluation accuracy on 300 images, 75.00
+    ....................Loss tensor(1.8991, grad_fn=<DivBackward0>)
+    Training: * Acc@1 58.000 Acc@5 81.167
+    ..........Epoch 7 :Evaluation accuracy on 300 images, 77.33
 
 
 Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -911,7 +964,7 @@ faster? Let's test:
  .. code-block:: none
 
     Elapsed time:  11 ms
-    Elapsed time:  11 ms
+    Elapsed time:  10 ms
 
 
 Running this locally on a MacBook pro yielded 61 ms for the regular model, and
@@ -931,7 +984,7 @@ Thanks for reading! As always, we welcome any feedback, so please create an issu
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 11 minutes  11.648 seconds)
+   **Total running time of the script:** ( 11 minutes  12.689 seconds)
 
 
 .. _sphx_glr_download_advanced_static_quantization_tutorial.py:
