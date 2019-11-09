@@ -13,8 +13,8 @@ sacrificing accuracy, deploy lightweight models on device, and guarantee
 privacy with private on-device computation. On the research front, pruning is 
 used to investigate the differences in learning dynamics between 
 over-parametrized and under-parametrized networks, to study the role of lucky 
-sparse subnetworks and initializations ("
-`lottery tickets <https://arxiv.org/abs/1803.03635>`_") as a destructive 
+sparse subnetworks and initializations
+("`lottery tickets <https://arxiv.org/abs/1803.03635>`_") as a destructive 
 neural architecture search technique, and more.
 
 In this tutorial, you will learn how to use ``torch.nn.utils.prune`` to 
@@ -23,7 +23,7 @@ own custom pruning technique.
 
 Requirements
 ------------
-``torch``
+``"torch>=1.4.0a0+8e8a5e0"``
 
 """
 import torch
@@ -166,8 +166,8 @@ print(module._forward_pre_hooks)
 # time using structured pruning along the 0th axis of the tensor (the 0th axis 
 # corresponds to the output channels of the convolutional layer and has 
 # dimensionality 6 for ``conv1``), based on the channels' L2 norm. This can be 
-# achieved using the ``ln_structured`` function, with ``n=2`` and ``axis=0``.
-prune.ln_structured(module, name="weight", amount=0.5, n=2, axis=0)
+# achieved using the ``ln_structured`` function, with ``n=2`` and ``dim=0``.
+prune.ln_structured(module, name="weight", amount=0.5, n=2, dim=0)
 
 # As we can verify, this will zero out all the connections corresponding to 
 # 50% (3 out of 6) of the channels, while preserving the action of the 
@@ -204,7 +204,8 @@ print(model.state_dict().keys())
 # makes it permanent, instead, by reassigning the parameter ``weight`` to the 
 # model parameters, in its pruned version.
 
-## prior to removing the re-parametrization
+######################################################################
+# Prior to removing the re-parametrization:
 print(list(module.named_parameters()))
 ######################################################################
 print(list(module.named_buffers()))
@@ -264,7 +265,7 @@ parameters_to_prune = (
 
 prune.global_unstructured(
     parameters_to_prune,
-    pruning_method=prune.L1PruningMethod,
+    pruning_method=prune.L1Unstructured,
     amount=0.2,
 )
 
@@ -323,18 +324,13 @@ print(
 
 
 ######################################################################
-# Available pruning techniques explained
-# --------------------------------------
-#
-
-######################################################################
-# Extending ``torch.nn.utils.pruning`` with custom pruning functions
+# Extending ``torch.nn.utils.prune`` with custom pruning functions
 # ------------------------------------------------------------------
 # To implement your own pruning function, you can extend the
 # ``nn.utils.prune`` module by subclassing the ``BasePruningMethod``
 # base class, the same way all other pruning methods do. The base class
 # implements the following methods for you: ``__call__``, ``apply_mask``,
-# ``apply``, and ``remove``. Beyond some special cases, you shouldn't
+# ``apply``, ``prune``, and ``remove``. Beyond some special cases, you shouldn't
 # have to reimplement these methods for your new pruning technique.
 # You will, however, have to implement ``__init__`` (the constructor),
 # and ``compute_mask`` (the instructions on how to compute the mask
