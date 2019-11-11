@@ -62,8 +62,8 @@ torch.manual_seed(191009)
 # - Insert ``QuantStub`` and ``DeQuantStub`` at the beginning and end of the network.
 # - Replace ReLU6 with ReLU
 #
-# Note that this code is taken from
-# `here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_
+# Note: this code is taken from
+# `here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.
 
 from torch.quantization import QuantStub, DeQuantStub
 
@@ -304,9 +304,60 @@ def print_size_of_model(model):
 # ----------------------------------
 #
 # As our last major setup step, we define our dataloaders for our training and testing set.
-# The specific dataset we've created for this tutorial contains just 1000 images, one from
+#
+# ImageNet Data
+# ^^^^^^^^^^^^^
+#
+# The specific dataset we've created for this tutorial contains just 1000 images from the ImageNet data, one from
 # each class (this dataset, at just over 250 MB, is small enough that it can be downloaded
-# relatively easily). These functions mostly come from
+# relatively easily). The URL for this custom dataset is:
+#
+# .. code::
+#
+#     https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip
+#
+# To download this data locally using Python, you could use:
+#
+# .. code:: python
+#
+#     import requests
+#
+#     url = 'https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip`
+#     filename = '~/Downloads/imagenet_1k_data.zip'
+#
+#     r = requests.get(url)
+#
+#     with open(filename, 'wb') as f:
+#         f.write(r.content)
+#
+# For this tutorial to run, we download this data and move it to the right place using
+# `these lines <https://github.com/pytorch/tutorials/blob/master/Makefile#L97-L98>`_
+# from the `Makefile <https://github.com/pytorch/tutorials/blob/master/Makefile>`_.
+#
+# To run the code in this tutorial using the entire ImageNet dataset, on the other hand, you could download
+# the data using ``torchvision`` following
+# `here <https://pytorch.org/docs/stable/torchvision/datasets.html#imagenet>`_. For example,
+# to download the training set and apply some standard transformations to it, you could use:
+#
+# .. code:: python
+#
+#     import torchvision
+#     import torchvision.transforms as transforms
+#
+#     imagenet_dataset = torchvision.datasets.ImageNet(
+#         '~/.data/imagenet',
+#         split='train',
+#         download=True,
+#         transforms.Compose([
+#             transforms.RandomResizedCrop(224),
+#             transforms.RandomHorizontalFlip(),
+#             transforms.ToTensor(),
+#             transforms.Normalize(mean=[0.485, 0.456, 0.406],
+#                                  std=[0.229, 0.224, 0.225]),
+#         ])
+#
+# With the data downloaded, we show functions below that define dataloaders we'll use to read
+# in this data. These functions mostly come from
 # `here <https://github.com/pytorch/vision/blob/master/references/detection/train.py>`_.
 
 def prepare_data_loaders(data_path):
@@ -348,11 +399,12 @@ def prepare_data_loaders(data_path):
     return data_loader, data_loader_test
 
 ######################################################################
-# Next, we'll load in the pre-trained MobileNetV2 model
+# Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``
+# `here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_.
 
 data_path = 'data/imagenet_1k'
 saved_model_dir = 'data/'
-float_model_file = 'mobilenet_quantization.pth'
+float_model_file = 'mobilenet_pretrained_float.pth'
 scripted_float_model_file = 'mobilenet_quantization_scripted.pth'
 scripted_quantized_model_file = 'mobilenet_quantization_scripted_quantized.pth'
 
@@ -391,7 +443,7 @@ print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_s
 torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
 
 ######################################################################
-# You should see 78% accuracy on 300 images, a solid baseline for ImageNet,
+# We see 78% accuracy on 300 images, a solid baseline for ImageNet,
 # especially considering our model is just 14.0 MB.
 #
 # This will be our baseline to compare to. Next, let's try different quantization methods
@@ -406,7 +458,8 @@ torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_m
 # data). These distributions are then used to determine how the specifically the different activations
 # should be quantized at inference time (a simple technique would be to simply divide the entire range
 # of activations into 256 levels, but we support more sophisticated methods as well). Importantly,
-# this additional step allows us to pass quantized values between operations instead of converting these values to floats - and then back to ints - between every operation, resulting in a significant speed-up.
+# this additional step allows us to pass quantized values between operations instead of converting these
+# values to floats - and then back to ints - between every operation, resulting in a significant speed-up.
 
 num_calibration_batches = 10
 
@@ -442,7 +495,7 @@ top1, top5 = evaluate(myModel, criterion, data_loader_test, neval_batches=num_ev
 print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg))
 
 ######################################################################
-# For this quantized model, we see a significantly lower accuracy of just 62.33% on these same 30
+# For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
 # images. Nevertheless, we did reduce the size of our model down to just under 3.6 MB, almost a 4x
 # decrease.
 #
@@ -470,7 +523,7 @@ torch.jit.save(torch.jit.script(per_channel_quantized_model), saved_model_dir + 
 
 ######################################################################
 # Changing just this quantization configuration method resulted in an increase
-# of the accuracy to 74%! Still, this is 4% worse than the baseline of 78% achieved above.
+# of the accuracy to over 76%! Still, this is 1-2% worse than the baseline of 78% achieved above.
 # So lets try quantization aware training.
 #
 # 5. Quantization-aware training
