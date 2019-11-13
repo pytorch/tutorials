@@ -80,11 +80,11 @@ print(list(module.named_buffers()))
 # ----------------
 # 
 # To prune a module (in this example, the ``conv1`` layer of our LeNet 
-# architecture), select a pruning technique among those available in 
+# architecture), first select a pruning technique among those available in 
 # ``torch.nn.utils.prune`` (or
 # `implement <#extending-torch-nn-utils-pruning-with-custom-pruning-functions>`_
 # your own by subclassing 
-# ``BasePruningMethod``). Specify the module and the name of the parameter to 
+# ``BasePruningMethod``). Then, specify the module and the name of the parameter to 
 # prune within that module. Finally, using the adequate keyword arguments 
 # required by the selected pruning technique, specify the pruning parameters.
 #
