@@ -40,7 +40,7 @@ implementation - a ``Function``.
 graph, that encodes a complete history of computation. Each tensor has
 a ``.grad_fn`` attribute that references a ``Function`` that has created
 the ``Tensor`` (except for Tensors created by the user - their
-``grad_fn is None``).
+``grad_fn`` is ``None``).
 
 If you want to compute the derivatives, you can call ``.backward()`` on
 a ``Tensor``. If ``Tensor`` is a scalar (i.e. it holds a one element
