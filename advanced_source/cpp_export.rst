@@ -228,7 +228,7 @@ structure:
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
-  Also, make sure you specify the correct configuration in the `cmake --build .`
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
   line below.
 
 The last step is building the application. For this, assume our example
