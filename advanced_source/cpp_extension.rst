@@ -204,7 +204,7 @@ into C++. Our primary datatype for all computations will be
 :class:`torch::Tensor`. Its full API can be inspected `here
 <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html>`_. Notice
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
-the full power of C++11 at our disposal.
+the full power of C++14 at our disposal.
 
 Forward Pass
 ************
@@ -361,7 +361,7 @@ should look something like this::
   building 'lltm_cpp' extension
   creating build
   creating build/temp.linux-x86_64-3.7
-  gcc -pthread -B ~/local/miniconda/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.7/site-packages/torch/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/torch/csrc/api/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/TH -I~/local/miniconda/lib/python3.7/site-packages/torch/include/THC -I~/local/miniconda/include/python3.7m -c lltm.cpp -o build/temp.linux-x86_64-3.7/lltm.o -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME=lltm_cpp -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++11
+  gcc -pthread -B ~/local/miniconda/compiler_compat -Wl,--sysroot=/ -Wsign-compare -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fPIC -I~/local/miniconda/lib/python3.7/site-packages/torch/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/torch/csrc/api/include -I~/local/miniconda/lib/python3.7/site-packages/torch/include/TH -I~/local/miniconda/lib/python3.7/site-packages/torch/include/THC -I~/local/miniconda/include/python3.7m -c lltm.cpp -o build/temp.linux-x86_64-3.7/lltm.o -DTORCH_API_INCLUDE_EXTENSION_H -DTORCH_EXTENSION_NAME=lltm_cpp -D_GLIBCXX_USE_CXX11_ABI=1 -std=c++14
   cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid for C/ObjC but not for C++
   creating build/lib.linux-x86_64-3.7
   g++ -pthread -shared -B ~/local/miniconda/compiler_compat -L~/local/miniconda/lib -Wl,-rpath=~/local/miniconda/lib -Wl,--no-as-needed -Wl,--sysroot=/ build/temp.linux-x86_64-3.7/lltm.o -o build/lib.linux-x86_64-3.7/lltm_cpp.cpython-37m-x86_64-linux-gnu.so
@@ -725,7 +725,7 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
 As you can see, it is largely boilerplate, checks and forwarding to functions
 that we'll define in the CUDA file. We'll name this file
 ``lltm_cuda_kernel.cu`` (note the ``.cu`` extension!). NVCC can reasonably
-compile C++11, thus we still have ATen and the C++ standard library available
+compile C++14, thus we still have ATen and the C++ standard library available
 to us (but not ``torch.h``). Note that :mod:`setuptools` cannot handle files
 with the same name but different extensions, so if you use the ``setup.py``
 method instead of the JIT method, you must give your CUDA file a different name
