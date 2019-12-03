@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>NLP From Scratch: Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.3.0 documentation</title>
+<title>NLP From Scratch: Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.3.1 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -106,7 +106,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.3.0
+                  1.3.1
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -316,8 +316,8 @@ Translate</a></li>
 <li><a class="reference external" href="https://arxiv.org/abs/1506.05869">A Neural Conversational Model</a></li>
 </ul>
 <p><strong>Requirements</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="k">import</span> <span class="nb">open</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="nb">open</span>
 <span class="kn">import</span> <span class="nn">unicodedata</span>
 <span class="kn">import</span> <span class="nn">string</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -325,7 +325,7 @@ Translate</a></li>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="k">import</span> <span class="n">optim</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">optim</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
@@ -373,7 +373,7 @@ called <code class="docutils literal notranslate"><span class="pre">Lang</span><
 
 
 <span class="k">class</span> <span class="nc">Lang</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2index</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">word2count</span> <span class="o">=</span> <span class="p">{}</span>
@@ -502,7 +502,7 @@ Counting words...
 Counted words:
 fra 4345
 eng 2803
-['je suis capable de parler .', 'i m able to speak .']
+['je suis etudiant a l universite .', 'i m a university student .']
 </pre></div>
 </div>
 </div>
@@ -543,7 +543,7 @@ next input word.</p>
 <img alt="" src="../_images/encoder-network.png"/>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EncoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">EncoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
 
@@ -579,7 +579,7 @@ last hidden state).</p>
 <img alt="" src="../_images/decoder-network.png"/>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">DecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
 
@@ -628,7 +628,7 @@ while shorter sentences will only use the first few.</p>
 <img alt="" src="../_images/attention-decoder-network.png"/>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">AttnDecoderRNN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">,</span> <span class="n">output_size</span><span class="p">,</span> <span class="n">dropout_p</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="n">MAX_LENGTH</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">AttnDecoderRNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">hidden_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
@@ -947,66 +947,66 @@ encoder and decoder are initialized and run <code class="docutils literal notran
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 47s (- 25m 7s) (5000 6%) 2.8236
-3m 32s (- 23m 1s) (10000 13%) 2.3154
-5m 17s (- 21m 10s) (15000 20%) 1.9787
-7m 1s (- 19m 19s) (20000 26%) 1.7162
-8m 45s (- 17m 31s) (25000 33%) 1.5375
-10m 29s (- 15m 44s) (30000 40%) 1.3764
-12m 13s (- 13m 58s) (35000 46%) 1.2639
-13m 58s (- 12m 13s) (40000 53%) 1.1217
-15m 43s (- 10m 28s) (45000 60%) 0.9855
-17m 30s (- 8m 45s) (50000 66%) 0.9025
-19m 15s (- 7m 0s) (55000 73%) 0.8213
-21m 0s (- 5m 15s) (60000 80%) 0.7389
-22m 44s (- 3m 29s) (65000 86%) 0.6481
-24m 29s (- 1m 44s) (70000 93%) 0.6027
-26m 14s (- 0m 0s) (75000 100%) 0.5695
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 53s (- 26m 28s) (5000 6%) 2.8654
+3m 40s (- 23m 51s) (10000 13%) 2.2806
+5m 27s (- 21m 49s) (15000 20%) 1.9487
+7m 14s (- 19m 53s) (20000 26%) 1.6924
+9m 1s (- 18m 2s) (25000 33%) 1.5108
+10m 49s (- 16m 14s) (30000 40%) 1.3069
+12m 39s (- 14m 27s) (35000 46%) 1.1947
+14m 29s (- 12m 40s) (40000 53%) 1.0573
+16m 19s (- 10m 52s) (45000 60%) 0.9702
+18m 7s (- 9m 3s) (50000 66%) 0.8749
+19m 56s (- 7m 15s) (55000 73%) 0.7893
+21m 44s (- 5m 26s) (60000 80%) 0.7230
+23m 33s (- 3m 37s) (65000 86%) 0.6507
+25m 20s (- 1m 48s) (70000 93%) 0.6197
+27m 7s (- 0m 0s) (75000 100%) 0.5493
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je suis une femme mariee desormais .
-= i m a married woman now .
-&lt; i m a married woman now . &lt;EOS&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; tu n es pas comme moi .
+= you re not like me .
+&lt; you re not like me . &lt;EOS&gt;
 
-&gt; vous n etes pas tom .
-= you aren t tom .
-&lt; you aren t tom . &lt;EOS&gt;
+&gt; il est tres ouvert .
+= he s very open .
+&lt; he s very open . &lt;EOS&gt;
 
-&gt; ils sont en train de gagner du temps .
-= they re stalling .
-&lt; they re stalling . &lt;EOS&gt;
+&gt; c est vraiment un bon travailleur .
+= he is a really good worker .
+&lt; he is a good good worker . &lt;EOS&gt;
 
-&gt; vous etes toutes a moi .
-= you re all mine .
-&lt; you re all mine . &lt;EOS&gt;
+&gt; je suis satisfait de leur representation .
+= i m pleased with their performance .
+&lt; i m pleased with their performance . &lt;EOS&gt;
 
-&gt; il est la pour te proteger .
-= he s here to protect you .
-&lt; he s here to protect you . &lt;EOS&gt;
+&gt; je ne suis pas beau .
+= i m not good looking .
+&lt; i m not good looking . &lt;EOS&gt;
 
-&gt; j ai peur de mourir .
-= i m afraid of death .
-&lt; i m afraid of dying . &lt;EOS&gt;
+&gt; vous etes vilain .
+= you are naughty .
+&lt; you are naughty . &lt;EOS&gt;
 
-&gt; je suis sur que tu vas reussir .
-= i m sure that you ll succeed .
-&lt; i m confident that you ll succeed . &lt;EOS&gt;
+&gt; je suis toujours mariee .
+= i m still married .
+&lt; i m still married . &lt;EOS&gt;
 
-&gt; je connais bien tom .
-= i m well acquainted with tom .
-&lt; i m acquainted with tom . &lt;EOS&gt;
+&gt; tu es celle la .
+= you are the one .
+&lt; you are the one . &lt;EOS&gt;
 
-&gt; nous sommes tous a la pension .
-= we re all retired .
-&lt; we re all retired . &lt;EOS&gt;
+&gt; il est ce qu on appelle un lettre .
+= he is what we call a scholar .
+&lt; he is what we call . &lt;EOS&gt;
 
-&gt; vous etes un drole d oiseau .
-= you re a funny guy .
-&lt; you re an funny . &lt;EOS&gt;
+&gt; je suis actuellement au telephone avec tom .
+= i m on the phone with tom now .
+&lt; i m on the car with now . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1074,13 +1074,13 @@ and labels:</p>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>input = elle a cinq ans de moins que moi .
-output = she s six years older than me . &lt;EOS&gt;
+output = she is five years younger than . &lt;EOS&gt;
 input = elle est trop petit .
-output = she s too trusting . &lt;EOS&gt;
+output = she s too fat . &lt;EOS&gt;
 input = je ne crains pas de mourir .
-output = i m not scared of dying . &lt;EOS&gt;
+output = i m not afraid to die . &lt;EOS&gt;
 input = c est un jeune directeur plein de talent .
-output = he s a talented . . &lt;EOS&gt;
+output = he s incredibly talented young . . &lt;EOS&gt;
 </pre></div>
 </div>
 </div>
@@ -1108,7 +1108,7 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 26 minutes  21.773 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 27 minutes  13.975 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a96a2daac1918ec72f68233dfe3f2c47/seq2seq_translation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>
