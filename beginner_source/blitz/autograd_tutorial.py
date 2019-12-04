@@ -174,13 +174,22 @@ print(x.grad)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad=True`` by wrapping the code block in
+# with ``.requires_grad=True`` either by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
 
 with torch.no_grad():
 	print((x ** 2).requires_grad)
+
+###############################################################
+# Or by using ``.detach()`` to get a new Tensor with the same
+# content but that does not require gradients:
+print(x.requires_grad)
+y = x.detach()
+print(y.requires_grad)
+print(x.eq(y).all())
+
 
 ###############################################################
 # **Read Later:**
