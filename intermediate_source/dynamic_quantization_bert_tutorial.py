@@ -13,7 +13,7 @@
 
 ######################################################################
 # Introduction
-# ============
+# ------------
 #
 # In this tutorial, we will apply the dynamic quantization on a BERT
 # model, closely following the BERT model from the HuggingFace
@@ -71,10 +71,10 @@
 
 ######################################################################
 # Setup
-# =====
+# -------
 #
 # Install PyTorch and HuggingFace Transformers
-# --------------------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # To start this tutorial, let’s first follow the installation instructions
 # in PyTorch and HuggingFace Github Repo: -
@@ -203,7 +203,7 @@ print(torch.__config__.parallel_info())
 
 ######################################################################
 # Fine-tune the BERT model
-# ========================
+# --------------------------
 #
 
 
@@ -476,7 +476,7 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
 
 ######################################################################
 # Apply the dynamic quantization
-# ==============================
+# -------------------------------
 #
 # We call ``torch.quantization.quantize_dynamic`` on the model to apply
 # the dynamic quantization on the HuggingFace BERT model. Specifically,
@@ -626,7 +626,7 @@ quantized_model.save_pretrained(quantized_output_dir)
 
 ######################################################################
 # Conclusion
-# ==========
+# ----------
 #
 # In this tutorial, we demonstrated how to demonstrate how to convert a
 # well-known state-of-the-art NLP model like BERT into dynamic quantized
@@ -641,7 +641,7 @@ quantized_model.save_pretrained(quantized_output_dir)
 
 ######################################################################
 # References
-# ==========
+# -----------
 #
 # [1] J.Devlin, M. Chang, K. Lee and K. Toutanova, BERT: Pre-training of
 # Deep Bidirectional Transformers for Language Understanding (2018)
@@ -657,5 +657,3 @@ quantized_model.save_pretrained(quantized_output_dir)
 ######################################################################
 #
 #
-
-
