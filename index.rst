@@ -247,18 +247,6 @@ Quantization (experimental)
     :figure: /_static/img/qat.png
     :description: :doc:`advanced/static_quantization_tutorial`
 
-.. customgalleryitem::
-    :tooltip: Perform quantized transfer learning with feature extractor
-    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
-    :figure: /_static/img/quantized_transfer_learning.png
-
-.. customgalleryitem::
-  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
-  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
-  :figure: /_static/img/bert.png
-
-
-
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -340,7 +328,7 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
-
+   
 .. toctree::
    :maxdepth: 2
    :includehidden:
@@ -397,8 +385,6 @@ PyTorch Fundamentals In-Depth
 
    advanced/dynamic_quantization_tutorial
    advanced/static_quantization_tutorial
-   intermediate/quantized_transfer_learning_tutorial
-   intermediate/dynamic_quantization_bert_tutorial
 
 .. toctree::
    :maxdepth: 2
