@@ -228,6 +228,8 @@ structure:
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The last step is building the application. For this, assume our example
 directory is laid out like this:
@@ -246,7 +248,7 @@ We can now run the following commands to build the application from within the
   mkdir build
   cd build
   cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
-  make
+  cmake --build . --config Release
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
 distribution. If all goes well, it will look something like this:
