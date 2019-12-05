@@ -8,12 +8,12 @@
 
 **Edited by**: `Jessica Lin <https://github.com/jlin27>`_
 
+
+Introduction
+------------
 """
-
-
 ######################################################################
-# Introduction
-# ------------
+#
 #
 # In this tutorial, we will apply the dynamic quantization on a BERT
 # model, closely following the BERT model from the HuggingFace
