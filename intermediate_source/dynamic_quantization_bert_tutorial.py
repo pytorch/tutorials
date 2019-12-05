@@ -54,19 +54,7 @@ Introduction
 #    MRPC is a common NLP task for language pair classification, as shown
 #    below.
 #
-# .. raw:: html
-#
-#    <!-- ![BERT for setence pair classification](https://drive.google.com/file/d/1m_VcRJNuMBwnrx3f0OShX6ffLyoEOJPC/view?usp=sharing). -->
-#
-# .. figure:: https://gluon-nlp.mxnet.io/_images/bert-sentence-pair.png
-#    :alt: BERT for setence pair classification
-#
-#    BERT for setence pair classification
-#
-# .. raw:: html
-#
-#    <!-- ![alt text](https://drive.google.com/file/d/1NJIWxtY39pBl0KUCOCMF5vpfuWLlSKf8/view?usp=sharing) -->
-#
+# .. figure:: /_static/img/bert_mrpc.png
 
 
 ######################################################################
