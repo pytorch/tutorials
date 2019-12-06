@@ -1,6 +1,11 @@
 Quantized Transfer Learning for Computer Vision Tutorial
 ========================================================
 
+.. tip::
+   To get the most of this tutorial, we suggest using this 
+   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/quantized_transfer_learning_tutorial.ipynb>`_. 
+   This will allow you to experiment with the information presented below. 
+
 **Author**: `Zafar Takhirov <https://github.com/z-a-f>`_
 
 **Reviewed by**: `Raghuraman Krishnamoorthi <https://github.com/raghuramank100>`_
