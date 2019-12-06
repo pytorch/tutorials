@@ -44,7 +44,7 @@ Introduction
 #    <https://gluebenchmark.com/>`_. The MRPC (Dolan and Brockett, 2005) is
 #    a corpus of sentence pairs automatically extracted from online news
 #    sources, with human annotations of whether the sentences in the pair
-#    are semantically equivalent. Because the classes are imbalanced (68%
+#    are semantically equivalent. As the classes are imbalanced (68%
 #    positive, 32% negative), we follow the common practice and report
 #    `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_.
 #    MRPC is a common NLP task for language pair classification, as shown
@@ -55,10 +55,10 @@ Introduction
 
 ######################################################################
 # 1. Setup
-# -------
+# --------
 #
-# Install PyTorch and HuggingFace Transformers
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# 1.1 Install PyTorch and HuggingFace Transformers
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # To start this tutorial, let’s first follow the installation instructions
 # in PyTorch `here <https://github.com/pytorch/pytorch/#installation>`_ and HuggingFace Github Repo `here <https://github.com/huggingface/transformers#installation>`_.
@@ -87,8 +87,8 @@ Introduction
 
 
 ######################################################################
-# 2. Import the necessary modules
-# ----------------------------
+# 1.2 Import the necessary modules
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # In this step we import the necessary Python modules for the tutorial.
 #
@@ -130,13 +130,13 @@ print(torch.__config__.parallel_info())
 
 
 ######################################################################
-# 3. Download the dataset
-# --------------------
+# 1.3 Download the dataset
+# ^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Before running MRPC tasks we download the `GLUE data
 # <https://gluebenchmark.com/tasks>`_ by running `this script
 # <https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_
-# and unpack it to a directory `glue_data`.
+# and unpack it to a directory ``glue_data``.
 #
 #
 # .. code:: shell
@@ -146,8 +146,8 @@ print(torch.__config__.parallel_info())
 
 
 ######################################################################
-# 4. Helper functions
-# ----------------
+# 1.4 Learn about helper functions
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # The helper functions are built-in in transformers library. We mainly use
 # the following helper functions: one for converting the text examples
@@ -157,9 +157,9 @@ print(torch.__config__.parallel_info())
 # The `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_ function converts the texts into input features:
 #
 # -  Tokenize the input sequences;
-# -  Insert [CLS] at the beginning;
+# -  Insert [CLS] in the beginning;
 # -  Insert [SEP] between the first sentence and the second sentence, and
-#    at the end;
+#    in the end;
 # -  Generate token type ids to indicate whether a token belongs to the
 #    first sequence or the second sequence.
 #
@@ -167,15 +167,15 @@ print(torch.__config__.parallel_info())
 # can be interpreted as a weighted average of the precision and recall,
 # where an F1 score reaches its best value at 1 and worst score at 0. The
 # relative contribution of precision and recall to the F1 score are equal.
-# The equation for the F1 score is:
 #
-# -  F1 = 2 \* (precision \* recall) / (precision + recall)
+# -  The equation for the F1 score is:
+# .. math:: F1 = 2 * (\text{precision} * \text{recall}) / (\text{precision} + \text{recall})
 #
 
 
 ######################################################################
-# 5. Fine-tune the BERT model
-# --------------------------
+# 2. Fine-tune the BERT model
+# ---------------------------
 #
 
 
@@ -216,8 +216,8 @@ print(torch.__config__.parallel_info())
 # To save time, you can download the model file (~400 MB) directly into your local folder ``$OUT_DIR``.
 
 ######################################################################
-# 6. Set global configurations
-# -------------------------
+# 2.1 Set global configurations
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 
 
@@ -264,12 +264,9 @@ set_seed(42)
 
 
 ######################################################################
-# 7. Load the fine-tuned BERT model
-# ------------------------------
+# 2.2 Load the fine-tuned BERT model
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-
-
-######################################################################
 # We load the tokenizer and fine-tuned BERT sequence classifier model
 # (FP32) from the ``configs.output_dir``.
 #
@@ -282,8 +279,8 @@ model.to(configs.device)
 
 
 ######################################################################
-# 8. Define the tokenize and evaluation function
-# -------------------------------------------
+# 2.3 Define the tokenize and evaluation function
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We reuse the tokenize and evaluation function from `Huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
 #
@@ -426,7 +423,7 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
 
 
 ######################################################################
-# 9. Apply the dynamic quantization
+# 3. Apply the dynamic quantization
 # -------------------------------
 #
 # We call ``torch.quantization.quantize_dynamic`` on the model to apply
@@ -445,8 +442,8 @@ print(quantized_model)
 
 
 ######################################################################
-# 10. Check the model size
-# --------------------
+# 3.1 Check the model size
+# ^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Let’s first check the model size. We can observe a significant reduction
 # in model size (FP32 total size: 438 MB; INT8 total size: 181 MB):
@@ -472,8 +469,8 @@ print_size_of_model(quantized_model)
 
 
 ######################################################################
-# 11. Evaluate the inference accuracy and time
-# ----------------------------------------
+# 3.2 Evaluate the inference accuracy and time
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Next, let’s compare the inference time as well as the evaluation
 # accuracy between the original FP32 model and the INT8 model after the
@@ -513,7 +510,7 @@ time_model_evaluation(quantized_model, configs, tokenizer)
 # comparison, in a `recent paper <https://arxiv.org/pdf/1910.06188.pdf>`_ (Table 1),
 # it achieved 0.8788 by
 # applying the post-training dynamic quantization and 0.8956 by applying
-# the quantization-aware training. The main reason is that we support the
+# the quantization-aware training. The main difference is that we support the
 # asymmetric quantization in PyTorch while that paper supports the
 # symmetric quantization only.
 #
@@ -533,8 +530,8 @@ time_model_evaluation(quantized_model, configs, tokenizer)
 
 
 ######################################################################
-# 12. Serialize the quantized model
-# -----------------------------
+# 3.3 Serialize the quantized model
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We can serialize and save the quantized model for the future use.
 #
