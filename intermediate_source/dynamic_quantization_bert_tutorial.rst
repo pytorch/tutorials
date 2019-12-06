@@ -1,4 +1,4 @@
-(Experimental) Dynamic Quantization on HuggingFace BERT model
+(experimental) Dynamic Quantization on HuggingFace BERT model
 ==============================================================
 
 .. tip::
