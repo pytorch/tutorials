@@ -35,22 +35,20 @@ Introduction
 #    are quantized dynamically (per batch) to int8 when the weights are
 #    quantized to int8.
 #
-# In PyTorch, we have ``torch.quantization.quantize_dynamic`` API support
-# (https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic),
-# which replaces specified modules with dynamic weight-only quantized
+# In PyTorch, we have `torch.quantization.quantize_dynamic API
+# <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_
+# ,which replaces specified modules with dynamic weight-only quantized
 # versions and output the quantized model.
 #
 # -  We demonstrate the accuracy and inference performance results on the
-#    Microsoft Research Paraphrase Corpus (MRPC) task
-#    (https://www.microsoft.com/en-us/download/details.aspx?id=52398) in
-#    the General Language Understanding Evaluation benchmark (GLUE)
-#    (https://gluebenchmark.com/). The MRPC (Dolan and Brockett, 2005) is
+#    `Microsoft Research Paraphrase Corpus (MRPC) task <https://www.microsoft.com/en-us/download/details.aspx?id=52398>`_
+#    in the General Language Understanding Evaluation benchmark `(GLUE)
+#    <https://gluebenchmark.com/>`_. The MRPC (Dolan and Brockett, 2005) is
 #    a corpus of sentence pairs automatically extracted from online news
 #    sources, with human annotations of whether the sentences in the pair
 #    are semantically equivalent. Because the classes are imbalanced (68%
 #    positive, 32% negative), we follow common practice and report both
-#    accuracy and F1 score
-#    (https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
+#    accuracy and `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_
 #    MRPC is a common NLP task for language pair classification, as shown
 #    below.
 #
@@ -66,8 +64,10 @@ Introduction
 #
 # To start this tutorial, let’s first follow the installation instructions
 # in PyTorch and HuggingFace Github Repo: -
-# https://github.com/pytorch/pytorch/#installation -
-# https://github.com/huggingface/transformers#installation
+#
+# * https://github.com/pytorch/pytorch/#installation -
+#
+# * https://github.com/huggingface/transformers#installation
 #
 # In addition, we also install ``sklearn`` package, as we will reuse its
 # built-in F1 score calculation helper function.
@@ -82,8 +82,8 @@ Introduction
 ######################################################################
 # Because we will be using the experimental parts of the PyTorch, it is
 # recommended to install the latest version of torch and torchvision. You
-# can find the most recent instructions on local installation here
-# https://pytorch.org/get-started/locally/. For example, to install on
+# can find the most recent instructions on local installation `here
+# <https://pytorch.org/get-started/locally/>`_. For example, to install on
 # Mac:
 #
 # .. code:: shell
@@ -140,10 +140,10 @@ print(torch.__config__.parallel_info())
 # Download the dataset
 # --------------------
 #
-# Before running MRPC tasks we download the GLUE data
-# (https://gluebenchmark.com/tasks) by running this script
-# (https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e,
-# https://github.com/nyu-mll/GLUE-baselines/blob/master/download_glue_data.py)
+# Before running MRPC tasks we download the `GLUE data
+# <https://gluebenchmark.com/tasks>`_ by running this `script
+# <https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_ followed by
+# `download_glue_data <https://github.com/nyu-mll/GLUE-baselines/blob/master/download_glue_data.py>`_.
 # and unpack it to some directory “glue_data/MRPC”.
 #
 #
@@ -167,8 +167,7 @@ print(torch.__config__.parallel_info())
 # Convert the texts into features
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# glue_convert_examples_to_features (
-# https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py)
+# `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_.
 # load a data file into a list of ``InputFeatures``.
 #
 # -  Tokenize the input sequences;
@@ -181,8 +180,7 @@ print(torch.__config__.parallel_info())
 # F1 metric
 # ~~~~~~~~~
 #
-# The F1 score
-# (https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html)
+# The `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_
 # can be interpreted as a weighted average of the precision and recall,
 # where an F1 score reaches its best value at 1 and worst score at 0. The
 # relative contribution of precision and recall to the F1 score are equal.
@@ -208,7 +206,7 @@ print(torch.__config__.parallel_info())
 #
 # To fine-tune the pre-trained BERT model (“bert-base-uncased” model in
 # HuggingFace transformers) for the MRPC task, you can follow the command
-# in (https://github.com/huggingface/transformers/tree/master/examples):
+# in `examples<https://github.com/huggingface/transformers/tree/master/examples>`_"
 #
 # ::
 #
@@ -317,10 +315,8 @@ model.to(configs.device)
 # Define the tokenize and evaluation function
 # -------------------------------------------
 #
-# We reuse the tokenize and evaluation function from
-# https://github.com/huggingface/transformers/blob/master/examples/run_glue.py.
+# We reuse the tokenize and evaluation function from `huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
 #
-
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
@@ -555,8 +551,8 @@ time_model_evaluation(quantized_model, configs, tokenizer)
 # set multi-thread by ``torch.set_num_threads(N)`` (``N`` is the number of
 # intra-op parallelization threads). One preliminary requirement to enable
 # the intra-op parallelization support is to build PyTorch with the right
-# backend such as OpenMP, Native, or TBB
-# (https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html#build-options).
+# `backend <https://pytorch.org/docs/stable/notes/cpu_threading_torchscript_inference.html#build-options>`_
+# such as OpenMP, Native or TBB.
 # You can use ``torch.__config__.parallel_info()`` to check the
 # parallelization settings. On the same MacBook Pro using PyTorch with
 # Native backend for parallelization, we can get about 46 seconds for
