@@ -1,5 +1,10 @@
 (Experimental) Dynamic Quantization on HuggingFace BERT model
 ==============================================================
+
+.. tip::
+   To get the most of this tutorial, we suggest using this 
+   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/dynamic_quantization_bert_tutorial.ipynb>`_. This will allow you to experiment with the information presented below. 
+   
 **Author**: `Jianyu Huang <https://github.com/jianyuh>`_
 
 **Reviewed by**: `Raghuraman Krishnamoorthi <https://github.com/raghuramank100>`_
