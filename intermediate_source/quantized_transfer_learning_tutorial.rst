@@ -1,5 +1,5 @@
-Quantized Transfer Learning for Computer Vision Tutorial
-========================================================
+(experimental) Quantized Transfer Learning for Computer Vision Tutorial
+========================================================================
 
 .. tip::
    To get the most of this tutorial, we suggest using this 
