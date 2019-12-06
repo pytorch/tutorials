@@ -96,6 +96,10 @@ download:
 	# Download dataset for advanced_source/static_quantization_tutorial.py
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
 	unzip -q -o $(DATADIR)/imagenet_1k.zip -d advanced_source/data/
+	
+	# Download weights for intermediate_source/dynamic_quantization_bert_tutorial.py
+	wget -N https://download.pytorch.org/tutorial/MRPC.zip -P $(DATADIR)
+	unzip -q -o $(DATADIR)/MRPC.zip -d intermediate_source/data/
 
 
 docs:
