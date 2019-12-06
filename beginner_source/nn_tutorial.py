@@ -156,8 +156,8 @@ print(preds[0], preds.shape)
 # (again, we can just use standard Python):
 
 
-def nll(input, target):
-    return -input[range(target.shape[0]), target].mean()
+def nll(input_tensor, target):
+    return -input_tensor[range(target.shape[0]), target].mean()
 
 loss_func = nll
 
