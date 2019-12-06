@@ -78,7 +78,6 @@ plt.ion()
 # ~~~~~~~~~
 #
 # .. note :: This section is identical to the original transfer learning tutorial.
-#
 # We will use ``torchvision`` and ``torch.utils.data`` packages to load
 # the data.
 #
@@ -369,18 +368,13 @@ def create_combined_model(model_fe):
   )
   return new_model
 
-<<<<<<< Updated upstream
-new_model = create_combined_model(model_fe)
-
-
-=======
->>>>>>> Stashed changes
 ######################################################################
 # .. warning:: Currently the quantized models can only be run on CPU.
 #   However, it is possible to send the non-quantized parts of the model to a GPU.
 #
 
 import torch.optim as optim
+new_model = create_combined_model(model_fe)
 new_model = new_model.to('cpu')
 
 criterion = nn.CrossEntropyLoss()
@@ -518,4 +512,3 @@ visualize_model(model_quantized_and_trained)
 plt.ioff()
 plt.tight_layout()
 plt.show()
-
