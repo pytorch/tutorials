@@ -2,93 +2,82 @@
 Quantized Transfer Learning for Computer Vision Tutorial
 ========================================================
 
-**Author**: `Zafar Takhirov <https://z-a-f.github.cio>`_
+**Author**: `Zafar Takhirov <https://github.com/z-a-f>`_
 
 **Reviewed by**: `Raghuraman Krishnamoorthi <https://github.com/raghuramank100>`_
 
 **Edited by**: `Jessica Lin <https://github.com/jlin27>`_
 
 This tutorial builds on the original `PyTorch Transfer Learning <https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html>`_
-tutorial, written by
-`Sasank Chilamkurthy <https://chsasank.github.io/>`_.
+tutorial, written by `Sasank Chilamkurthy <https://chsasank.github.io/>`_.
 
-Transfer learning refers to techniques to use a pretrained model for
-application on a different data-set. Typical scenarios look as follows:
+Transfer learning refers to techniques that make use of a pretrained model for
+application on a different data-set.
+There are two main ways the transfer learning is used:
 
-1. **ConvNet as fixed feature extractor**: Here, you “freeze”[#1]\_ the
-   weights for all of the network parameters except that of the final
+1. **ConvNet as a fixed feature extractor**: Here, you `“freeze” <https://arxiv.org/abs/1706.04983>`_
+   the weights of all the parameters in the network except that of the final
    several layers (aka “the head”, usually fully connected layers).
    These last layers are replaced with new ones initialized with random
    weights and only these layers are trained.
-2. **Finetuning the convnet**: Instead of random initializaion, you
-   initialize the network with a pretrained network, like the one that
-   is trained on imagenet 1000 dataset. Rest of the training looks as
-   usual. It is common to set the learning rate to a smaller number, as
-   the network is already considered to be trained.
+2. **Finetuning the ConvNet**: Instead of random initializaion, the model is
+   initialized using a pretrained network, after which the training proceeds as
+   usual but with a different dataset.
+   Usually the head (or part of it) is also replaced in the network in
+   case there is a different number of outputs.
+   It is common in this method to set the learning rate to a smaller number.
+   This is done because the network is already trained, and only minor changes
+   are required to "finetune" it to a new dataset.
 
-You can also combine the above two scenarios, and execute them both:
+You can also combine the above two methods:
 First you can freeze the feature extractor, and train the head. After
 that, you can unfreeze the feature extractor (or part of it), set the
 learning rate to something smaller, and continue training.
 
-In this part you will use the first scenario – extracting the features
+In this part you will use the first method – extracting the features
 using a quantized model.
 
-.. rubric:: Footnotes
 
-.. [#1] “Freezing” the model/layer means running it only in inference
-mode, and not allowing its parameters to be updated during the training.
+Part 0. Prerequisites
+---------------------
 
-We will start by doing the necessary imports:
+Before diving into the transfer learning, let us review the "prerequisites",
+such as installations and data loading/visualizations.
 """
 
-# imports
+# Imports
+import copy
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import time
-import copy
 
-plt.rc('axes', labelsize=18, titlesize=18)
-plt.rc('figure', titlesize=18)
-plt.rc('font', family='DejaVu Sans', serif='Times', size=18)
-plt.rc('legend', fontsize=18)
-plt.rc('lines', linewidth=3)
-plt.rc('text', usetex=False)  # TeX might not be supported
-plt.rc('xtick', labelsize=18)
-plt.rc('ytick', labelsize=18)
+plt.ion()
 
 ######################################################################
 # Installing the Nightly Build
-# ----------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Because you will be using the experimental parts of the PyTorch, it is
 # recommended to install the latest version of ``torch`` and
 # ``torchvision``. You can find the most recent instructions on local
 # installation `here <https://pytorch.org/get-started/locally/>`_.
-# For example, to install on Mac:
+# For example, to install without GPU support:
 #
 # .. code:: shell
 #
 #    pip install numpy
 #    pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html
+#    # For CUDA support use https://download.pytorch.org/whl/nightly/cu101/torch_nightly.html
 #
-# For Linux:
-#
-# .. code:: shell
-#
-#   !yes y | pip uninstall torch torchvision
-#   !yes y | pip install --pre torch torchvision -f https://download.pytorch.org/whl/nightly/cu101/torch_nightly.html
-#
-
 
 
 
 ######################################################################
 # Load Data
-# ------------------------------------------------------------------------
+# ~~~~~~~~~
 #
-# ..Note :: This section is identical to the original transfer learning tutorial.
-#
+# .. note :: This section is identical to the original transfer learning tutorial.
 # We will use ``torchvision`` and ``torch.utils.data`` packages to load
 # the data.
 #
@@ -101,37 +90,9 @@ plt.rc('ytick', labelsize=18)
 #
 # *This dataset is a very small subset of imagenet.*
 #
-# .. Note :: Download the data from
-# `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
-# and extract it to the ``data`` directory.
+# .. Note :: Download the data from `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
+#   and extract it to the ``data`` directory.
 #
-
-import requests
-import os
-import zipfile
-
-DATA_URL = 'https://download.pytorch.org/tutorial/hymenoptera_data.zip'
-DATA_PATH = os.path.join('.', 'data')
-FILE_NAME = os.path.join(DATA_PATH, 'hymenoptera_data.zip')
-
-if not os.path.isfile(FILE_NAME):
-  print("Downloading the data...")
-  os.makedirs('data', exist_ok=True)
-  with requests.get(DATA_URL) as req:
-    with open(FILE_NAME, 'wb') as f:
-      f.write(req.content)
-  if 200 <= req.status_code < 300:
-    print("Download complete!")
-  else:
-    print("Download failed!")
-else:
-  print(FILE_NAME, "already exists, skipping download...")
-
-with zipfile.ZipFile(FILE_NAME, 'r') as zip_ref:
-  print("Unzipping...")
-  zip_ref.extractall('data')
-
-DATA_PATH = os.path.join(DATA_PATH, 'hymenoptera_data')
 
 import torch
 from torchvision import transforms, datasets
@@ -154,7 +115,8 @@ data_transforms = {
     ]),
 }
 
-image_datasets = {x: datasets.ImageFolder(os.path.join(DATA_PATH, x),
+data_dir = 'data/hymenoptera_data'
+image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=16,
@@ -168,7 +130,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 ######################################################################
 # Visualize a few images
-# ^^^^^^^^^^^^^^^^^^^^^^
+# ~~~~~~~~~~~~~~~~~~~~~~
 #
 # Let’s visualize a few training images so as to understand the data
 # augmentations.
@@ -202,20 +164,28 @@ imshow(out, title=[class_names[x] for x in classes], ax=ax)
 
 
 ######################################################################
-# Training the model
-# ------------------
+# Support Function for Model Training
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Now, let’s write a general function to train a model. Here, we will
-# illustrate:
+# Below is a generic function for model training.
+# This function also
 #
-# -  Scheduling the learning rate
-# -  Saving the best model
-#
-# In the following, parameter ``scheduler`` is an LR scheduler object from
-# ``torch.optim.lr_scheduler``.
+# - Schedules the learning rate
+# - Saves the best model
 #
 
 def train_model(model, criterion, optimizer, scheduler, num_epochs=25, device='cpu'):
+  """
+  Support function for model training.
+
+  Args:
+    model: Model to be trained
+    criterion: Optimization criterion (loss)
+    optimizer: Optimizer to use for training
+    scheduler: Instance of ``torch.optim.lr_scheduler``
+    num_epochs: Number of epochs
+    device: Device to run the training on. Must be 'cpu' or 'cuda'
+  """
   since = time.time()
 
   best_model_wts = copy.deepcopy(model.state_dict())
@@ -285,7 +255,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25, device='c
 
 
 ######################################################################
-# Visualizing the model predictions ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Support Function for Visualizing the Model Predictions
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Generic function to display predictions for a few images
 #
@@ -327,16 +298,16 @@ def visualize_model(model, rows=3, cols=3):
 # train a custom classifier head on top of it. Unlike floating point
 # models, you don’t need to set requires_grad=False for the quantized
 # model, as it has no trainable parameters. Please, refer to the
-# documentation https://pytorch.org/docs/stable/quantization.html\ \_ for
+# `documentation <https://pytorch.org/docs/stable/quantization.html>`_ for
 # more details.
 #
-# Load a pretrained model: for this exercise you will be using ResNet-18
-# https://pytorch.org/hub/pytorch_vision_resnet/\ \_.
+# Load a pretrained model: for this exercise you will be using
+# `ResNet-18 <https://pytorch.org/hub/pytorch_vision_resnet/>`_.
 #
 
 import torchvision.models.quantization as models
 
-# We will need the number of filters in the `fc` for future use.
+# You will need the number of filters in the `fc` for future use.
 # Here the size of each output sample is set to 2.
 # Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
 model_fe = models.resnet18(pretrained=True, progress=True, quantize=True)
@@ -344,13 +315,13 @@ num_ftrs = model_fe.fc.in_features
 
 
 ######################################################################
-# At this point you need to mofify the pretrained model: Because the model
-# has the quantize/dequantize blocks in the beginning and the end, butt we
-# will only uuse the feature extractor, the dequantizatioin layer has to
-# move right before the linear layer (the head). The easiest way of doing
-# it is to wrap the model under the ``nn.Sequential``.
+# At this point you need to modify the pretrained model. The model
+# has the quantize/dequantize blocks in the beginning and the end. However,
+# because you will only use the feature extractor, the dequantizatioin layer has
+# to move right before the linear layer (the head). The easiest way to do that
+# is to wrap the model in the ``nn.Sequential`` module.
 #
-# The first step to do, is to isolate the feature extractor in the ResNet
+# The first step is to isolate the feature extractor in the ResNet
 # model. Although in this example you are tasked to use all layers except
 # ``fc`` as the feature extractor, in reality, you can take as many parts
 # as you need. This would be useful in case you would like to replace some
@@ -359,10 +330,11 @@ num_ftrs = model_fe.fc.in_features
 
 
 ######################################################################
-# **Notice that when isolating the feature extractor from a quantized
-# model, you have to place the quantizer in the beginning and in the end
-# of it.**
-# We write a helper function to create a model with a custom head.
+# .. note:: When separating the feature extractor from the rest of a quantized
+#    model, you have to manually place the quantizer/dequantized in the
+#    beginning and the end of the parts you want to keep quantized.
+#
+# The function below creates a model with a custom head.
 
 from torch import nn
 
@@ -396,11 +368,9 @@ def create_combined_model(model_fe):
   )
   return new_model
 
-
 ######################################################################
 # .. warning:: Currently the quantized models can only be run on CPU.
-# However, it is possible to send the non-quantized parts of the model to
-# a GPU.
+#   However, it is possible to send the non-quantized parts of the model to a GPU.
 #
 
 import torch.optim as optim
@@ -418,7 +388,7 @@ exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.
 
 ######################################################################
 # Train and evaluate
-# ------------------
+# ~~~~~~~~~~~~~~~~~~
 #
 # This step takes around 15-25 min on CPU. Because the quantized model can
 # only run on the CPU, you cannot run the training on GPU.
@@ -432,7 +402,8 @@ plt.tight_layout()
 
 
 ######################################################################
-# Part 2. Finetuning the quantizable model
+# Part 2. Finetuning the Quantizable Model
+# ----------------------------------------
 #
 # In this part, we fine tune the feature extractor used for transfer
 # learning, and quantize the feature extractor. Note that in both part 1
@@ -446,38 +417,42 @@ plt.tight_layout()
 # shown here will improve accuracy for transfer learning with larger
 # datasets.
 #
-# The pretrained feature extractor must be quantizable, i.e we need to do
-# the following:
-#  1. Fuse (Conv, BN, ReLU), (Conv, BN) and (Conv, ReLU)
-#     using torch.quantization.fuse_modules.
-#  2. Connect the feature extractor
-#     with a custom head. This requires dequantizing the output of the feature
-#     extractor.
+# The pretrained feature extractor must be quantizable.
+# To make sure it is quantizable, perform the following steps:
+#
+#  1. Fuse ``(Conv, BN, ReLU)``, ``(Conv, BN)``, and ``(Conv, ReLU)`` using
+#     ``torch.quantization.fuse_modules``.
+#  2. Connect the feature extractor with a custom head.
+#     This requires dequantizing the output of the feature extractor.
 #  3. Insert fake-quantization modules at appropriate locations
 #     in the feature extractor to mimic quantization during training.
 #
-# For step (1), we use models from torchvision/models/quantization, which
-# support a member method fuse_model, which fuses all the conv, bn, and
-# relu modules. In general, this would require calling the
-# torch.quantization.fuse_modules API with the list of modules to fuse.
+# For step (1), we use models from ``torchvision/models/quantization``, which
+# have a member method ``fuse_model``. This function fuses all the ``conv``,
+# ``bn``, and ``relu`` modules. For custom models, this would require calling
+# the ``torch.quantization.fuse_modules`` API with the list of modules to fuse
+# manually.
 #
-# Step (2) is done by the function create_combined_model function that we
+# Step (2) is performed by the ``create_combined_model`` function
 # used in the previous section.
 #
-# Step (3) is achieved by using torch.quantization.prepare_qat, which
+# Step (3) is achieved by using ``torch.quantization.prepare_qat``, which
 # inserts fake-quantization modules.
 #
-# Step (4) Fine tune the model with the desired custom head.
 #
-# Step (5) We convert the fine tuned model into a quantized model (only
-# the feature extractor is quantized) by calling
-# torch.quantization.convert
+# As step (4), you can start "finetuning" the model, and after that convert
+# it to a fully quantized version (Step 5).
 #
-# .. note:: Because of the random initialization your results might differ
-# from the results shown here.
+# To convert the fine tuned model into a quantized model you can call the
+# ``torch.quantization.convert`` function (in our case only
+# the feature extractor is quantized).
+#
+# .. note:: Because of the random initialization your results might differ from
+#    the results shown in this tutorial.
 #
 
-model = models.resnet18(pretrained=True, progress=True, quantize=False)  # notice `quantize=False`
+# notice `quantize=False`
+model = models.resnet18(pretrained=True, progress=True, quantize=False)
 num_ftrs = model.fc.in_features
 
 # Step 1
@@ -491,12 +466,11 @@ model_ft = torch.quantization.prepare_qat(model_ft, inplace=True)
 
 
 
-
 ######################################################################
 # Finetuning the model
-# --------------------
+# ~~~~~~~~~~~~~~~~~~~~
 #
-# We fine tune the entire model including the feature extractor. In
+# In the current tutorial the whole model is fine tuned. In
 # general, this will lead to higher accuracy. However, due to the small
 # training set used here, we end up overfitting to the training set.
 #
@@ -506,7 +480,7 @@ model_ft = torch.quantization.prepare_qat(model_ft, inplace=True)
 for param in model_ft.parameters():
   param.requires_grad = True
 
-model_ft.cuda()  # We can fine-tune on GPU
+model_ft.to(device)  # We can fine-tune on GPU if available
 
 criterion = nn.CrossEntropyLoss()
 
@@ -518,7 +492,7 @@ optimizer_ft = optim.SGD(model_ft.parameters(), lr=1e-3, momentum=0.9, weight_de
 exp_lr_scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=5, gamma=0.3)
 
 model_ft_tuned = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                             num_epochs=25, device='cuda')
+                             num_epochs=25, device=device)
 
 # Step 5. Convert to quantized model
 
