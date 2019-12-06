@@ -16,8 +16,8 @@ Introduction
 #
 #
 # In this tutorial, we will apply the dynamic quantization on a BERT
-# model, closely following the BERT model from the HuggingFace
-# Transformers examples (https://github.com/huggingface/transformers).
+# model, closely following the BERT model from `the HuggingFace
+# Transformers examples <https://github.com/huggingface/transformers>`_.
 # With this step-by-step journey, we would like to demonstrate how to
 # convert a well-known state-of-the-art model like BERT into dynamic
 # quantized model.
@@ -27,18 +27,16 @@ Introduction
 #    achieves the state-of-the-art accuracy results on many popular
 #    Natural Language Processing (NLP) tasks, such as question answering,
 #    text classification, and others. The original paper can be found
-#    here: https://arxiv.org/pdf/1810.04805.pdf.
+#    `here <https://arxiv.org/pdf/1810.04805.pdf>`_.
 #
 # -  Dynamic quantization support in PyTorch converts a float model to a
 #    quantized model with static int8 or float16 data types for the
 #    weights and dynamic quantization for the activations. The activations
 #    are quantized dynamically (per batch) to int8 when the weights are
-#    quantized to int8.
-#
-# In PyTorch, we have `torch.quantization.quantize_dynamic API
-# <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_
-# ,which replaces specified modules with dynamic weight-only quantized
-# versions and output the quantized model.
+#    quantized to int8. In PyTorch, we have `torch.quantization.quantize_dynamic API
+#    <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_,
+#    which replaces specified modules with dynamic weight-only quantized
+#    versions and output the quantized model.
 #
 # -  We demonstrate the accuracy and inference performance results on the
 #    `Microsoft Research Paraphrase Corpus (MRPC) task <https://www.microsoft.com/en-us/download/details.aspx?id=52398>`_
@@ -47,29 +45,24 @@ Introduction
 #    a corpus of sentence pairs automatically extracted from online news
 #    sources, with human annotations of whether the sentences in the pair
 #    are semantically equivalent. Because the classes are imbalanced (68%
-#    positive, 32% negative), we follow common practice and report both
-#    accuracy and `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_
+#    positive, 32% negative), we follow the common practice and report
+#    `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_.
 #    MRPC is a common NLP task for language pair classification, as shown
 #    below.
 #
-# .. figure:: /_static/img/bert_mrpc.png
+# .. figure:: /_static/img/bert.png
 
 
 ######################################################################
-# Setup
+# 1. Setup
 # -------
 #
 # Install PyTorch and HuggingFace Transformers
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # To start this tutorial, let’s first follow the installation instructions
-# in PyTorch and HuggingFace Github Repo: -
-#
-# * https://github.com/pytorch/pytorch/#installation -
-#
-# * https://github.com/huggingface/transformers#installation
-#
-# In addition, we also install ``sklearn`` package, as we will reuse its
+# in PyTorch `here <https://github.com/pytorch/pytorch/#installation>`_ and HuggingFace Github Repo `here <https://github.com/huggingface/transformers#installation>`_.
+# In addition, we also install `scikit-learn <https://github.com/scikit-learn/scikit-learn>`_ package, as we will reuse its
 # built-in F1 score calculation helper function.
 #
 # .. code:: shell
@@ -94,7 +87,7 @@ Introduction
 
 
 ######################################################################
-# Import the necessary modules
+# 2. Import the necessary modules
 # ----------------------------
 #
 # In this step we import the necessary Python modules for the tutorial.
@@ -137,26 +130,23 @@ print(torch.__config__.parallel_info())
 
 
 ######################################################################
-# Download the dataset
+# 3. Download the dataset
 # --------------------
 #
 # Before running MRPC tasks we download the `GLUE data
-# <https://gluebenchmark.com/tasks>`_ by running this `script
-# <https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_ followed by
-# `download_glue_data <https://github.com/nyu-mll/GLUE-baselines/blob/master/download_glue_data.py>`_.
-# and unpack it to some directory “glue_data/MRPC”.
+# <https://gluebenchmark.com/tasks>`_ by running `this script
+# <https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_
+# and unpack it to a directory `glue_data`.
 #
 #
 # .. code:: shell
 #
-#    wget https://gist.githubusercontent.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e/raw/17b8dd0d724281ed7c3b2aeeda662b92809aadd5/download_glue_data.py
 #    python download_glue_data.py --data_dir='glue_data' --tasks='MRPC'
-#    ls glue_data/MRPC
 #
 
 
 ######################################################################
-# Helper functions
+# 4. Helper functions
 # ----------------
 #
 # The helper functions are built-in in transformers library. We mainly use
@@ -164,34 +154,27 @@ print(torch.__config__.parallel_info())
 # into the feature vectors; The other one for measuring the F1 score of
 # the predicted result.
 #
-# Convert the texts into features
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
-# `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_.
-# load a data file into a list of ``InputFeatures``.
+# The `glue_convert_examples_to_features <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_ function converts the texts into input features:
 #
 # -  Tokenize the input sequences;
 # -  Insert [CLS] at the beginning;
 # -  Insert [SEP] between the first sentence and the second sentence, and
 #    at the end;
 # -  Generate token type ids to indicate whether a token belongs to the
-#    first sequence or the second sequence;
-#
-# F1 metric
-# ~~~~~~~~~
+#    first sequence or the second sequence.
 #
 # The `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_
 # can be interpreted as a weighted average of the precision and recall,
 # where an F1 score reaches its best value at 1 and worst score at 0. The
 # relative contribution of precision and recall to the F1 score are equal.
-# The formula for the F1 score is:
+# The equation for the F1 score is:
 #
-# F1 = 2 \* (precision \* recall) / (precision + recall)
+# -  F1 = 2 \* (precision \* recall) / (precision + recall)
 #
 
 
 ######################################################################
-# Fine-tune the BERT model
+# 5. Fine-tune the BERT model
 # --------------------------
 #
 
@@ -204,15 +187,15 @@ print(torch.__config__.parallel_info())
 # with the pre-trained BERT model to classify semantically equivalent
 # sentence pairs on MRPC task.
 #
-# To fine-tune the pre-trained BERT model (“bert-base-uncased” model in
+# To fine-tune the pre-trained BERT model (``bert-base-uncased`` model in
 # HuggingFace transformers) for the MRPC task, you can follow the command
-# in `examples<https://github.com/huggingface/transformers/tree/master/examples>`_"
+# in `examples <https://github.com/huggingface/transformers/tree/master/examples#mrpc>`_:
 #
 # ::
 #
 #    export GLUE_DIR=./glue_data
 #    export TASK_NAME=MRPC
-#    export OUT_DIR=/mnt/homedir/jianyuhuang/public/bert/$TASK_NAME/
+#    export OUT_DIR=./$TASK_NAME/
 #    python ./run_glue.py \
 #        --model_type bert \
 #        --model_name_or_path bert-base-uncased \
@@ -229,24 +212,11 @@ print(torch.__config__.parallel_info())
 #        --save_steps 100000 \
 #        --output_dir $OUT_DIR
 #
-# We provide the fined-tuned BERT model for MRPC task here (We did the
-# fine-tuning on CPUs with a total train batch size of 8):
-#
-# https://drive.google.com/drive/folders/1mGBx0t-YJAWXHbgab2f_IimaMiVHlKh-
-#
-# To save time, you can manually copy the fined-tuned BERT model for MRPC
-# task in your Google Drive (Create the same “BERT_Quant_Tutorial/MRPC”
-# folder in the Google Drive directory), and then mount your Google Drive
-# on your runtime using an authorization code, so that we can directly
-# read and write the models into Google Drive in the following steps.
-#
-
-from google.colab import drive
-drive.mount('/content/drive')
-
+# We provide the fined-tuned BERT model for MRPC task `here <https://download.pytorch.org/tutorial/MRPC.zip>`_.
+# To save time, you can download the model file (~400 MB) directly into your local folder ``$OUT_DIR``.
 
 ######################################################################
-# Set global configurations
+# 6. Set global configurations
 # -------------------------
 #
 
@@ -258,11 +228,11 @@ drive.mount('/content/drive')
 
 configs = Namespace()
 
-# The output directory for the fine-tuned model.
-configs.output_dir = "/content/drive/My Drive/BERT_Quant_Tutorial/MRPC/"
+# The output directory for the fine-tuned model, $OUT_DIR.
+configs.output_dir = "./MRPC/"
 
-# The data directory for the MRPC task in the GLUE benchmark.
-configs.data_dir = "/content/glue_data/MRPC"
+# The data directory for the MRPC task in the GLUE benchmark, $GLUE_DIR/$TASK_NAME.
+configs.data_dir = "./glue_data/MRPC"
 
 # The model name or path for the pre-trained model.
 configs.model_name_or_path = "bert-base-uncased"
@@ -294,7 +264,7 @@ set_seed(42)
 
 
 ######################################################################
-# Load the fine-tuned BERT model
+# 7. Load the fine-tuned BERT model
 # ------------------------------
 #
 
@@ -312,11 +282,12 @@ model.to(configs.device)
 
 
 ######################################################################
-# Define the tokenize and evaluation function
+# 8. Define the tokenize and evaluation function
 # -------------------------------------------
 #
-# We reuse the tokenize and evaluation function from `huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
+# We reuse the tokenize and evaluation function from `Huggingface <https://github.com/huggingface/transformers/blob/master/examples/run_glue.py>`_.
 #
+
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.
@@ -455,7 +426,7 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
 
 
 ######################################################################
-# Apply the dynamic quantization
+# 9. Apply the dynamic quantization
 # -------------------------------
 #
 # We call ``torch.quantization.quantize_dynamic`` on the model to apply
@@ -474,11 +445,11 @@ print(quantized_model)
 
 
 ######################################################################
-# Check the model size
+# 10. Check the model size
 # --------------------
 #
 # Let’s first check the model size. We can observe a significant reduction
-# in model size:
+# in model size (FP32 total size: 438 MB; INT8 total size: 181 MB):
 #
 
 def print_size_of_model(model):
@@ -491,7 +462,7 @@ print_size_of_model(quantized_model)
 
 
 ######################################################################
-# The BERT model used in this tutorial (bert-base-uncased) has a
+# The BERT model used in this tutorial (``bert-base-uncased``) has a
 # vocabulary size V of 30522. With the embedding size of 768, the total
 # size of the word embedding table is ~ 4 (Bytes/FP32) \* 30522 \* 768 =
 # 90 MB. So with the help of quantization, the model size of the
@@ -501,7 +472,7 @@ print_size_of_model(quantized_model)
 
 
 ######################################################################
-# Evaluate the inference accuracy and time
+# 11. Evaluate the inference accuracy and time
 # ----------------------------------------
 #
 # Next, let’s compare the inference time as well as the evaluation
@@ -509,7 +480,6 @@ print_size_of_model(quantized_model)
 # dynamic quantization.
 #
 
-# Evaluate the original FP32 BERT model
 def time_model_evaluation(model, configs, tokenizer):
     eval_start_time = time.time()
     result = evaluate(configs, model, tokenizer, prefix="")
@@ -518,6 +488,7 @@ def time_model_evaluation(model, configs, tokenizer):
     print(result)
     print("Evaluate total time (seconds): {0:.1f}".format(eval_duration_time))
 
+# Evaluate the original FP32 BERT model
 time_model_evaluation(model, configs, tokenizer)
 
 # Evaluate the INT8 BERT model after the dynamic quantization
@@ -539,7 +510,8 @@ time_model_evaluation(quantized_model, configs, tokenizer)
 #
 # We have 0.6% F1 score accuracy after applying the post-training dynamic
 # quantization on the fine-tuned BERT model on the MRPC task. As a
-# comparison, in the recent paper [3] (Table 1), it achieved 0.8788 by
+# comparison, in a `recent paper <https://arxiv.org/pdf/1910.06188.pdf>`_ (Table 1),
+# it achieved 0.8788 by
 # applying the post-training dynamic quantization and 0.8956 by applying
 # the quantization-aware training. The main reason is that we support the
 # asymmetric quantization in PyTorch while that paper supports the
@@ -561,7 +533,7 @@ time_model_evaluation(quantized_model, configs, tokenizer)
 
 
 ######################################################################
-# Serialize the quantized model
+# 12. Serialize the quantized model
 # -----------------------------
 #
 # We can serialize and save the quantized model for the future use.
@@ -583,7 +555,7 @@ if not os.path.exists(quantized_output_dir):
 # having a limited implication on accuracy.
 #
 # Thanks for reading! As always, we welcome any feedback, so please create
-# an issue here (https://github.com/pytorch/pytorch/issues) if you have
+# an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have
 # any.
 #
 
@@ -592,14 +564,14 @@ if not os.path.exists(quantized_output_dir):
 # References
 # -----------
 #
-# [1] J.Devlin, M. Chang, K. Lee and K. Toutanova, BERT: Pre-training of
+# [1] J.Devlin, M. Chang, K. Lee and K. Toutanova, `BERT: Pre-training of
 # Deep Bidirectional Transformers for Language Understanding (2018)
+# <https://arxiv.org/pdf/1810.04805.pdf>`_.
 #
-# [2] HuggingFace Transformers.
-# https://github.com/huggingface/transformers
+# [2] `HuggingFace Transformers <https://github.com/huggingface/transformers>`_.
 #
-# [3] O. Zafrir, G. Boudoukh, P. Izsak, & M. Wasserblat (2019). Q8BERT:
-# Quantized 8bit BERT. arXiv preprint arXiv:1910.06188.
+# [3] O. Zafrir, G. Boudoukh, P. Izsak, and M. Wasserblat (2019). `Q8BERT:
+# Quantized 8bit BERT <https://arxiv.org/pdf/1910.06188.pdf>`_.
 #
 
 
