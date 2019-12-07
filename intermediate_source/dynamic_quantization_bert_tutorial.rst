@@ -127,6 +127,7 @@ We set the number of threads to compare the single thread performance between FP
 In the end of the tutorial, the user can set other number of threads by building PyTorch with right parallel backend.
 
 .. code:: python
+
     torch.set_num_threads(1)
     print(torch.__config__.parallel_info())
 
