@@ -1,5 +1,5 @@
-(experimental) Dynamic Quantization on HuggingFace BERT model
-==============================================================
+(experimental) Dynamic Quantization on BERT
+===========================================
  
 **Author**: `Jianyu Huang <https://github.com/jianyuh>`_
 
@@ -128,21 +128,7 @@ In the end of the tutorial, the user can set other number of threads by building
     print(torch.__config__.parallel_info())
 
 
-1.3 Download the dataset
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Before running MRPC tasks we download the `GLUE data
-<https://gluebenchmark.com/tasks>`_ by running `this script
-<https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_
-and unpack it to a directory ``glue_data``.
-
-
-.. code:: shell
-
-   python download_glue_data.py --data_dir='glue_data' --tasks='MRPC'
-
-
-1.4 Learn about helper functions
+1.3 Learn about helper functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The helper functions are built-in in transformers library. We mainly use
@@ -159,13 +145,28 @@ The `glue_convert_examples_to_features <https://github.com/huggingface/transform
 -  Generate token type ids to indicate whether a token belongs to the
    first sequence or the second sequence.
 
-The `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_
+The `glue_compute_metrics <https://github.com/huggingface/transformers/blob/master/transformers/data/processors/glue.py>`_  function has the compute metrics with
+the `F1 score <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html>`_, which
 can be interpreted as a weighted average of the precision and recall,
 where an F1 score reaches its best value at 1 and worst score at 0. The
 relative contribution of precision and recall to the F1 score are equal.
 
 -  The equation for the F1 score is:
 .. math:: F1 = 2 * (\text{precision} * \text{recall}) / (\text{precision} + \text{recall})
+
+
+1.4 Download the dataset
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Before running MRPC tasks we download the `GLUE data
+<https://gluebenchmark.com/tasks>`_ by running `this script
+<https://gist.github.com/W4ngatang/60c2bdb54d156a41194446737ce03e2e>`_
+and unpack it to a directory ``glue_data``.
+
+
+.. code:: shell
+
+   python download_glue_data.py --data_dir='glue_data' --tasks='MRPC'
 
 
 2. Fine-tune the BERT model
