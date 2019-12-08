@@ -334,3 +334,12 @@ visualize_model(model_conv)
 
 plt.ioff()
 plt.show()
+
+######################################################################
+# Further Learning
+# -----------------
+#
+# If you would like to learn more about the applications of transfer learning,
+# checkout our `Quantized Transfer Learning for Computer Vision Tutorial <https://pytorch.org/tutorials/intermediate/quantized_transfer_learning.html>`_.
+#
+
