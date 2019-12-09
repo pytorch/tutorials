@@ -1,5 +1,5 @@
 """
-Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
 ========================================================================
 
 In this tutorial, we describe how to convert a model defined
@@ -37,14 +37,14 @@ import torch.onnx
 # and is widely used in image processing or video editing. For this
 # tutorial, we will use a small super-resolution model.
 #
-# First, let's create a SuperResolution model in PyTorch. 
+# First, let's create a SuperResolution model in PyTorch.
 # This model uses the efficient sub-pixel convolution layer described in
 # `"Real-Time Single Image and Video Super-Resolution Using an Efficient
 # Sub-Pixel Convolutional Neural Network" - Shi et al <https://arxiv.org/abs/1609.05158>`__
 # for increasing the resolution of an image by an upscale factor.
 # The model expects the Y component of the YCbCr of an image as an input, and
-# outputs the upscaled Y component in super resolution. 
-# 
+# outputs the upscaled Y component in super resolution.
+#
 # `The
 # model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py>`__
 # comes directly from PyTorch's examples without modification:
@@ -94,7 +94,7 @@ torch_model = SuperResolutionNet(upscale_factor=3)
 # It is important to call ``torch_model.eval()`` or ``torch_model.train(False)``
 # before exporting the model, to turn the model to inference mode.
 # This is required since operators like dropout or batchnorm behave
-# differently in inference and training mode. 
+# differently in inference and training mode.
 #
 
 # Load pretrained model weights
@@ -113,7 +113,7 @@ torch_model.eval()
 
 ######################################################################
 # Exporting a model in PyTorch works via tracing or scripting. This
-# tutorial will use as an example a model exported by tracing. 
+# tutorial will use as an example a model exported by tracing.
 # To export a model, we call the ``torch.onnx.export()`` function.
 # This will execute the model, recording a trace of what operators
 # are used to compute the outputs.
@@ -124,10 +124,10 @@ torch_model.eval()
 # all the input's dimensions, unless specified as a dynamic axes.
 # In this example we export the model with an input of batch_size 1,
 # but then specify the first dimension as dynamic in the ``dynamic_axes``
-# parameter in ``torch.onnx.export()``. 
+# parameter in ``torch.onnx.export()``.
 # The exported model will thus accept inputs of size [batch_size, 1, 224, 224]
-# where batch_size can be variable. 
-# 
+# where batch_size can be variable.
+#
 # To learn more details about PyTorch's export interface, check out the
 # `torch.onnx documentation <https://pytorch.org/docs/master/onnx.html>`__.
 #
@@ -142,7 +142,7 @@ torch.onnx.export(torch_model,               # model being run
                   "super_resolution.onnx",   # where to save the model (can be a file or file-like object)
                   export_params=True,        # store the trained parameter weights inside the model file
                   opset_version=10,          # the ONNX version to export the model to
-                  do_constant_folding=True,  # wether to execute constant folding for optimization
+                  do_constant_folding=True,  # whether to execute constant folding for optimization
                   input_names = ['input'],   # the model's input names
                   output_names = ['output'], # the model's output names
                   dynamic_axes={'input' : {0 : 'batch_size'},    # variable lenght axes
@@ -238,7 +238,7 @@ print("Exported model has been tested with ONNXRuntime, and the result looks goo
 # Then we split the image into its Y, Cb, and Cr components.
 # These components represent a greyscale image (Y), and
 # the blue-difference (Cb) and red-difference (Cr) chroma components.
-# The Y component being more sensitive to the human eye, we are 
+# The Y component being more sensitive to the human eye, we are
 # interested in this component which we will be transforming.
 # After extracting the Y component, we convert it to a tensor which
 # will be the input of our model.
@@ -278,7 +278,7 @@ img_out_y = ort_outs[0]
 # The post-processing steps have been adopted from PyTorch
 # implementation of super-resolution model
 # `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__.
-# 
+#
 
 img_out_y = Image.fromarray(np.uint8((img_out_y[0] * 255.0).clip(0, 255)[0]), mode='L')
 
@@ -301,12 +301,12 @@ final_img.save("./_static/img/cat_superres_with_ort.jpg")
 #
 # ONNX Runtime being a cross platform engine, you can run it across
 # multiple platforms and on both CPUs and GPUs.
-# 
+#
 # ONNX Runtime can also be deployed to the cloud for model inferencing
 # using Azure Machine Learning Services. More information `here <https://docs.microsoft.com/en-us/azure/machine-learning/service/concept-onnx>`__.
 #
 # More information about ONNX Runtime's performance `here <https://github.com/microsoft/onnxruntime#high-performance>`__.
 #
-# 
+#
 # For more information about ONNX Runtime `here <https://github.com/microsoft/onnxruntime>`__.
 #

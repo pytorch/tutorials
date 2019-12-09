@@ -123,43 +123,6 @@ network:
 
 .. includenodoc:: /beginner/examples_autograd/two_layer_net_custom_function.py
 
-TensorFlow: Static Graphs
--------------------------
-
-PyTorch autograd looks a lot like TensorFlow: in both frameworks we
-define a computational graph, and use automatic differentiation to
-compute gradients. The biggest difference between the two is that
-TensorFlow's computational graphs are **static** and PyTorch uses
-**dynamic** computational graphs.
-
-In TensorFlow, we define the computational graph once and then execute
-the same graph over and over again, possibly feeding different input
-data to the graph. In PyTorch, each forward pass defines a new
-computational graph.
-
-Static graphs are nice because you can optimize the graph up front; for
-example a framework might decide to fuse some graph operations for
-efficiency, or to come up with a strategy for distributing the graph
-across many GPUs or many machines. If you are reusing the same graph
-over and over, then this potentially costly up-front optimization can be
-amortized as the same graph is rerun over and over.
-
-One aspect where static and dynamic graphs differ is control flow. For
-some models we may wish to perform different computation for each data
-point; for example a recurrent network might be unrolled for different
-numbers of time steps for each data point; this unrolling can be
-implemented as a loop. With a static graph the loop construct needs to
-be a part of the graph; for this reason TensorFlow provides operators
-such as ``tf.scan`` for embedding loops into the graph. With dynamic
-graphs the situation is simpler: since we build graphs on-the-fly for
-each example, we can use normal imperative flow control to perform
-computation that differs for each input.
-
-To contrast with the PyTorch autograd example above, here we use
-TensorFlow to fit a simple two-layer net:
-
-.. includenodoc:: /beginner/examples_autograd/tf_two_layer_net.py
-
 `nn` module
 ===========
 

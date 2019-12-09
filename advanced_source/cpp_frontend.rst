@@ -105,6 +105,8 @@ environment, however you are free to follow along on MacOS or Windows too.
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The first step is to download the LibTorch distribution locally, via the link
 retrieved from the PyTorch website. For a vanilla Ubuntu Linux environment, this
@@ -201,7 +203,7 @@ corresponding absolute path. Now, we are ready to build our application:
   -- Configuring done
   -- Generating done
   -- Build files have been written to: /home/build
-  root@fa350df05ecf:/home/build# make -j
+  root@fa350df05ecf:/home/build# cmake --build . --config Release
   Scanning dependencies of target dcgan
   [ 50%] Building CXX object CMakeFiles/dcgan.dir/dcgan.cpp.o
   [100%] Linking CXX executable dcgan
@@ -209,9 +211,9 @@ corresponding absolute path. Now, we are ready to build our application:
 
 Above, we first created a ``build`` folder inside of our ``dcgan`` directory,
 entered this folder, ran the ``cmake`` command to generate the necessary build
-(Make) files and finally compiled the project successfully by running ``make
--j``. We are now all set to execute our minimal binary and complete this section
-on basic project configuration:
+(Make) files and finally compiled the project successfully by running ``cmake
+--build . --config Release``. We are now all set to execute our minimal binary
+and complete this section on basic project configuration:
 
 .. code-block:: shell
 
@@ -769,46 +771,49 @@ modules in the ``forward()`` method of a module we define ourselves:
 .. code-block:: cpp
 
   struct GeneratorImpl : nn::Module {
-    GeneratorImpl()
-        : conv1(nn::Conv2dOptions(kNoiseSize, 512, 4)
+    GeneratorImpl(int kNoiseSize)
+        : conv1(nn::Conv2dOptions(kNoiseSize, 256, 4)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm1(512),
-          conv2(nn::Conv2dOptions(512, 256, 4)
+          batch_norm1(256),
+          conv2(nn::Conv2dOptions(256, 128, 3)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm2(256),
-          conv3(nn::Conv2dOptions(256, 128, 4)
+          batch_norm2(128),
+          conv3(nn::Conv2dOptions(128, 64, 4)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
                     .transposed(true)),
-          batch_norm3(128),
-          conv4(nn::Conv2dOptions(128, 64, 4)
+          batch_norm3(64),
+          conv4(nn::Conv2dOptions(64, 1, 4)
                     .stride(2)
                     .padding(1)
                     .with_bias(false)
-                    .transposed(true)),
-          batch_norm4(64),
-          conv5(nn::Conv2dOptions(64, 1, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
-                    .transposed(true)) {}
+                    .transposed(true))
+   {
+     // register_module() is needed if we want to use the parameters() method later on
+     register_module("conv1", conv1);
+     register_module("conv2", conv2);
+     register_module("conv3", conv3);
+     register_module("conv4", conv4);
+     register_module("batch_norm1", batch_norm1);
+     register_module("batch_norm2", batch_norm1);
+     register_module("batch_norm3", batch_norm1);
+   }
 
-    torch::Tensor forward(torch::Tensor x) {
-      x = torch::relu(batch_norm1(conv1(x)));
-      x = torch::relu(batch_norm2(conv2(x)));
-      x = torch::relu(batch_norm3(conv3(x)));
-      x = torch::relu(batch_norm4(conv4(x)));
-      x = torch::tanh(conv5(x));
-      return x;
-    }
+   torch::Tensor forward(torch::Tensor x) {
+     x = torch::relu(batch_norm1(conv1(x)));
+     x = torch::relu(batch_norm2(conv2(x)));
+     x = torch::relu(batch_norm3(conv3(x)));
+     x = torch::tanh(conv4(x));
+     return x;
+   }
 
-    nn::Conv2d conv1, conv2, conv3, conv4, conv5;
-    nn::BatchNorm batch_norm1, batch_norm2, batch_norm3, batch_norm4;
+   nn::Conv2d conv1, conv2, conv3, conv4;
+   nn::BatchNorm batch_norm1, batch_norm2, batch_norm3;
   };
   TORCH_MODULE(Generator);
 

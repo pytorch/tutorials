@@ -1,5 +1,5 @@
 Getting Started with Distributed Data Parallel
-=============================================
+=================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
@@ -19,13 +19,36 @@ every module replica, i.e., no module replication within a process. The code in
 this tutorial runs on an 8-GPU server, but it can be easily generalized to
 other environments.
 
+Comparison between ``DataParallel`` and ``DistributedDataParallel``
+-------------------------------------------------------------------
+
+Before we dive in, let's clarify why, despite the added complexity, you would
+consider using ``DistributedDataParallel`` over ``DataParallel``:
+
+- First, recall from the
+  `prior tutorial <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__
+  that if your model is too large to fit on a single GPU, you must use **model parallel**
+  to split it across multiple GPUs. ``DistributedDataParallel`` works with
+  **model parallel**; ``DataParallel`` does not at this time.
+- ``DataParallel`` is single-process, multi-thread, and only works on a single
+  machine, while ``DistributedDataParallel`` is multi-process and works for both
+  single- and multi- machine training. Thus, even for single machine training,
+  where your **data** is small enough to fit on a single machine, ``DistributedDataParallel``
+  is expected to be faster than ``DataParallel``. ``DistributedDataParallel``
+  also replicates models upfront instead of on each iteration and gets Global
+  Interpreter Lock out of the way.
+- If both your data is too large to fit on one machine **and** your
+  model is too large to fit on a single GPU, you can combine model parallel
+  (splitting a single model across multiple GPUs) with ``DistributedDataParallel``.
+  Under this regime, each ``DistributedDataParallel`` process could use model parallel,
+  and all processes collectively would use data parallel.
 
 Basic Use Case
 --------------
 
 To create DDP modules, first set up process groups properly. More details can
 be found in
-`WRITING DISTRIBUTED APPLICATIONS WITH PYTORCH <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
+`Writing Distributed Applications with PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
 
 .. code:: python
 

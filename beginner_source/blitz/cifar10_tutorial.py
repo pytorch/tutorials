@@ -62,6 +62,9 @@ import torchvision.transforms as transforms
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
 # We transform them to Tensors of normalized range [-1, 1].
+# .. note::
+#     If running on Windows and you get a BrokenPipeError, try setting
+#     the num_worker of torch.utils.data.DataLoader() to 0.
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -182,6 +185,15 @@ for epoch in range(2):  # loop over the dataset multiple times
 print('Finished Training')
 
 ########################################################################
+# Let's quickly save our trained model:
+
+PATH = './cifar_net.pth'
+torch.save(net.state_dict(), PATH)
+
+########################################################################
+# See `here <https://pytorch.org/docs/stable/notes/serialization.html>`_
+# for more details on saving PyTorch models.
+#
 # 5. Test the network on the test data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
@@ -200,6 +212,13 @@ images, labels = dataiter.next()
 # print images
 imshow(torchvision.utils.make_grid(images))
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+
+########################################################################
+# Next, let's load back in our saved model (note: saving and re-loading the model
+# wasn't necessary here, we only did it to illustrate how to do so):
+
+net = Net()
+net.load_state_dict(torch.load(PATH))
 
 ########################################################################
 # Okay, now let us see what the neural network thinks these examples above are:
