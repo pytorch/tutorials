@@ -100,7 +100,6 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/imagenet_1k.zip -d advanced_source/data/
 
-
 docs:
 	make download
 	make html
