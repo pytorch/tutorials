@@ -113,9 +113,6 @@ def image_loader(image_name):
 style_img = image_loader("./data/images/neural-style/picasso.jpg")
 content_img = image_loader("./data/images/neural-style/dancing.jpg")
 
-assert style_img.size() == content_img.size(), \
-    "we need to import style and content images of the same size"
-
 
 ######################################################################
 # Now, let's create a function that displays an image by reconverting a 
@@ -180,7 +177,11 @@ class ContentLoss(nn.Module):
         self.target = target.detach()
 
     def forward(self, input):
-        self.loss = F.mse_loss(input, self.target)
+        # only calculate the loss when evaluating the content image
+        if input.shape == self.target.shape:
+            self.loss = F.mse_loss(input, self.target)
+        else:
+            self.loss = torch.tensor(0).to(device)
         return input
 
 ######################################################################
