@@ -304,6 +304,29 @@ be using Mask R-CNN:
 That’s it, this will make ``model`` be ready to be trained and evaluated
 on your custom dataset.
 
+Checking the model with random tensors (Optional)
+---------------------------
+
+Before iterating over the dataset, it's always good to see what the model 
+expects during training and inference time with random tensors. 
+
+.. code:: python
+   model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True) 
+   images,boxes,labels = torch.rand(4,3,600,1200), torch.rand(4,11,4), torch.rand(4,11) # For Training
+   images = list(image for image in images)                                             # This is handled by GeneralizedRCNNTransform
+   targets = []                                   
+   for i in range(len(images)):
+       d = {}
+       d['boxes'] = boxes[i]
+       d['labels'] = labels[i].type(torch.int64)
+       targets.append(d)
+   output = model(images,targets)
+
+   model.eval()                                                                         # For inference        
+   x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
+   predictions = model(x)
+
+
 Putting everything together
 ---------------------------
 
