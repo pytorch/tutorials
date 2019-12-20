@@ -311,6 +311,7 @@ Before iterating over the dataset, it's always good to see what the model
 expects during training and inference time with random tensors. 
 
 .. code:: python
+
    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True) 
    images,boxes,labels = torch.rand(4,3,600,1200), torch.rand(4,11,4), torch.rand(4,11) # For Training
    images = list(image for image in images)                                             # This is handled by GeneralizedRCNNTransform
@@ -320,11 +321,11 @@ expects during training and inference time with random tensors.
        d['boxes'] = boxes[i]
        d['labels'] = labels[i].type(torch.int64)
        targets.append(d)
-   output = model(images,targets)
+   output = model(images,targets)   # Returns losses and detections
 
    model.eval()                                                                         # For inference        
    x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
-   predictions = model(x)
+   predictions = model(x)           # Returns predictions 
 
 
 Putting everything together
