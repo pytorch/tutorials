@@ -314,7 +314,7 @@ expects during training and inference time with random tensors.
 
    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True) 
    images,boxes,labels = torch.rand(4,3,600,1200), torch.rand(4,11,4), torch.rand(4,11) # For Training
-   images = list(image for image in images)                                             # This is handled by GeneralizedRCNNTransform
+   images = list(image for image in images)                                             
    targets = []                                   
    for i in range(len(images)):
        d = {}
