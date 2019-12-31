@@ -234,7 +234,7 @@ optimizer = torch.optim.SGD(model.parameters(), lr=4.0)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, gamma=0.9)
 
 train_len = int(len(train_dataset) * 0.95)
-sub_train_, sub_valid_ = \
+sub_train_, sub_valid_ = 
     random_split(train_dataset, [train_len, len(train_dataset) - train_len])
 
 for epoch in range(N_EPOCHS):
