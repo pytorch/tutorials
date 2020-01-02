@@ -541,7 +541,7 @@ print(loss_func(model(xb), yb))
 ###############################################################################
 # Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
 # our training loop is now dramatically smaller and easier to understand. Let's
-# now try to add the basic features necessary to create effecive models in practice.
+# now try to add the basic features necessary to create effective models in practice.
 #
 # Add validation
 # -----------------------
@@ -706,7 +706,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # nn.Sequential
 # ------------------------
 #
-# ``torch.nn`` has another handy class we can use to simply our code:
+# ``torch.nn`` has another handy class we can use to simplify our code:
 # `Sequential <https://pytorch.org/docs/stable/nn.html#torch.nn.Sequential>`_ .
 # A ``Sequential`` object runs each of the modules contained within it, in a
 # sequential manner. This is a simpler way of writing our neural network.
