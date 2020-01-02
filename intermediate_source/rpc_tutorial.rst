@@ -1,0 +1,529 @@
+Getting Started with Distributed RPC Framework
+=================================================
+**Author**: `Shen Li <https://mrshenli.github.io/>`_
+
+
+This tutorial uses two simple examples to demonstrate how to build distributed
+applications with the `torch.distributed.rpc` package. Source code of the two
+examples can be found in `PyTorch examples <https://github.com/pytorch/examples>`__
+
+Previous tutorials described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
+which supports a specific training paradigm where the model is replicated across
+multiple processes and each process handles a split of the input data.
+Sometimes, you might run into scenarios that require different training
+paradigms:
+
+1) In reinforcement learning, it might be relatively expensive to acquire
+   training data from environments while the model itself can be quite small. In
+   this case, it might be useful to spawn multiple observers running in parallel
+   and share a single agent. In this case, the agent takes care of the training
+   locally, but the application would still need libraries to send and receive
+   data between observers and the trainer
+2) Your model might be too large to fit in GPUs on a single machine, and hence
+   would need a library to help split a model onto multiple machines. Or you
+   might be implementing a parameter server training framework, where model
+   parameters and trainers live on different machines.
+
+
+The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
+can help with the above scenarios. In case 1, `RPC <https://pytorch.org/docs/master/rpc.html#rpc>`__
+and `RRef <https://pytorch.org/docs/master/rpc.html#rref>`__ can help send data
+from one worker to another and also easily referencing remote data objects. In
+case 2, `distributed autograd <https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework>`__
+and `distributed optimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`__
+allows executing backward and optimizer step as if it is local training. In the
+next two sections, we will demonstrate APIs of
+`torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ using a
+reinforcement learning example and a language model example. Please note, this
+tutorial is not aiming at building the most accurate or efficient models to
+solve given problems, instead the main goal is to show how to use the
+`torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package to
+build distributed training applications.
+
+
+
+Distributed Reinforcement Learning using RPC and RRef
+-----------------------------------------------------
+
+This section describes steps to build a toy distributed reinforcement learning
+model using RPC to solve CartPole-v1 from `OpenAI Gym <https://gym.openai.com>`__.
+The policy code is mostly borrowed from the existing single-thread
+`example <https://github.com/pytorch/examples/blob/master/reinforcement_learning>`__
+as shown below. We will skip details of the ``Policy`` design, and focus on RPC
+usages.
+
+.. code:: python
+
+    class Policy(nn.Module):
+
+        def __init__(self):
+            super(Policy, self).__init__()
+            self.affine1 = nn.Linear(4, 128)
+            self.dropout = nn.Dropout(p=0.6)
+            self.affine2 = nn.Linear(128, 2)
+
+            self.saved_log_probs = []
+            self.rewards = []
+
+        def forward(self, x):
+            x = self.affine1(x)
+            x = self.dropout(x)
+            x = F.relu(x)
+            action_scores = self.affine2(x)
+            return F.softmax(action_scores, dim=1)
+
+Let's first prepare a helper function to call a function on a local ``RRef``. It
+might look unnecessary at the first glance, as you could simply do
+``rref.local_value().some_func(args)`` to run the target function. The reason
+for adding this helper function is because there is no way to get a reference
+of a remote value, and ``local_value`` is only available on the owner of the
+``RRef``.
+
+.. code:: python
+
+    def _call_method(method, rref, *args, **kwargs):
+        return method(rref.local_value(), *args, **kwargs)
+
+
+    def _remote_method(method, rref, *args, async_call=False, **kwargs):
+        args = [method, rref] + list(args)
+        func = rpc_async if async_call else rpc_sync
+        return func(rref.owner(), _call_method, args=args, kwargs=kwargs)
+
+    # to call a function on an rref, we could do the following
+    _remote_method(some_func, rref, *args)
+
+
+We are ready to present the observer. In this example, each observer creates its
+own environment, and waits for the agent's command to run an episode. In each
+episode, one observer loops at most ``n_steps`` iterations, and in each
+iteration, it uses RPC to pass its environment state to the agent and gets an
+action back. Then it applies that action to its environment, and gets the reward
+and the next state from the environment. After that, the observer uses another
+RPC to report the reward to the agent. Again, please note that, this is
+obviously not the most efficient observer implementation. For example, one
+simple optimization could be packing current state and last reward in one RPC to
+reduce the communication overhead. However, the goal is to demonstrate RPC API
+instead of building the best solver for CartPole.
+
+.. code:: python
+
+    class Observer:
+
+        def __init__(self):
+            self.id = rpc.get_worker_info().id
+            self.env = gym.make('CartPole-v1')
+            self.env.seed(args.seed)
+
+        def run_episode(self, agent_rref, n_steps):
+            state, ep_reward = self.env.reset(), 0
+            for step in range(n_steps):
+                # send the state to the agent to get an action
+                action = _remote_method(Agent.select_action, agent_rref, self.id, state)
+
+                # apply the action to the environment, and get the reward
+                state, reward, done, _ = self.env.step(action)
+
+                # report the reward to the agent for training purpose
+                _remote_method(Agent.report_reward, agent_rref, self.id, reward)
+
+                if done:
+                    break
+
+
+The code for agent is a little more complex, and we will break it into multiple
+pieces. In this example, the agent serves as both the trainer and the master,
+such that it sends command to multiple distributed observers to run episodes,
+and it also records all actions and rewards locally which will be used during
+the training phase after each episode. The code below shows ``Agent``
+constructor where most lines are initializing various components. The loop at
+the end initializes observers on other workers, and holds ``RRefs`` to those
+observers locally. The agent will use those observer ``RRefs`` later to send
+commands.
+
+
+.. code:: python
+
+    class Agent:
+        def __init__(self, world_size):
+            self.ob_rrefs = []
+            self.agent_rref = RRef(self)
+            self.rewards = {}
+            self.saved_log_probs = {}
+            self.policy = Policy()
+            self.optimizer = optim.Adam(self.policy.parameters(), lr=1e-2)
+            self.eps = np.finfo(np.float32).eps.item()
+            self.running_reward = 0
+            self.reward_threshold = gym.make('CartPole-v1').spec.reward_threshold
+            for ob_rank in range(1, world_size):
+                ob_info = rpc.get_worker_info(OBSERVER_NAME.format(ob_rank))
+                self.ob_rrefs.append(remote(ob_info, Observer))
+                self.rewards[ob_info.id] = []
+                self.saved_log_probs[ob_info.id] = []
+
+
+Next, the agent exposes two APIs to allow observers to select actions and report
+rewards. Those functions are only run locally on the agent, but will be
+triggered by observers through RPC.
+
+
+.. code:: python
+
+    class Agent:
+        ...
+        def select_action(self, ob_id, state):
+            state = torch.from_numpy(state).float().unsqueeze(0)
+            probs = self.policy(state)
+            m = Categorical(probs)
+            action = m.sample()
+            self.saved_log_probs[ob_id].append(m.log_prob(action))
+            return action.item()
+
+        def report_reward(self, ob_id, reward):
+            self.rewards[ob_id].append(reward)
+
+
+Let's add a ``run_episode`` function on agent which tells all observers
+to execute an episode. In this function, it first creates a list to collect
+futures from asynchronous RPCs, and then loop over all observer ``RRefs`` to
+make asynchronous RPCs. In these RPCs, the agent also passes an ``RRef`` of
+itself to the observer, so that the observer can call functions on the agent as
+well. As shown above, each observer will make RPCs back to the agent, which is
+actually nested RPCs. After each episode, the ``saved_log_probs`` and
+``rewards`` will contain the recorded action probs and rewards.
+
+
+.. code:: python
+
+    class Agent:
+        ...
+        def run_episode(self, n_steps=0):
+            futs = []
+            for ob_rref in self.ob_rrefs:
+                # make async RPC to kick off an episode on all observers
+                futs.append(
+                    _remote_method(
+                        Observer.run_episode,
+                        ob_rref,
+                        self.agent_rref,
+                        n_steps,
+                        async_call=True
+                    )
+                )
+
+            # wait until all obervers have finished this episode
+            for fut in futs:
+                fut.wait()
+
+
+Finally, after one episode, the agent needs to train the model, which
+is implemented in the ``finish_episode`` function below. It is also a local
+function and mostly borrowed from the single-thread
+`example <https://github.com/pytorch/examples/blob/master/reinforcement_learning>`__.
+
+
+
+.. code:: python
+
+    class Agent:
+        ...
+        def finish_episode(self):
+          # joins probs and rewards from different observers into lists
+          R, probs, rewards = 0, [], []
+          for ob_id in self.rewards:
+              probs.extend(self.saved_log_probs[ob_id])
+              rewards.extend(self.rewards[ob_id])
+
+          # use the minimum observer reward to calculate the running reward
+          min_reward = min([sum(self.rewards[ob_id]) for ob_id in self.rewards])
+          self.running_reward = 0.05 * min_reward + (1 - 0.05) * self.running_reward
+
+          # clear saved probs and rewards
+          for ob_id in self.rewards:
+              self.rewards[ob_id] = []
+              self.saved_log_probs[ob_id] = []
+
+          policy_loss, returns = [], []
+          for r in rewards[::-1]:
+              R = r + args.gamma * R
+              returns.insert(0, R)
+          returns = torch.tensor(returns)
+          returns = (returns - returns.mean()) / (returns.std() + self.eps)
+          for log_prob, R in zip(probs, returns):
+              policy_loss.append(-log_prob * R)
+          self.optimizer.zero_grad()
+          policy_loss = torch.cat(policy_loss).sum()
+          policy_loss.backward()
+          self.optimizer.step()
+          return min_reward
+
+
+With ``Policy``, ``Observer``, and ``Agent`` classes, we are ready to launch
+multiple processes to perform the distributed training. In this example, all
+processes run the same ``run_worker`` function, and they use the rank to
+distinguish their role. Rank 0 is always the agent, and all other ranks are
+observers. As agent as server as master, repeatedly call ``run_episode`` and
+``finish_episode`` until the running reward surpasses the reward threshold
+specified by the environment. All observers just passively waiting for commands
+from the agent.
+
+
+.. code:: python
+
+    def run_worker(rank, world_size):
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
+        if rank == 0:
+            # rank0 is the agent
+            rpc.init_rpc(AGENT_NAME, rank=rank, world_size=world_size)
+
+            agent = Agent(world_size)
+            for i_episode in count(1):
+                n_steps = int(TOTAL_EPISODE_STEP / (args.world_size - 1))
+                agent.run_episode(n_steps=n_steps)
+                last_reward = agent.finish_episode()
+
+                if i_episode % args.log_interval == 0:
+                    print('Episode {}\tLast reward: {:.2f}\tAverage reward: {:.2f}'.format(
+                          i_episode, last_reward, agent.running_reward))
+
+                if agent.running_reward > agent.reward_threshold:
+                    print("Solved! Running reward is now {}!".format(agent.running_reward))
+                    break
+        else:
+            # other ranks are the observer
+            rpc.init_rpc(OBSERVER_NAME.format(rank), rank=rank, world_size=world_size)
+            # observers passively waiting for instructions from agents
+        rpc.shutdown()
+
+
+    mp.spawn(
+        run_worker,
+        args=(args.world_size, ),
+        nprocs=args.world_size,
+        join=True
+    )
+
+
+In this example, we show how to use RPC as the communication vehicle to pass
+date across workers, and how to use RRef to reference remote objects. It is true
+that you could build the entire structure directly on top of ``ProcessGroup``
+``send`` and ``recv`` APIs or use other communication/RPC libraries. However,
+by using `torch.dstributed.rpc`, you can get the native support plus
+continuously optimized performance under the hood.
+
+Next, we will show how to combine RPC and RRef with distributed autograd and
+distributed optimizer to perform distributed model parallel training.
+
+
+
+
+Distributed RNN using Distributed Autograd and Distributed Optimizer
+--------------------------------------------------------------------
+
+In this section, we use an RNN model to show how to build distributed model
+parallel training using the RPC API. The example RNN model is very small and
+easily fit into a single GPU, but developer can apply the similar techniques to
+much larger models that need to span multiple devices. The RNN model design is
+borrowed from the word language model in PyTorch
+`example <https://github.com/pytorch/examples/tree/master/word_language_model>`__
+repository, which contains three main components, an embedding table, an
+``LSTM`` layer, and a decoder, as shown below.
+
+
+.. code:: python
+
+    class EmbeddingTable(nn.Module):
+        def __init__(self, ntoken, ninp, dropout):
+            super(EmbeddingTable, self).__init__()
+            self.drop = nn.Dropout(dropout)
+            self.encoder = nn.Embedding(ntoken, ninp)
+            self.encoder.weight.data.uniform_(-0.1, 0.1)
+
+        def forward(self, input):
+            return self.drop(self.encoder(input))
+
+
+    class RNN(nn.Module):
+        def __init__(self, ninp, nhid, nlayers, dropout):
+            super(RNN, self).__init__()
+            self.lstm = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
+
+        def forward(self, emb, hidden):
+            return self.lstm(emb, hidden)
+
+
+    class Decoder(nn.Module):
+        def __init__(self, ntoken, nhid, dropout):
+            super(Decoder, self).__init__()
+            self.drop = nn.Dropout(dropout)
+            self.decoder = nn.Linear(nhid, ntoken)
+            self.decoder.bias.data.zero_()
+            self.decoder.weight.data.uniform_(-0.1, 0.1)
+
+        def forward(self, output):
+            return self.decoder(self.drop(output))
+
+
+With the above three sub-modules, we can now piece them together using RPC to
+create an RNN model. In the code below ``ps`` represents a parameter server,
+which hosts paremeters of the embedding table and the decoder. The constructor
+uses the `remote https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote`__
+API to create an `EmbeddingTable` and a `Decoder` object on the parameter
+server, and locally creates the ``LSTM`` sub-module. During the forward pass,
+the trainer uses the ``EmbeddingTable`` ``RRef`` to find the remote sub-module
+and passes the input data to the ``EmbeddingTable`` using RPC and fetches the
+lookup results. Then, it runs the embedding through the local ``LSTM`` layer,
+and finally uses another RPC to send the output to the ``Decoder`` sub-module.
+In general, to implement distributed model parallel training, developers can
+divide the model into sub-modules, invoke RPC to create sub-module instances
+remotely, and use on ``RRef`` to find them when necessary. As you can see in the
+code below, it looks very similar to single-machine model parallel training. The
+main difference is replacing ``Tensor.to(device)`` with RPC functions.
+
+
+.. code:: python
+
+    class RNNModel(nn.Module):
+        def __init__(self, ps, ntoken, ninp, nhid, nlayers, dropout=0.5):
+            super(RNNModel, self).__init__()
+
+            # setup embedding table remotely
+            self.emb_table_rref = rpc.remote(ps, EmbeddingTable, args=(ntoken, ninp, dropout))
+            # setup LSTM locally
+            self.rnn = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
+            # setup decoder remotely
+            self.decoder_rref = rpc.remote(ps, Decoder, args=(ntoken, nhid, dropout))
+
+        def forward(self, input, hidden):
+            # pass input to the remote embedding table and fetch emb tensor back
+            emb = _remote_method(EmbeddingTable.forward, self.emb_table_rref, input)
+            output, hidden = self.rnn(emb, hidden)
+            # pass output to the rremote decoder and get the decoded output back
+            decoded = _remote_method(Decoder.forward, self.decoder_rref, output)
+            return decoded, hidden
+
+Before introducing the distributed optimizer, let's add a helper function to
+generate a list of RRefs of model parameters, which will be consumed by the
+distributed optimizer. In local training, applications could call
+``Module.parameters()`` to grab references to all parameter tensors, and pass it
+to the local optimizer to update. However, the same API does not work in
+the distributed training scenarios as some parameters live on remote machines.
+Therefore, instead of taking a list of parameter ``Tensors``, the distributed
+optimizer takes a list of ``RRefs``, one ``RRef`` per model parameter for both
+local and remote parameters. The helper function is pretty simple, just call
+``Module.parameters()`` and creates a local ``RRef`` on each of the parameters.
+
+.. code:: python
+
+    def _parameter_rrefs(module):
+      param_rrefs = []
+      for param in module.parameters():
+          param_rrefs.append(RRef(param))
+      return param_rrefs
+
+Then, as the ``RNNModel`` contains three sub-modules, we need to call
+``_parameter_rrefs`` three times, and wrap that into another helper function.
+
+.. code:: python
+
+    class RNNModel(nn.Module):
+        ...
+        def parameter_rrefs(self):
+            remote_params = []
+            # get RRefs of embedding table
+            remote_params.extend(_remote_method(_parameter_rrefs, self.emb_table_rref))
+            # create RRefs for local parameters
+            remote_params.extend(_parameter_rrefs(self.rnn))
+            # get RRefs of decoder
+            remote_params.extend(_remote_method(_parameter_rrefs, self.decoder_rref))
+            return remote_params
+
+Now, we are ready to implement the training loop. After initializing the model
+arguments, we create the ``RNNModel`` and the ``DistributedOptimizer``. The
+distributed optimizer will take a list of parameter ``RRefs``, find all distinct
+owner workers, and create the given local optimizer (i.e., ``SGD`` in this case)
+on each of the owner worker using the given arguments (i.e., ``lr=0.05``).
+
+In the training loop, it first creates a distributed autograd context, which
+will help the distributed autograd engine to find gradients and involved RPC
+send/recv functions. Then, it kicks off the forward pass as if it is a local
+model, and run the distributed backward pass. For the distributed backward, you
+only need to specify a list of roots, in this case, it is the loss ``Tensor``.
+The distributed autograd engine will traverse the distributed graph
+automatically and write gradients properly. Next, it runs the ``step``
+API on the distributed optimizer, which will reach out to all involved local
+optimizers to update model parameters. Compared to local training, one minor
+difference is that you don't need to run ``zero_grad()`` because each autograd
+context has dedicated space to store gradients, and as we create a context
+per iteration, those gradients from different iterations will not accumulate to
+the same set of ``Tensors``.
+
+.. code:: python
+
+    def run_trainer():
+        batch = 5
+        ntoken = 10
+        ninp = 2
+
+        nhid = 3
+        nindices = 3
+        nlayers = 4
+        hidden = (
+            torch.randn(nlayers, nindices, nhid),
+            torch.randn(nlayers, nindices, nhid)
+        )
+
+        model = rnn.RNNModel('ps', ntoken, ninp, nhid, nlayers)
+
+        # setup distributed optimizer
+        opt = DistributedOptimizer(
+            optim.SGD,
+            model.parameter_rrefs(),
+            lr=0.05,
+        )
+
+        # train for 10 iterations
+        for epoch in range(10):
+            # create distributed autograd context
+            with dist_autograd.context():
+                inp = torch.LongTensor(batch, nindices) % ntoken
+                hidden[0].detach_()
+                hidden[1].detach_()
+                output, hidden = model(inp, hidden)
+                # run distributed backward pass
+                dist_autograd.backward([output.sum()])
+                # run distributed optimizer
+                opt.step()
+                # not necessary to zero grads as each iteration creates a different
+                # distributed autograd context which hosts different grads
+                print("Training epoch {}".format(epoch))
+
+
+Finally, let's add some glue code to launch the parameter server and the trainer
+processes.
+
+
+.. code:: python
+
+    def run_ps():
+        pass
+
+    def run_worker(name, rank, func, world_size):
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '29500'
+        rpc.init_rpc(name, rank=rank, world_size=world_size)
+
+        func()
+
+        # block until all rpcs finish
+        rpc.shutdown()
+
+    mp.set_start_method('spawn')
+    ps = mp.Process(target=run_worker, args=("ps", 0, run_ps, 2))
+    ps.start()
+
+    trainer = mp.Process(target=run_worker, args=("trainer", 1, run_trainer, 2))
+    trainer.start()
+    ps.join()
+    trainer.join()
