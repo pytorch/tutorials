@@ -105,7 +105,7 @@ print(y_train.min(), y_train.max())
 # so that it can calculate the gradient during back-propagation *automatically*!
 #
 # For the weights, we set ``requires_grad`` **after** the initialization, since we
-# don't want that step included in the gradient. (Note that a trailling ``_`` in
+# don't want that step included in the gradient. (Note that a trailing ``_`` in
 # PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
