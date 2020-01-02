@@ -758,7 +758,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
-# single channel image. First, we can remove the initial Lambda layer but
+# single channel image. First, we can remove the initial Lambda layer by
 # moving the data preprocessing into a generator:
 
 def preprocess(x, y):
