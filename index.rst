@@ -382,6 +382,7 @@ PyTorch Fundamentals In-Depth
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
 
 .. toctree::

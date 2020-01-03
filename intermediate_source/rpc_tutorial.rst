@@ -54,6 +54,9 @@ usages.
 
 .. code:: python
 
+    import torch.nn as nn
+    import torch.nn.functional as F
+
     class Policy(nn.Module):
 
         def __init__(self):
@@ -81,17 +84,25 @@ of a remote value, and ``local_value`` is only available on the owner of the
 
 .. code:: python
 
+    from torch.distributed.rpc import rpc_sync
+
     def _call_method(method, rref, *args, **kwargs):
         return method(rref.local_value(), *args, **kwargs)
 
 
-    def _remote_method(method, rref, *args, async_call=False, **kwargs):
+    def _remote_method(method, rref, *args, **kwargs):
         args = [method, rref] + list(args)
-        func = rpc_async if async_call else rpc_sync
-        return func(rref.owner(), _call_method, args=args, kwargs=kwargs)
+        return rpc_sync(rref.owner(), _call_method, args=args, kwargs=kwargs)
 
     # to call a function on an rref, we could do the following
-    _remote_method(some_func, rref, *args)
+    # _remote_method(some_func, rref, *args)
+
+
+Ideally, the `torch.distributed.rpc` package should provide these helper
+functions out of box. For example, it will be easier if applications can
+directly call ``RRef.some_func(*arg)`` which will then translate to RPC to the
+``RRef`` owner. The progress on this API is tracked in in
+`pytorch/pytorch#31743 <https://github.com/pytorch/pytorch/issues/31743>`__.
 
 
 We are ready to present the observer. In this example, each observer creates its
@@ -107,6 +118,9 @@ reduce the communication overhead. However, the goal is to demonstrate RPC API
 instead of building the best solver for CartPole.
 
 .. code:: python
+
+    import gym
+    import torch.distributed.rpc as rpc
 
     class Observer:
 
@@ -143,6 +157,15 @@ commands.
 
 
 .. code:: python
+
+    import gym
+    import numpy as np
+
+    import torch
+    import torch.distributed.rpc as rpc
+    import torch.optim as optim
+    from torch.distributed.rpc import RRef, rpc_async, remote
+    from torch.distributions import Categorical
 
     class Agent:
         def __init__(self, world_size):
@@ -198,16 +221,13 @@ actually nested RPCs. After each episode, the ``saved_log_probs`` and
     class Agent:
         ...
         def run_episode(self, n_steps=0):
-            futs = []
             for ob_rref in self.ob_rrefs:
                 # make async RPC to kick off an episode on all observers
                 futs.append(
-                    _remote_method(
-                        Observer.run_episode,
-                        ob_rref,
-                        self.agent_rref,
-                        n_steps,
-                        async_call=True
+                    rpc_async(
+                        ob_rref.owner(),
+                        _call_method,
+                        args=(Observer.run_episode, ob_rref, self.agent_rref, n_steps)
                     )
                 )
 
@@ -270,6 +290,11 @@ from the agent.
 
 .. code:: python
 
+    import os
+    from itertools import count
+
+    import torch.multiprocessing as mp
+
     def run_worker(rank, world_size):
         os.environ['MASTER_ADDR'] = 'localhost'
         os.environ['MASTER_PORT'] = '29500'
@@ -293,7 +318,7 @@ from the agent.
         else:
             # other ranks are the observer
             rpc.init_rpc(OBSERVER_NAME.format(rank), rank=rank, world_size=world_size)
-            # observers passively waiting for instructions from agents
+            # observers passively waiting for instructions from the agent
         rpc.shutdown()
 
 
@@ -328,7 +353,9 @@ much larger models that need to span multiple devices. The RNN model design is
 borrowed from the word language model in PyTorch
 `example <https://github.com/pytorch/examples/tree/master/word_language_model>`__
 repository, which contains three main components, an embedding table, an
-``LSTM`` layer, and a decoder, as shown below.
+``LSTM`` layer, and a decoder. The code below wraps the embedding table and the
+decode into sub-modules, so that their constructors can be passed to the RPC
+API.
 
 
 .. code:: python
@@ -344,15 +371,6 @@ repository, which contains three main components, an embedding table, an
             return self.drop(self.encoder(input))
 
 
-    class RNN(nn.Module):
-        def __init__(self, ninp, nhid, nlayers, dropout):
-            super(RNN, self).__init__()
-            self.lstm = nn.LSTM(ninp, nhid, nlayers, dropout=dropout)
-
-        def forward(self, emb, hidden):
-            return self.lstm(emb, hidden)
-
-
     class Decoder(nn.Module):
         def __init__(self, ntoken, nhid, dropout):
             super(Decoder, self).__init__()
@@ -365,10 +383,10 @@ repository, which contains three main components, an embedding table, an
             return self.decoder(self.drop(output))
 
 
-With the above three sub-modules, we can now piece them together using RPC to
+With the above sub-modules, we can now piece them together using RPC to
 create an RNN model. In the code below ``ps`` represents a parameter server,
-which hosts paremeters of the embedding table and the decoder. The constructor
-uses the `remote https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote`__
+which hosts parameters of the embedding table and the decoder. The constructor
+uses the `remote <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote>`__
 API to create an `EmbeddingTable` and a `Decoder` object on the parameter
 server, and locally creates the ``LSTM`` sub-module. During the forward pass,
 the trainer uses the ``EmbeddingTable`` ``RRef`` to find the remote sub-module
@@ -414,6 +432,7 @@ optimizer takes a list of ``RRefs``, one ``RRef`` per model parameter for both
 local and remote parameters. The helper function is pretty simple, just call
 ``Module.parameters()`` and creates a local ``RRef`` on each of the parameters.
 
+
 .. code:: python
 
     def _parameter_rrefs(module):
@@ -422,8 +441,10 @@ local and remote parameters. The helper function is pretty simple, just call
           param_rrefs.append(RRef(param))
       return param_rrefs
 
+
 Then, as the ``RNNModel`` contains three sub-modules, we need to call
 ``_parameter_rrefs`` three times, and wrap that into another helper function.
+
 
 .. code:: python
 
@@ -438,6 +459,7 @@ Then, as the ``RNNModel`` contains three sub-modules, we need to call
             # get RRefs of decoder
             remote_params.extend(_remote_method(_parameter_rrefs, self.decoder_rref))
             return remote_params
+
 
 Now, we are ready to implement the training loop. After initializing the model
 arguments, we create the ``RNNModel`` and the ``DistributedOptimizer``. The
@@ -458,6 +480,7 @@ difference is that you don't need to run ``zero_grad()`` because each autograd
 context has dedicated space to store gradients, and as we create a context
 per iteration, those gradients from different iterations will not accumulate to
 the same set of ``Tensors``.
+
 
 .. code:: python
 
