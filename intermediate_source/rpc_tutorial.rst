@@ -285,7 +285,11 @@ distinguish their role. Rank 0 is always the agent, and all other ranks are
 observers. As agent as server as master, repeatedly call ``run_episode`` and
 ``finish_episode`` until the running reward surpasses the reward threshold
 specified by the environment. All observers just passively waiting for commands
-from the agent.
+from the agent. The code is wrapped by
+`rpc.init_rpc <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.init_rpc>`__ and
+`rpc.shutdown <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.shutdown>`__,
+which initializes and terminates RPC instances respectively. More details are
+available in the API page.
 
 
 .. code:: python
@@ -319,6 +323,8 @@ from the agent.
             # other ranks are the observer
             rpc.init_rpc(OBSERVER_NAME.format(rank), rank=rank, world_size=world_size)
             # observers passively waiting for instructions from the agent
+
+        # block until all rpcs finish, and shutdown the RPC instance
         rpc.shutdown()
 
 
@@ -334,7 +340,7 @@ In this example, we show how to use RPC as the communication vehicle to pass
 date across workers, and how to use RRef to reference remote objects. It is true
 that you could build the entire structure directly on top of ``ProcessGroup``
 ``send`` and ``recv`` APIs or use other communication/RPC libraries. However,
-by using `torch.dstributed.rpc`, you can get the native support plus
+by using `torch.distributed.rpc`, you can get the native support plus
 continuously optimized performance under the hood.
 
 Next, we will show how to combine RPC and RRef with distributed autograd and
@@ -539,7 +545,7 @@ processes.
 
         func()
 
-        # block until all rpcs finish
+        # block until all rpcs finish, and shutdown the RPC instance
         rpc.shutdown()
 
     mp.set_start_method('spawn')
