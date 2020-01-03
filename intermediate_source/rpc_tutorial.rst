@@ -442,10 +442,10 @@ local and remote parameters. The helper function is pretty simple, just call
 .. code:: python
 
     def _parameter_rrefs(module):
-      param_rrefs = []
-      for param in module.parameters():
-          param_rrefs.append(RRef(param))
-      return param_rrefs
+        param_rrefs = []
+        for param in module.parameters():
+            param_rrefs.append(RRef(param))
+        return param_rrefs
 
 
 Then, as the ``RNNModel`` contains three sub-modules, we need to call
@@ -535,24 +535,21 @@ processes.
 
 .. code:: python
 
-    def run_ps():
-        pass
-
-    def run_worker(name, rank, func, world_size):
+    def run_worker(rank, world_size):
         os.environ['MASTER_ADDR'] = 'localhost'
         os.environ['MASTER_PORT'] = '29500'
-        rpc.init_rpc(name, rank=rank, world_size=world_size)
+        if rank == 1:
+            rpc.init_rpc("trainer", rank=rank, world_size=world_size)
+            _run_trainer()
+        else:
+            rpc.init_rpc("ps", rank=rank, world_size=world_size)
+            # parameter server do nothing
+            pass
 
-        func()
-
-        # block until all rpcs finish, and shutdown the RPC instance
+        # block until all rpcs finish
         rpc.shutdown()
 
-    mp.set_start_method('spawn')
-    ps = mp.Process(target=run_worker, args=("ps", 0, run_ps, 2))
-    ps.start()
 
-    trainer = mp.Process(target=run_worker, args=("trainer", 1, run_trainer, 2))
-    trainer.start()
-    ps.join()
-    trainer.join()
+    if __name__=="__main__":
+        world_size = 2
+        mp.spawn(run_worker, args=(world_size, ), nprocs=world_size, join=True)
