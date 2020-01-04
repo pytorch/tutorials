@@ -304,30 +304,6 @@ be using Mask R-CNN:
 That’s it, this will make ``model`` be ready to be trained and evaluated
 on your custom dataset.
 
-Checking the model with random tensors (Optional)
----------------------------
-
-Before iterating over the dataset, it's always good to see what the model 
-expects during training and inference time with random tensors. 
-
-.. code:: python
-
-   model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True) 
-   images,boxes,labels = torch.rand(4,3,600,1200), torch.rand(4,11,4), torch.rand(4,11) # For Training
-   images = list(image for image in images)                                             
-   targets = []                                   
-   for i in range(len(images)):
-       d = {}
-       d['boxes'] = boxes[i]
-       d['labels'] = labels[i].type(torch.int64)
-       targets.append(d)
-   output = model(images,targets)   # Returns losses and detections
-
-   model.eval()                                                                         # For inference        
-   x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
-   predictions = model(x)           # Returns predictions 
-
-
 Putting everything together
 ---------------------------
 
@@ -350,6 +326,30 @@ transformation:
        if train:
            transforms.append(T.RandomHorizontalFlip(0.5))
        return T.Compose(transforms)
+
+
+Testing ``forward()`` method (Optional)
+---------------------------------------
+
+Before iterating over the dataset, it's good to see what the model 
+expects during training and inference time on sample data.
+
+.. code:: python
+
+   model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
+   dataset = PennFudanDataset('PennFudanPed', get_transform(train=True))
+   data_loader = torch.utils.data.DataLoader(
+    dataset, batch_size=2, shuffle=True, num_workers=4,
+    collate_fn=utils.collate_fn)
+   # For Training
+   images,targets = next(iter(data_loader))
+   images = list(image for image in images)
+   targets = [{k: v for k, v in t.items()} for t in targets]
+   output = model(images,targets)   # Returns losses and detections
+   # For inference
+   model.eval()
+   x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
+   predictions = model(x)           # Returns predictions 
 
 Let’s now write the main function which performs the training and the
 validation:
