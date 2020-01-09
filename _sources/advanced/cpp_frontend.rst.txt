@@ -144,7 +144,7 @@ on we'll use this ``CMakeLists.txt`` file:
 
   add_executable(dcgan dcgan.cpp)
   target_link_libraries(dcgan "${TORCH_LIBRARIES}")
-  set_property(TARGET dcgan PROPERTY CXX_STANDARD 11)
+  set_property(TARGET dcgan PROPERTY CXX_STANDARD 14)
 
 .. note::
 
