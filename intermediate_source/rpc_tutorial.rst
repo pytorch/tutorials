@@ -21,8 +21,9 @@ paradigms:
    data between observers and the trainer
 2) Your model might be too large to fit in GPUs on a single machine, and hence
    would need a library to help split a model onto multiple machines. Or you
-   might be implementing a parameter server training framework, where model
-   parameters and trainers live on different machines.
+   might be implementing a `parameter server <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`__
+   training framework, where model parameters and trainers live on different
+   machines.
 
 
 The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
@@ -360,21 +361,27 @@ borrowed from the word language model in PyTorch
 `example <https://github.com/pytorch/examples/tree/master/word_language_model>`__
 repository, which contains three main components, an embedding table, an
 ``LSTM`` layer, and a decoder. The code below wraps the embedding table and the
-decode into sub-modules, so that their constructors can be passed to the RPC
-API.
+decoder into sub-modules, so that their constructors can be passed to the RPC
+API. In the `EmbeddingTable` sub-module, we intentionally put the `Embedding`
+layer on GPU to demonstrate the use case. In v1.4, RPC always creates CPU tensor
+arguments or return values on the destination server. If the function takes a
+GPU tensor, you need to move it to the proper device explicitly.
 
 
 .. code:: python
 
     class EmbeddingTable(nn.Module):
+        r"""
+        Encoding layers of the RNNModel
+        """
         def __init__(self, ntoken, ninp, dropout):
             super(EmbeddingTable, self).__init__()
             self.drop = nn.Dropout(dropout)
-            self.encoder = nn.Embedding(ntoken, ninp)
+            self.encoder = nn.Embedding(ntoken, ninp).cuda()
             self.encoder.weight.data.uniform_(-0.1, 0.1)
 
         def forward(self, input):
-            return self.drop(self.encoder(input))
+            return self.drop(self.encoder(input.cuda()).cpu()
 
 
     class Decoder(nn.Module):
@@ -470,8 +477,9 @@ Then, as the ``RNNModel`` contains three sub-modules, we need to call
 Now, we are ready to implement the training loop. After initializing the model
 arguments, we create the ``RNNModel`` and the ``DistributedOptimizer``. The
 distributed optimizer will take a list of parameter ``RRefs``, find all distinct
-owner workers, and create the given local optimizer (i.e., ``SGD`` in this case)
-on each of the owner worker using the given arguments (i.e., ``lr=0.05``).
+owner workers, and create the given local optimizer (i.e., ``SGD`` in this case,
+you can use other local optimizers as well) on each of the owner worker using
+the given arguments (i.e., ``lr=0.05``).
 
 In the training loop, it first creates a distributed autograd context, which
 will help the distributed autograd engine to find gradients and involved RPC
