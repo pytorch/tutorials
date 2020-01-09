@@ -336,6 +336,41 @@ available in the API page.
         join=True
     )
 
+Below are some sample outputs when training with `world_size=2`.
+
+::
+
+    Episode 10      Last reward: 26.00      Average reward: 10.01
+    Episode 20      Last reward: 16.00      Average reward: 11.27
+    Episode 30      Last reward: 49.00      Average reward: 18.62
+    Episode 40      Last reward: 45.00      Average reward: 26.09
+    Episode 50      Last reward: 44.00      Average reward: 30.03
+    Episode 60      Last reward: 111.00     Average reward: 42.23
+    Episode 70      Last reward: 131.00     Average reward: 70.11
+    Episode 80      Last reward: 87.00      Average reward: 76.51
+    Episode 90      Last reward: 86.00      Average reward: 95.93
+    Episode 100     Last reward: 13.00      Average reward: 123.93
+    Episode 110     Last reward: 33.00      Average reward: 91.39
+    Episode 120     Last reward: 73.00      Average reward: 76.38
+    Episode 130     Last reward: 137.00     Average reward: 88.08
+    Episode 140     Last reward: 89.00      Average reward: 104.96
+    Episode 150     Last reward: 97.00      Average reward: 98.74
+    Episode 160     Last reward: 150.00     Average reward: 100.87
+    Episode 170     Last reward: 126.00     Average reward: 104.38
+    Episode 180     Last reward: 500.00     Average reward: 213.74
+    Episode 190     Last reward: 322.00     Average reward: 300.22
+    Episode 200     Last reward: 165.00     Average reward: 272.71
+    Episode 210     Last reward: 168.00     Average reward: 233.11
+    Episode 220     Last reward: 184.00     Average reward: 195.02
+    Episode 230     Last reward: 284.00     Average reward: 208.32
+    Episode 240     Last reward: 395.00     Average reward: 247.37
+    Episode 250     Last reward: 500.00     Average reward: 335.42
+    Episode 260     Last reward: 500.00     Average reward: 386.30
+    Episode 270     Last reward: 500.00     Average reward: 405.29
+    Episode 280     Last reward: 500.00     Average reward: 443.29
+    Episode 290     Last reward: 500.00     Average reward: 464.65
+    Solved! Running reward is now 475.3163778435275!
+
 
 In this example, we show how to use RPC as the communication vehicle to pass
 date across workers, and how to use RRef to reference remote objects. It is true
