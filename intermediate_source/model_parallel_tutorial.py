@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Model Parallel Best Practices
+Single-Machine Model Parallel Best Practices
 ================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
@@ -26,6 +26,13 @@ model. In this post, we will not try to construct huge models and squeeze them
 into a limited number of GPUs. Instead, this post focuses on showing the idea
 of model parallel. It is up to the readers to apply the ideas to real-world
 applications.
+
+.. note::
+
+    For distributed model parallel training where a model spans multiple
+    servers, please refer to
+    `Getting Started With Distributed RPC Framework <rpc_tutorial.html>__
+    for examples and details.
 
 Basic Usage
 -----------

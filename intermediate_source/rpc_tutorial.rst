@@ -12,10 +12,10 @@ This tutorial uses two simple examples to demonstrate how to build distributed
 training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
 package which is first introduced as an experimental feature in PyTorch v1.4.
 Source code of the two examples can be found in
-`PyTorch examples <https://github.com/pytorch/examples>`__
+`PyTorch examples <https://github.com/pytorch/examples>`__.
 
 Previous tutorials,
-`Getting Started With Distributed Data Parallel <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`__
+`Getting Started With Distributed Data Parallel <ddp_tutorial.html>`__
  and `Writing Distributed Applications With PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__,
 described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
 which supports a specific training paradigm where the model is replicated across
