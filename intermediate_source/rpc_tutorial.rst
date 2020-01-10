@@ -555,21 +555,30 @@ the same set of ``Tensors``.
             lr=0.05,
         )
 
+        criterion = torch.nn.CrossEntropyLoss()
+
+        def get_next_batch():
+            for _ in range(5):
+                data = torch.LongTensor(batch, nindices) % ntoken
+                target = torch.LongTensor(batch, ntoken) % nindices
+                yield data, target
+
         # train for 10 iterations
         for epoch in range(10):
             # create distributed autograd context
-            with dist_autograd.context():
-                inp = torch.LongTensor(batch, nindices) % ntoken
-                hidden[0].detach_()
-                hidden[1].detach_()
-                output, hidden = model(inp, hidden)
-                # run distributed backward pass
-                dist_autograd.backward([output.sum()])
-                # run distributed optimizer
-                opt.step()
-                # not necessary to zero grads as each iteration creates a different
-                # distributed autograd context which hosts different grads
-                print("Training epoch {}".format(epoch))
+            for data, target in get_next_batch():
+                with dist_autograd.context():
+                    hidden[0].detach_()
+                    hidden[1].detach_()
+                    output, hidden = model(data, hidden)
+                    loss = criterion(output, target)
+                    # run distributed backward pass
+                    dist_autograd.backward([loss])
+                    # run distributed optimizer
+                    opt.step()
+                    # not necessary to zero grads as each iteration creates a different
+                    # distributed autograd context which hosts different grads
+            print("Training epoch {}".format(epoch))
 
 
 Finally, let's add some glue code to launch the parameter server and the trainer
