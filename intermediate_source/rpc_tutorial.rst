@@ -4,23 +4,26 @@ Getting Started with Distributed RPC Framework
 
 
 This tutorial uses two simple examples to demonstrate how to build distributed
-applications with the `torch.distributed.rpc` package. Source code of the two
-examples can be found in `PyTorch examples <https://github.com/pytorch/examples>`__
+training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
+package. Source code of the two examples can be found in
+`PyTorch examples <https://github.com/pytorch/examples>`__
 
-Previous tutorials described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
+`Previous <https://deploy-preview-807--pytorch-tutorials-preview.netlify.com/intermediate/ddp_tutorial.html>`__
+`tutorials <https://deploy-preview-807--pytorch-tutorials-preview.netlify.com/intermediate/dist_tuto.html>`__
+described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
 which supports a specific training paradigm where the model is replicated across
 multiple processes and each process handles a split of the input data.
 Sometimes, you might run into scenarios that require different training
-paradigms:
+paradigms. For example:
 
 1) In reinforcement learning, it might be relatively expensive to acquire
    training data from environments while the model itself can be quite small. In
    this case, it might be useful to spawn multiple observers running in parallel
    and share a single agent. In this case, the agent takes care of the training
    locally, but the application would still need libraries to send and receive
-   data between observers and the trainer
+   data between observers and the trainer.
 2) Your model might be too large to fit in GPUs on a single machine, and hence
-   would need a library to help split a model onto multiple machines. Or you
+   would need a library to help split the model onto multiple machines. Or you
    might be implementing a `parameter server <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`__
    training framework, where model parameters and trainers live on different
    machines.
@@ -28,16 +31,16 @@ paradigms:
 
 The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
 can help with the above scenarios. In case 1, `RPC <https://pytorch.org/docs/master/rpc.html#rpc>`__
-and `RRef <https://pytorch.org/docs/master/rpc.html#rref>`__ can help send data
-from one worker to another and also easily referencing remote data objects. In
+and `RRef <https://pytorch.org/docs/master/rpc.html#rref>`__ allow sending data
+from one worker to another while easily referencing remote data objects. In
 case 2, `distributed autograd <https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework>`__
 and `distributed optimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`__
-allows executing backward and optimizer step as if it is local training. In the
-next two sections, we will demonstrate APIs of
+make executing backward pass and optimizer step as if it is local training. In
+the next two sections, we will demonstrate APIs of
 `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ using a
 reinforcement learning example and a language model example. Please note, this
-tutorial is not aiming at building the most accurate or efficient models to
-solve given problems, instead the main goal is to show how to use the
+tutorial does not aim at building the most accurate or efficient models to
+solve given problems, instead, the main goal here is to show how to use the
 `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package to
 build distributed training applications.
 
@@ -76,12 +79,13 @@ usages.
             action_scores = self.affine2(x)
             return F.softmax(action_scores, dim=1)
 
-Let's first prepare a helper function to call a function on a local ``RRef``. It
-might look unnecessary at the first glance, as you could simply do
-``rref.local_value().some_func(args)`` to run the target function. The reason
-for adding this helper function is because there is no way to get a reference
-of a remote value, and ``local_value`` is only available on the owner of the
-``RRef``.
+Let's first prepare a helper to run functions remotely on the owner worker of an
+``RRef``. You will find this function been used in several places this
+tutorial's examples. Ideally, the `torch.distributed.rpc` package should provide
+these helper functions out of box. For example, it will be easier if
+applications can directly call ``RRef.some_func(*arg)`` which will then
+translate to RPC to the ``RRef`` owner. The progress on this API is tracked in
+`pytorch/pytorch#31743 <https://github.com/pytorch/pytorch/issues/31743>`__.
 
 .. code:: python
 
@@ -99,13 +103,6 @@ of a remote value, and ``local_value`` is only available on the owner of the
     # _remote_method(some_func, rref, *args)
 
 
-Ideally, the `torch.distributed.rpc` package should provide these helper
-functions out of box. For example, it will be easier if applications can
-directly call ``RRef.some_func(*arg)`` which will then translate to RPC to the
-``RRef`` owner. The progress on this API is tracked in in
-`pytorch/pytorch#31743 <https://github.com/pytorch/pytorch/issues/31743>`__.
-
-
 We are ready to present the observer. In this example, each observer creates its
 own environment, and waits for the agent's command to run an episode. In each
 episode, one observer loops at most ``n_steps`` iterations, and in each
@@ -116,7 +113,8 @@ RPC to report the reward to the agent. Again, please note that, this is
 obviously not the most efficient observer implementation. For example, one
 simple optimization could be packing current state and last reward in one RPC to
 reduce the communication overhead. However, the goal is to demonstrate RPC API
-instead of building the best solver for CartPole.
+instead of building the best solver for CartPole. So, let's keep the logic
+simple and the two steps explicit in this example.
 
 .. code:: python
 
@@ -152,9 +150,13 @@ such that it sends command to multiple distributed observers to run episodes,
 and it also records all actions and rewards locally which will be used during
 the training phase after each episode. The code below shows ``Agent``
 constructor where most lines are initializing various components. The loop at
-the end initializes observers on other workers, and holds ``RRefs`` to those
-observers locally. The agent will use those observer ``RRefs`` later to send
-commands.
+the end initializes observers remotely on other workers, and holds ``RRefs`` to
+those observers locally. The agent will use those observer ``RRefs`` later to
+send commands. Applications don't need to worry about the lifetime of ``RRefs``.
+The owner of each ``RRef`` maintains a reference counting map to track it's
+lifetime, and guarantees the remote data object will not be deleted as long as
+there is any live user of that ``RRef``. Please refer to the ``RRef``
+`design doc <https://pytorch.org/docs/master/notes/rref.html>`__ for details.
 
 
 .. code:: python
@@ -186,9 +188,9 @@ commands.
                 self.saved_log_probs[ob_info.id] = []
 
 
-Next, the agent exposes two APIs to allow observers to select actions and report
-rewards. Those functions are only run locally on the agent, but will be
-triggered by observers through RPC.
+Next, the agent exposes two APIs to observers for selecting actions and
+reporting rewards. Those functions are only run locally on the agent, but will
+be triggered by observers through RPC.
 
 
 .. code:: python
@@ -212,9 +214,9 @@ to execute an episode. In this function, it first creates a list to collect
 futures from asynchronous RPCs, and then loop over all observer ``RRefs`` to
 make asynchronous RPCs. In these RPCs, the agent also passes an ``RRef`` of
 itself to the observer, so that the observer can call functions on the agent as
-well. As shown above, each observer will make RPCs back to the agent, which is
-actually nested RPCs. After each episode, the ``saved_log_probs`` and
-``rewards`` will contain the recorded action probs and rewards.
+well. As shown above, each observer will make RPCs back to the agent, which are
+nested RPCs. After each episode, the ``saved_log_probs`` and ``rewards`` will
+contain the recorded action probs and rewards.
 
 
 .. code:: python
