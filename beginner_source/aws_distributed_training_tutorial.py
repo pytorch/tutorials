@@ -1,6 +1,6 @@
 """
-PyTorch 1.0 Distributed Trainer with Amazon AWS
-===============================================
+(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
+=============================================================
 
 **Author**: `Nathan Inkawhich <https://github.com/inkawhich>`_
 

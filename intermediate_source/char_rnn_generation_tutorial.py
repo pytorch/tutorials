@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Generating Names with a Character-Level RNN
-*******************************************
+NLP From Scratch: Generating Names with a Character-Level RNN
+*************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
 
-In the :doc:`last tutorial </intermediate/char_rnn_classification_tutorial>`
+This is our second of three tutorials on "NLP From Scratch".
+In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
 we used a RNN to classify names into their language of origin. This time
 we'll turn around and generate names from languages.
 

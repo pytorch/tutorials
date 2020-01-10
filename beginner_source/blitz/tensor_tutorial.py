@@ -24,11 +24,20 @@ from __future__ import print_function
 import torch
 
 ###############################################################
+# .. note::
+#     An uninitialized matrix is declared,
+#     but does not contain definite known
+#     values before it is used. When an
+#     uninitialized matrix is created,
+#     whatever values were in the allocated
+#     memory at the time will appear as the initial values.
+
+###############################################################
 # Construct a 5x3 matrix, uninitialized:
 
 x = torch.empty(5, 3)
 print(x)
-
+ 
 ###############################################################
 # Construct a randomly initialized matrix:
 

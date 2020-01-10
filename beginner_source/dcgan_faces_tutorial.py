@@ -131,7 +131,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
-# Set random seem for reproducibility
+# Set random seed for reproducibility
 manualSeed = 999
 #manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)
