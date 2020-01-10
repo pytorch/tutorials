@@ -5,7 +5,8 @@ Getting Started with Distributed RPC Framework
 
 This tutorial uses two simple examples to demonstrate how to build distributed
 training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
-package. Source code of the two examples can be found in
+package which is first introduced as an experimental feature in PyTorch v1.4.
+Source code of the two examples can be found in
 `PyTorch examples <https://github.com/pytorch/examples>`__
 
 `Previous <https://deploy-preview-807--pytorch-tutorials-preview.netlify.com/intermediate/ddp_tutorial.html>`__
@@ -189,7 +190,7 @@ there is any live user of that ``RRef``. Please refer to the ``RRef``
 
 
 Next, the agent exposes two APIs to observers for selecting actions and
-reporting rewards. Those functions are only run locally on the agent, but will
+reporting rewards. Those functions only run locally on the agent, but will
 be triggered by observers through RPC.
 
 
@@ -240,9 +241,10 @@ contain the recorded action probs and rewards.
 
 
 Finally, after one episode, the agent needs to train the model, which
-is implemented in the ``finish_episode`` function below. It is also a local
-function and mostly borrowed from the single-thread
+is implemented in the ``finish_episode`` function below. There is no RPCs in
+this function and it is mostly borrowed from the single-thread
 `example <https://github.com/pytorch/examples/blob/master/reinforcement_learning>`__.
+Hence, we skip describing its contents.
 
 
 
@@ -285,14 +287,14 @@ With ``Policy``, ``Observer``, and ``Agent`` classes, we are ready to launch
 multiple processes to perform the distributed training. In this example, all
 processes run the same ``run_worker`` function, and they use the rank to
 distinguish their role. Rank 0 is always the agent, and all other ranks are
-observers. As agent as server as master, repeatedly call ``run_episode`` and
+observers. The agent serves as master by repeatedly calling ``run_episode`` and
 ``finish_episode`` until the running reward surpasses the reward threshold
-specified by the environment. All observers just passively waiting for commands
+specified by the environment. All observers passively waiting for commands
 from the agent. The code is wrapped by
 `rpc.init_rpc <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.init_rpc>`__ and
 `rpc.shutdown <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.shutdown>`__,
 which initializes and terminates RPC instances respectively. More details are
-available in the API page.
+available in the `API page <https://pytorch.org/docs/master/rpc.html>`__.
 
 
 .. code:: python
@@ -375,10 +377,10 @@ Below are some sample outputs when training with `world_size=2`.
 
 
 In this example, we show how to use RPC as the communication vehicle to pass
-date across workers, and how to use RRef to reference remote objects. It is true
+data across workers, and how to use RRef to reference remote objects. It is true
 that you could build the entire structure directly on top of ``ProcessGroup``
 ``send`` and ``recv`` APIs or use other communication/RPC libraries. However,
-by using `torch.distributed.rpc`, you can get the native support plus
+by using `torch.distributed.rpc`, you can get the native support and
 continuously optimized performance under the hood.
 
 Next, we will show how to combine RPC and RRef with distributed autograd and
@@ -386,22 +388,24 @@ distributed optimizer to perform distributed model parallel training.
 
 
 
-
 Distributed RNN using Distributed Autograd and Distributed Optimizer
 --------------------------------------------------------------------
 
 In this section, we use an RNN model to show how to build distributed model
-parallel training using the RPC API. The example RNN model is very small and
-easily fit into a single GPU, but developer can apply the similar techniques to
-much larger models that need to span multiple devices. The RNN model design is
-borrowed from the word language model in PyTorch
+parallel training with the RPC API. The example RNN model is very small and
+can easily fit into a single GPU, but we still divide its layers onto two
+different workers to demonstrate the idea. Developer can apply the similar
+techniques to distribute much larger models across multiple devices and
+machines.
+
+The RNN model design is borrowed from the word language model in PyTorch
 `example <https://github.com/pytorch/examples/tree/master/word_language_model>`__
 repository, which contains three main components, an embedding table, an
 ``LSTM`` layer, and a decoder. The code below wraps the embedding table and the
 decoder into sub-modules, so that their constructors can be passed to the RPC
 API. In the `EmbeddingTable` sub-module, we intentionally put the `Embedding`
-layer on GPU to demonstrate the use case. In v1.4, RPC always creates CPU tensor
-arguments or return values on the destination server. If the function takes a
+layer on GPU to cover the use case. In v1.4, RPC always creates CPU tensor
+arguments or return values on the destination worker. If the function takes a
 GPU tensor, you need to move it to the proper device explicitly.
 
 
@@ -437,7 +441,7 @@ With the above sub-modules, we can now piece them together using RPC to
 create an RNN model. In the code below ``ps`` represents a parameter server,
 which hosts parameters of the embedding table and the decoder. The constructor
 uses the `remote <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote>`__
-API to create an `EmbeddingTable` and a `Decoder` object on the parameter
+API to create an `EmbeddingTable` object and a `Decoder` object on the parameter
 server, and locally creates the ``LSTM`` sub-module. During the forward pass,
 the trainer uses the ``EmbeddingTable`` ``RRef`` to find the remote sub-module
 and passes the input data to the ``EmbeddingTable`` using RPC and fetches the
@@ -475,12 +479,13 @@ Before introducing the distributed optimizer, let's add a helper function to
 generate a list of RRefs of model parameters, which will be consumed by the
 distributed optimizer. In local training, applications could call
 ``Module.parameters()`` to grab references to all parameter tensors, and pass it
-to the local optimizer to update. However, the same API does not work in
-the distributed training scenarios as some parameters live on remote machines.
-Therefore, instead of taking a list of parameter ``Tensors``, the distributed
-optimizer takes a list of ``RRefs``, one ``RRef`` per model parameter for both
-local and remote parameters. The helper function is pretty simple, just call
-``Module.parameters()`` and creates a local ``RRef`` on each of the parameters.
+to the local optimizer for subsequent updates. However, the same API does not
+work in distributed training scenarios as some parameters live on remote
+machines. Therefore, instead of taking a list of parameter ``Tensors``, the
+distributed optimizer takes a list of ``RRefs``, one ``RRef`` per model
+parameter for both local and remote model parameters. The helper function is
+pretty simple, just call ``Module.parameters()`` and creates a local ``RRef`` on
+each of the parameters.
 
 
 .. code:: python
@@ -511,7 +516,7 @@ Then, as the ``RNNModel`` contains three sub-modules, we need to call
             return remote_params
 
 
-Now, we are ready to implement the training loop. After initializing the model
+Now, we are ready to implement the training loop. After initializing model
 arguments, we create the ``RNNModel`` and the ``DistributedOptimizer``. The
 distributed optimizer will take a list of parameter ``RRefs``, find all distinct
 owner workers, and create the given local optimizer (i.e., ``SGD`` in this case,
@@ -520,17 +525,19 @@ the given arguments (i.e., ``lr=0.05``).
 
 In the training loop, it first creates a distributed autograd context, which
 will help the distributed autograd engine to find gradients and involved RPC
-send/recv functions. Then, it kicks off the forward pass as if it is a local
+send/recv functions. The design details of the distributed autograd engine can
+be found in its `design note <https://pytorch.org/docs/master/notes/distributed_autograd.html>`__.
+Then, it kicks off the forward pass as if it is a local
 model, and run the distributed backward pass. For the distributed backward, you
 only need to specify a list of roots, in this case, it is the loss ``Tensor``.
 The distributed autograd engine will traverse the distributed graph
 automatically and write gradients properly. Next, it runs the ``step``
-API on the distributed optimizer, which will reach out to all involved local
-optimizers to update model parameters. Compared to local training, one minor
-difference is that you don't need to run ``zero_grad()`` because each autograd
-context has dedicated space to store gradients, and as we create a context
-per iteration, those gradients from different iterations will not accumulate to
-the same set of ``Tensors``.
+function on the distributed optimizer, which will reach out to all involved
+local optimizers to update model parameters. Compared to local training, one
+minor difference is that you don't need to run ``zero_grad()`` because each
+autograd context has dedicated space to store gradients, and as we create a
+context per iteration, those gradients from different iterations will not
+accumulate to the same set of ``Tensors``.
 
 
 .. code:: python
