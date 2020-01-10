@@ -611,9 +611,12 @@ for epoch in range(num_epochs):
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
         # Calculate the gradients for this batch
+        # Without a zero_grad() call, this accumulates (sums) 
+        #   the gradients from this call with the previously computed
+        #   gradients from errD_real 
         errD_fake.backward()
         D_G_z1 = output.mean().item()
-        # Add the gradients from the all-real and all-fake batches
+        # Compute error of D as sum over the fake and the real batches
         errD = errD_real + errD_fake
         # Update D
         optimizerD.step()
