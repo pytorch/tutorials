@@ -125,8 +125,20 @@ simple and the two steps explicit in this example.
 
 .. code:: python
 
+    import argparse
     import gym
     import torch.distributed.rpc as rpc
+
+    parser = argparse.ArgumentParser(
+        description="RPC Reinforcement Learning Example",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument('--world_size', default=2, help='Number of workers')
+    parser.add_argument('--log_interval', default=1, help='Log every log_interval episodes')
+    parser.add_argument('--gamma', default=0.1, help='how much to value future rewards')
+    parser.add_argument('--seed', default=1, help='random seed for reproducibility')
+    args = parser.parse_args()
 
     class Observer:
 
@@ -231,6 +243,7 @@ contain the recorded action probs and rewards.
     class Agent:
         ...
         def run_episode(self, n_steps=0):
+            futs = []
             for ob_rref in self.ob_rrefs:
                 # make async RPC to kick off an episode on all observers
                 futs.append(
@@ -309,6 +322,10 @@ available in the `API page <https://pytorch.org/docs/master/rpc.html>`__.
     from itertools import count
 
     import torch.multiprocessing as mp
+
+    AGENT_NAME = "agent"
+    OBSERVER_NAME="obs"
+    TOTAL_EPISODE_STEP = 100
 
     def run_worker(rank, world_size):
         os.environ['MASTER_ADDR'] = 'localhost'
