@@ -31,7 +31,7 @@ applications.
 
     For distributed model parallel training where a model spans multiple
     servers, please refer to
-    `Getting Started With Distributed RPC Framework <rpc_tutorial.html>__
+    `Getting Started With Distributed RPC Framework <rpc_tutorial.html>`__
     for examples and details.
 
 Basic Usage
