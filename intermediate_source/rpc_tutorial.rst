@@ -14,8 +14,9 @@ package which is first introduced as an experimental feature in PyTorch v1.4.
 Source code of the two examples can be found in
 `PyTorch examples <https://github.com/pytorch/examples>`__
 
-`Previous <https://deploy-preview-807--pytorch-tutorials-preview.netlify.com/intermediate/ddp_tutorial.html>`__
-`tutorials <https://deploy-preview-807--pytorch-tutorials-preview.netlify.com/intermediate/dist_tuto.html>`__
+Previous tutorials,
+`Getting Started With Distributed Data Parallel <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`__
+ and `Writing Distributed Applications With PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__,
 described `DistributedDataParallel <https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html>`__
 which supports a specific training paradigm where the model is replicated across
 multiple processes and each process handles a split of the input data.
@@ -86,7 +87,7 @@ usages.
             return F.softmax(action_scores, dim=1)
 
 Let's first prepare a helper to run functions remotely on the owner worker of an
-``RRef``. You will find this function been used in several places this
+``RRef``. You will find this function being used in several places this
 tutorial's examples. Ideally, the `torch.distributed.rpc` package should provide
 these helper functions out of box. For example, it will be easier if
 applications can directly call ``RRef.some_func(*arg)`` which will then
@@ -159,7 +160,7 @@ constructor where most lines are initializing various components. The loop at
 the end initializes observers remotely on other workers, and holds ``RRefs`` to
 those observers locally. The agent will use those observer ``RRefs`` later to
 send commands. Applications don't need to worry about the lifetime of ``RRefs``.
-The owner of each ``RRef`` maintains a reference counting map to track it's
+The owner of each ``RRef`` maintains a reference counting map to track its
 lifetime, and guarantees the remote data object will not be deleted as long as
 there is any live user of that ``RRef``. Please refer to the ``RRef``
 `design doc <https://pytorch.org/docs/master/notes/rref.html>`__ for details.
@@ -408,10 +409,10 @@ The RNN model design is borrowed from the word language model in PyTorch
 repository, which contains three main components, an embedding table, an
 ``LSTM`` layer, and a decoder. The code below wraps the embedding table and the
 decoder into sub-modules, so that their constructors can be passed to the RPC
-API. In the `EmbeddingTable` sub-module, we intentionally put the `Embedding`
-layer on GPU to cover the use case. In v1.4, RPC always creates CPU tensor
-arguments or return values on the destination worker. If the function takes a
-GPU tensor, you need to move it to the proper device explicitly.
+API. In the ``EmbeddingTable`` sub-module, we intentionally put the
+``Embedding`` layer on GPU to cover the use case. In v1.4, RPC always creates
+CPU tensor arguments or return values on the destination worker. If the function
+takes a GPU tensor, you need to move it to the proper device explicitly.
 
 
 .. code:: python
@@ -446,17 +447,18 @@ With the above sub-modules, we can now piece them together using RPC to
 create an RNN model. In the code below ``ps`` represents a parameter server,
 which hosts parameters of the embedding table and the decoder. The constructor
 uses the `remote <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote>`__
-API to create an `EmbeddingTable` object and a `Decoder` object on the parameter
-server, and locally creates the ``LSTM`` sub-module. During the forward pass,
-the trainer uses the ``EmbeddingTable`` ``RRef`` to find the remote sub-module
-and passes the input data to the ``EmbeddingTable`` using RPC and fetches the
-lookup results. Then, it runs the embedding through the local ``LSTM`` layer,
-and finally uses another RPC to send the output to the ``Decoder`` sub-module.
-In general, to implement distributed model parallel training, developers can
-divide the model into sub-modules, invoke RPC to create sub-module instances
-remotely, and use on ``RRef`` to find them when necessary. As you can see in the
-code below, it looks very similar to single-machine model parallel training. The
-main difference is replacing ``Tensor.to(device)`` with RPC functions.
+API to create an ``EmbeddingTable`` object and a ``Decoder`` object on the
+parameter server, and locally creates the ``LSTM`` sub-module. During the
+forward pass, the trainer uses the ``EmbeddingTable`` ``RRef`` to find the
+remote sub-module and passes the input data to the ``EmbeddingTable`` using RPC
+and fetches the lookup results. Then, it runs the embedding through the local
+``LSTM`` layer, and finally uses another RPC to send the output to the
+``Decoder`` sub-module. In general, to implement distributed model parallel
+training, developers can divide the model into sub-modules, invoke RPC to create
+sub-module instances remotely, and use on ``RRef`` to find them when necessary.
+As you can see in the code below, it looks very similar to single-machine model
+parallel training. The main difference is replacing ``Tensor.to(device)`` with
+RPC functions.
 
 
 .. code:: python
