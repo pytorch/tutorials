@@ -178,7 +178,7 @@ with open(model_data_filepath + 'out.txt', 'w') as outf:
 
             word = corpus.dictionary.idx2word[word_idx]
 
-            outf.write(str(word) + ('\n' if i % 20 == 19 else ' '))
+            outf.write(str(word.encode('utf-8')) + ('\n' if i % 20 == 19 else ' '))
 
             if i % 100 == 0:
                 print('| Generated {}/{} words'.format(i, 1000))
