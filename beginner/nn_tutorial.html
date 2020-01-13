@@ -160,9 +160,10 @@
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aws_distributed_training_tutorial.html">(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Extending PyTorch</span></p>
@@ -393,8 +394,8 @@ random at this stage, since we start with random weights.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-2.1401, -2.0166, -2.4288, -2.4895, -2.2287, -2.0842, -2.8981, -2.7197,
-        -2.2448, -2.1276], grad_fn=&lt;SelectBackward&gt;) torch.Size([64, 10])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-2.5389, -2.6647, -2.5986, -2.1375, -2.6206, -2.2812, -2.6010, -1.6307,
+        -2.0403, -2.4748], grad_fn=&lt;SelectBackward&gt;) torch.Size([64, 10])
 </pre></div>
 </div>
 <p>As you see, the <code class="docutils literal notranslate"><span class="pre">preds</span></code> tensor contains not only the tensor values, but also a
@@ -414,7 +415,7 @@ after a backprop pass later.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.3269, grad_fn=&lt;NegBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.2875, grad_fn=&lt;NegBackward&gt;)
 </pre></div>
 </div>
 <p>Let’s also implement a function to calculate the accuracy of our model.
@@ -431,7 +432,7 @@ accuracy improves as our loss improves.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.1094)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.1562)
 </pre></div>
 </div>
 <p>We can now run a training loop.  For each iteration, we will:</p>
@@ -490,7 +491,7 @@ have increased, and they have.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0815, grad_fn=&lt;NegBackward&gt;) tensor(1.)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0816, grad_fn=&lt;NegBackward&gt;) tensor(1.)
 </pre></div>
 </div>
 </div>
@@ -526,7 +527,7 @@ confirm that our loss and accuracy are the same as before:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0815, grad_fn=&lt;NllLossBackward&gt;) tensor(1.)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0816, grad_fn=&lt;NllLossBackward&gt;) tensor(1.)
 </pre></div>
 </div>
 </div>
@@ -570,7 +571,7 @@ method automatically.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.2718, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.2966, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 <p>Previously for our training loop we had to update the values for each parameter
@@ -617,7 +618,7 @@ again later.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0806, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0797, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -645,7 +646,7 @@ faster too.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.3540, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.2840, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 <p>We are still able to use our same <code class="docutils literal notranslate"><span class="pre">fit</span></code> method as before.</p>
@@ -655,7 +656,7 @@ faster too.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0812, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0807, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -706,8 +707,8 @@ can reuse it in the future.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.2980, grad_fn=&lt;NllLossBackward&gt;)
-tensor(0.0804, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(2.3350, grad_fn=&lt;NllLossBackward&gt;)
+tensor(0.0822, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -799,7 +800,7 @@ the DataLoader gives us each minibatch automatically.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0804, grad_fn=&lt;NllLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.0811, grad_fn=&lt;NllLossBackward&gt;)
 </pre></div>
 </div>
 <p>Thanks to Pytorch’s <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>, <code class="docutils literal notranslate"><span class="pre">nn.Parameter</span></code>, <code class="docutils literal notranslate"><span class="pre">Dataset</span></code>, and <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>,
@@ -853,8 +854,8 @@ and <code class="docutils literal notranslate"><span class="pre">nn.Dropout</spa
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 tensor(0.3069)
-1 tensor(0.3055)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 tensor(0.3574)
+1 tensor(0.2994)
 </pre></div>
 </div>
 </div>
@@ -914,8 +915,8 @@ model can be run in 3 lines of code:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3269891178369522
-1 0.42601987751722337
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.31069279173612596
+1 0.32623686944246294
 </pre></div>
 </div>
 <p>You can use these basic 3 lines of code to train a wide variety of models.
@@ -960,8 +961,8 @@ and generally leads to faster training.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3887483551025391
-1 0.2402944264650345
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3839433398246765
+1 0.2573188690304756
 </pre></div>
 </div>
 </div>
@@ -1008,8 +1009,8 @@ will create a layer that we can then use when defining a network with
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3294241257548332
-1 0.27747716482281687
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.4430202168464661
+1 0.25484212634563447
 </pre></div>
 </div>
 </div>
@@ -1072,8 +1073,8 @@ size input.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3727998104572296
-1 0.2677896244764328
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.3977905019760132
+1 0.24322097778320312
 </pre></div>
 </div>
 </div>
@@ -1115,8 +1116,8 @@ Pytorch:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.22633080139160155
-1 0.19101047129631044
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>0 0.2608880227565765
+1 0.19739805364608765
 </pre></div>
 </div>
 </div>
@@ -1153,7 +1154,7 @@ including classes provided with Pytorch such as <code class="docutils literal no
 <li><code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>: Takes any <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> and creates an iterator which returns batches of data.</li>
 </ul>
 </div></blockquote>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  5.810 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  5.920 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nn-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a6246751179fbfb7cad9222ef1c16617/nn_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">nn_tutorial.py</span></code></a></div>
