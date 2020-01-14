@@ -5,7 +5,7 @@ Getting Started with Distributed RPC Framework
 
 .. warning::
   The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
-  is experimental and subject to change. It also requires PyTorch 1.4.0+ to run as this is the first version to support RPC.
+  is experimental and subject to change.
 
 
 This tutorial uses two simple examples to demonstrate how to build distributed
