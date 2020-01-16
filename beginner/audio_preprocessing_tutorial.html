@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>torchaudio Tutorial — PyTorch Tutorials 1.3.1 documentation</title>
+<title>torchaudio Tutorial — PyTorch Tutorials 1.4.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -106,7 +106,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.3.1
+                  1.4.0
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -259,9 +259,9 @@ installed for easier visualization.</p>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
-<div class="section" id="opening-a-dataset">
-<h2>Opening a dataset<a class="headerlink" href="#opening-a-dataset" title="Permalink to this headline">¶</a></h2>
-<p>torchaudio supports loading sound files in the wav and mp3 format. We
+<div class="section" id="opening-a-file">
+<h2>Opening a file<a class="headerlink" href="#opening-a-file" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> also supports loading sound files in the wav and mp3 format. We
 call waveform the resulting raw audio signal.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">filename</span> <span class="o">=</span> <span class="s2">"../_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"</span>
 <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
@@ -279,14 +279,22 @@ call waveform the resulting raw audio signal.</p>
 Sample rate of waveform: 44100
 </pre></div>
 </div>
+<p>When you load a file in <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>, you can optionally specify the backend to use either
+<a class="reference external" href="https://pypi.org/project/sox/">SoX</a> or <a class="reference external" href="https://pypi.org/project/SoundFile/">SoundFile</a>
+via <code class="docutils literal notranslate"><span class="pre">torchaudio.set_audio_backend</span></code>. These backends are loaded lazily when needed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> also makes JIT compilation optional for functions, and uses <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> where possible.</p>
 </div>
 <div class="section" id="transformations">
 <h2>Transformations<a class="headerlink" href="#transformations" title="Permalink to this headline">¶</a></h2>
-<p>torchaudio supports a growing list of
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> supports a growing list of
 <a class="reference external" href="https://pytorch.org/audio/transforms.html">transformations</a>.</p>
 <ul class="simple">
 <li><strong>Resample</strong>: Resample waveform to a different sample rate.</li>
 <li><strong>Spectrogram</strong>: Create a spectrogram from a waveform.</li>
+<li><strong>GriffinLim</strong>: Compute waveform from a linear scale magnitude spectrogram using
+the Griffin-Lim transformation.</li>
+<li><strong>ComputeDeltas</strong>: Compute delta coefficients of a tensor, usually a spectrogram.</li>
+<li><strong>ComplexNorm</strong>: Compute the norm of a complex tensor.</li>
 <li><strong>MelScale</strong>: This turns a normal STFT into a Mel-frequency STFT,
 using a conversion matrix.</li>
 <li><strong>AmplitudeToDB</strong>: This turns a spectrogram from the
@@ -297,8 +305,13 @@ waveform.</li>
 STFT function in PyTorch.</li>
 <li><strong>MuLawEncoding</strong>: Encode waveform based on mu-law companding.</li>
 <li><strong>MuLawDecoding</strong>: Decode mu-law encoded waveform.</li>
+<li><strong>TimeStretch</strong>: Stretch a spectrogram in time without modifying pitch for a given rate.</li>
+<li><strong>FrequencyMasking</strong>: Apply masking to a spectrogram in the frequency domain.</li>
+<li><strong>TimeMasking</strong>: Apply masking to a spectrogram in the time domain.</li>
 </ul>
-<p>Since all transforms are nn.Modules or jit.ScriptModules, they can be
+<p>Each transform supports batching: you can perform a transform on a single raw
+audio signal or spectrogram, or many of the same shape.</p>
+<p>Since all transforms are <code class="docutils literal notranslate"><span class="pre">nn.Modules</span></code> or <code class="docutils literal notranslate"><span class="pre">jit.ScriptModules</span></code>, they can be
 used as part of a neural network at any point.</p>
 <p>To start, we can look at the log of the spectrogram on a log scale.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">specgram</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">Spectrogram</span><span class="p">()(</span><span class="n">waveform</span><span class="p">)</span>
@@ -412,11 +425,108 @@ version.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="functional">
+<h2>Functional<a class="headerlink" href="#functional" title="Permalink to this headline">¶</a></h2>
+<p>The transformations seen above rely on lower level stateless functions for their computations.
+These functions are available under <code class="docutils literal notranslate"><span class="pre">torchaudio.functional</span></code>. The complete list is available
+<a class="reference external" href="https://pytorch.org/audio/functional.html">here</a> and includes:</p>
+<ul class="simple">
+<li><strong>istft</strong>: Inverse short time Fourier Transform.</li>
+<li><strong>gain</strong>: Applies amplification or attenuation to the whole waveform.</li>
+<li><strong>dither</strong>: Increases the perceived dynamic range of audio stored at a
+particular bit-depth.</li>
+<li><strong>compute_deltas</strong>: Compute delta coefficients of a tensor.</li>
+<li><strong>equalizer_biquad</strong>: Design biquad peaking equalizer filter and perform filtering.</li>
+<li><strong>lowpass_biquad</strong>: Design biquad lowpass filter and perform filtering.</li>
+<li><strong>highpass_biquad</strong>:Design biquad highpass filter and perform filtering.</li>
+</ul>
+<p>For example, let’s try the <cite>mu_law_encoding</cite> functional:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mu_law_encoding_waveform</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">mu_law_encoding</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">quantization_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape of transformed waveform: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mu_law_encoding_waveform</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">mu_law_encoding_waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_007.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_007.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of transformed waveform: torch.Size([2, 276858])
+</pre></div>
+</div>
+<p>You can see how the output fron <code class="docutils literal notranslate"><span class="pre">torchaudio.functional.mu_law_encoding</span></code> is the same as
+the output from <code class="docutils literal notranslate"><span class="pre">torchaudio.transforms.MuLawEncoding</span></code>.</p>
+<p>Now let’s experiment with a few of the other functionals and visualize their output. Taking our
+spectogram, we can compute it’s deltas:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">computed</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">compute_deltas</span><span class="p">(</span><span class="n">specgram</span><span class="p">,</span> <span class="n">win_length</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape of computed deltas: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">computed</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">computed</span><span class="o">.</span><span class="n">log2</span><span class="p">()[</span><span class="mi">0</span><span class="p">,:,:]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'gray'</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_008.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_008.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of computed deltas: torch.Size([2, 128, 1385])
+</pre></div>
+</div>
+<p>We can take the original waveform and apply different effects to it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">gain_waveform</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">gain</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">gain_db</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Min of gain_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Max of gain_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Mean of gain_waveform: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gain_waveform</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">gain_waveform</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">gain_waveform</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+<span class="n">dither_waveform</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">dither</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Min of dither_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Max of dither_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Mean of dither_waveform: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dither_waveform</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">dither_waveform</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">dither_waveform</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Min of gain_waveform: -1.0186792612075806
+Max of gain_waveform: 1.024214744567871
+Mean of gain_waveform: 0.00016526904073543847
+Min of dither_waveform: -0.572784423828125
+Max of dither_waveform: 0.575927734375
+Mean of dither_waveform: 0.00010744280007202178
+</pre></div>
+</div>
+<p>Another example of the capabilities in <code class="docutils literal notranslate"><span class="pre">torchaudio.functional</span></code> are applying filters to our
+waveform. Applying the lowpass biquad filter to our waveform will output a new waveform with
+the signal of the frequency modified.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lowpass_waveform</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">lowpass_biquad</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Min of lowpass_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Max of lowpass_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Mean of lowpass_waveform: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lowpass_waveform</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">lowpass_waveform</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">lowpass_waveform</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">lowpass_waveform</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_009.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_009.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Min of lowpass_waveform: -0.5595061182975769
+Max of lowpass_waveform: 0.5595013499259949
+Mean of lowpass_waveform: 9.293758921558037e-05
+</pre></div>
+</div>
+<p>We can also visualize a waveform with the highpass biquad filter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">highpass_waveform</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">highpass_biquad</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">cutoff_freq</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Min of highpass_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Max of highpass_waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Mean of highpass_waveform: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">highpass_waveform</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">highpass_waveform</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">highpass_waveform</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">highpass_waveform</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_010.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_010.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Min of highpass_waveform: -0.11269105970859528
+Max of highpass_waveform: 0.10451901704072952
+Mean of highpass_waveform: -4.971002776077427e-12
+</pre></div>
+</div>
+</div>
 <div class="section" id="migrating-to-torchaudio-from-kaldi">
 <h2>Migrating to torchaudio from Kaldi<a class="headerlink" href="#migrating-to-torchaudio-from-kaldi" title="Permalink to this headline">¶</a></h2>
 <p>Users may be familiar with
 <a class="reference external" href="http://github.com/kaldi-asr/kaldi">Kaldi</a>, a toolkit for speech
-recognition. torchaudio offers compatibility with it in
+recognition. <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> offers compatibility with it in
 <code class="docutils literal notranslate"><span class="pre">torchaudio.kaldi_io</span></code>. It can indeed read from kaldi scp, or ark file
 or streams with:</p>
 <ul class="simple">
@@ -426,8 +536,8 @@ or streams with:</p>
 <li>read_mat_scp</li>
 <li>read_mat_ark</li>
 </ul>
-<p>torchaudio provides Kaldi-compatible transforms for <code class="docutils literal notranslate"><span class="pre">spectrogram</span></code> and
-<code class="docutils literal notranslate"><span class="pre">fbank</span></code> with the benefit of GPU support, see
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> provides Kaldi-compatible transforms for <code class="docutils literal notranslate"><span class="pre">spectrogram</span></code>,
+<code class="docutils literal notranslate"><span class="pre">fbank</span></code>, <code class="docutils literal notranslate"><span class="pre">mfcc</span></code>, and <a href="#id2"><span class="problematic" id="id3">``</span></a>resample_waveform with the benefit of GPU support, see
 <a class="reference external" href="compliance.kaldi.html">here</a> for more information.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_fft</span> <span class="o">=</span> <span class="mf">400.0</span>
 <span class="n">frame_length</span> <span class="o">=</span> <span class="n">n_fft</span> <span class="o">/</span> <span class="n">sample_rate</span> <span class="o">*</span> <span class="mf">1000.0</span>
@@ -452,7 +562,7 @@ or streams with:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">specgram</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'gray'</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_007.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_007.png"/>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_011.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_011.png"/>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of spectrogram: torch.Size([1383, 201])
 </pre></div>
@@ -467,20 +577,77 @@ matching Kaldi’s implementation.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fbank</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'gray'</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_008.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_008.png"/>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_012.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_012.png"/>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of fbank: torch.Size([1383, 23])
 </pre></div>
 </div>
+<p>You can create mel frequency cepstral coefficients from a raw audio signal
+This matches the input/output of Kaldi’s compute-mfcc-feats.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mfcc</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">compliance</span><span class="o">.</span><span class="n">kaldi</span><span class="o">.</span><span class="n">mfcc</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Shape of mfcc: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mfcc</span><span class="o">.</span><span class="n">size</span><span class="p">()))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mfcc</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">'gray'</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_013.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_013.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Shape of mfcc: torch.Size([1383, 13])
+</pre></div>
+</div>
+</div>
+<div class="section" id="available-datasets">
+<h2>Available Datasets<a class="headerlink" href="#available-datasets" title="Permalink to this headline">¶</a></h2>
+<p>If you do not want to create your own dataset to train your model, <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> offers a
+unified dataset interface. This interface supports lazy-loading of files to memory, download
+and extract functions, and datasets to build models.</p>
+<p>The datasets <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> currently supports are:</p>
+<ul class="simple">
+<li><strong>VCTK</strong>: Speech data uttered by 109 native speakers of English with various accents
+(<a class="reference external" href="https://homepages.inf.ed.ac.uk/jyamagis/page3/page58/page58.html">Read more here</a>).</li>
+<li><strong>Yesno</strong>: Sixty recordings of one individual saying yes or no in Hebrew; each
+recording is eight words long (<a class="reference external" href="https://www.openslr.org/1/">Read more here</a>).</li>
+<li><strong>Common Voice</strong>: An open source, multi-language dataset of voices that anyone can use
+to train speech-enabled applications (<a class="reference external" href="https://voice.mozilla.org/en/datasets">Read more here</a>).</li>
+<li><strong>LibriSpeech</strong>: Large-scale (1000 hours) corpus of read English speech (<a class="reference external" href="http://www.openslr.org/12">Read more here</a>).</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">yesno_data</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">YESNO</span><span class="p">(</span><span class="s1">'./'</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels is a list of integers with 1 for yes and 0 for no.</span>
+
+<span class="c1"># Pick data point number 3 to see an example of the the yesno_data:</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">yesno_data</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Sample rate: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Labels: </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
+<img alt="../_images/sphx_glr_audio_preprocessing_tutorial_014.png" class="sphx-glr-single-img" src="../_images/sphx_glr_audio_preprocessing_tutorial_014.png"/>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Waveform: tensor([[3.0518e-05, 6.1035e-05, 3.0518e-05,  ..., 5.8594e-03, 3.5400e-03,
+         3.3569e-04]])
+Sample rate: 8000
+Labels: [0, 1, 0, 0, 1, 0, 1, 0]
+</pre></div>
+</div>
+<p>Now, whenever you ask for a sound file from the dataset, it is loaded in memory only when you ask for it.
+Meaning, the dataset only loads and keeps in memory the items that you want and use, saving on memory.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
 <p>We used an example raw audio signal, or waveform, to illustrate how to
-open an audio file using torchaudio, and how to pre-process and
-transform such waveform. Given that torchaudio is built on PyTorch,
+open an audio file using <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>, and how to pre-process,
+transform, and apply functions to such waveform. We also demonstrated how
+to use familiar Kaldi functions, as well as utilize built-in datasets to
+construct our models. Given that <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> is built on PyTorch,
 these techniques can be used as building blocks for more advanced audio
 applications, such as speech recognition, while leveraging GPUs.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.322 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  40.525 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-audio-preprocessing-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/5ffe15ce830e55b3a9e9c294d04ab41c/audio_preprocessing_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">audio_preprocessing_tutorial.py</span></code></a></div>
@@ -522,9 +689,11 @@ applications, such as speech recognition, while leveraging GPUs.</p>
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
 <li><a class="reference internal" href="#">torchaudio Tutorial</a><ul>
-<li><a class="reference internal" href="#opening-a-dataset">Opening a dataset</a></li>
+<li><a class="reference internal" href="#opening-a-file">Opening a file</a></li>
 <li><a class="reference internal" href="#transformations">Transformations</a></li>
+<li><a class="reference internal" href="#functional">Functional</a></li>
 <li><a class="reference internal" href="#migrating-to-torchaudio-from-kaldi">Migrating to torchaudio from Kaldi</a></li>
+<li><a class="reference internal" href="#available-datasets">Available Datasets</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>

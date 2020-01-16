@@ -56,7 +56,7 @@ model from C++.
 
  .. code-block:: none
 
-    1.3.1
+    1.4.0
 
 
 Basics of PyTorch Model Authoring
@@ -102,11 +102,11 @@ Let’s examine a small example:
 
  .. code-block:: none
 
-    (tensor([[0.7917, 0.7179, 0.5499, 0.6771],
-            [0.5938, 0.8669, 0.9369, 0.8321],
-            [0.5801, 0.7318, 0.9207, 0.7973]]), tensor([[0.7917, 0.7179, 0.5499, 0.6771],
-            [0.5938, 0.8669, 0.9369, 0.8321],
-            [0.5801, 0.7318, 0.9207, 0.7973]]))
+    (tensor([[0.7489, 0.4594, 0.8645, 0.9031],
+            [0.9489, 0.8368, 0.5475, 0.7290],
+            [0.6811, 0.3595, 0.7902, 0.5872]]), tensor([[0.7489, 0.4594, 0.8645, 0.9031],
+            [0.9489, 0.8368, 0.5475, 0.7290],
+            [0.6811, 0.3595, 0.7902, 0.5872]]))
 
 
 So we’ve:
@@ -158,11 +158,11 @@ Let’s do something a little more interesting:
     MyCell(
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[ 0.2419,  0.4862,  0.4480,  0.4499],
-            [ 0.1253,  0.2305,  0.7810,  0.8675],
-            [-0.0465,  0.0451,  0.7498,  0.8255]], grad_fn=<TanhBackward>), tensor([[ 0.2419,  0.4862,  0.4480,  0.4499],
-            [ 0.1253,  0.2305,  0.7810,  0.8675],
-            [-0.0465,  0.0451,  0.7498,  0.8255]], grad_fn=<TanhBackward>))
+    (tensor([[-0.1188, -0.1287,  0.7586,  0.7342],
+            [ 0.4987,  0.1439,  0.1910,  0.4258],
+            [ 0.2532,  0.4627,  0.1110, -0.1086]], grad_fn=<TanhBackward>), tensor([[-0.1188, -0.1287,  0.7586,  0.7342],
+            [ 0.4987,  0.1439,  0.1910,  0.4258],
+            [ 0.2532,  0.4627,  0.1110, -0.1086]], grad_fn=<TanhBackward>))
 
 
 We’ve redefined our module ``MyCell``, but this time we’ve added a
@@ -230,11 +230,11 @@ Now let’s examine said flexibility:
       (dg): MyDecisionGate()
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[ 0.3482,  0.3189,  0.3776,  0.4645],
-            [ 0.1381,  0.5488,  0.7785,  0.7057],
-            [-0.0219,  0.3047,  0.7780,  0.6840]], grad_fn=<TanhBackward>), tensor([[ 0.3482,  0.3189,  0.3776,  0.4645],
-            [ 0.1381,  0.5488,  0.7785,  0.7057],
-            [-0.0219,  0.3047,  0.7780,  0.6840]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.5196,  0.6154,  0.0724,  0.5416],
+            [ 0.8309,  0.8410, -0.6059, -0.0423],
+            [ 0.7668,  0.7970, -0.6896, -0.0098]], grad_fn=<TanhBackward>), tensor([[ 0.5196,  0.6154,  0.0724,  0.5416],
+            [ 0.8309,  0.8410, -0.6059, -0.0423],
+            [ 0.7668,  0.7970, -0.6896, -0.0098]], grad_fn=<TanhBackward>))
 
 
 We’ve once again redefined our MyCell class, but here we’ve defined
@@ -297,9 +297,9 @@ Tracing ``Modules``
 
  .. code-block:: none
 
-    TracedModule[MyCell](
+    MyCell(
       original_name=MyCell
-      (linear): TracedModule[Linear](original_name=Linear)
+      (linear): Linear(original_name=Linear)
     )
 
 
@@ -335,21 +335,16 @@ examine the graph with the ``.graph`` property:
 
  .. code-block:: none
 
-    graph(%self : ClassType<MyCell>,
+    graph(%self.1 : __torch__.torch.nn.modules.module.___torch_mangle_1.Module,
           %input : Float(3, 4),
           %h : Float(3, 4)):
-      %1 : ClassType<Linear> = prim::GetAttr[name="linear"](%self)
-      %weight : Tensor = prim::GetAttr[name="weight"](%1)
-      %bias : Tensor = prim::GetAttr[name="bias"](%1)
-      %6 : Float(4, 4) = aten::t(%weight), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1370:0
-      %7 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1370:0
-      %8 : int = prim::Constant[value=1](), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1370:0
-      %9 : Float(3, 4) = aten::addmm(%bias, %input, %6, %7, %8), scope: MyCell/Linear[linear] # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1370:0
-      %10 : int = prim::Constant[value=1](), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %11 : Float(3, 4) = aten::add(%9, %h, %10), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %12 : Float(3, 4) = aten::tanh(%11), scope: MyCell # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %13 : (Float(3, 4), Float(3, 4)) = prim::TupleConstruct(%12, %12)
-      return (%13)
+      %19 : __torch__.torch.nn.modules.module.Module = prim::GetAttr[name="linear"](%self.1)
+      %21 : Tensor = prim::CallMethod[name="forward"](%19, %input)
+      %12 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %13 : Float(3, 4) = aten::add(%21, %h, %12) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %14 : Float(3, 4) = aten::tanh(%13) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %15 : (Float(3, 4), Float(3, 4)) = prim::TupleConstruct(%14, %14)
+      return (%15)
 
 
 However, this is a very low-level representation and most of the
@@ -375,17 +370,12 @@ of the code:
 
  .. code-block:: none
 
-    import __torch__
-    import __torch__.torch.nn.modules.linear
     def forward(self,
         input: Tensor,
         h: Tensor) -> Tuple[Tensor, Tensor]:
-      _0 = self.linear
-      weight = _0.weight
-      bias = _0.bias
-      _1 = torch.addmm(bias, input, torch.t(weight), beta=1, alpha=1)
-      _2 = torch.tanh(torch.add(_1, h, alpha=1))
-      return (_2, _2)
+      _0 = torch.add((self.linear).forward(input, ), h, alpha=1)
+      _1 = torch.tanh(_0)
+      return (_1, _1)
 
 
 So **why** did we do all this? There are several reasons:
@@ -424,17 +414,17 @@ the Python module:
 
  .. code-block:: none
 
-    (tensor([[ 0.7486, -0.2915,  0.8772,  0.4556],
-            [ 0.2839, -0.1242,  0.6626,  0.1197],
-            [ 0.2868,  0.1552,  0.7828,  0.6074]], grad_fn=<TanhBackward>), tensor([[ 0.7486, -0.2915,  0.8772,  0.4556],
-            [ 0.2839, -0.1242,  0.6626,  0.1197],
-            [ 0.2868,  0.1552,  0.7828,  0.6074]], grad_fn=<TanhBackward>))
-    (tensor([[ 0.7486, -0.2915,  0.8772,  0.4556],
-            [ 0.2839, -0.1242,  0.6626,  0.1197],
-            [ 0.2868,  0.1552,  0.7828,  0.6074]],
-           grad_fn=<DifferentiableGraphBackward>), tensor([[ 0.7486, -0.2915,  0.8772,  0.4556],
-            [ 0.2839, -0.1242,  0.6626,  0.1197],
-            [ 0.2868,  0.1552,  0.7828,  0.6074]],
+    (tensor([[0.7402, 0.7929, 0.6744, 0.1511],
+            [0.7769, 0.8511, 0.3433, 0.6795],
+            [0.3469, 0.4713, 0.6039, 0.7249]], grad_fn=<TanhBackward>), tensor([[0.7402, 0.7929, 0.6744, 0.1511],
+            [0.7769, 0.8511, 0.3433, 0.6795],
+            [0.3469, 0.4713, 0.6039, 0.7249]], grad_fn=<TanhBackward>))
+    (tensor([[0.7402, 0.7929, 0.6744, 0.1511],
+            [0.7769, 0.8511, 0.3433, 0.6795],
+            [0.3469, 0.4713, 0.6039, 0.7249]],
+           grad_fn=<DifferentiableGraphBackward>), tensor([[0.7402, 0.7929, 0.6744, 0.1511],
+            [0.7769, 0.8511, 0.3433, 0.6795],
+            [0.3469, 0.4713, 0.6039, 0.7249]],
            grad_fn=<DifferentiableGraphBackward>))
 
 
@@ -481,17 +471,11 @@ the control-flow-laden submodule. Let’s examine that now:
 
  .. code-block:: none
 
-    import __torch__.___torch_mangle_0
-    import __torch__
-    import __torch__.torch.nn.modules.linear.___torch_mangle_1
     def forward(self,
         input: Tensor,
         h: Tensor) -> Tuple[Tensor, Tensor]:
-      _0 = self.linear
-      weight = _0.weight
-      bias = _0.bias
-      x = torch.addmm(bias, input, torch.t(weight), beta=1, alpha=1)
-      _1 = torch.tanh(torch.add(torch.neg(x), h, alpha=1))
+      _0 = (self.dg).forward((self.linear).forward(input, ), )
+      _1 = torch.tanh(torch.add(_0, h, alpha=1))
       return (_1, _1)
 
 
@@ -528,36 +512,11 @@ using the script compiler:
 
  .. code-block:: none
 
-    import __torch__.___torch_mangle_3
-    import __torch__.___torch_mangle_2
-    import __torch__.torch.nn.modules.linear.___torch_mangle_4
     def forward(self,
         x: Tensor,
         h: Tensor) -> Tuple[Tensor, Tensor]:
-      _0 = self.linear
-      _1 = _0.weight
-      _2 = _0.bias
-      if torch.eq(torch.dim(x), 2):
-        _3 = torch.__isnot__(_2, None)
-      else:
-        _3 = False
-      if _3:
-        bias = ops.prim.unchecked_unwrap_optional(_2)
-        ret = torch.addmm(bias, x, torch.t(_1), beta=1, alpha=1)
-      else:
-        output = torch.matmul(x, torch.t(_1))
-        if torch.__isnot__(_2, None):
-          bias0 = ops.prim.unchecked_unwrap_optional(_2)
-          output0 = torch.add_(output, bias0, alpha=1)
-        else:
-          output0 = output
-        ret = output0
-      _4 = torch.gt(torch.sum(ret, dtype=None), 0)
-      if bool(_4):
-        _5 = ret
-      else:
-        _5 = torch.neg(ret)
-      new_h = torch.tanh(torch.add(_5, h, alpha=1))
+      _0 = (self.dg).forward((self.linear).forward(x, ), )
+      new_h = torch.tanh(torch.add(_0, h, alpha=1))
       return (new_h, new_h)
 
 
@@ -623,10 +582,6 @@ An example of the first case:
 
  .. code-block:: none
 
-    import __torch__
-    import __torch__.___torch_mangle_5
-    import __torch__.___torch_mangle_2
-    import __torch__.torch.nn.modules.linear.___torch_mangle_6
     def forward(self,
         xs: Tensor) -> Tuple[Tensor, Tensor]:
       h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
@@ -634,19 +589,9 @@ An example of the first case:
       y0 = y
       h0 = h
       for i in range(torch.size(xs, 0)):
-        _0 = self.cell
-        _1 = torch.select(xs, 0, i)
-        _2 = _0.linear
-        weight = _2.weight
-        bias = _2.bias
-        _3 = torch.addmm(bias, _1, torch.t(weight), beta=1, alpha=1)
-        _4 = torch.gt(torch.sum(_3, dtype=None), 0)
-        if bool(_4):
-          _5 = _3
-        else:
-          _5 = torch.neg(_3)
-        _6 = torch.tanh(torch.add(_5, h0, alpha=1))
-        y0, h0 = _6, _6
+        _0 = (self.cell).forward(torch.select(xs, 0, i), h0, )
+        y1, h1, = _0
+        y0, h0 = y1, h1
       return (y0, h0)
 
 
@@ -680,30 +625,10 @@ And an example of the second case:
 
  .. code-block:: none
 
-    import __torch__
-    import __torch__.___torch_mangle_9
-    import __torch__.___torch_mangle_7
-    import __torch__.___torch_mangle_2
-    import __torch__.torch.nn.modules.linear.___torch_mangle_8
     def forward(self,
         argument_1: Tensor) -> Tensor:
-      _0 = self.loop
-      h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
-      h0 = h
-      for i in range(torch.size(argument_1, 0)):
-        _1 = _0.cell
-        _2 = torch.select(argument_1, 0, i)
-        _3 = _1.linear
-        weight = _3.weight
-        bias = _3.bias
-        _4 = torch.addmm(bias, _2, torch.t(weight), beta=1, alpha=1)
-        _5 = torch.gt(torch.sum(_4, dtype=None), 0)
-        if bool(_5):
-          _6 = _4
-        else:
-          _6 = torch.neg(_4)
-        h0 = torch.tanh(torch.add(_6, h0, alpha=1))
-      return torch.relu(h0)
+      _0, h, = (self.loop).forward(argument_1, )
+      return torch.relu(h)
 
 
 This way, scripting and tracing can be used when the situation calls for
@@ -741,41 +666,21 @@ process. Let’s save and load our wrapped RNN module:
 
  .. code-block:: none
 
-    ScriptModule(
-      original_name=WrapRNN
-      (loop): ScriptModule(
+    RecursiveScriptModule(
+      original_name=Module
+      (loop): RecursiveScriptModule(
         original_name=MyRNNLoop
-        (cell): ScriptModule(
-          original_name=MyCell
-          (dg): ScriptModule(original_name=MyDecisionGate)
-          (linear): ScriptModule(original_name=Linear)
+        (cell): RecursiveScriptModule(
+          original_name=Module
+          (dg): RecursiveScriptModule(original_name=MyDecisionGate)
+          (linear): RecursiveScriptModule(original_name=Module)
         )
       )
     )
-    import __torch__
-    import __torch__.___torch_mangle_9
-    import __torch__.___torch_mangle_7
-    import __torch__.___torch_mangle_2
-    import __torch__.torch.nn.modules.linear.___torch_mangle_8
     def forward(self,
         argument_1: Tensor) -> Tensor:
-      _0 = self.loop
-      h = torch.zeros([3, 4], dtype=None, layout=None, device=None, pin_memory=None)
-      h0 = h
-      for i in range(torch.size(argument_1, 0)):
-        _1 = _0.cell
-        _2 = torch.select(argument_1, 0, i)
-        _3 = _1.linear
-        weight = _3.weight
-        bias = _3.bias
-        _4 = torch.addmm(bias, _2, torch.t(weight), beta=1, alpha=1)
-        _5 = torch.gt(torch.sum(_4, dtype=None), 0)
-        if bool(_5):
-          _6 = _4
-        else:
-          _6 = torch.neg(_4)
-        h0 = torch.tanh(torch.add(_6, h0, alpha=1))
-      return torch.relu(h0)
+      _0, h, = (self.loop).forward(argument_1, )
+      return torch.relu(h)
 
 
 As you can see, serialization preserves the module hierarchy and the
@@ -796,7 +701,7 @@ https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.247 seconds)
+   **Total running time of the script:** ( 0 minutes  0.256 seconds)
 
 
 .. _sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py:
