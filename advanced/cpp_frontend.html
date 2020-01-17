@@ -860,95 +860,28 @@ digits as its output.</p>
 <div class="section" id="the-generator-module">
 <h4>The Generator Module<a class="headerlink" href="#the-generator-module" title="Permalink to this headline">¶</a></h4>
 <p>We begin by defining the generator module, which consists of a series of
-transposed 2D convolutions, batch normalizations and ReLU activation units. Like
-in Python, PyTorch here provides two APIs for model definition: a functional one
-where inputs are passed through successive functions, and a more object-oriented
-one where we build a <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> module containing the entire model as
-submodules. Let’s see how our generator looks with either API, and you can
-decide for yourself which one you prefer. First, using <code class="docutils literal notranslate"><span class="pre">Sequential</span></code>:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">torch</span><span class="p">;</span>
-
-<span class="n">nn</span><span class="o">::</span><span class="n">Sequential</span> <span class="n">generator</span><span class="p">(</span>
-    <span class="c1">// Layer 1</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="n">kNoiseSize</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">relu</span><span class="p">),</span>
-    <span class="c1">// Layer 2</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">relu</span><span class="p">),</span>
-    <span class="c1">// Layer 3</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">relu</span><span class="p">),</span>
-    <span class="c1">// Layer 4</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                   <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
-    <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">tanh</span><span class="p">));</span>
-</pre></div>
-</div>
-<div class="admonition tip">
-<p class="first admonition-title">Tip</p>
-<p class="last">A <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> module simply performs function composition. The output of
-the first submodule becomes the input of the second, the output of the third
-becomes the input of the fourth and so on.</p>
-</div>
-<p>The particular modules chosen, like <code class="docutils literal notranslate"><span class="pre">nn::Conv2d</span></code> and <code class="docutils literal notranslate"><span class="pre">nn::BatchNorm</span></code>,
-follows the structure outlined earlier. The <code class="docutils literal notranslate"><span class="pre">kNoiseSize</span></code> constant determines
-the size of the input noise vector and is set to <code class="docutils literal notranslate"><span class="pre">100</span></code>. Notice also that we
-use the <code class="docutils literal notranslate"><span class="pre">torch::nn::Functional</span></code> module for our activation functions, passing
-it <code class="docutils literal notranslate"><span class="pre">torch::relu</span></code> for inner layers and <code class="docutils literal notranslate"><span class="pre">torch::tanh</span></code> as the final activation.
-Hyperparameters were, of course, found via grad student descent.</p>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The Python frontend has one module for each activation function, like
-<code class="docutils literal notranslate"><span class="pre">torch.nn.ReLU</span></code> or <code class="docutils literal notranslate"><span class="pre">torch.nn.Tanh</span></code>. In C++, we instead only provide the
-<code class="docutils literal notranslate"><span class="pre">Functional</span></code> module, to which you can pass any C++ function that will be
-called inside the <code class="docutils literal notranslate"><span class="pre">Functional</span></code>’s <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method.</p>
-</div>
-<div class="admonition attention">
-<p class="first admonition-title">Attention</p>
-<p class="last">No grad students were harmed in the discovery of hyperparameters. They were
-fed Soylent regularly.</p>
-</div>
-<p>For the second approach, we explicitly pass inputs (in a functional way) between
-modules in the <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method of a module we define ourselves:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">GeneratorImpl</span> <span class="p">:</span> <span class="n">nn</span><span class="o">::</span><span class="n">Module</span> <span class="p">{</span>
-  <span class="n">GeneratorImpl</span><span class="p">(</span><span class="kt">int</span> <span class="n">kNoiseSize</span><span class="p">)</span>
-      <span class="o">:</span> <span class="n">conv1</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="n">kNoiseSize</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
+transposed 2D convolutions, batch normalizations and ReLU activation units.
+We explicitly pass inputs (in a functional way) between modules in the
+<code class="docutils literal notranslate"><span class="pre">forward()</span></code> method of a module we define ourselves:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nl">DCGANGeneratorImpl</span> <span class="p">:</span> <span class="n">nn</span><span class="o">::</span><span class="n">Module</span> <span class="p">{</span>
+  <span class="n">DCGANGeneratorImpl</span><span class="p">(</span><span class="kt">int</span> <span class="n">kNoiseSize</span><span class="p">)</span>
+      <span class="o">:</span> <span class="n">conv1</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">ConvTranspose2dOptions</span><span class="p">(</span><span class="n">kNoiseSize</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+                  <span class="p">.</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
         <span class="n">batch_norm1</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
-        <span class="n">conv2</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">conv2</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">ConvTranspose2dOptions</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
+                  <span class="p">.</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
         <span class="n">batch_norm2</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
-        <span class="n">conv3</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">conv3</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">ConvTranspose2dOptions</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">)),</span>
+                  <span class="p">.</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
         <span class="n">batch_norm3</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-        <span class="n">conv4</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">conv4</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">ConvTranspose2dOptions</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
                   <span class="p">.</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span>
-                  <span class="p">.</span><span class="n">transposed</span><span class="p">(</span><span class="nb">true</span><span class="p">))</span>
+                  <span class="p">.</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">))</span>
  <span class="p">{</span>
    <span class="c1">// register_module() is needed if we want to use the parameters() method later on</span>
    <span class="n">register_module</span><span class="p">(</span><span class="s">"conv1"</span><span class="p">,</span> <span class="n">conv1</span><span class="p">);</span>
@@ -956,8 +889,8 @@ modules in the <code class="docutils literal notranslate"><span class="pre">forw
    <span class="n">register_module</span><span class="p">(</span><span class="s">"conv3"</span><span class="p">,</span> <span class="n">conv3</span><span class="p">);</span>
    <span class="n">register_module</span><span class="p">(</span><span class="s">"conv4"</span><span class="p">,</span> <span class="n">conv4</span><span class="p">);</span>
    <span class="n">register_module</span><span class="p">(</span><span class="s">"batch_norm1"</span><span class="p">,</span> <span class="n">batch_norm1</span><span class="p">);</span>
-   <span class="n">register_module</span><span class="p">(</span><span class="s">"batch_norm2"</span><span class="p">,</span> <span class="n">batch_norm1</span><span class="p">);</span>
-   <span class="n">register_module</span><span class="p">(</span><span class="s">"batch_norm3"</span><span class="p">,</span> <span class="n">batch_norm1</span><span class="p">);</span>
+   <span class="n">register_module</span><span class="p">(</span><span class="s">"batch_norm2"</span><span class="p">,</span> <span class="n">batch_norm2</span><span class="p">);</span>
+   <span class="n">register_module</span><span class="p">(</span><span class="s">"batch_norm3"</span><span class="p">,</span> <span class="n">batch_norm3</span><span class="p">);</span>
  <span class="p">}</span>
 
  <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">forward</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
@@ -968,25 +901,33 @@ modules in the <code class="docutils literal notranslate"><span class="pre">forw
    <span class="k">return</span> <span class="n">x</span><span class="p">;</span>
  <span class="p">}</span>
 
- <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span> <span class="n">conv1</span><span class="p">,</span> <span class="n">conv2</span><span class="p">,</span> <span class="n">conv3</span><span class="p">,</span> <span class="n">conv4</span><span class="p">;</span>
- <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span> <span class="n">batch_norm1</span><span class="p">,</span> <span class="n">batch_norm2</span><span class="p">,</span> <span class="n">batch_norm3</span><span class="p">;</span>
+ <span class="n">nn</span><span class="o">::</span><span class="n">ConvTranspose2d</span> <span class="n">conv1</span><span class="p">,</span> <span class="n">conv2</span><span class="p">,</span> <span class="n">conv3</span><span class="p">,</span> <span class="n">conv4</span><span class="p">;</span>
+ <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm2d</span> <span class="n">batch_norm1</span><span class="p">,</span> <span class="n">batch_norm2</span><span class="p">,</span> <span class="n">batch_norm3</span><span class="p">;</span>
 <span class="p">};</span>
-<span class="n">TORCH_MODULE</span><span class="p">(</span><span class="n">Generator</span><span class="p">);</span>
+<span class="n">TORCH_MODULE</span><span class="p">(</span><span class="n">DCGANGenerator</span><span class="p">);</span>
 
-<span class="n">Generator</span> <span class="n">generator</span><span class="p">;</span>
+<span class="n">DCGANGenerator</span> <span class="nf">generator</span><span class="p">(</span><span class="n">kNoiseSize</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Whichever approach we use, we can now invoke <code class="docutils literal notranslate"><span class="pre">forward()</span></code> on the <code class="docutils literal notranslate"><span class="pre">Generator</span></code> to
-map a noise sample to an image.</p>
+<p>We can now invoke <code class="docutils literal notranslate"><span class="pre">forward()</span></code> on the <code class="docutils literal notranslate"><span class="pre">DCGANGenerator</span></code> to map a noise sample to an image.</p>
+<p>The particular modules chosen, like <code class="docutils literal notranslate"><span class="pre">nn::ConvTranspose2d</span></code> and <code class="docutils literal notranslate"><span class="pre">nn::BatchNorm2d</span></code>,
+follows the structure outlined earlier. The <code class="docutils literal notranslate"><span class="pre">kNoiseSize</span></code> constant determines
+the size of the input noise vector and is set to <code class="docutils literal notranslate"><span class="pre">100</span></code>. Hyperparameters were,
+of course, found via grad student descent.</p>
+<div class="admonition attention">
+<p class="first admonition-title">Attention</p>
+<p class="last">No grad students were harmed in the discovery of hyperparameters. They were
+fed Soylent regularly.</p>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">A brief word on the way options are passed to built-in modules like <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code>
 in the C++ frontend: Every module has some required options, like the number
-of features for <code class="docutils literal notranslate"><span class="pre">BatchNorm</span></code>. If you only need to configure the required
+of features for <code class="docutils literal notranslate"><span class="pre">BatchNorm2d</span></code>. If you only need to configure the required
 options, you can pass them directly to the module’s constructor, like
-<code class="docutils literal notranslate"><span class="pre">BatchNorm(128)</span></code> or <code class="docutils literal notranslate"><span class="pre">Dropout(0.5)</span></code> or <code class="docutils literal notranslate"><span class="pre">Conv2d(8,</span> <span class="pre">4,</span> <span class="pre">2)</span></code> (for input
+<code class="docutils literal notranslate"><span class="pre">BatchNorm2d(128)</span></code> or <code class="docutils literal notranslate"><span class="pre">Dropout(0.5)</span></code> or <code class="docutils literal notranslate"><span class="pre">Conv2d(8,</span> <span class="pre">4,</span> <span class="pre">2)</span></code> (for input
 channel count, output channel count, and kernel size). If, however, you need
-to modify other options, which are normally defaulted, such as <code class="docutils literal notranslate"><span class="pre">with_bias</span></code>
+to modify other options, which are normally defaulted, such as <code class="docutils literal notranslate"><span class="pre">bias</span></code>
 for <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code>, you need to construct and pass an <em>options</em> object. Every
 module in the C++ frontend has an associated options struct, called
 <code class="docutils literal notranslate"><span class="pre">ModuleOptions</span></code> where <code class="docutils literal notranslate"><span class="pre">Module</span></code> is the name of the module, like
@@ -1001,34 +942,38 @@ and activations. However, the convolutions are now regular ones instead of
 transposed, and we use a leaky ReLU with an alpha value of 0.2 instead of a
 vanilla ReLU. Also, the final activation becomes a Sigmoid, which squashes
 values into a range between 0 and 1. We can then interpret these squashed values
-as the probabilities the discriminator assigns to images being real:</p>
+as the probabilities the discriminator assigns to images being real.</p>
+<p>To build the discriminator, we will try something different: a <cite>Sequential</cite> module.
+Like in Python, PyTorch here provides two APIs for model definition: a functional one
+where inputs are passed through successive functions (e.g. the generator module example),
+and a more object-oriented one where we build a <cite>Sequential</cite> module containing the
+entire model as submodules. Using <cite>Sequential</cite>, the discriminator would look like:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">::</span><span class="n">Sequential</span> <span class="n">discriminator</span><span class="p">(</span>
   <span class="c1">// Layer 1</span>
   <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span>
-      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">leaky_relu</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLUOptions</span><span class="p">().</span><span class="n">negative_slope</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)),</span>
   <span class="c1">// Layer 2</span>
   <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span>
-      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">leaky_relu</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">128</span><span class="p">),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLUOptions</span><span class="p">().</span><span class="n">negative_slope</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)),</span>
   <span class="c1">// Layer 3</span>
   <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span>
-      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">leaky_relu</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="n">nn</span><span class="o">::</span><span class="n">LeakyReLUOptions</span><span class="p">().</span><span class="n">negative_slope</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)),</span>
   <span class="c1">// Layer 4</span>
   <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span>
-      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="n">with_bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
-  <span class="n">nn</span><span class="o">::</span><span class="n">Functional</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">));</span>
+      <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
+  <span class="n">nn</span><span class="o">::</span><span class="n">Sigmoid</span><span class="p">());</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">When the function we pass to <code class="docutils literal notranslate"><span class="pre">Functional</span></code> takes more arguments than a single
-tensor, we can pass them to the <code class="docutils literal notranslate"><span class="pre">Functional</span></code> constructor, which will forward
-them to each function call. For the leaky ReLU above, this means
-<code class="docutils literal notranslate"><span class="pre">torch::leaky_relu(previous_output_tensor,</span> <span class="pre">0.2)</span></code> is called.</p>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">A <code class="docutils literal notranslate"><span class="pre">Sequential</span></code> module simply performs function composition. The output of
+the first submodule becomes the input of the second, the output of the third
+becomes the input of the fourth and so on.</p>
 </div>
 </div>
 </div>
