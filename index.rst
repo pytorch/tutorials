@@ -154,6 +154,12 @@ Reinforcement Learning
     :figure: /_static/img/cartpole.gif
     :description: :doc:`intermediate/reinforcement_q_learning`
 
+.. customgalleryitem::
+    :tooltip: Use PyTorch to train an A3C agent
+    :figure: /_static/img/cartpole.gif
+    :description: :doc:`intermediate/reinforcement_a3c_tutorial`
+
+    
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -356,6 +362,7 @@ PyTorch Fundamentals In-Depth
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/reinforcement_a3c_tutorial
 
 .. toctree::
    :maxdepth: 2
