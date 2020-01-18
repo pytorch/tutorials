@@ -539,6 +539,27 @@ transformation:</p>
     <span class="k">return</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="testing-forward-method-optional">
+<h2>Testing <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method (Optional)<a class="headerlink" href="#testing-forward-method-optional" title="Permalink to this headline">¶</a></h2>
+<p>Before iterating over the dataset, it’s good to see what the model
+expects during training and inference time on sample data.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">detection</span><span class="o">.</span><span class="n">fasterrcnn_resnet50_fpn</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">PennFudanDataset</span><span class="p">(</span><span class="s1">'PennFudanPed'</span><span class="p">,</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+ <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+ <span class="n">collate_fn</span><span class="o">=</span><span class="n">utils</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">)</span>
+<span class="c1"># For Training</span>
+<span class="n">images</span><span class="p">,</span><span class="n">targets</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">data_loader</span><span class="p">))</span>
+<span class="n">images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image</span> <span class="k">for</span> <span class="n">image</span> <span class="ow">in</span> <span class="n">images</span><span class="p">)</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">,</span><span class="n">targets</span><span class="p">)</span>   <span class="c1"># Returns losses and detections</span>
+<span class="c1"># For inference</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">400</span><span class="p">)]</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>           <span class="c1"># Returns predictions</span>
+</pre></div>
+</div>
 <p>Let’s now write the main function which performs the training and the
 validation:</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">engine</span> <span class="kn">import</span> <span class="n">train_one_epoch</span><span class="p">,</span> <span class="n">evaluate</span>
@@ -743,6 +764,7 @@ the torchvision repo.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#putting-everything-together">Putting everything together</a></li>
+<li><a class="reference internal" href="#testing-forward-method-optional">Testing <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method (Optional)</a></li>
 <li><a class="reference internal" href="#wrapping-up">Wrapping up</a></li>
 </ul>
 </li>
