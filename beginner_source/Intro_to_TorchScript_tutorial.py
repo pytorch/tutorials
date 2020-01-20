@@ -1,5 +1,5 @@
 """
-2. Introduction to TorchScript
+Introduction to TorchScript
 ===========================
 
 *James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
@@ -24,14 +24,14 @@ In this tutorial we will cover:
 -  How to compose both approaches
 -  Saving and loading TorchScript modules
 
-We hope that after you complete this tutorial, you proceed to go through
+We hope that after you complete this tutorial, you will proceed to go through
 `the follow-on tutorial <https://pytorch.org/tutorials/advanced/cpp_export.html>`_
 which will walk you through an example of actually calling a TorchScript
 model from C++.
 
 """
 
-import torch # This is all you need to use both PyTorch and TorchScript!
+import torch  # This is all you need to use both PyTorch and TorchScript!
 print(torch.__version__)
 
 
@@ -125,11 +125,11 @@ print(my_cell(x, h))
 #
 
 class MyDecisionGate(torch.nn.Module):
-  def forward(self, x):
-    if x.sum() > 0:
-      return x
-    else:
-      return -x
+    def forward(self, x):
+        if x.sum() > 0:
+            return x
+        else:
+            return -x
 
 class MyCell(torch.nn.Module):
     def __init__(self):
@@ -256,11 +256,11 @@ print(traced_cell(x, h))
 #
 
 class MyDecisionGate(torch.nn.Module):
-  def forward(self, x):
-    if x.sum() > 0:
-      return x
-    else:
-      return -x
+    def forward(self, x):
+        if x.sum() > 0:
+            return x
+        else:
+            return -x
 
 class MyCell(torch.nn.Module):
     def __init__(self, dg):
@@ -342,13 +342,13 @@ print(rnn_loop.code)
 #
 
 class WrapRNN(torch.nn.Module):
-  def __init__(self):
-    super(WrapRNN, self).__init__()
-    self.loop = torch.jit.script(MyRNNLoop())
+    def __init__(self):
+        super(WrapRNN, self).__init__()
+        self.loop = torch.jit.script(MyRNNLoop())
 
-  def forward(self, xs):
-    y, h = self.loop(xs)
-    return torch.relu(y)
+    def forward(self, xs):
+        y, h = self.loop(xs)
+        return torch.relu(y)
 
 traced = torch.jit.trace(WrapRNN(), (torch.rand(10, 3, 4)))
 print(traced.code)
