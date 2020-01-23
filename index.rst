@@ -226,6 +226,11 @@ Extending PyTorch
    :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
+   :tooltip: Implement custom classes in C++ for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_classes`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
     :tooltip: Create extensions using numpy and scipy
     :figure: /_static/img/scipynumpy.png
     :description: :doc:`advanced/numpy_extensions_tutorial`
@@ -392,6 +397,7 @@ PyTorch Fundamentals In-Depth
    :caption: Extending PyTorch
 
    advanced/torch_script_custom_ops
+   advanced/torch_script_custom_classes
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
 
