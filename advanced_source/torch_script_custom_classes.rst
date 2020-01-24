@@ -64,51 +64,52 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
 
 .. code-block:: cpp
 
+  // Notice a few things:
+  // - We pass the class to be registered as a template parameter to
+  //   `torch::jit::class_`. In this instance, we've passed the
+  //   specialization of the Stack class ``Stack<std::string>``.
+  //   In general, you cannot register a non-specialized template
+  //   class. For non-templated classes, you can just pass the 
+  //   class name directly as the template parameter.
+  // - The single parameter to ``torch::jit::class_()`` is a
+  //   string indicating the name of the class. This is the name
+  //   the class will appear as in both Python and TorchScript.
+  //   For example, our Stack class would appear as ``torch.classes.Stack``.
   static auto testStack =
-      torch::jit::class_<Stack<std::string>>("Stack")
-          .def(torch::jit::init<std::vector<std::string>>())
-          .def("top", [](const c10::intrusive_ptr<Stack<std::string>>& self) {
-            return self->stack_.back();
-          })
-          .def("push", &Stack<std::string>::push)
-          .def("pop", &Stack<std::string>::pop)
-          .def("clone", &Stack<std::string>::clone)
-          .def("merge", &Stack<std::string>::merge);
+    torch::jit::class_<Stack<std::string>>("Stack")
+        // The following line registers the contructor of our Stack
+        // class that takes a single `std::vector<std::string>` argument,
+        // i.e. it exposes the C++ method `Stack(std::vector<T> init)`.
+        // Currently, we do not support registering overloaded
+        // constructors, so for now you can only `def()` one instance of
+        // `torch::jit::init`.
+        .def(torch::jit::init<std::vector<std::string>>())
+        // The next line registers a stateless (i.e. no captures) C++ lambda 
+        // function as a method. Note that a lambda function must take a
+        // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
+        // as the first argument. Other arguments can be whatever you want.
+        .def("top", [](const c10::intrusive_ptr<Stack<std::string>>& self) {
+          return self->stack_.back();
+        })
+        // The following four lines expose methods of the Stack<std::string>
+        // class as-is. `torch::jit::class_` will automatically examine the
+        // argument and return types of the passed-in method pointers and
+        // expose these to Python and TorchScript accordingly. Finally, notice
+        // that we must take the *address* of the fully-qualified method name,
+        // i.e. use the unary `&` operator, due to C++ typing rules.
+        .def("push", &Stack<std::string>::push)
+        .def("pop", &Stack<std::string>::pop)
+        .def("clone", &Stack<std::string>::clone)
+        .def("merge", &Stack<std::string>::merge);
 
-Notice the following:
-
-- We pass the class to be registered as a template parameter to ``torch::jit::class_``.
-  In this instance, we've passed the specialization of the Stack class ``Stack<std::string>``.
-  In general, you cannot register a non-specialized template class. For non-templated classes,
-  you can just pass the class name directly as the template parameter.
-- The single parameter to ``torch::jit::class_()`` is a string indicating the name of the class.
-  This is the name the class will appear as in both Python and TorchScript. For example, our
-  Stack class would appear as ``torch.classes.Stack``.
-- For each method of the class we'd like to expose to Python and TorchScript, we use the
-  ``.def()`` method on ``torch::jit::class_``. We can chain these together to register
-  multiple methods as well. Let's examine the different callsites of ``def()`` in our example:
-
-  - ``torch::jit::init<std::vector<std::string>>()`` registers the contructor of our Stack
-    class that takes a single ``std::vector<std::string>`` argument, i.e. it exposes the C++
-    method ``Stack(std::vector<T> init)``. Currently, we do not support registering overloaded
-    constructors, so for now you can only ``def()`` one instance of ``torch::jit::init``.
-  - The next line registers a stateless (i.e. no captures) C++ lambda function as a method.
-    Note that a lambda function must take a ``c10::intrusive_ptr<YourClass>`` (or some
-    const/rev version of that) to work.
-  - ``.def("push", &Stack<std::string>::push)`` exposes the ``void push(T x)`` method.
-    ``torch::jit::class_`` will automatically examine the argument and return types of
-    the passed-in method pointers and expose these to Python and TorchScript accordingly.
-    Finally, notice that we must take the *address* of the fully-qualified method name,
-    i.e. use the unary ``&`` operator, due to C++ typing rules.
-  - The rest of the method registrations follow the same pattern.
 
 
 Building the Example as a C++ Project With CMake
 ------------------------------------------------
 
 Now, we're going to build the above C++ code with the `CMake
-<https://cmake.org>`_ build system. First, put all the C++ code
-we've covered so far, and place it in a file called ``class.cpp``.
+<https://cmake.org>`_ build system. First, take all the C++ code
+we've covered so far and place it in a file called ``class.cpp``.
 Then, write a simple ``CMakeLists.txt`` file and place it in the
 same directory. Here is what ``CMakeLists.txt`` should look like:
 
@@ -175,8 +176,9 @@ then make to build the project:
     [100%] Linking CXX shared library libcustom_class.so
     [100%] Built target custom_class
 
-What you'll find is there is now (among other things) a libcustom_class.so
-file present in the build directory. So the file tree should look like::
+What you'll find is there is now (among other things) a dynamic library
+file present in the build directory. On Linux, this is probably named
+``libcustom_class.so``. So the file tree should look like::
 
   custom_class_project/
     class.cpp
@@ -199,6 +201,9 @@ demonstrates that:
   # to load it in and make the custom C++ classes available to both Python and
   # TorchScript
   torch.classes.load_library("libcustom_class.so")
+  # You can query the loaded libraries like this:
+  print(torch.classes.loaded_libraries)
+  # prints {'/custom_class_project/build/libcustom_class.so'}
 
   # We can find and instantiate our custom C++ class in python by using the
   # `torch.classes` namespace:
@@ -212,27 +217,23 @@ demonstrates that:
   assert s.pop() == "pushed"
 
   # Returning and passing instances of custom classes works as you'd expect
-
   s2 = s.clone()
   s.merge(s2)
   for expected in ["bar", "foo", "bar", "foo"]:
       assert s.pop() == expected
 
   # We can also use the class in TorchScript
-  # For now, we need to assign the class's type to the local in order to
-  # annotate the type on the TorchScript function
+  # For now, we need to assign the class's type to a local in order to
+  # annotate the type on the TorchScript function. This may change
+  # in the future.
   Stack = torch.classes.Stack
 
-  # This demonstrates:
-  #   - passing a custom class instance to TorchScript
-  #   - instantiating a class in TorchScript
-  #   - calling a custom class's methods in torchscript
-  #   - returning a custom class instance from TorchScript
   @torch.jit.script
-  def do_stacks(s : Stack):
-      s2 = torch.classes.Stack(["hi", "mom"])
-      s2.merge(s)
-      return s2.clone(), s2.top()
+  def do_stacks(s : Stack): # We can pass a custom class instance to TorchScript
+      s2 = torch.classes.Stack(["hi", "mom"]) # We can instantiate the class
+      s2.merge(s) # We can call a method on the class
+      return s2.clone(), s2.top()  # We can also return instances of the class
+                                   # from TorchScript function/methods
 
   stack, top = do_stacks(torch.classes.Stack(["wow"]))
   assert top == "wow"
@@ -280,6 +281,9 @@ Similarly to before, let's create a file structure containing the following::
     foo.pt
     build/
     custom_class_project/
+      class.cpp
+      CMakeLists.txt
+      build/
 
 Notice we've copied over the serialized ``foo.pt`` file, as well as the source
 tree from the ``custom_class_project`` above. We will be adding the
@@ -313,7 +317,7 @@ Let's populate ``infer.cpp`` with the following:
 
 And similarly let's define our CMakeLists.txt file:
 
-.. code-block: cmake
+.. code-block:: cmake
 
   cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
   project(infer)
@@ -327,11 +331,13 @@ And similarly let's define our CMakeLists.txt file:
   set(CMAKE_CXX_STANDARD 14)
   # Link against LibTorch
   target_link_libraries(infer "${TORCH_LIBRARIES}")
+  # This is where we link in our libcustom_class code, making our
+  # custom class available in our binary.
   target_link_libraries(infer -Wl,--no-as-needed custom_class)
 
 You know the drill: ``cd build``, ``cmake``, and ``make``:
 
-.. code-block: shell
+.. code-block:: shell
 
   $ cd build
   $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
@@ -374,7 +380,7 @@ You know the drill: ``cd build``, ``cmake``, and ``make``:
 
 And now we can run our exciting C++ binary:
 
-.. code-block: shell
+.. code-block:: shell
 
   $ ./infer 
     momfoobarbaz
