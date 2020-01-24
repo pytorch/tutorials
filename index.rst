@@ -210,6 +210,11 @@ Parallel and Distributed Training
    :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
+  :tooltip: Getting Started with Distributed RPC Framework
+  :description: :doc:`/intermediate/rpc_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
@@ -384,6 +389,7 @@ PyTorch Fundamentals In-Depth
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
 
 .. toctree::
