@@ -69,7 +69,7 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
   //   `torch::jit::class_`. In this instance, we've passed the
   //   specialization of the Stack class ``Stack<std::string>``.
   //   In general, you cannot register a non-specialized template
-  //   class. For non-templated classes, you can just pass the 
+  //   class. For non-templated classes, you can just pass the
   //   class name directly as the template parameter.
   // - The single parameter to ``torch::jit::class_()`` is a
   //   string indicating the name of the class. This is the name
@@ -84,7 +84,7 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
         // constructors, so for now you can only `def()` one instance of
         // `torch::jit::init`.
         .def(torch::jit::init<std::vector<std::string>>())
-        // The next line registers a stateless (i.e. no captures) C++ lambda 
+        // The next line registers a stateless (i.e. no captures) C++ lambda
         // function as a method. Note that a lambda function must take a
         // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
         // as the first argument. Other arguments can be whatever you want.
@@ -363,8 +363,8 @@ You know the drill: ``cd build``, ``cmake``, and ``make``:
     -- Looking for pthread_create in pthreads - not found
     -- Looking for pthread_create in pthread
     -- Looking for pthread_create in pthread - found
-    -- Found Threads: TRUE  
-    -- Found torch: /local/miniconda3/lib/python3.7/site-packages/torch/lib/libtorch.so  
+    -- Found Threads: TRUE
+    -- Found torch: /local/miniconda3/lib/python3.7/site-packages/torch/lib/libtorch.so
     -- Configuring done
     -- Generating done
     -- Build files have been written to: /cpp_inference_example/build
@@ -382,16 +382,140 @@ And now we can run our exciting C++ binary:
 
 .. code-block:: shell
 
-  $ ./infer 
+  $ ./infer
     momfoobarbaz
 
 Incredible!
+
+Defining Serialization/Deserialization Methods for Custom C++ Classes
+---------------------------------------------------------------------
+
+If you try to save a ``ScriptModule`` with a custom-bound C++ class as
+an attribute, you'll get the following error:
+
+.. code-block:: python
+
+  # export_attr.py
+  import torch
+
+  torch.classes.load_library('libcustom_class.so')
+
+  class Foo(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stack = torch.classes.Stack(["just", "testing"])
+
+    def forward(self, s : str) -> str:
+        return self.stack.pop() + s
+
+  scripted_foo = torch.jit.script(Foo())
+
+  scripted_foo.save('foo.pt')
+
+.. code-block:: shell
+
+  RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.Stack. Please define serialization methods via torch::jit::pickle_ for this class. (pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128)
+
+This is because TorchScript cannot automatically figure out what information
+save from your C++ class. You must specify that manually. The way to do that
+is to define ``__getstate__`` and ``__setstate__`` methods on the class using
+the special ``torch::jit::pickle_`` function.
+
+.. note::
+  The semantics of ``__getstate__`` and ``__setstate__`` in TorchScript are
+  equivalent to that of the Python pickle module. You can
+  `read more<https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
+  about how we use these methods.
+
+.. warning::
+  Do not forget the trailing underscore on ``torch::jit::pickle_``! The API
+  for registering ``__getstate__`` and ``__setstate__`` has this underscore
+  because ``torch::jit::pickle`` was already taken.
+
+Here is an example of how we can update the registration code for our
+``Stack`` class to include serialization methods:
+
+.. code-block:: cpp
+
+  static auto testStack =
+    torch::jit::class_<Stack<std::string>>("Stack")
+        .def(torch::jit::init<std::vector<std::string>>())
+        .def("top", [](const c10::intrusive_ptr<Stack<std::string>>& self) {
+          return self->stack_.back();
+        })
+        .def("push", &Stack<std::string>::push)
+        .def("pop", &Stack<std::string>::pop)
+        .def("clone", &Stack<std::string>::clone)
+        .def("merge", &Stack<std::string>::merge)
+        // torch::jit::pickle_ allows you to define the serialization
+        // and deserialization methods for your C++ class.
+        // Currently, we only support passing stateless lambda functions
+        // as arguments to pickle_.
+        .def(torch::jit::pickle_(
+              // __getstate__
+              // This function defines what data structure should be produced
+              // when we serialize an instance of this class. The function
+              // must take a single `self` argument, which is an intrusive_ptr
+              // to the instance of the object. The function can return
+              // any type that is supported as a return value of the TorchScript
+              // custom operator API. In this instance, we've chosen to return
+              // a std::vector<std::string> as the salient data to preserve
+              // from the class.
+              [](const c10::intrusive_ptr<Stack<std::string>>& self)
+                  -> std::vector<std::string> {
+                return self->stack_;
+              },
+              // __setstate__
+              // This function defines how to create a new instance of the C++
+              // class when we are deserializing. The function must take a
+              // single argument of the same type as the return value of
+              // `__getstate__`. The function must return an intrusive_ptr
+              // to a new instance of the C++ class, initialized however
+              // you would like given the serialized state.
+              [](std::vector<std::string> state)
+                  -> c10::intrusive_ptr<Stack<std::string>> {
+                // A convenient way to instantiate an object and get an
+                // intrusive_ptr to it is via `make_intrusive`. We use
+                // that here to allocate an instance of Stack<std::string>
+                // and call the single-argument std::vector<std::string>
+                // constructor with the serialized state.
+                return c10::make_intrusive<Stack<std::string>>(std::move(state));
+              }));
+
+Once we have defined the (de)serialization behavior in this way, our script can
+now run successfully:
+
+.. code-block:: python
+
+  import torch
+
+  torch.classes.load_library('libcustom_class.so')
+
+  class Foo(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.stack = torch.classes.Stack(["just", "testing"])
+
+    def forward(self, s : str) -> str:
+        return self.stack.pop() + s
+
+  scripted_foo = torch.jit.script(Foo())
+
+  scripted_foo.save('foo.pt')
+  loaded = torch.jit.load('foo.pt')
+
+  print(loaded.stack.pop())
+
+.. code-block:: shell
+
+  $ python ../export_attr.py
+  testing
 
 Conclusion
 ----------
 
 This tutorial walked you through how to expose a C++ class to TorchScript
-(and by extension Python), how to register its method, how to use that
+(and by extension Python), how to register its methods, how to use that
 class from Python and TorchScript, and how to save and load code using
 the class and run that code in a standalone C++ process. You are now ready
 to extend your TorchScript models with C++ classes that interface with
