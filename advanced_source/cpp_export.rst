@@ -1,8 +1,6 @@
 Loading a TorchScript Model in C++
 =====================================
 
-**This tutorial was updated to work with PyTorch 1.2**
-
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
