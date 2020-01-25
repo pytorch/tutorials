@@ -421,6 +421,7 @@ an attribute, you'll get the following error:
 
 .. code-block:: shell
 
+  $ python export_attr.py
   RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.Stack. Please define serialization methods via torch::jit::pickle_ for this class. (pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128)
 
 This is because TorchScript cannot automatically figure out what information
@@ -431,13 +432,8 @@ the special ``torch::jit::pickle_`` function.
 .. note::
   The semantics of ``__getstate__`` and ``__setstate__`` in TorchScript are
   equivalent to that of the Python pickle module. You can
-  `read more<https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
+  `read more <https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
   about how we use these methods.
-
-.. warning::
-  Do not forget the trailing underscore on ``torch::jit::pickle_``! The API
-  for registering ``__getstate__`` and ``__setstate__`` has this underscore
-  because ``torch::jit::pickle`` was already taken.
 
 Here is an example of how we can update the registration code for our
 ``Stack`` class to include serialization methods:
@@ -488,6 +484,11 @@ Here is an example of how we can update the registration code for our
                 // constructor with the serialized state.
                 return c10::make_intrusive<Stack<std::string>>(std::move(state));
               }));
+
+.. warning::
+  Do not forget the trailing underscore on ``torch::jit::pickle_``! The API
+  for registering ``__getstate__`` and ``__setstate__`` has this underscore
+  because ``torch::jit::pickle`` was already taken.
 
 Once we have defined the (de)serialization behavior in this way, our script can
 now run successfully:
