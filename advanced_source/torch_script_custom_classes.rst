@@ -16,6 +16,13 @@ state in a member variable.
 
 .. code-block:: cpp
 
+  // This header is all you need to do the C++ portions of this
+  // tutorial
+  #include <torch/script.h>
+  // This header is what defines the custom class registration
+  // behavior specifically. script.h already includes this, but
+  // we include it here so you know it exists in case you want
+  // to look at the API or implementation.
   #include <torch/custom_class.h>
 
   #include <string>
