@@ -427,7 +427,7 @@ an attribute, you'll get the following error:
 This is because TorchScript cannot automatically figure out what information
 save from your C++ class. You must specify that manually. The way to do that
 is to define ``__getstate__`` and ``__setstate__`` methods on the class using
-the special ``torch::jit::pickle_`` function.
+the special ``def_pickle`` method on ``class_``.
 
 .. note::
   The semantics of ``__getstate__`` and ``__setstate__`` in TorchScript are
@@ -450,11 +450,11 @@ Here is an example of how we can update the registration code for our
         .def("pop", &Stack<std::string>::pop)
         .def("clone", &Stack<std::string>::clone)
         .def("merge", &Stack<std::string>::merge)
-        // torch::jit::pickle_ allows you to define the serialization
+        // class_<>::def_pickle allows you to define the serialization
         // and deserialization methods for your C++ class.
         // Currently, we only support passing stateless lambda functions
-        // as arguments to pickle_.
-        .def(torch::jit::pickle_(
+        // as arguments to def_pickle
+        .def_pickle(
               // __getstate__
               // This function defines what data structure should be produced
               // when we serialize an instance of this class. The function
@@ -483,12 +483,13 @@ Here is an example of how we can update the registration code for our
                 // and call the single-argument std::vector<std::string>
                 // constructor with the serialized state.
                 return c10::make_intrusive<Stack<std::string>>(std::move(state));
-              }));
+              });
 
-.. warning::
-  Do not forget the trailing underscore on ``torch::jit::pickle_``! The API
-  for registering ``__getstate__`` and ``__setstate__`` has this underscore
-  because ``torch::jit::pickle`` was already taken.
+.. note::
+  We take a different approach from pybind11 in the pickle API. Whereas pybind11
+  as a special function ``pybind11::pickle()`` which you pass into ``class_::def()``,
+  we have a separate method ``def_pickle`` for this purpose. This is because the
+  name ``torch::jit::pickle`` was already taken, and we didn't want to cause confusion.
 
 Once we have defined the (de)serialization behavior in this way, our script can
 now run successfully:
@@ -500,12 +501,12 @@ now run successfully:
   torch.classes.load_library('libcustom_class.so')
 
   class Foo(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.stack = torch.classes.Stack(["just", "testing"])
+      def __init__(self):
+          super().__init__()
+          self.stack = torch.classes.Stack(["just", "testing"])
 
-    def forward(self, s : str) -> str:
-        return self.stack.pop() + s
+      def forward(self, s : str) -> str:
+          return self.stack.pop() + s
 
   scripted_foo = torch.jit.script(Foo())
 
