@@ -482,6 +482,98 @@ Additional Resources
 
     <div style='clear:both'></div>
 
+Extending PyTorch
+----------------------
+
+.. customgalleryitem::
+   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_ops`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+   :tooltip: Implement custom classes in C++ for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_classes`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+    :tooltip: Create extensions using numpy and scipy
+    :figure: /_static/img/scipynumpy.png
+    :description: :doc:`advanced/numpy_extensions_tutorial`
+
+.. customgalleryitem::
+   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
+   :description: :doc:`/advanced/cpp_extension`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+    :tooltip: Custom Dataset and Dataloader in the PyTorch C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_dataset`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+Quantization (experimental)
+---------------------------
+
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. customgalleryitem::
+    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
+    :figure: /_static/img/qat.png
+    :description: :doc:`advanced/static_quantization_tutorial`
+
+.. customgalleryitem::
+    :tooltip: Perform quantized transfer learning with feature extractor
+    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
+    :figure: /_static/img/quantized_transfer_learning.png
+
+.. customgalleryitem::
+  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
+  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
+  :figure: /_static/img/bert.png
+
+
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
+PyTorch in Other Languages
+--------------------------
+
+.. customgalleryitem::
+    :tooltip: Using the PyTorch C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_frontend`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+PyTorch Fundamentals In-Depth
+-----------------------------
+
+.. customgalleryitem::
+   :tooltip: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples
+   :figure: /_static/img/thumbnails/examples.png
+   :description: :doc:`/beginner/pytorch_with_examples`
+
+.. customgalleryitem::
+   :figure: /_static/img/torch.nn.png
+   :tooltip: Use torch.nn to create and train a neural network
+   :description: :doc:`beginner/nn_tutorial`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
@@ -588,6 +680,7 @@ Additional Resources
    :caption: Extending PyTorch
 
    advanced/cpp_extension
+   advanced/cpp_dataset
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
    advanced/dispatcher
