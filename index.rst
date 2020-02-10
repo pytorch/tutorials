@@ -204,6 +204,11 @@ Parallel and Distributed Training
    :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
+  :tooltip: Getting Started with Distributed RPC Framework
+  :description: :doc:`/intermediate/rpc_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
@@ -218,6 +223,11 @@ Extending PyTorch
 .. customgalleryitem::
    :tooltip: Implement custom operators in C++ or CUDA for TorchScript
    :description: :doc:`/advanced/torch_script_custom_ops`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+   :tooltip: Implement custom classes in C++ for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_classes`
    :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
@@ -246,6 +256,18 @@ Quantization (experimental)
     :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
     :figure: /_static/img/qat.png
     :description: :doc:`advanced/static_quantization_tutorial`
+
+.. customgalleryitem::
+    :tooltip: Perform quantized transfer learning with feature extractor
+    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
+    :figure: /_static/img/quantized_transfer_learning.png
+
+.. customgalleryitem::
+  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
+  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
+  :figure: /_static/img/bert.png
+
+
 
 .. raw:: html
 
@@ -328,7 +350,7 @@ PyTorch Fundamentals In-Depth
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
    beginner/transformer_tutorial
-   
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
@@ -365,6 +387,7 @@ PyTorch Fundamentals In-Depth
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
 
 .. toctree::
@@ -374,6 +397,7 @@ PyTorch Fundamentals In-Depth
    :caption: Extending PyTorch
 
    advanced/torch_script_custom_ops
+   advanced/torch_script_custom_classes
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
 
@@ -385,6 +409,8 @@ PyTorch Fundamentals In-Depth
 
    advanced/dynamic_quantization_tutorial
    advanced/static_quantization_tutorial
+   intermediate/quantized_transfer_learning_tutorial
+   intermediate/dynamic_quantization_bert_tutorial
 
 .. toctree::
    :maxdepth: 2
