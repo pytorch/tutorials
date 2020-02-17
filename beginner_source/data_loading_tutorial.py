@@ -334,7 +334,7 @@ plt.show()
 #
 # -  An image is read from the file on the fly
 # -  Transforms are applied on the read image
-# -  Since one of the transforms is random, data is augmentated on
+# -  Since one of the transforms is random, data is augmented on
 #    sampling
 #
 # We can iterate over the created dataset with a ``for i in range``
