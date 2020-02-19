@@ -244,7 +244,7 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
-Quantization (experimental)
+Model Optimization
 ---------------------------
 
 .. customgalleryitem::
@@ -267,6 +267,10 @@ Quantization (experimental)
   :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
   :figure: /_static/img/bert.png
 
+.. customgalleryitem::
+   :tooltip: Use pruning to sparsify your neural networks
+   :description: :doc:`/intermediate_source/pruning_tutorial`
+   :figure: _static/img/pruning.png
 
 
 .. raw:: html
@@ -405,12 +409,13 @@ PyTorch Fundamentals In-Depth
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Quantization (experimental)
+   :caption: Model Optimization
 
    advanced/dynamic_quantization_tutorial
    advanced/static_quantization_tutorial
    intermediate/quantized_transfer_learning_tutorial
    intermediate/dynamic_quantization_bert_tutorial
+   intermediate_source/pruning_tutorial
 
 .. toctree::
    :maxdepth: 2
