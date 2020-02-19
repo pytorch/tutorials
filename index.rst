@@ -269,7 +269,7 @@ Model Optimization
 
 .. customgalleryitem::
    :tooltip: Use pruning to sparsify your neural networks
-   :description: :doc:`/intermediate_source/pruning_tutorial`
+   :description: :doc:`/intermediate/pruning_tutorial`
    :figure: _static/img/pruning.png
 
 
@@ -415,7 +415,7 @@ PyTorch Fundamentals In-Depth
    advanced/static_quantization_tutorial
    intermediate/quantized_transfer_learning_tutorial
    intermediate/dynamic_quantization_bert_tutorial
-   intermediate_source/pruning_tutorial
+   intermediate/pruning_tutorial
 
 .. toctree::
    :maxdepth: 2
