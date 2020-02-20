@@ -174,12 +174,13 @@
 <li class="toctree-l1"><a class="reference internal" href="numpy_extensions_tutorial.html">Creating Extensions Using numpy and scipy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Quantization (experimental)</span></p>
+<p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_tutorial.html">(experimental) Dynamic Quantization on an LSTM Word Language Model</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">(experimental) Static Quantization with Eager Mode in PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(experimental) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(experimental) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
 </ul>
 <p class="caption"><span class="caption-text">PyTorch in Other Languages</span></p>
 <ul>
@@ -782,16 +783,16 @@ Post Training Quantization: Convert done
 
  Sequential(
   (0): ConvBNReLU(
-    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.1502193659543991, zero_point=0, padding=(1, 1), groups=32)
+    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.17543432116508484, zero_point=0, padding=(1, 1), groups=32)
     (1): Identity()
     (2): Identity()
   )
-  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.20313501358032227, zero_point=71)
+  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.2279275357723236, zero_point=72)
   (2): Identity()
 )
 Size of model after quantization
 Size (MB): 3.58906
-..........Evaluation accuracy on 300 images, 63.33
+..........Evaluation accuracy on 300 images, 62.67
 </pre></div>
 </div>
 <p>For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
@@ -821,7 +822,7 @@ quantization parameters in an optimal manner.</li>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>QConfig(activation=functools.partial(&lt;class 'torch.quantization.observer.HistogramObserver'&gt;, reduce_range=True), weight=functools.partial(&lt;class 'torch.quantization.observer.PerChannelMinMaxObserver'&gt;, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
-....................Evaluation accuracy on 300 images, 77.33
+....................Evaluation accuracy on 300 images, 76.33
 </pre></div>
 </div>
 <p>Changing just this quantization configuration method resulted in an increase
@@ -951,30 +952,30 @@ match inference numerics.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(2.1218, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 54.333 Acc@5 75.500
-..........Epoch 0 :Evaluation accuracy on 300 images, 76.33
-....................Loss tensor(2.0381, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 57.500 Acc@5 77.667
-..........Epoch 1 :Evaluation accuracy on 300 images, 76.00
-....................Loss tensor(2.1132, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 52.667 Acc@5 76.000
-..........Epoch 2 :Evaluation accuracy on 300 images, 76.33
-....................Loss tensor(1.8767, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.333 Acc@5 81.333
-..........Epoch 3 :Evaluation accuracy on 300 images, 75.67
-....................Loss tensor(1.8002, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.333 Acc@5 81.333
-..........Epoch 4 :Evaluation accuracy on 300 images, 75.67
-....................Loss tensor(1.8624, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 56.500 Acc@5 80.833
-..........Epoch 5 :Evaluation accuracy on 300 images, 79.00
-....................Loss tensor(1.9197, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 56.500 Acc@5 78.667
-..........Epoch 6 :Evaluation accuracy on 300 images, 76.00
-....................Loss tensor(1.7743, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 61.333 Acc@5 82.000
-..........Epoch 7 :Evaluation accuracy on 300 images, 75.67
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(2.1792, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 51.667 Acc@5 75.167
+..........Epoch 0 :Evaluation accuracy on 300 images, 74.67
+....................Loss tensor(2.0113, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 54.667 Acc@5 78.500
+..........Epoch 1 :Evaluation accuracy on 300 images, 74.67
+....................Loss tensor(2.1586, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 52.000 Acc@5 75.500
+..........Epoch 2 :Evaluation accuracy on 300 images, 73.67
+....................Loss tensor(1.9928, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 55.167 Acc@5 78.167
+..........Epoch 3 :Evaluation accuracy on 300 images, 74.33
+....................Loss tensor(1.8787, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 58.333 Acc@5 80.833
+..........Epoch 4 :Evaluation accuracy on 300 images, 76.33
+....................Loss tensor(1.9220, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 55.167 Acc@5 80.000
+..........Epoch 5 :Evaluation accuracy on 300 images, 76.00
+....................Loss tensor(1.9286, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 55.167 Acc@5 79.333
+..........Epoch 6 :Evaluation accuracy on 300 images, 73.00
+....................Loss tensor(1.7713, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 59.667 Acc@5 82.000
+..........Epoch 7 :Evaluation accuracy on 300 images, 76.33
 </pre></div>
 </div>
 <p>Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -1018,7 +1019,7 @@ faster? Let’s test:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  16 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  15 ms
 Elapsed time:  10 ms
 </pre></div>
 </div>
@@ -1034,7 +1035,7 @@ and quantization-aware training - describing what they do “under the hood” a
 them in PyTorch.</p>
 <p>Thanks for reading! As always, we welcome any feedback, so please create an issue
 <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  43.723 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  55.411 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-static-quantization-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/bd7ace4f5df8c6f747eadb10a7f737cd/static_quantization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">static_quantization_tutorial.py</span></code></a></div>
