@@ -26,7 +26,7 @@ torch.manual_seed(1)
 # Creating Tensors
 # ~~~~~~~~~~~~~~~~
 #
-# Tensors can be created from Python lists with the torch.Tensor()
+# Tensors can be created from Python lists with the torch.tensor()
 # function.
 #
 
@@ -73,9 +73,10 @@ print(T[0])
 
 
 ######################################################################
-# You can also create tensors of other datatypes. The default, as you can
-# see, is Float. To create a tensor of integer types, try
-# torch.LongTensor(). Check the documentation for more data types, but
+# You can also create tensors of other data types. To create a tensor of integer types, try
+# torch.tensor([[1, 2], [3, 4]]) (where all elements in the list are integers).
+# You can also specify a data type by passing in `dtype=torch.data_type`.
+# Check the documentation for more data types, but
 # Float and Long will be the most common.
 #
 
