@@ -75,7 +75,7 @@ print(T[0])
 ######################################################################
 # You can also create tensors of other data types. To create a tensor of integer types, try
 # torch.tensor([[1, 2], [3, 4]]) (where all elements in the list are integers).
-# You can also specify a data type by passing in `dtype=torch.data_type`.
+# You can also specify a data type by passing in ``dtype=torch.data_type``.
 # Check the documentation for more data types, but
 # Float and Long will be the most common.
 #
