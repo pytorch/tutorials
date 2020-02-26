@@ -274,6 +274,8 @@ class MyCell(torch.nn.Module):
 
 my_cell = MyCell(MyDecisionGate())
 traced_cell = torch.jit.trace(my_cell, (x, h))
+
+print(traced_cell.dg.code)
 print(traced_cell.code)
 
 
@@ -293,8 +295,10 @@ print(traced_cell.code)
 scripted_gate = torch.jit.script(MyDecisionGate())
 
 my_cell = MyCell(scripted_gate)
-traced_cell = torch.jit.script(my_cell)
-print(traced_cell.code)
+scripted_cell = torch.jit.script(my_cell)
+
+print(scripted_gate.code)
+print(scripted_cell.code)
 
 
 ######################################################################
