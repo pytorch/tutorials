@@ -72,16 +72,6 @@ Image/Video
    :description: :doc:`beginner/transfer_learning_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/stn/Five.gif
-   :tooltip: Learn how to augment your network using a visual attention mechanism called spatial transformer networks
-   :description: :doc:`intermediate/spatial_transformer_tutorial`
-
-.. customgalleryitem::
-   :figure: /_static/img/neural-style/sphx_glr_neural_style_tutorial_004.png
-   :tooltip: How to implement the Neural-Style algorithm developed by Gatys, Ecker, and Bethge
-   :description: :doc:`advanced/neural_style_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/panda.png
    :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
    :description: :doc:`beginner/fgsm_tutorial`
@@ -209,8 +199,6 @@ Additional APIs
 
    intermediate/torchvision_tutorial
    beginner/transfer_learning_tutorial
-   intermediate/spatial_transformer_tutorial
-   advanced/neural_style_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
    advanced/static_quantization_tutorial
