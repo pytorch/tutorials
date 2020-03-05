@@ -134,7 +134,7 @@ class ReplayMemory(object):
 
 
 ######################################################################
-# Now, let's define our model. But first, let quickly recap what a DQN is.
+# Now, let's define our model. But first, let's quickly recap what a DQN is.
 #
 # DQN algorithm
 # -------------
