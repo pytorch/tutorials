@@ -131,16 +131,11 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #    and extract it to the current directory.
 
 ######################################################################
-# Similar to the character encoding used in the character-level RNN
-# tutorials, we will be representing each word in a language as a one-hot
-# vector, or giant vector of zeros except for a single one (at the index
-# of the word). Compared to the dozens of characters that might exist in a
-# language, there are many many more words, so the encoding vector is much
-# larger. We will however cheat a bit and trim the data to only use a few
-# thousand words per language.
-#
-# .. figure:: /_static/img/seq-seq-images/word-encoding.png
-#    :alt:
+# We will use an embedding layer to encode words into vectors in a
+# learned representation space. Since embedding layers work with
+# word indices, it will not be necessary to create one-hot encoded
+# vectors. Nontheless we will limit the vocabulary of our model to
+# reduce complexity.
 #
 #
 
