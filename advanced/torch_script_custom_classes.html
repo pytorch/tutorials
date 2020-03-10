@@ -726,6 +726,45 @@ testing
 </pre></div>
 </div>
 </div>
+<div class="section" id="defining-custom-operators-that-take-c-classes-as-arguments">
+<h2>Defining Custom Operators that Take C++ Classes as Arguments<a class="headerlink" href="#defining-custom-operators-that-take-c-classes-as-arguments" title="Permalink to this headline">¶</a></h2>
+<p>Once you’ve defined a custom C++ class, you can also use that class
+as an argument to custom operator (i.e. free functions). Here’s an
+example of how to do that:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">take_an_instance</span><span class="p">(</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">Stack</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">instance</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">instance</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">static</span> <span class="k">auto</span> <span class="n">instance_registry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="p">().</span><span class="n">op</span><span class="p">(</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="o">::</span><span class="n">options</span><span class="p">()</span>
+    <span class="p">.</span><span class="n">schema</span><span class="p">(</span>
+        <span class="s">"foo::take_an_instance(__torch__.torch.classes.Stack x) -&gt; str Y"</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">catchAllKernel</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">take_an_instance</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">take_an_instance</span><span class="o">&gt;</span><span class="p">());</span>
+</pre></div>
+</div>
+<p>Refer to the <a class="reference external" href="https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html">custom op tutorial</a>
+for more details on the registration API.</p>
+<p>Once this is done, you can use the op like the following example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TryCustomOp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TryCustomOp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">Stack</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">_TorchScriptTesting</span><span class="o">.</span><span class="n">take_an_instance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Registration of an operator that takes a C++ class as an argument requires that
+the custom class has already been registered. This is fine if your op is
+registered after your class in a single compilation unit, however, if your
+class is registered in a separate compilation unit from the op you will need
+to enforce that dependency. One way to do this is to wrap the class registration
+in a <a class="reference external" href="https://stackoverflow.com/q/1661529">Meyer’s singleton</a>, which can be
+called from the compilation unit that does the operator registration.</p>
+</div>
+</div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial walked you through how to expose a C++ class to TorchScript
@@ -777,6 +816,7 @@ lines between Python, TorchScript and C++ to blend smoothly.</p>
 <li><a class="reference internal" href="#using-the-c-class-from-python-and-torchscript">Using the C++ Class from Python and TorchScript</a></li>
 <li><a class="reference internal" href="#saving-loading-and-running-torchscript-code-using-custom-classes">Saving, Loading, and Running TorchScript Code Using Custom Classes</a></li>
 <li><a class="reference internal" href="#defining-serialization-deserialization-methods-for-custom-c-classes">Defining Serialization/Deserialization Methods for Custom C++ Classes</a></li>
+<li><a class="reference internal" href="#defining-custom-operators-that-take-c-classes-as-arguments">Defining Custom Operators that Take C++ Classes as Arguments</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 </ul>
 </li>
