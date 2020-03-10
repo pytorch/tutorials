@@ -153,6 +153,18 @@ Text
 .. raw:: html
 
     <div style='clear:both'></div>
+    
+Reinforcement Learning
+----------------------
+
+.. customgalleryitem::
+    :tooltip: Use PyTorch to train a Deep Q Learning (DQN) agent
+    :figure: /_static/img/cartpole.gif
+    :description: :doc:`intermediate/reinforcement_q_learning`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
 
 Additional APIs
 ----------------------
