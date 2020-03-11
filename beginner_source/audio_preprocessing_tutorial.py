@@ -207,7 +207,7 @@ plt.figure()
 plt.plot(mu_law_encoding_waveform[0,:].numpy())
 
 ######################################################################
-# You can see how the output fron ``torchaudio.functional.mu_law_encoding`` is the same as 
+# You can see how the output from ``torchaudio.functional.mu_law_encoding`` is the same as 
 # the output from ``torchaudio.transforms.MuLawEncoding``.
 #
 # Now let's experiment with a few of the other functionals and visualize their output. Taking our 
