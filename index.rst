@@ -148,7 +148,7 @@ Text
 .. raw:: html
 
     <div style='clear:both'></div>
-    
+
 Reinforcement Learning
 ----------------------
 
@@ -273,4 +273,4 @@ Additional APIs
    :hidden:
    :caption: Recipes
 
-   recipes/recipes_main
+   recipes/recipes_index
