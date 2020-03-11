@@ -44,11 +44,6 @@ Learning PyTorch
    :description: :doc:`beginner/nn_tutorial`
 
 .. customgalleryitem::
-   :figure: /_static/img/thumbnails/landmarked_face2.png
-   :tooltip: Learn how to load and preprocess/augment data from a non trivial dataset
-   :description: :doc:`/beginner/data_loading_tutorial`
-
-.. customgalleryitem::
    :figure: /_static/img/thumbnails/pytorch_tensorboard.png
    :tooltip: Learn to use TensorBoard to visualize data and model training
    :description: :doc:`intermediate/tensorboard_tutorial`
@@ -154,6 +149,18 @@ Text
 
     <div style='clear:both'></div>
 
+Reinforcement Learning
+----------------------
+
+.. customgalleryitem::
+    :tooltip: Use PyTorch to train a Deep Q Learning (DQN) agent
+    :figure: /_static/img/cartpole.gif
+    :description: :doc:`intermediate/reinforcement_q_learning`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
 Additional APIs
 ----------------------
 
@@ -190,6 +197,7 @@ Additional APIs
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
+   intermediate/tensorboard_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -236,14 +244,6 @@ Additional APIs
    intermediate/reinforcement_q_learning
 
 
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: PyTorch in Other Languages
-
-
 .. toctree::
    :maxdepth: 2
    :includehidden:
@@ -253,3 +253,12 @@ Additional APIs
    advanced/cpp_frontend
    intermediate/named_tensor_tutorial
    intermediate/pruning_tutorial
+
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Recipes
+
+   recipes/recipes_main

@@ -77,6 +77,17 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
     count=$((count+1))
   done
+    done
+  for filename in $(find recipes_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename $filename
+    else
+      echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
+    fi
+    count=$((count+1))
+  done
   echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
