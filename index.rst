@@ -226,6 +226,11 @@ Extending PyTorch
    :figure: _static/img/cpp_logo.png
 
 .. customgalleryitem::
+   :tooltip: Implement custom classes in C++ for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_classes`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
     :tooltip: Create extensions using numpy and scipy
     :figure: /_static/img/scipynumpy.png
     :description: :doc:`advanced/numpy_extensions_tutorial`
@@ -239,7 +244,7 @@ Extending PyTorch
 
     <div style='clear:both'></div>
 
-Quantization (experimental)
+Model Optimization
 ---------------------------
 
 .. customgalleryitem::
@@ -262,6 +267,10 @@ Quantization (experimental)
   :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
   :figure: /_static/img/bert.png
 
+.. customgalleryitem::
+   :tooltip: Use pruning to sparsify your neural networks
+   :description: :doc:`/intermediate/pruning_tutorial`
+   :figure: _static/img/pruning.png
 
 
 .. raw:: html
@@ -392,6 +401,7 @@ PyTorch Fundamentals In-Depth
    :caption: Extending PyTorch
 
    advanced/torch_script_custom_ops
+   advanced/torch_script_custom_classes
    advanced/numpy_extensions_tutorial
    advanced/cpp_extension
 
@@ -399,12 +409,13 @@ PyTorch Fundamentals In-Depth
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Quantization (experimental)
+   :caption: Model Optimization
 
    advanced/dynamic_quantization_tutorial
    advanced/static_quantization_tutorial
    intermediate/quantized_transfer_learning_tutorial
    intermediate/dynamic_quantization_bert_tutorial
+   intermediate/pruning_tutorial
 
 .. toctree::
    :maxdepth: 2
