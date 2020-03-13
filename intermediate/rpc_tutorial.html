@@ -776,19 +776,20 @@ accumulate to the same set of <code class="docutils literal notranslate"><span c
 
     <span class="c1"># train for 10 iterations</span>
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-        <span class="c1"># create distributed autograd context</span>
         <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">get_next_batch</span><span class="p">():</span>
-            <span class="k">with</span> <span class="n">dist_autograd</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
+            <span class="c1"># create distributed autograd context</span>
+            <span class="k">with</span> <span class="n">dist_autograd</span><span class="o">.</span><span class="n">context</span><span class="p">()</span> <span class="k">as</span> <span class="n">context_id</span><span class="p">:</span>
                 <span class="n">hidden</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach_</span><span class="p">()</span>
                 <span class="n">hidden</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">detach_</span><span class="p">()</span>
                 <span class="n">output</span><span class="p">,</span> <span class="n">hidden</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
                 <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
                 <span class="c1"># run distributed backward pass</span>
-                <span class="n">dist_autograd</span><span class="o">.</span><span class="n">backward</span><span class="p">([</span><span class="n">loss</span><span class="p">])</span>
+                <span class="n">dist_autograd</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">context_id</span><span class="p">,</span> <span class="p">[</span><span class="n">loss</span><span class="p">])</span>
                 <span class="c1"># run distributed optimizer</span>
-                <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-                <span class="c1"># not necessary to zero grads as each iteration creates a different</span>
-                <span class="c1"># distributed autograd context which hosts different grads</span>
+                <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">context_id</span><span class="p">)</span>
+                <span class="c1"># not necessary to zero grads since they are</span>
+                <span class="c1"># accumulated into the distributed autograd context</span>
+                <span class="c1"># which is reset every iteration.</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">"Training epoch </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">))</span>
 </pre></div>
 </div>
