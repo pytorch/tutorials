@@ -56,7 +56,7 @@ Conditional Random Field for named-entity recognition. The LSTM tagger
 above is typically sufficient for part-of-speech tagging, but a sequence
 model like the CRF is really essential for strong performance on NER.
 Familiarity with CRF's is assumed. Although this name sounds scary, all
-the model is is a CRF but where an LSTM provides the features. This is
+the model is a CRF but where an LSTM provides the features. This is
 an advanced model though, far more complicated than any earlier model in
 this tutorial. If you want to skip it, that is fine. To see if you're
 ready, see if you can:
@@ -89,9 +89,9 @@ transition scores are stored in a :math:`|T|x|T|` matrix
 implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
 to tag :math:`j` from tag :math:`k`. So:
 
-.. math::  \text{Score}(x,y) = \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
-
-.. math::  = \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
+.. math::
+    \text{Score}(x,y) &= \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
+                      &= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
 
 where in this second expression, we think of the tags as being assigned
 unique non-negative indices.
