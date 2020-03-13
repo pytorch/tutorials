@@ -90,6 +90,7 @@ implementation, :math:`\textbf{P}_{j,k}` is the score of transitioning
 to tag :math:`j` from tag :math:`k`. So:
 
 .. math::
+
     \text{Score}(x,y) &= \sum_i \log \psi_\text{EMIT}(y_i \rightarrow x_i) + \log \psi_\text{TRANS}(y_{i-1} \rightarrow y_i)
                       &= \sum_i h_i[y_i] + \textbf{P}_{y_i, y_{i-1}}
 
