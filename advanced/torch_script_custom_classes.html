@@ -229,7 +229,7 @@ state in a member variable.</p>
 <span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span>
-<span class="k">struct</span> <span class="nl">MyStackClass</span> <span class="p">:</span> <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">CustomClassHolder</span> <span class="p">{</span>
+<span class="k">struct</span> <span class="nl">MyStackClass</span> <span class="p">:</span> <span class="n">torch</span><span class="o">::</span><span class="n">CustomClassHolder</span> <span class="p">{</span>
   <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">stack_</span><span class="p">;</span>
   <span class="n">MyStackClass</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">init</span><span class="p">)</span> <span class="o">:</span> <span class="n">stack_</span><span class="p">(</span><span class="n">init</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">init</span><span class="p">.</span><span class="n">end</span><span class="p">())</span> <span class="p">{}</span>
 
@@ -264,31 +264,31 @@ as a smart pointer like <code class="docutils literal notranslate"><span class="
 is to ensure consistent lifetime management of the object instances between languages
 (C++, Python and TorchScript).</li>
 <li>The second thing to notice is that the user-defined class must inherit from
-<code class="docutils literal notranslate"><span class="pre">torch::jit::CustomClassHolder</span></code>. This ensures that everything is set up to handle
+<code class="docutils literal notranslate"><span class="pre">torch::CustomClassHolder</span></code>. This ensures that everything is set up to handle
 the lifetime management system previously mentioned.</li>
 </ul>
 <p>Now let’s take a look at how we will make this class visible to TorchScript, a process called
 <em>binding</em> the class:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Notice a few things:</span>
 <span class="c1">// - We pass the class to be registered as a template parameter to</span>
-<span class="c1">//   `torch::jit::class_`. In this instance, we've passed the</span>
+<span class="c1">//   `torch::class_`. In this instance, we've passed the</span>
 <span class="c1">//   specialization of the MyStackClass class ``MyStackClass&lt;std::string&gt;``.</span>
 <span class="c1">//   In general, you cannot register a non-specialized template</span>
 <span class="c1">//   class. For non-templated classes, you can just pass the</span>
 <span class="c1">//   class name directly as the template parameter.</span>
-<span class="c1">// - The single parameter to ``torch::jit::class_()`` is a</span>
+<span class="c1">// - The single parameter to ``torch::class_()`` is a</span>
 <span class="c1">//   string indicating the name of the class. This is the name</span>
 <span class="c1">//   the class will appear as in both Python and TorchScript.</span>
 <span class="c1">//   For example, our MyStackClass class would appear as ``torch.classes.MyStackClass``.</span>
 <span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
       <span class="c1">// The following line registers the contructor of our MyStackClass</span>
       <span class="c1">// class that takes a single `std::vector&lt;std::string&gt;` argument,</span>
       <span class="c1">// i.e. it exposes the C++ method `MyStackClass(std::vector&lt;T&gt; init)`.</span>
       <span class="c1">// Currently, we do not support registering overloaded</span>
       <span class="c1">// constructors, so for now you can only `def()` one instance of</span>
-      <span class="c1">// `torch::jit::init`.</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
+      <span class="c1">// `torch::init`.</span>
+      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
       <span class="c1">// The next line registers a stateless (i.e. no captures) C++ lambda</span>
       <span class="c1">// function as a method. Note that a lambda function must take a</span>
       <span class="c1">// `c10::intrusive_ptr&lt;YourClass&gt;` (or some const/ref version of that)</span>
@@ -297,7 +297,7 @@ the lifetime management system previously mentioned.</li>
         <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
       <span class="p">})</span>
       <span class="c1">// The following four lines expose methods of the MyStackClass&lt;std::string&gt;</span>
-      <span class="c1">// class as-is. `torch::jit::class_` will automatically examine the</span>
+      <span class="c1">// class as-is. `torch::class_` will automatically examine the</span>
       <span class="c1">// argument and return types of the passed-in method pointers and</span>
       <span class="c1">// expose these to Python and TorchScript accordingly. Finally, notice</span>
       <span class="c1">// that we must take the *address* of the fully-qualified method name,</span>
@@ -489,7 +489,7 @@ build the custom class into the binary.</p>
 <span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span> <span class="k">module</span><span class="p">;</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span> <span class="k">module</span><span class="p">;</span>
   <span class="k">try</span> <span class="p">{</span>
     <span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
     <span class="k">module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="s">"foo.pt"</span><span class="p">);</span>
@@ -571,6 +571,31 @@ $ make -j
 </div>
 <p>Incredible!</p>
 </div>
+<div class="section" id="moving-custom-classes-to-from-ivalues">
+<h2>Moving Custom Classes To/From IValues<a class="headerlink" href="#moving-custom-classes-to-from-ivalues" title="Permalink to this headline">¶</a></h2>
+<p>It’s also possible that you may need to move custom classes into or out of
+<code class="docutils literal notranslate"><span class="pre">IValue``s,</span> <span class="pre">such</span> <span class="pre">as</span> <span class="pre">when</span> <span class="pre">you</span> <span class="pre">take</span> <span class="pre">or</span> <span class="pre">return</span> <span class="pre">``IValue``s</span> <span class="pre">from</span> <span class="pre">TorchScript</span> <span class="pre">methods</span>
+<span class="pre">or</span> <span class="pre">you</span> <span class="pre">want</span> <span class="pre">to</span> <span class="pre">instantiate</span> <span class="pre">a</span> <span class="pre">custom</span> <span class="pre">class</span> <span class="pre">attribute</span> <span class="pre">in</span> <span class="pre">C++.</span> <span class="pre">For</span> <span class="pre">creating</span> <span class="pre">an</span>
+<span class="pre">``IValue</span></code> from a custom C++ class instance:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">torch::make_custom_class&lt;T&gt;()</span></code> provides an API similar to c10::intrusive_ptr&lt;T&gt;
+in that it will take whatever set of arguments you provide to it, call the constructor
+of T that matches that set of arguments, and wrap that instance up and return it.
+However, instead of returning just a pointer to a custom class object, it returns
+an <code class="docutils literal notranslate"><span class="pre">IValue</span></code> wrapping the object. You can then pass this <code class="docutils literal notranslate"><span class="pre">IValue</span></code> directly to
+TorchScript.</li>
+<li>In the event that you already have an <code class="docutils literal notranslate"><span class="pre">intrusive_ptr</span></code> pointing to your class, you
+can directly construct an IValue from it using the constructor <code class="docutils literal notranslate"><span class="pre">IValue(intrusive_ptr&lt;T&gt;)</span></code>.</li>
+</ul>
+<p>For converting <a href="#id1"><span class="problematic" id="id2">``</span></a>IValue``s back to custom classes:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">IValue::toCustomClass&lt;T&gt;()</span></code> will return an <code class="docutils literal notranslate"><span class="pre">intrusive_ptr&lt;T&gt;</span></code> pointing to the
+custom class that the <code class="docutils literal notranslate"><span class="pre">IValue</span></code> contains. Internally, this function is checking
+that <code class="docutils literal notranslate"><span class="pre">T</span></code> is registered as a custom class and that the <code class="docutils literal notranslate"><span class="pre">IValue</span></code> does in fact contain
+a custom class. You can check whether the <code class="docutils literal notranslate"><span class="pre">IValue</span></code> contains a custom class manually by
+calling <code class="docutils literal notranslate"><span class="pre">isCustomClass()</span></code>.</li>
+</ul>
+</div>
 <div class="section" id="defining-serialization-deserialization-methods-for-custom-c-classes">
 <h2>Defining Serialization/Deserialization Methods for Custom C++ Classes<a class="headerlink" href="#defining-serialization-deserialization-methods-for-custom-c-classes" title="Permalink to this headline">¶</a></h2>
 <p>If you try to save a <code class="docutils literal notranslate"><span class="pre">ScriptModule</span></code> with a custom-bound C++ class as
@@ -594,7 +619,7 @@ an attribute, you’ll get the following error:</p>
 </pre></div>
 </div>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python export_attr.py
-RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.MyStackClass. Please define serialization methods via torch::jit::pickle_ <span class="k">for</span> this class. <span class="o">(</span>pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128<span class="o">)</span>
+RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.MyStackClass. Please define serialization methods via def_pickle <span class="k">for</span> this class. <span class="o">(</span>pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128<span class="o">)</span>
 </pre></div>
 </div>
 <p>This is because TorchScript cannot automatically figure out what information
@@ -611,8 +636,8 @@ about how we use these methods.</p>
 <p>Here is an example of how we can update the registration code for our
 <code class="docutils literal notranslate"><span class="pre">MyStackClass</span></code> class to include serialization methods:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
+      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
       <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"top"</span><span class="p">,</span> <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
       <span class="p">})</span>
@@ -776,6 +801,7 @@ lines between Python, TorchScript and C++ to blend smoothly.</p>
 <li><a class="reference internal" href="#building-the-example-as-a-c-project-with-cmake">Building the Example as a C++ Project With CMake</a></li>
 <li><a class="reference internal" href="#using-the-c-class-from-python-and-torchscript">Using the C++ Class from Python and TorchScript</a></li>
 <li><a class="reference internal" href="#saving-loading-and-running-torchscript-code-using-custom-classes">Saving, Loading, and Running TorchScript Code Using Custom Classes</a></li>
+<li><a class="reference internal" href="#moving-custom-classes-to-from-ivalues">Moving Custom Classes To/From IValues</a></li>
 <li><a class="reference internal" href="#defining-serialization-deserialization-methods-for-custom-c-classes">Defining Serialization/Deserialization Methods for Custom C++ Classes</a></li>
 <li><a class="reference internal" href="#defining-custom-operators-that-take-or-return-bound-c-classes">Defining Custom Operators that Take or Return Bound C++ Classes</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
