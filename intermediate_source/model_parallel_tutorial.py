@@ -62,7 +62,7 @@ class ToyModel(nn.Module):
 
 ######################################################################
 # Note that, the above ``ToyModel`` looks very similar to how one would
-# implement it on a single GPU, except the five ``to(device)`` calls which
+# implement it on a single GPU, except the four ``to(device)`` calls which
 # place linear layers and tensors on proper devices. That is the only place in
 # the model that requires changes. The ``backward()`` and ``torch.optim`` will
 # automatically take care of gradients as if the model is on one GPU. You only
