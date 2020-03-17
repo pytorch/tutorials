@@ -189,13 +189,13 @@ Parallel and Distributed Training
 ---------------------------------
 
 .. customgalleryitem::
-  :tooltip: Model parallel training on multiple GPUs
-  :description: :doc:`/intermediate/model_parallel_tutorial`
+  :tooltip: Getting started with DistributedDataParallel
+  :description: :doc:`/intermediate/ddp_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
-  :tooltip: Getting started with DistributedDataParallel
-  :description: :doc:`/intermediate/ddp_tutorial`
+  :tooltip: Model parallel training on multiple GPUs
+  :description: :doc:`/intermediate/model_parallel_tutorial`
   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. customgalleryitem::
