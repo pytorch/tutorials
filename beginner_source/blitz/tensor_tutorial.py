@@ -16,12 +16,12 @@ audiences:
 Getting Started
 ---------------
 
-In this section of the tutorial, we will introduce the concept of a tensor in PyTorch, and it's operations.
+In this section of the tutorial, we will introduce the concept of a tensor in PyTorch, and its operations.
 
 Tensors
 ^^^^^^^
 
-A tensor is a generic n-dimensional array. tensors in PyTorch are similar to NumPy’s ndarrays, 
+A tensor is a generic n-dimensional array. Tensors in PyTorch are similar to NumPy’s ndarrays, 
 with the addition being that tensors can also be used on a GPU to accelerate computing.
 
 To see the behavior of tensors, we will first need to import PyTorch into our program.
@@ -32,7 +32,7 @@ import torch
 
 """
 We import ``future`` here to help port our code from Python 2 to Python 3.
-For more details, see the `Python-Future technical documentation <https://python-future.org/quickstart.html>`. 
+For more details, see the `Python-Future technical documentation <https://python-future.org/quickstart.html>`_. 
 
 Let's take a look at how we can create tensors.
 """
@@ -83,9 +83,9 @@ Our tensor can represent all types of data. This data can be an audio waveform, 
 pixels of an image, even entities of a language.
 
 PyTorch has packages that support these specific data types. For additional learning, see:
--  `torchvision <https://pytorch.org/docs/stable/torchvision/index.html>`
--  `torchtext <https://pytorch.org/text/>`
--  `torchaudio <https://pytorch.org/audio/>`
+-  `torchvision <https://pytorch.org/docs/stable/torchvision/index.html>`_
+-  `torchtext <https://pytorch.org/text/>`_
+-  `torchaudio <https://pytorch.org/audio/>`_
 """
 
 ###############################################################
@@ -155,10 +155,10 @@ print(y)
 #     For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
 
 ###############################################################
-# Similar to NumPy, tensors can be index using the standard
+# Similar to NumPy, tensors can be indexed using the standard
 # Python ``x[i]`` syntax, where ``x`` is the array and ``i`` is the selection.
 # 
-# That said, you can NumPy-like indexing with all its bells and whistles!
+# That said, you can use NumPy-like indexing with all its bells and whistles!
 
 print(x[:, 1])
 
@@ -174,7 +174,7 @@ print(x.size(), y.size(), z.size())
 ###############################################################
 # You can access the Python number-value of a one-element tensor using ``.item()``.
 # If you have a multidimensional tensor, see the 
-# `tolist() https://pytorch.org/docs/stable/tensors.html#torch.Tensor.tolist` method.
+# `tolist() <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.tolist>`_ method.
 
 x = torch.randn(1)
 print(x)
