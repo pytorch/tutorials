@@ -5,7 +5,7 @@ Transfer Learning for Computer Vision Tutorial
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
 In this tutorial, you will learn how to train a convolutional neural network for
-image classification using transfer learning. You can read more about the transfer
+image classification using transfer learning. You can read more about transfer
 learning at `cs231n notes <https://cs231n.github.io/transfer-learning/>`__
 
 Quoting these notes,
@@ -20,11 +20,11 @@ Quoting these notes,
 
 These two major transfer learning scenarios look as follows:
 
--  **Finetuning the convnet**: Instead of random initializaion, we
+-  **Finetuning the convnet**: Instead of random initialization, we
    initialize the network with a pretrained network, like the one that is
-   trained on imagenet 1000 dataset. Rest of the training looks as
-   usual.
--  **ConvNet as fixed feature extractor**: Here, we will freeze the weights
+   trained on imagenet 1000 dataset. The rest of the training is normal
+
+-  **ConvNet as a fixed feature extractor**: Here, we will freeze the weights
    for all of the network except that of the final fully connected
    layer. This last fully connected layer is replaced with a new one
    with random weights and only this layer is trained.
@@ -53,15 +53,13 @@ plt.ion()   # interactive mode
 # Load Data
 # ---------
 #
-# We will use torchvision and torch.utils.data packages for loading the
-# data.
+# We will use torchvision and torch.utils.data for loading the data.
 #
-# The problem we're going to solve today is to train a model to classify
-# **ants** and **bees**. We have about 120 training images each for ants and bees.
-# There are 75 validation images for each class. Usually, this is a very
-# small dataset to generalize upon, if trained from scratch. Since we
-# are using transfer learning, we should be able to generalize reasonably
-# well.
+# In this tutorial, we will train a model to classify **ants** and **bees**. We
+# only have about 120 training images and 75 validation images for each of the
+# two classes. This would be a very small dataset to generalize upon, if
+# trained from scratch. Since we are using transfer learning, we should be able
+# to generalize reasonably well.
 #
 # This dataset is a very small subset of imagenet.
 #
@@ -137,7 +135,7 @@ imshow(out, title=[class_names[x] for x in classes])
 # -  Scheduling the learning rate
 # -  Saving the best model
 #
-# In the following, parameter ``scheduler`` is an LR scheduler object from
+# In the following, the ``scheduler`` parameter is an LR scheduler object from
 # ``torch.optim.lr_scheduler``.
 
 
@@ -214,7 +212,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 # Visualizing the model predictions
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Generic function to display predictions for a few images
+# Next, we will write a generic function to display predictions for a few
+# images:
 #
 
 def visualize_model(model, num_images=6):
@@ -247,7 +246,11 @@ def visualize_model(model, num_images=6):
 # Finetuning the convnet
 # ----------------------
 #
-# Load a pretrained model and reset final fully connected layer.
+# Now we can load the model that will be used for transfer learning. Since we
+# want to keep most of a model that has been trained on a larger dataset, 
+# we will use a pretrained ``resnet`` that comes with ``torchvision``. Then we
+# can reset the last fully connected layer so we can complete training on the
+# ``hymenoptera`` dataset.
 #
 
 model_ft = models.resnet18(pretrained=True)
@@ -270,8 +273,8 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 # Train and evaluate
 # ^^^^^^^^^^^^^^^^^^
 #
-# It should take around 15-25 min on CPU. On GPU though, it takes less than a
-# minute.
+# Now that everything is setup, we can train the model. It should take around
+# 15-25 min on a CPU. On a GPU, it should take less than a minute.
 #
 
 model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
@@ -287,7 +290,7 @@ visualize_model(model_ft)
 # ConvNet as fixed feature extractor
 # ----------------------------------
 #
-# Here, we need to freeze all the network except the final layer. We need
+# Here, we need to freeze all of the network except the final layer. We need
 # to set ``requires_grad == False`` to freeze the parameters so that the
 # gradients are not computed in ``backward()``.
 #
@@ -307,8 +310,7 @@ model_conv = model_conv.to(device)
 
 criterion = nn.CrossEntropyLoss()
 
-# Observe that only parameters of final layer are being optimized as
-# opposed to before.
+# Observe that only parameters in the final layer are being optimized now
 optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs
@@ -319,7 +321,7 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
 # Train and evaluate
 # ^^^^^^^^^^^^^^^^^^
 #
-# On CPU this will take about half the time compared to previous scenario.
+# On a CPU this will take about half the time compared to previous scenario.
 # This is expected as gradients don't need to be computed for most of the
 # network. However, forward does need to be computed.
 #
