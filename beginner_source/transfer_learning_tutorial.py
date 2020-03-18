@@ -43,6 +43,7 @@ import numpy as np
 import torchvision
 from torchvision import datasets, models, transforms
 import matplotlib.pyplot as plt
+from datetime import timedelta
 import time
 import os
 import copy
@@ -95,7 +96,7 @@ dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ######################################################################
 # Visualize a few images
@@ -117,12 +118,13 @@ def imshow(inp, title=None):
 
 
 # Get a batch of training data
-inputs, classes = next(iter(dataloaders['train']))
+images, classes = next(iter(dataloaders['train']))
 
 # Make a grid from batch
-out = torchvision.utils.make_grid(inputs)
+out = torchvision.utils.make_grid(images)
+title = (' '*15).join(class_names[x] for x in classes)
 
-imshow(out, title=[class_names[x] for x in classes])
+imshow(out, title=title)
 
 
 ######################################################################
@@ -198,9 +200,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
 
         print()
 
-    time_elapsed = time.time() - since
-    print('Training complete in {:.0f}m {:.0f}s'.format(
-        time_elapsed // 60, time_elapsed % 60))
+    time_elapsed = timedelta(seconds=time.time()-since)
+    print('Training complete in ' + str(time_elapsed))
     print('Best val Acc: {:4f}'.format(best_acc))
 
     # load best model weights
@@ -223,7 +224,7 @@ def visualize_model(model, num_images=6):
     fig = plt.figure()
 
     with torch.no_grad():
-        for i, (inputs, labels) in enumerate(dataloaders['val']):
+        for inputs, labels in dataloaders['val']:
             inputs = inputs.to(device)
             labels = labels.to(device)
 
