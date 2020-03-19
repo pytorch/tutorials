@@ -25,6 +25,18 @@ Some considerations:
 * Finally, here's a link to the
   `PyTorch Release Notes <https://github.com/pytorch/pytorch/releases>`_
 
+Recipes
+------------------
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/pytorch-logo-flat.png
+   :tooltip: Bite-sized tutorials
+   :description: :doc:`/recipes/recipes_index`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
 Learning PyTorch
 ------------------
 
@@ -188,6 +200,14 @@ Additional APIs
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Recipes
+
+   recipes/recipes_index
+
 .. toctree::
    :maxdepth: 2
    :hidden:
