@@ -228,7 +228,7 @@ class Decoder(nn.Module):
                  emb_dim: int,
                  enc_hid_dim: int,
                  dec_hid_dim: int,
-                 dropout: int,
+                 dropout: float,
                  attention: nn.Module):
         super().__init__()
 
