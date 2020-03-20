@@ -3,11 +3,6 @@ Getting Started with Distributed RPC Framework
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 
-.. warning::
-  The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
-  is experimental and subject to change. It also requires PyTorch 1.4.0+ to run as this is the first version to support RPC.
-
-
 This tutorial uses two simple examples to demonstrate how to build distributed
 training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
 package which is first introduced as an experimental feature in PyTorch v1.4.
