@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Source: https://github.com/pytorch/tutorials/blob/967d22b93b17e18f0371b15ffd5850dace3dd7f5/intermediate_source/reinforcement_q_learning.py
-
 Reinforcement Learning (DQN) Tutorial
 =====================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
