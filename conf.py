@@ -34,7 +34,7 @@ import pytorch_sphinx_theme
 import torch
 import glob
 import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 
 
 try:
@@ -42,7 +42,7 @@ try:
 except ImportError:
     import warnings
     warnings.warn('unable to load "torchvision" package')
-import pytorch_sphinx_theme
+#import pytorch_sphinx_theme
 
 # -- General configuration ------------------------------------------------
 
@@ -62,7 +62,7 @@ extensions = ['sphinx.ext.mathjax',
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced','recipes'],
+    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
     'filename_pattern': os.environ.get('GALLERY_PATTERN', r'tutorial.py'),
     'backreferences_dir': False
 }
@@ -162,7 +162,7 @@ html_static_path = ['_static']
 
 
 html_theme = 'pytorch_sphinx_theme'
-html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
+html_theme_path = ['../../pytorch_sphinx_theme-1']
 html_logo = '_static/img/pytorch-logo-dark.svg'
 html_theme_options = {
     'pytorch_project': 'tutorials',
@@ -237,3 +237,5 @@ def setup(app):
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
     app.add_directive('customgalleryitem', CustomGalleryItemDirective)
+    app.add_directive('customcarditem', CustomCardItemDirective)
+    app.add_directive('customcalloutitem', CustomCalloutItemDirective)
