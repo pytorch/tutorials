@@ -48,10 +48,10 @@ class Net(nn.Module):
         super(Net, self).__init__()
         # 1 input image channel, 6 output channels, 3x3 square convolution
         # kernel
-        self.conv1 = nn.Conv2d(1, 6, 3)
-        self.conv2 = nn.Conv2d(6, 16, 3)
+        self.conv1 = nn.Conv2d(1, 6, 5)
+        self.conv2 = nn.Conv2d(6, 16, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 6 * 6, 120)  # 6*6 from image dimension 
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 6*6 from image dimension 
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
@@ -99,7 +99,7 @@ out = net(input)
 print(out)
 
 ########################################################################
-# Zero the gradient buffers of all parameters and backprops with random
+# Zero the gradient buffers of all parameters and backprop with random
 # gradients:
 net.zero_grad()
 out.backward(torch.randn(1, 10))
