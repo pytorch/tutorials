@@ -276,12 +276,13 @@ the lifetime management system previously mentioned.</li>
 <span class="c1">//   In general, you cannot register a non-specialized template</span>
 <span class="c1">//   class. For non-templated classes, you can just pass the</span>
 <span class="c1">//   class name directly as the template parameter.</span>
-<span class="c1">// - The single parameter to ``torch::class_()`` is a</span>
-<span class="c1">//   string indicating the name of the class. This is the name</span>
-<span class="c1">//   the class will appear as in both Python and TorchScript.</span>
-<span class="c1">//   For example, our MyStackClass class would appear as ``torch.classes.MyStackClass``.</span>
+<span class="c1">// - The arguments passed to the constructor make up the "qualified name"</span>
+<span class="c1">//   of the class. In this case, the registered class will appear in</span>
+<span class="c1">//   Python and C++ as `torch.classes.my_classes.MyStackClass`. We call</span>
+<span class="c1">//   the first argument the "namespace" and the second argument the</span>
+<span class="c1">//   actual class name.</span>
 <span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"my_classes"</span><span class="p">,</span> <span class="s">"MyStackClass"</span><span class="p">)</span>
       <span class="c1">// The following line registers the contructor of our MyStackClass</span>
       <span class="c1">// class that takes a single `std::vector&lt;std::string&gt;` argument,</span>
       <span class="c1">// i.e. it exposes the C++ method `MyStackClass(std::vector&lt;T&gt; init)`.</span>
@@ -406,7 +407,7 @@ demonstrates that:</p>
 <span class="c1">#</span>
 <span class="c1"># This instantiation will invoke the MyStackClass(std::vector&lt;T&gt; init) constructor</span>
 <span class="c1"># we registered earlier</span>
-<span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
 
 <span class="c1"># We can call methods in Python</span>
 <span class="n">s</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s2">"pushed"</span><span class="p">)</span>
@@ -422,16 +423,16 @@ demonstrates that:</p>
 <span class="c1"># For now, we need to assign the class's type to a local in order to</span>
 <span class="c1"># annotate the type on the TorchScript function. This may change</span>
 <span class="c1"># in the future.</span>
-<span class="n">MyStackClass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span>
+<span class="n">MyStackClass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span>
 
 <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
 <span class="k">def</span> <span class="nf">do_stacks</span><span class="p">(</span><span class="n">s</span> <span class="p">:</span> <span class="n">MyStackClass</span><span class="p">):</span> <span class="c1"># We can pass a custom class instance to TorchScript</span>
-    <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span> <span class="c1"># We can instantiate the class</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span> <span class="c1"># We can instantiate the class</span>
     <span class="n">s2</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="c1"># We can call a method on the class</span>
     <span class="k">return</span> <span class="n">s2</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>  <span class="c1"># We can also return instances of the class</span>
                                  <span class="c1"># from TorchScript function/methods</span>
 
-<span class="n">stack</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="n">do_stacks</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"wow"</span><span class="p">]))</span>
+<span class="n">stack</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="n">do_stacks</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"wow"</span><span class="p">]))</span>
 <span class="k">assert</span> <span class="n">top</span> <span class="o">==</span> <span class="s2">"wow"</span>
 <span class="k">for</span> <span class="n">expected</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"wow"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">,</span> <span class="s2">"hi"</span><span class="p">]:</span>
     <span class="k">assert</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">==</span> <span class="n">expected</span>
@@ -452,7 +453,7 @@ instantiates and calls a method on our MyStackClass class:</p>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
 
 <span class="n">scripted_foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
@@ -608,7 +609,7 @@ an attribute, you’ll get the following error:</p>
 <span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
       <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
 
   <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
       <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
@@ -619,7 +620,7 @@ an attribute, you’ll get the following error:</p>
 </pre></div>
 </div>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python export_attr.py
-RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.MyStackClass. Please define serialization methods via def_pickle <span class="k">for</span> this class. <span class="o">(</span>pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128<span class="o">)</span>
+RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.my_classes.MyStackClass. Please define serialization methods via def_pickle <span class="k">for</span> this class. <span class="o">(</span>pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128<span class="o">)</span>
 </pre></div>
 </div>
 <p>This is because TorchScript cannot automatically figure out what information
@@ -636,7 +637,7 @@ about how we use these methods.</p>
 <p>Here is an example of how we can update the registration code for our
 <code class="docutils literal notranslate"><span class="pre">MyStackClass</span></code> class to include serialization methods:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"my_classes"</span><span class="p">,</span> <span class="s">"MyStackClass"</span><span class="p">)</span>
       <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
       <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"top"</span><span class="p">,</span> <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
@@ -697,7 +698,7 @@ now run successfully:</p>
 <span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
@@ -728,7 +729,7 @@ example of how to do that:</p>
 <span class="k">static</span> <span class="k">auto</span> <span class="n">instance_registry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="p">().</span><span class="n">op</span><span class="p">(</span>
 <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="o">::</span><span class="n">options</span><span class="p">()</span>
     <span class="p">.</span><span class="n">schema</span><span class="p">(</span>
-        <span class="s">"foo::manipulate_instance(__torch__.torch.classes.MyStackClass x) -&gt; __torch__.torch.classes.MyStackClass Y"</span><span class="p">)</span>
+        <span class="s">"foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -&gt; __torch__.torch.classes.my_classes.MyStackClass Y"</span><span class="p">)</span>
     <span class="p">.</span><span class="n">catchAllKernel</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">manipulate_instance</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">manipulate_instance</span><span class="o">&gt;</span><span class="p">());</span>
 </pre></div>
 </div>
@@ -738,7 +739,7 @@ for more details on the registration API.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TryCustomOp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TryCustomOp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">foo</span><span class="o">.</span><span class="n">manipulate_instance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">)</span>

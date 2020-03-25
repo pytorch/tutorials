@@ -899,12 +899,24 @@ if (downloadNote.length >= 1) {
 if ($("p.caption:first").text() == "Notes") {
 
     $("p.caption:first").addClass("left-nav-top-caption");
-    $("span.caption-text:first").addClass("pytorch-left-nav-collapsed");
+    $("span.caption-text:first").after("<span class='expand-menu'>[Expand]</span>");
+    $(".expand-menu").after("<span class='hide-menu'>[Hide]</span>");
     $("p.caption:first").next("ul").hide();
 
-    $("span.caption-text:first").on("click", function() {
-    $(this).toggleClass("pytorch-left-nav-collapsible pytorch-left-nav-collapsed");
-    $("p.caption:first").next("ul").toggle();
+    $(".expand-menu").on("click", function() {
+        $(".hide-menu").toggle();
+        toggleList(this);
     });
+
+    $(".hide-menu").on("click", function() {
+        $(".expand-menu").toggle();
+        toggleList(this);
+    });
+
+    function toggleList(menuCommand) {
+        $(menuCommand).toggle();
+        $("p.caption:first").next("ul").toggle();
+    }
 }
+
 },{"jquery":"jquery"}]},{},[1,2,3,4,5,6,7,8,9,"pytorch-sphinx-theme"]);
