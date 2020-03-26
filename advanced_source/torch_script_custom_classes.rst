@@ -29,7 +29,7 @@ state in a member variable.
   #include <vector>
 
   template <class T>
-  struct MyStackClass : torch::jit::CustomClassHolder {
+  struct MyStackClass : torch::CustomClassHolder {
     std::vector<T> stack_;
     MyStackClass(std::vector<T> init) : stack_(init.begin(), init.end()) {}
 
@@ -63,7 +63,7 @@ There are several things to note:
   is to ensure consistent lifetime management of the object instances between languages
   (C++, Python and TorchScript).
 - The second thing to notice is that the user-defined class must inherit from
-  ``torch::jit::CustomClassHolder``. This ensures that everything is set up to handle
+  ``torch::CustomClassHolder``. This ensures that everything is set up to handle
   the lifetime management system previously mentioned.
 
 Now let's take a look at how we will make this class visible to TorchScript, a process called
@@ -73,24 +73,25 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
 
   // Notice a few things:
   // - We pass the class to be registered as a template parameter to
-  //   `torch::jit::class_`. In this instance, we've passed the
+  //   `torch::class_`. In this instance, we've passed the
   //   specialization of the MyStackClass class ``MyStackClass<std::string>``.
   //   In general, you cannot register a non-specialized template
   //   class. For non-templated classes, you can just pass the
   //   class name directly as the template parameter.
-  // - The single parameter to ``torch::jit::class_()`` is a
-  //   string indicating the name of the class. This is the name
-  //   the class will appear as in both Python and TorchScript.
-  //   For example, our MyStackClass class would appear as ``torch.classes.MyStackClass``.
+  // - The arguments passed to the constructor make up the "qualified name"
+  //   of the class. In this case, the registered class will appear in
+  //   Python and C++ as `torch.classes.my_classes.MyStackClass`. We call
+  //   the first argument the "namespace" and the second argument the
+  //   actual class name.
   static auto testStack =
-    torch::jit::class_<MyStackClass<std::string>>("MyStackClass")
+    torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
         // The following line registers the contructor of our MyStackClass
         // class that takes a single `std::vector<std::string>` argument,
         // i.e. it exposes the C++ method `MyStackClass(std::vector<T> init)`.
         // Currently, we do not support registering overloaded
         // constructors, so for now you can only `def()` one instance of
-        // `torch::jit::init`.
-        .def(torch::jit::init<std::vector<std::string>>())
+        // `torch::init`.
+        .def(torch::init<std::vector<std::string>>())
         // The next line registers a stateless (i.e. no captures) C++ lambda
         // function as a method. Note that a lambda function must take a
         // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
@@ -99,7 +100,7 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
           return self->stack_.back();
         })
         // The following four lines expose methods of the MyStackClass<std::string>
-        // class as-is. `torch::jit::class_` will automatically examine the
+        // class as-is. `torch::class_` will automatically examine the
         // argument and return types of the passed-in method pointers and
         // expose these to Python and TorchScript accordingly. Finally, notice
         // that we must take the *address* of the fully-qualified method name,
@@ -217,7 +218,7 @@ demonstrates that:
   #
   # This instantiation will invoke the MyStackClass(std::vector<T> init) constructor
   # we registered earlier
-  s = torch.classes.MyStackClass(["foo", "bar"])
+  s = torch.classes.my_classes.MyStackClass(["foo", "bar"])
 
   # We can call methods in Python
   s.push("pushed")
@@ -233,16 +234,16 @@ demonstrates that:
   # For now, we need to assign the class's type to a local in order to
   # annotate the type on the TorchScript function. This may change
   # in the future.
-  MyStackClass = torch.classes.MyStackClass
+  MyStackClass = torch.classes.my_classes.MyStackClass
 
   @torch.jit.script
   def do_stacks(s : MyStackClass): # We can pass a custom class instance to TorchScript
-      s2 = torch.classes.MyStackClass(["hi", "mom"]) # We can instantiate the class
+      s2 = torch.classes.my_classes.MyStackClass(["hi", "mom"]) # We can instantiate the class
       s2.merge(s) # We can call a method on the class
       return s2.clone(), s2.top()  # We can also return instances of the class
                                    # from TorchScript function/methods
 
-  stack, top = do_stacks(torch.classes.MyStackClass(["wow"]))
+  stack, top = do_stacks(torch.classes.my_classes.MyStackClass(["wow"]))
   assert top == "wow"
   for expected in ["wow", "mom", "hi"]:
       assert stack.pop() == expected
@@ -265,7 +266,7 @@ instantiates and calls a method on our MyStackClass class:
           super().__init__()
 
       def forward(self, s : str) -> str:
-          stack = torch.classes.MyStackClass(["hi", "mom"])
+          stack = torch.classes.my_classes.MyStackClass(["hi", "mom"])
           return stack.pop() + s
 
   scripted_foo = torch.jit.script(Foo())
@@ -307,7 +308,7 @@ Let's populate ``infer.cpp`` with the following:
   #include <memory>
 
   int main(int argc, const char* argv[]) {
-    torch::jit::script::Module module;
+    torch::script::Module module;
     try {
       // Deserialize the ScriptModule from a file using torch::jit::load().
       module = torch::jit::load("foo.pt");
@@ -394,6 +395,31 @@ And now we can run our exciting C++ binary:
 
 Incredible!
 
+Moving Custom Classes To/From IValues
+-------------------------------------
+
+It's also possible that you may need to move custom classes into or out of
+``IValue``s, such as when you take or return ``IValue``s from TorchScript methods
+or you want to instantiate a custom class attribute in C++. For creating an
+``IValue`` from a custom C++ class instance:
+
+- ``torch::make_custom_class<T>()`` provides an API similar to c10::intrusive_ptr<T>
+  in that it will take whatever set of arguments you provide to it, call the constructor
+  of T that matches that set of arguments, and wrap that instance up and return it.
+  However, instead of returning just a pointer to a custom class object, it returns
+  an ``IValue`` wrapping the object. You can then pass this ``IValue`` directly to
+  TorchScript.
+- In the event that you already have an ``intrusive_ptr`` pointing to your class, you
+  can directly construct an IValue from it using the constructor ``IValue(intrusive_ptr<T>)``.
+
+For converting ``IValue``s back to custom classes:
+
+- ``IValue::toCustomClass<T>()`` will return an ``intrusive_ptr<T>`` pointing to the
+  custom class that the ``IValue`` contains. Internally, this function is checking
+  that ``T`` is registered as a custom class and that the ``IValue`` does in fact contain
+  a custom class. You can check whether the ``IValue`` contains a custom class manually by
+  calling ``isCustomClass()``.
+
 Defining Serialization/Deserialization Methods for Custom C++ Classes
 ---------------------------------------------------------------------
 
@@ -410,7 +436,7 @@ an attribute, you'll get the following error:
   class Foo(torch.nn.Module):
     def __init__(self):
         super().__init__()
-        self.stack = torch.classes.MyStackClass(["just", "testing"])
+        self.stack = torch.classes.my_classes.MyStackClass(["just", "testing"])
 
     def forward(self, s : str) -> str:
         return self.stack.pop() + s
@@ -422,7 +448,7 @@ an attribute, you'll get the following error:
 .. code-block:: shell
 
   $ python export_attr.py
-  RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.MyStackClass. Please define serialization methods via torch::jit::pickle_ for this class. (pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128)
+  RuntimeError: Cannot serialize custom bound C++ class __torch__.torch.classes.my_classes.MyStackClass. Please define serialization methods via def_pickle for this class. (pushIValueImpl at ../torch/csrc/jit/pickler.cpp:128)
 
 This is because TorchScript cannot automatically figure out what information
 save from your C++ class. You must specify that manually. The way to do that
@@ -441,8 +467,8 @@ Here is an example of how we can update the registration code for our
 .. code-block:: cpp
 
   static auto testStack =
-    torch::jit::class_<MyStackClass<std::string>>("MyStackClass")
-        .def(torch::jit::init<std::vector<std::string>>())
+    torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
+        .def(torch::init<std::vector<std::string>>())
         .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
           return self->stack_.back();
         })
@@ -503,7 +529,7 @@ now run successfully:
   class Foo(torch.nn.Module):
       def __init__(self):
           super().__init__()
-          self.stack = torch.classes.MyStackClass(["just", "testing"])
+          self.stack = torch.classes.my_classes.MyStackClass(["just", "testing"])
 
       def forward(self, s : str) -> str:
           return self.stack.pop() + s
@@ -537,7 +563,7 @@ example of how to do that:
   static auto instance_registry = torch::RegisterOperators().op(
   torch::RegisterOperators::options()
       .schema(
-          "foo::manipulate_instance(__torch__.torch.classes.MyStackClass x) -> __torch__.torch.classes.MyStackClass Y")
+          "foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y")
       .catchAllKernel<decltype(manipulate_instance), &manipulate_instance>());
 
 Refer to the `custom op tutorial <https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html>`_
@@ -550,7 +576,7 @@ Once this is done, you can use the op like the following example:
   class TryCustomOp(torch.nn.Module):
       def __init__(self):
           super(TryCustomOp, self).__init__()
-          self.f = torch.classes.MyStackClass(["foo", "bar"])
+          self.f = torch.classes.my_classes.MyStackClass(["foo", "bar"])
 
       def forward(self):
           return torch.ops.foo.manipulate_instance(self.f)
