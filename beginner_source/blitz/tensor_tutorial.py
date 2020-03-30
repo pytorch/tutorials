@@ -13,31 +13,31 @@ audiences:
 Getting Started
 ---------------
 
-Tensors
-^^^^^^^
+Tensors and Their Construction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Tensors are similar to NumPy’s ndarrays, with the addition being that
-Tensors can also be used on a GPU to accelerate computing.
+tensors can also be used on a GPU to accelerate computing.
 """
 
 from __future__ import print_function
 import torch
 
 ###############################################################
-# .. note::
-#     An uninitialized matrix is declared,
-#     but does not contain definite known
-#     values before it is used. When an
-#     uninitialized matrix is created,
-#     whatever values were in the allocated
-#     memory at the time will appear as the initial values.
-
-###############################################################
 # Construct a 5x3 matrix, uninitialized:
 
 x = torch.empty(5, 3)
 print(x)
- 
+
+###############################################################
+# .. note::
+#     Here, an uninitialized tensor is declared,
+#     but would not contain definite known
+#     values before it is used. When an
+#     uninitialized tensor is created,
+#     whatever values were in the allocated
+#     memory at the time will appear as the initial values.
+
 ###############################################################
 # Construct a randomly initialized matrix:
 
@@ -91,7 +91,7 @@ print(x + y)
 print(torch.add(x, y))
 
 ###############################################################
-# Addition: providing an output tensor as argument
+# Addition: output to a provided tensor argument
 result = torch.empty(5, 3)
 torch.add(x, y, out=result)
 print(result)
@@ -182,9 +182,10 @@ print(b)
 # CUDA Tensors
 # ------------
 #
-# Tensors can be moved onto any device using the ``.to`` method.
+# PyTorch uses CUDA as the interface to access GPU resources. Tensors
+# can be moved onto any device (CPU or GPU) using the ``.to`` method.
 
-# let us run this cell only if CUDA is available
+# Let us run this cell only if CUDA is available
 # We will use ``torch.device`` objects to move tensors in and out of GPU
 if torch.cuda.is_available():
     device = torch.device("cuda")          # a CUDA device object
