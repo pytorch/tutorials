@@ -236,7 +236,7 @@ should return:</p>
 <li><code class="docutils literal notranslate"><span class="pre">boxes</span> <span class="pre">(FloatTensor[N,</span> <span class="pre">4])</span></code>: the coordinates of the <code class="docutils literal notranslate"><span class="pre">N</span></code>
 bounding boxes in <code class="docutils literal notranslate"><span class="pre">[x0,</span> <span class="pre">y0,</span> <span class="pre">x1,</span> <span class="pre">y1]</span></code> format, ranging from <code class="docutils literal notranslate"><span class="pre">0</span></code>
 to <code class="docutils literal notranslate"><span class="pre">W</span></code> and <code class="docutils literal notranslate"><span class="pre">0</span></code> to <code class="docutils literal notranslate"><span class="pre">H</span></code></li>
-<li><code class="docutils literal notranslate"><span class="pre">labels</span> <span class="pre">(Int64Tensor[N])</span></code>: the label for each bounding box</li>
+<li><code class="docutils literal notranslate"><span class="pre">labels</span> <span class="pre">(Int64Tensor[N])</span></code>: the label for each bounding box. <code class="docutils literal notranslate"><span class="pre">0</span></code> represents always the background class.</li>
 <li><code class="docutils literal notranslate"><span class="pre">image_id</span> <span class="pre">(Int64Tensor[1])</span></code>: an image identifier. It should be
 unique between all the images in the dataset, and is used during
 evaluation</li>
@@ -261,6 +261,7 @@ representation</li>
 <p>If your model returns the above methods, they will make it work for both
 training and evaluation, and will use the evaluation scripts from
 <code class="docutils literal notranslate"><span class="pre">pycocotools</span></code>.</p>
+<p>One note on the <code class="docutils literal notranslate"><span class="pre">labels</span></code>. The model considers class <code class="docutils literal notranslate"><span class="pre">0</span></code> as background. If your dataset does not contain the background class, you should not have <code class="docutils literal notranslate"><span class="pre">0</span></code> in your <code class="docutils literal notranslate"><span class="pre">labels</span></code>. For example, assuming you have just two classes, <em>cat</em> and <em>dog</em>, you can define <code class="docutils literal notranslate"><span class="pre">1</span></code> (not <code class="docutils literal notranslate"><span class="pre">0</span></code>) to represent <em>cats</em> and <code class="docutils literal notranslate"><span class="pre">2</span></code> to represent <em>dogs</em>. So, for instance, if one of the images has booth classes, your <code class="docutils literal notranslate"><span class="pre">labels</span></code> tensor should look like <code class="docutils literal notranslate"><span class="pre">[1,2]</span></code>.</p>
 <p>Additionally, if you want to use aspect ratio grouping during training
 (so that each batch only contains images with similar aspect ratio),
 then it is recommended to also implement a <code class="docutils literal notranslate"><span class="pre">get_height_and_width</span></code>
