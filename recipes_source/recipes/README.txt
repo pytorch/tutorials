@@ -53,8 +53,8 @@ PyTorch Recipes
          https://pytorch.org/tutorials/recipes/recipes/cpp_extension.html
 
 13. custom_dataset.ipynb
-	 Custom C++ and CUDA Extensions
-         https://pytorch.org/tutorials/recipes/recipes/cpp_extension.html
+	 Writing Custom Data Transformations
+         https://pytorch.org/tutorials/recipes/recipes/custom_dataset.html
 
 14. example_recipe.py
 	   Example Recipe
