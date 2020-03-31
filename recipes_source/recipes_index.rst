@@ -106,6 +106,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/torch_script_custom_ops.html
    :tags: Extending-PyTorch, TorchScript
+   
+ .. customcarditem::
+   :header: Extending TorchScript with Custom C++ Classes
+   :card_description: This is a contiuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/torch_script_custom_classes.html
+   :tags: Extending-PyTorch, TorchScript
+
 
 .. customcarditem::
    :header: Creating Extensions Using numpy and scipy
