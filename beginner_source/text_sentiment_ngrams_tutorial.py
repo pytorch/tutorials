@@ -197,8 +197,7 @@ def test(data_):
         text, offsets, cls = text.to(device), offsets.to(device), cls.to(device)
         with torch.no_grad():
             output = model(text, offsets)
-            loss = criterion(output, cls)
-            loss += loss.item()
+            loss += criterion(output, cls).item()
             acc += (output.argmax(1) == cls).sum().item()
 
     return loss / len(data_), acc / len(data_)
