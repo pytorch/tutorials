@@ -170,6 +170,11 @@ Additional APIs
     :description: :doc:`advanced/cpp_frontend`
 
 .. customgalleryitem::
+    :tooltip: Autograd in C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_autograd`
+
+.. customgalleryitem::
    :figure: /_static/img/named_tensor.png
    :tooltip: Named Tensor
    :description: :doc:`intermediate/named_tensor_tutorial`
@@ -251,6 +256,7 @@ Additional APIs
    :caption: Additional APIs
 
    advanced/cpp_frontend
+   advanced/cpp_autograd
    intermediate/named_tensor_tutorial
    intermediate/pruning_tutorial
 
