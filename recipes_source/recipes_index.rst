@@ -61,11 +61,18 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/cpp_export.html
    :tags: Production
 
-.. Parallel-and-Distributed-Training
-
 .. customcarditem::
    :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
    :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/super_resolution_with_onnxruntime.html
+   :tags: Production
+
+.. Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Model Parallel Best Practices
+   :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU 
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/model_parallel_tutorial.html
    :tags: Parallel-and-Distributed-Training
@@ -97,21 +104,21 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :header: Extending TorchScript with Custom C++ Operators
    :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/pytorch-logo-flat.png
-   :link: ../recipes/recipes/aws_distributed_training_tutorial.html
+   :link: ../recipes/recipes/torch_script_custom_ops.html
    :tags: Extending-PyTorch, TorchScript
 
 .. customcarditem::
    :header: Creating Extensions Using numpy and scipy
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
    :image: _static/img/thumbnails/pytorch-logo-flat.png
-   :link: ../recipes/recipes/aws_distributed_training_tutorial.html
+   :link: ../recipes/recipes/numpy_extensions_tutorial.html
    :tags: Extending-PyTorch, numpy, scipy
 
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
    :image: _static/img/thumbnails/pytorch-logo-flat.png
-   :link: ../recipes/recipes/aws_distributed_training_tutorial.html
+   :link: ../recipes/recipes/cpp_extension.html
    :tags: Extending-PyTorch, C++, CUDA
 
 
