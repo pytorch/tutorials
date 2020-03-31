@@ -83,7 +83,6 @@ print(y)
 # ``grad_fn`` points to the last operation performed on the tensor.
 # In this case it is an addition function, so its value is ``AddBackward0``.
 
-
 print(y.grad_fn)
 
 ###############################################################
