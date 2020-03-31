@@ -40,22 +40,26 @@ PyTorch Recipes
 	 (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
          https://pytorch.org/tutorials/recipes/recipes/aws_distributed_training_tutorial.html
 
-10. torsh_script_custom_ops.rst
+10. torsh_script_custom_classes.rst
+	 Extending TorchScript with Custom C++ Classs
+         https://pytorch.org/tutorials/recipes/recipes/torsh_script_custom_classes.html
+
+11. torsh_script_custom_ops.rst
 	 Extending TorchScript with Custom C++ Operators
          https://pytorch.org/tutorials/recipes/recipes/torsh_script_custom_ops.html
 
-11. numpy_extensions_tutorial.py
+12. numpy_extensions_tutorial.py
 	 Creating Extensions Using numpy and scipy
          https://pytorch.org/tutorials/recipes/recipes/numpy_extensions_tutorila.html
 
-12. cpp_extension.py
+13. cpp_extension.py
 	 Custom C++ and CUDA Extensions
          https://pytorch.org/tutorials/recipes/recipes/cpp_extension.html
 
-13. custom_dataset.ipynb
+14. custom_dataset.ipynb
 	 Writing Custom Data Transformations
          https://pytorch.org/tutorials/recipes/recipes/custom_dataset.html
 
-14. example_recipe.py
+15. example_recipe.py
 	   Example Recipe
            https://pytorch.org/tutorials/recipes/recipes/example_recipe.html
