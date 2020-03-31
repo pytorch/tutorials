@@ -80,7 +80,9 @@ y = x + 2
 print(y)
 
 ###############################################################
-# ``y`` was created as a result of an operation, so it has a ``grad_fn`` that tells us its history.
+# ``grad_fn`` points to the last operation performed on the tensor.
+# In this case it is an addition function, so its value is ``AddBackward0``.
+
 
 print(y.grad_fn)
 
