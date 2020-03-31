@@ -90,6 +90,13 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/dist_tuto.html
    :tags: Parallel-and-Distributed-Training
+   
+.. customcarditem::
+   :header: Getting Started with Distributed RPC Framework
+   :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/rpc_tutorial.html
+   :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
