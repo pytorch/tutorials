@@ -3,11 +3,15 @@
 Neural Networks
 ===============
 
-Neural networks can be constructed using the ``torch.nn`` package.
+Deep learning uses artificial neural networks (models), which are computing
+systems that are composed of many layers of interconnected units.
+By passing data through these interconnected units, a neural 
+network is able to learn how to approximate the computations
+required to transform inputs into outputs. In PyTorch, neural networks 
+can be constructed using the ``torch.nn`` package.
 
-Now that you had a glimpse of ``autograd``, ``nn`` depends on
-``autograd`` to define models and differentiate them.
-An ``nn.Module`` contains layers, and a method ``forward(input)``\ that
+``torch.nn`` depends on ``autograd`` to define models and differentiate them.
+An ``nn.Module`` contains layers, and a method ``forward(input)`` that
 returns the ``output``.
 
 For example, look at this network that classifies digit images:
@@ -17,9 +21,12 @@ For example, look at this network that classifies digit images:
 
    convnet
 
-It is a simple feed-forward network. It takes the input, feeds it
-through several layers one after the other, and then finally gives the
-output.
+It is a simple feed-forward network (the connections between the nodes do 
+not form a cycle). It takes the input, feeds it through several layers one 
+after the other, and then finally gives the output.
+
+Getting Started
+---------------
 
 A typical training procedure for a neural network is as follows:
 
@@ -32,10 +39,23 @@ A typical training procedure for a neural network is as follows:
 - Update the weights of the network, typically using a simple update rule:
   ``weight = weight - learning_rate * gradient``
 
+In this section of the tutorial, we will step through this process using PyTorch.
+
 Define the network
 ------------------
 
-Let’s define this network:
+Our network will recognize images. We will use a process built into PyTorch called 
+convolution. Convolution is the process of adding each element of the image to its 
+local neighbors, weighted by a kernel, or a small martrix, that helps us extract
+certain features (like edge detection, sharpness, blurriness, etc.) from the input image.
+
+We will create a model that takes in 1 input, has 6 outputs produced by the convolution, 
+and a convolving kernal of size 3. 
+
+The 6 outputs are representative of the number of kernels which will be applied to the input
+image. 
+
+Lets start by defining our network:
 """
 import torch
 import torch.nn as nn
@@ -78,10 +98,13 @@ net = Net()
 print(net)
 
 ########################################################################
-# You just have to define the ``forward`` function, and the ``backward``
-# function (where gradients are computed) is automatically defined for you
-# using ``autograd``.
-# You can use any of the Tensor operations in the ``forward`` function.
+# When you use PyTorch to build a model, you just have to define the ``forward``
+# function, that will pass the data into the computation graph (i.e. our 
+# neural network). You can use any of the Tensor operations in the ``forward`` function. 
+# 
+# The ``backward`` function (where gradients are computed) 
+# is automatically defined for you as we saw in the previous section of 
+# the tutorial with ``autograd``.
 #
 # The learnable parameters of a model are returned by ``net.parameters()``
 
@@ -90,7 +113,8 @@ print(len(params))
 print(params[0].size())  # conv1's .weight
 
 ########################################################################
-# Let's try a random 32x32 input.
+# Let's try a random 32x32 input that will represent our image.
+#
 # Note: expected input size of this net (LeNet) is 32x32. To use this net on
 # the MNIST dataset, please resize the images from the dataset to 32x32.
 
@@ -100,7 +124,9 @@ print(out)
 
 ########################################################################
 # Zero the gradient buffers of all parameters and backprops with random
-# gradients:
+# gradients. We do this because at this point we have yet to calculate 
+# the loss:
+
 net.zero_grad()
 out.backward(torch.randn(1, 10))
 
@@ -117,7 +143,8 @@ out.backward(torch.randn(1, 10))
 #     If you have a single sample, just use ``input.unsqueeze(0)`` to add
 #     a fake batch dimension.
 #
-# Before proceeding further, let's recap all the classes you’ve seen so far.
+#
+# Before proceeding further, let's recap all the classes we’ve seen so far.
 #
 # **Recap:**
 #   -  ``torch.Tensor`` - A *multi-dimensional array* with support for autograd
@@ -168,7 +195,6 @@ print(loss)
 # ``.grad_fn`` attribute, you will see a graph of computations that looks
 # like this:
 #
-# ::
 #
 #     input -> conv2d -> relu -> maxpool2d -> conv2d -> relu -> maxpool2d
 #           -> view -> linear -> relu -> linear -> relu -> linear
@@ -176,7 +202,7 @@ print(loss)
 #           -> loss
 #
 # So, when we call ``loss.backward()``, the whole graph is differentiated
-# w.r.t. the loss, and all Tensors in the graph that has ``requires_grad=True``
+# with respect to the loss, and all tensors in the graph that has ``requires_grad=True``
 # will have their ``.grad`` Tensor accumulated with the gradient.
 #
 # For illustration, let us follow a few steps backward:
@@ -189,7 +215,7 @@ print(loss.grad_fn.next_functions[0][0].next_functions[0][0])  # ReLU
 # Backprop
 # --------
 # To backpropagate the error all we have to do is to ``loss.backward()``.
-# You need to clear the existing gradients though, else gradients will be
+# Remember that you need to clear the existing gradients, otherwise gradients will be
 # accumulated to existing gradients.
 #
 #
