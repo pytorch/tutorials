@@ -3,10 +3,11 @@
 Training a Classifier
 =====================
 
-This is it. You have seen how to define neural networks, compute loss and make
+This is it! You made it to the last step of the tutorial.
+You have seen how to define neural networks, compute loss and make
 updates to the weights of the network.
 
-Now you might be thinking,
+Now you might be thinking...
 
 What about data?
 ----------------
@@ -27,6 +28,10 @@ Imagenet, CIFAR10, MNIST, etc. and data transformers for images, viz.,
 
 This provides a huge convenience and avoids writing boilerplate code.
 
+
+Getting Started
+---------------
+
 For this tutorial, we will use the CIFAR10 dataset.
 It has the classes: ‘airplane’, ‘automobile’, ‘bird’, ‘cat’, ‘deer’,
 ‘dog’, ‘frog’, ‘horse’, ‘ship’, ‘truck’. The images in CIFAR-10 are of
@@ -38,7 +43,7 @@ size 3x32x32, i.e. 3-channel color images of 32x32 pixels in size.
    cifar10
 
 
-Training an image classifier
+Training an Image classifier
 ----------------------------
 
 We will do the following steps in order:
@@ -84,6 +89,9 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 ########################################################################
+# We can use the same dataset for training and testing because we are 
+# randomizing by setting ``shuffle`` to True.
+#
 # Let us show some of the training images, for fun.
 
 import matplotlib.pyplot as plt
@@ -316,13 +324,14 @@ print(device)
 #
 #         inputs, labels = data[0].to(device), data[1].to(device)
 #
-# Why dont I notice MASSIVE speedup compared to CPU? Because your network
+# Why dont I notice MASSIVE speedup compared to CPU? Because this network
 # is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
 # the first ``nn.Conv2d``, and argument 1 of the second ``nn.Conv2d`` –
 # they need to be the same number), see what kind of speedup you get.
 #
+# You did it! You have officially completed the PyTorch 60-minute Blitz.
 # **Goals achieved**:
 #
 # - Understanding PyTorch's Tensor library and neural networks at a high level.
