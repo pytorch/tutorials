@@ -135,6 +135,11 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/cpp_extension.html
    :tags: Extending-PyTorch, C++, CUDA
 
+.. customcarditem::
+   :header: Model Interpretability using Captum
+   :card_description: Attributing the predictions of a torchvision ResNet to the image areas responsible for these predictions.
+   :link: ../recipes/recipes/captum.html
+   :tags: Captum, visualization
 
 .. End of recipe card section
 
