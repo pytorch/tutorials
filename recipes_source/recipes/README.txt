@@ -64,6 +64,10 @@ PyTorch Recipes
 	 Extending TorchScript with Custom C++ Operators
          https://pytorch.org/tutorials/recipes/recipes/torsh_script_custom_ops.html
 
+17. captum.ipynb
+	 Model Interpretability using Captum
+         https://pytorch.org/tutorials/recipes/recipes/captum.html
+
 
 
 
