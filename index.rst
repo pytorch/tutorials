@@ -47,6 +47,16 @@ Learning PyTorch
    :figure: /_static/img/thumbnails/pytorch_tensorboard.png
    :tooltip: Learn to use TensorBoard to visualize data and model training
    :description: :doc:`intermediate/tensorboard_tutorial`
+   
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/net_analysis.png
+   :tooltip: Analyze the inner workings of a neural network
+   :description: :doc:`beginner/network_analysis_tutorial`
+
+.. customgalleryitem::
+   :figure: /_static/img/thumbnails/weight_transfer.png
+   :tooltip: Easily transfer weights from one network to another
+   :description: :doc:`beginner/weight_transfer_tutorial`
 
 .. raw:: html
 
@@ -198,6 +208,8 @@ Additional APIs
    beginner/pytorch_with_examples
    beginner/nn_tutorial
    intermediate/tensorboard_tutorial
+   beginner/network_analysis_tutorial
+   beginner/weight_transfer_tutorial
 
 .. toctree::
    :maxdepth: 2
