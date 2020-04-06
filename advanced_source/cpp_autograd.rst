@@ -286,7 +286,7 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
     // Note that both forward and backward are static functions
   
     // bias is an optional argument
-    static Variable forward(AutogradContext *ctx, Variable input, Variable weight, Variable bias = Variable()) {
+    static Tensor forward(AutogradContext *ctx, Tensor input, Tensor weight, Tensor bias = Tensor()) {
       ctx->save_for_backward({input, weight, bias});
       auto output = input.mm(weight.t());
       if (bias.defined()) {
@@ -295,7 +295,7 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
       return output;
     }
   
-    static variable_list backward(AutogradContext *ctx, variable_list grad_outputs) {
+    static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
       auto saved = ctx->get_saved_variables();
       auto input = saved[0];
       auto weight = saved[1];
@@ -304,7 +304,7 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
       auto grad_output = grad_outputs[0];
       auto grad_input = grad_output.mm(weight);
       auto grad_weight = grad_output.t().mm(input);
-      auto grad_bias = Variable();
+      auto grad_bias = Tensor();
       if (bias.defined()) {
         grad_bias = grad_output.sum(0);
       }
@@ -348,17 +348,17 @@ Here, we give an additional example of a function that is parametrized by non-Te
   
   class MulConstant : public Function<MulConstant> {
    public:
-    static Variable forward(AutogradContext *ctx, Variable variable, double constant) {
+    static Tensor forward(AutogradContext *ctx, Tensor tensor, double constant) {
       // ctx is a context object that can be used to stash information
       // for backward computation
       ctx->saved_data["constant"] = constant;
-      return variable * constant;
+      return tensor * constant;
     }
   
-    static variable_list backward(AutogradContext *ctx, variable_list grad_outputs) {
+    static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
       // We return as many input gradients as there were arguments.
-      // Gradients of non-Tensor arguments to forward must be `Variable()`.
-      return {grad_outputs[0] * ctx->saved_data["constant"].toDouble(), Variable()};
+      // Gradients of non-Tensor arguments to forward must be `Tensor()`.
+      return {grad_outputs[0] * ctx->saved_data["constant"].toDouble(), Tensor()};
     }
   };
 
