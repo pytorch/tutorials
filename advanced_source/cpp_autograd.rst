@@ -83,7 +83,7 @@ Out:
   MeanBackward0
 
 
-``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad`` flag in-place.
+``.requires_grad_( ... )`` changes an existing tensor's ``requires_grad`` flag in-place.
 
 .. code-block:: cpp
 
@@ -171,7 +171,7 @@ Out:
       0.1024
   [ CPUFloatType{3} ]
 
-You can also stop autograd from tracking history on Tensors that require gradients
+You can also stop autograd from tracking history on tensors that require gradients
 either by putting ``torch::NoGradGuard`` in a code block
 
 .. code-block:: cpp
@@ -193,7 +193,7 @@ Out:
   true
   false
 
-Or by using ``.detach()`` to get a new Tensor with the same content but that does
+Or by using ``.detach()`` to get a new tensor with the same content but that does
 not require gradients:
 
 .. code-block:: cpp
@@ -286,7 +286,8 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
     // Note that both forward and backward are static functions
   
     // bias is an optional argument
-    static Tensor forward(AutogradContext *ctx, Tensor input, Tensor weight, Tensor bias = Tensor()) {
+    static torch::Tensor forward(
+        AutogradContext *ctx, torch::Tensor input, torch::Tensor weight, torch::Tensor bias = torch::Tensor()) {
       ctx->save_for_backward({input, weight, bias});
       auto output = input.mm(weight.t());
       if (bias.defined()) {
@@ -304,7 +305,7 @@ Below you can find code for a ``Linear`` function from ``torch::nn``:
       auto grad_output = grad_outputs[0];
       auto grad_input = grad_output.mm(weight);
       auto grad_weight = grad_output.t().mm(input);
-      auto grad_bias = Tensor();
+      auto grad_bias = torch::Tensor();
       if (bias.defined()) {
         grad_bias = grad_output.sum(0);
       }
@@ -338,7 +339,7 @@ Out:
    3.7608  0.9101  0.0073
   [ CPUFloatType{4,3} ]
 
-Here, we give an additional example of a function that is parametrized by non-Tensor arguments:
+Here, we give an additional example of a function that is parametrized by non-tensor arguments:
 
 .. code-block:: cpp
 
@@ -348,7 +349,7 @@ Here, we give an additional example of a function that is parametrized by non-Te
   
   class MulConstant : public Function<MulConstant> {
    public:
-    static Tensor forward(AutogradContext *ctx, Tensor tensor, double constant) {
+    static torch::Tensor forward(AutogradContext *ctx, torch::Tensor tensor, double constant) {
       // ctx is a context object that can be used to stash information
       // for backward computation
       ctx->saved_data["constant"] = constant;
@@ -357,8 +358,8 @@ Here, we give an additional example of a function that is parametrized by non-Te
   
     static tensor_list backward(AutogradContext *ctx, tensor_list grad_outputs) {
       // We return as many input gradients as there were arguments.
-      // Gradients of non-Tensor arguments to forward must be `Tensor()`.
-      return {grad_outputs[0] * ctx->saved_data["constant"].toDouble(), Tensor()};
+      // Gradients of non-tensor arguments to forward must be `torch::Tensor()`.
+      return {grad_outputs[0] * ctx->saved_data["constant"].toDouble(), torch::Tensor()};
     }
   };
 
