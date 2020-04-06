@@ -3,7 +3,7 @@ Autograd in C++ Frontend
 
 The ``autograd`` package is crucial for building highly flexible and dynamic neural
 networks in PyTorch. Most of the autograd APIs in PyTorch Python frontend are also available
-in C++ frontend, allowing easy translation from Python autograd code to C++.
+in C++ frontend, allowing easy translation of autograd code from Python to C++.
 
 In this tutorial we'll look at several examples of doing autograd in PyTorch C++ frontend.
 Note that this tutorial assumes that you already have a basic understanding of
@@ -171,7 +171,7 @@ Out:
       0.1024
   [ CPUFloatType{3} ]
 
-You can also stop autograd from tracking history on Tensors with ``.requires_grad() == true``
+You can also stop autograd from tracking history on Tensors that require gradients
 either by putting ``torch::NoGradGuard`` in a code block
 
 .. code-block:: cpp
@@ -236,10 +236,7 @@ Let's see an example of it using ``torch::autograd::grad``:
   
   // Use norm of gradients as penalty
   auto grad_output = torch::ones_like(output);
-  auto gradient = torch::autograd::grad({output}, {input}, /*grad_outputs=*/{grad_output},
-                  /*retain_graph=*/true, /*create_graph=*/true,
-                  /*allow_unused=*/true)[0];
-  gradient = gradient.view({-1, 1});
+  auto gradient = torch::autograd::grad({output}, {input}, /*grad_outputs=*/{grad_output}, /*create_graph=*/true)[0];
   auto gradient_penalty = torch::pow((gradient.norm(2, /*dim=*/1) - 1), 2).mean();
   
   // Add gradient penalty to loss
@@ -252,9 +249,10 @@ Out:
 
 .. code-block:: shell
 
-  -0.2574  0.0494  0.3060  0.3215
-  -0.1197  0.0248  0.1405  0.1401
-  [ CPUFloatType{2,4} ]
+  -0.1042 -0.0638  0.0103  0.0723
+  -0.2543 -0.1222  0.0071  0.0814
+  -0.1683 -0.1052  0.0355  0.1024
+  [ CPUFloatType{3,4} ]
 
 Please see the documentation for ``torch::autograd::backward``
 (`link <https://pytorch.org/cppdocs/api/function_namespacetorch_1_1autograd_1afa9b5d4329085df4b6b3d4b4be48914b.html>`_)
@@ -267,7 +265,7 @@ Using custom autograd function in C++
 
 (Adapted from `this tutorial <https://pytorch.org/docs/stable/notes/extending.html#extending-torch-autograd>`_)
 
-Adding operations to ``torch::autograd`` requires implementing a new ``torch::autograd::Function``
+Adding a new elementary operation to ``torch::autograd`` requires implementing a new ``torch::autograd::Function``
 subclass for each operation. ``torch::autograd::Function`` s are what ``torch::autograd``
 uses to compute the results and gradients, and encode the operation history. Every
 new function requires you to implement 2 methods: ``forward`` and ``backward``, and
@@ -389,7 +387,7 @@ Translating autograd code from Python to C++
 --------------------------------------------
 
 On a high level, the easiest way to use autograd in C++ is to have working
-autograd code in Python first, and then translate your Python autograd code to
+autograd code in Python first, and then translate your autograd code from Python to
 C++ using the following table:
 
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -422,10 +420,6 @@ C++ using the following table:
 | ``torch.Tensor.output_nr``     | ``torch::Tensor::output_nr`` (`link <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html#_CPPv4NK2at6Tensor9output_nrEv>`_)                                        |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``torch.Tensor.is_leaf``       | ``torch::Tensor::is_leaf`` (`link <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html#_CPPv4NK2at6Tensor7is_leafEv>`_)                                            |
-+--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``torch.Tensor._version``      | ``torch::Tensor::_version`` (`link <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html#_CPPv4NK2at6Tensor8_versionEv>`_)                                          |
-+--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``torch.Tensor._base``         | ``torch::Tensor::_base`` (`link <https://pytorch.org/cppdocs/api/classat_1_1_tensor.html#_CPPv4NK2at6Tensor5_baseEv>`_)                                                |
 +--------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 After translation, most of your Python autograd code should just work in C++.
