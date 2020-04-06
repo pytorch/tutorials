@@ -77,7 +77,6 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
     count=$((count+1))
    done
-    done
    for filename in $(find recipes_source/ -name '*.py' -not -path '*/data/*'); do
     if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
       echo "Removing runnable code from "$filename
