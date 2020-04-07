@@ -37,9 +37,6 @@ pip install torchaudio
 4. Iterate over the data
 5. [Optional] Visualize the data
 
-TIPS:
-* alksdjalksdjaslkdj
-
 ### **1) Import necessary libraries for loading our data**
 For this recipe, we will use ``torch`` and ``torchaudio``. Depending on what built-in datasets you use, you can also install and import ``torchvision`` or ``torchtext``.
 """
