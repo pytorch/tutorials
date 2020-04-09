@@ -363,7 +363,7 @@ print(device)
 # .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
 # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
 # .. _PyTorch Examples: https://github.com/pytorch/examples
-# .. _More PyTorch tutorials: https://github.com/pytorch/tutorials
+# .. _More PyTorch tutorials: https://pytorch.org/tutorials/index.html
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
 # .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
 
