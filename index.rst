@@ -259,6 +259,18 @@ Additional APIs
    :maxdepth: 2
    :includehidden:
    :hidden:
+   :caption: Parallel and Distributed Training
+
+   intermediate/ddp_tutorial
+   intermediate/model_parallel_tutorial
+   intermediate/rpc_tutorial
+   intermediate/rpc_param_server_tutorial
+
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
    :caption: Recipes
 
    recipes/recipes_index
