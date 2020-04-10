@@ -31,7 +31,6 @@ Let's start with the familiar: importing our required modules and defining a sim
 
    # --------- MNIST Network to train, from pytorch/examples -----
 
-
    class Net(nn.Module):
        def __init__(self, num_gpus=0):
            super(Net, self).__init__()
@@ -71,7 +70,6 @@ Let's start with the familiar: importing our required modules and defining a sim
            x = self.fc2(x)
            output = F.log_softmax(x, dim=1)
            return output
-
 Next, let's define some helper functions that will be useful for the rest of our script. The following uses `rpc_sync <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.rpc_sync>`_ and `RRef <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef>`_ in order to define a function that invokes a given method on an object living on a remote node. Below, our handle to the remote object is given by the ``rref`` argument, and we run it on its owning node: ``rref.owner()``. On the caller node, we run this command synchronously through the use of ``rpc_sync``\ , meaning that we will block until a response is received.
 
 .. code-block:: python
@@ -96,7 +94,6 @@ Next, let's define some helper functions that will be useful for the rest of our
    def remote_method(method, rref, *args, **kwargs):
        args = [method, rref] + list(args)
        return rpc.rpc_sync(rref.owner(), call_method, args=args, kwargs=kwargs)
-
 Now, we're ready to define our parameter server. We will subclass ``nn.Module`` and save a handle to our network defined above. We'll also save an input device which will be the device our input is transferred to before invoking the model.
 
 .. code-block:: python
@@ -109,7 +106,6 @@ Now, we're ready to define our parameter server. We will subclass ``nn.Module`` 
            self.model = model
            self.input_device = torch.device(
                "cuda:0" if torch.cuda.is_available() and num_gpus > 0 else "cpu")
-
 Next, we'll define our forward pass. Note that regardless of the device of the model output, we move the output to CPU, as the Distributed RPC Framework currently only supports sending CPU tensors over RPC. We have intentionally disabled sending CUDA tensors over RPC due to the potential for different devices (CPU/GPU) on on the caller/callee, but may support this in future releases.
 
 .. code-block:: python
@@ -123,7 +119,6 @@ Next, we'll define our forward pass. Note that regardless of the device of the m
                # Tensors must be moved in and out of GPU memory due to this.
                out = out.to("cpu")
                return out
-
 Next, we'll define a few miscellaneous functions useful for training and verification purposes. The first, ``get_dist_gradients``\ , will take in a Distributed Autograd context ID and call into the ``dist_autograd.get_gradients`` API in order to retrieve gradients computed by distributed autograd. More information can be found in the `distributed autograd documentation <https://pytorch.org/docs/stable/rpc.html#distributed-autograd-framework>`_. Note that we also iterate through the resulting dictionary and convert each tensor to a CPU tensor, as the framework currently only supports sending tensors over RPC. Next, ``get_param_rrefs`` will iterate through our model parameters and wrap them as a (local) `RRef <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef>`_. This method will be invoked over RPC by trainer nodes and will return a list of the parameters to be optimized. This is required as input to the `Distributed Optimizer <https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim>`_\ , which requires all parameters it must optimize as a list of ``RRef``\ s. 
 
 .. code-block:: python
@@ -145,7 +140,6 @@ Next, we'll define a few miscellaneous functions useful for training and verific
    def get_param_rrefs(self):
        param_rrefs = [rpc.RRef(param) for param in self.model.parameters()]
        return param_rrefs
-
 Finally, we'll create methods to initialize our parameter server. Note that there will only be one instance of a parameter server across all processes, and all trainers will talk to the same parameter server and update the same stored model. As seen in ``run_parameter_server``\ , the server itself does not take any independent actions; it waits for requests from trainers (which are yet to be defined) and responds to them by running the requested function.
 
 .. code-block:: python
@@ -179,7 +173,6 @@ Finally, we'll create methods to initialize our parameter server. Note that ther
      print("RPC initialized! Running parameter server...")
      rpc.shutdown()
      print("RPC shutdown on parameter server.")
-
 Note that above, ``rpc.shutdown()`` will not immediately shut down the Parameter Server. Instead, it will wait for all workers (trainers in this case) to also call into ``rpc.shutdown()``. This gives us the guarantee that the parameter server will not go offline before all trainers (yet to be define) have completed their training process.
 
 Next, we'll define our ``TrainerNet`` class. This will also be a subclass of ``nn.Module``\ , and our ``__init__`` method will use the ``rpc.remote`` API to obtain an RRef, or Remote Reference, to our parameter server. Note that here we are not copying the parameter server to our local process, instead, we can think of ``self.param_server_rref`` as a distributed shared pointer to the parameter server that lives on a separate process.
@@ -197,7 +190,6 @@ Next, we'll define our ``TrainerNet`` class. This will also be a subclass of ``n
            self.num_gpus = num_gpus
            self.param_server_rref = rpc.remote(
                "parameter_server", get_parameter_server, args=(num_gpus,))
-
 Next, we'll define a method called ``get_global_param_rrefs``. To motivate the need for this method, it is worth it to read through the documentation on `DistributedOptimizer <https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim>`_, specifically the API signature.  The optimizer must be passed a list of ``RRef``\ s corresponding to the remote parameters to be optimized, so here we obtain the necessary ``RRef``\ s. Since the only remote worker that a given ``TrainerNet`` interacts with is the ``ParameterServer``\ , we simply invoke a ``remote_method`` on the ``ParameterServer``. We use the ``get_param_rrefs`` method which we defined in the ``ParameterServer`` class. This method will return a list of ``RRef``\ s to the parameters that need to be optimized. Note that in this case our ``TrainerNet`` does not define its own paramaters; if it did, we would need to wrap each parameter in an ``RRef`` as well and include it into our input to ``DistributedOptimizer``.
 
 .. code-block:: python
@@ -209,7 +201,6 @@ Next, we'll define a method called ``get_global_param_rrefs``. To motivate the n
                ParameterServer.get_param_rrefs,
                self.param_server_rref)
            return remote_params
-
 Now, we're ready to define our ``forward`` method, which will invoke (synchronous) RPC to run the forward pass of the network defined on the ``ParameterServer``. Note that we pass in ``self.param_server_rref``\ , which is a remote handle to our ``ParameterServer``\ , to our RPC call. This call will send an RPC to the node on which our ``ParameterServer`` is running, invoke the ``forward`` pass, and return the ``Tensor`` corresponding to the model's output.
 
 .. code-block:: python
@@ -220,7 +211,6 @@ Now, we're ready to define our ``forward`` method, which will invoke (synchronou
            model_output = remote_method(
                ParameterServer.forward, self.param_server_rref, x)
            return model_output
-
 With our trainer fully defined, it's now time to write our neural network training loop that will create our network and optimizer, run some inputs through the network and compute the loss. The training loop looks a lot like that of a local training program, with some modifications due to the nature of our network being distributed across machines.
 
 Below, we initialize our ``TrainerNet`` and build a ``DistributedOptimizer``. Note that as mentioned above, we must pass in all of the global (across all nodes participating in distributed training) parameters that we want to be optimized. In addition, we pass in the local optimizer to be used, in this case, SGD. Note that we can configure the underlying optimizer algorithm in the same way as creating a local optimizer - all arguments for ``optimizer.SGD`` will be forwarded properly. As an example, we pass in a custom learning rate that will be used as the learning rate for all local optimizers.
@@ -231,11 +221,10 @@ Below, we initialize our ``TrainerNet`` and build a ``DistributedOptimizer``. No
        # Runs the typical nueral network forward + backward + optimizer step, but
        # in a distributed fashion.
        net = TrainerNet(num_gpus=num_gpus)
-       # Build DistributedOptmizer.
+       # Build DistributedOptimizer.
        param_rrefs = net.get_global_param_rrefs()
        opt = DistributedOptimizer(optim.SGD, param_rrefs, lr=0.03)
-
-Next, we define our main training loop. We loop through iterables given by PyTorch's `DataLoader <https://pytorch.org/docs/stable/data.html>`_. Before writing our typical forward/backward/optimizer loop, we first wrap the logic within a Distributed Autograd context. Note that this is needed to record RPCs invoked in the model's forward pass, so that an appropriate graph can be constructed which includes all participating distributed workers in the backward pass. The distributed autograd context returns a ``context_id`` which serves as an identifier for accumulating and optimizing gradients corresponding to a particular iteration. 
+Next, we define our main training loop. We loop through iterables given by PyTorch's `DataLoader <https://pytorch.org/docs/stable/data.html>`_. Before writing our typical forward/backward/optimizer loop, we first wrap the logic within a `Distributed Autograd context <https://pytorch.org/docs/stable/rpc.html#torch.distributed.autograd.context>`_. Note that this is needed to record RPCs invoked in the model's forward pass, so that an appropriate graph can be constructed which includes all participating distributed workers in the backward pass. The distributed autograd context returns a ``context_id`` which serves as an identifier for accumulating and optimizing gradients corresponding to a particular iteration. 
 
 As opposed to calling the typical ``loss.backward()`` which would kick off the backward pass on this local worker, we call ``dist_autograd.backward()`` and pass in our context_id as well as ``loss``\ , which is the root at which we want the backward pass to begin. In addition, we pass this ``context_id`` into our optimizer call, which is required to be able to look up the corresponding gradients computed by this particular backwards pass across all nodes.
 
@@ -262,7 +251,6 @@ As opposed to calling the typical ``loss.backward()`` which would kick off the b
      print("Training complete!")
      print("Getting accuracy....")
      get_accuracy(test_loader, net)
-
 The following simply computes the accuracy of our model after we're done training, much like a traditional local model. However, note that the ``net`` we pass into this function above is an instance of ``TrainerNet`` and therefore the forward pass invokes RPC in a transparent fashion.
 
 .. code-block:: python
@@ -282,7 +270,6 @@ The following simply computes the accuracy of our model after we're done trainin
                correct_sum += correct
 
        print(f"Accuracy {correct_sum / len(test_loader.dataset)}")
-
 Next, similar to how we defined ``run_parameter_server`` as the main loop for our ``ParameterServer`` that is responsible for initializing RPC, let's define a similar loop for our trainers. The difference will be that our trainers must run the training loop we defined above:
 
 .. code-block:: python
@@ -299,7 +286,6 @@ Next, similar to how we defined ``run_parameter_server`` as the main loop for ou
 
        run_training_loop(rank, num_gpus, train_loader, test_loader)
        rpc.shutdown()
-
 Note that similar to ``run_parameter_server``\ , ``rpc.shutdown()`` will by default wait for all workers, both trainers and ParameterServers, to call into ``rpc.shutdown()`` before this node exits. This ensures that nodes are terminated gracefully and no node goes offline while another is expecting it to be online.
 
 We've now completed our trainer and parameter server specific code, and all that's left is to add code to launch trainers and parameter servers. First, we must take in various arguments that apply to our parameter server and trainers. ``world_size`` corresponds to the total number of nodes that will participate in training, and is the sum of all trainers and the parameter server. We also must pass in a unique ``rank`` for each individual process, from 0 (where we will run our single parameter server) to ``world_size - 1``. ``master_addr`` and ``master_port`` are arguments that can be used to identify where the rank 0 process is running, and will be used by individual nodes to discover each other. To test this example out locally, simply pass in ``localhost`` and the same ``master_port`` to all instances spawned. Note that for demonstration purposes, this example supports only between 0-2 GPUs, although the pattern can be extended to make use of additional GPUs.
@@ -344,7 +330,6 @@ We've now completed our trainer and parameter server specific code, and all that
        assert args.num_gpus <= 3, f"Only 0-2 GPUs currently supported (got {args.num_gpus})."
        os.environ['MASTER_ADDR'] = args.master_addr
        os.environ["MASTER_PORT"] = args.master_port
-
 Now, we'll create a process corresponding to either a parameter server or trainer depending on our command line arguments. We'll create a ``ParameterServer`` if our passed in rank is 0, and a ``TrainerNet`` otherwise. Note that we're using ``torch.multiprocessing`` to launch a subprocess corresponding to the function that we want to execute, and waiting on this process's completion from the main thread with ``p.join()``. In the case of initializing our trainers, we also use PyTorch's `dataloaders <https://pytorch.org/docs/stable/data.html>`_ in order to specify train and test data loaders on the MNIST dataset. 
 
 .. code-block:: python
@@ -392,7 +377,6 @@ Now, we'll create a process corresponding to either a parameter server or traine
 
    for p in processes:
        p.join()
-
 To run the example locally, run the following command worker for the server and each worker you wish to spawn, in separate terminal windows: ``python rpc_parameter_server.py --world_size=WORLD_SIZE --rank=RANK``. For example, for a master node with world size of 2, the command would be ``python rpc_parameter_server.py --world_size=2 --rank=0``. The trainer can then be launched with the command ``python rpc_parameter_server.py --world_size=2 --rank=1`` in a separate window, and this will begin training with one server and a single trainer. Note that this tutorial assumes that training occurs using between 0 and 2 GPUs, and this argument can be configured by passing ``--num_gpus=N`` into the training script.
 
-You can pass in the command line arguments ``--master_addr=<address>`` and ``master_port=PORT`` to indicate the address:port that the master worker is listening on, for example, to test functionality where trainers and master nodes run on different machines.
+You can pass in the command line arguments ``--master_addr=<address>`` and ``master_port=PORT`` to indicate the address and port that the master worker is listening on, for example, to test functionality where trainers and master nodes run on different machines.
