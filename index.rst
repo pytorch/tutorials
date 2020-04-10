@@ -366,18 +366,6 @@ Parallel and Distributed Training
    :hidden:
    :caption: Parallel and Distributed Training
 
-   intermediate/ddp_tutorial
-   intermediate/model_parallel_tutorial
-   intermediate/rpc_tutorial
-   intermediate/rpc_param_server_tutorial
-
-
-.. toctree::
-   :maxdepth: 2
-   :includehidden:
-   :hidden:
-   :caption: Recipes
-
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
