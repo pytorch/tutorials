@@ -11,6 +11,46 @@ Recipes
 	   https://pytorch.org/tutorials/recipes/recipes_index.html
 
 
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="PyTorch features extensive neural network building blocks with a simple, intuitive, and stable ...">
+
+.. only:: html
+
+    .. figure:: /recipes/images/thumb/sphx_glr_loading_data_recipe_thumb.png
+
+        :ref:`sphx_glr_recipes_loading_data_recipe.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /recipes/loading_data_recipe
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Example script with invalid Python syntax ">
+
+.. only:: html
+
+    .. figure:: /recipes/images/thumb/sphx_glr_Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch_thumb.png
+
+        :ref:`sphx_glr_recipes_Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /recipes/Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch
 .. raw:: html
 
     <div style='clear:both'></div>

@@ -272,6 +272,15 @@ Parallel and Distributed Training
    :maxdepth: 2
    :hidden:
    :includehidden:
+   :caption: Recipes
+
+   recipes/loading_data_recipe
+   recipes/Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
    :caption: Learning PyTorch
 
    beginner/deep_learning_60min_blitz
