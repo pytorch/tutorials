@@ -76,16 +76,6 @@ Image/Video
     :figure: /_static/img/dcgan_generator.png
     :description: :doc:`beginner/dcgan_faces_tutorial`
 
-.. customgalleryitem::
-    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
-    :figure: /_static/img/qat.png
-    :description: :doc:`advanced/static_quantization_tutorial`
-
-.. customgalleryitem::
-    :tooltip: Perform quantized transfer learning with feature extractor
-    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
-    :figure: /_static/img/quantized_transfer_learning.png
-
 
 .. raw:: html
 
@@ -135,16 +125,6 @@ Text
     :figure: /_static/img/thumbnails/german_to_english_translation.png
     :description: :doc:`/beginner/torchtext_translation_tutorial`
 
-.. customgalleryitem::
-   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
-   :description: :doc:`/advanced/dynamic_quantization_tutorial`
-   :figure: _static/img/quant_asym.png
-
-.. customgalleryitem::
-  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
-  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
-  :figure: /_static/img/bert.png
-
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -161,8 +141,39 @@ Reinforcement Learning
 
     <div style='clear:both'></div>
 
-Additional APIs
+Deploying PyTorch Models in Production
+--------------------------------------
+
+.. customgalleryitem::
+   :tooltip: Deploying PyTorch and Building a REST API using Flask
+   :description: :doc:`/intermediate/flask_rest_api_tutorial`
+   :figure: _static/img/flask.png
+
+.. customgalleryitem::
+   :tooltip: Introduction to TorchScript
+   :description: :doc:`beginner/Intro_to_TorchScript_tutorial`
+   :figure: _static/img/torchscript.png
+
+.. customgalleryitem::
+   :tooltip: Loading a PyTorch model in C++
+   :description: :doc:`advanced/cpp_export`
+   :figure: _static/img/torchscript_to_cpp.png
+
+.. customgalleryitem::
+   :figure: /_static/img/cat.jpg
+   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
+   :description: :doc:`advanced/super_resolution_with_onnxruntime`
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+Frontend APIs
 ----------------------
+.. customgalleryitem::
+   :figure: /_static/img/named_tensor.png
+   :tooltip: Named Tensor
+   :description: :doc:`intermediate/named_tensor_tutorial`
 
 .. customgalleryitem::
     :tooltip: Using the PyTorch C++ Frontend
@@ -170,15 +181,84 @@ Additional APIs
     :description: :doc:`advanced/cpp_frontend`
 
 .. customgalleryitem::
-   :figure: /_static/img/named_tensor.png
-   :tooltip: Named Tensor
-   :description: :doc:`intermediate/named_tensor_tutorial`
+   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
+   :description: :doc:`/advanced/cpp_extension`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_ops`
+   :figure: _static/img/cpp_logo.png
+
+.. customgalleryitem::
+   :tooltip: Implement custom classes in C++ for TorchScript
+   :description: :doc:`/advanced/torch_script_custom_classes`
+   :figure: _static/img/cpp_logo.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
+Model Optimization
+---------------------------
 
 .. customgalleryitem::
    :tooltip: Use pruning to sparsify your neural networks
    :description: :doc:`/intermediate/pruning_tutorial`
    :figure: _static/img/pruning.png
 
+.. customgalleryitem::
+   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
+   :description: :doc:`/advanced/dynamic_quantization_tutorial`
+   :figure: _static/img/quant_asym.png
+
+.. customgalleryitem::
+  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
+  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
+  :figure: /_static/img/bert.png
+
+.. customgalleryitem::
+    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
+    :figure: /_static/img/qat.png
+    :description: :doc:`advanced/static_quantization_tutorial`
+
+.. customgalleryitem::
+    :tooltip: Perform quantized transfer learning with feature extractor
+    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
+    :figure: /_static/img/quantized_transfer_learning.png
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+Parallel and Distributed Training
+---------------------------------
+
+.. customgalleryitem::
+  :tooltip: Model parallel training on multiple GPUs
+  :description: :doc:`/intermediate/model_parallel_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
+  :tooltip: Getting started with DistributedDataParallel
+  :description: :doc:`/intermediate/ddp_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
+   :tooltip: Parallelize computations across processes and clusters of machines
+   :description: :doc:`/intermediate/dist_tuto`
+   :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
+  :tooltip: Getting Started with Distributed RPC Framework
+  :description: :doc:`/intermediate/rpc_tutorial`
+  :figure: _static/img/distributed/DistPyTorch.jpg
+
+.. customgalleryitem::
+   :tooltip: PyTorch distributed trainer with Amazon AWS
+   :description: :doc:`/beginner/aws_distributed_training_tutorial`
+   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. raw:: html
 
@@ -209,8 +289,6 @@ Additional APIs
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
-   advanced/static_quantization_tutorial
-   intermediate/quantized_transfer_learning_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -232,8 +310,7 @@ Additional APIs
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation_tutorial
-   advanced/dynamic_quantization_tutorial
-   intermediate/dynamic_quantization_bert_tutorial
+
 
 .. toctree::
    :maxdepth: 2
@@ -243,22 +320,49 @@ Additional APIs
 
    intermediate/reinforcement_q_learning
 
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Deploying PyTorch Models in Production
+
+   intermediate/flask_rest_api_tutorial
+   beginner/Intro_to_TorchScript_tutorial
+   advanced/cpp_export
+   advanced/super_resolution_with_onnxruntime
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Additional APIs
+   :caption: Frontend APIs
 
-   advanced/cpp_frontend
    intermediate/named_tensor_tutorial
-   intermediate/pruning_tutorial
-
+   advanced/cpp_frontend
+   advanced/cpp_extension
+   advanced/torch_script_custom_ops
+   advanced/torch_script_custom_classes
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Recipes
+   :caption: Model Optimization
 
-   recipes/recipes_index
+   intermediate/pruning_tutorial
+   advanced/dynamic_quantization_tutorial
+   intermediate/dynamic_quantization_bert_tutorial
+   advanced/static_quantization_tutorial
+   intermediate/quantized_transfer_learning_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Parallel and Distributed Training
+
+   intermediate/model_parallel_tutorial
+   intermediate/ddp_tutorial
+   intermediate/dist_tuto
+   intermediate/rpc_tutorial
+   beginner/aws_distributed_training_tutorial
