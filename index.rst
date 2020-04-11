@@ -272,14 +272,6 @@ Parallel and Distributed Training
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Recipes
-
-   recipes/custom_dataset_transforms_loader
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :includehidden:
    :caption: Learning PyTorch
 
    beginner/deep_learning_60min_blitz
