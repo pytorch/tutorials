@@ -14,13 +14,13 @@ Recipes
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="PyTorch features extensive neural network building blocks with a simple, intuitive, and stable ...">
+    <div class="sphx-glr-thumbcontainer" tooltip="A significant amount of the effort applied to developing machine learning algorithms is related...">
 
 .. only:: html
 
-    .. figure:: /recipes/images/thumb/sphx_glr_loading_data_recipe_thumb.png
+    .. figure:: /recipes/images/thumb/sphx_glr_custom_dataset_transforms_loader_thumb.png
 
-        :ref:`sphx_glr_recipes_loading_data_recipe.py`
+        :ref:`sphx_glr_recipes_custom_dataset_transforms_loader.py`
 
 .. raw:: html
 
@@ -30,27 +30,7 @@ Recipes
 .. toctree::
    :hidden:
 
-   /recipes/loading_data_recipe
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Example script with invalid Python syntax ">
-
-.. only:: html
-
-    .. figure:: /recipes/images/thumb/sphx_glr_Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch_thumb.png
-
-        :ref:`sphx_glr_recipes_Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /recipes/Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch
+   /recipes/custom_dataset_transforms_loader
 .. raw:: html
 
     <div style='clear:both'></div>

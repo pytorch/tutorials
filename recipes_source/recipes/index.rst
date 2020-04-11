@@ -29,3 +29,10 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. Add recipe cards below this line
 
 .. Getting Started
+
+.. customcarditem::
+   :header: Writing Custom Datasets, DataLoaders and Transforms
+   :card_description: Learn how to load and preprocess/augment data from a non trivial dataset.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/custom_dataset_transforms_loader.html
+   :tags: Getting-Started

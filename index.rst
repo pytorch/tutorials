@@ -274,8 +274,7 @@ Parallel and Distributed Training
    :includehidden:
    :caption: Recipes
 
-   recipes/loading_data_recipe
-   recipes/Warmstarting_model_using_parameters_from_a_different_model_in_PyTorch
+   recipes/custom_dataset_transforms_loader
 
 .. toctree::
    :maxdepth: 2
