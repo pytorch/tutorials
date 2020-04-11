@@ -332,6 +332,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/rpc_param_server_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Distributed Pipeline Parallelism Using RPC
+   :card_description: Demonstrate how to implement distributed pipeline parallelism using RPC
+   :image: _static/img/thumbnails/cropped/Distributed-Pipeline-Parallelism-Using-RPC.png
+   :link: intermediate/dist_pipeline_parallel_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -497,3 +504,4 @@ Additional Resources
    intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
    intermediate/rpc_param_server_tutorial
+   intermediate/dist_pipeline_parallel_tutorial
