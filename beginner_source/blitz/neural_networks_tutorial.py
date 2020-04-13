@@ -50,7 +50,7 @@ local neighbors, weighted by a kernel, or a small martrix, that helps us extract
 certain features (like edge detection, sharpness, blurriness, etc.) from the input image.
 
 We will create a model that takes in 1 input, has 6 outputs produced by the convolution, 
-and a convolving kernal of size 3. 
+and a convolving kernel of size 3. 
 
 The 6 outputs are representative of the number of kernels which will be applied to the input
 image. 

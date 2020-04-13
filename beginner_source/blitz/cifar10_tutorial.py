@@ -324,7 +324,7 @@ print(device)
 #
 #         inputs, labels = data[0].to(device), data[1].to(device)
 #
-# Why dont I notice MASSIVE speedup compared to CPU? Because this network
+# Why don't I notice MASSIVE speedup compared to CPU? Because this network
 # is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
