@@ -345,20 +345,25 @@ print(device)
 # Where do I go next?
 # -------------------
 #
+# Learn More
+# ^^^^^^^^^^^^
 # -  :doc:`Train neural nets to play video games </intermediate/reinforcement_q_learning>`
 # -  `Train a state-of-the-art ResNet network on imagenet`_
 # -  `Train a face generator using Generative Adversarial Networks`_
 # -  `Train a word-level language model using Recurrent LSTM networks`_
-# -  `More examples`_
-# -  `More tutorials`_
+# -  `PyTorch Examples`_
+# -  `More PyTorch tutorials`_
+#
+# PyTorch Community
+# ^^^^^^^^^^^^^^^^^^
 # -  `Discuss PyTorch on the Forums`_
-# -  `Chat with other users on Slack`_
+# -  `Chat with other PyTorch users on Slack`_
 #
 # .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
 # .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
 # .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
-# .. _More examples: https://github.com/pytorch/examples
-# .. _More tutorials: https://github.com/pytorch/tutorials
+# .. _PyTorch Examples: https://github.com/pytorch/examples
+# .. _More PyTorch tutorials: https://pytorch.org/tutorials/index.html
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
 # .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/
 
