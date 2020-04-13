@@ -259,6 +259,11 @@ Parallel and Distributed Training
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
+   
+.. customgalleryitem::
+   :tooltip: Implementing a Parameter Server Using Distributed RPC Framework
+   :description: :doc:`/intermediate/rpc_param_server_tutorial`
+   :figure: _static/img/distributed/DistPyTorch.jpg
 
 .. raw:: html
 
@@ -366,3 +371,4 @@ Parallel and Distributed Training
    intermediate/dist_tuto
    intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
+   intermediate/rpc_param_server_tutorial
