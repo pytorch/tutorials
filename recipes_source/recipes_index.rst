@@ -37,8 +37,17 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/data_loading_tutorial.html
    :tags: Getting-Started
 
+.. Interpretability
 
-.. TorchScript
+.. customcarditem::
+   :header: Model Interpretability using Captum
+   :card_description: Learn how to use Captum attribute the predictions of an image classifier to their corresponding image features and visualize the attribution results.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/Captum_Recipe.html
+   :tags: TorchScript
+
+
+.. Production Development
 
 .. customcarditem::
    :header: TorchScript for Deployment
@@ -46,6 +55,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/torchscript_inference.html
    :tags: TorchScript
+   
 
 
 .. End of recipe card section
