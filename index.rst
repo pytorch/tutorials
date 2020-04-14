@@ -349,12 +349,6 @@ Additional Resources
    :button_text: Check Them Out
 
 .. customcalloutitem::
-   :header: Recipes
-   :description: Bite-sized, ready-to-deploy PyTorch code examples. 
-   :button_link: recipes/recipes_index.html
-   :button_text: Explore Recipes
-
-.. customcalloutitem::
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements. 
    :button_link: beginner/ptcheat.html
