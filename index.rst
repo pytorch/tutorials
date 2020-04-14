@@ -1,279 +1,380 @@
 Welcome to PyTorch Tutorials
 ============================
 
-To learn how to use PyTorch, begin with our Getting Started Tutorials.
-The :doc:`60-minute blitz </beginner/deep_learning_60min_blitz>` is the most common
-starting point, and provides a broad view into how to use PyTorch from the basics all the way into constructing deep neural networks.
+.. raw:: html
 
-Some considerations:
+    <div class="tutorials-callout-container">
+        <div class="row">
 
-* We’ve added a new feature to tutorials that allows users to open the notebook associated with a tutorial in Google Colab.
-  Visit `this page <https://pytorch.org/tutorials/beginner/colab.html>`_ for more information.
-* If you would like to do the tutorials interactively via IPython / Jupyter,
-  each tutorial has a download link for a Jupyter Notebook and Python source code.
-* Additional high-quality examples are available, including image classification,
-  unsupervised learning, reinforcement learning, machine translation, and
-  many other applications, in `PyTorch Examples
-  <https://github.com/pytorch/examples/>`_.
-* You can find reference documentation for the PyTorch API and layers in `PyTorch Docs
-  <https://pytorch.org/docs>`_ or via inline help.
-* If you would like the tutorials section improved, please open a github issue
-  `here <https://github.com/pytorch/tutorials>`_ with your feedback.
-* Check out our
-  `PyTorch Cheat Sheet <https://pytorch.org/tutorials/beginner/ptcheat.html>`_
-  for additional useful information.
-* Finally, here's a link to the
-  `PyTorch Release Notes <https://github.com/pytorch/pytorch/releases>`_
+.. Add callout items below this line
 
-Learning PyTorch
-------------------
+.. customcalloutitem::
+   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all to the way constructing deep neural networks. 
+   :header: New to PyTorch?
+   :button_link: beginner/deep_learning_60min_blitz.html
+   :button_text: Start 60-min blitz
 
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/pytorch-logo-flat.png
-   :tooltip: Understand PyTorch’s Tensor library and neural networks at a high level
-   :description: :doc:`/beginner/deep_learning_60min_blitz`
+.. customcalloutitem::
+   :description: Bite-sized, ready-to-deploy PyTorch code examples. 
+   :header: Recipes
+   :button_link: recipes/recipe_index.html
+   :button_text: Explore Recipes
 
-.. customgalleryitem::
-   :tooltip: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples
-   :figure: /_static/img/thumbnails/examples.png
-   :description: :doc:`/beginner/pytorch_with_examples`
-
-.. customgalleryitem::
-   :figure: /_static/img/torch.nn.png
-   :tooltip: Use torch.nn to create and train a neural network
-   :description: :doc:`beginner/nn_tutorial`
-
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/pytorch_tensorboard.png
-   :tooltip: Learn to use TensorBoard to visualize data and model training
-   :description: :doc:`intermediate/tensorboard_tutorial`
+.. End of callout item section
 
 .. raw:: html
 
-    <div style='clear:both'></div>
+        </div>
+    </div>
 
+    <div id="tutorial-cards-container">
 
-Image/Video
-----------------------
+    <nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
+        <div class="tutorial-tags-container">
+            <div id="dropdown-filter-tags">
+                <div class="tutorial-filter-menu">
+                    <div class="tutorial-filter filter-btn all-tag-selected" data-tag="all">All</div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/tv-img.png
-   :tooltip: Finetuning a pre-trained Mask R-CNN model
-   :description: :doc:`intermediate/torchvision_tutorial`
+    <hr class="tutorials-hr">
 
-.. customgalleryitem::
-   :figure: /_static/img/thumbnails/sphx_glr_transfer_learning_tutorial_001.png
-   :tooltip: In transfer learning, a model created from one task is used in another
-   :description: :doc:`beginner/transfer_learning_tutorial`
+    <div class="row">
 
-.. customgalleryitem::
-   :figure: /_static/img/panda.png
-   :tooltip: Raise your awareness to the security vulnerabilities of ML models, and get insight into the hot topic of adversarial machine learning
-   :description: :doc:`beginner/fgsm_tutorial`
+    <div id="tutorial-cards">
+    <div class="list">
 
-.. customgalleryitem::
-    :tooltip: Train a generative adversarial network (GAN) to generate new celebrities
-    :figure: /_static/img/dcgan_generator.png
-    :description: :doc:`beginner/dcgan_faces_tutorial`
+.. Add tutorial cards below this line
 
+.. Learning PyTorch
 
-.. raw:: html
+.. customcarditem::
+   :header: Deep Learning with PyTorch: A 60 Minute Blitz
+   :card_description: Understand PyTorch’s Tensor library and neural networks at a high level.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: beginner/deep_learning_60min_blitz.html
+   :tags: Getting-Started
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: Learning PyTorch with Examples
+   :card_description: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples.
+   :image: _static/img/thumbnails/examples.png
+   :link: beginner/pytorch_with_examples.html
+   :tags: Getting-Started
 
-Audio
-----------------------
+.. customcarditem::
+   :header: What is torch.nn really?
+   :card_description: Use torch.nn to create and train a neural network.
+   :image: _static/img/torch.nn.png
+   :link: beginner/nn_tutorial.html
+   :tags: Getting-Started
 
-.. customgalleryitem::
-   :figure: /_static/img/audio_preprocessing_tutorial_waveform.png
-   :tooltip: Preprocessing with torchaudio Tutorial
-   :description: :doc:`beginner/audio_preprocessing_tutorial`
+.. customcarditem::
+   :header: Visualizing Models, Data, and Training with Tensorboard
+   :card_description: Learn to use TensorBoard to visualize data and model training.
+   :image: _static/img/thumbnails/pytorch_tensorboard.png
+   :link: intermediate/tensorboard_tutorial.html
+   :tags: Interpretability, Getting-Started, Tensorboard
 
-.. raw:: html
+.. Image/Video
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: TorchVision Object Detection Finetuning Tutorial
+   :card_description: Finetune a pre-trained Mask R-CNN model.
+   :image: _static/img/thumbnails/tv-img.png
+   :link: intermediate/torchvision_tutorial.html
+   :tags: Image/Video
 
+.. customcarditem::
+   :header: Transfer Learning for Computer Vision Tutorial
+   :card_description: Train a convolutional neural network for image classification using transfer learning. 
+   :image: _static/img/thumbnails/sphx_glr_transfer_learning_tutorial_001.png
+   :link: beginner/transfer_learning_tutorial.html
+   :tags: Image/Video
 
-Text
-----------------------
+.. customcarditem::
+   :header: Adversarial Example Generation
+   :card_description: Train a convolutional neural network for image classification using transfer learning. 
+   :image: _static/img/panda.png
+   :link: beginner/fgsm_tutorial.html
+   :tags: Image/Video
 
-.. customgalleryitem::
-    :tooltip: Transformer Tutorial
-    :figure: /_static/img/transformer_architecture.jpg
-    :description: :doc:`/beginner/transformer_tutorial`
+.. customcarditem::
+   :header: DCGAN Tutorial
+   :card_description: Train a generative adversarial network (GAN) to generate new celebrities.
+   :image: _static/img/dcgan_generator.png
+   :link: beginner/dcgan_faces_tutorial.html
+   :tags: Image/Video
 
-.. customgalleryitem::
-   :figure: /_static/img/rnnclass.png
-   :tooltip: Build and train a basic character-level RNN to classify words
-   :description: :doc:`intermediate/char_rnn_classification_tutorial`
+.. Audio
 
-.. customgalleryitem::
-   :figure: /_static/img/char_rnn_generation.png
-   :tooltip: Generate names from languages
-   :description: :doc:`intermediate/char_rnn_generation_tutorial`
+.. customcarditem::
+   :header: torchaudio Tutorial
+   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library. 
+   :image: _static/img/audio_preprocessing_tutorial_waveform.png
+   :link: beginner/audio_preprocessing_tutorial.html
+   :tags: Audio
 
-.. galleryitem:: intermediate/seq2seq_translation_tutorial.py
-  :figure: _static/img/seq2seq_flat.png
+.. Text
 
-.. customgalleryitem::
-    :tooltip: Sentiment Ngrams with Torchtext
-    :figure: /_static/img/text_sentiment_ngrams_model.png
-    :description: :doc:`/beginner/text_sentiment_ngrams_tutorial`
+.. customcarditem::
+   :header: Sequence-to-Sequence Modeling wiht nn.Transformer and torchtext
+   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module. 
+   :image: _static/img/transformer_architecture.jpg
+   :link: beginner/transformer_tutorial.html
+   :tags: Text
 
-.. customgalleryitem::
-    :tooltip: Language Translation with Torchtext
-    :figure: /_static/img/thumbnails/german_to_english_translation.png
-    :description: :doc:`/beginner/torchtext_translation_tutorial`
+.. customcarditem::
+   :header: NLP from Scratch: Classifying Names with a Character-level RNN
+   :card_description: Build and train a basic character-level RNN to classify word from scratch without the use of torchtext. First in a series of three tutorials. 
+   :image: _static/img/rnnclass.png
+   :link: intermediate/char_rnn_classification_tutorial
+   :tags: Text
 
-.. raw:: html
+.. customcarditem::
+   :header: NLP from Scratch: Generating Names with a Character-level RNN
+   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials. 
+   :image: _static/img/char_rnn_generation.png
+   :link: intermediate/char_rnn_generation_tutorial.html
+   :tags: Text
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: NLP from Scratch: Translation with a Sequence-to-sequence Network and Attention 
+   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :image: _static/img/seq2seq_flat.png
+   :link: intermediate/seq2seq_translation_tutorial.html
+   :tags: Text
 
-Reinforcement Learning
-----------------------
+.. customcarditem::
+   :header: Text Classification with Torchtext
+   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :image: _static/img/text_sentiment_ngrams_model.png
+   :link: beginner/text_sentiment_ngrams_tutorial.html
+   :tags: Text
 
-.. customgalleryitem::
-    :tooltip: Use PyTorch to train a Deep Q Learning (DQN) agent
-    :figure: /_static/img/cartpole.gif
-    :description: :doc:`intermediate/reinforcement_q_learning`
+.. customcarditem::
+   :header: Language Translation with Torchtext
+   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.  
+   :image: _static/img/thumbnails/german_to_english_translation.png
+   :link: beginner/torchtext_translation_tutorial.html
+   :tags: Text
 
-.. raw:: html
+.. Reinforcement Learning
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: Reinforcement Learning (DQN)
+   :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
+   :image: _static/img/cartpole.gif
+   :link: intermediate/reinforcement_q_learning.html
+   :tags: Reinforcement-Learning
 
-Deploying PyTorch Models in Production
---------------------------------------
+.. Deploying PyTorch Models in Production
 
-.. customgalleryitem::
-   :tooltip: Deploying PyTorch and Building a REST API using Flask
-   :description: :doc:`/intermediate/flask_rest_api_tutorial`
-   :figure: _static/img/flask.png
+.. customcarditem::
+   :header: Deploying PyTorch in Python via a REST API with Flask
+   :card_description: Deploy a PyTorch model using Flask and expose a REST API for model inference using the example of a pretrained DenseNet 121 model which detects the image.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/flask_rest_api_tutorial.html
+   :tags: Production
 
-.. customgalleryitem::
-   :tooltip: Introduction to TorchScript
-   :description: :doc:`beginner/Intro_to_TorchScript_tutorial`
-   :figure: _static/img/torchscript.png
+.. customcarditem::
+   :header: Introduction to TorchScript
+   :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: beginner/Intro_to_TorchScript_tutorial.html
+   :tags: Production
 
-.. customgalleryitem::
-   :tooltip: Loading a PyTorch model in C++
-   :description: :doc:`advanced/cpp_export`
-   :figure: _static/img/torchscript_to_cpp.png
+.. customcarditem::
+   :header: Loading a TorchScript Model in C++
+   :card_description:  Learn how PyTorch provides to go from an existing Python model to a serialized representation that can be loaded and executed purely from C++, with no dependency on Python.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: advanced/cpp_export.html
+   :tags: Production
 
-.. customgalleryitem::
-   :figure: /_static/img/cat.jpg
-   :tooltip: Exporting a Model from PyTorch to ONNX and Running it using ONNXRuntime
-   :description: :doc:`advanced/super_resolution_with_onnxruntime`
+.. customcarditem::
+   :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
+   :card_description:  Convert a model defined in PyTorch into the ONNX format and then run it with ONNX Runtime.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: advanced/super_resolution_with_onnxruntime.html
+   :tags: Production
 
-.. raw:: html
+.. Frontend APIs
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: (Experimental) Introduction to Named Tensors in PyTorch
+   :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
+   :image: _static/img/named_tensor.png
+   :link: intermediate/named_tensor_tutorial.html
+   :tags: Named-Tensor, Best-Practice
 
-Frontend APIs
-----------------------
-.. customgalleryitem::
-   :figure: /_static/img/named_tensor.png
-   :tooltip: Named Tensor
-   :description: :doc:`intermediate/named_tensor_tutorial`
+.. customcarditem::
+   :header: Using the PyTorch C++ Frontend
+   :card_description: Walk through an end-to-end example of training a model with the C++ frontend by training a DCGAN – a kind of generative model – to generate images of MNIST digits.
+   :image: _static/img/cpp-pytorch.png
+   :link: advanced/cpp_frontend.html
+   :tags: C++
 
-.. customgalleryitem::
-    :tooltip: Using the PyTorch C++ Frontend
-    :figure: /_static/img/cpp-pytorch.png
-    :description: :doc:`advanced/cpp_frontend`
+.. customcarditem::
+   :header: Custom C++ and CUDA Extensions
+   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: advanced/cpp_extension.html
+   :tags: Extending-PyTorch, C++, CUDA
 
-.. customgalleryitem::
-   :tooltip: Implement custom extensions in C++ or CUDA for eager PyTorch
-   :description: :doc:`/advanced/cpp_extension`
-   :figure: _static/img/cpp_logo.png
-
-.. customgalleryitem::
-   :tooltip: Implement custom operators in C++ or CUDA for TorchScript
-   :description: :doc:`/advanced/torch_script_custom_ops`
-   :figure: _static/img/cpp_logo.png
-
-.. customgalleryitem::
-   :tooltip: Implement custom classes in C++ for TorchScript
-   :description: :doc:`/advanced/torch_script_custom_classes`
-   :figure: _static/img/cpp_logo.png
+.. customcarditem::
+   :header: Extending TorchScript with Custom C++ Operators
+   :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: advanced/torch_script_custom_ops.html
+   :tags: Extending-PyTorch, TorchScript
    
-.. customgalleryitem::
-    :tooltip: Autograd in C++ Frontend
-    :figure: /_static/img/cpp-pytorch.png
-    :description: :doc:`advanced/cpp_autograd`
+.. customcarditem::
+   :header: Extending TorchScript with Custom C++ Classes
+   :card_description: This is a contiuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: advanced/torch_script_custom_classes.html
+   :tags: Extending-PyTorch, TorchScript
 
-.. raw:: html
+.. Model Optimization
 
-    <div style='clear:both'></div>
+.. customcarditem::
+   :header: Pruning Tutorial
+   :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
+   :image: _static/img/pruning.png
+   :link: intermediate/pruning_tutorial.html
+   :tags: Model-Optimization, Best-Practice
 
+.. customcarditem::
+   :header: (Experimental) Dynamic Quantization on an LSTM Word Language Model
+   :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.  
+   :image: _static/img/quant_asym.png
+   :link: advanced/dynamic_quantization_tutorial.html
+   :tags: Text, Quantization, Model-Optimization
 
-Model Optimization
----------------------------
+.. customcarditem::
+   :header: (Experimental) Dynamic Quantization on BERT
+   :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model. 
+   :image: _static/img/bert.png
+   :link: intermediate/dynamic_quantization_bert_tutorial.html
+   :tags: Text, Quantization, Model-Optimization
 
-.. customgalleryitem::
-   :tooltip: Use pruning to sparsify your neural networks
-   :description: :doc:`/intermediate/pruning_tutorial`
-   :figure: _static/img/pruning.png
+.. customcarditem::
+   :header: (Experimental) Static Quantization with Eager Mode in PyTorch
+   :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training. 
+   :image: _static/img/qat.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Image/Video, Quantization, Model-Optimization
 
-.. customgalleryitem::
-   :tooltip: Perform dynamic quantization on a pre-trained PyTorch model
-   :description: :doc:`/advanced/dynamic_quantization_tutorial`
-   :figure: _static/img/quant_asym.png
+.. customcarditem::
+   :header: (Experimental) Quantized Transfer Learning for Computer Vision Tutorial
+   :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training. 
+   :image: _static/img/qat.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Image/Video, Quantization, Model-Optimization
 
-.. customgalleryitem::
-  :tooltip: Convert a well-known state-of-the-art model like BERT into dynamic quantized model
-  :description: :doc:`/intermediate/dynamic_quantization_bert_tutorial`
-  :figure: /_static/img/bert.png
+.. Parallel-and-Distributed-Training
 
-.. customgalleryitem::
-    :tooltip: (experimental) Static Quantization with Eager Mode in PyTorch
-    :figure: /_static/img/qat.png
-    :description: :doc:`advanced/static_quantization_tutorial`
+.. customcarditem::
+   :header: Model Parallel Best Practices
+   :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU 
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/model_parallel_tutorial.html
+   :tags: Parallel-and-Distributed-Training
 
-.. customgalleryitem::
-    :tooltip: Perform quantized transfer learning with feature extractor
-    :description: :doc:`/intermediate/quantized_transfer_learning_tutorial`
-    :figure: /_static/img/quantized_transfer_learning.png
+.. customcarditem::
+   :header: Getting Started with Distributed Data Parallel
+   :card_description: Learn the basics of when to use distributed data paralle versus data parallel and work through an example to set it up. 
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/ddp_tutorial.html
+   :tags: Parallel-and-Distributed-Training
 
-.. raw:: html
-
-    <div style='clear:both'></div>
-
-Parallel and Distributed Training
----------------------------------
-
-.. customgalleryitem::
-  :tooltip: Model parallel training on multiple GPUs
-  :description: :doc:`/intermediate/model_parallel_tutorial`
-  :figure: _static/img/distributed/DistPyTorch.jpg
-
-.. customgalleryitem::
-  :tooltip: Getting started with DistributedDataParallel
-  :description: :doc:`/intermediate/ddp_tutorial`
-  :figure: _static/img/distributed/DistPyTorch.jpg
-
-.. customgalleryitem::
-   :tooltip: Parallelize computations across processes and clusters of machines
-   :description: :doc:`/intermediate/dist_tuto`
-   :figure: _static/img/distributed/DistPyTorch.jpg
-
-.. customgalleryitem::
-  :tooltip: Getting Started with Distributed RPC Framework
-  :description: :doc:`/intermediate/rpc_tutorial`
-  :figure: _static/img/distributed/DistPyTorch.jpg
-
-.. customgalleryitem::
-   :tooltip: PyTorch distributed trainer with Amazon AWS
-   :description: :doc:`/beginner/aws_distributed_training_tutorial`
-   :figure: _static/img/distributed/DistPyTorch.jpg
+.. customcarditem::
+   :header: Writing Distributed Applications with PyTorch
+   :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/dist_tuto.html
+   :tags: Parallel-and-Distributed-Training
    
-.. customgalleryitem::
-   :tooltip: Implementing a Parameter Server Using Distributed RPC Framework
-   :description: :doc:`/intermediate/rpc_param_server_tutorial`
-   :figure: _static/img/distributed/DistPyTorch.jpg
+.. customcarditem::
+   :header: Getting Started with Distributed RPC Framework
+   :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/rpc_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
+   :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: beginner/aws_distributed_training_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Implementing a Parameter Server Using Distributed RPC Framework
+   :card_description: Walk through a through a simple example of implementing a parameter server using PyTorch’s Distributed RPC framework. 
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: intermediate/rpc_param_server_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. End of tutorial card section
 
 .. raw:: html
 
-    <div style='clear:both'></div>
+    </div>
 
+    </div>
+
+    </div>
+
+    </div>
+
+.. .. galleryitem:: beginner/saving_loading_models.py
+
+Additional Resources
+============================
+
+.. raw:: html
+
+    <div class="tutorials-callout-container">
+        <div class="row">
+
+.. Add callout items below this line
+
+.. customcalloutitem::
+   :header: Examples of PyTorch
+   :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
+   :button_link: https://github.com/pytorch/examples
+   :button_text: Check Them Out
+
+.. customcalloutitem::
+   :header: Recipes
+   :description: Bite-sized, ready-to-deploy PyTorch code examples. 
+   :button_link: recipes/recipes_index.html
+   :button_text: Explore Recipes
+
+.. customcalloutitem::
+   :header: PyTorch Cheat Sheet
+   :description: Quick overview to essential PyTorch elements. 
+   :button_link: beginner/ptcheat.html
+   :button_text: Download
+
+.. customcalloutitem::
+   :header: Tutorials on GitHub
+   :description: Access PyTorch Tutorials from GitHub. 
+   :button_link: https://github.com/pytorch/tutorials
+   :button_text: Go To GitHub
+
+
+.. End of callout section
+
+.. raw:: html
+
+        </div>
+    </div>
+
+    <div style='clear:both'></div>
 
 .. -----------------------------------------
 .. Page TOC
