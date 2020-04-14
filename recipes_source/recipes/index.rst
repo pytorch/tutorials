@@ -36,3 +36,10 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/custom_dataset_transforms_loader.html
    :tags: Getting-Started
+
+.. customcarditem::
+   :header: Dynamic Quantization
+   :card_description:  Apply dynamic quantization to a simple LSTM model.
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/dynamic_quantization.html
+   :tags: Quantization, Text, Model-Optimization
