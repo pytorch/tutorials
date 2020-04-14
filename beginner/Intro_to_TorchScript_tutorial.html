@@ -161,6 +161,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul>
@@ -296,11 +297,11 @@ is invoked.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.7464, 0.3680, 0.9559, 0.6897],
-        [0.8421, 0.7634, 0.7471, 0.8470],
-        [0.7059, 0.7792, 0.6396, 0.8366]]), tensor([[0.7464, 0.3680, 0.9559, 0.6897],
-        [0.8421, 0.7634, 0.7471, 0.8470],
-        [0.7059, 0.7792, 0.6396, 0.8366]]))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.6127, 0.6151, 0.9039, 0.5411],
+        [0.4075, 0.7357, 0.7969, 0.8971],
+        [0.5420, 0.1344, 0.8478, 0.9436]]), tensor([[0.6127, 0.6151, 0.9039, 0.5411],
+        [0.4075, 0.7357, 0.7969, 0.8971],
+        [0.5420, 0.1344, 0.8478, 0.9436]]))
 </pre></div>
 </div>
 <p>So we’ve:</p>
@@ -336,11 +337,11 @@ matrices of random values. Then we invoked the cell with
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MyCell(
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[0.7880, 0.1387, 0.6970, 0.5050],
-        [0.6448, 0.7627, 0.8612, 0.6927],
-        [0.8016, 0.4218, 0.8669, 0.3337]], grad_fn=&lt;TanhBackward&gt;), tensor([[0.7880, 0.1387, 0.6970, 0.5050],
-        [0.6448, 0.7627, 0.8612, 0.6927],
-        [0.8016, 0.4218, 0.8669, 0.3337]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.1391, -0.0612,  0.6821,  0.1239],
+        [ 0.2934,  0.0909,  0.8192,  0.2809],
+        [ 0.2459, -0.5133,  0.8458,  0.2675]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.1391, -0.0612,  0.6821,  0.1239],
+        [ 0.2934,  0.0909,  0.8192,  0.2809],
+        [ 0.2459, -0.5133,  0.8458,  0.2675]], grad_fn=&lt;TanhBackward&gt;))
 </pre></div>
 </div>
 <p>We’ve redefined our module <code class="docutils literal notranslate"><span class="pre">MyCell</span></code>, but this time we’ve added a
@@ -388,11 +389,11 @@ flexibility in model authoring.</p>
   (dg): MyDecisionGate()
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[ 0.6427,  0.3670,  0.8077, -0.3921],
-        [ 0.6095,  0.5690,  0.8412,  0.5355],
-        [ 0.8976,  0.5286,  0.7664,  0.0586]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.6427,  0.3670,  0.8077, -0.3921],
-        [ 0.6095,  0.5690,  0.8412,  0.5355],
-        [ 0.8976,  0.5286,  0.7664,  0.0586]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.3128,  0.3469,  0.9233,  0.7141],
+        [ 0.1791,  0.3807,  0.9354,  0.8071],
+        [ 0.1141, -0.1506,  0.9296,  0.8725]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.3128,  0.3469,  0.9233,  0.7141],
+        [ 0.1791,  0.3807,  0.9354,  0.8071],
+        [ 0.1141, -0.1506,  0.9296,  0.8725]], grad_fn=&lt;TanhBackward&gt;))
 </pre></div>
 </div>
 <p>We’ve once again redefined our MyCell class, but here we’ve defined
@@ -504,17 +505,17 @@ the Python module:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[ 0.9236,  0.5091,  0.9382, -0.0326],
-        [ 0.9346,  0.0990,  0.9197,  0.6986],
-        [ 0.8855,  0.4369,  0.8743,  0.4236]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.9236,  0.5091,  0.9382, -0.0326],
-        [ 0.9346,  0.0990,  0.9197,  0.6986],
-        [ 0.8855,  0.4369,  0.8743,  0.4236]], grad_fn=&lt;TanhBackward&gt;))
-(tensor([[ 0.9236,  0.5091,  0.9382, -0.0326],
-        [ 0.9346,  0.0990,  0.9197,  0.6986],
-        [ 0.8855,  0.4369,  0.8743,  0.4236]],
-       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[ 0.9236,  0.5091,  0.9382, -0.0326],
-        [ 0.9346,  0.0990,  0.9197,  0.6986],
-        [ 0.8855,  0.4369,  0.8743,  0.4236]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[ 0.6336, -0.3696, -0.1187,  0.0416],
+        [ 0.3464,  0.1739,  0.5703,  0.2909],
+        [ 0.2368,  0.5645,  0.0170,  0.8067]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.6336, -0.3696, -0.1187,  0.0416],
+        [ 0.3464,  0.1739,  0.5703,  0.2909],
+        [ 0.2368,  0.5645,  0.0170,  0.8067]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.6336, -0.3696, -0.1187,  0.0416],
+        [ 0.3464,  0.1739,  0.5703,  0.2909],
+        [ 0.2368,  0.5645,  0.0170,  0.8067]],
+       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[ 0.6336, -0.3696, -0.1187,  0.0416],
+        [ 0.3464,  0.1739,  0.5703,  0.2909],
+        [ 0.2368,  0.5645,  0.0170,  0.8067]],
        grad_fn=&lt;DifferentiableGraphBackward&gt;))
 </pre></div>
 </div>
@@ -550,11 +551,9 @@ the control-flow-laden submodule. Let’s examine that now:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>def forward(self,
     input: Tensor,
     h: Tensor) -&gt; Tuple[Tensor, Tensor]:
-  _0 = self.dg
-  _1 = (self.linear).forward(input, )
-  _2 = (_0).forward(_1, )
-  _3 = torch.tanh(torch.add(_1, h, alpha=1))
-  return (_3, _3)
+  _0 = (self.dg).forward((self.linear).forward(input, ), )
+  _1 = torch.tanh(torch.add(_0, h, alpha=1))
+  return (_1, _1)
 </pre></div>
 </div>
 <p>Looking at the <code class="docutils literal notranslate"><span class="pre">.code</span></code> output, we can see that the <code class="docutils literal notranslate"><span class="pre">if-else</span></code> branch
@@ -696,7 +695,7 @@ python-free execution.</p>
 out the NeurIPS demo for converting machine translation models using
 TorchScript:
 <a class="reference external" href="https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ">https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.255 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.250 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-intro-to-torchscript-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/bf4ee4ef1ffde8b469d9ed4001a28ee8/Intro_to_TorchScript_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">Intro_to_TorchScript_tutorial.py</span></code></a></div>
