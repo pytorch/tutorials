@@ -194,6 +194,11 @@ Frontend APIs
    :tooltip: Implement custom classes in C++ for TorchScript
    :description: :doc:`/advanced/torch_script_custom_classes`
    :figure: _static/img/cpp_logo.png
+   
+.. customgalleryitem::
+    :tooltip: Autograd in C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_autograd`
 
 .. raw:: html
 
@@ -355,6 +360,7 @@ Parallel and Distributed Training
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
+   advanced/cpp_autograd
 
 .. toctree::
    :maxdepth: 2
