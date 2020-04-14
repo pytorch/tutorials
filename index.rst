@@ -15,10 +15,10 @@ Welcome to PyTorch Tutorials
    :button_text: Start 60-min blitz
 
 .. customcalloutitem::
-   :description: Bite-sized, ready-to-deploy PyTorch code examples. 
-   :header: Recipes
-   :button_link: recipes/recipe_index.html
-   :button_text: Explore Recipes
+   :description: Quick overview to essential PyTorch elements.  
+   :header: PyTorch Cheat Sheet
+   :button_link: beginner/ptcheat.html
+   :button_text: Download
 
 .. End of callout item section
 
