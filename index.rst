@@ -277,6 +277,14 @@ Parallel and Distributed Training
    :maxdepth: 2
    :hidden:
    :includehidden:
+   :caption: Recipes
+
+   recipes/recipes_index
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
    :caption: Learning PyTorch
 
    beginner/deep_learning_60min_blitz
