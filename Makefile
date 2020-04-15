@@ -115,4 +115,4 @@ html-noplot:
 
 clean-cache:
 	make clean
-	rm -rf advanced beginner intermediate
+	rm -rf advanced beginner intermediate recipes
