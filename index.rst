@@ -241,7 +241,7 @@ Welcome to PyTorch Tutorials
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/cpp-pytorch.png
-   :link: /advanced/cpp_autograd.html
+   :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs, C++
 
 .. Model Optimization
