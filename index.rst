@@ -195,6 +195,11 @@ Frontend APIs
    :description: :doc:`/advanced/torch_script_custom_classes`
    :figure: _static/img/cpp_logo.png
 
+.. customgalleryitem::
+    :tooltip: Autograd in C++ Frontend
+    :figure: /_static/img/cpp-pytorch.png
+    :description: :doc:`advanced/cpp_autograd`
+
 .. raw:: html
 
     <div style='clear:both'></div>
@@ -259,7 +264,7 @@ Parallel and Distributed Training
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
-   
+
 .. customgalleryitem::
    :tooltip: Implementing a Parameter Server Using Distributed RPC Framework
    :description: :doc:`/intermediate/rpc_param_server_tutorial`
@@ -273,6 +278,14 @@ Parallel and Distributed Training
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Recipes
+
+   recipes/what_is_state_dict
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -347,6 +360,7 @@ Parallel and Distributed Training
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
+   advanced/cpp_autograd
 
 .. toctree::
    :maxdepth: 2
