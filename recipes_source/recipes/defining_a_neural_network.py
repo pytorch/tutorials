@@ -1,7 +1,6 @@
 """
-Defining a neural network in PyTorch
+Defining a Neural Network in PyTorch
 ====================================
-
 Deep learning uses artificial neural networks (models), which are
 computing systems that are composed of many layers of interconnected
 units. By passing data through these interconnected units, a neural
@@ -11,7 +10,6 @@ constructed using the ``torch.nn`` package.
 
 Introduction
 ------------
-
 PyTorch provides the elegantly designed modules and classes, including
 ``torch.nn``, to help you create and train neural networks. An
 ``nn.Module`` contains layers, and a method ``forward(input)`` that
@@ -23,13 +21,15 @@ dataset <https://pytorch.org/docs/stable/torchvision/datasets.html#mnist>`__.
 
 Setup
 -----
-
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-"""
+::
 
-pip install torch
+   pip install torchaudio
+
+
+"""
 
 
 ######################################################################
@@ -41,7 +41,7 @@ pip install torch
 # 3. Specify how data will pass through your model
 # 4. [Optional] Pass data through your model to test
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -54,7 +54,7 @@ import torch.nn.functional as F
 
 
 ######################################################################
-# **2) Define and intialize the neural network**
+# 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Our network will recognize images. We will use a process built into
@@ -103,12 +103,12 @@ print(my_nn)
 # We have finished defining our neural network, now we have to define how
 # our data will pass through it.
 # 
-# **3) Specify how data will pass through your model**
+# 3. Specify how data will pass through your model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # When you use PyTorch to build a model, you just have to define the
 # ``forward`` function, that will pass the data into the computation graph
-# (i.e. our neural network). This will represent our feed-forward
+# (i.e. our neural network). This will represent our feed-forward
 # algorithm.
 # 
 # You can use any of the Tensor operations in the ``forward`` function.
@@ -152,7 +152,7 @@ class Net(nn.Module):
 
 
 ######################################################################
-# **4) [Optional] Pass data through your model to test**
+# 4. [Optional] Pass data through your model to test
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # To ensure we receive our desired output, let’s test our model by passing
@@ -181,4 +181,3 @@ print (result)
 # 
 # -  TBD
 # -  TBD
-# 
