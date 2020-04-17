@@ -1,40 +1,44 @@
 """
 Loading Data in PyTorch
 =======================
-
 PyTorch features extensive neural network building blocks with a simple,
 intuitive, and stable API. PyTorch includes packages to prepare and load
 common datasets for your model.
 
 Introduction
 ------------
-
 At the heart of PyTorch data loading utility is the
-```torch.utils.data.DataLoader`` <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`__
+`torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`__
 class. It represents a Python iterable over a dataset. Libraries in
 PyTorch offer built-in high-quality datasets for you to use in
-```torch.utils.data.Dataset`` <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`__.
+`torch.utils.data.Dataset <https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset>`__.
 These datasets are currently available in:
 
--  ```torchvision`` <https://pytorch.org/docs/stable/torchvision/datasets.html>`__
--  ```torchaudio`` <https://pytorch.org/audio/datasets.html>`__
--  ```torchtext`` <https://pytorch.org/text/datasets.html>`__
+* `torchvision <https://pytorch.org/docs/stable/torchvision/datasets.html>`__
+* `torchaudio <https://pytorch.org/audio/datasets.html>`__
+* `torchtext <https://pytorch.org/text/datasets.html>`__
 
 with more to come.
-
 Using the Yesno dataset from ``torchaudio.datasets.YESNO``, we will
 demonstrate how to effectively and efficiently load data from a PyTorch
 ``Dataset`` into a PyTorch ``DataLoader``.
 
 Setup
 -----
-
 Before we begin, we need to install ``torchaudio`` to have access to the
 dataset.
 
+::
+
+   pip install torchaudio
+
+
 """
 
-pip install torchaudio
+
+
+
+
 
 
 ######################################################################
@@ -49,7 +53,7 @@ pip install torchaudio
 # 
 # TIPS: \* alksdjalksdjaslkdj
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and ``torchaudio``. Depending on
@@ -62,7 +66,7 @@ import torchaudio
 
 
 ######################################################################
-# **2) Access the data in the dataset**
+# 2. Access the data in the dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # The Yesno dataset in ``torchaudio`` features sixty recordings of one
@@ -72,7 +76,7 @@ import torchaudio
 # ``torchaudio.datasets.YESNO`` creates a dataset for YesNo.
 # 
 # ::
-# 
+#    
 #    torchaudio.datasets.YESNO(
 #      root,
 #      url='http://www.openslr.org/resources/1/waves_yesno.tar.gz',
@@ -85,16 +89,13 @@ import torchaudio
 # labels).
 # 
 # You must set a ``root`` for the Yesno dataset, which is where the
-# training and testing dataset will exist. the other parameters are
+# training and testing dataset will exist. The other parameters are
 # optional, with their default values shown. Here is some additional
-# useful info on the other parameters: \* ``download``: If true, downloads
-# the dataset from the internet and puts it in root directory. If dataset
-# is already downloaded, it is not downloaded again. \* ``transform``:
-# Using transforms on your data allows you to take it from its source
-# state and transform it into data that’s joined together, de-normalized,
-# and ready for training. Each library in PyTorch supports a growing list
-# of transformations. \* ``target_transform``: A function/transform that
-# takes in the target and transforms it.
+# useful info on the other parameters:
+
+# * ``download``: If true, downloads the dataset from the internet and puts it in root directory. If dataset is already downloaded, it is not downloaded again.
+# * ``transform``: Using transforms on your data allows you to take it from its source state and transform it into data that’s joined together, de-normalized, and ready for training. Each library in PyTorch supports a growing list of transformations.
+# * ``target_transform``: A function/transform that takes in the target and transforms it.
 # 
 # Let’s access our Yesno data:
 # 
@@ -114,7 +115,7 @@ print("Waveform: {}\nSample rate: {}\nLabels: {}".format(waveform, sample_rate, 
 # data into a “training” dataset and a “testing” dataset. This ensures
 # that you have out-of-sample data to test the performance of your model.
 # 
-# **3) Loading the data**
+# 3. Loading the data
 # ~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Now that we have access to the dataset, we must pass it through
@@ -128,7 +129,7 @@ data_loader = torch.utils.data.DataLoader(yesno_data,
 
 
 ######################################################################
-# **4) Iterate over the data**
+# 4. Iterate over the data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Our data is now iterable using the ``data_loader``. This will be
@@ -144,7 +145,7 @@ for data in data_loader:
 
 
 ######################################################################
-# **5) [Optional] Visualize the data**
+# 5. [Optional] Visualize the data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # You can optionally visualize your data to further understand the output
@@ -160,13 +161,13 @@ plt.plot(waveform.t().numpy())
 
 
 ######################################################################
-# Congradulations! You have successfully loaded data in PyTorch.
+# Congratulations! You have successfully loaded data in PyTorch.
 # 
 # Learn More
 # ----------
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
-# 
+# - `Saving and loading multiple models in one file using PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html>`__
+
+# -  `Defining a neural network in PyTorch <https://pytorch.org/tutorials/recipes/recipes/defining_a_neural_network.html>`__
