@@ -37,7 +37,7 @@ PyTorch Recipes
          Saving and loading a general checkpoint in PyTorch
          https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html
 
-10. saving_and_loading_a_general_checkpoint.py
+10. saving_and_loading_models_for_inference.py
          Saving and loading models for inference in PyTorch
          https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html
 
