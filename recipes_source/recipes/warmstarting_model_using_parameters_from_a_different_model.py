@@ -1,7 +1,6 @@
 """
 Warmstarting model using parameters from a different model in PyTorch
 =====================================================================
-
 Partially loading a model or loading a partial model are common
 scenarios when transfer learning or training a new complex model.
 Leveraging trained parameters, even if only a few are usable, will help
@@ -10,24 +9,24 @@ much faster than training from scratch.
 
 Introduction
 ------------
-
 Whether you are loading from a partial ``state_dict``, which is missing
 some keys, or loading a ``state_dict`` with more keys than the model
 that you are loading into, you can set the strict argument to ``False``
 in the ``load_state_dict()`` function to ignore non-matching keys.
-
 In this recipe, we will experiment with warmstarting a model using
 parameters of a different model.
 
 Setup
 -----
-
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
+::
+
+   pip install torch
+   
 """
 
-pip install torch
 
 
 ######################################################################
@@ -39,7 +38,7 @@ pip install torch
 # 3. Save model A
 # 4. Load into model B
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -52,7 +51,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# **2) Define and intialize the neural network A and B**
+# 2. Define and intialize the neural network A and B
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -105,7 +104,7 @@ netB = NetB()
 
 
 ######################################################################
-# **3) Save model A**
+# 3. Save model A
 # ~~~~~~~~~~~~~~~~~~~
 # 
 
@@ -116,7 +115,7 @@ torch.save(netA.state_dict(), PATH)
 
 
 ######################################################################
-# **4) Load into model B**
+# 4. Load into model B
 # ~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # If you want to load parameters from one layer to another, but some keys
@@ -141,4 +140,3 @@ netB.load_state_dict(torch.load(PATH), strict=False)
 # 
 # -  TBD
 # -  TBD
-# 
