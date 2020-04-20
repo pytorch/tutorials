@@ -24,3 +24,7 @@ PyTorch Recipes
 5. Captum_Recipe.py 
 	 Model Interpretability using Captum
          https://pytorch.org/tutorials/recipes/recipes/Captum_Recipe.html
+
+6. dynamic_quantization.py
+         Dynamic Quantization
+         https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html

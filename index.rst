@@ -284,7 +284,7 @@ Parallel and Distributed Training
    :includehidden:
    :caption: Recipes
 
-   recipes/what_is_state_dict
+   recipes/recipes_index
 
 .. toctree::
    :maxdepth: 2
