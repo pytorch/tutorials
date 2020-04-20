@@ -1,10 +1,8 @@
 """
 Saving and loading a general checkpoint in PyTorch
 ==================================================
-
-Saving and loading a general checkpoint of for model for inference or
+Saving and loading a general checkpoint model for inference or 
 resuming training can be helpful for picking up where you last left off.
-
 When saving a general checkpoint, you must save more than just the
 model’s state_dict. It is important to also save the optimizer’s
 state_dict, as this contains buffers and parameters that are updated as
@@ -14,7 +12,6 @@ you left off on, the latest recorded training loss, external
 
 Introduction
 ------------
-
 To save multiple checkpoints, you must organize them in a dictionary and
 use ``torch.save()`` to serialize the dictionary. A common PyTorch
 convention is to save these checkpoints using the ``.tar`` file
@@ -28,13 +25,16 @@ checkpoints.
 
 Setup
 -----
-
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
+::
+
+   pip install torch
+
+
 """
 
-pip install torch
 
 
 ######################################################################
@@ -47,7 +47,7 @@ pip install torch
 # 4. Save the general checkpoint
 # 5. Load the general checkpoint
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -60,7 +60,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# **2) Define and intialize the neural network**
+# 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -91,7 +91,7 @@ print(net)
 
 
 ######################################################################
-# **3) Initialize the optimizer**
+# 3. Initialize the optimizer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We will use SGD with momentum.
@@ -101,7 +101,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
 ######################################################################
-# **4) Save the general checkpoint**
+# 4. Save the general checkpoint
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Collect all relevant information and build your dictionary.
@@ -121,7 +121,7 @@ torch.save({
 
 
 ######################################################################
-# **5) Load the general checkpoint**
+# 5. Load the general checkpoint
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Remember to first initialize the model and optimizer, then load the
@@ -160,4 +160,3 @@ model.train()
 # 
 # -  TBD
 # -  TBD
-# 
