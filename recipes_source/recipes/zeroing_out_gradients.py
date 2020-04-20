@@ -1,14 +1,12 @@
 """
 Zeroing out gradients in PyTorch
 ================================
-
 It is beneficial to zero out gradients when building a neural network.
 This is because by default, gradients are accumulated in buffers (i.e,
 not overwritten) whenever ``.backward()`` is called.
 
 Introduction
 ------------
-
 When training your neural network, models are able to increase their
 accuracy through gradient decent. In short, gradient descent is the
 process of minimizing our loss (or error) by tweaking the weights and
@@ -24,23 +22,23 @@ when .backward() is called on the loss tensor.
 There are cases where it may be necessary to zero-out the gradients of a
 tensor. For example: when you start your training loop, you should zero
 out the gradients so that you can perform this tracking correctly.
-
 In this recipe, we will learn how to zero out gradients using the
 PyTorch library. We will demonstrate how to do this by training a neural
 network on the ``CIFAR10`` dataset built into PyTorch.
 
 Setup
 -----
-
 Since we will be training data in this recipe, if you are in a runable
 notebook, it is best to switch the runtime to GPU or TPU.
-
 Before we begin, we need to install ``torch`` and ``torchvision`` if
 they aren’t already available.
 
-"""
+::
 
-pip install torchvision
+   pip install torchvision
+
+
+"""
 
 
 ######################################################################
@@ -57,7 +55,7 @@ pip install torchvision
 # 4. Define the loss function
 # 5. Zero the gradients while training the network
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will just be using ``torch`` and ``torchvision`` to
@@ -76,7 +74,7 @@ import torchvision.transforms as transforms
 
 
 ######################################################################
-# **2) Load and normalize the dataset**
+# 2. Load and normalize the dataset
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # PyTorch features various built-in datasets (see the Loading Data recipe
@@ -102,7 +100,7 @@ classes = ('plane', 'car', 'bird', 'cat',
 
 
 ######################################################################
-# **3) Build the neural network**
+# 3. Build the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We will use a convolutional neural network. To learn more see the
@@ -130,7 +128,7 @@ class Net(nn.Module):
 
 
 ######################################################################
-# **4) Define a Loss function and optimizer**
+# 4. Define a Loss function and optimizer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Let’s use a Classification Cross-Entropy loss and SGD with momentum.
@@ -142,7 +140,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
 ######################################################################
-# **5) Zero the gradients while training the network**
+# 5. Zero the gradients while training the network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # This is when things start to get interesting. We simply have to loop
@@ -193,4 +191,3 @@ print('Finished Training')
 # 
 # -  TBD
 # -  TBD
-# 
