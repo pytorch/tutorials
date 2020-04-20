@@ -1,19 +1,16 @@
 """
 Saving and loading models for inference in PyTorch
 ==================================================
-
 There are two approaches for saving and loading models for inference in
 PyTorch. The first is saving and loading the ``state_dict``, and the
 second is saving and loading the entire model.
 
 Introduction
 ------------
-
 Saving the model’s ``state_dict`` with the ``torch.save()`` function
 will give you the most flexibility for restoring the model later. This
 is the recommended method for saving models, because it is only really
 necessary to save the trained model’s learned parameters.
-
 When saving and loading an entire model, you save the entire module
 using Python’s
 `pickle <https://docs.python.org/3/library/pickle.html>`__ module. Using
@@ -25,19 +22,21 @@ not save the model class itself. Rather, it saves a path to the file
 containing the class, which is used during load time. Because of this,
 your code can break in various ways when used in other projects or after
 refactors.
-
 In this recipe, we will explore both ways on how to save and load models
 for inference.
 
 Setup
 -----
-
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
-"""
 
-pip install torch
+::
+
+   pip install torch
+
+
+"""
 
 
 ######################################################################
@@ -50,7 +49,7 @@ pip install torch
 # 4. Save and load the model via ``state_dict``
 # 5. Save and load the entire model
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -63,7 +62,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# **2) Define and intialize the neural network**
+# 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -94,7 +93,7 @@ print(net)
 
 
 ######################################################################
-# **3) Initialize the optimizer**
+# 3. Initialize the optimizer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We will use SGD with momentum.
@@ -104,7 +103,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
 ######################################################################
-# **4) Save and load the model via ``state_dict``**
+# 4. Save and load the model via ``state_dict``
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Let’s save and load our model using just ``state_dict``.
@@ -136,7 +135,7 @@ model.eval()
 # batch normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 # 
-# **5) Save and load entire model**
+# 5. Save and load entire model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Now let’s try the same thing with the entire model.
@@ -167,4 +166,3 @@ model.eval()
 # 
 # -  TBD
 # -  TBD
-# 
