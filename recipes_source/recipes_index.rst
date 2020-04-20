@@ -101,9 +101,9 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Model Interpretability using Captum
    :card_description: Learn how to use Captum attribute the predictions of an image classifier to their corresponding image features and visualize the attribution results.
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/captum_teaser.png
    :link: ../recipes/recipes/Captum_Recipe.html
-   :tags: TorchScript
+   :tags: Interpretability, Captum
 
 .. Quantization
 
