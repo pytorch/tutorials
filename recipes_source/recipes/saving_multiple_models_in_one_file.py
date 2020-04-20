@@ -1,36 +1,34 @@
 """
 Saving and loading multiple models in one file using PyTorch
 ============================================================
-
 Saving and loading multiple models can be helpful for reusing models
 that you have previously trained.
 
 Introduction
 ------------
-
 When saving a model comprised of multiple ``torch.nn.Modules``, such as
 a GAN, a sequence-to-sequence model, or an ensemble of models, you must
 save a dictionary of each model’s state_dict and corresponding
 optimizer. You can also save any other items that may aid you in
 resuming training by simply appending them to the dictionary.
-
 To load the models, first initialize the models and optimizers, then
 load the dictionary locally using ``torch.load()``. From here, you can
 easily access the saved items by simply querying the dictionary as you
 would expect.
-
 In this recipe, we will demonstrate how to save multiple models to one
 file using PyTorch.
 
 Setup
 -----
-
 Before we begin, we need to install ``torch`` if it isn’t already
 available.
 
+::
+
+   pip install torch
+   
 """
 
-pip install torch
 
 
 ######################################################################
@@ -43,7 +41,7 @@ pip install torch
 # 4. Save multiple models
 # 5. Load multiple models
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -56,7 +54,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# **2) Define and intialize the neural network**
+# 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -88,7 +86,7 @@ netB = Net()
 
 
 ######################################################################
-# **3) Initialize the optimizer**
+# 3. Initialize the optimizer
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # We will use SGD with momentum to build an optimizer for each model we
@@ -100,7 +98,7 @@ optimizerB = optim.SGD(netB.parameters(), lr=0.001, momentum=0.9)
 
 
 ######################################################################
-# **4) Save multiple models**
+# 4. Save multiple models
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Collect all relevant information and build your dictionary.
@@ -118,7 +116,7 @@ torch.save({
 
 
 ######################################################################
-# **5) Load multiple models**
+# 4. Load multiple models
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # Remember to first initialize the models and optimizers, then load the
@@ -161,4 +159,4 @@ modelB.train()
 # 
 # -  TBD
 # -  TBD
-# 
+#  
