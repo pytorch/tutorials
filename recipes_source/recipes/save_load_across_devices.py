@@ -19,9 +19,11 @@ In order for every code block to run properly in this recipe, you must
 first change the runtime to “GPU” or higher. Once you do, we need to
 install ``torch`` if it isn’t already available.
 
-"""
+::
 
-pip install torch
+   pip install torch
+
+"""
 
 
 ######################################################################
@@ -35,7 +37,7 @@ pip install torch
 # 5. Save on a CPU, load on a GPU
 # 6. Saving and loading ``DataParallel`` models
 # 
-# **1) Import necessary libraries for loading our data**
+# 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
@@ -48,7 +50,7 @@ import torch.optim as optim
 
 
 ######################################################################
-# **2) Define and intialize the neural network**
+# 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # For sake of example, we will create a neural network for training
@@ -79,7 +81,7 @@ print(net)
 
 
 ######################################################################
-# **3) Save on GPU, Load on CPU**
+# 3. Save on GPU, Load on CPU
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # When loading a model on a CPU that was trained with a GPU, pass
@@ -103,7 +105,7 @@ model.load_state_dict(torch.load(PATH, map_location=device))
 # In this case, the storages underlying the tensors are dynamically
 # remapped to the CPU device using the ``map_location`` argument.
 # 
-# **4) Save on GPU, Load on GPU**
+# 4. Save on GPU, Load on GPU
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # When loading a model on a GPU that was trained and saved on GPU, simply
@@ -130,7 +132,7 @@ model.to(device)
 # remember to manually overwrite tensors:
 # ``my_tensor = my_tensor.to(torch.device('cuda'))``.
 # 
-# **5) Save on CPU, Load on GPU**
+# 5. Save on CPU, Load on GPU
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # When loading a model on a GPU that was trained and saved on CPU, set the
@@ -157,7 +159,7 @@ model.to(device)
 
 
 ######################################################################
-# **6) Saving ``torch.nn.DataParallel`` Models**
+# 6. Saving ``torch.nn.DataParallel`` Models
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # ``torch.nn.DataParallel`` is a model wrapper that enables parallel GPU
