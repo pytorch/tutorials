@@ -30,8 +30,8 @@ rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
-
+# pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
+pip install sphinx-gallery tqdm matplotlib ipython pillow
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
