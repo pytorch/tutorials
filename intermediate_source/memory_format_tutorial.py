@@ -93,12 +93,12 @@ print(z.stride()) # Ouputs: (3072, 1, 96, 3)
 #  (only works for CudNN >= 7.6)
 if torch.backends.cudnn.version() >= 7603:
     input = torch.randint(1, 10, (2, 8, 4, 4), dtype=torch.float32, device="cuda", requires_grad=True)
-    conv = torch.nn.Conv2d(8, 4, 3).cuda().float()
+    model = torch.nn.Conv2d(8, 4, 3).cuda().float()
 
     input = input.contiguous(memory_format=torch.channels_last)
-    conv = conv.to(memory_format=torch.channels_last) # Module parameters need to be Channels Last
+    model = model.to(memory_format=torch.channels_last) # Module parameters need to be Channels Last
 
-    out = conv(input)
+    out = model(input)
     print(out.is_contiguous(memory_format=torch.channels_last)) # Ouputs: True
 
 ######################################################################
@@ -194,8 +194,12 @@ if torch.backends.cudnn.version() >= 7603:
 #
 # Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly. 
 #
-input = input.to(memory_format=torch.channels_last)
-model = model.to(memory_format=torch.channels_last)
+
+# Need to be done once, after model initialization (or load)
+model = model.to(memory_format=torch.channels_last) # Replace with your model
+
+# Need to be done for every input
+input = input.to(memory_format=torch.channels_last) # Replace with your input
 output = model(input)
 
 #######################################################################
