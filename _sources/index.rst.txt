@@ -176,6 +176,11 @@ Frontend APIs
    :description: :doc:`intermediate/named_tensor_tutorial`
 
 .. customgalleryitem::
+   :figure: /_static/img/memory_format_logo.png
+   :tooltip: Memory Format
+   :description: :doc:`intermediate/memory_format_tutorial`
+
+.. customgalleryitem::
     :tooltip: Using the PyTorch C++ Frontend
     :figure: /_static/img/cpp-pytorch.png
     :description: :doc:`advanced/cpp_frontend`
@@ -348,6 +353,7 @@ Parallel and Distributed Training
    :caption: Frontend APIs
 
    intermediate/named_tensor_tutorial
+   intermediate/memory_format_tutorial
    advanced/cpp_frontend
    advanced/cpp_extension
    advanced/torch_script_custom_ops
