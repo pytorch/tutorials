@@ -15,7 +15,8 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 # pip install -r $DIR/../requirements.txt
 # Adding requirments one at a time
-pip install spacy awscli
+pip install spacy awscli numpy
+pip install torch torchvision torchtext torchaudio PyHamcrest bs4 flask
 
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
