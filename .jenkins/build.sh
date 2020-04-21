@@ -19,7 +19,8 @@ pip install spacy awscli numpy
 pip install torch torchvision torchtext torchaudio PyHamcrest bs4 flask
 
 export PATH=/opt/conda/bin:$PATH
-pip install sphinx==1.8.2 pandas
+# pip install sphinx==1.8.2 pandas
+pip install sphinx pandas
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
