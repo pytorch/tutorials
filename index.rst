@@ -199,7 +199,7 @@ Frontend APIs
    :tooltip: Implement custom classes in C++ for TorchScript
    :description: :doc:`/advanced/torch_script_custom_classes`
    :figure: _static/img/cpp_logo.png
-   
+
 .. customgalleryitem::
     :tooltip: Autograd in C++ Frontend
     :figure: /_static/img/cpp-pytorch.png
@@ -269,7 +269,7 @@ Parallel and Distributed Training
    :tooltip: PyTorch distributed trainer with Amazon AWS
    :description: :doc:`/beginner/aws_distributed_training_tutorial`
    :figure: _static/img/distributed/DistPyTorch.jpg
-   
+
 .. customgalleryitem::
    :tooltip: Implementing a Parameter Server Using Distributed RPC Framework
    :description: :doc:`/intermediate/rpc_param_server_tutorial`
