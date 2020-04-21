@@ -14,6 +14,8 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 # pip install -r $DIR/../requirements.txt
+# Adding requirments one at a time
+pip install spacy
 
 export PATH=/opt/conda/bin:$PATH
 pip install sphinx==1.8.2 pandas
