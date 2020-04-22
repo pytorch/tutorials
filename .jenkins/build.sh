@@ -20,7 +20,7 @@ pip install torch torchvision torchtext torchaudio PyHamcrest bs4 flask
 
 export PATH=/opt/conda/bin:$PATH
 # pip install sphinx==1.8.2 pandas
-pip install sphinx pandas
+pip install sphinx==1.8.2 pandas
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
@@ -35,7 +35,7 @@ pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch
 # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
 # this is a workaround to the issue.
 # pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
-pip install sphinx-gallery tqdm matplotlib ipython pillow
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
 aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
