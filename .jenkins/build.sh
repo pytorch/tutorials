@@ -10,8 +10,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
-# See if we can pick up Cuda 10.1 for the build. 
-sudo apt-get -y install cuda-10-1
 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
