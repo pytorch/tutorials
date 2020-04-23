@@ -213,7 +213,7 @@ plt.plot(mu_law_encoding_waveform[0,:].numpy())
 # Now let's experiment with a few of the other functionals and visualize their output. Taking our 
 # spectogram, we can compute it's deltas:
 
-computed = torchaudio.functional.compute_deltas(specgram, win_length=3)
+computed = torchaudio.functional.compute_deltas(specgram.contiguous(), win_length=3)
 print("Shape of computed deltas: {}".format(computed.shape))
 
 plt.figure()
