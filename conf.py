@@ -12,6 +12,16 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+#
+
+# Because the sphinx gallery might take a long time, you can control specific
+# files that generate the results using `GALLERY_PATTERN` environment variable,
+# For example to run only `neural_style_transfer_tutorial.py`:
+#   GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
+# or
+#   GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
+#
+# GALLERY_PATTERN variable respects regular expressions.
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -24,7 +34,7 @@ import pytorch_sphinx_theme
 import torch
 import glob
 import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 
 
 try:
@@ -49,12 +59,11 @@ extensions = ['sphinx.ext.mathjax',
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
-
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced'],
-    'filename_pattern': 'tutorial.py',
+                      'advanced_source', 'recipes_source'],
+    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
+    'filename_pattern': os.environ.get('GALLERY_PATTERN', r'tutorial.py'),
     'backreferences_dir': False
 }
 
@@ -228,3 +237,5 @@ def setup(app):
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
     app.add_directive('customgalleryitem', CustomGalleryItemDirective)
+    app.add_directive('customcarditem', CustomCardItemDirective)
+    app.add_directive('customcalloutitem', CustomCalloutItemDirective)

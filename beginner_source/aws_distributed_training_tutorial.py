@@ -209,9 +209,6 @@ import time
 import sys
 import torch
 
-if __name__ == '__main__':
-    torch.multiprocessing.set_start_method('spawn')
-
 import torch.nn as nn
 import torch.nn.parallel
 import torch.distributed as dist
@@ -692,4 +689,3 @@ for epoch in range(num_epochs):
 #
 # -  If possible, setup a NFS so you only need one copy of the dataset
 #
-
