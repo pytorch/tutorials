@@ -60,6 +60,15 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/Captum_Recipe.html
    :tags: TorchScript
 
+.. Vizualization
+
+.. customcarditem::
+   :header: How to use TensorBoard with PyTorch
+   :card_description: Learn basic usage of TensorBoard with PyTorch, and how to visualize data in TensorBoard UI
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/tensorboard_with_pytorch.html
+   :tags: Vizualization, TensorBoard
+
 
 .. Production Development
 
