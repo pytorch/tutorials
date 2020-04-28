@@ -41,7 +41,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Defining a Neural Network
    :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network the MNIST dataset.
-   :image: ../_static/img/thumbnails/pytorch-logo-flat.png
+   :image: ../_static/img/thumbnails/defining_a_network.png
    :link: ../recipes/recipes/defining_a_neural_network.html
    :tags: Basics
 
