@@ -105,6 +105,13 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/Captum_Recipe.html
    :tags: Interpretability, Captum
 
+.. customcarditem::
+   :header: How to use TensorBoard with PyTorch
+   :card_description: Learn basic usage of TensorBoard with PyTorch, and how to visualize data in TensorBoard UI
+   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :link: ../recipes/recipes/tensorboard_with_pytorch.html
+   :tags: Interpretability, TensorBoard
+
 .. Quantization
 
 .. customcarditem::
@@ -114,6 +121,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/dynamic_quantization.html
    :tags: Quantization, Text, Model-Optimization
 
+
 .. Production Development
 
 .. customcarditem::
@@ -122,6 +130,13 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: ../recipes/recipes/torchscript_inference.html
    :tags: TorchScript
+   
+.. customcarditem::
+   :header: Deploying with Flask
+   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model. 
+   :image: _static/img/flask.png
+   :link: ../recipes/recipes/deployment_with_flask.html
+   :tags: Production, TorchScript
    
 
 
