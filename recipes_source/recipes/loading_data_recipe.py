@@ -1,5 +1,5 @@
 """
-Loading Data in PyTorch
+Loading data in PyTorch
 =======================
 PyTorch features extensive neural network building blocks with a simple,
 intuitive, and stable API. PyTorch includes packages to prepare and load
