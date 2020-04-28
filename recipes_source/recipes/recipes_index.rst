@@ -65,7 +65,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Dynamic Quantization
    :card_description:  Apply dynamic quantization to a simple LSTM model.
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/pixelated-cat.png
    :link: ../recipes/recipes/dynamic_quantization.html
    :tags: Quantization, Text, Model-Optimization
 
@@ -74,12 +74,17 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: TorchScript for Deployment
    :card_description: Learn how to export your trained model in TorchScript format and how to load your TorchScript model in C++ and do inference.
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/torchscript.png
    :link: ../recipes/recipes/torchscript_inference.html
-   :tags: TorchScript
+   :tags: Production, TorchScript
+
+.. customcarditem::
+   :header: Deploying with Flask
+   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model. 
+   :image: _static/img/flask.png
+   :link: ../recipes/recipes/deployment_with_flask.html
+   :tags: Production, TorchScript
    
-
-
 .. End of recipe card section
 
 .. raw:: html
