@@ -55,7 +55,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Saving and loading models for inference in PyTorch
    :card_description: Learn about the two approaches for saving and loading models for inference in PyTorch - via the state_dict and via the entire model. 
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/floppy.png
    :link: ../recipes/recipes/saving_and_loading_models_for_inference.html
    :tags: Basics
 
@@ -63,14 +63,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Saving and loading a general checkpoint in PyTorch
    :card_description: Saving and loading a general checkpoint model for inference or resuming training can be helpful for picking up where you last left off. In this recipe, explore how to save and load multiple checkpoints.
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/floppy.png
    :link: ../recipes/recipes/saving_and_loading_a_general_checkpoint.html
    :tags: Basics
 
 .. customcarditem::
    :header: Saving and loading multiple models in one file using PyTorch
    :card_description: In this recipe, learn how saving and loading multiple models can be helpful for reusing models that you have previously trained. 
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/floppy.png
    :link: ../recipes/recipes/saving_multiple_models_in_one_file.html
    :tags: Basics
 
@@ -84,7 +84,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Saving and loading models across devices in PyTorch
    :card_description: Learn how saving and loading models across devices (CPUs and GPUs) is relatively straightforward using PyTorch. 
-   :image: _static/img/thumbnails/pytorch-logo-flat.png
+   :image: _static/img/thumbnails/floppy.png
    :link: ../recipes/recipes/save_load_across_devices.html
    :tags: Basics
 
