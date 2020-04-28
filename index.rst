@@ -203,11 +203,18 @@ Welcome to PyTorch Tutorials
 .. Frontend APIs
 
 .. customcarditem::
-   :header: (Experimental) Introduction to Named Tensors in PyTorch
+   :header: (experimental) Introduction to Named Tensors in PyTorch
    :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
+   :image: _static/img/memory_format_logo.png
+   :link: intermediate/memory_format_tutorial.html
+   :tags: Frontend-APIs,Named-Tensor, Best-Practice
+   
+.. customcarditem::
+   :header: (experimental) Channels Last Memory Format in PyTorch
+   :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions. 
    :image: _static/img/named_tensor.png
    :link: intermediate/named_tensor_tutorial.html
-   :tags: Frontend-APIs,Named-Tensor, Best-Practice
+   :tags: Frontend-APIs,Memory-Format, Best-Practice
 
 .. customcarditem::
    :header: Using the PyTorch C++ Frontend
@@ -254,28 +261,28 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization, Best-Practice
 
 .. customcarditem::
-   :header: (Experimental) Dynamic Quantization on an LSTM Word Language Model
+   :header: (experimental) Dynamic Quantization on an LSTM Word Language Model
    :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.  
    :image: _static/img/quant_asym.png
    :link: advanced/dynamic_quantization_tutorial.html
    :tags: Text, Quantization, Model-Optimization
 
 .. customcarditem::
-   :header: (Experimental) Dynamic Quantization on BERT
+   :header: (experimental) Dynamic Quantization on BERT
    :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model. 
    :image: _static/img/bert.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text, Quantization, Model-Optimization
 
 .. customcarditem::
-   :header: (Experimental) Static Quantization with Eager Mode in PyTorch
+   :header: (experimental) Static Quantization with Eager Mode in PyTorch
    :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training. 
    :image: _static/img/qat.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Image/Video, Quantization, Model-Optimization
 
 .. customcarditem::
-   :header: (Experimental) Quantized Transfer Learning for Computer Vision Tutorial
+   :header: (experimental) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training. 
    :image: _static/img/qat.png
    :link: advanced/static_quantization_tutorial.html
@@ -284,7 +291,7 @@ Welcome to PyTorch Tutorials
 .. Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: Model Parallel Best Practices
+   :header: Single-Machine Model Parallel Best Practices
    :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU 
    :image: _static/img/thumbnails/pytorch-logo-flat.png
    :link: intermediate/model_parallel_tutorial.html
@@ -374,12 +381,20 @@ Additional Resources
 
         </div>
     </div>
-
+    
     <div style='clear:both'></div>
 
 .. -----------------------------------------
 .. Page TOC
 .. -----------------------------------------
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Recipes
+
+   recipes/recipes_index
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -450,6 +465,7 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/named_tensor_tutorial
+   intermediate/memory_format_tutorial
    advanced/cpp_frontend
    advanced/cpp_extension
    advanced/torch_script_custom_ops
