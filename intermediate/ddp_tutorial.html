@@ -233,44 +233,49 @@
 <div class="section" id="getting-started-with-distributed-data-parallel">
 <h1>Getting Started with Distributed Data Parallel<a class="headerlink" href="#getting-started-with-distributed-data-parallel" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a></p>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html">DistributedDataParallel</a>
-(DDP) implements data parallelism at the module level. It uses communication
-collectives in the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">torch.distributed</a>
-package to synchronize gradients, parameters, and buffers. Parallelism is
-available both within a process and across processes. Within a process, DDP
-replicates the input module to devices specified in <code class="docutils literal notranslate"><span class="pre">device_ids</span></code>, scatters
-inputs along the batch dimension accordingly, and gathers outputs to the
-<code class="docutils literal notranslate"><span class="pre">output_device</span></code>, which is similar to
-<a class="reference external" href="https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html">DataParallel</a>.
-Across processes, DDP inserts necessary parameter synchronizations in forward
-passes and gradient synchronizations in backward passes. It is up to users to
-map processes to available resources, as long as processes do not share GPU
-devices. The recommended (usually fastest) approach is to create a process for
-every module replica, i.e., no module replication within a process. The code in
-this tutorial runs on an 8-GPU server, but it can be easily generalized to
-other environments.</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a>
+(DDP) implements data parallelism at the module level which can run across
+multiple machines. Applications using DDP should spawn multiple processes and
+create a single DDP instance per process. DDP uses collective communications in the
+<a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">torch.distributed</a>
+package to synchronize gradients and buffers. More specifically, DDP registers
+an autograd hook for each parameter given by <code class="docutils literal notranslate"><span class="pre">model.parameters()</span></code> and the
+hook will fire when the corresponding gradient is computed in the backward
+pass. Then DDP uses that signal to trigger gradient synchronization across
+processes. Please refer to
+<a class="reference external" href="https://pytorch.org/docs/master/notes/ddp.html">DDP design note</a> for more details.</p>
+<p>The recommended way to use DDP is to spawn one process for each model replica,
+where a model replica can span multiple devices. DDP processes can be
+placed on the same machine or across machines, but GPU devices cannot be
+shared across processes. This tutorial starts from a basic DDP use case and
+then demonstrates more advanced use cases including checkpointing models and
+combining DDP with model parallel.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The code in this tutorial runs on an 8-GPU server, but it can be easily
+generalized to other environments.</p>
+</div>
 <div class="section" id="comparison-between-dataparallel-and-distributeddataparallel">
 <h2>Comparison between <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> and <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code><a class="headerlink" href="#comparison-between-dataparallel-and-distributeddataparallel" title="Permalink to this headline">¶</a></h2>
 <p>Before we dive in, let’s clarify why, despite the added complexity, you would
 consider using <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> over <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>:</p>
 <ul class="simple">
-<li>First, recall from the
+<li>First, <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> is single-process, multi-thread, and only works on a
+single machine, while <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> is multi-process and works
+for both single- and multi- machine training. <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> is usually
+slower than <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> even on a single machine due to GIL
+contention across threads, per-iteration replicated model, and additional
+overhead introduced by scattering inputs and gathering outputs.</li>
+<li>Recall from the
 <a class="reference external" href="https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html">prior tutorial</a>
 that if your model is too large to fit on a single GPU, you must use <strong>model parallel</strong>
 to split it across multiple GPUs. <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> works with
-<strong>model parallel</strong>; <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> does not at this time.</li>
-<li><code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> is single-process, multi-thread, and only works on a single
-machine, while <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> is multi-process and works for both
-single- and multi- machine training. Thus, even for single machine training,
-where your <strong>data</strong> is small enough to fit on a single machine, <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>
-is expected to be faster than <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code>. <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>
-also replicates models upfront instead of on each iteration and gets Global
-Interpreter Lock out of the way.</li>
-<li>If both your data is too large to fit on one machine <strong>and</strong> your
-model is too large to fit on a single GPU, you can combine model parallel
-(splitting a single model across multiple GPUs) with <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code>.
-Under this regime, each <code class="docutils literal notranslate"><span class="pre">DistributedDataParallel</span></code> process could use model parallel,
-and all processes collectively would use data parallel.</li>
+<strong>model parallel</strong>; <code class="docutils literal notranslate"><span class="pre">DataParallel</span></code> does not at this time. When DDP is combined
+with model parallel, each DDP process would use model parallel, and all processes
+collectively would use data parallel.</li>
+<li>If your model needs to span multiple machines or if your use case does not fit
+into data parallelism paradigm, please see <a class="reference external" href="https://pytorch.org/docs/stable/rpc.html">the RPC API</a>
+for more generic distributed training support.</li>
 </ul>
 </div>
 <div class="section" id="basic-use-case">
@@ -296,19 +301,15 @@ be found in
     <span class="c1"># initialize the process group</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
 
-    <span class="c1"># Explicitly setting seed to make sure that models created in two processes</span>
-    <span class="c1"># start from same random weights and biases.</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-
 
 <span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Now, let’s create a toy module, wrap it with DDP, and feed it with some dummy
-input data. Please note, if training starts from random parameters, you might
-want to make sure that all DDP processes use the same initial values.
-Otherwise, global gradient synchronizes will not make sense.</p>
+input data. Please note, as DDP broadcasts model states from rank 0 process to
+all other processes in the DDP constructor, you don’t need to worry about
+different DDP processes start from different model parameter initial values.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ToyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -321,24 +322,19 @@ Otherwise, global gradient synchronizes will not make sense.</p>
 
 
 <span class="k">def</span> <span class="nf">demo_basic</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running basic DDP example on rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="n">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
 
-    <span class="c1"># setup devices for this process, rank 1 uses GPUs [0, 1, 2, 3] and</span>
-    <span class="c1"># rank 2 uses GPUs [4, 5, 6, 7].</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">//</span> <span class="n">world_size</span>
-    <span class="n">device_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">rank</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">))</span>
-
-    <span class="c1"># create model and move it to device_ids[0]</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="c1"># output_device defaults to device_ids[0]</span>
-    <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="n">device_ids</span><span class="p">)</span>
+    <span class="c1"># create model and move it to GPU with id rank</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+    <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
 
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
 
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">ddp_model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
     <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
@@ -352,22 +348,26 @@ Otherwise, global gradient synchronizes will not make sense.</p>
              <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As you can see, DDP wraps lower level distributed communication details, and
-provides a clean API as if it is a local model. For basic use cases, DDP only
+<p>As you can see, DDP wraps lower-level distributed communication details and
+provides a clean API as if it is a local model. Gradient synchronization
+communications take place during the backward pass and overlap with the
+backward computation. When the <code class="docutils literal notranslate"><span class="pre">backward()</span></code> returns, <code class="docutils literal notranslate"><span class="pre">param.grad</span></code> already
+contains the synchronized gradient tensor. For basic use cases, DDP only
 requires a few more LoCs to set up the process group. When applying DDP to more
-advanced use cases, there are some caveats that require cautions.</p>
+advanced use cases, some caveats require caution.</p>
 </div>
 <div class="section" id="skewed-processing-speeds">
 <h2>Skewed Processing Speeds<a class="headerlink" href="#skewed-processing-speeds" title="Permalink to this headline">¶</a></h2>
-<p>In DDP, constructor, forward method, and differentiation of the outputs are
-distributed synchronization points. Different processes are expected to reach
-synchronization points in the same order and enter each synchronization point
-at roughly the same time. Otherwise, fast processes might arrive early and
-timeout on waiting for stragglers. Hence, users are responsible for balancing
-workloads distributions across processes. Sometimes, skewed processing speeds
-are inevitable due to, e.g., network delays, resource contentions,
-unpredictable workload spikes. To avoid timeouts in these situations, make
-sure that you pass a sufficiently large <code class="docutils literal notranslate"><span class="pre">timeout</span></code> value when calling
+<p>In DDP, the constructor, the forward pass, and the backward pass are
+distributed synchronization points. Different processes are expected to launch
+the same number of synchronizations and reach these synchronization points in
+the same order and enter each synchronization point at roughly the same time.
+Otherwise, fast processes might arrive early and timeout on waiting for
+stragglers. Hence, users are responsible for balancing workloads distributions
+across processes. Sometimes, skewed processing speeds are inevitable due to,
+e.g., network delays, resource contentions, unpredictable workload spikes. To
+avoid timeouts in these situations, make sure that you pass a sufficiently
+large <code class="docutils literal notranslate"><span class="pre">timeout</span></code> value when calling
 <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group">init_process_group</a>.</p>
 </div>
 <div class="section" id="save-and-load-checkpoints">
@@ -379,24 +379,20 @@ for more details. When using DDP, one optimization is to save the model in
 only one process and then load it to all processes, reducing write overhead.
 This is correct because all processes start from the same parameters and
 gradients are synchronized in backward passes, and hence optimizers should keep
-setting parameters to same values. If you use this optimization, make sure all
+setting parameters to the same values. If you use this optimization, make sure all
 processes do not start loading before the saving is finished. Besides, when
 loading the module, you need to provide an appropriate <code class="docutils literal notranslate"><span class="pre">map_location</span></code>
 argument to prevent a process to step into others’ devices. If <code class="docutils literal notranslate"><span class="pre">map_location</span></code>
 is missing, <code class="docutils literal notranslate"><span class="pre">torch.load</span></code> will first load the module to CPU and then copy each
 parameter to where it was saved, which would result in all processes on the
-same machine using the same set of devices.</p>
+same machine using the same set of devices. For more advanced failure recovery
+and elasticity support, please refer to <a class="reference external" href="https://pytorch.org/elastic">TorchElastic</a>.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">demo_checkpoint</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running DDP checkpoint example on rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="n">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
 
-    <span class="c1"># setup devices for this process, rank 1 uses GPUs [0, 1, 2, 3] and</span>
-    <span class="c1"># rank 2 uses GPUs [4, 5, 6, 7].</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">//</span> <span class="n">world_size</span>
-    <span class="n">device_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">rank</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">))</span>
-
-    <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="c1"># output_device defaults to device_ids[0]</span>
-    <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="n">device_ids</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+    <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
 
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
@@ -412,15 +408,13 @@ same machine using the same set of devices.</p>
     <span class="c1"># 0 saves it.</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
     <span class="c1"># configure map_location properly</span>
-    <span class="n">rank0_devices</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">-</span> <span class="n">rank</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">device_ids</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">device_ids</span><span class="p">]</span>
-    <span class="n">device_pairs</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rank0_devices</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">)</span>
-    <span class="n">map_location</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'cuda:</span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="n">x</span><span class="p">:</span> <span class="s1">'cuda:</span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">device_pairs</span><span class="p">}</span>
+    <span class="n">map_location</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'cuda:</span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="mi">0</span><span class="p">:</span> <span class="s1">'cuda:</span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span> <span class="n">rank</span><span class="p">}</span>
     <span class="n">ddp_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">CHECKPOINT_PATH</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">map_location</span><span class="p">))</span>
 
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">ddp_model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
-    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
     <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
     <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
@@ -438,13 +432,8 @@ same machine using the same set of devices.</p>
 </div>
 <div class="section" id="combine-ddp-with-model-parallelism">
 <h2>Combine DDP with Model Parallelism<a class="headerlink" href="#combine-ddp-with-model-parallelism" title="Permalink to this headline">¶</a></h2>
-<p>DDP also works with multi-GPU models, but replications within a process are not
-supported. You need to create one process per module replica, which usually
-leads to better performance compared to multiple replicas per process. DDP
-wrapping multi-GPU models is especially helpful when training large models with
-a huge amount of data. When using this feature, the multi-GPU model needs to be
-carefully implemented to avoid hard-coded devices, because different model
-replicas will be placed to different devices.</p>
+<p>DDP also works with multi-GPU models. DDP wrapping multi-GPU models is especially
+helpful when training large models with a huge amount of data.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ToyMpModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev0</span><span class="p">,</span> <span class="n">dev1</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ToyMpModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -465,6 +454,7 @@ replicas will be placed to different devices.</p>
 must NOT be set. Input and output data will be placed in proper devices by
 either the application or the model <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">demo_model_parallel</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running DDP with model parallel example on rank </span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
     <span class="n">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
 
     <span class="c1"># setup mp_model and devices for this process</span>
@@ -487,11 +477,13 @@ either the application or the model <code class="docutils literal notranslate"><
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
-    <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_basic</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_checkpoint</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">8</span><span class="p">:</span>
-        <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_model_parallel</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">n_gpus</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_gpus</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+      <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Requires at least 8 GPUs to run, but got </span><span class="si">{</span><span class="n">n_gpus</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_basic</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_checkpoint</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_model_parallel</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
