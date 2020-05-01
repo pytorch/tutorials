@@ -100,7 +100,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Custom Datasets, Transforms & Dataloaders
    :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader. 
-   :image: ../_static/img/thumbnails/custom_dataset.png
+   :image: ../_static/img/thumbnails/cropped/custom-datasets-transforms-and-dataloaders.png
    :link: ../recipes/recipes/custom_dataset_transforms_loader.html
    :tags: Data-Customization
 
@@ -109,14 +109,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Model Interpretability using Captum
    :card_description: Learn how to use Captum attribute the predictions of an image classifier to their corresponding image features and visualize the attribution results.
-   :image: ../_static/img/thumbnails/captum_teaser.png
+   :image: ../_static/img/thumbnails/cropped/model-interpretability-using-captum.png
    :link: ../recipes/recipes/Captum_Recipe.html
    :tags: Interpretability, Captum
 
 .. customcarditem::
    :header: How to use TensorBoard with PyTorch
    :card_description: Learn basic usage of TensorBoard with PyTorch, and how to visualize data in TensorBoard UI
-   :image: ../_static/img/thumbnails/pytorch-logo-flat.png
+   :image: ../_static/img/thumbnails/tensorboard_scalars.png
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
    :tags: Interpretability, TensorBoard
 
@@ -125,7 +125,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: Dynamic Quantization
    :card_description:  Apply dynamic quantization to a simple LSTM model.
-   :image: ../_static/img/thumbnails/pixelated-cat.png
+   :image: ../_static/img/thumbnails/cropped/using-dynamic-post-training-quantization.png
    :link: ../recipes/recipes/dynamic_quantization.html
    :tags: Quantization, Text, Model-Optimization
 
@@ -135,14 +135,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 .. customcarditem::
    :header: TorchScript for Deployment
    :card_description: Learn how to export your trained model in TorchScript format and how to load your TorchScript model in C++ and do inference.
-   :image: ../_static/img/thumbnails/pytorch-logo-flat.png
+   :image: ../_static/img/thumbnails/cropped/torchscript_overview.png
    :link: ../recipes/recipes/torchscript_inference.html
    :tags: TorchScript
    
 .. customcarditem::
    :header: Deploying with Flask
    :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model. 
-   :image: ../_static/img/flask.png
+   :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
    :link: ../recipes/recipes/deployment_with_flask.html
    :tags: Production, TorchScript
    
@@ -159,4 +159,3 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
     </div>
 
     </div>
-

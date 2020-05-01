@@ -338,13 +338,13 @@ Welcome to PyTorch Tutorials
 
     </div>
 
-    </div>
+    <div class="pagination d-flex justify-content-center"></div>
 
     </div>
 
     </div>
+    <br>
 
-.. .. galleryitem:: beginner/saving_loading_models.py
 
 Additional Resources
 ============================
