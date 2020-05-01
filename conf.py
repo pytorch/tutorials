@@ -34,7 +34,7 @@ import pytorch_sphinx_theme
 import torch
 import glob
 import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
 
 
 try:
@@ -61,8 +61,8 @@ extensions = ['sphinx.ext.mathjax',
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced'],
+                      'advanced_source', 'recipes_source'],
+    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
     'filename_pattern': os.environ.get('GALLERY_PATTERN', r'tutorial.py'),
     'backreferences_dir': False
 }
@@ -237,3 +237,5 @@ def setup(app):
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
     app.add_directive('customgalleryitem', CustomGalleryItemDirective)
+    app.add_directive('customcarditem', CustomCardItemDirective)
+    app.add_directive('customcalloutitem', CustomCalloutItemDirective)
