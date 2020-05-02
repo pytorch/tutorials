@@ -80,6 +80,26 @@ PyTorch Recipes
 
 .. raw:: html
 
+    <div class="sphx-glr-thumbcontainer" tooltip="Installation ---------------------- PyTorch should be installed to log models and metrics into ...">
+
+.. only:: html
+
+    .. figure:: /recipes/recipes/images/thumb/sphx_glr_tensorboard_with_pytorch_thumb.png
+
+        :ref:`sphx_glr_recipes_recipes_tensorboard_with_pytorch.py`
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /recipes/recipes/tensorboard_with_pytorch
+
+.. raw:: html
+
     <div class="sphx-glr-thumbcontainer" tooltip="Introduction ------------ Saving the model’s ``state_dict`` with the ``torch.save()`` function ...">
 
 .. only:: html
@@ -297,26 +317,6 @@ PyTorch Recipes
    :hidden:
 
    /recipes/recipes/Captum_Recipe
-
-.. raw:: html
-
-    <div class="sphx-glr-thumbcontainer" tooltip="Example script with invalid Python syntax ">
-
-.. only:: html
-
-    .. figure:: /recipes/recipes/images/thumb/sphx_glr_tensorboard_with_pytorch_thumb.png
-
-        :ref:`sphx_glr_recipes_recipes_tensorboard_with_pytorch.py`
-
-.. raw:: html
-
-    </div>
-
-
-.. toctree::
-   :hidden:
-
-   /recipes/recipes/tensorboard_with_pytorch
 
 .. raw:: html
 

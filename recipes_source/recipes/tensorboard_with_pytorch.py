@@ -16,6 +16,7 @@ Anaconda (recommended):
 ::
 
    $ conda install pytorch torchvision -c pytorch 
+   
 
 or pip
 
@@ -33,16 +34,14 @@ or pip
 # we need to create a ``SummaryWriter`` instance.
 #   
 
-.. code:: python
-
-
-    import torch
-    from torch.utils.tensorboard import SummaryWriter
-    writer = SummaryWriter()
+import torch
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
 
 # 
 # Writer will output to ``./runs/`` directory by default.
 # 
+
 
 ######################################################################
 # Log scalars
@@ -58,27 +57,25 @@ or pip
 # log loss value using ``add_scalar``
 #
 
-.. code:: python
+x = torch.arange(-5, 5, 0.1).view(-1, 1)
+y = -5 * x + 0.1 * torch.randn(x.size())
 
+model = torch.nn.Linear(1, 1)
+criterion = torch.nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr = 0.1)
 
-    x = torch.arange(-5, 5, 0.1).view(-1, 1)
-    y = -5 * x + 0.1 * torch.randn(x.size())
+def train_model(iter):
+    for epoch in range(iter):
+        y1 = model(x)
+        loss = criterion(y1, y)
+        writer.add_scalar("Loss/train", loss, epoch)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+train_model(10)
+writer.flush()
 
-    model = torch.nn.Linear(1, 1)
-    criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr = 0.1)
-
-    def train_model(iter):
-        for epoch in range(iter):
-            y1 = model(x)
-            loss = criterion(y1, y)
-            writer.add_scalar("Loss/train", loss, epoch)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            
-    train_model(10)
-    writer.flush()
 
 # 
 # Call ``flush()`` method to make sure that all pending events 
@@ -89,11 +86,8 @@ or pip
 # 
 # If you do not need the summary writer anymore, call ``close()`` method.
 #
-.. code:: python
 
-
-    writer.close()
-
+writer.close()
 
 ######################################################################
 # Run TensorBoard
@@ -101,25 +95,26 @@ or pip
 # 
 # Install TensorBoard through the command line to visualize data you logged
 #
-$ pip install tensorboard
+# ::
+# 
+#    $ pip install tensorboard
+# 
 #
 # Now, start TensorBoard, specifying the root log directory you used above. 
 # Argument ``logdir`` points to directory where TensorBoard will look to find 
 # event files that it can display. TensorBoard will recursively walk 
 # the directory structure rooted at logdir, looking for .*tfevents.* files.
 #
-$ tensorboard --logdir=runs
+# ::
+# 
+#    $ tensorboard --logdir=runs
 # 
 # Go to the URL it provides OR on windows:
 # 
-`http://localhost:6006/ <http://localhost:6006/>`_
-
-.. image:: _static/img/thumbnails/tensorboard_scalars.png
-    :scale: 75 %
-
-|
-|
-
+# `http://localhost:6006/ <http://localhost:6006/>`_
+# 
+# .. image:: ../_static/img/thumbnails/tensorboard_dev.png
+#    :scale: 75 %
 # 
 # This dashboard shows how the loss and accuracy change with every epoch. 
 # You can use it to also track training speed, learning rate, and other 
@@ -137,14 +132,18 @@ $ tensorboard --logdir=runs
 # track, and share your TensorBoard dashboards.
 # 
 # Install the latest version of TensorBoard to use the uploader.
+#
+# :: 
 # 
-$ pip install tensorboard --upgrade
+#    $ pip install tensorboard --upgrade
 #
 # Use a simple command to upload and share your TensorBoard.
 #
-$ tensorboard dev upload --logdir runs \
- --name "My latest experiment" \ # optional
- --description "Simple comparison of several hyperparameters" # optional
+# :: 
+# 
+#   $ tensorboard dev upload --logdir runs \
+#   --name "My latest experiment" \ # optional
+#   --description "Simple comparison of several hyperparameters" # optional
 # 
 # For help, run ``$ tensorboard dev --help``.
 #
@@ -154,17 +153,13 @@ $ tensorboard dev upload --logdir runs \
 # View your TensorBoard live at URL provided in your terminal. 
 # E.g. `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
 #
-
-.. image:: _static/img/thumbnails/tensorboard_dev.png
-    :scale: 75 %
-
-|
-|
-
 #
-# **Limitations:** TensorBoard.dev currently supports only scalars dashboard.
-#
-
+# .. image:: _static/img/thumbnails/tensorboard_dev.png
+#    :scale: 75 %
+# 
+# 
+# .. note::
+#   TensorBoard.dev currently supports only scalars dashboard.
 
 ########################################################################
 # Learn More
