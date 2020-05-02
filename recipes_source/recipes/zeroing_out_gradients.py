@@ -189,5 +189,5 @@ print('Finished Training')
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
+# - `Loading data in PyTorch <https://pytorch.org/tutorials/recipes/recipes/loading_data_recipe.html>`__
+# - `Saving and loading models across devices in PyTorch <https://pytorch.org/tutorials/recipes/recipes/save_load_across_devices.html>`__

@@ -197,8 +197,8 @@ Learn More
 
 Take a look at these other recipes to continue your learning:
 
--  TBD
--  TBD
+- `What is a state_dict in PyTorch <https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html>`__
+- `Saving and loading models for inference in PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html>`__
 
 
 .. rst-class:: sphx-glr-timing

@@ -48,7 +48,6 @@ Steps
 4. Iterate over the data
 5. [Optional] Visualize the data
 
-TIPS: \* alksdjalksdjaslkdj
 
 1. Import necessary libraries for loading our data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -185,8 +184,8 @@ Learn More
 
 Take a look at these other recipes to continue your learning:
 
--  TBD
--  TBD
+- `Defining a Neural Network <https://pytorch.org/tutorials/recipes/recipes/defining_a_neural_network.html>`__
+- `What is a state_dict in PyTorch <https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html>`__
 
 
 .. rst-class:: sphx-glr-timing
