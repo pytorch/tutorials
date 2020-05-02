@@ -118,7 +118,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :card_description: Learn basic usage of TensorBoard with PyTorch, and how to visualize data in TensorBoard UI
    :image: ../_static/img/thumbnails/tensorboard_scalars.png
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
-   :tags: Interpretability, TensorBoard
+   :tags: Visualization, TensorBoard
 
 .. Quantization
 

@@ -113,8 +113,8 @@ writer.close()
 # 
 # `http://localhost:6006/ <http://localhost:6006/>`_
 # 
-# .. image:: ../_static/img/thumbnails/tensorboard_dev.png
-#    :scale: 75 %
+# .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
+#    :scale: 40 %
 # 
 # This dashboard shows how the loss and accuracy change with every epoch. 
 # You can use it to also track training speed, learning rate, and other 
@@ -154,8 +154,8 @@ writer.close()
 # E.g. `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
 #
 #
-# .. image:: _static/img/thumbnails/tensorboard_dev.png
-#    :scale: 75 %
+# .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
+#    :scale: 40 %
 # 
 # 
 # .. note::

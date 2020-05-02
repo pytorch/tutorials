@@ -113,7 +113,7 @@ writer.close()
 # 
 # `http://localhost:6006/ <http://localhost:6006/>`_
 # 
-# .. image:: ../_static/img/thumbnails/tensorboard_dev.png
+# .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
 #    :scale: 75 %
 # 
 # This dashboard shows how the loss and accuracy change with every epoch. 
@@ -154,7 +154,7 @@ writer.close()
 # E.g. `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA <https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA>`_
 #
 #
-# .. image:: _static/img/thumbnails/tensorboard_dev.png
+# .. image:: ../../_static/img/thumbnails/tensorboard_dev.png
 #    :scale: 75 %
 # 
 # 
