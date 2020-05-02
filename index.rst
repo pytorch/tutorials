@@ -256,7 +256,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Pruning Tutorial
    :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
-   :image: _static/img/cropped/Pruning-Tutorial.png
+   :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: intermediate/pruning_tutorial.html
    :tags: Model-Optimization, Best-Practice
 

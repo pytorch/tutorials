@@ -147,14 +147,13 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :tags: Production, TorchScript
    
 
-
-.. End of recipe card section
+.. End of tutorial card section
 
 .. raw:: html
 
     </div>
 
-    </div>
+    <div class="pagination d-flex justify-content-center"></div>
 
     </div>
 
