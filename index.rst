@@ -120,7 +120,7 @@ Welcome to PyTorch Tutorials
 .. Text
 
 .. customcarditem::
-   :header: Sequence-to-Sequence Modeling wiht nn.Transformer and torchtext
+   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
    :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module. 
    :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
    :link: beginner/transformer_tutorial.html
