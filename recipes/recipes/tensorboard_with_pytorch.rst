@@ -46,10 +46,8 @@ we need to create a ``SummaryWriter`` instance.
     from torch.utils.tensorboard import SummaryWriter
     writer = SummaryWriter()
 
-    # 
-    # Writer will output to ``./runs/`` directory by default.
-    # 
 
+Writer will output to ``./runs/`` directory by default.
 
 
 Log scalars
@@ -89,15 +87,19 @@ log loss value using ``add_scalar``
     writer.flush()
 
 
-    # 
-    # Call ``flush()`` method to make sure that all pending events 
-    # have been written to disk.
-    # 
-    # See `torch.utils.tensorboard tutorials <https://pytorch.org/docs/stable/tensorboard.html>`_ 
-    # to find more TensorBoard visualization types you can log.
-    # 
-    # If you do not need the summary writer anymore, call ``close()`` method.
-    #
+
+Call ``flush()`` method to make sure that all pending events 
+have been written to disk.
+
+See `torch.utils.tensorboard tutorials <https://pytorch.org/docs/stable/tensorboard.html>`_ 
+to find more TensorBoard visualization types you can log.
+
+If you do not need the summary writer anymore, call ``close()`` method.
+
+
+
+.. code-block:: default
+
 
     writer.close()
 

@@ -38,7 +38,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
-# 
+######################################################################
 # Writer will output to ``./runs/`` directory by default.
 # 
 
@@ -77,7 +77,7 @@ train_model(10)
 writer.flush()
 
 
-# 
+###################################################################### 
 # Call ``flush()`` method to make sure that all pending events 
 # have been written to disk.
 # 
