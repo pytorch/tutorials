@@ -212,7 +212,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: (experimental) Channels Last Memory Format in PyTorch
    :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions. 
-   :image: _static/img/memory_format_logo.png
+   :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
    :tags: Memory-Format, Best-Practice
 
