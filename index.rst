@@ -226,7 +226,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
-   :image: _static/img/thumbnails/Custom-Cpp-and-CUDA-Extensions.png
+   :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Frontend-APIs, C++, CUDA
 
@@ -247,7 +247,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
-   :image: _static/img/thumbnails/Autograd-in-Cpp-Frontend.png
+   :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs, C++
 
