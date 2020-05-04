@@ -76,7 +76,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
-   :tags: Interpretability, Getting-Started, Tensorboard
+   :tags: Interpretability,Getting-Started,Tensorboard
 
 .. Image/Video
 
@@ -207,14 +207,14 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
    :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
-   :tags: Frontend-APIs,Named-Tensor, Best-Practice
+   :tags: Frontend-APIs,Named-Tensor,Best-Practice
    
 .. customcarditem::
    :header: (experimental) Channels Last Memory Format in PyTorch
    :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions. 
    :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
-   :tags: Memory-Format, Best-Practice
+   :tags: Memory-Format,Best-Practice
 
 .. customcarditem::
    :header: Using the PyTorch C++ Frontend
@@ -228,28 +228,28 @@ Welcome to PyTorch Tutorials
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
-   :tags: Frontend-APIs, C++, CUDA
+   :tags: Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
    :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
-   :tags: Frontend-APIs, TorchScript, C++
+   :tags: Frontend-APIs,TorchScript,C++
    
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Classes
    :card_description: This is a continuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Classes.png
    :link: advanced/torch_script_custom_classes.html
-   :tags: Frontend-APIs, TorchScript, C++
+   :tags: Frontend-APIs,TorchScript,C++
    
 .. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
-   :tags: Frontend-APIs, C++
+   :tags: Frontend-APIs,C++
 
 .. Model Optimization
 
@@ -258,35 +258,35 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
    :link: intermediate/pruning_tutorial.html
-   :tags: Model-Optimization, Best-Practice
+   :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
    :header: (experimental) Dynamic Quantization on an LSTM Word Language Model
    :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.  
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-an-LSTM-Word-Language-Model.png
    :link: advanced/dynamic_quantization_tutorial.html
-   :tags: Text, Quantization, Model-Optimization
+   :tags: Text,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Dynamic Quantization on BERT
    :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model. 
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
-   :tags: Text, Quantization, Model-Optimization
+   :tags: Text,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Static Quantization with Eager Mode in PyTorch
    :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training. 
    :image: _static/img/thumbnails/cropped/experimental-Static-Quantization-with-Eager-Mode-in-PyTorch.png
    :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video, Quantization, Model-Optimization
+   :tags: Image/Video,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training. 
    :image: _static/img/thumbnails/cropped/experimental-Quantized-Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video, Quantization, Model-Optimization
+   :tags: Image/Video,Quantization,Model-Optimization
 
 .. Parallel-and-Distributed-Training
 
@@ -343,6 +343,7 @@ Welcome to PyTorch Tutorials
     </div>
 
     </div>
+    <br>
     <br>
 
 

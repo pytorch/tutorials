@@ -111,14 +111,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :card_description: Learn how to use Captum attribute the predictions of an image classifier to their corresponding image features and visualize the attribution results.
    :image: ../_static/img/thumbnails/cropped/model-interpretability-using-captum.png
    :link: ../recipes/recipes/Captum_Recipe.html
-   :tags: Interpretability, Captum
+   :tags: Interpretability,Captum
 
 .. customcarditem::
    :header: How to use TensorBoard with PyTorch
    :card_description: Learn basic usage of TensorBoard with PyTorch, and how to visualize data in TensorBoard UI
    :image: ../_static/img/thumbnails/tensorboard_scalars.png
    :link: ../recipes/recipes/tensorboard_with_pytorch.html
-   :tags: Visualization, TensorBoard
+   :tags: Visualization,TensorBoard
 
 .. Quantization
 
@@ -127,7 +127,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :card_description:  Apply dynamic quantization to a simple LSTM model.
    :image: ../_static/img/thumbnails/cropped/using-dynamic-post-training-quantization.png
    :link: ../recipes/recipes/dynamic_quantization.html
-   :tags: Quantization, Text, Model-Optimization
+   :tags: Quantization,Text,Model-Optimization
 
 
 .. Production Development
@@ -144,7 +144,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model. 
    :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
    :link: ../recipes/recipes/deployment_with_flask.html
-   :tags: Production, TorchScript
+   :tags: Production,TorchScript
    
 
 .. End of tutorial card section
