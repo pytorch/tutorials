@@ -54,7 +54,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Saving and loading models for inference in PyTorch
-   :card_description: Learn about the two approaches for saving and loading models for inference in PyTorch - via the state_dict and via the entire model. 
+   :card_description: Learn about the two approaches for saving and loading models for inference in PyTorch - via the state_dict and via the entire model.
    :image: ../_static/img/thumbnails/cropped/saving-and-loading-models-for-inference.png
    :link: ../recipes/recipes/saving_and_loading_models_for_inference.html
    :tags: Basics
@@ -69,7 +69,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Saving and loading multiple models in one file using PyTorch
-   :card_description: In this recipe, learn how saving and loading multiple models can be helpful for reusing models that you have previously trained. 
+   :card_description: In this recipe, learn how saving and loading multiple models can be helpful for reusing models that you have previously trained.
    :image: ../_static/img/thumbnails/cropped/saving-multiple-models.png
    :link: ../recipes/recipes/saving_multiple_models_in_one_file.html
    :tags: Basics
@@ -83,14 +83,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Saving and loading models across devices in PyTorch
-   :card_description: Learn how saving and loading models across devices (CPUs and GPUs) is relatively straightforward using PyTorch. 
+   :card_description: Learn how saving and loading models across devices (CPUs and GPUs) is relatively straightforward using PyTorch.
    :image: ../_static/img/thumbnails/cropped/saving-and-loading-models-across-devices.png
    :link: ../recipes/recipes/save_load_across_devices.html
    :tags: Basics
 
 .. customcarditem::
    :header: Zeroing out gradients in PyTorch
-   :card_description: Learn when you should zero out graidents and how doing so can help increase the accuracy of your model. 
+   :card_description: Learn when you should zero out graidents and how doing so can help increase the accuracy of your model.
    :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.png
    :link: ../recipes/recipes/zeroing_out_gradients.html
    :tags: Basics
@@ -99,7 +99,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Custom Datasets, Transforms & Dataloaders
-   :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader. 
+   :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader.
    :image: ../_static/img/thumbnails/cropped/custom-datasets-transforms-and-dataloaders.png
    :link: ../recipes/recipes/custom_dataset_transforms_loader.html
    :tags: Data-Customization
@@ -136,16 +136,16 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :header: TorchScript for Deployment
    :card_description: Learn how to export your trained model in TorchScript format and how to load your TorchScript model in C++ and do inference.
    :image: ../_static/img/thumbnails/cropped/torchscript_overview.png
-   :link: ../recipes/recipes/torchscript_inference.html
+   :link: ../recipes/torchscript_inference.html
    :tags: TorchScript
-   
+
 .. customcarditem::
    :header: Deploying with Flask
-   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model. 
+   :card_description: Learn how to use Flask, a lightweight web server, to quickly setup a web API from your trained PyTorch model.
    :image: ../_static/img/thumbnails/cropped/using-flask-create-restful-api.png
-   :link: ../recipes/recipes/deployment_with_flask.html
+   :link: ../recipes/deployment_with_flask.html
    :tags: Production,TorchScript
-   
+
 
 .. End of tutorial card section
 
