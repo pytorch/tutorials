@@ -361,7 +361,7 @@ Additional Resources
    :header: Examples of PyTorch
    :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
    :button_link: https://github.com/pytorch/examples
-   :button_text: Check Them Out
+   :button_text: Checkout Examples
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
