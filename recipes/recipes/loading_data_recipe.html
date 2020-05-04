@@ -382,12 +382,15 @@ dataset.</p>
 <li>Iterate over the data</li>
 <li>[Optional] Visualize the data</li>
 </ol>
-<p>TIPS: * alksdjalksdjaslkdj</p>
 <div class="section" id="import-necessary-libraries-for-loading-our-data">
 <h3>1. Import necessary libraries for loading our data<a class="headerlink" href="#import-necessary-libraries-for-loading-our-data" title="Permalink to this headline">¶</a></h3>
 <p>For this recipe, we will use <code class="docutils literal notranslate"><span class="pre">torch</span></code> and <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>. Depending on
 what built-in datasets you use, you can also install and import
 <code class="docutils literal notranslate"><span class="pre">torchvision</span></code> or <code class="docutils literal notranslate"><span class="pre">torchtext</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchaudio</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="access-the-data-in-the-dataset">
 <h3>2. Access the data in the dataset<a class="headerlink" href="#access-the-data-in-the-dataset" title="Permalink to this headline">¶</a></h3>
@@ -419,9 +422,12 @@ useful info on the other parameters:</p>
 
 <span class="c1"># A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels</span>
 <span class="c1"># is a list of integers with 1 for yes and 0 for no.</span>
-
+<span class="n">yesno_data_trainset</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">YESNO</span><span class="p">(</span><span class="s1">&#39;./&#39;</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Pick data point number 3 to see an example of the the yesno_data:</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">yesno_data</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Sample rate: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Labels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>When using this data in practice, it is best practice to provision the
@@ -433,6 +439,11 @@ that you have out-of-sample data to test the performance of your model.</p>
 <p>Now that we have access to the dataset, we must pass it through
 <code class="docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code>. The <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> combines the dataset
 and a sampler, returning an iterable over the dataset.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">yesno_data</span><span class="p">,</span>
+                                          <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                          <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="iterate-over-the-data">
 <h3>4. Iterate over the data<a class="headerlink" href="#iterate-over-the-data" title="Permalink to this headline">¶</a></h3>
@@ -440,11 +451,25 @@ and a sampler, returning an iterable over the dataset.</p>
 necessary when we begin training our model! You will notice that now
 each data entry in the <code class="docutils literal notranslate"><span class="pre">data_loader</span></code> object is converted to a tensor
 containing tensors representing our waveform, sample rate, and labels.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Data: &quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+  <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Waveform: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Sample rate: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">Labels: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+  <span class="k">break</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="optional-visualize-the-data">
 <h3>5. [Optional] Visualize the data<a class="headerlink" href="#optional-visualize-the-data" title="Permalink to this headline">¶</a></h3>
 <p>You can optionally visualize your data to further understand the output
 from your <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+</pre></div>
+</div>
 <p>Congratulations! You have successfully loaded data in PyTorch.</p>
 </div>
 </div>
@@ -452,12 +477,9 @@ from your <code class="docutils literal notranslate"><span class="pre">DataLoade
 <h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this headline">¶</a></h2>
 <p>Take a look at these other recipes to continue your learning:</p>
 <ul class="simple">
-<li>TBD</li>
-<li>TBD</li>
+<li><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/defining_a_neural_network.html">Defining a Neural Network</a></li>
+<li><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html">What is a state_dict in PyTorch</a></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
-</pre></div>
-</div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-loading-data-recipe-py">
 <div class="sphx-glr-download docutils container">
@@ -826,9 +848,6 @@ from your <code class="docutils literal notranslate"><span class="pre">DataLoade
       highlightNavigation.bind();
       mainMenuDropdown.bind();
       filterTags.bind();
-
-      // Remove any empty p tags that Sphinx adds
-      $("[data-tags='null']").remove();
 
       // Add class to links that have code blocks, since we cannot create links in code blocks
       $("article.pytorch-article a span.pre").each(function(e) {

@@ -366,11 +366,12 @@ Anaconda (recommended):</p>
 <h2>Using TensorBoard in PyTorch<a class="headerlink" href="#using-tensorboard-in-pytorch" title="Permalink to this headline">¶</a></h2>
 <p>Let’s now try using TensorBoard with PyTorch! Before logging anything,
 we need to create a <code class="docutils literal notranslate"><span class="pre">SummaryWriter</span></code> instance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
-<span class="c1"># Writer will output to ``./runs/`` directory by default.</span>
-<span class="c1">#</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">SummaryWriter</span><span class="p">()</span>
 </pre></div>
 </div>
+<p>Writer will output to <code class="docutils literal notranslate"><span class="pre">./runs/</span></code> directory by default.</p>
 </div>
 <div class="section" id="log-scalars">
 <h2>Log scalars<a class="headerlink" href="#log-scalars" title="Permalink to this headline">¶</a></h2>
@@ -381,47 +382,54 @@ the loss value of each training step, or the accuracy after each epoch.</p>
 <code class="docutils literal notranslate"><span class="pre">add_scalar(tag,</span> <span class="pre">scalar_value,</span> <span class="pre">global_step=None,</span> <span class="pre">walltime=None)</span></code>.
 For example, lets create a simple linear regression training, and
 log loss value using <code class="docutils literal notranslate"><span class="pre">add_scalar</span></code></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
-<span class="c1"># Call ``flush()`` method to make sure that all pending events</span>
-<span class="c1"># have been written to disk.</span>
-<span class="c1">#</span>
-<span class="c1"># See `torch.utils.tensorboard tutorials &lt;https://pytorch.org/docs/stable/tensorboard.html&gt;`_</span>
-<span class="c1"># to find more TensorBoard visualization types you can log.</span>
-<span class="c1">#</span>
-<span class="c1"># If you do not need the summary writer anymore, call ``close()`` method.</span>
-<span class="c1">#</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+        <span class="n">y1</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">y1</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">writer</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="s2">&quot;Loss/train&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="n">train_model</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">writer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Call <code class="docutils literal notranslate"><span class="pre">flush()</span></code> method to make sure that all pending events
+have been written to disk.</p>
+<p>See <a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html">torch.utils.tensorboard tutorials</a>
+to find more TensorBoard visualization types you can log.</p>
+<p>If you do not need the summary writer anymore, call <code class="docutils literal notranslate"><span class="pre">close()</span></code> method.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-tensorboard">
 <h2>Run TensorBoard<a class="headerlink" href="#run-tensorboard" title="Permalink to this headline">¶</a></h2>
 <p>Install TensorBoard through the command line to visualize data you logged</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
-<span class="c1"># Now, start TensorBoard, specifying the root log directory you used above.</span>
-<span class="c1"># Argument ``logdir`` points to directory where TensorBoard will look to find</span>
-<span class="c1"># event files that it can display. TensorBoard will recursively walk</span>
-<span class="c1"># the directory structure rooted at logdir, looking for .*tfevents.* files.</span>
-<span class="c1">#</span>
-
-<span class="c1">#</span>
-<span class="c1"># Go to the URL it provides OR on windows:</span>
-<span class="c1">#</span>
-
-
-
-
-
-
-
-
-<span class="c1">#</span>
-<span class="c1"># This dashboard shows how the loss and accuracy change with every epoch.</span>
-<span class="c1"># You can use it to also track training speed, learning rate, and other</span>
-<span class="c1"># scalar values. It’s helpful to compare these metrics across different</span>
-<span class="c1"># training runs to improve your model.</span>
-<span class="c1">#</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install tensorboard
 </pre></div>
 </div>
+<p>Now, start TensorBoard, specifying the root log directory you used above.
+Argument <code class="docutils literal notranslate"><span class="pre">logdir</span></code> points to directory where TensorBoard will look to find
+event files that it can display. TensorBoard will recursively walk
+the directory structure rooted at logdir, looking for .*tfevents.* files.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tensorboard --logdir=runs
+</pre></div>
+</div>
+<p>Go to the URL it provides OR to <a class="reference external" href="http://localhost:6006/">http://localhost:6006/</a></p>
+<a class="reference internal image-reference" href="../../_images/tensorboard_scalars.png"><img alt="../../_images/tensorboard_scalars.png" src="../../_images/tensorboard_scalars.png" style="width: 584.0px; height: 455.20000000000005px;" /></a>
+<p>This dashboard shows how the loss and accuracy change with every epoch.
+You can use it to also track training speed, learning rate, and other
+scalar values. It’s helpful to compare these metrics across different
+training runs to improve your model.</p>
 </div>
 <div class="section" id="share-tensorboard-dashboards">
 <h2>Share TensorBoard dashboards<a class="headerlink" href="#share-tensorboard-dashboards" title="Permalink to this headline">¶</a></h2>
@@ -429,32 +437,24 @@ log loss value using <code class="docutils literal notranslate"><span class="pre
 your ML experiment results with anyone. Use TensorBoard.dev to host,
 track, and share your TensorBoard dashboards.</p>
 <p>Install the latest version of TensorBoard to use the uploader.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#</span>
-<span class="c1"># Use a simple command to upload and share your TensorBoard.</span>
-<span class="c1">#</span>
-
-
-
-<span class="c1">#</span>
-<span class="c1"># For help, run ``$ tensorboard dev --help``.</span>
-<span class="c1">#</span>
-<span class="c1"># **Note:** Uploaded TensorBoards are public and visible to everyone.</span>
-<span class="c1"># Do not upload sensitive data.</span>
-<span class="c1">#</span>
-<span class="c1"># View your TensorBoard live at URL provided in your terminal.</span>
-<span class="c1"># E.g. `https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA &lt;https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA&gt;`_</span>
-<span class="c1">#</span>
-
-
-
-
-
-
-
-<span class="c1">#</span>
-<span class="c1"># **Limitations:** TensorBoard.dev currently supports only scalars dashboard.</span>
-<span class="c1">#</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install tensorboard --upgrade
 </pre></div>
+</div>
+<p>Use a simple command to upload and share your TensorBoard.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ tensorboard dev upload --logdir runs \
+--name &quot;My latest experiment&quot; \ # optional
+--description &quot;Simple comparison of several hyperparameters&quot; # optional
+</pre></div>
+</div>
+<p>For help, run <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">tensorboard</span> <span class="pre">dev</span> <span class="pre">--help</span></code>.</p>
+<p><strong>Note:</strong> Uploaded TensorBoards are public and visible to everyone.
+Do not upload sensitive data.</p>
+<p>View your TensorBoard live at URL provided in your terminal.
+E.g. <a class="reference external" href="https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA">https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA</a></p>
+<a class="reference internal image-reference" href="../../_images/tensorboard_dev.png"><img alt="../../_images/tensorboard_dev.png" src="../../_images/tensorboard_dev.png" style="width: 601.6px; height: 672.0px;" /></a>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">TensorBoard.dev currently supports only scalars dashboard.</p>
 </div>
 </div>
 <div class="section" id="learn-more">
@@ -463,9 +463,6 @@ track, and share your TensorBoard dashboards.</p>
 <li><a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html">torch.utils.tensorboard</a> docs</li>
 <li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html">Visualizing models, data, and training with TensorBoard</a> tutorial</li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%%%%%</span><span class="n">RUNNABLE_CODE_REMOVED</span><span class="o">%%%%%%</span>
-</pre></div>
-</div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-tensorboard-with-pytorch-py">
 <div class="sphx-glr-download docutils container">
@@ -829,9 +826,6 @@ track, and share your TensorBoard dashboards.</p>
       highlightNavigation.bind();
       mainMenuDropdown.bind();
       filterTags.bind();
-
-      // Remove any empty p tags that Sphinx adds
-      $("[data-tags='null']").remove();
 
       // Add class to links that have code blocks, since we cannot create links in code blocks
       $("article.pytorch-article a span.pre").each(function(e) {

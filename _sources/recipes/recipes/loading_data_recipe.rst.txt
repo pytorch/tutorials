@@ -51,7 +51,6 @@ Steps
 4. Iterate over the data
 5. [Optional] Visualize the data
 
-TIPS: \* alksdjalksdjaslkdj
 
 1. Import necessary libraries for loading our data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,6 +58,15 @@ TIPS: \* alksdjalksdjaslkdj
 For this recipe, we will use ``torch`` and ``torchaudio``. Depending on
 what built-in datasets you use, you can also install and import
 ``torchvision`` or ``torchtext``.
+
+
+
+.. code-block:: default
+
+
+    import torch
+    import torchaudio
+
 
 
 2. Access the data in the dataset
@@ -101,12 +109,12 @@ useful info on the other parameters:
 
     # A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels 
     # is a list of integers with 1 for yes and 0 for no.
-
+    yesno_data_trainset = torchaudio.datasets.YESNO('./', download=True)
 
     # Pick data point number 3 to see an example of the the yesno_data:
-
-
-
+    n = 3
+    waveform, sample_rate, labels = yesno_data[n]
+    print("Waveform: {}\nSample rate: {}\nLabels: {}".format(waveform, sample_rate, labels))
 
 
 
@@ -122,6 +130,16 @@ Now that we have access to the dataset, we must pass it through
 and a sampler, returning an iterable over the dataset.
 
 
+
+.. code-block:: default
+
+
+    data_loader = torch.utils.data.DataLoader(yesno_data,
+                                              batch_size=1,
+                                              shuffle=True)
+
+
+
 4. Iterate over the data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -131,11 +149,35 @@ each data entry in the ``data_loader`` object is converted to a tensor
 containing tensors representing our waveform, sample rate, and labels.
 
 
+
+.. code-block:: default
+
+
+    for data in data_loader:
+      print("Data: ", data)
+      print("Waveform: {}\nSample rate: {}\nLabels: {}".format(data[0], data[1], data[2]))
+      break
+
+
+
 5. [Optional] Visualize the data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can optionally visualize your data to further understand the output
 from your ``DataLoader``.
+
+
+
+.. code-block:: default
+
+
+    import matplotlib.pyplot as plt
+
+    print(data[0][0].numpy())
+
+    plt.figure()
+    plt.plot(waveform.t().numpy())
+
 
 
 Congratulations! You have successfully loaded data in PyTorch.
@@ -145,14 +187,9 @@ Learn More
 
 Take a look at these other recipes to continue your learning:
 
--  TBD
--  TBD
+- `Defining a Neural Network <https://pytorch.org/tutorials/recipes/recipes/defining_a_neural_network.html>`__
+- `What is a state_dict in PyTorch <https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html>`__
 
-
-.. code-block:: default
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
 .. rst-class:: sphx-glr-timing
 

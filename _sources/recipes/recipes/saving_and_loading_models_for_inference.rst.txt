@@ -61,6 +61,16 @@ For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
 and ``torch.optim``.
 
 
+
+.. code-block:: default
+
+
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+
+
+
 2. Define and intialize the neural network
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -68,10 +78,46 @@ For sake of example, we will create a neural network for training
 images. To learn more see the Defining a Neural Network recipe.
 
 
+
+.. code-block:: default
+
+
+    class Net(nn.Module):
+        def __init__(self):
+            super(Net, self).__init__()
+            self.conv1 = nn.Conv2d(3, 6, 5)
+            self.pool = nn.MaxPool2d(2, 2)
+            self.conv2 = nn.Conv2d(6, 16, 5)
+            self.fc1 = nn.Linear(16 * 5 * 5, 120)
+            self.fc2 = nn.Linear(120, 84)
+            self.fc3 = nn.Linear(84, 10)
+
+        def forward(self, x):
+            x = self.pool(F.relu(self.conv1(x)))
+            x = self.pool(F.relu(self.conv2(x)))
+            x = x.view(-1, 16 * 5 * 5)
+            x = F.relu(self.fc1(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
+            return x
+
+    net = Net()
+    print(net)
+
+
+
 3. Initialize the optimizer
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We will use SGD with momentum.
+
+
+
+.. code-block:: default
+
+
+    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
 
 
 4. Save and load the model via ``state_dict``
@@ -85,15 +131,15 @@ Let’s save and load our model using just ``state_dict``.
 
 
     # Specify a path
-
+    PATH = "state_dict_model.pt"
 
     # Save
-
+    torch.save(net.state_dict(), PATH)
 
     # Load
-
-
-
+    model = Net()
+    model.load_state_dict(torch.load(PATH))
+    model.eval()
 
 
 
@@ -121,14 +167,14 @@ Now let’s try the same thing with the entire model.
 
 
     # Specify a path
-
+    PATH = "entire_model.pt"
 
     # Save
-
+    torch.save(net, PATH)
 
     # Load
-
-
+    model = torch.load(PATH)
+    model.eval()
 
 
 
@@ -143,14 +189,9 @@ Learn More
 
 Take a look at these other recipes to continue your learning:
 
--  TBD
--  TBD
+- `Saving and loading a general checkpoint in PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html>`__
+- `Saving and loading multiple models in one file using PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html>`__
 
-
-.. code-block:: default
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
 
 .. rst-class:: sphx-glr-timing
 

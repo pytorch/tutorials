@@ -441,42 +441,43 @@ recipe.</p>
 includes PyTorch’s quantized operators and conversion functions. We also
 define a very simple LSTM model and set up some inputs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># import the modules used here in this recipe</span>
-
-
-
-
-
-
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.quantization</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
 <span class="c1"># define a very, very simple LSTM for demonstration purposes</span>
 <span class="c1"># in this case, we are wrapping nn.LSTM, one layer, no pre or post processing</span>
 <span class="c1"># inspired by</span>
 <span class="c1"># https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html, by Robert Guthrie</span>
 <span class="c1"># and https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html</span>
+<span class="k">class</span> <span class="nc">lstm_for_demonstration</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+  <span class="sd">&quot;&quot;&quot;Elementary Long Short Term Memory style model which simply wraps nn.LSTM</span>
+<span class="sd">     Not to be used for anything other than demonstration.</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_dim</span><span class="p">,</span><span class="n">out_dim</span><span class="p">,</span><span class="n">depth</span><span class="p">):</span>
+     <span class="nb">super</span><span class="p">(</span><span class="n">lstm_for_demonstration</span><span class="p">,</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+     <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span><span class="n">out_dim</span><span class="p">,</span><span class="n">depth</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inputs</span><span class="p">,</span><span class="n">hidden</span><span class="p">):</span>
+     <span class="n">out</span><span class="p">,</span><span class="n">hidden</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span><span class="n">hidden</span><span class="p">)</span>
+     <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">hidden</span>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">29592</span><span class="p">)</span>  <span class="c1"># set the seed for reproducibility</span>
 
 <span class="c1">#shape parameters</span>
-
-
-
-
+<span class="n">model_dimension</span><span class="o">=</span><span class="mi">8</span>
+<span class="n">sequence_length</span><span class="o">=</span><span class="mi">20</span>
+<span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">lstm_depth</span><span class="o">=</span><span class="mi">1</span>
 
 <span class="c1"># random data for input</span>
-
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">sequence_length</span><span class="p">,</span><span class="n">batch_size</span><span class="p">,</span><span class="n">model_dimension</span><span class="p">)</span>
 <span class="c1"># hidden is actually is a tuple of the initial hidden state and the initial cell state</span>
+<span class="n">hidden</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">lstm_depth</span><span class="p">,</span><span class="n">batch_size</span><span class="p">,</span><span class="n">model_dimension</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">lstm_depth</span><span class="p">,</span><span class="n">batch_size</span><span class="p">,</span><span class="n">model_dimension</span><span class="p">))</span>
 </pre></div>
 </div>
 <p><strong>Step 2: Do the quantization</strong></p>
@@ -493,12 +494,20 @@ have quantized if they appear, then the datatype we are targeting. This
 function returns a quantized version of the original model as a new
 module.</p>
 <p>That’s all it takes.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># this is the call that does the work</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> <span class="c1"># here is our floating point instance</span>
+<span class="n">float_lstm</span> <span class="o">=</span> <span class="n">lstm_for_demonstration</span><span class="p">(</span><span class="n">model_dimension</span><span class="p">,</span> <span class="n">model_dimension</span><span class="p">,</span><span class="n">lstm_depth</span><span class="p">)</span>
 
-
-
+<span class="c1"># this is the call that does the work</span>
+<span class="n">quantized_lstm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span>
+    <span class="n">float_lstm</span><span class="p">,</span> <span class="p">{</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span>
+<span class="p">)</span>
 
 <span class="c1"># show the changes that were made</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Here is the floating point version of this module:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">float_lstm</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;and now the quantized version:&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">quantized_lstm</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Step 4. Look at the model size</strong></p>
@@ -510,10 +519,17 @@ below will be less than 75% but if you increase the model size above
 (for example you can set model dimension to something like 80) this will
 converge towards 4x smaller as the stored model size dominated more and
 more by the parameter values.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># compare the sizes</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_size_of_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s2">&quot;temp.p&quot;</span><span class="p">)</span>
+    <span class="n">size</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="s2">&quot;temp.p&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;model: &quot;</span><span class="p">,</span><span class="n">label</span><span class="p">,</span><span class="s1">&#39; </span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;Size (KB):&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">/</span><span class="mf">1e3</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;temp.p&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">size</span>
 
-
-
+<span class="c1"># compare the sizes</span>
+<span class="n">f</span><span class="o">=</span><span class="n">print_size_of_model</span><span class="p">(</span><span class="n">float_lstm</span><span class="p">,</span><span class="s2">&quot;fp32&quot;</span><span class="p">)</span>
+<span class="n">q</span><span class="o">=</span><span class="n">print_size_of_model</span><span class="p">(</span><span class="n">quantized_lstm</span><span class="p">,</span><span class="s2">&quot;int8&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:.2f}</span><span class="s2"> times smaller&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="o">/</span><span class="n">q</span><span class="p">))</span>
 
 <span class="c1"># note that this value is wrong in PyTorch 1.4 due to https://github.com/pytorch/pytorch/issues/31468</span>
 <span class="c1"># this will be fixed in 1.5 with https://github.com/pytorch/pytorch/pull/31540</span>
@@ -531,10 +547,10 @@ faster. This will generally be true of more complex networks but as they
 say “your milage may vary” depending on a number of factors including
 the structure of the model and the hardware you are running on.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># compare the performance</span>
-
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Floating point FP32&quot;</span><span class="p">)</span>
 <span class="c1"># %timeit float_lstm.forward(inputs, hidden)</span>
 
-
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Quantized INT8&quot;</span><span class="p">)</span>
 <span class="c1"># %timeit quantized_lstm.forward(inputs,hidden)</span>
 </pre></div>
 </div>
@@ -547,16 +563,18 @@ ballpark” as the original one.</p>
 <p>For a more detailed analysis please see the more advanced tutorials
 referenced at the end of this recipe.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># run the float model</span>
-
-
-
+<span class="n">out1</span><span class="p">,</span> <span class="n">hidden1</span> <span class="o">=</span> <span class="n">float_lstm</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+<span class="n">mag1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">out1</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mean absolute value of output tensor values in the FP32 model is </span><span class="si">{0:.5f}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mag1</span><span class="p">))</span>
 
 <span class="c1"># run the quantized model</span>
-
-
-
+<span class="n">out2</span><span class="p">,</span> <span class="n">hidden2</span> <span class="o">=</span> <span class="n">quantized_lstm</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">hidden</span><span class="p">)</span>
+<span class="n">mag2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">out2</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mean absolute value of output tensor values in the INT8 model is </span><span class="si">{0:.5f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mag2</span><span class="p">))</span>
 
 <span class="c1"># compare them</span>
+<span class="n">mag3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">out1</span><span class="o">-</span><span class="n">out2</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mean absolute value of the difference between the output tensors is </span><span class="si">{0:.5f}</span><span class="s1"> or </span><span class="si">{1:.2f}</span><span class="s1"> percent&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mag3</span><span class="p">,</span><span class="n">mag3</span><span class="o">/</span><span class="n">mag1</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
 <p><strong>Summary</strong></p>
@@ -575,9 +593,6 @@ detail please continue learning with:</p>
 <p><a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html</a></p>
 <p>Blogs</p>
 <p><a class="reference external" href="https://pytorch.org/blog/introduction-to-quantization-on-pytorch/">https://pytorch.org/blog/introduction-to-quantization-on-pytorch/</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%%%%%%</span><span class="n">RUNNABLE_CODE_REMOVED</span><span class="o">%%%%%%</span>
-</pre></div>
-</div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-dynamic-quantization-py">
 <div class="sphx-glr-download docutils container">
@@ -932,9 +947,6 @@ detail please continue learning with:</p>
       highlightNavigation.bind();
       mainMenuDropdown.bind();
       filterTags.bind();
-
-      // Remove any empty p tags that Sphinx adds
-      $("[data-tags='null']").remove();
 
       // Add class to links that have code blocks, since we cannot create links in code blocks
       $("article.pytorch-article a span.pre").each(function(e) {
