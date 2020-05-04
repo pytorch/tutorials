@@ -123,11 +123,9 @@ the directory structure rooted at logdir, looking for .*tfevents.* files.
 
    $ tensorboard --logdir=runs
 
-Go to the URL it provides OR on windows:
+Go to the URL it provides OR to `http://localhost:6006/ <http://localhost:6006/>`_
 
-`http://localhost:6006/ <http://localhost:6006/>`_
-
-.. image:: ../../_static/img/thumbnails/tensorboard_dev.png
+.. image:: ../../_static/img/thumbnails/tensorboard_scalars.png
    :scale: 40 %
 
 This dashboard shows how the loss and accuracy change with every epoch. 
