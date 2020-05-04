@@ -94,13 +94,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.html'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes -name '*.html'); do
     file_basename=$(basename $filename .html)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.rst'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes -name '*.rst'); do
     file_basename=$(basename $filename .rst)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
@@ -118,13 +118,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced -name '*.rst.txt'); do
+  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced -name '*.doctree'); do
+  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
