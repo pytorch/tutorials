@@ -180,7 +180,11 @@
               
             
             
-              <p class="caption"><span class="caption-text">Learning PyTorch</span></p>
+              <p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes_index.html">See All Recipes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning PyTorch</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
@@ -344,12 +348,12 @@
 </div>
 <div class="sphx-glr-example-title section" id="dynamic-quantization">
 <span id="sphx-glr-recipes-recipes-dynamic-quantization-py"></span><h1>Dynamic Quantization<a class="headerlink" href="#dynamic-quantization" title="Permalink to this headline">¶</a></h1>
-<hr class="docutils" />
 <p>In this recipe you will see how to take advantage of Dynamic
 Quantization to accelerate inference on an LSTM-style recurrent neural
 network. This reduces the size of the model weights and speeds up model
 execution.</p>
-<p><strong>Introduction</strong></p>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of trade-offs that can be made when designing neural
 networks. During model developmenet and training you can alter the
 number of layers and number of parameters in a recurrent neural network
@@ -361,7 +365,9 @@ accuracy with a known model after training is completed.</p>
 <p>You can give it a try in a single session and you will certainly reduce
 your model size significantly and may get a significant latency
 reduction without losing a lot of accuracy.</p>
-<p><strong>What is dynamic quantization?</strong></p>
+</div>
+<div class="section" id="what-is-dynamic-quantization">
+<h2>What is dynamic quantization?<a class="headerlink" href="#what-is-dynamic-quantization" title="Permalink to this headline">¶</a></h2>
 <p>Quantizing a network means converting it to use a reduced precision
 integer representation for the weights and/or activations. This saves on
 model size and allows the use of higher throughput math operations on
@@ -385,13 +391,15 @@ the next layer is quantized or converted to FP32 for output.</p>
 <p>Dynamic quantization is relatively free of tuning parameters which makes
 it well suited to be added into production pipelines as a standard part
 of converting LSTM models to deployment.</p>
-<hr class="docutils" />
-<p><strong>Note: Limitations on the approach taken here</strong></p>
-<p>This recipe provides a quick introduction to the dynamic quantization
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Limitations on the approach taken here</p>
+<p class="last">This recipe provides a quick introduction to the dynamic quantization
 features in PyTorch and the workflow for using it. Our focus is on
 explaining the specific functions used to convert the model. We will
 make a number of significant simplifications in the interest of brevity
 and clarity</p>
+</div>
 <ol class="arabic simple">
 <li>You will start with a minimal LSTM network</li>
 <li>You are simply going to initialize the network with a random hidden
@@ -412,29 +420,21 @@ accuracy on a trained LSTM is left to a more advanced tutorial. If you
 want to move right away to that more rigorous treatment please proceed
 to the <a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">advanced dynamic quantization
 tutorial</a>.</p>
-<hr class="docutils" />
-<p><strong>Recipe Structure</strong></p>
+</div>
+<div class="section" id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Permalink to this headline">¶</a></h2>
 <p>This recipe has 5 steps.</p>
-<ol class="arabic">
-<li><p class="first">Set up</p>
-<p>Here you define a very simple LSTM, import modules, and establish
-some random input tensors.</p>
-</li>
-<li><p class="first">Do the quantization</p>
-<p>Here you instantiate a floating point model and then create quantized
-version of it.</p>
-</li>
-<li><p class="first">Look at model size</p>
-<p>Here you show that the model size gets smaller.</p>
-</li>
-<li><p class="first">Look at latency</p>
-<p>Here you run the two models and compare model runtime (latency).</p>
-</li>
-<li><p class="first">Look at accuracy</p>
-<p>Here you run the two models and compare outputs.</p>
-</li>
+<ol class="arabic simple">
+<li>Set Up - Here you define a very simple LSTM, import modules, and establish
+some random input tensors.</li>
+<li>Do the Quantization - Here you instantiate a floating point model and then create quantized
+version of it.</li>
+<li>Look at Model Size - Here you show that the model size gets smaller.</li>
+<li>Look at Latency - Here you run the two models and compare model runtime (latency).</li>
+<li>Look at Accuracy - Here you run the two models and compare outputs.</li>
 </ol>
-<p><strong>Step 1: set up</strong></p>
+<div class="section" id="set-up">
+<h3>1: Set Up<a class="headerlink" href="#set-up" title="Permalink to this headline">¶</a></h3>
 <p>This is a straightfoward bit of code to set up for the rest of the
 recipe.</p>
 <p>The unique module we are importing here is torch.quantization which
@@ -480,7 +480,9 @@ define a very simple LSTM model and set up some inputs.</p>
 <span class="n">hidden</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">lstm_depth</span><span class="p">,</span><span class="n">batch_size</span><span class="p">,</span><span class="n">model_dimension</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">lstm_depth</span><span class="p">,</span><span class="n">batch_size</span><span class="p">,</span><span class="n">model_dimension</span><span class="p">))</span>
 </pre></div>
 </div>
-<p><strong>Step 2: Do the quantization</strong></p>
+</div>
+<div class="section" id="do-the-quantization">
+<h3>2: Do the Quantization<a class="headerlink" href="#do-the-quantization" title="Permalink to this headline">¶</a></h3>
 <p>Now we get to the fun part. First we create an instance of the model
 called float_lstm then we are going to quantize it. We’re going to use
 the</p>
@@ -510,7 +512,9 @@ module.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">quantized_lstm</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>Step 4. Look at the model size</strong></p>
+</div>
+<div class="section" id="look-at-model-size">
+<h3>3. Look at Model Size<a class="headerlink" href="#look-at-model-size" title="Permalink to this headline">¶</a></h3>
 <p>Ok, so we’ve quantized the model. What does that get us? Well the first
 benefit is that we’ve replaced the FP32 model parameters with INT8
 values (and some recorded scale factors). This means about 75% less data
@@ -535,7 +539,9 @@ more by the parameter values.</p>
 <span class="c1"># this will be fixed in 1.5 with https://github.com/pytorch/pytorch/pull/31540</span>
 </pre></div>
 </div>
-<p><strong>Step 4: Look at latency</strong></p>
+</div>
+<div class="section" id="look-at-latency">
+<h3>4. Look at Latency<a class="headerlink" href="#look-at-latency" title="Permalink to this headline">¶</a></h3>
 <p>The second benefit is that the quantized model will typically run
 faster. This is due to a combinations of effects including at least:</p>
 <ol class="arabic simple">
@@ -554,7 +560,9 @@ the structure of the model and the hardware you are running on.</p>
 <span class="c1"># %timeit quantized_lstm.forward(inputs,hidden)</span>
 </pre></div>
 </div>
-<p><strong>Step 5: Look at accuracy</strong></p>
+</div>
+<div class="section" id="look-at-accuracy">
+<h3>5: Look at Accuracy<a class="headerlink" href="#look-at-accuracy" title="Permalink to this headline">¶</a></h3>
 <p>We are not going to do a careful look at accuracy here because we are
 working with a randomly initialized network rather than a properly
 trained one. However, I think it is worth quickly showing that the
@@ -577,22 +585,23 @@ referenced at the end of this recipe.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;mean absolute value of the difference between the output tensors is </span><span class="si">{0:.5f}</span><span class="s1"> or </span><span class="si">{1:.2f}</span><span class="s1"> percent&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mag3</span><span class="p">,</span><span class="n">mag3</span><span class="o">/</span><span class="n">mag1</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
-<p><strong>Summary</strong></p>
-<p>We’ve explained what dynamic quantization is, what beenefits it brings,
+</div>
+</div>
+<div class="section" id="learn-more">
+<h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this headline">¶</a></h2>
+<p>We’ve explained what dynamic quantization is, what benefits it brings,
 and you have used the <code class="docutils literal notranslate"><span class="pre">torch.quantization.quantize_dynamic()</span></code> function
 to quickly quantize a simple LSTM model.</p>
-<p><strong>To continue learning about dynamic quantization</strong></p>
 <p>This was a fast and high level treatment of this material; for more
-detail please continue learning with:</p>
-<p><a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html</a></p>
-<p><strong>Other resources:</strong></p>
-<p>Docs</p>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/quantization.html">https://pytorch.org/docs/stable/quantization.html</a></p>
-<p>Tutorials</p>
-<p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html">https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html</a></p>
-<p><a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html</a></p>
-<p>Blogs</p>
-<p><a class="reference external" href="https://pytorch.org/blog/introduction-to-quantization-on-pytorch/">https://pytorch.org/blog/introduction-to-quantization-on-pytorch/</a></p>
+detail please continue learning with <a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">(experimental) Dynamic Quantization on an LSTM Word Language Model Tutorial</a>.</p>
+</div>
+</div>
+<div class="section" id="additional-resources">
+<h1>Additional Resources<a class="headerlink" href="#additional-resources" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/quantization.html">Quantization API Documentaion</a></p>
+<p><a class="reference external" href="https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html">(experimental) Dynamic Quantization on BERT</a></p>
+<p><a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">(experimental) Dynamic Quantization on an LSTM Word Language Model</a></p>
+<p>` Introduction to Quantization on PyTorch &lt;<a class="reference external" href="https://pytorch.org/blog/introduction-to-quantization-on-pytorch/">https://pytorch.org/blog/introduction-to-quantization-on-pytorch/</a>&gt;`_</p>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-dynamic-quantization-py">
 <div class="sphx-glr-download docutils container">
@@ -644,7 +653,21 @@ detail please continue learning with:</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Dynamic Quantization</a></li>
+<li><a class="reference internal" href="#">Dynamic Quantization</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#what-is-dynamic-quantization">What is dynamic quantization?</a></li>
+<li><a class="reference internal" href="#steps">Steps</a><ul>
+<li><a class="reference internal" href="#set-up">1: Set Up</a></li>
+<li><a class="reference internal" href="#do-the-quantization">2: Do the Quantization</a></li>
+<li><a class="reference internal" href="#look-at-model-size">3. Look at Model Size</a></li>
+<li><a class="reference internal" href="#look-at-latency">4. Look at Latency</a></li>
+<li><a class="reference internal" href="#look-at-accuracy">5: Look at Accuracy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#learn-more">Learn More</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-resources">Additional Resources</a></li>
 </ul>
 
             </div>
