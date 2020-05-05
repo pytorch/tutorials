@@ -280,7 +280,7 @@ PyTorch Recipes
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="--------------">
+    <div class="sphx-glr-thumbcontainer" tooltip="In this recipe you will see how to take advantage of Dynamic Quantization to accelerate inferen...">
 
 .. only:: html
 

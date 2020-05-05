@@ -9,13 +9,13 @@ Welcome to PyTorch Tutorials
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all to the way constructing deep neural networks. 
+   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all to the way constructing deep neural networks.
    :header: New to PyTorch?
    :button_link: beginner/deep_learning_60min_blitz.html
    :button_text: Start 60-min blitz
 
 .. customcalloutitem::
-   :description: Bite-size, ready-to-deploy PyTorch code examples.  
+   :description: Bite-size, ready-to-deploy PyTorch code examples.
    :header: PyTorch Recipes
    :button_link: recipes/recipes_index.html
    :button_text: Explore Recipes
@@ -89,14 +89,14 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Transfer Learning for Computer Vision Tutorial
-   :card_description: Train a convolutional neural network for image classification using transfer learning. 
+   :card_description: Train a convolutional neural network for image classification using transfer learning.
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
    :tags: Image/Video
 
 .. customcarditem::
    :header: Adversarial Example Generation
-   :card_description: Train a convolutional neural network for image classification using transfer learning. 
+   :card_description: Train a convolutional neural network for image classification using transfer learning.
    :image: _static/img/thumbnails/cropped/Adversarial-Example-Generation.png
    :link: beginner/fgsm_tutorial.html
    :tags: Image/Video
@@ -112,7 +112,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library. 
+   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
    :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
@@ -121,27 +121,27 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
-   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module. 
+   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
    :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
    :link: beginner/transformer_tutorial.html
    :tags: Text
 
 .. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
-   :card_description: Build and train a basic character-level RNN to classify word from scratch without the use of torchtext. First in a series of three tutorials. 
+   :card_description: Build and train a basic character-level RNN to classify word from scratch without the use of torchtext. First in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Classifying-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_classification_tutorial
    :tags: Text
 
 .. customcarditem::
    :header: NLP from Scratch: Generating Names with a Character-level RNN
-   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials. 
+   :card_description: After using character-level RNN to classify names, leanr how to generate names from languages. Second in a series of three tutorials.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Generating-Names-with-a-Character-Level-RNN.png
    :link: intermediate/char_rnn_generation_tutorial.html
    :tags: Text
 
 .. customcarditem::
-   :header: NLP from Scratch: Translation with a Sequence-to-sequence Network and Attention 
+   :header: NLP from Scratch: Translation with a Sequence-to-sequence Network and Attention
    :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Translation-with-a-Sequence-to-Sequence-Network-and-Attention.png
    :link: intermediate/seq2seq_translation_tutorial.html
@@ -156,7 +156,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.  
+   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
    :link: beginner/torchtext_translation_tutorial.html
    :tags: Text
@@ -208,10 +208,10 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
    :tags: Frontend-APIs,Named-Tensor,Best-Practice
-   
+
 .. customcarditem::
    :header: (experimental) Channels Last Memory Format in PyTorch
-   :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions. 
+   :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions.
    :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
    :tags: Memory-Format,Best-Practice
@@ -225,7 +225,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Custom C++ and CUDA Extensions
-   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights. 
+   :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
    :tags: Frontend-APIs,C++,CUDA
@@ -236,14 +236,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
    :tags: Frontend-APIs,TorchScript,C++
-   
+
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Classes
    :card_description: This is a continuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Classes.png
    :link: advanced/torch_script_custom_classes.html
    :tags: Frontend-APIs,TorchScript,C++
-   
+
 .. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
@@ -262,28 +262,28 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: (experimental) Dynamic Quantization on an LSTM Word Language Model
-   :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.  
+   :card_description: Apply dynamic quantization, the easiest form of quantization, to a LSTM-based next word prediction model.
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-an-LSTM-Word-Language-Model.png
    :link: advanced/dynamic_quantization_tutorial.html
    :tags: Text,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Dynamic Quantization on BERT
-   :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model. 
+   :card_description: Apply the dynamic quantization on a BERT (Bidirectional Embedding Representations from Transformers) model.
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Static Quantization with Eager Mode in PyTorch
-   :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training. 
+   :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training.
    :image: _static/img/thumbnails/cropped/experimental-Static-Quantization-with-Eager-Mode-in-PyTorch.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
 
 .. customcarditem::
    :header: (experimental) Quantized Transfer Learning for Computer Vision Tutorial
-   :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training. 
+   :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training.
    :image: _static/img/thumbnails/cropped/experimental-Quantized-Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
@@ -292,14 +292,14 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Single-Machine Model Parallel Best Practices
-   :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU 
+   :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU
    :image: _static/img/thumbnails/cropped/Model-Parallel-Best-Practices.png
    :link: intermediate/model_parallel_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
    :header: Getting Started with Distributed Data Parallel
-   :card_description: Learn the basics of when to use distributed data paralle versus data parallel and work through an example to set it up. 
+   :card_description: Learn the basics of when to use distributed data paralle versus data parallel and work through an example to set it up.
    :image: _static/img/thumbnails/cropped/Getting-Started-with-Distributed-Data-Parallel.png
    :link: intermediate/ddp_tutorial.html
    :tags: Parallel-and-Distributed-Training
@@ -310,7 +310,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
    :link: intermediate/dist_tuto.html
    :tags: Parallel-and-Distributed-Training
-   
+
 .. customcarditem::
    :header: Getting Started with Distributed RPC Framework
    :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
@@ -327,7 +327,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Implementing a Parameter Server Using Distributed RPC Framework
-   :card_description: Walk through a through a simple example of implementing a parameter server using PyTorch’s Distributed RPC framework. 
+   :card_description: Walk through a through a simple example of implementing a parameter server using PyTorch’s Distributed RPC framework.
    :image: _static/img/thumbnails/cropped/Implementing-a-Parameter-Server-Using-Distributed-RPC-Framework.png
    :link: intermediate/rpc_param_server_tutorial.html
    :tags: Parallel-and-Distributed-Training
@@ -365,13 +365,13 @@ Additional Resources
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
-   :description: Quick overview to essential PyTorch elements. 
+   :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
    :button_text: Download
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
-   :description: Access PyTorch Tutorials from GitHub. 
+   :description: Access PyTorch Tutorials from GitHub.
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
@@ -382,7 +382,7 @@ Additional Resources
 
         </div>
     </div>
-    
+
     <div style='clear:both'></div>
 
 .. -----------------------------------------
@@ -392,9 +392,9 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Recipes
+   :caption: PyTorch Recipes
 
-   recipes/recipes_index
+   See All Recipes <recipes/recipes_index>
 
 .. toctree::
    :maxdepth: 2
