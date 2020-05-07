@@ -136,7 +136,7 @@ def model(xb):
     return log_softmax(xb @ weights + bias)
 
 ###############################################################################
-# In the above, the ``@`` stands for the dot product operation. We will call
+# In the above, the ``@`` stands for the matrix multiplication operation. We will call
 # our function on one batch of data (in this case, 64 images).  This is
 # one *forward pass*.  Note that our predictions won't be any better than
 # random at this stage, since we start with random weights.
