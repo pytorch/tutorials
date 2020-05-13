@@ -158,3 +158,25 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
     </div>
 
     </div>
+
+.. -----------------------------------------
+.. Page TOC
+.. -----------------------------------------
+.. toctree::
+   :hidden:
+
+   /recipes/recipes/loading_data_recipe
+   /recipes/recipes/defining_a_neural_network
+   /recipes/recipes/what_is_state_dict
+   /recipes/recipes/saving_and_loading_models_for_inference
+   /recipes/recipes/saving_and_loading_a_general_checkpoint
+   /recipes/recipes/saving_multiple_models_in_one_file
+   /recipes/recipes/warmstarting_model_using_parameters_from_a_different_model
+   /recipes/recipes/save_load_across_devices
+   /recipes/recipes/zeroing_out_gradients
+   /recipes/recipes/custom_dataset_transforms_loader
+   /recipes/recipes/Captum_Recipe
+   /recipes/recipes/tensorboard_with_pytorch
+   /recipes/recipes/dynamic_quantization
+   /recipes/torchscript_inference
+   /recipes/deployment_with_flask
