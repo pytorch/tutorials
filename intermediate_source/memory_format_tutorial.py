@@ -118,12 +118,7 @@ y = torch.empty_like(x)
 print(y.stride()) # Ouputs: (3072, 1, 96, 3)
 
 ######################################################################
-# Pointwise operators preserves memory format. Note: for p-wise
-# operatros with multiple inputs of different memory format,
-# contiguous memory format is the dominating memory format. This means
-# IFF all inputs are in channels last memory format, the operator
-# produces output in channels last memory format. Otherwise,
-# output will be in contiguous memory format.
+# Pointwise operators preserves memory format
 z = x + y
 print(z.stride()) # Ouputs: (3072, 1, 96, 3)
 
