@@ -9,7 +9,7 @@ Welcome to PyTorch Tutorials
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all to the way constructing deep neural networks.
+   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all the way to constructing deep neural networks.
    :header: New to PyTorch?
    :button_link: beginner/deep_learning_60min_blitz.html
    :button_text: Start 60-min blitz
