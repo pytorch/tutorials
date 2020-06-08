@@ -110,8 +110,8 @@ class TextSentiment(nn.Module):
 
 VOCAB_SIZE = len(train_dataset.get_vocab())
 EMBED_DIM = 32
-NUN_CLASS = len(train_dataset.get_labels())
-model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUN_CLASS).to(device)
+NUM_CLASS = len(train_dataset.get_labels())
+model = TextSentiment(VOCAB_SIZE, EMBED_DIM, NUM_CLASS).to(device)
 
 
 ######################################################################
