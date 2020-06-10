@@ -1,8 +1,8 @@
 """
 PyTorch Profiler
 ====================================
-This recipe explains how to use PyTorch profiler and measure time and
-memory consumption of model's operators.
+This recipe explains how to use PyTorch profiler and measure the time and
+memory consumption of the model's operators.
 
 Introduction
 ------------
@@ -38,7 +38,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # In this recipe we will use ``torch``, ``torchvision.models``
-# and ``profiler`` modules.
+# and ``profiler`` modules:
 #
 
 import torch
@@ -51,7 +51,7 @@ import torch.autograd.profiler as profiler
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Let's create an instance of a Resnet model and prepare an input
-# for it.
+# for it:
 #
 
 model = models.resnet18()
@@ -66,10 +66,10 @@ inputs = torch.randn(5, 3, 224, 224)
 #
 # - ``record_shapes`` - whether to record shapes of the operator inputs;
 # - ``profile_memory`` - whether to report amount of memory consumed by
-#   model's Tensors
+#   model's Tensors;
 # - ``use_cuda`` - whether to measure execution time of CUDA kernels.
 #
-# Let's see how we can use profiler to analyze execution time
+# Let's see how we can use profiler to analyze the execution time:
 
 with profiler.profile(record_shapes=True) as prof:
     with profiler.record_function("model_inference"):
@@ -77,16 +77,16 @@ with profiler.profile(record_shapes=True) as prof:
 
 ######################################################################
 # Note that we can use ``record_function`` context manager to label
-# arbitrary code ranges with user provided names.
-#
+# arbitrary code ranges with user provided names
+# (``model_inference`` is used as a label in the example above).
 # Profiler allows one to check which operators were called during the
 # execution of a code range wrapped with a profiler context manager.
 # If multiple profiler ranges are active at the same time (e.g. in
 # parallel PyTorch threads), each profiling context manager tracks only
 # the operators of its corresponding range.
-# Profiler also automatically propagates itself into the async tasks
-# launched with ``torch.jit._fork`` and (in case a backward pass is run)
-# a backward pass launched with ``backward()`` call.
+# Profiler also automatically profiles the async tasks launched
+# with ``torch.jit._fork`` and (in case of a backward pass)
+# the backward pass operators launched with ``backward()`` call.
 #
 # Let's print out the stats for the execution above:
 
@@ -114,7 +114,7 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 # Here we see that, as expected, most of the time is spent in convolution (and specifically in ``mkldnn_convolution``
 # for PyTorch compiled with MKL-DNN support).
 # Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time exludes time
-# spent in children operatator calls, while total cpu time includes it.
+# spent in children operator calls, while total cpu time includes it.
 #
 # To get a finer granularity of results and include operator input shapes, pass ``group_by_input_shape=True``:
 
@@ -141,8 +141,11 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 # 4. Use profiler to analyze memory consumption
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# PyTorch profiler can also show the amount memory allocated (freed) for the tensors
-# during the code execution. To enable memory profiling functionality pass ``profile_memory=True``.
+# PyTorch profiler can also show the amount of memory (used by the model's tensors)
+# that was allocated (or released) during the execution of the model's operators.
+# In the output below, 'self' memory corresponds to the memory allocated (released)
+# by the operator, excluding the children calls to the other operators.
+# To enable memory profiling functionality pass ``profile_memory=True``.
 
 with profiler.profile(profile_memory=True, record_shapes=True) as prof:
     model(inputs)
@@ -201,3 +204,12 @@ prof.export_chrome_trace("trace.json")
 #
 # .. image:: ../../_static/img/trace_img.png
 #    :scale: 25 %
+
+######################################################################
+# Learn More
+# ----------
+#
+# Take a look at the following tutorial to learn how to visualize your model with TensorBoard:
+#
+# -  `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
+#
