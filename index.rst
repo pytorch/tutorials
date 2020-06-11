@@ -245,6 +245,13 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
+   :header: Dynamic Parallelism in TorchScript
+   :card_description: This tutorial introduces the syntax for doing *dynamic inter-op parallelism* in TorchScript.
+   :image: _static/img/thumbnails/cropped/TorchScript-Parallelism.jpg
+   :link: advanced/torch-script-parallelism.html
+   :tags: Frontend-APIs,TorchScript,C++
+
+.. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
@@ -471,6 +478,7 @@ Additional Resources
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
+   advanced/torch-script-parallelism
    advanced/cpp_autograd
 
 .. toctree::
