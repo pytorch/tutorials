@@ -1,6 +1,6 @@
 PyTorch Recipes
 ---------------------------------------------
-Recipes are bite-sized bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
+Recipes are bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
 
 .. raw:: html
 
