@@ -3,6 +3,14 @@
 Autograd: Automatic Differentiation
 ===================================
 
+**Video By**: `Elliot Waite`_
+
+.. raw:: html
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/MswxJw-8PvE" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
+
 Central to all neural networks in PyTorch is the ``autograd`` package.
 Let’s first briefly visit this, and we will then go to training our
 first neural network.
