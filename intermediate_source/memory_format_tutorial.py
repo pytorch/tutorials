@@ -104,9 +104,9 @@ if torch.backends.cudnn.version() >= 7603:
 ######################################################################
 # Performance Gains
 # -------------------------------------------------------------------------------------------
-# The most significant performance gains are observed on NVidia's hardware with
+# The most significant performance gains are observed on Nvidia's hardware with
 # Tensor Cores support. We were able to archive over 22%  perf gains while running '
-# AMP (Automated Mixed Precision) training scripts supplied by NVidia https://github.com/NVIDIA/apex.
+# AMP (Automated Mixed Precision) training scripts supplied by Nvidia https://github.com/NVIDIA/apex.
 #
 # ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2  ./data``
 
