@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Writing Distributed Applications with PyTorch — PyTorch Tutorials 1.5.0 documentation</title>
+<title>Writing Distributed Applications with PyTorch — PyTorch Tutorials 1.5.1 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -106,7 +106,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.5.0
+                  1.5.1
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -600,29 +600,28 @@ DeepSpeech’s efficient ring allreduce. This is fairly easily implemented
 using point-to-point collectives.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">""" Implementation of a ring-reduce with addition. """</span>
 <span class="k">def</span> <span class="nf">allreduce</span><span class="p">(</span><span class="n">send</span><span class="p">,</span> <span class="n">recv</span><span class="p">):</span>
-    <span class="n">rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
-    <span class="n">size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
-    <span class="n">send_buff</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">send</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
-    <span class="n">recv_buff</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">send</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
-    <span class="n">accum</span> <span class="o">=</span> <span class="n">th</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">send</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>
-    <span class="n">accum</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">send</span><span class="p">[:]</span>
+   <span class="n">rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+   <span class="n">size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
+   <span class="n">send_buff</span> <span class="o">=</span> <span class="n">send</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+   <span class="n">recv_buff</span> <span class="o">=</span> <span class="n">send</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+   <span class="n">accum</span> <span class="o">=</span> <span class="n">send</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
 
-    <span class="n">left</span> <span class="o">=</span> <span class="p">((</span><span class="n">rank</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">size</span><span class="p">)</span> <span class="o">%</span> <span class="n">size</span>
-    <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">size</span>
+   <span class="n">left</span> <span class="o">=</span> <span class="p">((</span><span class="n">rank</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">size</span><span class="p">)</span> <span class="o">%</span> <span class="n">size</span>
+   <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">size</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="c1"># Send send_buff</span>
-            <span class="n">send_req</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">send_buff</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-            <span class="n">dist</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">recv_buff</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
-            <span class="n">accum</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">recv</span><span class="p">[:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Send recv_buff</span>
-            <span class="n">send_req</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">recv_buff</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-            <span class="n">dist</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">send_buff</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
-            <span class="n">accum</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">send</span><span class="p">[:]</span>
-        <span class="n">send_req</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-    <span class="n">recv</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">accum</span><span class="p">[:]</span>
+   <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+       <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+           <span class="c1"># Send send_buff</span>
+           <span class="n">send_req</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">send_buff</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+           <span class="n">dist</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">recv_buff</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+           <span class="n">accum</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">recv_buff</span><span class="p">[:]</span>
+       <span class="k">else</span><span class="p">:</span>
+           <span class="c1"># Send recv_buff</span>
+           <span class="n">send_req</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">isend</span><span class="p">(</span><span class="n">recv_buff</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+           <span class="n">dist</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">send_buff</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+           <span class="n">accum</span><span class="p">[:]</span> <span class="o">+=</span> <span class="n">send_buff</span><span class="p">[:]</span>
+       <span class="n">send_req</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+   <span class="n">recv</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">accum</span><span class="p">[:]</span>
 </pre></div>
 </div>
 <p>In the above script, the <code class="docutils literal notranslate"><span class="pre">allreduce(send,</span> <span class="pre">recv)</span></code> function has a
