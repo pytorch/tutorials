@@ -153,6 +153,13 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/deployment_with_flask.html
    :tags: Production,TorchScript
 
+.. customcarditem::
+   :header: PyTorch Mobile Performance Recipes
+   :card_description: List of recipes for performance optimizations for using PyTorch on Mobile.
+   :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
+   :link: ../recipes/mobile_perf.html
+   :tags: Mobile,Model-Optimization
+
 
 .. End of tutorial card section
 
