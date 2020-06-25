@@ -11,11 +11,11 @@ All the tutorials are now presented as sphinx style documentation at:
 
 We use sphinx-gallery's [notebook styled examples](https://sphinx-gallery.github.io/stable/tutorials/index.html) to create the tutorials. Syntax is very simple. In essence, you write a slightly well formatted python file and it shows up as documentation page.
 
-Here's how to create a new tutorial:
+Here's how to create a new tutorial or recipe:
 1. Create a notebook styled python file. If you want it executed while inserted into documentation, save the file with suffix `tutorial` so that file name is `your_tutorial.py`.
-2. Put it in one of the beginner_source, intermediate_source, advanced_source based on the level.
-2. Include it in the right TOC tree at index.rst
-3. Create a thumbnail in the index file using a command like `.. galleryitem:: beginner/your_tutorial.py`. (This is a custom directive. See `custom_directives.py` for more info.) 
+2. Put it in one of the beginner_source, intermediate_source, advanced_source based on the level. If it is a recipe, add to recipes_source.
+2. For Tutorials, include it in the TOC tree at index.rst
+3. For Tutorials, create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/master/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/master/recipes_source/recipes_index.rst)
 
 In case you prefer to write your tutorial in jupyter, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to python file. After conversion and addition to the project, please make sure the sections headings etc are in logical order.
 
