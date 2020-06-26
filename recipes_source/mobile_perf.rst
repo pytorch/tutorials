@@ -49,6 +49,7 @@ Code your model:
           self.dequant = torch.quantization.DeQuantStub()
 
       def forward(self, x):
+          x.contiguous(memory_format=torch.channels_last)
           x = self.quant(x)
           x = self.conv(x)
           x = self.bn(x)
@@ -129,9 +130,24 @@ Next we call ``optimize_for_mobile`` and save model on the disk.
   torchscript_model_optimized = optimize_for_mobile(torchscript_model)
   torch.jit.save(torchscript_model_optimized, "model.pt")
 
+4. Prefer Using Channels Last Tensor memory format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-4. Android. Reusing tensors for forward.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Channels Last(NHWC) memory format was introduced in PyTorch 1.4.0. It is supported only for four-dimensional tensors. This memory format gives a better memory locality for most operators, especially convolution. Our measurements showed a 3x speedup of MobileNetV2 model compared with the default Channels First(NCHW) format.
+
+At the moment of writing this recipe, PyTorch Android java API does not support using inputs in Channels Last memory format. But it can be used on the TorchScript model level, by adding the conversion to it for model inputs.
+
+.. code-block:: python
+
+  def forward(self, x):
+      x.contiguous(memory_format=torch.channels_last)
+      ...
+
+
+This conversion is zero cost if your input is already in Channels Last memory format. After it, all operators will work preserving ChannelsLast memory format.
+
+5. Android. Reusing tensors for forward
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This recipe is Android only.
 Memory is a critical resource for android performance, especially on old devices.
