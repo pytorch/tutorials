@@ -754,8 +754,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # Our CNN is fairly concise, but it only works with MNIST, because:
 #  - It assumes the input is a 28\*28 long vector
-#  - It assumes that the final CNN grid size is 4\*4 (since that's the average
-# pooling kernel size we used)
+#  - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
 # single channel image. First, we can remove the initial Lambda layer but
