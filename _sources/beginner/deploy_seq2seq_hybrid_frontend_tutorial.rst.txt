@@ -129,6 +129,11 @@ maximum length output that the model is capable of producing.
 
 
 
+
+
+
+
+
 Model Overview
 --------------
 
@@ -255,6 +260,11 @@ indexes.
 
 
 
+
+
+
+
+
 Define Encoder
 --------------
 
@@ -321,6 +331,11 @@ before we run evaluations.
 
 
 
+
+
+
+
+
 Define Decoder’s Attention Module
 ---------------------------------
 
@@ -377,6 +392,11 @@ of the query sentence at a particular time-step of decoding.
 
             # Return the softmax normalized probability scores (with added dimension)
             return F.softmax(attn_energies, dim=1).unsqueeze(1)
+
+
+
+
+
 
 
 
@@ -452,6 +472,11 @@ to select the next word in the output sequence.
             output = F.softmax(output, dim=1)
             # Return output and final hidden state
             return output, hidden
+
+
+
+
+
 
 
 
@@ -600,6 +625,11 @@ Changes:
 
 
 
+
+
+
+
+
 Evaluating an Input
 ~~~~~~~~~~~~~~~~~~~
 
@@ -672,6 +702,11 @@ an argument, normalizes it, evaluates it, and prints the response.
         output_words = evaluate(searcher, voc, input_sentence)
         output_words[:] = [x for x in output_words if not (x == 'EOS' or x == 'PAD')]
         print('Bot:', ' '.join(output_words))
+
+
+
+
+
 
 
 
@@ -785,6 +820,19 @@ evaluation (which is the same as we normally do in eager mode).
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Building encoder and decoder ...
+    Models built and ready to go!
+
+
 Convert Model to TorchScript
 -----------------------------
 
@@ -852,6 +900,11 @@ would initialize an un-scripted variant.
 
 
 
+
+
+
+
+
 Print Graphs
 ------------
 
@@ -867,6 +920,55 @@ graph, we just need to print the `scripted_searcher` graph
 
     print('scripted_searcher graph:\n', scripted_searcher.graph)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    scripted_searcher graph:
+     graph(%self : __torch__.GreedySearchDecoder,
+          %input_seq.1 : Tensor,
+          %input_length.1 : Tensor,
+          %max_length.1 : int):
+      %51 : bool = prim::Constant[value=0]()
+      %40 : bool = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
+      %20 : None = prim::Constant()
+      %17 : int = prim::Constant[value=4]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:68
+      %16 : Device = prim::Constant[value="cpu"]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:48
+      %13 : int = prim::Constant[value=2]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:41
+      %12 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
+      %14 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
+      %4 : __torch__.EncoderRNN = prim::GetAttr[name="encoder"](%self)
+      %7 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%4, %input_seq.1, %input_length.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:557:42
+      %encoder_outputs.1 : Tensor, %encoder_hidden.1 : Tensor = prim::TupleUnpack(%7)
+      %decoder_hidden.1 : Tensor = aten::slice(%encoder_hidden.1, %12, %12, %13, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
+      %19 : int[] = prim::ListConstruct(%14, %14)
+      %22 : Tensor = aten::ones(%19, %17, %20, %16, %20) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
+      %decoder_input.1 : Tensor = aten::mul(%22, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
+      %25 : int[] = prim::ListConstruct(%12)
+      %all_tokens.1 : Tensor = aten::zeros(%25, %17, %20, %16, %20) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:21
+      %31 : int[] = prim::ListConstruct(%12)
+      %all_scores.1 : Tensor = aten::zeros(%31, %20, %20, %16, %20) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:21
+      %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %40, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
+        block0(%41 : int, %all_tokens.6 : Tensor, %all_scores.6 : Tensor, %decoder_hidden.5 : Tensor, %decoder_input.9 : Tensor):
+          %42 : __torch__.LuongAttnDecoderRNN = prim::GetAttr[name="decoder"](%self)
+          %46 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%42, %decoder_input.9, %decoder_hidden.5, %encoder_outputs.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:568:45
+          %decoder_output.1 : Tensor, %decoder_hidden.3 : Tensor = prim::TupleUnpack(%46)
+          %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%decoder_output.1, %14, %51) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:44
+          %59 : Tensor[] = prim::ListConstruct(%all_tokens.6, %decoder_input.3)
+          %all_tokens.3 : Tensor = aten::cat(%59, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:25
+          %65 : Tensor[] = prim::ListConstruct(%all_scores.6, %decoder_scores.1)
+          %all_scores.3 : Tensor = aten::cat(%65, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:25
+          %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %12) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:28
+          -> (%40, %all_tokens.3, %all_scores.3, %decoder_hidden.3, %decoder_input.7)
+      %73 : (Tensor, Tensor) = prim::TupleConstruct(%all_tokens, %all_scores)
+      return (%73)
 
 
 Run Evaluation
@@ -901,6 +1003,27 @@ give it a spin.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    > hello
+    Bot: hello .
+    > what's up?
+    Bot: i m going to get my car .
+    > who are you?
+    Bot: i m the owner .
+    > where am I?
+    Bot: in the house .
+    > where are you from?
+    Bot: south america .
+
+
 Save Model
 ----------
 
@@ -919,9 +1042,14 @@ of torch.save(model, PATH).
     scripted_searcher.save("scripted_chatbot.pth")
 
 
+
+
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  0.774 seconds)
 
 
 .. _sphx_glr_download_beginner_deploy_seq2seq_hybrid_frontend_tutorial.py:
