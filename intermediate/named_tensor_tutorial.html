@@ -289,10 +289,6 @@ This works with most factory functions, such as</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'C', 'H', 'W')
-</pre></div>
-</div>
 <p>Unlike in
 <a class="reference external" href="http://nlp.seas.harvard.edu/NamedTensor">the original named tensors blogpost</a>,
 named dimensions are ordered: <code class="docutils literal notranslate"><span class="pre">tensor.names[i]</span></code> is the name of the <code class="docutils literal notranslate"><span class="pre">i</span></code> th
@@ -307,18 +303,9 @@ dimension of <code class="docutils literal notranslate"><span class="pre">tensor
 <span class="nb">print</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('batch', 'channel', 'width', 'height')
-('batch', 'C', 'W', 'H')
-</pre></div>
-</div>
 <p>The preferred way to remove names is to call <code class="docutils literal notranslate"><span class="pre">tensor.rename(None)</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgs</span> <span class="o">=</span> <span class="n">imgs</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(None, None, None, None)
 </pre></div>
 </div>
 <p>Unnamed tensors (tensors with no named dimensions) still work as
@@ -328,20 +315,9 @@ normal and do not have names in their <code class="docutils literal notranslate"
 <span class="nb">print</span><span class="p">(</span><span class="n">unnamed</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[-0.5381,  0.5801,  0.7841]],
-
-        [[ 0.3123,  1.3629, -2.6775]]])
-(None, None, None)
-</pre></div>
-</div>
 <p>Named tensors do not require that all dimensions be named.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', None, None, None)
 </pre></div>
 </div>
 <p>Because named tensors can coexist with unnamed tensors, we need a nice way to
@@ -380,21 +356,11 @@ following constraints:</p>
 <span class="n">catch_error</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">named_imgs</span><span class="o">.</span><span class="n">refine_names</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,</span> <span class="s1">'C'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">,</span> <span class="s1">'width'</span><span class="p">))</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'C', 'H', 'W')
-(None, None, 'H', 'W')
-refine_names: cannot coerce Tensor['N', 'C', 'H', 'W'] to Tensor['N', 'C', 'H', 'width'] because 'W' is different from 'width' at index 3
-</pre></div>
-</div>
 <p>Most simple operations propagate names. The ultimate goal for named tensors
 is for all operations to propagate names in a reasonable, intuitive manner.
 Support for many common operations has been added at the time of the 1.3
 release; here, for example, is <code class="docutils literal notranslate"><span class="pre">.abs()</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">named_imgs</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'C', 'H', 'W')
 </pre></div>
 </div>
 <div class="section" id="accessors-and-reduction">
@@ -408,11 +374,6 @@ advanced) has not been implemented yet but is on the roadmap. Using the
 
 <span class="n">img0</span> <span class="o">=</span> <span class="n">named_imgs</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># get one image</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">img0</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'H', 'W')
-('C', 'H', 'W')
 </pre></div>
 </div>
 </div>
@@ -440,17 +401,9 @@ The only one of these three that will error, therefore, is <code class="docutils
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">catch_error</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">z</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Error when attempting to broadcast dims ['X'] and dims ['Z']: dim 'X' and dim 'Z' are at the same position from the right but do not match.
-</pre></div>
-</div>
 <p><strong>Propagate names</strong>: <em>unify</em> the two names by returning the most refined name
 of the two. With <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">y</span></code>,  <code class="docutils literal notranslate"><span class="pre">X</span></code> is more refined than <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('X',)
 </pre></div>
 </div>
 <p>Most name inference rules are straightforward but some of them can have
@@ -467,10 +420,6 @@ operations that broadcast. In the below example, we apply a
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,</span> <span class="s1">'C'</span><span class="p">,</span> <span class="s1">'H'</span><span class="p">,</span> <span class="s1">'W'</span><span class="p">))</span>
 <span class="n">per_batch_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s1">'N'</span><span class="p">,))</span>
 <span class="n">catch_error</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">imgs</span> <span class="o">*</span> <span class="n">per_batch_scale</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Error when attempting to broadcast dims ['N', 'C', 'H', 'W'] and dims ['N']: dim 'W' and dim 'N' are at the same position from the right but do not match.
 </pre></div>
 </div>
 <p>Without <code class="docutils literal notranslate"><span class="pre">names</span></code>, the <code class="docutils literal notranslate"><span class="pre">per_batch_scale</span></code> tensor is aligned with the last
@@ -492,10 +441,6 @@ and the second dim of <code class="docutils literal notranslate"><span class="pr
 <span class="c1"># Apply one transition</span>
 <span class="n">new_state</span> <span class="o">=</span> <span class="n">markov_states</span> <span class="o">@</span> <span class="n">transition_matrix</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('batch', 'out')
 </pre></div>
 </div>
 <p>As you can see, matrix multiply does not check if the contracted dimensions
@@ -554,11 +499,6 @@ but we do not yet do that.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">imgs</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'features')
-('N', 'C', 'H', 'W')
-</pre></div>
-</div>
 </div>
 <div class="section" id="autograd-support">
 <h3>Autograd support<a class="headerlink" href="#autograd-support" title="Permalink to this headline">¶</a></h3>
@@ -586,11 +526,6 @@ autograd.</p>
 <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="p">,</span> <span class="n">correct_grad</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.4293,  0.2151,  0.5764])
-tensor([-0.4293,  0.2151,  0.5764])
-</pre></div>
-</div>
 </div>
 <div class="section" id="other-supported-and-unsupported-features">
 <h3>Other supported (and unsupported) features<a class="headerlink" href="#other-supported-and-unsupported-features" title="Permalink to this headline">¶</a></h3>
@@ -612,10 +547,6 @@ currently supported:</p>
 
 
 <span class="n">catch_error</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">fn</span><span class="p">(</span><span class="n">imgs_named</span><span class="p">))</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>NYI: Named tensors are currently unsupported in TorchScript. As a  workaround please drop names via `tensor = tensor.rename(None)`.
 </pre></div>
 </div>
 <p>As a workaround, please drop names via <code class="docutils literal notranslate"><span class="pre">tensor</span> <span class="pre">=</span> <span class="pre">tensor.rename(None)</span></code>
@@ -794,10 +725,6 @@ meaningful than <code class="docutils literal notranslate"><span class="pre">vie
 <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('N', 'T', 'D')
-</pre></div>
-</div>
 <p>The above works as expected. Furthermore, note that in the code we
 did not mention the name of the batch dimension at all. In fact,
 our <code class="docutils literal notranslate"><span class="pre">MultiHeadAttention</span></code> module is agnostic to the existence of batch
@@ -808,17 +735,13 @@ dimensions.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('T', 'D')
-</pre></div>
-</div>
 </div>
 <div class="section" id="conclusion">
 <h3>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h3>
 <p>Thank you for reading! Named tensors are still very much in development;
 if you have feedback and/or suggestions for improvement, please let us
 know by creating <a class="reference external" href="https://github.com/pytorch/pytorch/issues">an issue</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.069 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-named-tensor-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/1e94d0ce96a0c8097f002bcbe94c35d7/named_tensor_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">named_tensor_tutorial.py</span></code></a></div>

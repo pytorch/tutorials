@@ -114,11 +114,6 @@ And for more, read the papers that introduced these topics:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-
-
-
-
-
 Loading data files
 ==================
 
@@ -196,11 +191,6 @@ called ``Lang`` which has word → index (``word2index``) and index → word
 
 
 
-
-
-
-
-
 The files are all in Unicode, to simplify we will turn Unicode
 characters to ASCII, make everything lowercase, and trim most
 punctuation.
@@ -226,11 +216,6 @@ punctuation.
         s = re.sub(r"([.!?])", r" \1", s)
         s = re.sub(r"[^a-zA-Z.!?]+", r" ", s)
         return s
-
-
-
-
-
 
 
 
@@ -264,11 +249,6 @@ flag to reverse the pairs.
             output_lang = Lang(lang2)
 
         return input_lang, output_lang, pairs
-
-
-
-
-
 
 
 
@@ -307,11 +287,6 @@ earlier).
 
 
 
-
-
-
-
-
 The full process for preparing the data is:
 
 -  Read text file and split into lines, split lines into pairs
@@ -341,25 +316,6 @@ The full process for preparing the data is:
     input_lang, output_lang, pairs = prepareData('eng', 'fra', True)
     print(random.choice(pairs))
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Reading lines...
-    Read 135842 sentence pairs
-    Trimmed to 10599 sentence pairs
-    Counting words...
-    Counted words:
-    fra 4345
-    eng 2803
-    ['elle est bien connue comme chanteuse .', 'she s well known as a singer .']
 
 
 The Seq2Seq Model
@@ -431,11 +387,6 @@ next input word.
             return torch.zeros(1, 1, self.hidden_size, device=device)
 
 
-
-
-
-
-
 The Decoder
 -----------
 
@@ -484,11 +435,6 @@ last hidden state).
 
         def initHidden(self):
             return torch.zeros(1, 1, self.hidden_size, device=device)
-
-
-
-
-
 
 
 I encourage you to train and observe the results of this model, but to
@@ -568,11 +514,6 @@ while shorter sentences will only use the first few.
 
 
 
-
-
-
-
-
 .. note:: There are other forms of attention that work around the length
   limitation by using a relative position approach. Read about "local
   attention" in `Effective Approaches to Attention-based Neural Machine
@@ -608,11 +549,6 @@ EOS token to both sequences.
         input_tensor = tensorFromSentence(input_lang, pair[0])
         target_tensor = tensorFromSentence(output_lang, pair[1])
         return (input_tensor, target_tensor)
-
-
-
-
-
 
 
 
@@ -702,11 +638,6 @@ choose to use teacher forcing or not with a simple if statement. Turn
 
 
 
-
-
-
-
-
 This is a helper function to print time elapsed and estimated time
 remaining given the current time and progress %.
 
@@ -731,11 +662,6 @@ remaining given the current time and progress %.
         es = s / (percent)
         rs = es - s
         return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
-
-
-
-
-
 
 
 
@@ -791,11 +717,6 @@ of examples, time so far, estimated time) and average loss.
 
 
 
-
-
-
-
-
 Plotting results
 ----------------
 
@@ -820,11 +741,6 @@ Plotting is done with matplotlib, using the array of loss values
         loc = ticker.MultipleLocator(base=0.2)
         ax.yaxis.set_major_locator(loc)
         plt.plot(points)
-
-
-
-
-
 
 
 
@@ -879,11 +795,6 @@ attention outputs for display later.
 
 
 
-
-
-
-
-
 We can evaluate random sentences from the training set and print out the
 input, target, and output to make some subjective quality judgements:
 
@@ -901,11 +812,6 @@ input, target, and output to make some subjective quality judgements:
             output_sentence = ' '.join(output_words)
             print('<', output_sentence)
             print('')
-
-
-
-
-
 
 
 
@@ -939,100 +845,11 @@ reasonable results.
 
 
 
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_001.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_002.png
-            :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    1m 56s (- 27m 10s) (5000 6%) 2.8476
-    3m 45s (- 24m 27s) (10000 13%) 2.2896
-    5m 34s (- 22m 18s) (15000 20%) 2.0035
-    7m 23s (- 20m 20s) (20000 26%) 1.7491
-    9m 15s (- 18m 30s) (25000 33%) 1.5305
-    11m 6s (- 16m 39s) (30000 40%) 1.3538
-    12m 57s (- 14m 48s) (35000 46%) 1.2300
-    14m 47s (- 12m 56s) (40000 53%) 1.1344
-    16m 36s (- 11m 4s) (45000 60%) 0.9976
-    18m 26s (- 9m 13s) (50000 66%) 0.9012
-    20m 17s (- 7m 22s) (55000 73%) 0.7998
-    22m 9s (- 5m 32s) (60000 80%) 0.7490
-    24m 0s (- 3m 41s) (65000 86%) 0.6818
-    25m 50s (- 1m 50s) (70000 93%) 0.6373
-    27m 41s (- 0m 0s) (75000 100%) 0.5794
-
-
-
 .. code-block:: default
 
 
     evaluateRandomly(encoder1, attn_decoder1)
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    > vous etes le dernier espoir de l humanite .
-    = you re the last hope for humanity .
-    < you re the last hope for humanity . <EOS>
-
-    > c est un assistant en archeologie .
-    = he is an archeologist s assistant .
-    < he is an authority is now . <EOS>
-
-    > je suis americaine .
-    = i am an american .
-    < i am american . <EOS>
-
-    > vous etes tres emotifs .
-    = you re very emotional .
-    < you re very emotional . <EOS>
-
-    > nous sommes satisfaits .
-    = we re satisfied .
-    < we re satisfied . <EOS>
-
-    > vous n etes pas encore adolescent .
-    = you re not a teenager yet .
-    < you re not a teenager yet . <EOS>
-
-    > je ne vais pas m arreter de travailler .
-    = i m not going to stop working .
-    < i m not getting to stop . <EOS>
-
-    > je suis heureux que tu l aies aime .
-    = i m glad you liked it .
-    < i m happy you liked it . <EOS>
-
-    > c est un joueur de tennis .
-    = he is a tennis player .
-    < he is a tennis player . <EOS>
-
-    > je suis un peu decue .
-    = i m a little disappointed .
-    < i m a little disappointed . <EOS>
 
 
 Visualizing Attention
@@ -1055,14 +872,6 @@ output steps:
     output_words, attentions = evaluate(
         encoder1, attn_decoder1, "je suis trop froid .")
     plt.matshow(attentions.numpy())
-
-
-
-
-
-.. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_003.png
-    :class: sphx-glr-single-img
-
 
 
 
@@ -1111,48 +920,6 @@ and labels:
 
 
 
-
-
-.. rst-class:: sphx-glr-horizontal
-
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_004.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_005.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_006.png
-            :class: sphx-glr-multi-img
-
-    *
-
-      .. image:: /intermediate/images/sphx_glr_seq2seq_translation_tutorial_007.png
-            :class: sphx-glr-multi-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    input = elle a cinq ans de moins que moi .
-    output = she is five years younger than me . <EOS>
-    input = elle est trop petit .
-    output = she is a short . <EOS>
-    input = je ne crains pas de mourir .
-    output = i m not scared of dying . <EOS>
-    input = c est un jeune directeur plein de talent .
-    output = he s incredibly talented for talented . <EOS>
-
-
 Exercises
 =========
 
@@ -1179,7 +946,7 @@ Exercises
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 27 minutes  48.636 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_seq2seq_translation_tutorial.py:
