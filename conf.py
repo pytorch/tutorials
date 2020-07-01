@@ -35,6 +35,8 @@ import torch
 import glob
 import shutil
 from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
+import distutils.file_util
+import re
 
 
 try:
@@ -63,9 +65,18 @@ sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
-    'filename_pattern': os.environ.get('GALLERY_PATTERN', r'tutorial.py'),
     'backreferences_dir': False
 }
+
+if os.getenv('GALLERY_PATTERN'):
+    # GALLERY_PATTERN is to be used when you want to work on a single
+    # tutorial.  Previously this was fed into filename_pattern, but
+    # if you do that, you still end up parsing all of the other Python
+    # files which takes a few seconds.  This strategy is better, as
+    # ignore_pattern also skips parsing.
+    # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
+    # for a more detailed description of the issue.
+    sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
 
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
     gallery_dir = sphinx_gallery_conf['gallery_dirs'][i]
@@ -78,7 +89,7 @@ for i in range(len(sphinx_gallery_conf['examples_dirs'])):
 
     # Copy rst files from source dir to gallery dir
     for f in glob.glob(os.path.join(source_dir, '*.rst')):
-        shutil.copy(f, gallery_dir)
+        distutils.file_util.copy_file(f, gallery_dir, update=True)
 
 
 # Add any paths that contain templates here, relative to this directory.
