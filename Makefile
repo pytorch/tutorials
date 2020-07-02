@@ -108,7 +108,6 @@ docs:
 	touch docs/.nojekyll
 
 html-noplot:
-	make clean
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
 	# bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
 	@echo
