@@ -2,24 +2,29 @@ Pytorch Mobile Performance Recipes
 ==================================
 
 Introduction
-------------
+----------------
 Performance (aka latency) is crucial to most, if not all,
 applications and use-cases of ML model inference on mobile devices.
 
 Today, PyTorch executes the models on the CPU backend pending availability
 of other hardware backends such as GPU, DSP, and NPU.
 
+In this recipe, you will learn:
+
+- How to optimize your model to help decrease execution time (higher performance, lower latency) on the mobile device.
+- How to benchmark (to check if optimizations helped your use case).
+
 
 Model preparation
 -----------------
 
-Next recipes you can take (offline) while preparing the model
-to have an optimized model that will probably have shorter execution time
+We will start with preparing to optimize your model to help decrease execution time
 (higher performance, lower latency) on the mobile device.
 
 
 Setup
-_____
+#######
+
 First we need to installed pytorch using conda or pip with version at least 1.5.0.
 
 ::
@@ -64,7 +69,7 @@ Code your model:
 
 
 1. Fuse operators using ``torch.quantization.fuse_modules``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#############################################################
 
 Do not be confused that fuse_modules is in the quantization package.
 It works for all ``torcn.nn.Module``.
@@ -85,7 +90,7 @@ This script will fuse Convolution, Batch Normalization and Relu in previously de
 
 
 2. Quantize your model
-~~~~~~~~~~~~~~~~~~~~~~
+#############################################################
 
 You can find more about PyTorch quantization in
 `the dedicated tutorial <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_.
@@ -110,7 +115,7 @@ This code does quantization, using stub for model calibration function, you can 
 
 
 3. Use torch.utils.mobile_optimizer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#############################################################
 
 Torch mobile_optimizer package does several optimizations with the scripted model,
 which will help to conv2d and linear operations.
@@ -196,14 +201,14 @@ and buffer is refilled using ``org.pytorch.torchvision.TensorImageUtils.imageYUV
 Benchmarking
 ------------
 
-The best way to benchmark (to check if optimizations helped your use case) - to measure your particular use case that you want to optimize, as performance behavior can vary in different environments.
+The best way to benchmark (to check if optimizations helped your use case) - is to measure your particular use case that you want to optimize, as performance behavior can vary in different environments.
 
 PyTorch distribution provides a way to benchmark naked binary that runs the model forward,
 this approach can give more stable measurements rather than testing inside the application.
 
 
-Android
--------
+Android - Benchmarking Setup
+#############################
 
 For this you first need to build benchmark binary:
 
@@ -235,5 +240,3 @@ Now we are ready to benchmark your model:
   Running warmup runs.
   Main runs.
   Main run finished. Microseconds per iter: 121318. Iters per second: 8.24281
-
-
