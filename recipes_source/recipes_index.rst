@@ -160,6 +160,12 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/mobile_perf.html
    :tags: Mobile,Model-Optimization
 
+.. customcarditem::
+   :header: Making Android Native Application That Uses PyTorch Android Prebuilt Libraries
+   :card_description: Learn how to make android application from the scratch that uses LibTorch C++ API and uses TorchScript model with custom C++ operator.
+   :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
+   :link: ../recipes/android_native_app_with_custom_op.html
+   :tags: Mobile
 
 .. End of tutorial card section
 
