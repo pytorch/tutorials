@@ -62,6 +62,7 @@ import torchvision.transforms as transforms
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
 # We transform them to Tensors of normalized range [-1, 1].
+#
 # .. note::
 #     If running on Windows and you get a BrokenPipeError, try setting
 #     the num_worker of torch.utils.data.DataLoader() to 0.
@@ -316,7 +317,7 @@ print(device)
 #
 #         inputs, labels = data[0].to(device), data[1].to(device)
 #
-# Why dont I notice MASSIVE speedup compared to CPU? Because your network
+# Why don't I notice MASSIVE speedup compared to CPU? Because your network
 # is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
