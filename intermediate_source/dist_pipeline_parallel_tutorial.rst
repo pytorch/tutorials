@@ -58,6 +58,7 @@ the two ResNet shards.
 
 
 .. code:: python
+
     import threading
 
     import torch
