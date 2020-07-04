@@ -7,7 +7,7 @@
 .. _sphx_glr_intermediate_memory_format_tutorial.py:
 
 
-(experimental) Channels Last Memory Format in PyTorch
+(beta) Channels Last Memory Format in PyTorch
 *******************************************************
 **Author**: `Vitaly Fedyunin <https://github.com/VitalyFedyunin>`_
 
@@ -18,12 +18,12 @@ Channels Last memory format is an alternative way of ordering NCHW tensors in me
 
 For example, classic (contiguous) storage of NCHW tensor (in our case it is two 2x2 images with 3 color channels) look like this:
 
-.. figure:: /_static/img/classic_memory_format.png   
+.. figure:: /_static/img/classic_memory_format.png
    :alt: classic_memory_format
 
 Channels Last memory format orders data differently:
 
-.. figure:: /_static/img/channels_last_memory_format.png   
+.. figure:: /_static/img/channels_last_memory_format.png
    :alt: channels_last_memory_format
 
 Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
@@ -40,15 +40,10 @@ Channels Last memory format is implemented for 4D NCWH Tensors only.
     N, C, H, W = 10, 3, 32, 32
 
 
-
-
-
-
-
 Memory Format API
 -----------------------
 
-Here is how to convert tensors between contiguous and channels 
+Here is how to convert tensors between contiguous and channels
 last memory formats.
 
 Classic PyTorch contiguous tensor
@@ -58,18 +53,6 @@ Classic PyTorch contiguous tensor
 
     x = torch.empty(N, C, H, W)
     print(x.stride()) # Ouputs: (3072, 1024, 32, 1)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1024, 32, 1)
 
 
 Conversion operator
@@ -82,19 +65,6 @@ Conversion operator
     print(x.stride()) # Outputs: (3072, 1, 96, 3)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    torch.Size([10, 3, 32, 32])
-    (3072, 1, 96, 3)
-
-
 Back to contiguous
 
 
@@ -102,18 +72,6 @@ Back to contiguous
 
     x = x.contiguous(memory_format=torch.contiguous_format)
     print(x.stride()) # Outputs: (3072, 1024, 32, 1)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1024, 32, 1)
 
 
 Alternative option
@@ -125,36 +83,12 @@ Alternative option
     print(x.stride()) # Ouputs: (3072, 1, 96, 3)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
-
-
 Format checks
 
 
 .. code-block:: default
 
     print(x.is_contiguous(memory_format=torch.channels_last)) # Ouputs: True
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    True
 
 
 Create as Channels Last
@@ -166,18 +100,6 @@ Create as Channels Last
     print(x.stride()) # Ouputs: (3072, 1, 96, 3)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
-
-
 ``clone`` preserves memory format
 
 
@@ -185,18 +107,6 @@ Create as Channels Last
 
     y = x.clone()
     print(y.stride()) # Ouputs: (3072, 1, 96, 3)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
 
 
 ``to``, ``cuda``, ``float`` ... preserves memory format
@@ -209,18 +119,6 @@ Create as Channels Last
         print(y.stride()) # Ouputs: (3072, 1, 96, 3)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
-
-
 ``empty_like``, ``*_like`` operators preserves memory format
 
 
@@ -230,18 +128,6 @@ Create as Channels Last
     print(y.stride()) # Ouputs: (3072, 1, 96, 3)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
-
-
 Pointwise operators preserves memory format
 
 
@@ -249,18 +135,6 @@ Pointwise operators preserves memory format
 
     z = x + y
     print(z.stride()) # Ouputs: (3072, 1, 96, 3)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    (3072, 1, 96, 3)
 
 
 Conv, Batchnorm modules support Channels Last
@@ -280,23 +154,11 @@ Conv, Batchnorm modules support Channels Last
         print(out.is_contiguous(memory_format=torch.channels_last)) # Ouputs: True
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    True
-
-
 Performance Gains
 -------------------------------------------------------------------------------------------
-The most significant performance gains are observed on NVidia's hardware with 
+The most significant performance gains are observed on Nvidia's hardware with
 Tensor Cores support. We were able to archive over 22%  perf gains while running '
-AMP (Automated Mixed Precision) training scripts supplied by NVidia https://github.com/NVIDIA/apex.
+AMP (Automated Mixed Precision) training scripts supplied by Nvidia https://github.com/NVIDIA/apex.
 
 ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2  ./data``
 
@@ -335,11 +197,6 @@ AMP (Automated Mixed Precision) training scripts supplied by NVidia https://gith
     # Epoch: [0][60/125] Time 0.258 (0.360) Speed 775.623 (555.728) Loss 0.7592862844 (0.7472) Prec@1 51.000 (53.917) Prec@5 100.000 (100.000)
     # Epoch: [0][70/125] Time 0.258 (0.345) Speed 774.746 (579.115) Loss 1.9698858261 (0.9218) Prec@1 49.500 (53.286) Prec@5 100.000 (100.000)
     # Epoch: [0][80/125] Time 0.260 (0.335) Speed 770.324 (597.659) Loss 2.2505953312 (1.0879) Prec@1 50.500 (52.938) Prec@5 100.000 (100.000)
-
-
-
-
-
 
 
 Passing ``--channels-last true`` allows running a model in Channels Last format with observed 22% perf gain.
@@ -387,11 +244,6 @@ Passing ``--channels-last true`` allows running a model in Channels Last format 
     # Epoch: [0][80/125] Time 0.198 (0.269) Speed 1011.827 (743.883) Loss 2.8196096420 (2.4011) Prec@1 47.500 (50.938) Prec@5 100.000 (100.000)
 
 
-
-
-
-
-
 The following list of models has the full support of Channels Last and showing 8%-35% perf gains on Volta devices:
 ``alexnet``, ``mnasnet0_5``, ``mnasnet0_75``, ``mnasnet1_0``, ``mnasnet1_3``, ``mobilenet_v2``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``shufflenet_v2_x1_5``, ``shufflenet_v2_x2_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 
@@ -399,7 +251,7 @@ The following list of models has the full support of Channels Last and showing 8
 Converting existing models
 --------------------------
 
-Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly. 
+Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly.
 
 
 
@@ -414,17 +266,12 @@ Channels Last support not limited by existing models, as any model can be conver
     output = model(input)
 
 
-
-
-
-
-
-However, not all operators fully converted to support Channels Last (usually returning 
-contiguous output instead). That means you need to verify the list of used operators 
-against supported operators list https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support, 
+However, not all operators fully converted to support Channels Last (usually returning
+contiguous output instead). That means you need to verify the list of used operators
+against supported operators list https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support,
 or introduce memory format checks into eager execution mode and run your model.
 
-After running the code below, operators will raise an exception if the output of the 
+After running the code below, operators will raise an exception if the output of the
 operator doesn't match the memory format of the input.
 
 
@@ -501,21 +348,8 @@ operator doesn't match the memory format of the input.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Optional
-    '_Optional' object has no attribute '__name__'
-
-
 If you found an operator that doesn't support Channels Last tensors
-and you want to contribute, feel free to use following developers 
+and you want to contribute, feel free to use following developers
 guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
 
 
@@ -533,7 +367,7 @@ know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  1.960 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_memory_format_tutorial.py:
