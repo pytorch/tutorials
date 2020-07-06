@@ -298,6 +298,13 @@ Welcome to PyTorch Tutorials
 .. Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: PyTorch Distributed Overview
+   :card_description: Have a high-level overview of all concepts and features in the distributed package. Use this to find the distributed training technology can best serve your application.
+   :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
+   :link: beginner/dist_overview.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Single-Machine Model Parallel Best Practices
    :card_description:  Learn how to implement model parallel, a distributed training technique which splits a single model onto different GPUs, rather than replicating the entire model on each GPU
    :image: _static/img/thumbnails/cropped/Model-Parallel-Best-Practices.png
@@ -312,6 +319,13 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
+   :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
+   :image: _static/img/thumbnails/cropped/advanced-PyTorch-1point0-Distributed-Trainer-with-Amazon-AWS.png
+   :link: beginner/aws_distributed_training_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Writing Distributed Applications with PyTorch
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
@@ -323,13 +337,6 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
    :image: _static/img/thumbnails/cropped/Getting Started with Distributed-RPC-Framework.png
    :link: intermediate/rpc_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
-   :header: (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
-   :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
-   :image: _static/img/thumbnails/cropped/advanced-PyTorch-1point0-Distributed-Trainer-with-Amazon-AWS.png
-   :link: beginner/aws_distributed_training_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -513,6 +520,7 @@ Additional Resources
    :hidden:
    :caption: Parallel and Distributed Training
 
+   beginner/dist_overview
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
