@@ -83,6 +83,9 @@ common development trajectory would be:
    leave dynamically during the training.
 
 
+.. note:: Data-parallel training also works with `Automatic Mixed Precision (AMP) <https://pytorch.org/docs/master/notes/amp_examples.html#working-with-multiple-gpus>`__.
+
+
 ``torch.nn.DataParallel``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
