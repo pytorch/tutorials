@@ -299,7 +299,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: PyTorch Distributed Overview
-   :card_description: Have a high-level overview of all concepts and features in the distributed package. Use this to find the distributed training technology can best serve your application.
+   :card_description: Briefly go over all concepts and features in the distributed package. Use this document to find the distributed training technology that can best serve your application.
    :image: _static/img/thumbnails/cropped/PyTorch-Distributed-Overview.png
    :link: beginner/dist_overview.html
    :tags: Parallel-and-Distributed-Training

@@ -2,6 +2,13 @@ Getting Started with Distributed Data Parallel
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `DistributedDataParallel API documents <https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html>`__
+_  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
+
+
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and

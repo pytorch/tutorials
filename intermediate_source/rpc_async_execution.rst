@@ -5,8 +5,9 @@ Implementing Batch RPC Processing Using Asynchronous Executions
 
 Prerequisites:
 
--  `Getting started with Distributed RPC Framework <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`__
--  `Implementing a Parameter Server using Distributed RPC Framework <https://pytorch.org/tutorials/intermediate/rpc_param_server_tutorial.html>`__
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `Getting started with Distributed RPC Framework <rpc_tutorial.html>`__
+-  `Implementing a Parameter Server using Distributed RPC Framework <rpc_param_server_tutorial.html>`__
 -  `RPC Asynchronous Execution Decorator <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 
 This tutorial demonstrates how to build batch-processing RPC applications with
