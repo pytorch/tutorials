@@ -65,6 +65,7 @@ sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
                       'advanced_source', 'recipes_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
+    'filename_pattern': 'tutorial.py',
     'backreferences_dir': False
 }
 
