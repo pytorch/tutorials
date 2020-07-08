@@ -63,6 +63,11 @@ We'll start by doing the necessary imports:
     torch.manual_seed(191009)
 
 
+
+
+
+
+
 1. Model architecture
 ---------------------
 
@@ -236,6 +241,11 @@ Note: this code is taken from
                             torch.quantization.fuse_modules(m.conv, [str(idx), str(idx + 1)], inplace=True)
 
 
+
+
+
+
+
 2. Helper functions
 -------------------
 
@@ -317,6 +327,11 @@ We next define several helper functions to help with model evaluation. These mos
         torch.save(model.state_dict(), "temp.p")
         print('Size (MB):', os.path.getsize("temp.p")/1e6)
         os.remove('temp.p')
+
+
+
+
+
 
 
 3. Define dataset and data loaders
@@ -422,6 +437,11 @@ in this data. These functions mostly come from
         return data_loader, data_loader_test
 
 
+
+
+
+
+
 Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``
 `here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_.
 
@@ -443,6 +463,11 @@ Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to dow
     float_model = load_model(saved_model_dir + float_model_file).to('cpu')
 
 
+
+
+
+
+
 Next, we'll "fuse modules"; this can both make the model faster by saving on memory access
 while also improving numerical accuracy. While this can be used with any model, this is
 especially common with quantized models.
@@ -461,6 +486,43 @@ especially common with quantized models.
     print('\n Inverted Residual Block: After fusion\n\n',float_model.features[1].conv)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Inverted Residual Block: Before fusion 
+
+     Sequential(
+      (0): ConvBNReLU(
+        (0): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False)
+        (1): BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+      )
+      (1): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (2): BatchNorm2d(16, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+
+     Inverted Residual Block: After fusion
+
+     Sequential(
+      (0): ConvBNReLU(
+        (0): ConvReLU2d(
+          (0): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32)
+          (1): ReLU()
+        )
+        (1): Identity()
+        (2): Identity()
+      )
+      (1): Conv2d(32, 16, kernel_size=(1, 1), stride=(1, 1))
+      (2): Identity()
+    )
+
+
 Finally to get a "baseline" accuracy, let's see the accuracy of our un-quantized model
 with fused modules
 
@@ -476,6 +538,20 @@ with fused modules
     top1, top5 = evaluate(float_model, criterion, data_loader_test, neval_batches=num_eval_batches)
     print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg))
     torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size of baseline model
+    Size (MB): 13.981375
+    ..........Evaluation accuracy on 300 images, 78.00
 
 
 We see 78% accuracy on 300 images, a solid baseline for ImageNet,
@@ -534,6 +610,59 @@ values to floats - and then back to ints - between every operation, resulting in
     print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    QConfig(activation=functools.partial(<class 'torch.quantization.observer.MinMaxObserver'>, reduce_range=True), weight=functools.partial(<class 'torch.quantization.observer.MinMaxObserver'>, dtype=torch.qint8, qscheme=torch.per_tensor_symmetric))
+    Post Training Quantization Prepare: Inserting Observers
+
+     Inverted Residual Block:After observer insertion 
+
+     Sequential(
+      (0): ConvBNReLU(
+        (0): ConvReLU2d(
+          (0): Conv2d(
+            32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32
+            (activation_post_process): MinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+          )
+          (1): ReLU(
+            (activation_post_process): MinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+          )
+        )
+        (1): Identity()
+        (2): Identity()
+      )
+      (1): Conv2d(
+        32, 16, kernel_size=(1, 1), stride=(1, 1)
+        (activation_post_process): MinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+      )
+      (2): Identity()
+    )
+    ..........Post Training Quantization: Calibration done
+    Post Training Quantization: Convert done
+
+     Inverted Residual Block: After fusion and quantization, note fused modules: 
+
+     Sequential(
+      (0): ConvBNReLU(
+        (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.15558508038520813, zero_point=0, padding=(1, 1), groups=32)
+        (1): Identity()
+        (2): Identity()
+      )
+      (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.20753994584083557, zero_point=72)
+      (2): Identity()
+    )
+    Size of model after quantization
+    Size (MB): 3.589121
+    ..........Evaluation accuracy on 300 images, 64.33
+
+
 For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
 images. Nevertheless, we did reduce the size of our model down to just under 3.6 MB, almost a 4x
 decrease.
@@ -563,6 +692,19 @@ quantizing for x86 architectures. This configuration does the following:
     top1, top5 = evaluate(per_channel_quantized_model, criterion, data_loader_test, neval_batches=num_eval_batches)
     print('Evaluation accuracy on %d images, %2.2f'%(num_eval_batches * eval_batch_size, top1.avg))
     torch.jit.save(torch.jit.script(per_channel_quantized_model), saved_model_dir + scripted_quantized_model_file)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    QConfig(activation=functools.partial(<class 'torch.quantization.observer.HistogramObserver'>, reduce_range=True), weight=functools.partial(<class 'torch.quantization.observer.PerChannelMinMaxObserver'>, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
+    ....................Evaluation accuracy on 300 images, 76.67
 
 
 Changing just this quantization configuration method resulted in an increase
@@ -625,6 +767,11 @@ We first define a training function:
         return
 
 
+
+
+
+
+
 We fuse modules as before
 
 
@@ -638,6 +785,11 @@ We fuse modules as before
     qat_model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
 
 
+
+
+
+
+
 Finally, ``prepare_qat`` performs the "fake quantization", preparing the model for quantization-aware
 training
 
@@ -647,6 +799,47 @@ training
 
     torch.quantization.prepare_qat(qat_model, inplace=True)
     print('Inverted Residual Block: After preparation for QAT, note fake-quantization modules \n',qat_model.features[1].conv)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Inverted Residual Block: After preparation for QAT, note fake-quantization modules 
+     Sequential(
+      (0): ConvBNReLU(
+        (0): ConvBnReLU2d(
+          32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=32, bias=False
+          (activation_post_process): FakeQuantize(
+            fake_quant_enabled=True, observer_enabled=True,            scale=tensor([1.]), zero_point=tensor([0])
+            (activation_post_process): MovingAverageMinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+          )
+          (weight_fake_quant): FakeQuantize(
+            fake_quant_enabled=True, observer_enabled=True,            scale=tensor([1.]), zero_point=tensor([0])
+            (activation_post_process): MovingAveragePerChannelMinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+          )
+        )
+        (1): Identity()
+        (2): Identity()
+      )
+      (1): ConvBn2d(
+        32, 16, kernel_size=(1, 1), stride=(1, 1), bias=False
+        (activation_post_process): FakeQuantize(
+          fake_quant_enabled=True, observer_enabled=True,            scale=tensor([1.]), zero_point=tensor([0])
+          (activation_post_process): MovingAverageMinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+        )
+        (weight_fake_quant): FakeQuantize(
+          fake_quant_enabled=True, observer_enabled=True,            scale=tensor([1.]), zero_point=tensor([0])
+          (activation_post_process): MovingAveragePerChannelMinMaxObserver(min_val=tensor([]), max_val=tensor([]))
+        )
+      )
+      (2): Identity()
+    )
 
 
 Training a quantized model with high accuracy requires accurate modeling of numerics at
@@ -677,6 +870,41 @@ inference. For quantization aware training, therefore, we modify the training lo
         quantized_model.eval()
         top1, top5 = evaluate(quantized_model,criterion, data_loader_test, neval_batches=num_eval_batches)
         print('Epoch %d :Evaluation accuracy on %d images, %2.2f'%(nepoch, num_eval_batches * eval_batch_size, top1.avg))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ....................Loss tensor(2.2886, grad_fn=<DivBackward0>)
+    Training: * Acc@1 50.000 Acc@5 73.667
+    ..........Epoch 0 :Evaluation accuracy on 300 images, 73.00
+    ....................Loss tensor(2.2395, grad_fn=<DivBackward0>)
+    Training: * Acc@1 51.667 Acc@5 75.167
+    ..........Epoch 1 :Evaluation accuracy on 300 images, 73.00
+    ....................Loss tensor(2.2829, grad_fn=<DivBackward0>)
+    Training: * Acc@1 51.167 Acc@5 75.167
+    ..........Epoch 2 :Evaluation accuracy on 300 images, 74.67
+    ....................Loss tensor(2.1777, grad_fn=<DivBackward0>)
+    Training: * Acc@1 52.167 Acc@5 76.333
+    ..........Epoch 3 :Evaluation accuracy on 300 images, 77.00
+    ....................Loss tensor(2.0117, grad_fn=<DivBackward0>)
+    Training: * Acc@1 56.667 Acc@5 80.167
+    ..........Epoch 4 :Evaluation accuracy on 300 images, 72.67
+    ....................Loss tensor(2.0540, grad_fn=<DivBackward0>)
+    Training: * Acc@1 56.500 Acc@5 77.500
+    ..........Epoch 5 :Evaluation accuracy on 300 images, 76.67
+    ....................Loss tensor(1.8940, grad_fn=<DivBackward0>)
+    Training: * Acc@1 57.000 Acc@5 80.333
+    ..........Epoch 6 :Evaluation accuracy on 300 images, 73.67
+    ....................Loss tensor(1.9771, grad_fn=<DivBackward0>)
+    Training: * Acc@1 57.333 Acc@5 77.500
+    ..........Epoch 7 :Evaluation accuracy on 300 images, 76.67
 
 
 Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -726,6 +954,19 @@ faster? Let's test:
     run_benchmark(saved_model_dir + scripted_quantized_model_file, data_loader_test)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Elapsed time:   7 ms
+    Elapsed time:   3 ms
+
+
 Running this locally on a MacBook pro yielded 61 ms for the regular model, and
 just 20 ms for the quantized model, illustrating the typical 2-4x speedup
 we see for quantized models compared to floating point ones.
@@ -743,7 +984,7 @@ Thanks for reading! As always, we welcome any feedback, so please create an issu
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 5 minutes  57.513 seconds)
 
 
 .. _sphx_glr_download_advanced_static_quantization_tutorial.py:

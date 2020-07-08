@@ -33,6 +33,11 @@ installed for easier visualization.
     import matplotlib.pyplot as plt
 
 
+
+
+
+
+
 Opening a file
 -----------------
 
@@ -52,6 +57,22 @@ call waveform the resulting raw audio signal.
 
     plt.figure()
     plt.plot(waveform.t().numpy())
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of waveform: torch.Size([2, 276858])
+    Sample rate of waveform: 44100
 
 
 When you load a file in ``torchaudio``, you can optionally specify the backend to use either 
@@ -109,6 +130,21 @@ To start, we can look at the log of the spectrogram on a log scale.
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_002.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of spectrogram: torch.Size([2, 201, 1385])
+
+
 Or we can look at the Mel Spectrogram on a log scale.
 
 
@@ -123,6 +159,21 @@ Or we can look at the Mel Spectrogram on a log scale.
     plt.figure()
     p = plt.imshow(specgram.log2()[0,:,:].detach().numpy(), cmap='gray')
 
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_003.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of spectrogram: torch.Size([2, 128, 1385])
 
 
 We can resample the waveform, one channel at a time.
@@ -145,6 +196,21 @@ We can resample the waveform, one channel at a time.
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_004.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of transformed waveform: torch.Size([1, 27686])
+
+
 As another example of transformations, we can encode the signal based on
 Mu-Law enconding. But to do so, we need the signal to be between -1 and
 1. Since the tensor is just a regular PyTorch tensor, we can apply
@@ -158,6 +224,20 @@ standard operators on it.
     # Let's check if the tensor is in the interval [-1,1]
     print("Min of waveform: {}\nMax of waveform: {}\nMean of waveform: {}".format(waveform.min(), waveform.max(), waveform.mean()))
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Min of waveform: -0.572845458984375
+    Max of waveform: 0.575958251953125
+    Mean of waveform: 9.293758921558037e-05
 
 
 Since the waveform is already between -1 and 1, we do not need to
@@ -178,6 +258,11 @@ normalize it.
 
 
 
+
+
+
+
+
 Let’s apply encode the waveform.
 
 
@@ -192,6 +277,21 @@ Let’s apply encode the waveform.
     plt.figure()
     plt.plot(transformed[0,:].numpy())
 
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_005.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of transformed waveform: torch.Size([2, 276858])
 
 
 And now decode.
@@ -210,6 +310,21 @@ And now decode.
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_006.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of recovered waveform: torch.Size([2, 276858])
+
+
 We can finally compare the original waveform with its reconstructed
 version.
 
@@ -223,6 +338,18 @@ version.
 
     print("Median relative difference between original and MuLaw reconstucted signals: {:.2%}".format(err))
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Median relative difference between original and MuLaw reconstucted signals: 1.28%
 
 
 Functional
@@ -255,6 +382,21 @@ For example, let's try the `mu_law_encoding` functional:
     plt.plot(mu_law_encoding_waveform[0,:].numpy())
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_007.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of transformed waveform: torch.Size([2, 276858])
+
+
 You can see how the output fron ``torchaudio.functional.mu_law_encoding`` is the same as 
 the output from ``torchaudio.transforms.MuLawEncoding``.
 
@@ -272,6 +414,21 @@ spectogram, we can compute it's deltas:
     plt.imshow(computed.log2()[0,:,:].detach().numpy(), cmap='gray')
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_008.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of computed deltas: torch.Size([2, 128, 1385])
+
+
 We can take the original waveform and apply different effects to it.
 
 
@@ -284,6 +441,23 @@ We can take the original waveform and apply different effects to it.
 
     dither_waveform = torchaudio.functional.dither(waveform)
     print("Min of dither_waveform: {}\nMax of dither_waveform: {}\nMean of dither_waveform: {}".format(dither_waveform.min(), dither_waveform.max(), dither_waveform.mean()))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Min of gain_waveform: -1.0186792612075806
+    Max of gain_waveform: 1.024214744567871
+    Mean of gain_waveform: 0.00016526904073543847
+    Min of dither_waveform: -0.572784423828125
+    Max of dither_waveform: 0.575927734375
+    Mean of dither_waveform: 0.00010744280007202178
 
 
 Another example of the capabilities in ``torchaudio.functional`` are applying filters to our
@@ -302,6 +476,23 @@ the signal of the frequency modified.
     plt.plot(lowpass_waveform.t().numpy())
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_009.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Min of lowpass_waveform: -0.5595061182975769
+    Max of lowpass_waveform: 0.5595013499259949
+    Mean of lowpass_waveform: 9.293758921558037e-05
+
+
 We can also visualize a waveform with the highpass biquad filter.
 
 
@@ -316,6 +507,23 @@ We can also visualize a waveform with the highpass biquad filter.
     plt.figure()
     plt.plot(highpass_waveform.t().numpy())
 
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_010.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Min of highpass_waveform: -0.11269105970859528
+    Max of highpass_waveform: 0.10451901704072952
+    Mean of highpass_waveform: -4.971002776077427e-12
 
 
 Migrating to torchaudio from Kaldi
@@ -366,6 +574,21 @@ or streams with:
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_011.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of spectrogram: torch.Size([1383, 201])
+
+
 We also support computing the filterbank features from waveforms,
 matching Kaldi’s implementation.
 
@@ -383,6 +606,21 @@ matching Kaldi’s implementation.
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_012.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of fbank: torch.Size([1383, 23])
+
+
 You can create mel frequency cepstral coefficients from a raw audio signal
 This matches the input/output of Kaldi’s compute-mfcc-feats.
 
@@ -398,6 +636,21 @@ This matches the input/output of Kaldi’s compute-mfcc-feats.
     plt.figure()
     plt.imshow(mfcc.t().numpy(), cmap='gray')
 
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_013.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of mfcc: torch.Size([1383, 13])
 
 
 Available Datasets
@@ -437,6 +690,24 @@ The datasets ``torchaudio`` currently supports are:
 
 
 
+
+
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_014.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Waveform: tensor([[3.0518e-05, 6.1035e-05, 3.0518e-05,  ..., 5.8594e-03, 3.5400e-03,
+             3.3569e-04]])
+    Sample rate: 8000
+    Labels: [0, 1, 0, 0, 1, 0, 1, 0]
+
+
 Now, whenever you ask for a sound file from the dataset, it is loaded in memory only when you ask for it.
 Meaning, the dataset only loads and keeps in memory the items that you want and use, saving on memory.
 
@@ -456,7 +727,7 @@ applications, such as speech recognition, while leveraging GPUs.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  21.512 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_preprocessing_tutorial.py:
