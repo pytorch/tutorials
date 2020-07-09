@@ -30,6 +30,7 @@ torch::Tensor warp_perspective(torch::Tensor image, torch::Tensor warp) {
 // END warp_perspective
 
 // BEGIN registry
-static auto registry =
-  torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+TORCH_LIBRARY(my_ops, m) {
+  m.def("warp_perspective", warp_perspective);
+}
 // END registry
