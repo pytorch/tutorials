@@ -209,9 +209,9 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         loss_fn(outputs, labels).backward()
         optimizer.step()
 
-        # Use a barrier() to make sure that all processes have finished reading the
-        # checkpoint
-        dist.barrier()
+        # Not necessary to use a dist.barrier() to guard the file deletion below
+        # as the AllReduce ops in the backward pass of DDP already served as
+        # a synchronization.
 
         if rank == 0:
             os.remove(CHECKPOINT_PATH)
