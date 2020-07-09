@@ -6,7 +6,7 @@ Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
 -  `DistributedDataParallel API documents <https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html>`__
-_  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
+-  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
 
 
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__

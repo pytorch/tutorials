@@ -186,7 +186,7 @@ RPC Tutorials are listed below:
    tutorial borrows the spirit of
    `HogWild! training <https://people.eecs.berkeley.edu/~brecht/papers/hogwildTR.pdf>`__
    and applies it to an asynchronous parameter server (PS) training application.
-3. The `Distributed Pipeliine Parallelism Using RPC <../intermediate/dist_pipeline_parallel_tutorial.html>`__
+3. The `Distributed Pipeline Parallelism Using RPC <../intermediate/dist_pipeline_parallel_tutorial.html>`__
    tutorial extends the single-machine pipeline parallel example (presented in
    `Single-Machine Model Parallel Best Practices <../intermediate/model_parallel_tutorial.html>`__)
    to a distributed environment and shows how to implement it using RPC.
