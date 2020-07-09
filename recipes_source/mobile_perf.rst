@@ -2,24 +2,29 @@ Pytorch Mobile Performance Recipes
 ==================================
 
 Introduction
-------------
+----------------
 Performance (aka latency) is crucial to most, if not all,
 applications and use-cases of ML model inference on mobile devices.
 
 Today, PyTorch executes the models on the CPU backend pending availability
 of other hardware backends such as GPU, DSP, and NPU.
 
+In this recipe, you will learn:
+
+- How to optimize your model to help decrease execution time (higher performance, lower latency) on the mobile device.
+- How to benchmark (to check if optimizations helped your use case).
+
 
 Model preparation
 -----------------
 
-Next recipes you can take (offline) while preparing the model
-to have an optimized model that will probably have shorter execution time
+We will start with preparing to optimize your model to help decrease execution time
 (higher performance, lower latency) on the mobile device.
 
 
 Setup
-_____
+^^^^^^^
+
 First we need to installed pytorch using conda or pip with version at least 1.5.0.
 
 ::
@@ -49,6 +54,7 @@ Code your model:
           self.dequant = torch.quantization.DeQuantStub()
 
       def forward(self, x):
+          x.contiguous(memory_format=torch.channels_last)
           x = self.quant(x)
           x = self.conv(x)
           x = self.bn(x)
@@ -63,7 +69,7 @@ Code your model:
 
 
 1. Fuse operators using ``torch.quantization.fuse_modules``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Do not be confused that fuse_modules is in the quantization package.
 It works for all ``torcn.nn.Module``.
@@ -84,7 +90,7 @@ This script will fuse Convolution, Batch Normalization and Relu in previously de
 
 
 2. Quantize your model
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can find more about PyTorch quantization in
 `the dedicated tutorial <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_.
@@ -109,7 +115,7 @@ This code does quantization, using stub for model calibration function, you can 
 
 
 3. Use torch.utils.mobile_optimizer
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Torch mobile_optimizer package does several optimizations with the scripted model,
 which will help to conv2d and linear operations.
@@ -129,11 +135,27 @@ Next we call ``optimize_for_mobile`` and save model on the disk.
   torchscript_model_optimized = optimize_for_mobile(torchscript_model)
   torch.jit.save(torchscript_model_optimized, "model.pt")
 
+4. Prefer Using Channels Last Tensor memory format
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-4. Android. Reusing tensors for forward.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Channels Last(NHWC) memory format was introduced in PyTorch 1.4.0. It is supported only for four-dimensional tensors. This memory format gives a better memory locality for most operators, especially convolution. Our measurements showed a 3x speedup of MobileNetV2 model compared with the default Channels First(NCHW) format.
 
-This recipe is Android only.
+At the moment of writing this recipe, PyTorch Android java API does not support using inputs in Channels Last memory format. But it can be used on the TorchScript model level, by adding the conversion to it for model inputs.
+
+.. code-block:: python
+
+  def forward(self, x):
+      x.contiguous(memory_format=torch.channels_last)
+      ...
+
+
+This conversion is zero cost if your input is already in Channels Last memory format. After it, all operators will work preserving ChannelsLast memory format.
+
+5. Android - Reusing tensors for forward
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This part of the recipe is Android only.
+
 Memory is a critical resource for android performance, especially on old devices.
 Tensors can need a significant amount of memory.
 For example, standard computer vision tensor contains 1*3*224*224 elements,
@@ -180,14 +202,16 @@ and buffer is refilled using ``org.pytorch.torchvision.TensorImageUtils.imageYUV
 Benchmarking
 ------------
 
-The best way to benchmark (to check if optimizations helped your use case) - to measure your particular use case that you want to optimize, as performance behavior can vary in different environments.
+The best way to benchmark (to check if optimizations helped your use case) - is to measure your particular use case that you want to optimize, as performance behavior can vary in different environments.
 
 PyTorch distribution provides a way to benchmark naked binary that runs the model forward,
 this approach can give more stable measurements rather than testing inside the application.
 
 
-Android
--------
+Android - Benchmarking Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This part of the recipe is Android only.
 
 For this you first need to build benchmark binary:
 
@@ -221,8 +245,8 @@ Now we are ready to benchmark your model:
   Main run finished. Microseconds per iter: 121318. Iters per second: 8.24281
 
 
-iOS
--------
+iOS - Benchmarking Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For iOS, we'll be using our `TestApp<https://github.com/pytorch/pytorch/tree/master/ios/TestApp>` as the benchmarking tool. 
 
