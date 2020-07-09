@@ -23,7 +23,7 @@ Python and in their serialized form directly in C++.
 The following paragraphs give an example of writing a TorchScript custom op to
 call into `OpenCV <https://www.opencv.org>`_, a computer vision library written
 in C++. We will discuss how to work with tensors in C++, how to efficiently
-convert them to third party tensor formats (in this case, OpenCV ``Mat``s), how
+convert them to third party tensor formats (in this case, OpenCV ``Mat``), how
 to register your operator with the TorchScript runtime and finally how to
 compile the operator and use it in Python and C++.
 
@@ -37,27 +37,10 @@ TorchScript as a custom operator. The first step is to write the implementation
 of our custom operator in C++. Let's call the file for this implementation
 ``op.cpp`` and make it look like this:
 
-.. code-block:: cpp
-
-  #include <opencv2/opencv.hpp>
-  #include <torch/script.h>
-
-  torch::Tensor warp_perspective(torch::Tensor image, torch::Tensor warp) {
-    cv::Mat image_mat(/*rows=*/image.size(0),
-                      /*cols=*/image.size(1),
-                      /*type=*/CV_32FC1,
-                      /*data=*/image.data<float>());
-    cv::Mat warp_mat(/*rows=*/warp.size(0),
-                     /*cols=*/warp.size(1),
-                     /*type=*/CV_32FC1,
-                     /*data=*/warp.data<float>());
-
-    cv::Mat output_mat;
-    cv::warpPerspective(image_mat, output_mat, warp_mat, /*dsize=*/{8, 8});
-
-    torch::Tensor output = torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8});
-    return output.clone();
-  }
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN warp_perspective
+  :end-before: END warp_perspective
 
 The code for this operator is quite short. At the top of the file, we include
 the OpenCV header file, ``opencv2/opencv.hpp``, alongside the ``torch/script.h``
@@ -92,12 +75,10 @@ tensors to OpenCV matrices, as OpenCV's ``warpPerspective`` expects ``cv::Mat``
 objects as inputs. Fortunately, there is a way to do this **without copying
 any** data. In the first few lines,
 
-.. code-block:: cpp
-
-  cv::Mat image_mat(/*rows=*/image.size(0),
-                    /*cols=*/image.size(1),
-                    /*type=*/CV_32FC1,
-                    /*data=*/image.data<float>());
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN image_mat
+  :end-before: END image_mat
 
 we are calling `this constructor
 <https://docs.opencv.org/trunk/d3/d63/classcv_1_1Mat.html#a922de793eabcec705b3579c5f95a643e>`_
@@ -113,12 +94,10 @@ subsequent OpenCV routines with the library's native matrix type, even though
 we're actually storing the data in a PyTorch tensor. We repeat this procedure to
 convert the ``warp`` PyTorch tensor to the ``warp_mat`` OpenCV matrix:
 
-.. code-block:: cpp
-
-  cv::Mat warp_mat(/*rows=*/warp.size(0),
-                   /*cols=*/warp.size(1),
-                   /*type=*/CV_32FC1,
-                   /*data=*/warp.data<float>());
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN warp_mat
+  :end-before: END warp_mat
 
 Next, we are ready to call the OpenCV function we were so eager to use in
 TorchScript: ``warpPerspective``. For this, we pass the OpenCV function the
@@ -126,10 +105,10 @@ TorchScript: ``warpPerspective``. For this, we pass the OpenCV function the
 called ``output_mat``. We also specify the size ``dsize`` we want the output
 matrix (image) to be. It is hardcoded to ``8 x 8`` for this example:
 
-.. code-block:: cpp
-
-  cv::Mat output_mat;
-  cv::warpPerspective(image_mat, output_mat, warp_mat, /*dsize=*/{8, 8});
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN output_mat
+  :end-before: END output_mat
 
 The final step in our custom operator implementation is to convert the
 ``output_mat`` back into a PyTorch tensor, so that we can further use it in
@@ -139,9 +118,10 @@ other direction. In this case, PyTorch provides a ``torch::from_blob`` method. A
 we want to interpret as a PyTorch tensor. The call to ``torch::from_blob`` looks
 like this:
 
-.. code-block:: cpp
-
-  torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8})
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN output_tensor
+  :end-before: END output_tensor
 
 We use the ``.ptr<float>()`` method on the OpenCV ``Mat`` class to get a raw
 pointer to the underlying data (just like ``.data<float>()`` for the PyTorch
@@ -167,10 +147,10 @@ with the TorchScript runtime and compiler. This will allow the TorchScript
 compiler to resolve references to our custom operator in TorchScript code.
 Registration is very simple. For our case, we need to write:
 
-.. code-block:: cpp
-
-  static auto registry =
-    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN registry
+  :end-before: END registry
 
 somewhere in the global scope of our ``op.cpp`` file. This creates a global
 variable ``registry``, which will register our operator with TorchScript in its
@@ -230,22 +210,8 @@ somewhere accessible in your file system. The following paragraphs will refer to
 that location as ``/path/to/libtorch``. The contents of our ``CMakeLists.txt``
 file should then be the following:
 
-.. code-block:: cmake
-
-  cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-  project(warp_perspective)
-
-  find_package(Torch REQUIRED)
-  find_package(OpenCV REQUIRED)
-
-  # Define our library target
-  add_library(warp_perspective SHARED op.cpp)
-  # Enable C++11
-  target_compile_features(warp_perspective PRIVATE cxx_range_for)
-  # Link against LibTorch
-  target_link_libraries(warp_perspective "${TORCH_LIBRARIES}")
-  # Link against OpenCV
-  target_link_libraries(warp_perspective opencv_core opencv_imgproc)
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/CMakeLists.txt
+  :language: cpp
 
 .. warning::
 
@@ -267,7 +233,7 @@ To now build our operator, we can run the following commands from our
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH=$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)') ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -660,7 +626,7 @@ Along with a small ``CMakeLists.txt`` file:
 
 At this point, we should be able to build the application:
 
-.. code-block:: cpp
+.. code-block::
 
   $ mkdir build
   $ cd build
@@ -700,7 +666,7 @@ At this point, we should be able to build the application:
 
 And run it without passing a model just yet:
 
-.. code-block:: cpp
+.. code-block::
 
   $ ./example_app
   usage: example_app <path-to-exported-script-module>
@@ -727,7 +693,7 @@ The last line will serialize the script function into a file called
 "example.pt". If we then pass this serialized model to our C++ application, we
 can run it straight away:
 
-.. code-block:: cpp
+.. code-block::
 
   $ ./example_app example.pt
   terminate called after throwing an instance of 'torch::jit::script::ErrorReport'
