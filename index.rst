@@ -332,6 +332,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/rpc_param_server_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Combining Distributed DataParallel with Distributed RPC Framework
+   :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
+   :image: _static/img/thumbnails/cropped/Combining-Distributed-DataParallel-with-Distributed-RPC-Framework.png
+   :link: advanced/rpc_ddp_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
