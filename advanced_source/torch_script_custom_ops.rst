@@ -484,7 +484,7 @@ function inside of our script code:
 
 When the TorchScript compiler sees the reference to
 ``torch.ops.my_ops.warp_perspective``, it will find the implementation we
-registered via the ``RegisterOperators`` object in C++, and compile it into its
+registered via the ``TORCH_LIBRARY`` function in C++, and compile it into its
 graph representation:
 
 .. code-block:: python
@@ -720,7 +720,7 @@ library.
   ``-Wl,--no-as-needed`` prefix to the ``warp_perspective`` link line. This is
   required because we will not actually be calling any function from the
   ``warp_perspective`` shared library in our application code. We only need the
-  global ``RegisterOperators`` object's constructor to run. Inconveniently, this
+  ``TORCH_LIBRARY`` function to run. Inconveniently, this
   confuses the linker and makes it think it can just skip linking against the
   library altogether. On Linux, the ``-Wl,--no-as-needed`` flag forces the link
   to happen (NB: this flag is specific to Linux!). There are other workarounds
