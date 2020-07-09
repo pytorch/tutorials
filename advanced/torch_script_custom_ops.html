@@ -368,7 +368,7 @@ like this:</p>
 </pre></div>
 </div>
 <p>We use the <code class="docutils literal notranslate"><span class="pre">.ptr&lt;float&gt;()</span></code> method on the OpenCV <code class="docutils literal notranslate"><span class="pre">Mat</span></code> class to get a raw
-pointer to the underlying data (just like <code class="docutils literal notranslate"><span class="pre">.data&lt;float&gt;()</span></code> for the PyTorch
+pointer to the underlying data (just like <code class="docutils literal notranslate"><span class="pre">.data_ptr&lt;float&gt;()</span></code> for the PyTorch
 tensor earlier). We also specify the output shape of the tensor, which we
 hardcoded as <code class="docutils literal notranslate"><span class="pre">8</span> <span class="pre">x</span> <span class="pre">8</span></code>. The output of <code class="docutils literal notranslate"><span class="pre">torch::from_blob</span></code> is then a
 <code class="docutils literal notranslate"><span class="pre">torch::Tensor</span></code>, pointing to the memory owned by the OpenCV matrix.</p>
@@ -387,36 +387,26 @@ It is thus safe to return to the outside world.</p>
 <p>Now that have implemented our custom operator in C++, we need to <em>register</em> it
 with the TorchScript runtime and compiler. This will allow the TorchScript
 compiler to resolve references to our custom operator in TorchScript code.
-Registration is very simple. For our case, we need to write:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">auto</span> <span class="n">registry</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="p">(</span><span class="s">"my_ops::warp_perspective"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">warp_perspective</span><span class="p">);</span>
+If you have ever used the pybind11 library, our syntax for registration
+resembles the pybind11 syntax very closely.  To register a single function,
+we write:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TORCH_LIBRARY</span><span class="p">(</span><span class="n">my_ops</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"warp_perspective"</span><span class="p">,</span> <span class="n">warp_perspective</span><span class="p">);</span>
+<span class="p">}</span>
 </pre></div>
 </div>
-<p>somewhere in the global scope of our <code class="docutils literal notranslate"><span class="pre">op.cpp</span></code> file. This creates a global
-variable <code class="docutils literal notranslate"><span class="pre">registry</span></code>, which will register our operator with TorchScript in its
-constructor (i.e. exactly once per program). We specify the name of the
-operator, and a pointer to its implementation (the function we wrote earlier).
-The name consists of two parts: a <em>namespace</em> (<code class="docutils literal notranslate"><span class="pre">my_ops</span></code>) and a name for the
-particular operator we are registering (<code class="docutils literal notranslate"><span class="pre">warp_perspective</span></code>). The namespace and
-operator name are separated by two colons (<code class="docutils literal notranslate"><span class="pre">::</span></code>).</p>
-<div class="admonition tip">
-<p class="first admonition-title">Tip</p>
-<p>If you want to register more than one operator, you can chain calls to
-<code class="docutils literal notranslate"><span class="pre">.op()</span></code> after the constructor:</p>
-<div class="last highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">auto</span> <span class="n">registry</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="p">(</span><span class="s">"my_ops::warp_perspective"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">warp_perspective</span><span class="p">)</span>
-  <span class="p">.</span><span class="n">op</span><span class="p">(</span><span class="s">"my_ops::another_op"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">another_op</span><span class="p">)</span>
-  <span class="p">.</span><span class="n">op</span><span class="p">(</span><span class="s">"my_ops::and_another_op"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">and_another_op</span><span class="p">);</span>
-</pre></div>
-</div>
-</div>
-<p>Behind the scenes, <code class="docutils literal notranslate"><span class="pre">RegisterOperators</span></code> will perform a number of fairly
-complicated C++ template metaprogramming magic tricks to infer the argument and
-return value types of the function pointer we pass it (<code class="docutils literal notranslate"><span class="pre">&amp;warp_perspective</span></code>).
-This information is used to form a <em>function schema</em> for our operator. A
-function schema is a structured representation of an operator – a kind of
-“signature” or “prototype” – used by the TorchScript compiler to verify
-correctness in TorchScript programs.</p>
+<p>somewhere at the top level of our <code class="docutils literal notranslate"><span class="pre">op.cpp</span></code> file.  The <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code> macro
+creates a function that will be called when your program starts.  The name
+of your library (<code class="docutils literal notranslate"><span class="pre">my_ops</span></code>) is given as the first argument (it should not
+be in quotes).  The second argument (<code class="docutils literal notranslate"><span class="pre">m</span></code>) defines a variable of type
+<code class="docutils literal notranslate"><span class="pre">torch::Library</span></code> which is the main interface to register your operators.
+The method <code class="docutils literal notranslate"><span class="pre">Library::def</span></code> actually creates an operator named <code class="docutils literal notranslate"><span class="pre">warp_perspective</span></code>,
+exposing it to both Python and TorchScript.  You can define as many operators
+as you like by making multiple calls to <code class="docutils literal notranslate"><span class="pre">def</span></code>.</p>
+<p>Behinds the scenes, the <code class="docutils literal notranslate"><span class="pre">def</span></code> function is actually doing quite a bit of work:
+it is using template metaprogramming to inspect the type signature of your
+function and translate it into an operator schema which specifies the operators
+type within TorchScript’s type system.</p>
 </div>
 <div class="section" id="building-the-custom-operator">
 <h2>Building the Custom Operator<a class="headerlink" href="#building-the-custom-operator" title="Permalink to this headline">¶</a></h2>
@@ -426,7 +416,16 @@ we can load into Python for research and experimentation, or into C++ for
 inference in a no-Python environment. There exist multiple ways to build our
 operator, using either pure CMake, or Python alternatives like <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>.
 For brevity, the paragraphs below only discuss the CMake approach. The appendix
-of this tutorial dives into the Python based alternatives.</p>
+of this tutorial dives into other alternatives.</p>
+<div class="section" id="environment-setup">
+<h3>Environment setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h3>
+<p>We need an installation of PyTorch and OpenCV.  The easiest and most platform
+independent way to get both is to via Conda:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span> <span class="n">pytorch</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">opencv</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="building-with-cmake">
 <h3>Building with CMake<a class="headerlink" href="#building-with-cmake" title="Permalink to this headline">¶</a></h3>
 <p>To build our custom operator into a shared library using the <a class="reference external" href="https://cmake.org">CMake</a> build system, we need to write a short <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code>
@@ -437,11 +436,7 @@ a directory structure that looks like this:</p>
   <span class="n">CMakeLists</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
-<p>Also, make sure to grab the latest version of the LibTorch distribution, which
-packages PyTorch’s C++ libraries and CMake build files, from <a class="reference external" href="https://pytorch.org/get-started/locally">pytorch.org</a>. Place the unzipped distribution
-somewhere accessible in your file system. The following paragraphs will refer to
-that location as <code class="docutils literal notranslate"><span class="pre">/path/to/libtorch</span></code>. The contents of our <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code>
-file should then be the following:</p>
+<p>The contents of our <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file should then be the following:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.1</span> <span class="n">FATAL_ERROR</span><span class="p">)</span>
 <span class="n">project</span><span class="p">(</span><span class="n">warp_perspective</span><span class="p">)</span>
 
@@ -457,18 +452,6 @@ file should then be the following:</p>
 <span class="cp"># Link against OpenCV</span>
 <span class="n">target_link_libraries</span><span class="p">(</span><span class="n">warp_perspective</span> <span class="n">opencv_core</span> <span class="n">opencv_imgproc</span><span class="p">)</span>
 </pre></div>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">This setup makes some assumptions about the build environment, particularly
-what pertains to the installation of OpenCV. The above <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file
-was tested inside a Docker container running Ubuntu Xenial with
-<code class="docutils literal notranslate"><span class="pre">libopencv-dev</span></code> installed via <code class="docutils literal notranslate"><span class="pre">apt</span></code>. If it does not work for you and you
-feel stuck, please use the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> in the <a class="reference external" href="https://github.com/pytorch/extension-script">accompanying tutorial
-repository</a> to
-build an isolated, reproducible environment in which to play around with the
-code from this tutorial. If you run into further troubles, please file an
-issue in the tutorial repository or post a question in <a class="reference external" href="https://discuss.pytorch.org/">our forum</a>.</p>
 </div>
 <p>To now build our operator, we can run the following commands from our
 <code class="docutils literal notranslate"><span class="pre">warp_perspective</span></code> folder:</p>
@@ -510,20 +493,19 @@ Scanning dependencies of target warp_perspective
 </pre></div>
 </div>
 <p>which will place a <code class="docutils literal notranslate"><span class="pre">libwarp_perspective.so</span></code> shared library file in the
-<code class="docutils literal notranslate"><span class="pre">build</span></code> folder. In the <code class="docutils literal notranslate"><span class="pre">cmake</span></code> command above, you should replace
-<code class="docutils literal notranslate"><span class="pre">/path/to/libtorch</span></code> with the path to your unzipped LibTorch distribution.</p>
+<code class="docutils literal notranslate"><span class="pre">build</span></code> folder. In the <code class="docutils literal notranslate"><span class="pre">cmake</span></code> command above, we use the helper
+variable <code class="docutils literal notranslate"><span class="pre">torch.utils.cmake_prefix_path</span></code> to conveniently tell us where
+the cmake files for our PyTorch install are.</p>
 <p>We will explore how to use and call our operator in detail further below, but to
 get an early sensation of success, we can try running the following code in
 Python:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"/path/to/libwarp_perspective.so"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">my_ops</span><span class="o">.</span><span class="n">warp_perspective</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"build/libwarp_perspective.so"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">my_ops</span><span class="o">.</span><span class="n">warp_perspective</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">/path/to/libwarp_perspective.so</span></code> should be a relative or absolute path
-to the <code class="docutils literal notranslate"><span class="pre">libwarp_perspective.so</span></code> shared library we just built. If all goes
-well, this should print something like</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">my_ops</span><span class="p">::</span><span class="n">warp_perspective</span> <span class="n">of</span> <span class="n">PyCapsule</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f618fc6fa50</span><span class="o">&gt;</span>
+<p>If all goes well, this should print something like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">my_ops</span><span class="p">::</span><span class="n">warp_perspective</span> <span class="n">of</span> <span class="n">PyCapsule</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x7f618fc6fa50</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>which is the Python function we will later use to invoke our custom operator.</p>
@@ -538,10 +520,9 @@ TorchScript code.</p>
 <p>You already saw how to import your operator into Python:
 <code class="docutils literal notranslate"><span class="pre">torch.ops.load_library()</span></code>. This function takes the path to a shared library
 containing custom operators, and loads it into the current process. Loading the
-shared library will also execute the constructor of the global
-<code class="docutils literal notranslate"><span class="pre">RegisterOperators</span></code> object we placed into our custom operator implementation
-file. This will register our custom operator with the TorchScript compiler and
-allow us to use that operator in TorchScript code.</p>
+shared library will also execute the <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code> block. This will register
+our custom operator with the TorchScript compiler and allow us to use that
+operator in TorchScript code.</p>
 <p>You can refer to your loaded operator as <code class="docutils literal notranslate"><span class="pre">torch.ops.&lt;namespace&gt;.&lt;function&gt;</span></code>,
 where <code class="docutils literal notranslate"><span class="pre">&lt;namespace&gt;</span></code> is the namespace part of your operator name, and
 <code class="docutils literal notranslate"><span class="pre">&lt;function&gt;</span></code> the function name of your operator. For the operator we wrote
@@ -550,16 +531,19 @@ which means our operator is available as <code class="docutils literal notransla
 While this function can be used in scripted or traced TorchScript modules, we
 can also just use it in vanilla eager PyTorch and pass it regular PyTorch
 tensors:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"libwarp_perspective.so"</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">my_ops</span><span class="o">.</span><span class="n">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="go">tensor([[0.0000, 0.3218, 0.4611,  ..., 0.4636, 0.4636, 0.4636],</span>
-<span class="go">      [0.3746, 0.0978, 0.5005,  ..., 0.4636, 0.4636, 0.4636],</span>
-<span class="go">      [0.3245, 0.0169, 0.0000,  ..., 0.4458, 0.4458, 0.4458],</span>
-<span class="go">      ...,</span>
-<span class="go">      [0.1862, 0.1862, 0.1692,  ..., 0.0000, 0.0000, 0.0000],</span>
-<span class="go">      [0.1862, 0.1862, 0.1692,  ..., 0.0000, 0.0000, 0.0000],</span>
-<span class="go">      [0.1862, 0.1862, 0.1692,  ..., 0.0000, 0.0000, 0.0000]])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"build/libwarp_perspective.so"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">my_ops</span><span class="o">.</span><span class="n">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>producing:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">([[</span><span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.3218</span><span class="p">,</span> <span class="mf">0.4611</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">],</span>
+      <span class="p">[</span><span class="mf">0.3746</span><span class="p">,</span> <span class="mf">0.0978</span><span class="p">,</span> <span class="mf">0.5005</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">,</span> <span class="mf">0.4636</span><span class="p">],</span>
+      <span class="p">[</span><span class="mf">0.3245</span><span class="p">,</span> <span class="mf">0.0169</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.4458</span><span class="p">,</span> <span class="mf">0.4458</span><span class="p">,</span> <span class="mf">0.4458</span><span class="p">],</span>
+      <span class="o">...</span><span class="p">,</span>
+      <span class="p">[</span><span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1692</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+      <span class="p">[</span><span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1692</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+      <span class="p">[</span><span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1862</span><span class="p">,</span> <span class="mf">0.1692</span><span class="p">,</span>  <span class="o">...</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">]])</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -581,7 +565,9 @@ as you would other functions from the <code class="docutils literal notranslate"
 library” functions like <code class="docutils literal notranslate"><span class="pre">torch.matmul</span></code> go through largely the same
 registration path as custom operators, which makes custom operators really
 first-class citizens when it comes to how and where they can be used in
-TorchScript.</p>
+TorchScript.  (One difference, however, is that standard library functions
+have custom written Python argument parsing logic that differs from
+<code class="docutils literal notranslate"><span class="pre">torch.ops</span></code> argument parsing.)</p>
 <div class="section" id="using-the-custom-operator-with-tracing">
 <h3>Using the Custom Operator with Tracing<a class="headerlink" href="#using-the-custom-operator-with-tracing" title="Permalink to this headline">¶</a></h3>
 <p>Let’s start by embedding our operator in a traced function. Recall that for
@@ -595,48 +581,51 @@ some example inputs, which it will forward to our implementation to record the
 sequence of operations that occur as the inputs flow through it. The result of
 this is effectively a “frozen” version of the eager PyTorch program, which the
 TorchScript compiler can further analyze, optimize and serialize:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">trace</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">compute</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
-<span class="go">graph(%x : Float(4, 8)</span>
-<span class="go">    %y : Float(8, 5)</span>
-<span class="go">    %z : Float(4, 5)) {</span>
-<span class="go">  %3 : Float(4, 5) = aten::matmul(%x, %y)</span>
-<span class="go">  %4 : Float(4, 5) = aten::relu(%z)</span>
-<span class="go">  %5 : int = prim::Constant[value=1]()</span>
-<span class="go">  %6 : Float(4, 5) = aten::add(%3, %4, %5)</span>
-<span class="go">  return (%6);</span>
-<span class="go">}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">compute</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Producing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span><span class="p">(</span><span class="o">%</span><span class="n">x</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
+      <span class="o">%</span><span class="n">y</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
+      <span class="o">%</span><span class="n">z</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)):</span>
+  <span class="o">%</span><span class="mi">3</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">matmul</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="p">,</span> <span class="o">%</span><span class="n">y</span><span class="p">)</span> <span class="c1"># test.py:10:0</span>
+  <span class="o">%</span><span class="mi">4</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">relu</span><span class="p">(</span><span class="o">%</span><span class="n">z</span><span class="p">)</span> <span class="c1"># test.py:10:0</span>
+  <span class="o">%</span><span class="mi">5</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">]()</span> <span class="c1"># test.py:10:0</span>
+  <span class="o">%</span><span class="mi">6</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">add</span><span class="p">(</span><span class="o">%</span><span class="mi">3</span><span class="p">,</span> <span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="o">%</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># test.py:10:0</span>
+  <span class="k">return</span> <span class="p">(</span><span class="o">%</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, the exciting revelation is that we can simply drop our custom operator into
 our PyTorch trace as if it were <code class="docutils literal notranslate"><span class="pre">torch.relu</span></code> or any other <code class="docutils literal notranslate"><span class="pre">torch</span></code> function:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"libwarp_perspective.so"</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">my_ops</span><span class="o">.</span><span class="n">warp_perspective</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>and then trace it as before:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">trace</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">compute</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
-<span class="go">graph(%x.1 : Float(4, 8)</span>
-<span class="go">    %y : Float(8, 5)</span>
-<span class="go">    %z : Float(8, 5)) {</span>
-<span class="go">    %3 : int = prim::Constant[value=3]()</span>
-<span class="go">    %4 : int = prim::Constant[value=6]()</span>
-<span class="go">    %5 : int = prim::Constant[value=0]()</span>
-<span class="go">    %6 : int[] = prim::Constant[value=[0, -1]]()</span>
-<span class="go">    %7 : Float(3, 3) = aten::eye(%3, %4, %5, %6)</span>
-<span class="go">    %x : Float(8, 8) = my_ops::warp_perspective(%x.1, %7)</span>
-<span class="go">    %11 : Float(8, 5) = aten::matmul(%x, %y)</span>
-<span class="go">    %12 : Float(8, 5) = aten::relu(%z)</span>
-<span class="go">    %13 : int = prim::Constant[value=1]()</span>
-<span class="go">    %14 : Float(8, 5) = aten::add(%11, %12, %13)</span>
-<span class="go">    return (%14);</span>
-<span class="go">  }</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span>
+<span class="n">trace</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">compute</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Producing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="o">.</span><span class="mi">1</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
+      <span class="o">%</span><span class="n">y</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
+      <span class="o">%</span><span class="n">z</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)):</span>
+  <span class="o">%</span><span class="mi">3</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">3</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">4</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">6</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">5</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">6</span> <span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">7</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">8</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">eye</span><span class="p">(</span><span class="o">%</span><span class="mi">3</span><span class="p">,</span> <span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="o">%</span><span class="mi">5</span><span class="p">,</span> <span class="o">%</span><span class="mi">6</span><span class="p">,</span> <span class="o">%</span><span class="mi">7</span><span class="p">)</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="n">x</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">my_ops</span><span class="p">::</span><span class="n">warp_perspective</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">%</span><span class="mi">8</span><span class="p">)</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="mi">10</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">matmul</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="p">,</span> <span class="o">%</span><span class="n">y</span><span class="p">)</span> <span class="c1"># test.py:26:0</span>
+  <span class="o">%</span><span class="mi">11</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">relu</span><span class="p">(</span><span class="o">%</span><span class="n">z</span><span class="p">)</span> <span class="c1"># test.py:26:0</span>
+  <span class="o">%</span><span class="mi">12</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">]()</span> <span class="c1"># test.py:26:0</span>
+  <span class="o">%</span><span class="mi">13</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">add</span><span class="p">(</span><span class="o">%</span><span class="mi">10</span><span class="p">,</span> <span class="o">%</span><span class="mi">11</span><span class="p">,</span> <span class="o">%</span><span class="mi">12</span><span class="p">)</span> <span class="c1"># test.py:26:0</span>
+  <span class="k">return</span> <span class="p">(</span><span class="o">%</span><span class="mi">13</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Integrating TorchScript custom ops into traced PyTorch code is as easy as this!</p>
@@ -1066,8 +1055,9 @@ custom TorchScript operator as a string. For this, use
 <span class="s2">  return output.clone();</span>
 <span class="s2">}</span>
 
-<span class="s2">static auto registry =</span>
-<span class="s2">  torch::RegisterOperators("my_ops::warp_perspective", &amp;warp_perspective);</span>
+<span class="s2">TORCH_LIBRARY(my_ops, m) {</span>
+<span class="s2">  m.def("warp_perspective", &amp;warp_perspective);</span>
+<span class="s2">}</span>
 <span class="s2">"""</span>
 
 <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cpp_extension</span><span class="o">.</span><span class="n">load_inline</span><span class="p">(</span>
@@ -1200,6 +1190,7 @@ visible to TorchScript:</p>
 <li><a class="reference internal" href="#implementing-the-custom-operator-in-c">Implementing the Custom Operator in C++</a></li>
 <li><a class="reference internal" href="#registering-the-custom-operator-with-torchscript">Registering the Custom Operator with TorchScript</a></li>
 <li><a class="reference internal" href="#building-the-custom-operator">Building the Custom Operator</a><ul>
+<li><a class="reference internal" href="#environment-setup">Environment setup</a></li>
 <li><a class="reference internal" href="#building-with-cmake">Building with CMake</a></li>
 </ul>
 </li>
