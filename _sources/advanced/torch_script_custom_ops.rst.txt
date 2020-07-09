@@ -212,7 +212,7 @@ To now build our operator, we can run the following commands from our
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)') ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -609,7 +609,7 @@ At this point, we should be able to build the application:
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -752,7 +752,7 @@ library. In the top level ``example_app`` directory:
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc

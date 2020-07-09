@@ -2,7 +2,7 @@ Extending TorchScript with Custom C++ Classes
 ===============================================
 
 This tutorial is a follow-on to the
-`custom operator <https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html>`_
+:doc:`custom operator <torch_script_custom_ops>`
 tutorial, and introduces the API we've built for binding C++ classes into TorchScript
 and Python simultaneously. The API is very similar to
 `pybind11 <https://github.com/pybind/pybind11>`_, and most of the concepts will transfer
@@ -14,44 +14,10 @@ Implementing and Binding the Class in C++
 For this tutorial, we are going to define a simple C++ class that maintains persistent
 state in a member variable.
 
-.. code-block:: cpp
-
-  // This header is all you need to do the C++ portions of this
-  // tutorial
-  #include <torch/script.h>
-  // This header is what defines the custom class registration
-  // behavior specifically. script.h already includes this, but
-  // we include it here so you know it exists in case you want
-  // to look at the API or implementation.
-  #include <torch/custom_class.h>
-
-  #include <string>
-  #include <vector>
-
-  template <class T>
-  struct MyStackClass : torch::CustomClassHolder {
-    std::vector<T> stack_;
-    MyStackClass(std::vector<T> init) : stack_(init.begin(), init.end()) {}
-
-    void push(T x) {
-      stack_.push_back(x);
-    }
-    T pop() {
-      auto val = stack_.back();
-      stack_.pop_back();
-      return val;
-    }
-
-    c10::intrusive_ptr<MyStackClass> clone() const {
-      return c10::make_intrusive<MyStackClass>(stack_);
-    }
-
-    void merge(const c10::intrusive_ptr<MyStackClass>& c) {
-      for (auto& elem : c->stack_) {
-        push(elem);
-      }
-    }
-  };
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
+  :language: cpp
+  :start-after: BEGIN class
+  :end-before: END class
 
 There are several things to note:
 
@@ -69,46 +35,10 @@ There are several things to note:
 Now let's take a look at how we will make this class visible to TorchScript, a process called
 *binding* the class:
 
-.. code-block:: cpp
-
-  // Notice a few things:
-  // - We pass the class to be registered as a template parameter to
-  //   `torch::class_`. In this instance, we've passed the
-  //   specialization of the MyStackClass class ``MyStackClass<std::string>``.
-  //   In general, you cannot register a non-specialized template
-  //   class. For non-templated classes, you can just pass the
-  //   class name directly as the template parameter.
-  // - The arguments passed to the constructor make up the "qualified name"
-  //   of the class. In this case, the registered class will appear in
-  //   Python and C++ as `torch.classes.my_classes.MyStackClass`. We call
-  //   the first argument the "namespace" and the second argument the
-  //   actual class name.
-  static auto testStack =
-    torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
-        // The following line registers the contructor of our MyStackClass
-        // class that takes a single `std::vector<std::string>` argument,
-        // i.e. it exposes the C++ method `MyStackClass(std::vector<T> init)`.
-        // Currently, we do not support registering overloaded
-        // constructors, so for now you can only `def()` one instance of
-        // `torch::init`.
-        .def(torch::init<std::vector<std::string>>())
-        // The next line registers a stateless (i.e. no captures) C++ lambda
-        // function as a method. Note that a lambda function must take a
-        // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
-        // as the first argument. Other arguments can be whatever you want.
-        .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
-          return self->stack_.back();
-        })
-        // The following four lines expose methods of the MyStackClass<std::string>
-        // class as-is. `torch::class_` will automatically examine the
-        // argument and return types of the passed-in method pointers and
-        // expose these to Python and TorchScript accordingly. Finally, notice
-        // that we must take the *address* of the fully-qualified method name,
-        // i.e. use the unary `&` operator, due to C++ typing rules.
-        .def("push", &MyStackClass<std::string>::push)
-        .def("pop", &MyStackClass<std::string>::pop)
-        .def("clone", &MyStackClass<std::string>::clone)
-        .def("merge", &MyStackClass<std::string>::merge);
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
+  :language: cpp
+  :start-after: BEGIN binding
+  :end-before: END binding
 
 
 
@@ -121,18 +51,8 @@ we've covered so far and place it in a file called ``class.cpp``.
 Then, write a simple ``CMakeLists.txt`` file and place it in the
 same directory. Here is what ``CMakeLists.txt`` should look like:
 
-.. code-block:: cmake
-
-  cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-  project(custom_class)
-
-  find_package(Torch REQUIRED)
-
-  # Define our library target
-  add_library(custom_class SHARED class.cpp)
-  set(CMAKE_CXX_STANDARD 14)
-  # Link against LibTorch
-  target_link_libraries(custom_class "${TORCH_LIBRARIES}")
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/CMakeLists.txt
+  :language: cmake
 
 Also, create a ``build`` directory. Your file tree should look like this::
 
@@ -141,16 +61,14 @@ Also, create a ``build`` directory. Your file tree should look like this::
     CMakeLists.txt
     build/
 
-Now, to build the project, go ahead and download the appropriate libtorch
-binary from the `PyTorch website <https://pytorch.org/>`_. Extract the
-zip archive somewhere (within the project directory might be convenient)
-and note the path you've extracted it to. Next, go ahead and invoke cmake and
-then make to build the project:
+We assume you've setup your environment in the same way as described in
+the :doc:`previous tutorial <torch_script_custom_ops>`.
+Go ahead and invoke cmake and then make to build the project:
 
 .. code-block:: shell
 
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
     -- The C compiler identification is GNU 7.3.1
     -- The CXX compiler identification is GNU 7.3.1
     -- Check for working C compiler: /opt/rh/devtoolset-7/root/usr/bin/cc
@@ -201,52 +119,9 @@ Now that we have our class and its registration compiled into an ``.so`` file,
 we can load that `.so` into Python and try it out. Here's a script that
 demonstrates that:
 
-.. code-block:: python
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/custom_test.py
+  :language: python
 
-  import torch
-
-  # `torch.classes.load_library()` allows you to pass the path to your .so file
-  # to load it in and make the custom C++ classes available to both Python and
-  # TorchScript
-  torch.classes.load_library("libcustom_class.so")
-  # You can query the loaded libraries like this:
-  print(torch.classes.loaded_libraries)
-  # prints {'/custom_class_project/build/libcustom_class.so'}
-
-  # We can find and instantiate our custom C++ class in python by using the
-  # `torch.classes` namespace:
-  #
-  # This instantiation will invoke the MyStackClass(std::vector<T> init) constructor
-  # we registered earlier
-  s = torch.classes.my_classes.MyStackClass(["foo", "bar"])
-
-  # We can call methods in Python
-  s.push("pushed")
-  assert s.pop() == "pushed"
-
-  # Returning and passing instances of custom classes works as you'd expect
-  s2 = s.clone()
-  s.merge(s2)
-  for expected in ["bar", "foo", "bar", "foo"]:
-      assert s.pop() == expected
-
-  # We can also use the class in TorchScript
-  # For now, we need to assign the class's type to a local in order to
-  # annotate the type on the TorchScript function. This may change
-  # in the future.
-  MyStackClass = torch.classes.my_classes.MyStackClass
-
-  @torch.jit.script
-  def do_stacks(s : MyStackClass): # We can pass a custom class instance to TorchScript
-      s2 = torch.classes.my_classes.MyStackClass(["hi", "mom"]) # We can instantiate the class
-      s2.merge(s) # We can call a method on the class
-      return s2.clone(), s2.top()  # We can also return instances of the class
-                                   # from TorchScript function/methods
-
-  stack, top = do_stacks(torch.classes.my_classes.MyStackClass(["wow"]))
-  assert top == "wow"
-  for expected in ["wow", "mom", "hi"]:
-      assert stack.pop() == expected
 
 Saving, Loading, and Running TorchScript Code Using Custom Classes
 ------------------------------------------------------------------
@@ -255,24 +130,8 @@ We can also use custom-registered C++ classes in a C++ process using
 libtorch. As an example, let's define a simple ``nn.Module`` that
 instantiates and calls a method on our MyStackClass class:
 
-.. code-block:: python
-
-  import torch
-
-  torch.classes.load_library('libcustom_class.so')
-
-  class Foo(torch.nn.Module):
-      def __init__(self):
-          super().__init__()
-
-      def forward(self, s : str) -> str:
-          stack = torch.classes.my_classes.MyStackClass(["hi", "mom"])
-          return stack.pop() + s
-
-  scripted_foo = torch.jit.script(Foo())
-  print(scripted_foo.graph)
-
-  scripted_foo.save('foo.pt')
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/save.py
+  :language: python
 
 ``foo.pt`` in our filesystem now contains the serialized TorchScript
 program we've just defined.
@@ -300,55 +159,20 @@ build the custom class into the binary.
 
 Let's populate ``infer.cpp`` with the following:
 
-.. code-block:: cpp
-
-  #include <torch/script.h>
-
-  #include <iostream>
-  #include <memory>
-
-  int main(int argc, const char* argv[]) {
-    torch::script::Module module;
-    try {
-      // Deserialize the ScriptModule from a file using torch::jit::load().
-      module = torch::jit::load("foo.pt");
-    }
-    catch (const c10::Error& e) {
-      std::cerr << "error loading the model\n";
-      return -1;
-    }
-
-    std::vector<c10::IValue> inputs = {"foobarbaz"};
-    auto output = module.forward(inputs).toString();
-    std::cout << output->string() << std::endl;
-  }
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/infer.cpp
+  :language: cpp
 
 And similarly let's define our CMakeLists.txt file:
 
-.. code-block:: cmake
-
-  cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-  project(infer)
-
-  find_package(Torch REQUIRED)
-
-  add_subdirectory(custom_class_project)
-
-  # Define our library target
-  add_executable(infer infer.cpp)
-  set(CMAKE_CXX_STANDARD 14)
-  # Link against LibTorch
-  target_link_libraries(infer "${TORCH_LIBRARIES}")
-  # This is where we link in our libcustom_class code, making our
-  # custom class available in our binary.
-  target_link_libraries(infer -Wl,--no-as-needed custom_class)
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/CMakeLists.txt
+  :language: cpp
 
 You know the drill: ``cd build``, ``cmake``, and ``make``:
 
 .. code-block:: shell
 
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
     -- The C compiler identification is GNU 7.3.1
     -- The CXX compiler identification is GNU 7.3.1
     -- Check for working C compiler: /opt/rh/devtoolset-7/root/usr/bin/cc
@@ -412,7 +236,7 @@ or you want to instantiate a custom class attribute in C++. For creating an
 - In the event that you already have an ``intrusive_ptr`` pointing to your class, you
   can directly construct an IValue from it using the constructor ``IValue(intrusive_ptr<T>)``.
 
-For converting ``IValue``s back to custom classes:
+For converting ``IValue`` back to custom classes:
 
 - ``IValue::toCustomClass<T>()`` will return an ``intrusive_ptr<T>`` pointing to the
   custom class that the ``IValue`` contains. Internally, this function is checking
@@ -426,24 +250,8 @@ Defining Serialization/Deserialization Methods for Custom C++ Classes
 If you try to save a ``ScriptModule`` with a custom-bound C++ class as
 an attribute, you'll get the following error:
 
-.. code-block:: python
-
-  # export_attr.py
-  import torch
-
-  torch.classes.load_library('libcustom_class.so')
-
-  class Foo(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.stack = torch.classes.my_classes.MyStackClass(["just", "testing"])
-
-    def forward(self, s : str) -> str:
-        return self.stack.pop() + s
-
-  scripted_foo = torch.jit.script(Foo())
-
-  scripted_foo.save('foo.pt')
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/export_attr.py
+  :language: python
 
 .. code-block:: shell
 
@@ -464,52 +272,10 @@ the special ``def_pickle`` method on ``class_``.
 Here is an example of how we can update the registration code for our
 ``MyStackClass`` class to include serialization methods:
 
-.. code-block:: cpp
-
-  static auto testStack =
-    torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
-        .def(torch::init<std::vector<std::string>>())
-        .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
-          return self->stack_.back();
-        })
-        .def("push", &MyStackClass<std::string>::push)
-        .def("pop", &MyStackClass<std::string>::pop)
-        .def("clone", &MyStackClass<std::string>::clone)
-        .def("merge", &MyStackClass<std::string>::merge)
-        // class_<>::def_pickle allows you to define the serialization
-        // and deserialization methods for your C++ class.
-        // Currently, we only support passing stateless lambda functions
-        // as arguments to def_pickle
-        .def_pickle(
-              // __getstate__
-              // This function defines what data structure should be produced
-              // when we serialize an instance of this class. The function
-              // must take a single `self` argument, which is an intrusive_ptr
-              // to the instance of the object. The function can return
-              // any type that is supported as a return value of the TorchScript
-              // custom operator API. In this instance, we've chosen to return
-              // a std::vector<std::string> as the salient data to preserve
-              // from the class.
-              [](const c10::intrusive_ptr<MyStackClass<std::string>>& self)
-                  -> std::vector<std::string> {
-                return self->stack_;
-              },
-              // __setstate__
-              // This function defines how to create a new instance of the C++
-              // class when we are deserializing. The function must take a
-              // single argument of the same type as the return value of
-              // `__getstate__`. The function must return an intrusive_ptr
-              // to a new instance of the C++ class, initialized however
-              // you would like given the serialized state.
-              [](std::vector<std::string> state)
-                  -> c10::intrusive_ptr<MyStackClass<std::string>> {
-                // A convenient way to instantiate an object and get an
-                // intrusive_ptr to it is via `make_intrusive`. We use
-                // that here to allocate an instance of MyStackClass<std::string>
-                // and call the single-argument std::vector<std::string>
-                // constructor with the serialized state.
-                return c10::make_intrusive<MyStackClass<std::string>>(std::move(state));
-              });
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
+  :language: cpp
+  :start-after: BEGIN pickle_binding
+  :end-before: END pickle_binding
 
 .. note::
   We take a different approach from pybind11 in the pickle API. Whereas pybind11
@@ -519,27 +285,6 @@ Here is an example of how we can update the registration code for our
 
 Once we have defined the (de)serialization behavior in this way, our script can
 now run successfully:
-
-.. code-block:: python
-
-  import torch
-
-  torch.classes.load_library('libcustom_class.so')
-
-  class Foo(torch.nn.Module):
-      def __init__(self):
-          super().__init__()
-          self.stack = torch.classes.my_classes.MyStackClass(["just", "testing"])
-
-      def forward(self, s : str) -> str:
-          return self.stack.pop() + s
-
-  scripted_foo = torch.jit.script(Foo())
-
-  scripted_foo.save('foo.pt')
-  loaded = torch.jit.load('foo.pt')
-
-  print(loaded.stack.pop())
 
 .. code-block:: shell
 
@@ -553,18 +298,10 @@ Once you've defined a custom C++ class, you can also use that class
 as an argument or return from a custom operator (i.e. free functions). Here's an
 example of how to do that:
 
-.. code-block:: cpp
-
-  c10::intrusive_ptr<MyStackClass<std::string>> manipulate_instance(const c10::intrusive_ptr<MyStackClass<std::string>>& instance) {
-    instance->pop();
-    return instance;
-  }
-
-  static auto instance_registry = torch::RegisterOperators().op(
-  torch::RegisterOperators::options()
-      .schema(
-          "foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y")
-      .catchAllKernel<decltype(manipulate_instance), &manipulate_instance>());
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
+  :language: cpp
+  :start-after: BEGIN free_function
+  :end-before: END free_function
 
 Refer to the `custom op tutorial <https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html>`_
 for more details on the registration API.

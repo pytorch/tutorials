@@ -237,7 +237,7 @@
 <div class="section" id="extending-torchscript-with-custom-c-classes">
 <h1>Extending TorchScript with Custom C++ Classes<a class="headerlink" href="#extending-torchscript-with-custom-c-classes" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial is a follow-on to the
-<a class="reference external" href="https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html">custom operator</a>
+<a class="reference internal" href="torch_script_custom_ops.html"><span class="doc">custom operator</span></a>
 tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript
 and Python simultaneously. The API is very similar to
 <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>, and most of the concepts will transfer
@@ -365,13 +365,11 @@ same directory. Here is what <code class="docutils literal notranslate"><span cl
   <span class="n">build</span><span class="o">/</span>
 </pre></div>
 </div>
-<p>Now, to build the project, go ahead and download the appropriate libtorch
-binary from the <a class="reference external" href="https://pytorch.org/">PyTorch website</a>. Extract the
-zip archive somewhere (within the project directory might be convenient)
-and note the path you’ve extracted it to. Next, go ahead and invoke cmake and
-then make to build the project:</p>
+<p>We assume you’ve setup your environment in the same way as described in
+the <a class="reference internal" href="torch_script_custom_ops.html"><span class="doc">previous tutorial</span></a>.
+Go ahead and invoke cmake and then make to build the project:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> build
-$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch ..
+$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
   -- The C compiler identification is GNU <span class="m">7</span>.3.1
   -- The CXX compiler identification is GNU <span class="m">7</span>.3.1
   -- Check <span class="k">for</span> working C compiler: /opt/rh/devtoolset-7/root/usr/bin/cc
@@ -427,7 +425,7 @@ demonstrates that:</p>
 <span class="c1"># `torch.classes.load_library()` allows you to pass the path to your .so file</span>
 <span class="c1"># to load it in and make the custom C++ classes available to both Python and</span>
 <span class="c1"># TorchScript</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"libcustom_class.so"</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"build/libcustom_class.so"</span><span class="p">)</span>
 <span class="c1"># You can query the loaded libraries like this:</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">loaded_libraries</span><span class="p">)</span>
 <span class="c1"># prints {'/custom_class_project/build/libcustom_class.so'}</span>
@@ -435,8 +433,8 @@ demonstrates that:</p>
 <span class="c1"># We can find and instantiate our custom C++ class in python by using the</span>
 <span class="c1"># `torch.classes` namespace:</span>
 <span class="c1">#</span>
-<span class="c1"># This instantiation will invoke the MyStackClass(std::vector&lt;T&gt; init) constructor</span>
-<span class="c1"># we registered earlier</span>
+<span class="c1"># This instantiation will invoke the MyStackClass(std::vector&lt;T&gt; init)</span>
+<span class="c1"># constructor we registered earlier</span>
 <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">])</span>
 
 <span class="c1"># We can call methods in Python</span>
@@ -455,12 +453,16 @@ demonstrates that:</p>
 <span class="c1"># in the future.</span>
 <span class="n">MyStackClass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span>
 
+
 <span class="nd">@torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span>
-<span class="k">def</span> <span class="nf">do_stacks</span><span class="p">(</span><span class="n">s</span> <span class="p">:</span> <span class="n">MyStackClass</span><span class="p">):</span> <span class="c1"># We can pass a custom class instance to TorchScript</span>
-    <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span> <span class="c1"># We can instantiate the class</span>
-    <span class="n">s2</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="c1"># We can call a method on the class</span>
-    <span class="k">return</span> <span class="n">s2</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>  <span class="c1"># We can also return instances of the class</span>
-                                 <span class="c1"># from TorchScript function/methods</span>
+<span class="k">def</span> <span class="nf">do_stacks</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n">MyStackClass</span><span class="p">):</span>  <span class="c1"># We can pass a custom class instance</span>
+    <span class="c1"># We can instantiate the class</span>
+    <span class="n">s2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span>
+    <span class="n">s2</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># We can call a method on the class</span>
+    <span class="c1"># We can also return instances of the class</span>
+    <span class="c1"># from TorchScript function/methods</span>
+    <span class="k">return</span> <span class="n">s2</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">s2</span><span class="o">.</span><span class="n">top</span><span class="p">()</span>
+
 
 <span class="n">stack</span><span class="p">,</span> <span class="n">top</span> <span class="o">=</span> <span class="n">do_stacks</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"wow"</span><span class="p">]))</span>
 <span class="k">assert</span> <span class="n">top</span> <span class="o">==</span> <span class="s2">"wow"</span>
@@ -476,15 +478,17 @@ libtorch. As an example, let’s define a simple <code class="docutils literal n
 instantiates and calls a method on our MyStackClass class:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libcustom_class.so'</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'build/libcustom_class.so'</span><span class="p">)</span>
+
 
 <span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"hi"</span><span class="p">,</span> <span class="s2">"mom"</span><span class="p">])</span>
         <span class="k">return</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
+
 
 <span class="n">scripted_foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">scripted_foo</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
@@ -520,7 +524,7 @@ build the custom class into the binary.</p>
 <span class="cp">#include</span> <span class="cpf">&lt;memory&gt;</span><span class="cp"></span>
 
 <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">script</span><span class="o">::</span><span class="n">Module</span> <span class="k">module</span><span class="p">;</span>
+  <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">Module</span> <span class="k">module</span><span class="p">;</span>
   <span class="k">try</span> <span class="p">{</span>
     <span class="c1">// Deserialize the ScriptModule from a file using torch::jit::load().</span>
     <span class="k">module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">jit</span><span class="o">::</span><span class="n">load</span><span class="p">(</span><span class="s">"foo.pt"</span><span class="p">);</span>
@@ -537,26 +541,26 @@ build the custom class into the binary.</p>
 </pre></div>
 </div>
 <p>And similarly let’s define our CMakeLists.txt file:</p>
-<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">cmake_minimum_required</span><span class="p">(</span><span class="s">VERSION</span> <span class="s">3.1</span> <span class="s">FATAL_ERROR</span><span class="p">)</span>
-<span class="nb">project</span><span class="p">(</span><span class="s">infer</span><span class="p">)</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.1</span> <span class="n">FATAL_ERROR</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">infer</span><span class="p">)</span>
 
-<span class="nb">find_package</span><span class="p">(</span><span class="s">Torch</span> <span class="s">REQUIRED</span><span class="p">)</span>
+<span class="n">find_package</span><span class="p">(</span><span class="n">Torch</span> <span class="n">REQUIRED</span><span class="p">)</span>
 
-<span class="nb">add_subdirectory</span><span class="p">(</span><span class="s">custom_class_project</span><span class="p">)</span>
+<span class="n">add_subdirectory</span><span class="p">(</span><span class="n">custom_class_project</span><span class="p">)</span>
 
-<span class="c"># Define our library target</span>
-<span class="nb">add_executable</span><span class="p">(</span><span class="s">infer</span> <span class="s">infer.cpp</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_CXX_STANDARD</span> <span class="s">14</span><span class="p">)</span>
-<span class="c"># Link against LibTorch</span>
-<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">infer</span> <span class="s2">"${TORCH_LIBRARIES}"</span><span class="p">)</span>
-<span class="c"># This is where we link in our libcustom_class code, making our</span>
-<span class="c"># custom class available in our binary.</span>
-<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">infer</span> <span class="s">-Wl,--no-as-needed</span> <span class="s">custom_class</span><span class="p">)</span>
+<span class="cp"># Define our library target</span>
+<span class="n">add_executable</span><span class="p">(</span><span class="n">infer</span> <span class="n">infer</span><span class="p">.</span><span class="n">cpp</span><span class="p">)</span>
+<span class="n">set</span><span class="p">(</span><span class="n">CMAKE_CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>
+<span class="cp"># Link against LibTorch</span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">infer</span> <span class="s">"${TORCH_LIBRARIES}"</span><span class="p">)</span>
+<span class="cp"># This is where we link in our libcustom_class code, making our</span>
+<span class="cp"># custom class available in our binary.</span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">infer</span> <span class="o">-</span><span class="n">Wl</span><span class="p">,</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">as</span><span class="o">-</span><span class="n">needed</span> <span class="n">custom_class</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You know the drill: <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">build</span></code>, <code class="docutils literal notranslate"><span class="pre">cmake</span></code>, and <code class="docutils literal notranslate"><span class="pre">make</span></code>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> build
-$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span>/path/to/libtorch ..
+$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
   -- The C compiler identification is GNU <span class="m">7</span>.3.1
   -- The CXX compiler identification is GNU <span class="m">7</span>.3.1
   -- Check <span class="k">for</span> working C compiler: /opt/rh/devtoolset-7/root/usr/bin/cc
@@ -618,7 +622,7 @@ TorchScript.</li>
 <li>In the event that you already have an <code class="docutils literal notranslate"><span class="pre">intrusive_ptr</span></code> pointing to your class, you
 can directly construct an IValue from it using the constructor <code class="docutils literal notranslate"><span class="pre">IValue(intrusive_ptr&lt;T&gt;)</span></code>.</li>
 </ul>
-<p>For converting <a href="#id1"><span class="problematic" id="id2">``</span></a>IValue``s back to custom classes:</p>
+<p>For converting <code class="docutils literal notranslate"><span class="pre">IValue</span></code> back to custom classes:</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">IValue::toCustomClass&lt;T&gt;()</span></code> will return an <code class="docutils literal notranslate"><span class="pre">intrusive_ptr&lt;T&gt;</span></code> pointing to the
 custom class that the <code class="docutils literal notranslate"><span class="pre">IValue</span></code> contains. Internally, this function is checking
@@ -634,19 +638,24 @@ an attribute, you’ll get the following error:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># export_attr.py</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libcustom_class.so'</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'build/libcustom_class.so'</span><span class="p">)</span>
+
 
 <span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-  <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-      <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
 
-  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
+
 
 <span class="n">scripted_foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
 
 <span class="n">scripted_foo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'foo.pt'</span><span class="p">)</span>
+<span class="n">loaded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'foo.pt'</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">loaded</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
 </pre></div>
 </div>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python export_attr.py
@@ -721,26 +730,6 @@ name <code class="docutils literal notranslate"><span class="pre">torch::jit::pi
 </div>
 <p>Once we have defined the (de)serialization behavior in this way, our script can
 now run successfully:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s1">'libcustom_class.so'</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">Foo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">classes</span><span class="o">.</span><span class="n">my_classes</span><span class="o">.</span><span class="n">MyStackClass</span><span class="p">([</span><span class="s2">"just"</span><span class="p">,</span> <span class="s2">"testing"</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="n">s</span>
-
-<span class="n">scripted_foo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">Foo</span><span class="p">())</span>
-
-<span class="n">scripted_foo</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'foo.pt'</span><span class="p">)</span>
-<span class="n">loaded</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'foo.pt'</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">loaded</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
-</pre></div>
-</div>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ python ../export_attr.py
 testing
 </pre></div>
