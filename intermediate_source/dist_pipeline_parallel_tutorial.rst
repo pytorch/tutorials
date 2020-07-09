@@ -4,6 +4,7 @@ Distributed Pipeline Parallelism Using RPC
 
 Prerequisites:
 
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
 -  `Single-Machine Model Parallel Best Practices <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__
 -  `Getting started with Distributed RPC Framework <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`__
 -  RRef helper functions:
