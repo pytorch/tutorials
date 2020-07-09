@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-(experimental) Channels Last Memory Format in PyTorch
+(beta) Channels Last Memory Format in PyTorch
 *******************************************************
 **Author**: `Vitaly Fedyunin <https://github.com/VitalyFedyunin>`_
 
@@ -11,12 +11,12 @@ Channels Last memory format is an alternative way of ordering NCHW tensors in me
 
 For example, classic (contiguous) storage of NCHW tensor (in our case it is two 2x2 images with 3 color channels) look like this:
 
-.. figure:: /_static/img/classic_memory_format.png   
+.. figure:: /_static/img/classic_memory_format.png
    :alt: classic_memory_format
 
 Channels Last memory format orders data differently:
 
-.. figure:: /_static/img/channels_last_memory_format.png   
+.. figure:: /_static/img/channels_last_memory_format.png
    :alt: channels_last_memory_format
 
 Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
@@ -34,7 +34,7 @@ N, C, H, W = 10, 3, 32, 32
 # Memory Format API
 # -----------------------
 #
-# Here is how to convert tensors between contiguous and channels 
+# Here is how to convert tensors between contiguous and channels
 # last memory formats.
 
 ######################################################################
@@ -104,9 +104,9 @@ if torch.backends.cudnn.version() >= 7603:
 ######################################################################
 # Performance Gains
 # -------------------------------------------------------------------------------------------
-# The most significant performance gains are observed on NVidia's hardware with 
+# The most significant performance gains are observed on Nvidia's hardware with
 # Tensor Cores support. We were able to archive over 22%  perf gains while running '
-# AMP (Automated Mixed Precision) training scripts supplied by NVidia https://github.com/NVIDIA/apex.
+# AMP (Automated Mixed Precision) training scripts supplied by Nvidia https://github.com/NVIDIA/apex.
 #
 # ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2  ./data``
 
@@ -144,7 +144,7 @@ if torch.backends.cudnn.version() >= 7603:
 
 ######################################################################
 # Passing ``--channels-last true`` allows running a model in Channels Last format with observed 22% perf gain.
-# 
+#
 # ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2 --channels-last true ./data``
 
 # opt_level = O2
@@ -192,7 +192,7 @@ if torch.backends.cudnn.version() >= 7603:
 # Converting existing models
 # --------------------------
 #
-# Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly. 
+# Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly.
 #
 
 # Need to be done once, after model initialization (or load)
@@ -203,12 +203,12 @@ input = input.to(memory_format=torch.channels_last) # Replace with your input
 output = model(input)
 
 #######################################################################
-# However, not all operators fully converted to support Channels Last (usually returning 
-# contiguous output instead). That means you need to verify the list of used operators 
-# against supported operators list https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support, 
+# However, not all operators fully converted to support Channels Last (usually returning
+# contiguous output instead). That means you need to verify the list of used operators
+# against supported operators list https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support,
 # or introduce memory format checks into eager execution mode and run your model.
-# 
-# After running the code below, operators will raise an exception if the output of the 
+#
+# After running the code below, operators will raise an exception if the output of the
 # operator doesn't match the memory format of the input.
 #
 #
@@ -282,7 +282,7 @@ attribute(torch)
 
 ######################################################################
 # If you found an operator that doesn't support Channels Last tensors
-# and you want to contribute, feel free to use following developers 
+# and you want to contribute, feel free to use following developers
 # guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
 #
 

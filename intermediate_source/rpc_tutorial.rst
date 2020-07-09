@@ -5,7 +5,7 @@ Getting Started with Distributed RPC Framework
 
 This tutorial uses two simple examples to demonstrate how to build distributed
 training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
-package which is first introduced as an experimental feature in PyTorch v1.4.
+package which is first introduced as a prototype feature in PyTorch v1.4.
 Source code of the two examples can be found in
 `PyTorch examples <https://github.com/pytorch/examples>`__.
 
