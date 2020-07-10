@@ -7,10 +7,12 @@ Data Parallelism is when we split the mini-batch of samples into
 multiple smaller mini-batches and run the computation for each of the
 smaller mini-batches in parallel.
 
-Data Parallelism is implemented using ``torch.nn.DataParallel``.
+Data Parallelism is implemented using |torch.nn.DataParallel|_.
 One can wrap a Module in ``DataParallel`` and it will be parallelized
 over multiple GPUs in the batch dimension.
 
+.. |torch.nn.DataParallel| replace:: ``torch.nn.DataParallel``
+.. _torch.nn.DataParallel: https://pytorch.org/docs/nn.html#torch.nn.DataParallel
 
 DataParallel
 -------------
@@ -41,7 +43,7 @@ class DataParallelModel(nn.Module):
 # The code does not need to be changed in CPU-mode.
 #
 # The documentation for DataParallel can be found
-# `here <https://pytorch.org/docs/nn.html#dataparallel>`_.
+# `here <https://pytorch.org/docs/nn.html#torch.nn.DataParallel>`_.
 # 
 # **Attributes of the wrapped module**
 # 
