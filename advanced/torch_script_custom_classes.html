@@ -290,12 +290,14 @@ state in a member variable.</p>
 with your custom class.</li>
 <li>Notice that whenever we are working with instances of the custom
 class, we do it via instances of <code class="docutils literal notranslate"><span class="pre">c10::intrusive_ptr&lt;&gt;</span></code>. Think of <code class="docutils literal notranslate"><span class="pre">intrusive_ptr</span></code>
-as a smart pointer like <code class="docutils literal notranslate"><span class="pre">std::shared_ptr</span></code>. The reason for using this smart pointer
-is to ensure consistent lifetime management of the object instances between languages
-(C++, Python and TorchScript).</li>
+as a smart pointer like <code class="docutils literal notranslate"><span class="pre">std::shared_ptr</span></code>, but the reference count is stored
+directly in the object, as opposed to a separate metadata block (as is done in
+<code class="docutils literal notranslate"><span class="pre">std::shared_ptr</span></code>.  <code class="docutils literal notranslate"><span class="pre">torch::Tensor</span></code> internally uses the same pointer type;
+and custom classes have to also use this pointer type so that we can
+consistently manage different object types.</li>
 <li>The second thing to notice is that the user-defined class must inherit from
-<code class="docutils literal notranslate"><span class="pre">torch::CustomClassHolder</span></code>. This ensures that everything is set up to handle
-the lifetime management system previously mentioned.</li>
+<code class="docutils literal notranslate"><span class="pre">torch::CustomClassHolder</span></code>. This ensures that the custom class has space to
+store the reference count.</li>
 </ul>
 <p>Now let’s take a look at how we will make this class visible to TorchScript, a process called
 <em>binding</em> the class:</p>
@@ -311,32 +313,34 @@ the lifetime management system previously mentioned.</li>
 <span class="c1">//   Python and C++ as `torch.classes.my_classes.MyStackClass`. We call</span>
 <span class="c1">//   the first argument the "namespace" and the second argument the</span>
 <span class="c1">//   actual class name.</span>
-<span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"my_classes"</span><span class="p">,</span> <span class="s">"MyStackClass"</span><span class="p">)</span>
-      <span class="c1">// The following line registers the contructor of our MyStackClass</span>
-      <span class="c1">// class that takes a single `std::vector&lt;std::string&gt;` argument,</span>
-      <span class="c1">// i.e. it exposes the C++ method `MyStackClass(std::vector&lt;T&gt; init)`.</span>
-      <span class="c1">// Currently, we do not support registering overloaded</span>
-      <span class="c1">// constructors, so for now you can only `def()` one instance of</span>
-      <span class="c1">// `torch::init`.</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
-      <span class="c1">// The next line registers a stateless (i.e. no captures) C++ lambda</span>
-      <span class="c1">// function as a method. Note that a lambda function must take a</span>
-      <span class="c1">// `c10::intrusive_ptr&lt;YourClass&gt;` (or some const/ref version of that)</span>
-      <span class="c1">// as the first argument. Other arguments can be whatever you want.</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"top"</span><span class="p">,</span> <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
-      <span class="p">})</span>
-      <span class="c1">// The following four lines expose methods of the MyStackClass&lt;std::string&gt;</span>
-      <span class="c1">// class as-is. `torch::class_` will automatically examine the</span>
-      <span class="c1">// argument and return types of the passed-in method pointers and</span>
-      <span class="c1">// expose these to Python and TorchScript accordingly. Finally, notice</span>
-      <span class="c1">// that we must take the *address* of the fully-qualified method name,</span>
-      <span class="c1">// i.e. use the unary `&amp;` operator, due to C++ typing rules.</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"push"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">push</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"pop"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">pop</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"clone"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">clone</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">merge</span><span class="p">);</span>
+<span class="n">TORCH_LIBRARY</span><span class="p">(</span><span class="n">my_classes</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">m</span><span class="p">.</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"MyStackClass"</span><span class="p">)</span>
+    <span class="c1">// The following line registers the contructor of our MyStackClass</span>
+    <span class="c1">// class that takes a single `std::vector&lt;std::string&gt;` argument,</span>
+    <span class="c1">// i.e. it exposes the C++ method `MyStackClass(std::vector&lt;T&gt; init)`.</span>
+    <span class="c1">// Currently, we do not support registering overloaded</span>
+    <span class="c1">// constructors, so for now you can only `def()` one instance of</span>
+    <span class="c1">// `torch::init`.</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
+    <span class="c1">// The next line registers a stateless (i.e. no captures) C++ lambda</span>
+    <span class="c1">// function as a method. Note that a lambda function must take a</span>
+    <span class="c1">// `c10::intrusive_ptr&lt;YourClass&gt;` (or some const/ref version of that)</span>
+    <span class="c1">// as the first argument. Other arguments can be whatever you want.</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"top"</span><span class="p">,</span> <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
+    <span class="p">})</span>
+    <span class="c1">// The following four lines expose methods of the MyStackClass&lt;std::string&gt;</span>
+    <span class="c1">// class as-is. `torch::class_` will automatically examine the</span>
+    <span class="c1">// argument and return types of the passed-in method pointers and</span>
+    <span class="c1">// expose these to Python and TorchScript accordingly. Finally, notice</span>
+    <span class="c1">// that we must take the *address* of the fully-qualified method name,</span>
+    <span class="c1">// i.e. use the unary `&amp;` operator, due to C++ typing rules.</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"push"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">push</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"pop"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">pop</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"clone"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">clone</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">merge</span><span class="p">)</span>
+  <span class="p">;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -673,52 +677,42 @@ equivalent to that of the Python pickle module. You can
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate">read more</a>
 about how we use these methods.</p>
 </div>
-<p>Here is an example of how we can update the registration code for our
-<code class="docutils literal notranslate"><span class="pre">MyStackClass</span></code> class to include serialization methods:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">auto</span> <span class="n">testStack</span> <span class="o">=</span>
-  <span class="n">torch</span><span class="o">::</span><span class="n">class_</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="s">"my_classes"</span><span class="p">,</span> <span class="s">"MyStackClass"</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">())</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"top"</span><span class="p">,</span> <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
-      <span class="p">})</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"push"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">push</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"pop"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">pop</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"clone"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">clone</span><span class="p">)</span>
-      <span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">"merge"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">merge</span><span class="p">)</span>
-      <span class="c1">// class_&lt;&gt;::def_pickle allows you to define the serialization</span>
-      <span class="c1">// and deserialization methods for your C++ class.</span>
-      <span class="c1">// Currently, we only support passing stateless lambda functions</span>
-      <span class="c1">// as arguments to def_pickle</span>
-      <span class="p">.</span><span class="n">def_pickle</span><span class="p">(</span>
-            <span class="c1">// __getstate__</span>
-            <span class="c1">// This function defines what data structure should be produced</span>
-            <span class="c1">// when we serialize an instance of this class. The function</span>
-            <span class="c1">// must take a single `self` argument, which is an intrusive_ptr</span>
-            <span class="c1">// to the instance of the object. The function can return</span>
-            <span class="c1">// any type that is supported as a return value of the TorchScript</span>
-            <span class="c1">// custom operator API. In this instance, we've chosen to return</span>
-            <span class="c1">// a std::vector&lt;std::string&gt; as the salient data to preserve</span>
-            <span class="c1">// from the class.</span>
-            <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span>
-                <span class="o">-&gt;</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="p">{</span>
-              <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">;</span>
-            <span class="p">},</span>
-            <span class="c1">// __setstate__</span>
-            <span class="c1">// This function defines how to create a new instance of the C++</span>
-            <span class="c1">// class when we are deserializing. The function must take a</span>
-            <span class="c1">// single argument of the same type as the return value of</span>
-            <span class="c1">// `__getstate__`. The function must return an intrusive_ptr</span>
-            <span class="c1">// to a new instance of the C++ class, initialized however</span>
-            <span class="c1">// you would like given the serialized state.</span>
-            <span class="p">[](</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">state</span><span class="p">)</span>
-                <span class="o">-&gt;</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
-              <span class="c1">// A convenient way to instantiate an object and get an</span>
-              <span class="c1">// intrusive_ptr to it is via `make_intrusive`. We use</span>
-              <span class="c1">// that here to allocate an instance of MyStackClass&lt;std::string&gt;</span>
-              <span class="c1">// and call the single-argument std::vector&lt;std::string&gt;</span>
-              <span class="c1">// constructor with the serialized state.</span>
-              <span class="k">return</span> <span class="n">c10</span><span class="o">::</span><span class="n">make_intrusive</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">state</span><span class="p">));</span>
-            <span class="p">});</span>
+<p>Here is an example of the <code class="docutils literal notranslate"><span class="pre">def_pickle</span></code> call we can add to the registration of
+<code class="docutils literal notranslate"><span class="pre">MyStackClass</span></code> to include serialization methods:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>    <span class="c1">// class_&lt;&gt;::def_pickle allows you to define the serialization</span>
+    <span class="c1">// and deserialization methods for your C++ class.</span>
+    <span class="c1">// Currently, we only support passing stateless lambda functions</span>
+    <span class="c1">// as arguments to def_pickle</span>
+    <span class="p">.</span><span class="n">def_pickle</span><span class="p">(</span>
+          <span class="c1">// __getstate__</span>
+          <span class="c1">// This function defines what data structure should be produced</span>
+          <span class="c1">// when we serialize an instance of this class. The function</span>
+          <span class="c1">// must take a single `self` argument, which is an intrusive_ptr</span>
+          <span class="c1">// to the instance of the object. The function can return</span>
+          <span class="c1">// any type that is supported as a return value of the TorchScript</span>
+          <span class="c1">// custom operator API. In this instance, we've chosen to return</span>
+          <span class="c1">// a std::vector&lt;std::string&gt; as the salient data to preserve</span>
+          <span class="c1">// from the class.</span>
+          <span class="p">[](</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">self</span><span class="p">)</span>
+              <span class="o">-&gt;</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">stack_</span><span class="p">;</span>
+          <span class="p">},</span>
+          <span class="c1">// __setstate__</span>
+          <span class="c1">// This function defines how to create a new instance of the C++</span>
+          <span class="c1">// class when we are deserializing. The function must take a</span>
+          <span class="c1">// single argument of the same type as the return value of</span>
+          <span class="c1">// `__getstate__`. The function must return an intrusive_ptr</span>
+          <span class="c1">// to a new instance of the C++ class, initialized however</span>
+          <span class="c1">// you would like given the serialized state.</span>
+          <span class="p">[](</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">state</span><span class="p">)</span>
+              <span class="o">-&gt;</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+            <span class="c1">// A convenient way to instantiate an object and get an</span>
+            <span class="c1">// intrusive_ptr to it is via `make_intrusive`. We use</span>
+            <span class="c1">// that here to allocate an instance of MyStackClass&lt;std::string&gt;</span>
+            <span class="c1">// and call the single-argument std::vector&lt;std::string&gt;</span>
+            <span class="c1">// constructor with the serialized state.</span>
+            <span class="k">return</span> <span class="n">c10</span><span class="o">::</span><span class="n">make_intrusive</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">state</span><span class="p">));</span>
+          <span class="p">});</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -738,18 +732,20 @@ testing
 <div class="section" id="defining-custom-operators-that-take-or-return-bound-c-classes">
 <h2>Defining Custom Operators that Take or Return Bound C++ Classes<a class="headerlink" href="#defining-custom-operators-that-take-or-return-bound-c-classes" title="Permalink to this headline">¶</a></h2>
 <p>Once you’ve defined a custom C++ class, you can also use that class
-as an argument or return from a custom operator (i.e. free functions). Here’s an
-example of how to do that:</p>
+as an argument or return from a custom operator (i.e. free functions). Suppose
+you have the following free function:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;</span> <span class="n">manipulate_instance</span><span class="p">(</span><span class="k">const</span> <span class="n">c10</span><span class="o">::</span><span class="n">intrusive_ptr</span><span class="o">&lt;</span><span class="n">MyStackClass</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&gt;&amp;</span> <span class="n">instance</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">instance</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">();</span>
   <span class="k">return</span> <span class="n">instance</span><span class="p">;</span>
 <span class="p">}</span>
-
-<span class="k">static</span> <span class="k">auto</span> <span class="n">instance_registry</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="p">().</span><span class="n">op</span><span class="p">(</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">RegisterOperators</span><span class="o">::</span><span class="n">options</span><span class="p">()</span>
-    <span class="p">.</span><span class="n">schema</span><span class="p">(</span>
-        <span class="s">"foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -&gt; __torch__.torch.classes.my_classes.MyStackClass Y"</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">catchAllKernel</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="n">manipulate_instance</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">manipulate_instance</span><span class="o">&gt;</span><span class="p">());</span>
+</pre></div>
+</div>
+<p>You can register it running the following code inside your <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code>
+block:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>    <span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span>
+      <span class="s">"foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -&gt; __torch__.torch.classes.my_classes.MyStackClass Y"</span><span class="p">,</span>
+      <span class="n">manipulate_instance</span>
+    <span class="p">);</span>
 </pre></div>
 </div>
 <p>Refer to the <a class="reference external" href="https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html">custom op tutorial</a>
@@ -767,12 +763,11 @@ for more details on the registration API.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Registration of an operator that takes a C++ class as an argument requires that
-the custom class has already been registered. This is fine if your op is
-registered after your class in a single compilation unit, however, if your
-class is registered in a separate compilation unit from the op you will need
-to enforce that dependency. One way to do this is to wrap the class registration
-in a <a class="reference external" href="https://stackoverflow.com/q/1661529">Meyer’s singleton</a>, which can be
-called from the compilation unit that does the operator registration.</p>
+the custom class has already been registered.  You can enforce this by
+making sure the custom class registration and your free function definitions
+are in the same <code class="docutils literal notranslate"><span class="pre">TORCH_LIBRARY</span></code> block, and that the custom class
+registration comes first.  In the future, we may relax this requirement,
+so that these can be registered in any order.</p>
 </div>
 </div>
 <div class="section" id="conclusion">
