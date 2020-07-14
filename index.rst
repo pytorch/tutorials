@@ -254,6 +254,13 @@ Welcome to PyTorch Tutorials
 .. Model Optimization
 
 .. customcarditem::
+   :header: Hyperparameter Tuning Tutorial
+   :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
+   :image: _static/img/ray-tune.png
+   :link: beginner/hyperparameter_tuning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
    :header: Pruning Tutorial
    :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
@@ -479,6 +486,7 @@ Additional Resources
    :hidden:
    :caption: Model Optimization
 
+   beginner/hyperparameter_tuning_tutorial
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
