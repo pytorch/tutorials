@@ -44,7 +44,7 @@ two RPC workers on the same host, named "worker0" and "worker1" respectively. Th
 be spawned as subprocesses, and we set some environment variables required for proper
 initialization (see torch.distributed documentation for more details).
 
-.. code:: python
+.. code:: python3
   import torch
   import torch.distributed.rpc as rpc
   import torch.autograd.profiler as profiler
@@ -95,7 +95,7 @@ Now that we have a skeleton setup of our RPC framework, we can move on to
 sending RPCs back and forth and using the profiler to obtain a view of what's
 happening under the hood. Let's add to the above "worker" function:
 
-..code:: python
+..code:: python3
     def worker(rank, world_size):
         # Above code omitted...
         if rank == 0:
@@ -152,7 +152,7 @@ call are prefixed with ::rpc_async#aten::mul(worker0 -> worker1).
 We can also use the profiler gain insight into user-defined functions that are executed over RPC. 
 For example, let's add the following to the above "worker" function:
 
-..code:: python
+..code:: python3
   # Define somewhere outside of worker() func.
   def udf_with_ops():
       import time
@@ -161,7 +161,7 @@ For example, let's add the following to the above "worker" function:
       torch.add(t1, t2)
       torch.mul(t1, t2)
 
-..code::python
+..code::python3
   def worker(rank, world_size):
       # Above code omitted
       with profiler.profile() as p:
@@ -197,7 +197,7 @@ remote operators that have been executed on worker 1 as part of executing this R
 Lastly, we can visualize remote execution using the tracing functionality provided by the profiler.
 Let's add the following code to the above "worker" function:
 
-..code:: python
+..code:: python3
     def worker(rank, world_size):
         # Above code omitted
         # Will generated trace for above profiling output
@@ -215,7 +215,7 @@ in this case, given in the trace column for "node_id: 1".
 
 Putting it all together, we have the following code for this recipe:
 
-..code:: python
+..code:: python3
     import torch
     import torch.distributed.rpc as rpc
     import torch.autograd.profiler as profiler
