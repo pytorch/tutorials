@@ -45,6 +45,7 @@ be spawned as subprocesses, and we set some environment variables required for p
 initialization (see torch.distributed documentation for more details).
 
 .. code:: python3
+
   import torch
   import torch.distributed.rpc as rpc
   import torch.autograd.profiler as profiler
@@ -87,7 +88,8 @@ initialization (see torch.distributed documentation for more details).
 
 Running the above program should present you with the following output:
 
-.. 
+..
+
   DEBUG:root:worker0 successfully initialized RPC.
   DEBUG:root:worker1 successfully initialized RPC.
 
@@ -96,6 +98,7 @@ sending RPCs back and forth and using the profiler to obtain a view of what's
 happening under the hood. Let's add to the above "worker" function:
 
 ..code:: python3
+
     def worker(rank, world_size):
         # Above code omitted...
         if rank == 0:
@@ -153,6 +156,7 @@ We can also use the profiler gain insight into user-defined functions that are e
 For example, let's add the following to the above "worker" function:
 
 ..code:: python3
+
   # Define somewhere outside of worker() func.
   def udf_with_ops():
       import time
@@ -198,6 +202,7 @@ Lastly, we can visualize remote execution using the tracing functionality provid
 Let's add the following code to the above "worker" function:
 
 ..code:: python3
+
     def worker(rank, world_size):
         # Above code omitted
         # Will generated trace for above profiling output
@@ -217,6 +222,7 @@ in this case, given in the trace column for "node_id: 1".
 Putting it all together, we have the following code for this recipe:
 
 ..code:: python3
+
     import torch
     import torch.distributed.rpc as rpc
     import torch.autograd.profiler as profiler
