@@ -111,8 +111,8 @@ way under the hood.  Here's what the dispatching function looks like:
 
 .. literalinclude:: ../advanced_source/dispatcher/op.cpp
   :language: cpp
-  :start-after: myadd
-  :end-before: myadd
+  :start-after: BEGIN myadd
+  :end-before: END myadd
 
 Let's break it down:
 
@@ -140,8 +140,8 @@ With the dispatch function in hand, we can now write the autograd kernel:
 
 .. literalinclude:: ../advanced_source/dispatcher/op.cpp
   :language: cpp
-  :start-after: myadd_autograd
-  :end-before: myadd_autograd
+  :start-after: BEGIN myadd_autograd
+  :end-before: END myadd_autograd
 
 The autograd function is written as normal using ``torch::autograd::Function``,
 except that instead of directly writing the implementation in ``forward()``,
