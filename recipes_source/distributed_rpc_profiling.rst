@@ -208,7 +208,8 @@ Let's add the following code to the above "worker" function:
 Now, we can load the trace file in Chrome (``chrome://tracing``). We should see output similar to
 the following:
 
-# TODO - link image.
+.. image:: ../_static/img/rpc_trace_img.png
+   :scale: 25 %
 
 As we can see, we have traced our RPC requests and can also visualize traces of the remote operations,
 in this case, given in the trace column for "node_id: 1".
