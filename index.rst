@@ -504,3 +504,4 @@ Additional Resources
    intermediate/rpc_tutorial
    beginner/aws_distributed_training_tutorial
    intermediate/rpc_param_server_tutorial
+   advanced/rpc_ddp_tutorial
