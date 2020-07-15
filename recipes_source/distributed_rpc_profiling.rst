@@ -90,12 +90,16 @@ Running the above program should present you with the following output:
 
 ::
 
-  DEBUG:root:worker0 successfully initialized RPC.
   DEBUG:root:worker1 successfully initialized RPC.
+  DEBUG:root:worker0 successfully initialized RPC.
+  DEBUG:root:Rank 0 waiting for workers and shutting down RPC
+  DEBUG:root:Rank 1 waiting for workers and shutting down RPC
+  DEBUG:root:Rank 1 shutdown RPC
+  DEBUG:root:Rank 0 shutdown RPC
 
 Now that we have a skeleton setup of our RPC framework, we can move on to 
 sending RPCs back and forth and using the profiler to obtain a view of what's
-happening under the hood. Let's add to the above "worker" function:
+happening under the hood. Let's add to the above ``worker`` function:
 
 ::
 
