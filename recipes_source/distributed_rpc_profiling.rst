@@ -3,9 +3,9 @@ Profiling PyTorch RPC-Based Workloads
 
 In this recipe, you will learn:
 
--  An overview of the Distributed RPC Framework
--  An overview of the PyTorch Profiler
--  How to use the PyTorch Profiler to profile RPC-based workloads
+-  An overview of the `Distributed RPC Framework`_
+-  An overview of the `PyTorch Profiler`_
+-  How to use the profiler to profile RPC-based workloads
 
 Requirements
 ------------
@@ -18,11 +18,11 @@ available at `pytorch.org`_.
 What is the Distributed RPC Framework?
 ---------------------------------------
 
-The ** Distributed RPC Framework ** provides mechanisms for multi-machine model
+The **Distributed RPC Framework** provides mechanisms for multi-machine model
 training through a set of primitives to allow for remote communication, and a 
 higher-level API to automatically differentiate models split across several machines.
-For this recipe, it would be helpful to be familiar with the Distributed RPC Framework
-as well as the tutorials. 
+For this recipe, it would be helpful to be familiar with the `Distributed RPC Framework`_
+as well as the `RPC Tutorials`_. 
 
 What is the PyTorch Profiler?
 ---------------------------------------
@@ -30,7 +30,7 @@ The profiler is a context manager based API that allows for on-demand profiling 
 operators in a model's workload. The profiler can be used to analyze various aspects
 of a model including execution time, operators invoked, and memory consumption. For a
 detailed tutorial on using the profiler to profile a single-node model, please see the
-Profiler Recipe.
+`Profiler Recipe`_.
 
 
 
@@ -40,11 +40,11 @@ How to use the Profiler for RPC-based workloads
 The profiler supports profiling of calls made of RPC and allows the user to have a
 detailed view into the operations that take place on different nodes. To demonstrate an
 example of this, let's first set up the RPC framework. The below code snippet will initialize
-two RPC workers on the same host, named "worker0" and "worker1" respectively. The workers will
+two RPC workers on the same host, named ``worker0`` and ``worker1`` respectively. The workers will
 be spawned as subprocesses, and we set some environment variables required for proper
-initialization (see torch.distributed documentation for more details).
+initialization.
 
-.. code:: python3
+::
 
   import torch
   import torch.distributed.rpc as rpc
@@ -88,7 +88,7 @@ initialization (see torch.distributed documentation for more details).
 
 Running the above program should present you with the following output:
 
-..
+::
 
   DEBUG:root:worker0 successfully initialized RPC.
   DEBUG:root:worker1 successfully initialized RPC.
@@ -97,7 +97,7 @@ Now that we have a skeleton setup of our RPC framework, we can move on to
 sending RPCs back and forth and using the profiler to obtain a view of what's
 happening under the hood. Let's add to the above "worker" function:
 
-..code:: python3
+::
 
     def worker(rank, world_size):
         # Above code omitted...
@@ -115,14 +115,15 @@ happening under the hood. Let's add to the above "worker" function:
 
             print(prof.key_averages().table())
 
-The aformented code creates 2 RPCs, specifying torch.add and torch.mul, respectively, 
-to be run with two random input tensors on worker 1. Since we use the rpc_async API, 
-we are returned a torch.futures.Future object, which must be awaited for the result
+The aformented code creates 2 RPCs, specifying ``torch.add`` and ``torch.mul``, respectively, 
+to be run with two random input tensors on worker 1. Since we use the ``rpc_async`` API, 
+we are returned a ``torch.futures.Future`` object, which must be awaited for the result
 of the computation. Note that this wait must take place within the scope created by
 the profiling context manager in order for the RPC to be accurately profiled. Running
 the code with this new worker function should result in the following output:
 
-..
+:: 
+
   # Some columns are omitted for brevity, exact output subject to randomness
   ----------------------------------------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  
   Name                                                              Self CPU total %  Self CPU total   CPU total %      CPU total        CPU time avg     Number of Calls  Node ID          
@@ -138,24 +139,24 @@ the code with this new worker function should result in the following output:
   ----------------------------------------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  
   Self CPU time total: 11.237ms
 
-Here we can see that the profiler has profiled our rpc_async calls made to worker 1
-from worker 0. In particular, the first 2 entries in the table show details (such as
+Here we can see that the profiler has profiled our ``rpc_async`` calls made to ``worker1``
+from ``worker0``. In particular, the first 2 entries in the table show details (such as
 the operator name, originating worker, and destination worker) about each RPC call made
-and the "CPU total" column indicates the end-to-end latency of the RPC call. 
+and the ``CPU total`` column indicates the end-to-end latency of the RPC call. 
 
 We also have visibility into the actual operators invoked remotely on worker 1 due RPC.
-We can see operations that took place on worker 1 by checking the "Node ID" column. For 
-example, we can interpret the row with name ::'rpc_async#aten::mul(worker0 -> worker1)#remote_op: mul'
-as a `mul` operation taking place on the remote node, as a result of the RPC sent to worker 1
-from worker 0, specifying worker 1 to run the builtin `mul` operator on the input tensors.
+We can see operations that took place on ``worker1`` by checking the ``Node ID`` column. For 
+example, we can interpret the row with name ``rpc_async#aten::mul(worker0 -> worker1)#remote_op: mul``
+as a ``mul`` operation taking place on the remote node, as a result of the RPC sent to ``worker1``
+from ``worker0``, specifying ``worker1`` to run the builtin ``mul`` operator on the input tensors.
 Note that names of remote operations are prefixed with the name of the RPC event that resulted
-in them. For example, remote operations corresponding to the ::rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))
-call are prefixed with ::rpc_async#aten::mul(worker0 -> worker1).
+in them. For example, remote operations corresponding to the ``rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))``
+call are prefixed with ``rpc_async#aten::mul(worker0 -> worker1)``.
 
 We can also use the profiler gain insight into user-defined functions that are executed over RPC. 
-For example, let's add the following to the above "worker" function:
+For example, let's add the following to the above ``worker`` function:
 
-..code:: python3
+::
 
   # Define somewhere outside of worker() func.
   def udf_with_ops():
@@ -165,7 +166,6 @@ For example, let's add the following to the above "worker" function:
       torch.add(t1, t2)
       torch.mul(t1, t2)
 
-..code::python3
   def worker(rank, world_size):
       # Above code omitted
       with profiler.profile() as p:
@@ -177,7 +177,8 @@ The above code creates a user-defined function that sleeps for 1 second, and the
 operators. Similar to what we've done above, we send an RPC to the remote worker, specifying it to
 run our user-defined function. Running this code should result in the following output:
 
-..
+::
+
   # Exact output subject to randomness
   --------------------------------------------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  
   Name                                                                  Self CPU total %  Self CPU total   CPU total %      CPU total        CPU time avg     Number of Calls  Node ID          
@@ -194,14 +195,14 @@ run our user-defined function. Running this code should result in the following 
   --------------------------------------------------------------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  ---------------  
 
 Here we can see that the user-defined function has successfully been profiled with its name
-(rpc_async#udf_with_ops(worker0 -> worker1)), and has the CPU total time we would roughly expect
-(slightly greater than 1s given the sleep). Similar to the above profiling output, we can see the
+``(rpc_async#udf_with_ops(worker0 -> worker1))``, and has the CPU total time we would roughly expect
+(slightly greater than 1s given the ``sleep``). Similar to the above profiling output, we can see the
 remote operators that have been executed on worker 1 as part of executing this RPC request.
 
 Lastly, we can visualize remote execution using the tracing functionality provided by the profiler.
-Let's add the following code to the above "worker" function:
+Let's add the following code to the above ``worker`` function:
 
-..code:: python3
+::
 
     def worker(rank, world_size):
         # Above code omitted
@@ -217,11 +218,11 @@ the following:
    :scale: 25 %
 
 As we can see, we have traced our RPC requests and can also visualize traces of the remote operations,
-in this case, given in the trace column for "node_id: 1".
+in this case, given in the trace column for ``node_id: 1``.
 
 Putting it all together, we have the following code for this recipe:
 
-..code:: python3
+::
 
     import torch
     import torch.distributed.rpc as rpc
@@ -298,13 +299,12 @@ Learn More
 
 -  `pytorch.org`_ for installation instructions, and more documentation
    and tutorials.
--  `Introduction to TorchScript tutorial`_ for a deeper initial
-   exposition of TorchScript
--  `Full TorchScript documentation`_ for complete TorchScript language
-   and API reference
+-  `Distributed RPC Framework`_ for RPC framework and API reference.
+- `Full profiler documentation`_ for profiler documentation.
 
 .. _pytorch.org: https://pytorch.org/
-.. _Introduction to TorchScript tutorial: https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html
-.. _Full TorchScript documentation: https://pytorch.org/docs/stable/jit.html
-.. _Loading A TorchScript Model in C++ tutorial: https://pytorch.org/tutorials/advanced/cpp_export.html
-.. _full TorchScript documentation: https://pytorch.org/docs/stable/jit.html
+.. _Full profiler documentation: https://pytorch.org/docs/stable/autograd.html#profiler
+.. _Pytorch Profiler: https://pytorch.org/docs/stable/autograd.html#profiler
+.. _Distributed RPC Framework: https://pytorch.org/docs/stable/rpc.html
+.. _RPC Tutorials: https://pytorch.org/tutorials/intermediate/rpc_tutorial.html
+.. _Profiler Recipe: https://pytorch.org/tutorials/recipes/recipes/profiler.html
