@@ -34,12 +34,62 @@ Profiler Recipe.
 
 
 
-
 How to use the Profiler for RPC-based workloads
 -----------------------------------------------
 
-As an example, let’s take a pretrained vision model. All of the
-pretrained models in TorchVision are compatible with TorchScript.
+The profiler supports profiling of calls made of RPC and allows the user to have a
+detailed view into the operations that take place on different nodes. To demonstrate an
+example of this, let's first set up the RPC framework:
+
+.. code:: python
+  import torch
+  import torch.distributed.rpc as rpc
+  import torch.autograd.profiler as profiler
+  import torch.multiprocessing as mp
+  import os
+  import logging
+  import sys
+
+  logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+  logger = logging.getLogger()
+
+  def random_tensor():
+      return torch.rand((3, 3), requires_grad=True)
+
+
+  def worker(rank, world_size):
+      os.environ["MASTER_ADDR"] = "localhost"
+      os.environ["MASTER_PORT"] = "29500"
+      worker_name = f"worker{rank}"
+
+      # Initialize RPC framework.
+      rpc.init_rpc(
+          name=worker_name,
+          rank=rank,
+          world_size=world_size
+      )
+      logger.debug(f"{worker_name} successfully initialized RPC.")
+
+      pass # to be continued below
+
+
+  if __name__ == '__main__':
+      # Run 2 RPC workers.
+      world_size = 2
+      mp.spawn(worker, args=(world_size,), nprocs=world_size)
+
+Running the above program should present you with the following output:
+
+.. 
+  DEBUG:root:worker0 successfully initialized RPC.
+  DEBUG:root:worker1 successfully initialized RPC.
+
+And you're done!
+
+
+
+
+
 
 
 Important Resources
