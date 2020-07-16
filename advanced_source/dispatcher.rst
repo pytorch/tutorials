@@ -33,9 +33,9 @@ Defining schema and backend implementations
 The general principle behind the dispatcher is that it divides the
 implementation of an operator into multiple kernels, each of which
 implements functionality for a specific *dispatch key*; for example,
-`CPU`, `CUDA` or `Autograd`.  The end effect is that when you call
-an operator, we first execute the `Autograd` kernel, and then we
-redispatch to the `CPU` or `CUDA` kernel depending on the device
+CPU, CUDA or Autograd.  The end effect is that when you call
+an operator, we first execute the Autograd kernel, and then we
+redispatch to the CPU or CUDA kernel depending on the device
 types of the passed in tensors.
 
 Let's take a look at the various parts involved in making this
@@ -69,7 +69,7 @@ To do this, we can use the ``TORCH_LIBRARY_IMPL`` macro:
   :end-before: END TORCH_LIBRARY_IMPL CPU
 
 The ``TORCH_LIBRARY_IMPL`` lets us register implementations for operators on
-a specific dispatch key (in this case, ``CPU``).  Each call to ``impl``
+a specific dispatch key (in this case, CPU).  Each call to ``impl``
 associates a CPU kernel with the corresponding operator (which we previously
 defined in the ``TORCH_LIBRARY`` block).  You can have as many
 ``TORCH_LIBRARY_IMPL`` blocks for a namespace as you like; so for example,
@@ -147,7 +147,7 @@ The autograd function is written as normal using ``torch::autograd::Function``,
 except that instead of directly writing the implementation in ``forward()``,
 we:
 
-1. Turn off autograd handling with the `at::AutoNonVariableTypeMode`` RAII
+1. Turn off autograd handling with the ``at::AutoNonVariableTypeMode`` RAII
    guard, and then
 2. Call the dispatch function ``myadd`` to call back into the dispatcher.
 
@@ -249,24 +249,6 @@ general rules:
 * Any operation that does a convolution or gemm under the hood should
   probably be float16
 
-..
-
-    NB: This doesn't work because torch.ops doesn't support names.
-
-    Named
-    ^^^^^
-
-    `Named tensors <https://pytorch.org/docs/stable/named_tensor.html>`_ allow
-    users to associate explicit names with tensor dimensions, and then have those
-    dimensions be propagated when you run operations on those tensors.  If you
-    define a new operator, you have to also define rules for how names should
-    be checked and propagated.  The Named kernel handles implementing these rules.
-
-    .. literalinclude:: ../advanced_source/dispatcher/op.cpp
-      :language: cpp
-      :start-after: BEGIN TORCH_LIBRARY_IMPL Named
-      :end-before: END TORCH_LIBRARY_IMPL Named
-
 Batched
 ^^^^^^^
 
@@ -282,5 +264,5 @@ Tracer
 The Tracer dispatch key implements support for recording invocations of operators
 into a trace when you run ``torch.jit.trace``.  We intend to provide a
 boxed fallback that will implement tracing for arbitrary operations,
-see `issue #41478 <https://github.com/pytorch/pytorch/issues/41478>` to track
+see `issue #41478 <https://github.com/pytorch/pytorch/issues/41478>`_ to track
 progress.
