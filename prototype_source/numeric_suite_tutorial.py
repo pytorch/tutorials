@@ -409,13 +409,13 @@ for key in ob_dict:
 
 ##############################################################################
 # SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.
-
+#
 # Conclusion
 # ----------
 # In this tutorial, we demonstrated how to use PyTorch Numeric Suite to measure and compare the statistics between quantized model and float model in eager mode with unified APIs for both static quantization and dynamic quantization.
-
+#
 # Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
-
+#
 # References
 # ----------
 # [1] `DYNAMIC QUANTIZATION ON AN LSTM WORD LANGUAGE MODEL <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`_.
