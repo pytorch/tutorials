@@ -49,15 +49,14 @@ float_model.to('cpu')
 float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
-img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long))
-                         for _ in range(2)]
+img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
 qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
 
 ##############################################################################
 # 1. Compare the weights of float and quantized models
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # The first thing we usually want to compare are the weights of quantized model and float model.
-# We can call ``compare_weights()`` from PyTorch Numeric Suite to get a ``dictionary wt_compare_dict`` with key corresponding to module names and each entry is a dictionary with two keys 'float' and 'quantized', containing the float and quantized weights.
+# We can call ``compare_weights()`` from PyTorch Numeric Suite to get a dictionary ``wt_compare_dict`` with key corresponding to module names and each entry is a dictionary with two keys 'float' and 'quantized', containing the float and quantized weights.
 # ``compare_weights()`` takes in floating point and quantized state dict and returns a dict, with keys corresponding to the
 # floating point weights and values being a dictionary of floating point and quantized weights
 
@@ -74,7 +73,7 @@ print(wt_compare_dict['conv1.weight']['quantized'].shape)
 
 ##############################################################################
 # Once get ``wt_compare_dict``, users can process this dictionary in whatever way they want. Here as an example we compute the quantization error of the weights of float and quantized models as following.
-# Compute the Signal-to-Quantization-Noise Ratio (SQNR) of the quantized tensor ``y```. The SQNR reflects the
+# Compute the Signal-to-Quantization-Noise Ratio (SQNR) of the quantized tensor ``y``. The SQNR reflects the
 # relationship between the maximum nominal signal strength and the quantization error introduced in the
 # quantization. Higher SQNR corresponds to lower quantization error.
 
@@ -115,8 +114,7 @@ plt.show()
 # We call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activations in float model and quantized model at corresponding locations for the given input data. This API returns a dict with module names being keys. Each entry is itself a dict with two keys 'float' and 'quantized' containing the activations.
 data = img_data[0][0]
 
-##############################################################################
-# ``img_data`` in floating point and quantized model as well as input data, and returns a dict, with keys
+# Take in floating point and quantized model as well as input data, and returns a dict, with keys
 # corresponding to the quantized module names and each entry being a dictionary with two keys 'float' and
 # 'quantized', containing the activations of floating point and quantized model at matching locations.
 act_compare_dict = ns.compare_model_outputs(float_model, qmodel, data)
@@ -137,15 +135,14 @@ for key in act_compare_dict:
 ##############################################################################
 # If we want to do the comparison for more than one input data, we can do the following.
 # Prepare the model by attaching the logger to both floating point module and quantized
-# module if they are in the white_list. Default logger is OutputLogger, and default white_list
-# is DEFAULT_NUMERIC_SUITE_COMPARE_MODEL_OUTPUT_WHITE_LIST
+# module if they are in the ``white_list``. Default logger is ``OutputLogger``, and default white_list
+# is ``DEFAULT_NUMERIC_SUITE_COMPARE_MODEL_OUTPUT_WHITE_LIST``
 ns.prepare_model_outputs(float_model, qmodel)
 
 for data in img_data:
     float_model(data[0])
     qmodel(data[0])
 
-##############################################################################
 # Find the matching activation between floating point and quantized modules, and return a dict with key
 # corresponding to quantized module names and each entry being a dictionary with two keys 'float'
 # and 'quantized', containing the matching floating point and quantized activations logged by the logger
@@ -153,7 +150,7 @@ act_compare_dict = ns.get_matching_activations(float_model, qmodel)
 
 
 ##############################################################################
-# The default logger used in above APIs is OutputLogger, which is used to log the outputs of the modules. We can inherit from base Logger class and create our own logger to perform different functionalities. For example we can make a new MyOutputLogger class as below.
+# The default logger used in above APIs is ``OutputLogger``, which is used to log the outputs of the modules. We can inherit from base ``Logger`` class and create our own logger to perform different functionalities. For example we can make a new ``MyOutputLogger`` class as below.
 
 class MyOutputLogger(ns.Logger):
     r"""Customized logger class
@@ -199,26 +196,24 @@ act_compare_dict = ns.get_matching_activations(float_model, qmodel)
 #
 # The Shadow module takes quantized module, float module and logger as input, and creates a forward path inside to make the float module to shadow quantized module sharing the same input tensor.
 #
-# The logger can be customizable, default logger is ShadowLogger and it will save the outputs of the quantized module and float module that can be used to compute the module level quantization error.
+# The logger can be customizable, default logger is ``ShadowLogger`` and it will save the outputs of the quantized module and float module that can be used to compute the module level quantization error.
 #
-# Notice before each call of compare_model_outputs() and compare_model_stub() we need to have clean float and quantized model. This is because compare_model_outputs() and compare_model_stub() modify float and quantized model inplace, and it will cause unexpected results if call one right after another.
+# Notice before each call of ``compare_model_outputs()`` and ``compare_model_stub()`` we need to have clean float and quantized model. This is because ``compare_model_outputs()`` and ``compare_model_stub()`` modify float and quantized model inplace, and it will cause unexpected results if call one right after another.
 
 float_model = torchvision.models.quantization.resnet18(pretrained=True, quantize=False)
 float_model.to('cpu')
 float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
-img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long))
-                         for _ in range(2)]
+img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
 qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
 
 ##############################################################################
-# In the following example we call compare_model_stub() from PyTorch Numeric Suite to compare QuantizableBasicBlock module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
+# In the following example we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare ``QuantizableBasicBlock`` module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
 
 data = img_data[0][0]
 module_swap_list = [torchvision.models.quantization.resnet.QuantizableBasicBlock]
 
-##############################################################################
 # Takes in floating point and quantized model as well as input data, and returns a dict with key
 # corresponding to module names and each entry being a dictionary with two keys 'float' and
 # 'quantized', containing the output tensors of quantized module and its matching floating point shadow module.
@@ -247,7 +242,7 @@ for data in img_data:
 ob_dict = ns.get_logger_dict(qmodel)
 
 ##############################################################################
-# The default logger used in above APIs is ShadowLogger, which is used to log the outputs of the quantized module and its matching float shadow module. We can inherit from base Logger class and create our own logger to perform different functionalities. For example we can make a new MyShadowLogger class as below.
+# The default logger used in above APIs is ``ShadowLogger``, which is used to log the outputs of the quantized module and its matching float shadow module. We can inherit from base ``Logger`` class and create our own logger to perform different functionalities. For example we can make a new ``MyShadowLogger`` class as below.
 
 class MyShadowLogger(ns.Logger):
     r"""Customized logger class
@@ -279,13 +274,13 @@ ob_dict = ns.get_logger_dict(qmodel)
 # Numeric Suite for Dynamic Quantization
 # -------------------------------------
 #
-# Numeric Suite APIs are designed in such as way that they work for both dynamic quantized model and static quantized model. We will use a model with both LSTM and Linear modules to demonstrate the usage of Numeric Suite on dynamic quantized model.
+# Numeric Suite APIs are designed in such as way that they work for both dynamic quantized model and static quantized model. We will use a model with both LSTM and Linear modules to demonstrate the usage of Numeric Suite on dynamic quantized model. This model is the same one used in the tutorial of dynamic quantization on LSTM word language model [1].
 #
 
 #################################
 # Setup
 # ^^^^^^
-# First we define the model as below. Notice that within this model only nn. LSTM and nn.Linear modules will be quantized dynamically and nn. Embedding will remain as floating point module after quantization.
+# First we define the model as below. Notice that within this model only ``nn.LSTM`` and ``nn.Linear`` modules will be quantized dynamically and ``nn.Embedding`` will remain as floating point module after quantization.
 
 class LSTMModel(nn.Module):
     """Container module with an encoder, a recurrent module, and a decoder."""
@@ -319,7 +314,7 @@ class LSTMModel(nn.Module):
                 weight.new_zeros(self.nlayers, bsz, self.nhid))
 
 ##############################################################################
-# Then we create the ``float_model``` and quantize it into qmodel.
+# Then we create the ``float_model`` and quantize it into qmodel.
 
 ntokens = 10
 
@@ -361,7 +356,7 @@ for key in wt_compare_dict:
 # 2. Compare float point and quantized models at corresponding locations
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Then we call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activations in float model and quantized model at corresponding locations for the given input data. This API returns a dict with module names being keys. Each entry is itself a dict with two keys 'float' and 'quantized' containing the activations. Notice that this sequence model has two inputs, and we can pass both inputs into compare_model_outputs() and compare_model_stub().
+# Then we call ``compare_model_outputs()`` from PyTorch Numeric Suite to get the activations in float model and quantized model at corresponding locations for the given input data. This API returns a dict with module names being keys. Each entry is itself a dict with two keys 'float' and 'quantized' containing the activations. Notice that this sequence model has two inputs, and we can pass both inputs into ``compare_model_outputs()`` and ``compare_model_stub()``.
 
 
 input_ = torch.randint(ntokens, (1, 1), dtype=torch.long)
@@ -371,7 +366,7 @@ act_compare_dict = ns.compare_model_outputs(float_model, qmodel, input_, hidden)
 print(act_compare_dict.keys())
 
 ##############################################################################
-# This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following. The LSTM module in this model has two outputs, in this example we compute the error of the first output as below.
+# This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following. The LSTM module in this model has two outputs, in this example we compute the error of the first output.
 
 
 for key in act_compare_dict:
@@ -382,7 +377,7 @@ for key in act_compare_dict:
 # 3. Compare a module in a quantized model with its float point equivalent, with the same input data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# Next we call compare_model_stub() from PyTorch Numeric Suite to compare LSTM and Linear module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
+# Next we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare LSTM and Linear module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
 #
 # We reset the model first.
 
@@ -414,3 +409,13 @@ for key in ob_dict:
 
 ##############################################################################
 # SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.
+
+# Conclusion
+# ----------
+# In this tutorial, we demonstrated how to use PyTorch Numeric Suite to measure and compare the statistics between quantized model and float model in eager mode with unified APIs for both static quantization and dynamic quantization.
+
+# Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
+
+# References
+# ----------
+# [1] `DYNAMIC QUANTIZATION ON AN LSTM WORD LANGUAGE MODEL <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`_.
