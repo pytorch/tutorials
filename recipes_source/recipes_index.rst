@@ -102,13 +102,6 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/recipes/profiler.html
    :tags: Basics
 
-.. customcarditem::
-   :header: Distributed RPC Profiling
-   :card_description: Learn how to use PyTorch's profiler in conjunction with the Distributed RPC Framework.
-   :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/distributed_rpc_profiling.html
-   :tags: Basics
-
 .. Customization
 
 .. customcarditem::
