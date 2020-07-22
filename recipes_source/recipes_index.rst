@@ -155,15 +155,15 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: PyTorch Mobile Performance Recipes
-   :card_description: List of recipes for performance optimizations for using PyTorch on Mobile.
-   :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
+   :card_description: List of recipes for performance optimizations for using PyTorch on Mobile (Android and iOS).
+   :image: ../_static/img/thumbnails/cropped/mobile.png
    :link: ../recipes/mobile_perf.html
    :tags: Mobile,Model-Optimization
 
 .. customcarditem::
    :header: Making Android Native Application That Uses PyTorch Android Prebuilt Libraries
-   :card_description: Learn how to make android application from the scratch that uses LibTorch C++ API and uses TorchScript model with custom C++ operator.
-   :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
+   :card_description: Learn how to make Android application from the scratch that uses LibTorch C++ API and uses TorchScript model with custom C++ operator.
+   :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
 
