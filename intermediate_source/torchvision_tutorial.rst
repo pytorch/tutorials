@@ -56,6 +56,11 @@ If your model returns the above methods, they will make it work for both
 training and evaluation, and will use the evaluation scripts from
 ``pycocotools``.
 
+.. note ::
+  For Windows, please install ``pycocotools`` from `gautamchitnis <https://github.com/gautamchitnis/cocoapi>`__ with command 
+
+  ``pip install git+https://github.com/gautamchitnis/cocoapi.git@cocodataset-master#subdirectory=PythonAPI``
+
 One note on the ``labels``. The model considers class ``0`` as background. If your dataset does not contain the background class, you should not have ``0`` in your ``labels``. For example, assuming you have just two classes, *cat* and *dog*, you can define ``1`` (not ``0``) to represent *cats* and ``2`` to represent *dogs*. So, for instance, if one of the images has booth classes, your ``labels`` tensor should look like ``[1,2]``.
 
 Additionally, if you want to use aspect ratio grouping during training

@@ -63,8 +63,9 @@ extensions = ['sphinx.ext.mathjax',
 
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source', 'recipes_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes'],
+                      'advanced_source', 'recipes_source', 'prototype_source'],
+    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
+    'filename_pattern': 'tutorial.py',
     'backreferences_dir': False
 }
 

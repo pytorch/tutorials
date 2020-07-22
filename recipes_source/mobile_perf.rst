@@ -23,7 +23,7 @@ We will start with preparing to optimize your model to help decrease execution t
 
 
 Setup
-#######
+^^^^^^^
 
 First we need to installed pytorch using conda or pip with version at least 1.5.0.
 
@@ -69,7 +69,7 @@ Code your model:
 
 
 1. Fuse operators using ``torch.quantization.fuse_modules``
-#############################################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Do not be confused that fuse_modules is in the quantization package.
 It works for all ``torcn.nn.Module``.
@@ -90,7 +90,7 @@ This script will fuse Convolution, Batch Normalization and Relu in previously de
 
 
 2. Quantize your model
-#############################################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can find more about PyTorch quantization in
 `the dedicated tutorial <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_.
@@ -115,7 +115,7 @@ This code does quantization, using stub for model calibration function, you can 
 
 
 3. Use torch.utils.mobile_optimizer
-#############################################################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Torch mobile_optimizer package does several optimizations with the scripted model,
 which will help to conv2d and linear operations.
@@ -136,7 +136,7 @@ Next we call ``optimize_for_mobile`` and save model on the disk.
   torch.jit.save(torchscript_model_optimized, "model.pt")
 
 4. Prefer Using Channels Last Tensor memory format
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Channels Last(NHWC) memory format was introduced in PyTorch 1.4.0. It is supported only for four-dimensional tensors. This memory format gives a better memory locality for most operators, especially convolution. Our measurements showed a 3x speedup of MobileNetV2 model compared with the default Channels First(NCHW) format.
 
@@ -151,10 +151,11 @@ At the moment of writing this recipe, PyTorch Android java API does not support 
 
 This conversion is zero cost if your input is already in Channels Last memory format. After it, all operators will work preserving ChannelsLast memory format.
 
-5. Android. Reusing tensors for forward
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. Android - Reusing tensors for forward
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This recipe is Android only.
+This part of the recipe is Android only.
+
 Memory is a critical resource for android performance, especially on old devices.
 Tensors can need a significant amount of memory.
 For example, standard computer vision tensor contains 1*3*224*224 elements,
@@ -208,7 +209,9 @@ this approach can give more stable measurements rather than testing inside the a
 
 
 Android - Benchmarking Setup
-#############################
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This part of the recipe is Android only.
 
 For this you first need to build benchmark binary:
 
@@ -240,3 +243,47 @@ Now we are ready to benchmark your model:
   Running warmup runs.
   Main runs.
   Main run finished. Microseconds per iter: 121318. Iters per second: 8.24281
+
+
+iOS - Benchmarking Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For iOS, we'll be using our `TestApp <https://github.com/pytorch/pytorch/tree/master/ios/TestApp>`_ as the benchmarking tool. 
+
+To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_mode.py <https://github.com/pytorch/pytorch/blob/master/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
+
+::
+
+  import torch
+  import torchvision
+  from torch.utils.mobile_optimizer import optimize_for_mobile
+
+  model = torchvision.models.mobilenet_v2(pretrained=True)
+  model.eval()
+  example = torch.rand(1, 3, 224, 224)
+  traced_script_module = torch.jit.trace(model, example)
+  torchscript_model_optimized = optimize_for_mobile(traced_script_module)
+  torch.jit.save(torchscript_model_optimized, "model.pt")
+
+Now let's run ``python trace_model.py``. If everything works well, we should be able to generate our optimized model in the benchmark directory. 
+
+Next, we're going to build the PyTorch libraries from source.
+
+::
+
+  BUILD_PYTORCH_MOBILE=1 IOS_ARCH=arm64 ./scripts/build_ios.sh
+
+Now that we have the optimized model and PyTorch ready, it's time to generate our XCode project and do benchmarking. To do that, we'll be using a ruby script - `setup.rb` which does the heavy lifting jobs of setting up the XCode project. 
+
+::
+
+  ruby setup.rb
+
+Now open the `TestApp.xcodeproj` and plug in your iPhone, you're ready to go. Below is an example result from iPhoneX
+
+::
+
+  TestApp[2121:722447] Main runs
+  TestApp[2121:722447] Main run finished. Milliseconds per iter: 28.767
+  TestApp[2121:722447] Iters per second: : 34.762
+  TestApp[2121:722447] Done.

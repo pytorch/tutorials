@@ -201,3 +201,4 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    /recipes/recipes/dynamic_quantization
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
+   /recipes/distributed_rpc_profiling
