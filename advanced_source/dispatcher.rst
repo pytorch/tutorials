@@ -31,12 +31,14 @@ Defining schema and backend implementations
 -------------------------------------------
 
 The general principle behind the dispatcher is that it divides the
-implementation of an operator into multiple kernels, each of which
-implements functionality for a specific *dispatch key*; for example,
-CPU, CUDA or Autograd.  The end effect is that when you call
-an operator, we first execute the Autograd kernel, and then we
-redispatch to the CPU or CUDA kernel depending on the device
-types of the passed in tensors.
+implementation of an operator into multiple kernels, each of which implements
+functionality for a specific *dispatch key*; for example, CPU, CUDA or Autograd.
+The dispatcher determines what the highest priority dispatch key is at the time
+you call an operator (this is done by looking at both the tensor arguments as
+well as some thread local state), and transfers control to the kernel for that
+dispatch key.  The end effect is that when you call an operator, we first
+execute the Autograd kernel, and then we redispatch to the CPU or CUDA kernel
+depending on the device types of the passed in tensors.
 
 Let's take a look at the various parts involved in making this
 happen.  First, we must define the schema for the operator in question.
@@ -58,10 +60,12 @@ For concreteness, here is a really simple implementation of addition on CPU:
   :start-after: BEGIN myadd_cpu
   :end-before: END myadd_cpu
 
-We'd like to register this function as an implementation of ``myops::myadd``, but we
-don't want to register it as a catch-all kernel to be run in all cases; we
-only want it to be run when we call ``myops::myadd`` at the backend on CPU tensors.
-To do this, we can use the ``TORCH_LIBRARY_IMPL`` macro:
+We'd like to register this function as an implementation of ``myops::myadd``.
+However, the simple way of registering it (``def("myadd", myadd_cpu)``) would
+register the kernel to run in all cases, even if the tensor is not a CPU
+tensor!  (Internally, we refer to these as "catch-all" kernels, since they
+catch all cases.)  To ensure that ``myadd_cpu`` is only run for
+CPU tensors, we can use the ``TORCH_LIBRARY_IMPL`` macro:
 
 .. literalinclude:: ../advanced_source/dispatcher/op.cpp
   :language: cpp
@@ -71,10 +75,8 @@ To do this, we can use the ``TORCH_LIBRARY_IMPL`` macro:
 The ``TORCH_LIBRARY_IMPL`` lets us register implementations for operators on
 a specific dispatch key (in this case, CPU).  Each call to ``impl``
 associates a CPU kernel with the corresponding operator (which we previously
-defined in the ``TORCH_LIBRARY`` block).  You can have as many
-``TORCH_LIBRARY_IMPL`` blocks for a namespace as you like; so for example,
-if we also have a CUDA implementation ``myadd_cuda``, we can register it
-with:
+defined in the ``TORCH_LIBRARY`` block).  If we also have a CUDA implementation ``myadd_cuda``,
+we can register it in a separate ``TORCH_LIBRARY_IMPL`` block:
 
 .. literalinclude:: ../advanced_source/dispatcher/op.cpp
   :language: cpp
@@ -83,7 +85,17 @@ with:
 
 These registrations can be split across files or even across library boundaries; so
 for example, you could have these two ``TORCH_LIBRARY_IMPL`` blocks compiled
-into a separate ``myops_cpu`` and ``myops_cuda`` dynamic library.
+into a separate ``myops_cpu`` and ``myops_cuda`` dynamic libraries.  Generally,
+speaking, the structure of your registrations will look like this:
+
+1. A single ``TORCH_LIBRARY`` that lists every custom operator in your namespace
+   in a centralized place.
+2. A ``TORCH_LIBRARY_IMPL`` per dispatch key that registers implementations for
+   that key (e.g., CPU or CUDA).  If you like, you can further subdivide
+   ``TORCH_LIBRARY_IMPL`` blocks into a block per operator. This is convenient
+   if you have a separate file per operator implementation, but don't want to
+   expose the operators in a header; you can just put the registration in the
+   cpp file that defines your operator.
 
 .. note::
 
@@ -152,9 +164,10 @@ we:
 2. Call the dispatch function ``myadd`` to call back into the dispatcher.
 
 Without (1), your calls will infinite loop (and stack overflow), because
-``myadd`` will send you back to the autograd implementation!  With (1),
-the redispatch will skip over autograd and go to the next handlers,
-which will either be CPU and CUDA.
+``myadd`` will send you back to this function (as the highest priority dispatch
+key would still be autograd.) With (1),
+autograd is excluded from the set of dispatch keys under consideration, and
+we will go to the next handlers, which will either be CPU and CUDA.
 
 We can now register this function in the same way we registered the CPU/CUDA
 functions:
