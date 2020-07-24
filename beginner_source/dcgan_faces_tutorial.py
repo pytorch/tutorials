@@ -604,10 +604,13 @@ for epoch in range(num_epochs):
         # Generate batch of latent vectors
         noise = torch.randn(b_size, nz, 1, 1, device=device)
         # Generate fake image batch with G
-        fake = netG(noise)
+        netG.eval()
+        with torch.no_grad():
+            fake = netG(noise).detach()
+        netG.train()
         label.fill_(fake_label)
         # Classify all fake batch with D
-        output = netD(fake.detach()).view(-1)
+        output = netD(fake).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
         # Calculate the gradients for this batch
@@ -645,8 +648,10 @@ for epoch in range(num_epochs):
         
         # Check how the generator is doing by saving G's output on fixed_noise
         if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+            netG.eval()
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
+            netG.train()
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
             
         iters += 1
