@@ -173,6 +173,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Mad Mario
    :card_description: Train an agent with Double Q Learning to play the game of Super Mario Bros.
+   :image: _static/img/thumbnails/cropped/mario.png
    :link: intermediate/mad_mario_tutorial.html
    :tags: Reinforcement-Learning
 
