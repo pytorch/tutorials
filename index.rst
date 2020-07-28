@@ -507,6 +507,7 @@ Additional Resources
    advanced/torch_script_custom_classes
    advanced/torch-script-parallelism
    advanced/cpp_autograd
+   advanced/dispatcher
 
 .. toctree::
    :maxdepth: 2
