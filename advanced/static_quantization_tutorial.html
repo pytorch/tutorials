@@ -166,6 +166,7 @@
 <li class="toctree-l1"><a class="reference internal" href="cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dispatcher.html">Dispatcher in C++</a></li>
 </ul>
@@ -179,12 +180,16 @@
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
 </ul>
 </div>
 </div>
@@ -778,16 +783,16 @@ Post Training Quantization: Convert done
 
  Sequential(
   (0): ConvBNReLU(
-    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.15566156804561615, zero_point=0, padding=(1, 1), groups=32)
+    (0): QuantizedConvReLU2d(32, 32, kernel_size=(3, 3), stride=(1, 1), scale=0.14513568580150604, zero_point=0, padding=(1, 1), groups=32)
     (1): Identity()
     (2): Identity()
   )
-  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.20098167657852173, zero_point=74)
+  (1): QuantizedConv2d(32, 16, kernel_size=(1, 1), stride=(1, 1), scale=0.19285070896148682, zero_point=71)
   (2): Identity()
 )
 Size of model after quantization
 Size (MB): 3.631847
-..........Evaluation accuracy on 300 images, 67.00
+..........Evaluation accuracy on 300 images, 61.67
 </pre></div>
 </div>
 <p>For this quantized model, we see a significantly lower accuracy of just ~62% on these same 300
@@ -817,7 +822,7 @@ quantization parameters in an optimal manner.</li>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>QConfig(activation=functools.partial(&lt;class 'torch.quantization.observer.HistogramObserver'&gt;, reduce_range=True), weight=functools.partial(&lt;class 'torch.quantization.observer.PerChannelMinMaxObserver'&gt;, dtype=torch.qint8, qscheme=torch.per_channel_symmetric))
-....................Evaluation accuracy on 300 images, 76.33
+....................Evaluation accuracy on 300 images, 77.67
 </pre></div>
 </div>
 <p>Changing just this quantization configuration method resulted in an increase
@@ -949,30 +954,30 @@ match inference numerics.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(1.8262, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.833 Acc@5 83.167
-..........Epoch 0 :Evaluation accuracy on 300 images, 75.33
-....................Loss tensor(2.0147, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 56.333 Acc@5 77.500
-..........Epoch 1 :Evaluation accuracy on 300 images, 74.33
-....................Loss tensor(1.9057, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 59.333 Acc@5 79.500
-..........Epoch 2 :Evaluation accuracy on 300 images, 78.33
-....................Loss tensor(2.0594, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 53.833 Acc@5 79.500
-..........Epoch 3 :Evaluation accuracy on 300 images, 75.67
-....................Loss tensor(1.8858, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.500 Acc@5 81.500
-..........Epoch 4 :Evaluation accuracy on 300 images, 77.67
-....................Loss tensor(1.7825, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.833 Acc@5 81.667
-..........Epoch 5 :Evaluation accuracy on 300 images, 77.00
-....................Loss tensor(1.8997, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 59.167 Acc@5 80.500
-..........Epoch 6 :Evaluation accuracy on 300 images, 74.67
-....................Loss tensor(1.8698, grad_fn=&lt;DivBackward0&gt;)
-Training: * Acc@1 58.333 Acc@5 80.667
-..........Epoch 7 :Evaluation accuracy on 300 images, 77.67
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>....................Loss tensor(1.9651, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 56.667 Acc@5 79.667
+..........Epoch 0 :Evaluation accuracy on 300 images, 74.67
+....................Loss tensor(2.0288, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 55.833 Acc@5 75.667
+..........Epoch 1 :Evaluation accuracy on 300 images, 76.00
+....................Loss tensor(1.9066, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 56.667 Acc@5 80.500
+..........Epoch 2 :Evaluation accuracy on 300 images, 73.67
+....................Loss tensor(2.0095, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 53.333 Acc@5 77.333
+..........Epoch 3 :Evaluation accuracy on 300 images, 77.00
+....................Loss tensor(1.8609, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 60.333 Acc@5 79.500
+..........Epoch 4 :Evaluation accuracy on 300 images, 76.00
+....................Loss tensor(1.8552, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 60.667 Acc@5 80.333
+..........Epoch 5 :Evaluation accuracy on 300 images, 75.67
+....................Loss tensor(2.0209, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 54.667 Acc@5 77.333
+..........Epoch 6 :Evaluation accuracy on 300 images, 76.00
+....................Loss tensor(1.7526, grad_fn=&lt;DivBackward0&gt;)
+Training: * Acc@1 60.333 Acc@5 82.833
+..........Epoch 7 :Evaluation accuracy on 300 images, 77.00
 </pre></div>
 </div>
 <p>Here, we just perform quantization-aware training for a small number of epochs. Nevertheless,
@@ -1016,7 +1021,7 @@ faster? Let’s test:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  12 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Elapsed time:  11 ms
 Elapsed time:   3 ms
 </pre></div>
 </div>
@@ -1032,7 +1037,7 @@ and quantization-aware training - describing what they do “under the hood” a
 them in PyTorch.</p>
 <p>Thanks for reading! As always, we welcome any feedback, so please create an issue
 <a class="reference external" href="https://github.com/pytorch/pytorch/issues">here</a> if you have any.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  44.154 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 5 minutes  53.844 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-static-quantization-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/bd7ace4f5df8c6f747eadb10a7f737cd/static_quantization_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">static_quantization_tutorial.py</span></code></a></div>

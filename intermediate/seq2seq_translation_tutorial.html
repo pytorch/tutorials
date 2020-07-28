@@ -166,6 +166,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Dispatcher in C++</a></li>
 </ul>
@@ -179,12 +180,16 @@
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/aws_distributed_training_tutorial.html">(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
 </ul>
 </div>
 </div>
@@ -502,7 +507,7 @@ Counting words...
 Counted words:
 fra 4345
 eng 2803
-['je suis la patronne .', 'i m the boss .']
+['elle est belle comme sa mere .', 'she is beautiful like her mother .']
 </pre></div>
 </div>
 </div>
@@ -947,66 +952,66 @@ encoder and decoder are initialized and run <code class="docutils literal notran
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 55s (- 26m 51s) (5000 6%) 2.8481
-3m 45s (- 24m 27s) (10000 13%) 2.2832
-5m 36s (- 22m 26s) (15000 20%) 1.9585
-7m 27s (- 20m 31s) (20000 26%) 1.7318
-9m 16s (- 18m 33s) (25000 33%) 1.5433
-11m 6s (- 16m 39s) (30000 40%) 1.3677
-12m 58s (- 14m 49s) (35000 46%) 1.2104
-14m 48s (- 12m 57s) (40000 53%) 1.1088
-16m 39s (- 11m 6s) (45000 60%) 1.0081
-18m 30s (- 9m 15s) (50000 66%) 0.9202
-20m 20s (- 7m 23s) (55000 73%) 0.8053
-22m 10s (- 5m 32s) (60000 80%) 0.7487
-24m 1s (- 3m 41s) (65000 86%) 0.6799
-25m 52s (- 1m 50s) (70000 93%) 0.6437
-27m 41s (- 0m 0s) (75000 100%) 0.5835
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 56s (- 27m 5s) (5000 6%) 2.8202
+3m 56s (- 25m 34s) (10000 13%) 2.2736
+5m 44s (- 22m 58s) (15000 20%) 1.9503
+7m 33s (- 20m 46s) (20000 26%) 1.7198
+9m 22s (- 18m 45s) (25000 33%) 1.5176
+11m 12s (- 16m 48s) (30000 40%) 1.3638
+13m 0s (- 14m 52s) (35000 46%) 1.2431
+14m 50s (- 12m 59s) (40000 53%) 1.1181
+16m 41s (- 11m 7s) (45000 60%) 1.0032
+18m 29s (- 9m 14s) (50000 66%) 0.9348
+20m 17s (- 7m 22s) (55000 73%) 0.8517
+22m 7s (- 5m 31s) (60000 80%) 0.7924
+23m 55s (- 3m 40s) (65000 86%) 0.7015
+25m 44s (- 1m 50s) (70000 93%) 0.6499
+27m 33s (- 0m 0s) (75000 100%) 0.5966
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; elle est chaude .
-= she s hot .
-&lt; she s hot . &lt;EOS&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; vous etes egoiste .
+= you re selfish .
+&lt; you re selfish . &lt;EOS&gt;
 
-&gt; tu es tres astucieuse .
-= you re very astute .
-&lt; you re very astute . &lt;EOS&gt;
+&gt; il est plonge dans les cours de latin .
+= he is absorbed in the study of latin .
+&lt; he is short on the closet . &lt;EOS&gt;
 
-&gt; j essaie simplement de m en sortir .
-= i m just trying to get by .
-&lt; i m just trying to get by . &lt;EOS&gt;
+&gt; il est fier d etre musicien .
+= he is proud of being a musician .
+&lt; he is proud of being being girl . &lt;EOS&gt;
 
-&gt; je ne suis pas parfait .
-= i m not perfect .
-&lt; i m not perfect . &lt;EOS&gt;
+&gt; j ecris pour exprimer mon insatisfaction .
+= i am writing to express my dissatisfaction .
+&lt; i am trying to my new . . &lt;EOS&gt;
 
-&gt; c est un scientifique de niveau international .
-= he s a world class scientist .
-&lt; he s a of world of &lt;EOS&gt;
+&gt; je n en suis pas fier .
+= i m not proud of that .
+&lt; i m not proud of it . &lt;EOS&gt;
 
-&gt; tu es bougon .
-= you re grumpy .
-&lt; you re extroverted . &lt;EOS&gt;
+&gt; je suis en retard .
+= i m behind schedule .
+&lt; i m behind . &lt;EOS&gt;
 
-&gt; nous sommes a court de possibilites .
-= we re out of options .
-&lt; we re out of options . &lt;EOS&gt;
+&gt; je vais voir tom aujourd hui .
+= i m going to see tom today .
+&lt; i m going to see some some . . &lt;EOS&gt;
 
-&gt; je le rends .
-= i m giving it back .
-&lt; i m giving it back . &lt;EOS&gt;
+&gt; je ne suis pas aveugle .
+= i m not blind .
+&lt; i m not blind . &lt;EOS&gt;
 
-&gt; c est un avocat competent .
-= he is a capable lawyer .
-&lt; he is a capable lawyer . &lt;EOS&gt;
+&gt; il s interesse aux propheties mayas .
+= he s interested in mayan prophecies .
+&lt; he is interested in the piano . &lt;EOS&gt;
 
-&gt; nous sommes canadiens .
-= we re canadians .
-&lt; we re canadians . &lt;EOS&gt;
+&gt; je suis un etranger ici .
+= i m a stranger here .
+&lt; i am a stranger here . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1074,13 +1079,13 @@ and labels:</p>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>input = elle a cinq ans de moins que moi .
-output = she is two years younger than me . &lt;EOS&gt;
+output = she is five years younger than me . . &lt;EOS&gt;
 input = elle est trop petit .
 output = she is too short . &lt;EOS&gt;
 input = je ne crains pas de mourir .
-output = i m not scared to die . &lt;EOS&gt;
+output = i m afraid sure of dying . &lt;EOS&gt;
 input = c est un jeune directeur plein de talent .
-output = he is a very young man . &lt;EOS&gt;
+output = he s a talented boy . &lt;EOS&gt;
 </pre></div>
 </div>
 </div>
@@ -1108,7 +1113,7 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 27 minutes  48.554 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 27 minutes  40.760 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a96a2daac1918ec72f68233dfe3f2c47/seq2seq_translation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>

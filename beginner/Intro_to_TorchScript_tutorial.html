@@ -166,6 +166,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Dispatcher in C++</a></li>
 </ul>
@@ -179,12 +180,16 @@
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="dist_overview.html">PyTorch Distributed Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="aws_distributed_training_tutorial.html">(advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
 </ul>
 </div>
 </div>
@@ -303,11 +308,11 @@ is invoked.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.6440, 0.3052, 0.6534, 0.8647],
-        [0.8227, 0.9333, 0.6689, 0.8961],
-        [0.8513, 0.8497, 0.7815, 0.5605]]), tensor([[0.6440, 0.3052, 0.6534, 0.8647],
-        [0.8227, 0.9333, 0.6689, 0.8961],
-        [0.8513, 0.8497, 0.7815, 0.5605]]))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.8627, 0.6837, 0.8973, 0.9566],
+        [0.7370, 0.6196, 0.6115, 0.8225],
+        [0.8954, 0.8844, 0.8311, 0.5238]]), tensor([[0.8627, 0.6837, 0.8973, 0.9566],
+        [0.7370, 0.6196, 0.6115, 0.8225],
+        [0.8954, 0.8844, 0.8311, 0.5238]]))
 </pre></div>
 </div>
 <p>So we’ve:</p>
@@ -343,11 +348,11 @@ matrices of random values. Then we invoked the cell with
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>MyCell(
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[-0.1505,  0.4973,  0.1732,  0.4045],
-        [ 0.3801,  0.7836,  0.3492,  0.4829],
-        [-0.0698,  0.6822,  0.6890,  0.3871]], grad_fn=&lt;TanhBackward&gt;), tensor([[-0.1505,  0.4973,  0.1732,  0.4045],
-        [ 0.3801,  0.7836,  0.3492,  0.4829],
-        [-0.0698,  0.6822,  0.6890,  0.3871]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.5254, -0.6767, -0.4403,  0.8696],
+        [ 0.3452, -0.0161, -0.3719,  0.5147],
+        [ 0.2503, -0.2177,  0.1969,  0.3185]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.5254, -0.6767, -0.4403,  0.8696],
+        [ 0.3452, -0.0161, -0.3719,  0.5147],
+        [ 0.2503, -0.2177,  0.1969,  0.3185]], grad_fn=&lt;TanhBackward&gt;))
 </pre></div>
 </div>
 <p>We’ve redefined our module <code class="docutils literal notranslate"><span class="pre">MyCell</span></code>, but this time we’ve added a
@@ -395,11 +400,11 @@ flexibility in model authoring.</p>
   (dg): MyDecisionGate()
   (linear): Linear(in_features=4, out_features=4, bias=True)
 )
-(tensor([[0.7068, 0.1514, 0.3097, 0.6454],
-        [0.8168, 0.8091, 0.5179, 0.8347],
-        [0.4163, 0.7778, 0.8070, 0.6995]], grad_fn=&lt;TanhBackward&gt;), tensor([[0.7068, 0.1514, 0.3097, 0.6454],
-        [0.8168, 0.8091, 0.5179, 0.8347],
-        [0.4163, 0.7778, 0.8070, 0.6995]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.7991,  0.1690,  0.6260,  0.5327],
+        [ 0.6162,  0.5691,  0.1826, -0.1235],
+        [ 0.7916,  0.5234,  0.4495,  0.4375]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.7991,  0.1690,  0.6260,  0.5327],
+        [ 0.6162,  0.5691,  0.1826, -0.1235],
+        [ 0.7916,  0.5234,  0.4495,  0.4375]], grad_fn=&lt;TanhBackward&gt;))
 </pre></div>
 </div>
 <p>We’ve once again redefined our MyCell class, but here we’ve defined
@@ -511,17 +516,17 @@ the Python module:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[0.5270, 0.0073, 0.7908, 0.2469],
-        [0.5961, 0.7613, 0.4549, 0.5289],
-        [0.1814, 0.2462, 0.5875, 0.2611]], grad_fn=&lt;TanhBackward&gt;), tensor([[0.5270, 0.0073, 0.7908, 0.2469],
-        [0.5961, 0.7613, 0.4549, 0.5289],
-        [0.1814, 0.2462, 0.5875, 0.2611]], grad_fn=&lt;TanhBackward&gt;))
-(tensor([[0.5270, 0.0073, 0.7908, 0.2469],
-        [0.5961, 0.7613, 0.4549, 0.5289],
-        [0.1814, 0.2462, 0.5875, 0.2611]],
-       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[0.5270, 0.0073, 0.7908, 0.2469],
-        [0.5961, 0.7613, 0.4549, 0.5289],
-        [0.1814, 0.2462, 0.5875, 0.2611]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(tensor([[ 0.0541,  0.5835,  0.8745,  0.8553],
+        [-0.3343,  0.0410,  0.7895,  0.7456],
+        [-0.1404,  0.4398,  0.8317,  0.8299]], grad_fn=&lt;TanhBackward&gt;), tensor([[ 0.0541,  0.5835,  0.8745,  0.8553],
+        [-0.3343,  0.0410,  0.7895,  0.7456],
+        [-0.1404,  0.4398,  0.8317,  0.8299]], grad_fn=&lt;TanhBackward&gt;))
+(tensor([[ 0.0541,  0.5835,  0.8745,  0.8553],
+        [-0.3343,  0.0410,  0.7895,  0.7456],
+        [-0.1404,  0.4398,  0.8317,  0.8299]],
+       grad_fn=&lt;DifferentiableGraphBackward&gt;), tensor([[ 0.0541,  0.5835,  0.8745,  0.8553],
+        [-0.3343,  0.0410,  0.7895,  0.7456],
+        [-0.1404,  0.4398,  0.8317,  0.8299]],
        grad_fn=&lt;DifferentiableGraphBackward&gt;))
 </pre></div>
 </div>
@@ -701,7 +706,7 @@ python-free execution.</p>
 out the NeurIPS demo for converting machine translation models using
 TorchScript:
 <a class="reference external" href="https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ">https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.286 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.288 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-intro-to-torchscript-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/bf4ee4ef1ffde8b469d9ed4001a28ee8/Intro_to_TorchScript_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">Intro_to_TorchScript_tutorial.py</span></code></a></div>
