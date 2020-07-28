@@ -4,12 +4,12 @@
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
 
-This tutorial introduces the steps to do post training static quantization in graph mode. 
-The advantage of graph mode quantization is that as long as the model can be scripted or traced, 
-we can perform quantization fully automatically on the model. 
-Right now we can do post training static and post training dynamic quantization 
-and quantization aware training support will come later. 
-We have a separate tutorial for `Graph Mode Post Training Dynamic Quantization <https://pytorch.org/tutorials/prototype_source/graph_mode_dynamic_bert_tutorial.html>`_.
+This tutorial introduces the steps to do post training static quantization in graph mode.
+The advantage of graph mode quantization is that as long as the model can be scripted or traced,
+we can perform quantization fully automatically on the model.
+Right now we can do post training static and post training dynamic quantization
+and quantization aware training support will come later.
+We have a separate tutorial for `Graph Mode Post Training Dynamic Quantization <https://pytorch.org/tutorials/prototype/graph_mode_dynamic_quantization_tutorial.html>`_.
 
 tldr; The graph mode API looks like the following:
 
@@ -17,7 +17,7 @@ tldr; The graph mode API looks like the following:
 
     import torch
     from torch.quantization import get_default_qconfig, quantize_jit
-    
+
     ts_model = torch.jit.script(float_model.eval()) # or torch.jit.trace(float_model, input)
     qconfig = get_default_qconfig('fbgemm')
     def calibrate(model, data_loader):
@@ -44,11 +44,11 @@ tldr; The graph mode API looks like the following:
 # - Special handling is needed for pytorch tensor operations (like add, concat etc.)
 # - Functionals did not have first class support (functional.conv2d and functional.linear would not get quantized)
 #
-# Most of these required modifications comes from the underlying limitations of eager mode quantization. Eager mode works in module level since it can not inspect the code that is actually run (in the forward function), quantization is achieved by module swapping, and we don’t know how the modules are used in forward function in eager mode, so it requires users to insert QuantStub and DeQuantStub manually to mark the points they want to quantize or dequantize. 
+# Most of these required modifications comes from the underlying limitations of eager mode quantization. Eager mode works in module level since it can not inspect the code that is actually run (in the forward function), quantization is achieved by module swapping, and we don’t know how the modules are used in forward function in eager mode, so it requires users to insert QuantStub and DeQuantStub manually to mark the points they want to quantize or dequantize.
 # In graph mode, we can inspect the actual code that’s been executed in forward function (e.g. aten function calls) and quantization is achieved by module and graph manipulations. Since graph mode has full visibility of the code that is run, our tool is able to automatically figure out things like which modules to fuse and where to insert observer calls, quantize/dequantize functions etc., we are able to automate the whole quantization process.
 #
 # Advantages of graph mode quantization are:
-# 
+#
 # - Simple quantization flow, minimal manual steps
 # - Unlocks the possibility of doing higher level optimizations like automatic precision selection
 #
@@ -56,8 +56,8 @@ tldr; The graph mode API looks like the following:
 #
 # 2. Define Helper Functions and Prepare Dataset
 # ---------------------
-# We’ll start by doing the necessary imports, defining some helper functions and prepare the data. 
-# These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.    
+# We’ll start by doing the necessary imports, defining some helper functions and prepare the data.
+# These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 #
 # Download dataset:
 #
@@ -229,7 +229,7 @@ float_model.eval();
 # 3. Script/Trace the model
 # --------------------------
 # The input for graph mode quantization is a TorchScript model, so we'll need to either script or trace the model first.
-# 
+#
 
 ts_model = torch.jit.script(float_model).eval() # ts_model = torch.jit.trace(float_model, input)
 
@@ -271,8 +271,8 @@ qconfig_dict = {'': qconfig}
 #       model(sample_data, ...)
 #
 #
-# Calibration function is run after the observers are inserted in the model. 
-# The purpose for calibration is to run through some sample examples that is representative of the workload 
+# Calibration function is run after the observers are inserted in the model.
+# The purpose for calibration is to run through some sample examples that is representative of the workload
 # (for example a sample of the training data set) so that the observers in the model are able to observe
 # the statistics of the Tensors and we can later use this information to calculate quantization parameters.
 #
@@ -313,7 +313,7 @@ def calibrate(model, data_loader):
 # - Fold the quantize and prepack ops like ``quantized::conv2d_prepack`` into an attribute, so we don't need to quantize and prepack the weight everytime we run the model.
 #
 # If ``debug`` is set to ``True``:
-# 
+#
 # - We can still access the attributes of the quantized model the same way as the original floating point model, e.g. ``model.conv1.weight`` (might be harder if you use a module list or sequential)
 # - The arithmetic operations all occur in floating point with the numerics being identical to the final quantized model, allowing for debugging.
 
@@ -326,7 +326,7 @@ quantized_model = quantize_jit(
 print(quantized_model.graph)
 
 ######################################################################
-# As we can see ``aten::conv2d`` is changed to ``quantized::conv2d`` and the floating point weight has been quantized 
+# As we can see ``aten::conv2d`` is changed to ``quantized::conv2d`` and the floating point weight has been quantized
 # and packed into an attribute (``quantized._jit_pass_packed_weight_30``), so we don't need to quantize/pack in runtime.
 # Also we can't access the weight attributes anymore after the debug option since they are frozen.
 #
@@ -348,8 +348,8 @@ top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
 print('[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
 
 ######################################################################
-# If you want to get better accuracy or performance,  try changing the `qconfig_dict`. 
-# We plan to add support for graph mode in the Numerical Suite so that you can 
+# If you want to get better accuracy or performance,  try changing the `qconfig_dict`.
+# We plan to add support for graph mode in the Numerical Suite so that you can
 # easily determine the sensitivity towards quantization of different modules in a model: `PyTorch Numeric Suite Tutorial <https://pytorch.org/tutorials/prototype/numeric_suite_tutorial.html>`_
 #
 # 8. Debugging Quantized Model
@@ -367,25 +367,25 @@ top1, top5 = evaluate(quantized_debug_model, criterion, data_loader_test)
 print('[debug=True] quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
 
 ######################################################################
-# Note that the accuracy of the debug version is close to, but not exactly the same as the non-debug 
-# version as the debug version uses floating point ops to emulate quantized ops and the numerics match 
+# Note that the accuracy of the debug version is close to, but not exactly the same as the non-debug
+# version as the debug version uses floating point ops to emulate quantized ops and the numerics match
 # is approximate. We are working on making this even more exact.
 #
 
 print(quantized_debug_model.graph)
 
 ######################################################################
-# We can see that there is no ``quantized::conv2d`` in the model, but the numerically equivalent pattern 
+# We can see that there is no ``quantized::conv2d`` in the model, but the numerically equivalent pattern
 # of ``aten::dequnatize - aten::conv2d - aten::quantize_per_tensor``.
 
 print_size_of_model(quantized_debug_model)
 
 ######################################################################
-# Size of the debug model is the close to the floating point model because all the weights are 
-# in float and not yet quantized and frozen, this allows people to inspect the weight. 
+# Size of the debug model is the close to the floating point model because all the weights are
+# in float and not yet quantized and frozen, this allows people to inspect the weight.
 # You may access the weight attributes directly in the torchscript model, except for batch norm as
-# it is fused into the preceding convolutions. We will also develop graph mode ``Numeric Suite`` 
-# to allow easier inspection of weights in the future. Accessing the weight in the debug model is 
+# it is fused into the preceding convolutions. We will also develop graph mode ``Numeric Suite``
+# to allow easier inspection of weights in the future. Accessing the weight in the debug model is
 # the same as accessing the weight in a TorchScript model:
 
 def get_first_conv_weight(model):
@@ -416,8 +416,8 @@ print('Baseline Float Model Evaluation accuracy: %2.2f, %2.2f'%(top1.avg, top5.a
 torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
 
 ######################################################################
-# In this section we compare the model quantized with graph mode quantization with the model 
-# quantized in eager mode. Graph mode and eager mode produce very similar quantized models, 
+# In this section we compare the model quantized with graph mode quantization with the model
+# quantized in eager mode. Graph mode and eager mode produce very similar quantized models,
 # so the expectation is that the accuracy and speedup are similar as well.
 
 print('Size of graph mode quantized model')
@@ -452,8 +452,6 @@ torch.jit.save(eager_quantized_model, saved_model_dir + eager_mode_model_file)
 #   Self CPU time total: 157.256ms
 #
 # As we can see for resnet18 both graph mode and eager mode quantized model get similar speed up over the floating point model,
-# which is around 2-3x faster than the floating point model. But the actual speedup over floating point model may vary 
+# which is around 2-3x faster than the floating point model. But the actual speedup over floating point model may vary
 # depending on model, device, build, input batch sizes, threading etc.
 #
-
-
