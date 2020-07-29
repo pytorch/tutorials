@@ -205,7 +205,6 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         optimizer.zero_grad()
         outputs = ddp_model(torch.randn(20, 10))
         labels = torch.randn(20, 5).to(rank)
-        loss_fn = nn.MSELoss()
         loss_fn(outputs, labels).backward()
         optimizer.step()
 
