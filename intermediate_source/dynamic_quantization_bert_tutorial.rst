@@ -1,10 +1,10 @@
-(experimental) Dynamic Quantization on BERT
+(beta) Dynamic Quantization on BERT
 ===========================================
 
 .. tip::
-   To get the most of this tutorial, we suggest using this 
+   To get the most of this tutorial, we suggest using this
    `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/dynamic_quantization_bert_tutorial.ipynb>`_. This will allow you to experiment with the information presented below.
- 
+
 **Author**: `Jianyu Huang <https://github.com/jianyuh>`_
 
 **Reviewed by**: `Raghuraman Krishnamoorthi <https://github.com/raghuramank100>`_
@@ -71,7 +71,7 @@ built-in F1 score calculation helper function.
    pip install transformers
 
 
-Because we will be using the experimental parts of the PyTorch, it is
+Because we will be using the beta parts of the PyTorch, it is
 recommended to install the latest version of torch and torchvision. You
 can find the most recent instructions on local installation `here
 <https://pytorch.org/get-started/locally/>`_. For example, to install on
