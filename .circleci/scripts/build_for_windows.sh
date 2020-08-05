@@ -44,17 +44,6 @@ python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tut
 python $DIR/remove_runnable_code.py beginner_source/data_loading_tutorial.py beginner_source/data_loading_tutorial.py || true
 python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py beginner_source/dcgan_faces_tutorial.py || true
 python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
-
-echo "keys =  list(filter(lambda x: not x.startswith('_'), vars(torch.Tensor).keys()))" >> intermediate_source/memory_format_tutorial.py
-echo "for attr in keys:" >> intermediate_source/memory_format_tutorial.py
-echo "  delattr(torch.Tensor, attr)" >> intermediate_source/memory_format_tutorial.py
-echo "keys =  list(filter(lambda x: not x.startswith('_'), vars(torch.nn.functional).keys()))" >> intermediate_source/memory_format_tutorial.py
-echo "for attr in keys:" >> intermediate_source/memory_format_tutorial.py
-echo "  delattr(torch.nn.functional, attr)" >> intermediate_source/memory_format_tutorial.py
-echo "keys =  list(filter(lambda x: not x.startswith('_'), vars(torch).keys()))" >> intermediate_source/memory_format_tutorial.py
-echo "for attr in keys:" >> intermediate_source/memory_format_tutorial.py
-echo "  delattr(torch, attr)" >> intermediate_source/memory_format_tutorial.py
-echo "from importlib import reload" >> intermediate_source/memory_format_tutorial.py
-echo "reload(torch)" >> intermediate_source/memory_format_tutorial.py
+python $DIR/remove_runnable_code.py intermediate_source/memory_format_tutorial.py intermediate_source/memory_format_tutorial.py || true
 
 make docs
