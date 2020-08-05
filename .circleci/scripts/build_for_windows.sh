@@ -44,8 +44,6 @@ python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tut
 python $DIR/remove_runnable_code.py beginner_source/data_loading_tutorial.py beginner_source/data_loading_tutorial.py || true
 python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py beginner_source/dcgan_faces_tutorial.py || true
 python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
-python $DIR/remove_runnable_code.py advanced_source/static_quantization_tutorial.py advanced_source/static_quantization_tutorial.py || true
-python $DIR/remove_runnable_code.py prototype_source/numeric_suite_tutorial.py || true
-python $DIR/remove_runnable_code.py prototype_source/graph_mode_static_quantization_tutorial.py || true
+python $DIR/remove_runnable_code.py intermediate_source/memory_format_tutorial.py intermediate_source/memory_format_tutorial.py || true
 
 make docs
