@@ -59,7 +59,7 @@ import torch.nn.functional as F
 # 
 # Our network will recognize images. We will use a process built into
 # PyTorch called convolution. Convolution adds each element of an image to
-# its local neighbors, weighted by a kernel, or a small martrix, that
+# its local neighbors, weighted by a kernel, or a small matrix, that
 # helps us extract certain features (like edge detection, sharpness,
 # blurriness, etc.) from the input image.
 # 
