@@ -2,6 +2,13 @@ Getting Started with Distributed Data Parallel
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `DistributedDataParallel API documents <https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html>`__
+-  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
+
+
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and
@@ -202,9 +209,9 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         loss_fn(outputs, labels).backward()
         optimizer.step()
 
-        # Use a barrier() to make sure that all processes have finished reading the
-        # checkpoint
-        dist.barrier()
+        # Not necessary to use a dist.barrier() to guard the file deletion below
+        # as the AllReduce ops in the backward pass of DDP already served as
+        # a synchronization.
 
         if rank == 0:
             os.remove(CHECKPOINT_PATH)

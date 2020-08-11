@@ -129,4 +129,4 @@ TORCH_LIBRARY(my_classes, m) {
       manipulate_instance
     );
 // END def_free
-}
+
