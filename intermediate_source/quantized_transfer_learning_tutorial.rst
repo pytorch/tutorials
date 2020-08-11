@@ -1,10 +1,10 @@
-(experimental) Quantized Transfer Learning for Computer Vision Tutorial
+(beta) Quantized Transfer Learning for Computer Vision Tutorial
 ========================================================================
 
 .. tip::
-   To get the most of this tutorial, we suggest using this 
-   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/quantized_transfer_learning_tutorial.ipynb>`_. 
-   This will allow you to experiment with the information presented below. 
+   To get the most of this tutorial, we suggest using this
+   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/quantized_transfer_learning_tutorial.ipynb>`_.
+   This will allow you to experiment with the information presented below.
 
 **Author**: `Zafar Takhirov <https://github.com/z-a-f>`_
 
@@ -62,7 +62,7 @@ such as installations and data loading/visualizations.
 Installing the Nightly Build
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Because you will be using the experimental parts of the PyTorch, it is
+Because you will be using the beta parts of the PyTorch, it is
 recommended to install the latest version of ``torch`` and
 ``torchvision``. You can find the most recent instructions on local
 installation `here <https://pytorch.org/get-started/locally/>`_.
