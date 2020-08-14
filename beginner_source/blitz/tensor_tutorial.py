@@ -138,7 +138,7 @@ print(x.item())
 # NumPy Bridge
 # ------------
 #
-# Converting a Torch Tensor to a NumPy array and vice versa is a breeze.
+# Converting a Torch Tensor to a NumPy array and vice versa is a bridge.
 #
 # The Torch Tensor and NumPy array will share their underlying memory
 # locations (if the Torch Tensor is on CPU), and changing one will change
