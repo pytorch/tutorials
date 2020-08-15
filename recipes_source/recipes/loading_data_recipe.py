@@ -91,7 +91,7 @@ import torchaudio
 # training and testing dataset will exist. The other parameters are
 # optional, with their default values shown. Here is some additional
 # useful info on the other parameters:
-
+#
 # * ``download``: If true, downloads the dataset from the internet and puts it in root directory. If dataset is already downloaded, it is not downloaded again.
 # * ``transform``: Using transforms on your data allows you to take it from its source state and transform it into data that’s joined together, de-normalized, and ready for training. Each library in PyTorch supports a growing list of transformations.
 # * ``target_transform``: A function/transform that takes in the target and transforms it.
