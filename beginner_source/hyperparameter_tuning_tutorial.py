@@ -14,7 +14,7 @@ algorithms, integrates with TensorBoard and other analysis libraries, and native
 supports distributed training through `Ray's distributed machine learning engine
 <https://ray.io/>`_.
 
-In this tutorial, we will show you how to integrate Tune into your PyTorch
+In this tutorial, we will show you how to integrate Ray Tune into your PyTorch
 training workflow. We will extend `this tutorial from the PyTorch documentation
 <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_ for training
 a CIFAR10 image classifier.
@@ -62,6 +62,7 @@ from ray.tune.schedulers import ASHAScheduler
 # We wrap the data loaders in their own function and pass a global data directory.
 # This way we can share a data directory between different trials.
 
+
 def load_data(data_dir="./data"):
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -81,6 +82,7 @@ def load_data(data_dir="./data"):
 # ---------------------------
 # We can only tune those parameters that are configurable. In this example, we can specify
 # the layer sizes of the fully connected layers:
+
 
 class Net(nn.Module):
     def __init__(self, l1=120, l2=84):
@@ -107,17 +109,20 @@ class Net(nn.Module):
 # Now it gets interesting, because we introduce some changes to the example `from the PyTorch
 # documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_.
 #
-# We wrap the training script in a function ``train_cifar(config, checkpoint=None, data_dir=None)``.
+# We wrap the training script in a function ``train_cifar(config, checkpoint_dir=None, data_dir=None)``.
 # As you can guess, the ``config`` parameter will receive the hyperparameters we would like to
-# train with. The ``checkpoint`` parameter is used to restore checkpoints. The ``data_dir`` specifies
+# train with. The ``checkpoint_dir`` parameter is used to restore checkpoints. The ``data_dir`` specifies
 # the directory where we load and store the data, so multiple runs can share the same data source.
 #
 # .. code-block:: python
 #
 #     net = Net(config["l1"], config["l2"])
 #
-#     if checkpoint:
-#         net.load_state_dict(torch.load(checkpoint))
+#     if checkpoint_dir:
+#         model_state, optimizer_state = torch.load(
+#             os.path.join(checkpoint_dir, "checkpoint"))
+#         net.load_state_dict(model_state)
+#         optimizer.load_state_dict(optimizer_state)
 #
 # The learning rate of the optimizer is made configurable, too:
 #
@@ -162,25 +167,25 @@ class Net(nn.Module):
 # Communicating with Ray Tune
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# The most interesting part is the communication with Tune:
+# The most interesting part is the communication with Ray Tune:
 #
 # .. code-block:: python
 #
-#     checkpoint_dir = tune.make_checkpoint_dir(epoch)
-#     path = os.path.join(checkpoint_dir, "checkpoint")
-#     torch.save((net.state_dict(), optimizer.state_dict()), path)
-#     tune.save_checkpoint(path)
+#     with tune.checkpoint_dir(epoch) as checkpoint_dir:
+#         path = os.path.join(checkpoint_dir, "checkpoint")
+#         torch.save((net.state_dict(), optimizer.state_dict()), path)
 #
 #     tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
 #
-# Here we first save a checkpoint and then report some metrics back to Tune. Specifically,
-# we send the validation loss and accuracy back to Tune. Tune can then use these metrics
+# Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
+# we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
 # to decide which hyperparameter configuration lead to the best results. These metrics
 # can also be used to stop bad performing trials early in order to avoid wasting
 # resources on those trials.
 #
 # The checkpoint saving is optional, however, it is necessary if we wanted to use advanced
-# schedulers like `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
+# schedulers like
+# `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
 # Also, by saving the checkpoint we can later load the trained models and validate them
 # on a test set.
 #
@@ -189,7 +194,8 @@ class Net(nn.Module):
 #
 # The full code example looks like this:
 
-def train_cifar(config, checkpoint=None, data_dir=None):
+
+def train_cifar(config, checkpoint_dir=None, data_dir=None):
     net = Net(config["l1"], config["l2"])
 
     device = "cpu"
@@ -202,9 +208,9 @@ def train_cifar(config, checkpoint=None, data_dir=None):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
 
-    if checkpoint:
-        print("loading checkpoint {}".format(checkpoint))
-        model_state, optimizer_state = torch.load(checkpoint)
+    if checkpoint_dir:
+        model_state, optimizer_state = torch.load(
+            os.path.join(checkpoint_dir, "checkpoint"))
         net.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
@@ -269,10 +275,9 @@ def train_cifar(config, checkpoint=None, data_dir=None):
                 val_loss += loss.cpu().numpy()
                 val_steps += 1
 
-        checkpoint_dir = tune.make_checkpoint_dir(epoch)
-        path = os.path.join(checkpoint_dir, "checkpoint")
-        torch.save((net.state_dict(), optimizer.state_dict()), path)
-        tune.save_checkpoint(path)
+        with tune.checkpoint_dir(epoch) as checkpoint_dir:
+            path = os.path.join(checkpoint_dir, "checkpoint")
+            torch.save((net.state_dict(), optimizer.state_dict()), path)
 
         tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
     print("Finished Training")
@@ -285,6 +290,7 @@ def train_cifar(config, checkpoint=None, data_dir=None):
 # Commonly the performance of a machine learning model is tested on a hold-out test
 # set with data that has not been used for training the model. We also wrap this in a
 # function:
+
 
 def test_accuracy(net, device="cpu"):
     trainset, testset = load_data()
@@ -311,7 +317,7 @@ def test_accuracy(net, device="cpu"):
 #
 # Configuring the search space
 # ----------------------------
-# Lastly, we need to define Tune's search space. Here is an example:
+# Lastly, we need to define Ray Tune's search space. Here is an example:
 #
 # .. code-block:: python
 #
@@ -328,7 +334,7 @@ def test_accuracy(net, device="cpu"):
 # The ``lr`` (learning rate) should be uniformly sampled between 0.0001 and 0.1. Lastly,
 # the batch size is a choice between 2, 4, 8, and 16.
 #
-# At each trial, Tune will now randomly sample a combination of parameters from these
+# At each trial, Ray Tune will now randomly sample a combination of parameters from these
 # search spaces. It will then train a number of models in parallel and find the best
 # performing one among these. We also use the ``ASHAScheduler`` which will terminate bad
 # performing trials early.
@@ -366,6 +372,7 @@ def test_accuracy(net, device="cpu"):
 #
 # The full main function looks like this:
 
+
 def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     data_dir = os.path.abspath("./data")
     load_data(data_dir)
@@ -390,8 +397,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
-        progress_reporter=reporter,
-        checkpoint_at_end=True)
+        progress_reporter=reporter)
 
     best_trial = result.get_best_trial("loss", "min", "last")
     print("Best trial config: {}".format(best_trial.config))
@@ -408,7 +414,9 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
             best_trained_model = nn.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    model_state, optimizer_state = torch.load(best_trial.checkpoint.value)
+    best_checkpoint_dir = best_trial.checkpoint.value
+    model_state, optimizer_state = torch.load(os.path.join(
+        best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
     test_acc = test_accuracy(best_trained_model, device)
