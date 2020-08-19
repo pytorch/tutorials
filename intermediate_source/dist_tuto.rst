@@ -2,6 +2,10 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+
 In this short tutorial, we will be going over the distributed package
 of PyTorch. We'll see how to set up the distributed setting, use the
 different communication strategies, and go over some the internals of

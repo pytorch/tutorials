@@ -37,7 +37,12 @@ struct MyStackClass : torch::CustomClassHolder {
 };
 // END class
 
-#ifdef NO_PICKLE
+// BEGIN free_function
+c10::intrusive_ptr<MyStackClass<std::string>> manipulate_instance(const c10::intrusive_ptr<MyStackClass<std::string>>& instance) {
+  instance->pop();
+  return instance;
+}
+// END free_function
 
 // BEGIN binding
 // Notice a few things:
@@ -52,94 +57,76 @@ struct MyStackClass : torch::CustomClassHolder {
 //   Python and C++ as `torch.classes.my_classes.MyStackClass`. We call
 //   the first argument the "namespace" and the second argument the
 //   actual class name.
-static auto testStack =
-  torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
-      // The following line registers the contructor of our MyStackClass
-      // class that takes a single `std::vector<std::string>` argument,
-      // i.e. it exposes the C++ method `MyStackClass(std::vector<T> init)`.
-      // Currently, we do not support registering overloaded
-      // constructors, so for now you can only `def()` one instance of
-      // `torch::init`.
-      .def(torch::init<std::vector<std::string>>())
-      // The next line registers a stateless (i.e. no captures) C++ lambda
-      // function as a method. Note that a lambda function must take a
-      // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
-      // as the first argument. Other arguments can be whatever you want.
-      .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
-        return self->stack_.back();
-      })
-      // The following four lines expose methods of the MyStackClass<std::string>
-      // class as-is. `torch::class_` will automatically examine the
-      // argument and return types of the passed-in method pointers and
-      // expose these to Python and TorchScript accordingly. Finally, notice
-      // that we must take the *address* of the fully-qualified method name,
-      // i.e. use the unary `&` operator, due to C++ typing rules.
-      .def("push", &MyStackClass<std::string>::push)
-      .def("pop", &MyStackClass<std::string>::pop)
-      .def("clone", &MyStackClass<std::string>::clone)
-      .def("merge", &MyStackClass<std::string>::merge);
+TORCH_LIBRARY(my_classes, m) {
+  m.class_<MyStackClass<std::string>>("MyStackClass")
+    // The following line registers the contructor of our MyStackClass
+    // class that takes a single `std::vector<std::string>` argument,
+    // i.e. it exposes the C++ method `MyStackClass(std::vector<T> init)`.
+    // Currently, we do not support registering overloaded
+    // constructors, so for now you can only `def()` one instance of
+    // `torch::init`.
+    .def(torch::init<std::vector<std::string>>())
+    // The next line registers a stateless (i.e. no captures) C++ lambda
+    // function as a method. Note that a lambda function must take a
+    // `c10::intrusive_ptr<YourClass>` (or some const/ref version of that)
+    // as the first argument. Other arguments can be whatever you want.
+    .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
+      return self->stack_.back();
+    })
+    // The following four lines expose methods of the MyStackClass<std::string>
+    // class as-is. `torch::class_` will automatically examine the
+    // argument and return types of the passed-in method pointers and
+    // expose these to Python and TorchScript accordingly. Finally, notice
+    // that we must take the *address* of the fully-qualified method name,
+    // i.e. use the unary `&` operator, due to C++ typing rules.
+    .def("push", &MyStackClass<std::string>::push)
+    .def("pop", &MyStackClass<std::string>::pop)
+    .def("clone", &MyStackClass<std::string>::clone)
+    .def("merge", &MyStackClass<std::string>::merge)
 // END binding
+#ifndef NO_PICKLE
+// BEGIN def_pickle
+    // class_<>::def_pickle allows you to define the serialization
+    // and deserialization methods for your C++ class.
+    // Currently, we only support passing stateless lambda functions
+    // as arguments to def_pickle
+    .def_pickle(
+          // __getstate__
+          // This function defines what data structure should be produced
+          // when we serialize an instance of this class. The function
+          // must take a single `self` argument, which is an intrusive_ptr
+          // to the instance of the object. The function can return
+          // any type that is supported as a return value of the TorchScript
+          // custom operator API. In this instance, we've chosen to return
+          // a std::vector<std::string> as the salient data to preserve
+          // from the class.
+          [](const c10::intrusive_ptr<MyStackClass<std::string>>& self)
+              -> std::vector<std::string> {
+            return self->stack_;
+          },
+          // __setstate__
+          // This function defines how to create a new instance of the C++
+          // class when we are deserializing. The function must take a
+          // single argument of the same type as the return value of
+          // `__getstate__`. The function must return an intrusive_ptr
+          // to a new instance of the C++ class, initialized however
+          // you would like given the serialized state.
+          [](std::vector<std::string> state)
+              -> c10::intrusive_ptr<MyStackClass<std::string>> {
+            // A convenient way to instantiate an object and get an
+            // intrusive_ptr to it is via `make_intrusive`. We use
+            // that here to allocate an instance of MyStackClass<std::string>
+            // and call the single-argument std::vector<std::string>
+            // constructor with the serialized state.
+            return c10::make_intrusive<MyStackClass<std::string>>(std::move(state));
+          });
+// END def_pickle
+#endif // NO_PICKLE
 
-#else
+// BEGIN def_free
+    m.def(
+      "foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y",
+      manipulate_instance
+    );
+// END def_free
 
-// BEGIN pickle_binding
-static auto testStack =
-  torch::class_<MyStackClass<std::string>>("my_classes", "MyStackClass")
-      .def(torch::init<std::vector<std::string>>())
-      .def("top", [](const c10::intrusive_ptr<MyStackClass<std::string>>& self) {
-        return self->stack_.back();
-      })
-      .def("push", &MyStackClass<std::string>::push)
-      .def("pop", &MyStackClass<std::string>::pop)
-      .def("clone", &MyStackClass<std::string>::clone)
-      .def("merge", &MyStackClass<std::string>::merge)
-      // class_<>::def_pickle allows you to define the serialization
-      // and deserialization methods for your C++ class.
-      // Currently, we only support passing stateless lambda functions
-      // as arguments to def_pickle
-      .def_pickle(
-            // __getstate__
-            // This function defines what data structure should be produced
-            // when we serialize an instance of this class. The function
-            // must take a single `self` argument, which is an intrusive_ptr
-            // to the instance of the object. The function can return
-            // any type that is supported as a return value of the TorchScript
-            // custom operator API. In this instance, we've chosen to return
-            // a std::vector<std::string> as the salient data to preserve
-            // from the class.
-            [](const c10::intrusive_ptr<MyStackClass<std::string>>& self)
-                -> std::vector<std::string> {
-              return self->stack_;
-            },
-            // __setstate__
-            // This function defines how to create a new instance of the C++
-            // class when we are deserializing. The function must take a
-            // single argument of the same type as the return value of
-            // `__getstate__`. The function must return an intrusive_ptr
-            // to a new instance of the C++ class, initialized however
-            // you would like given the serialized state.
-            [](std::vector<std::string> state)
-                -> c10::intrusive_ptr<MyStackClass<std::string>> {
-              // A convenient way to instantiate an object and get an
-              // intrusive_ptr to it is via `make_intrusive`. We use
-              // that here to allocate an instance of MyStackClass<std::string>
-              // and call the single-argument std::vector<std::string>
-              // constructor with the serialized state.
-              return c10::make_intrusive<MyStackClass<std::string>>(std::move(state));
-            });
-// END pickle_binding
-
-// BEGIN free_function
-c10::intrusive_ptr<MyStackClass<std::string>> manipulate_instance(const c10::intrusive_ptr<MyStackClass<std::string>>& instance) {
-  instance->pop();
-  return instance;
-}
-
-static auto instance_registry = torch::RegisterOperators().op(
-torch::RegisterOperators::options()
-    .schema(
-        "foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y")
-    .catchAllKernel<decltype(manipulate_instance), &manipulate_instance>());
-// END free_function
-
-#endif

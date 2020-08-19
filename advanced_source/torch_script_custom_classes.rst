@@ -25,12 +25,14 @@ There are several things to note:
   with your custom class.
 - Notice that whenever we are working with instances of the custom
   class, we do it via instances of ``c10::intrusive_ptr<>``. Think of ``intrusive_ptr``
-  as a smart pointer like ``std::shared_ptr``. The reason for using this smart pointer
-  is to ensure consistent lifetime management of the object instances between languages
-  (C++, Python and TorchScript).
+  as a smart pointer like ``std::shared_ptr``, but the reference count is stored
+  directly in the object, as opposed to a separate metadata block (as is done in
+  ``std::shared_ptr``.  ``torch::Tensor`` internally uses the same pointer type;
+  and custom classes have to also use this pointer type so that we can
+  consistently manage different object types.
 - The second thing to notice is that the user-defined class must inherit from
-  ``torch::CustomClassHolder``. This ensures that everything is set up to handle
-  the lifetime management system previously mentioned.
+  ``torch::CustomClassHolder``. This ensures that the custom class has space to
+  store the reference count.
 
 Now let's take a look at how we will make this class visible to TorchScript, a process called
 *binding* the class:
@@ -39,6 +41,9 @@ Now let's take a look at how we will make this class visible to TorchScript, a p
   :language: cpp
   :start-after: BEGIN binding
   :end-before: END binding
+  :append:
+      ;
+    }
 
 
 
@@ -269,13 +274,13 @@ the special ``def_pickle`` method on ``class_``.
   `read more <https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
   about how we use these methods.
 
-Here is an example of how we can update the registration code for our
-``MyStackClass`` class to include serialization methods:
+Here is an example of the ``def_pickle`` call we can add to the registration of
+``MyStackClass`` to include serialization methods:
 
 .. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
   :language: cpp
-  :start-after: BEGIN pickle_binding
-  :end-before: END pickle_binding
+  :start-after: BEGIN def_pickle
+  :end-before: END def_pickle
 
 .. note::
   We take a different approach from pybind11 in the pickle API. Whereas pybind11
@@ -295,13 +300,21 @@ Defining Custom Operators that Take or Return Bound C++ Classes
 ---------------------------------------------------------------
 
 Once you've defined a custom C++ class, you can also use that class
-as an argument or return from a custom operator (i.e. free functions). Here's an
-example of how to do that:
+as an argument or return from a custom operator (i.e. free functions). Suppose
+you have the following free function:
 
 .. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
   :language: cpp
   :start-after: BEGIN free_function
   :end-before: END free_function
+
+You can register it running the following code inside your ``TORCH_LIBRARY``
+block:
+
+.. literalinclude:: ../advanced_source/torch_script_custom_classes/custom_class_project/class.cpp
+  :language: cpp
+  :start-after: BEGIN def_free
+  :end-before: END def_free
 
 Refer to the `custom op tutorial <https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html>`_
 for more details on the registration API.
@@ -321,12 +334,12 @@ Once this is done, you can use the op like the following example:
 .. note::
 
   Registration of an operator that takes a C++ class as an argument requires that
-  the custom class has already been registered. This is fine if your op is
-  registered after your class in a single compilation unit, however, if your
-  class is registered in a separate compilation unit from the op you will need
-  to enforce that dependency. One way to do this is to wrap the class registration
-  in a `Meyer's singleton <https://stackoverflow.com/q/1661529>`_, which can be
-  called from the compilation unit that does the operator registration.
+  the custom class has already been registered.  You can enforce this by
+  making sure the custom class registration and your free function definitions
+  are in the same ``TORCH_LIBRARY`` block, and that the custom class
+  registration comes first.  In the future, we may relax this requirement,
+  so that these can be registered in any order.
+
 
 Conclusion
 ----------
