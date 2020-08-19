@@ -481,14 +481,17 @@ operator doesn't match the memory format of the input.
             return result
         return check_cl
 
+    old_attrs = dict()
 
     def attribute(m):
+        old_attrs[m] = dict()
         for i in dir(m):
             e = getattr(m, i)
             exclude_functions = ['is_cuda', 'has_names', 'numel',
                                  'stride', 'Tensor', 'is_contiguous', '__class__']
             if i not in exclude_functions and not i.startswith('_') and '__call__' in dir(e):
                 try:
+                    old_attrs[m][i] = e
                     setattr(m, i, check_wrapper(e))
                 except Exception as e:
                     print(i)
@@ -519,6 +522,22 @@ and you want to contribute, feel free to use following developers
 guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
 
 
+Code below is to recover the attributes of torch.
+
+
+.. code-block:: default
+
+
+    for (m, attrs) in old_attrs.items():
+      for (k,v) in attrs.items():
+        setattr(m, k, v)
+
+
+
+
+
+
+
 Work to do
 ----------
 There are still many things to do, such as:
@@ -533,7 +552,7 @@ know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  2.157 seconds)
+   **Total running time of the script:** ( 0 minutes  2.109 seconds)
 
 
 .. _sphx_glr_download_intermediate_memory_format_tutorial.py:
