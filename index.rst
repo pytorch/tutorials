@@ -500,6 +500,7 @@ Additional Resources
    :hidden:
    :caption: Frontend APIs
 
+   intermediate/mixed_precision_tutorial
    intermediate/named_tensor_tutorial
    intermediate/memory_format_tutorial
    advanced/cpp_frontend
