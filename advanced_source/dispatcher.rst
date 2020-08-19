@@ -229,17 +229,18 @@ Autocast
 ^^^^^^^^
 
 The Autocast dispatch key implements support for
-`automatic mixed precision (AMP)<https://pytorch.org/docs/stable/amp.html>`_.
+`automatic mixed precision (AMP) <https://pytorch.org/docs/stable/amp.html>`_.
 An autocast wrapper kernel typically casts incoming ``float16`` or ``float32`` CUDA tensors
 to some preferred precision before running the op.
 For example, matmuls and convolutions on floating-point CUDA tensors usually run faster
 and use less memory in ``float16`` without impairing convergence.
 Autocast wrappers only have an effect in
-`autocast-enabled contexts<https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_.
+`autocast-enabled contexts <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_.
 
 Here's an autocast wrapper for a hypothetical custom matmul, along with its registration:
 
 .. code-block:: cpp
+
     // Autocast-specific helper functions
     #include <ATen/autocast_mode.h>
 
@@ -263,7 +264,9 @@ is recommended, but not required.  For example, if you wanted to force ``float16
 you could ``return mymatmul(self.half(), other.half());`` instead of using ``cached_cast``.
 
 Notice that, like our autograd kernels, we exclude the ``Autocast`` key from
-dispatch before redispatching.  By default, if no autocast wrapper is provided,
+dispatch before redispatching.
+
+By default, if no autocast wrapper is provided,
 we fallthrough directly to the regular operator implementation (no
 autocasting occurs).  (We didn't use ``myadd`` for this example, since pointwise
 addition doesn't need autocasting and should just fall through.)
@@ -274,23 +277,23 @@ get a sense for some native ops' preferred precisions by looking at the
 `cast lists <https://pytorch.org/docs/master/amp.html#op-specific-behavior>`_.
 General guidance:
 
-* Ops that do reductions should probably execute in float32,
+* Ops that do reductions should probably execute in ``float32``,
 * Any op that does a convolution or gemm under the hood should
-  probably execute in float16, and
+  probably execute in ``float16``, and
 * Other ops with multiple floating-point tensor inputs should standardize
-  them to a common precision (unless the implementation is known to support
-  inputs with different precisions).
+  them to a common precision (unless the implementation supports inputs with different precisions).
 
 If your custom op falls into the third category, the ``promote_type`` template
 helps figure out the widest floating-point type present among input tensors, which is
-usually the safest option for the execution type:
+the safest choice for the execution type:
 
 .. code-block:: cpp
+
     #include <ATen/autocast_mode.h>
 
     Tensor my_multiple_input_op_autocast(const Tensor& t0, const Tensor& t1) {
       c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
-      auto exec_type = at::autocast::promote_type(at::kHalf, t0, t1);
+      auto exec_type = at::autocast::promote_type(at::kHalf/*optimistic initial guess*/, t0, t1);
       return my_multiple_input_op(at::autocast::cached_cast(exec_type, t0),
                                   at::autocast::cached_cast(exec_type, t1));
     }
