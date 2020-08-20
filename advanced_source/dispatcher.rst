@@ -293,7 +293,8 @@ the safest choice for the execution type:
 
     Tensor my_multiple_input_op_autocast(const Tensor& t0, const Tensor& t1) {
       c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
-      auto exec_type = at::autocast::promote_type(at::kHalf/*optimistic initial guess*/, t0, t1);
+      // The required at::kHalf argument is an optimistic initial guess.
+      auto exec_type = at::autocast::promote_type(at::kHalf, t0, t1);
       return my_multiple_input_op(at::autocast::cached_cast(exec_type, t0),
                                   at::autocast::cached_cast(exec_type, t1));
     }
