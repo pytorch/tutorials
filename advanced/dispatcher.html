@@ -480,35 +480,68 @@ for.</p>
 <div class="section" id="autocast">
 <h3>Autocast<a class="headerlink" href="#autocast" title="Permalink to this headline">¶</a></h3>
 <p>The Autocast dispatch key implements support for
-<a class="reference external" href="https://developer.nvidia.com/automatic-mixed-precision">automatic mixed precision</a>
-(AMP).  An autocast kernel typically modifies the operation of an operator by casting the
-input arguments to some precision before carrying out the operation.  For some
-operations, it is numerically safe to cast to lower precision, which is how AMP
-can achieve speed ups and reduced memory usage without sacrificing much
-accuracy.  A nontrivial autocast kernel looks something like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Tensor</span> <span class="nf">mymatmul_autocast</span><span class="p">(</span><span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">,</span> <span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+<a class="reference external" href="https://pytorch.org/docs/stable/amp.html">automatic mixed precision (AMP)</a>.
+An autocast wrapper kernel typically casts incoming <code class="docutils literal notranslate"><span class="pre">float16</span></code> or <code class="docutils literal notranslate"><span class="pre">float32</span></code> CUDA tensors
+to some preferred precision before running the op.
+For example, matmuls and convolutions on floating-point CUDA tensors usually run faster
+and use less memory in <code class="docutils literal notranslate"><span class="pre">float16</span></code> without impairing convergence.
+Autocast wrappers only have an effect in
+<a class="reference external" href="https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast">autocast-enabled contexts</a>.</p>
+<p>Here’s an autocast wrapper for a hypothetical custom matmul, along with its registration:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Autocast-specific helper functions</span>
+<span class="cp">#include</span> <span class="cpf">&lt;ATen/autocast_mode.h&gt;</span><span class="cp"></span>
+
+<span class="n">Tensor</span> <span class="nf">mymatmul_autocast</span><span class="p">(</span><span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">,</span> <span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">c10</span><span class="o">::</span><span class="n">impl</span><span class="o">::</span><span class="n">ExcludeDispatchKeyGuard</span> <span class="n">no_autocast</span><span class="p">(</span><span class="n">c10</span><span class="o">::</span><span class="n">DispatchKey</span><span class="o">::</span><span class="n">Autocast</span><span class="p">);</span>
-  <span class="k">return</span> <span class="n">mymatmul</span><span class="p">(</span><span class="n">autocast</span><span class="o">::</span><span class="n">_cast</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">kHalf</span><span class="p">,</span> <span class="n">self</span><span class="p">),</span> <span class="n">autocast</span><span class="o">::</span><span class="n">_cast</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">kHalf</span><span class="p">,</span> <span class="n">other</span><span class="p">));</span>
+  <span class="k">return</span> <span class="n">mymatmul</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">kHalf</span><span class="p">,</span> <span class="n">self</span><span class="p">),</span>
+                  <span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">kHalf</span><span class="p">,</span> <span class="n">other</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">TORCH_LIBRARY_IMPL</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span> <span class="n">Autocast</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">m</span><span class="p">.</span><span class="n">impl</span><span class="p">(</span><span class="s">"mymatmul"</span><span class="p">,</span> <span class="n">mymatmul_autocast</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">cached_cast(kHalf,</span> <span class="pre">tensor)</span></code> casts <code class="docutils literal notranslate"><span class="pre">tensor</span></code> to <code class="docutils literal notranslate"><span class="pre">float16</span></code> if <code class="docutils literal notranslate"><span class="pre">tensor</span></code> is CUDA and <code class="docutils literal notranslate"><span class="pre">float32</span></code>,
+otherwise, it leaves <code class="docutils literal notranslate"><span class="pre">tensor</span></code> unchanged (c.f. the
+<a class="reference external" href="https://pytorch.org/docs/stable/amp.html#op-eligibility">eligibility policy</a> for natively autocasted ops).
+This ensures if the network calls <code class="docutils literal notranslate"><span class="pre">mymatmul</span></code> on any mixture of <code class="docutils literal notranslate"><span class="pre">float16</span></code> and <code class="docutils literal notranslate"><span class="pre">float32</span></code> CUDA tensors,
+<code class="docutils literal notranslate"><span class="pre">mymatmul</span></code> runs in <code class="docutils literal notranslate"><span class="pre">float16</span></code>.  Meanwhile, calls to <code class="docutils literal notranslate"><span class="pre">mymatmul</span></code> with non-CUDA, integer-type, or <code class="docutils literal notranslate"><span class="pre">float64</span></code>
+inputs are unaffected.  Using <code class="docutils literal notranslate"><span class="pre">cached_cast</span></code> to follow the native eligibility policy in your own autocast wrapper
+is recommended, but not required.  For example, if you wanted to force <code class="docutils literal notranslate"><span class="pre">float16</span></code> execution for all input types,
+you could <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">mymatmul(self.half(),</span> <span class="pre">other.half());</span></code> instead of using <code class="docutils literal notranslate"><span class="pre">cached_cast</span></code>.</p>
 <p>Notice that, like our autograd kernels, we exclude the <code class="docutils literal notranslate"><span class="pre">Autocast</span></code> key from
-dispatch before redispatching.  By default, if no autocast kernel is provided,
-we simply fallthrough directly to the regular operator implementation (no
-autocasting occurs.) (We didn’t use <code class="docutils literal notranslate"><span class="pre">myadd</span></code> for this example, since pointwise
-addition doesn’t do autocasting and should just fall through).</p>
-<p>When should an autocast kernel be registered? Unfortunately, there aren’t
-cut-and-dry rules for when you should cast to a lower precision.  You can
-get a sense for what operators have autocasting behavior by looking at
-the <a class="reference external" href="https://pytorch.org/docs/master/amp.html#op-specific-behavior">AMP documentation</a>.  Some other
-general rules:</p>
+dispatch before redispatching.</p>
+<p>By default, if no autocast wrapper is provided,
+we fallthrough directly to the regular operator implementation (no
+autocasting occurs).  (We didn’t use <code class="docutils literal notranslate"><span class="pre">myadd</span></code> for this example, since pointwise
+addition doesn’t need autocasting and should just fall through.)</p>
+<p>When should an autocast wrapper be registered? Unfortunately, there aren’t
+cut-and-dried rules for an op’s preferred precision.  You can
+get a sense for some native ops’ preferred precisions by looking at the
+<a class="reference external" href="https://pytorch.org/docs/master/amp.html#op-specific-behavior">cast lists</a>.
+General guidance:</p>
 <ul class="simple">
-<li>Operations that do reductions should be carried out in float32,</li>
-<li>Any operation with multiple float tensor inputs has to standardize them
-to a common precision, and</li>
-<li>Any operation that does a convolution or gemm under the hood should
-probably be float16</li>
+<li>Ops that do reductions should probably execute in <code class="docutils literal notranslate"><span class="pre">float32</span></code>,</li>
+<li>Any op that does a convolution or gemm under the hood should
+probably execute in <code class="docutils literal notranslate"><span class="pre">float16</span></code>, and</li>
+<li>Other ops with multiple floating-point tensor inputs should standardize
+them to a common precision (unless the implementation supports inputs with different precisions).</li>
 </ul>
+<p>If your custom op falls into the third category, the <code class="docutils literal notranslate"><span class="pre">promote_type</span></code> template
+helps figure out the widest floating-point type present among input tensors, which is
+the safest choice for the execution type:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;ATen/autocast_mode.h&gt;</span><span class="cp"></span>
+
+<span class="n">Tensor</span> <span class="nf">my_multiple_input_op_autocast</span><span class="p">(</span><span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">t0</span><span class="p">,</span> <span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">t1</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">c10</span><span class="o">::</span><span class="n">impl</span><span class="o">::</span><span class="n">ExcludeDispatchKeyGuard</span> <span class="n">no_autocast</span><span class="p">(</span><span class="n">c10</span><span class="o">::</span><span class="n">DispatchKey</span><span class="o">::</span><span class="n">Autocast</span><span class="p">);</span>
+  <span class="c1">// The required at::kHalf argument is an optimistic initial guess.</span>
+  <span class="k">auto</span> <span class="n">exec_type</span> <span class="o">=</span> <span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">promote_type</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">kHalf</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">my_multiple_input_op</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="n">exec_type</span><span class="p">,</span> <span class="n">t0</span><span class="p">),</span>
+                              <span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="n">exec_type</span><span class="p">,</span> <span class="n">t1</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="batched">
 <h3>Batched<a class="headerlink" href="#batched" title="Permalink to this headline">¶</a></h3>
