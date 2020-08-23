@@ -151,7 +151,7 @@ class PositionalEncoding(nn.Module):
 
 import torchtext
 from torchtext.data.utils import get_tokenizer
-TEXT = torchtext.data.Field(tokenize=get_tokenizer("basic_english"),
+TEXT = torchtext.data.Field(tokenize=get_tokenizer("spacy"),
                             init_token='<sos>',
                             eos_token='<eos>',
                             lower=True)
