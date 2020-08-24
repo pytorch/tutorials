@@ -10,7 +10,7 @@ modeling tasks. We hope after you complete this tutorial that you'll proceed to
 learn how `torchtext` can handle much of this preprocessing for you in the
 three tutorials immediately following this one.
 
-In this project we will be teaching a neural network to translate from
+In this project, we will be teaching a neural network to translate from
 French to English.
 
 ::
@@ -118,8 +118,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # individual text files here: https://www.manythings.org/anki/
 #
 # The English to French pairs are too big to include in the repo, so
-# download to ``data/eng-fra.txt`` before continuing. The file is a tab
-# separated list of translation pairs:
+# download to ``data/eng-fra.txt`` before continuing. The file is a tab-separated list of translation pairs:
 #
 # ::
 #
@@ -133,10 +132,10 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 ######################################################################
 # Similar to the character encoding used in the character-level RNN
 # tutorials, we will be representing each word in a language as a one-hot
-# vector, or giant vector of zeros except for a single one (at the index
+# vector or giant vector of zeros except for a single one (at the index
 # of the word). Compared to the dozens of characters that might exist in a
 # language, there are many many more words, so the encoding vector is much
-# larger. We will however cheat a bit and trim the data to only use a few
+# larger. We will however, cheat a bit and trim the data to only use a few
 # thousand words per language.
 #
 # .. figure:: /_static/img/seq-seq-images/word-encoding.png
@@ -147,7 +146,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ######################################################################
 # We'll need a unique index per word to use as the inputs and targets of
-# the networks later. To keep track of all this we will use a helper class
+# the networks later. To keep track of all this, we will use a helper class
 # called ``Lang`` which has word → index (``word2index``) and index → word
 # (``index2word``) dictionaries, as well as a count of each word
 # ``word2count`` to use to later replace rare words.
@@ -298,7 +297,7 @@ print(random.choice(pairs))
 # sequence and uses its own output as input for subsequent steps.
 #
 # A `Sequence to Sequence network <https://arxiv.org/abs/1409.3215>`__, or
-# seq2seq network, or `Encoder Decoder
+# seq2seq network, or `Encoder-Decoder
 # network <https://arxiv.org/pdf/1406.1078v3.pdf>`__, is a model
 # consisting of two RNNs called the encoder and decoder. The encoder reads
 # an input sequence and outputs a single vector, and the decoder reads
@@ -330,9 +329,9 @@ print(random.choice(pairs))
 # The Encoder
 # -----------
 #
-# The encoder of a seq2seq network is a RNN that outputs some value for
-# every word from the input sentence. For every input word the encoder
-# outputs a vector and a hidden state, and uses the hidden state for the
+# The encoder of a seq2seq network is an RNN that outputs some value for
+# every word from the input sentence. For every input word, the encoder
+# outputs a vector and a hidden state and uses the hidden state for the
 # next input word.
 #
 # .. figure:: /_static/img/seq-seq-images/encoder-network.png
@@ -370,7 +369,7 @@ class EncoderRNN(nn.Module):
 # Simple Decoder
 # ^^^^^^^^^^^^^^
 #
-# In the simplest seq2seq decoder we use only last output of the encoder.
+# In the simplest seq2seq decoder, we use only the last output of the encoder.
 # This last output is sometimes called the *context vector* as it encodes
 # context from the entire sequence. This context vector is used as the
 # initial hidden state of the decoder.
@@ -416,11 +415,11 @@ class DecoderRNN(nn.Module):
 # Attention Decoder
 # ^^^^^^^^^^^^^^^^^
 #
-# If only the context vector is passed betweeen the encoder and decoder,
+# If only the context vector is passed between the encoder and decoder,
 # that single vector carries the burden of encoding the entire sentence.
 #
 # Attention allows the decoder network to "focus" on a different part of
-# the encoder's outputs for every step of the decoder's own outputs. First
+# the encoder's outputs for every step of the decoder's own outputs. First,
 # we calculate a set of *attention weights*. These will be multiplied by
 # the encoder output vectors to create a weighted combination. The result
 # (called ``attn_applied`` in the code) should contain information about
@@ -433,7 +432,7 @@ class DecoderRNN(nn.Module):
 # Calculating the attention weights is done with another feed-forward
 # layer ``attn``, using the decoder's input and hidden state as inputs.
 # Because there are sentences of all sizes in the training data, to
-# actually create and train this layer we have to choose a maximum
+# create and train this layer, we have to choose a maximum
 # sentence length (input length, for encoder outputs) that it can apply
 # to. Sentences of the maximum length will use all the attention weights,
 # while shorter sentences will only use the first few.
@@ -492,9 +491,9 @@ class AttnDecoderRNN(nn.Module):
 # Preparing Training Data
 # -----------------------
 #
-# To train, for each pair we will need an input tensor (indexes of the
+# To train, for each pair, we will need an input tensor (indexes of the
 # words in the input sentence) and target tensor (indexes of the words in
-# the target sentence). While creating these vectors we will append the
+# the target sentence). While creating these vectors, we will append the
 # EOS token to both sequences.
 #
 
@@ -518,14 +517,14 @@ def tensorsFromPair(pair):
 # Training the Model
 # ------------------
 #
-# To train we run the input sentence through the encoder, and keep track
+# To train, we run the input sentence through the encoder and keep track
 # of every output and the latest hidden state. Then the decoder is given
-# the ``<SOS>`` token as its first input, and the last hidden state of the
+# the ``<SOS>`` token as its first input and the last hidden state of the
 # encoder as its first hidden state.
 #
 # "Teacher forcing" is the concept of using the real target outputs as
-# each next input, instead of using the decoder's guess as the next input.
-# Using teacher forcing causes it to converge faster but `when the trained
+# each next input, instead of using the decoder's guess as to the next input.
+# Using teacher force causes it to converge faster, but `when the trained
 # network is exploited, it may exhibit
 # instability <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.378.4095&rep=rep1&type=pdf>`__.
 #
@@ -536,7 +535,7 @@ def tensorsFromPair(pair):
 # has not properly learned how to create the sentence from the translation
 # in the first place.
 #
-# Because of the freedom PyTorch's autograd gives us, we can randomly
+# Because of the freedom, PyTorch's autograd gives us, we can randomly
 # choose to use teacher forcing or not with a simple if statement. Turn
 # ``teacher_forcing_ratio`` up to use more of it.
 #
@@ -694,10 +693,10 @@ def showPlot(points):
 # Evaluation
 # ==========
 #
-# Evaluation is mostly the same as training, but there are no targets so
+# Evaluation is mostly the same as training, but there are no targets, so
 # we simply feed the decoder's predictions back to itself for each step.
-# Every time it predicts a word we add it to the output string, and if it
-# predicts the EOS token we stop there. We also store the decoder's
+# Every time it predicts a word, we add it to the output string, and if it
+# predicts the EOS token, we stop there. We also store the decoder's
 # attention outputs for display later.
 #
 
@@ -758,12 +757,12 @@ def evaluateRandomly(encoder, decoder, n=10):
 # =======================
 #
 # With all these helper functions in place (it looks like extra work, but
-# it makes it easier to run multiple experiments) we can actually
+# it makes it easier to run multiple experiments), we can actually
 # initialize a network and start training.
 #
 # Remember that the input sentences were heavily filtered. For this small
-# dataset we can use relatively small networks of 256 hidden nodes and a
-# single GRU layer. After about 40 minutes on a MacBook CPU we'll get some
+# dataset, we can use relatively small networks of 256 hidden nodes and a
+# single GRU layer. After about 40 minutes on a MacBook CPU, we'll get some
 # reasonable results.
 #
 # .. Note::
@@ -848,10 +847,10 @@ evaluateAndShowAttention("c est un jeune directeur plein de talent .")
 # Exercises
 # =========
 #
-# -  Try with a different dataset
+# -  Try with a different dataset.
 #
 #    -  Another language pair
-#    -  Human → Machine (e.g. IOT commands)
+#    -  Human → Machine (e.g., IOT commands)
 #    -  Chat → Response
 #    -  Question → Answer
 #
@@ -864,6 +863,6 @@ evaluateAndShowAttention("c est un jeune directeur plein de talent .")
 #    this:
 #
 #    -  Train as an autoencoder
-#    -  Save only the Encoder network
+#    -  Save only the Encoder network.
 #    -  Train a new Decoder for translation from there
 #
