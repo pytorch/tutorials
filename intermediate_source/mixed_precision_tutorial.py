@@ -19,22 +19,23 @@ First we'll cover typical use, then describe more advanced cases.
 .. contents:: :local:
 """
 
-import time, gc
+import torch, time, gc
 
-_start_time = None
+start_time = None
 
 def start_timer():
-    global _start_time
+    global start_time
     gc.collect()
     torch.cuda.empty_cache()
     torch.cuda.reset_max_memory_allocated()
     torch.cuda.synchronize()
-    _start_time = time.time()
+    start_time = time.time()
 
 def end_timer_and_print(local_msg):
     torch.cuda.synchronize()
-    print(local_msg)
-    print("Total execution time = {:.3f} sec".format(time.time() - _start_time))
+    end_time = time.time()
+    print("\n" + local_msg)
+    print("Total execution time = {:.3f} sec".format(end_time - start_time))
     print("Max memory used by tensors = {} bytes".format(torch.cuda.max_memory_allocated()))
 
 def make_model(in_size, out_size, num_layers):
@@ -45,29 +46,31 @@ def make_model(in_size, out_size, num_layers):
     layers.append(torch.nn.Linear(in_size, out_size))
     return torch.nn.Sequential(*tuple(layers)).cuda()
 
-######################################################################
-# Without torch.cuda.amp, the following simple "network" executes all
-# ops in default precision (torch.float32):
-
-import torch
-
 # batch_size, in_size, out_size, and num_layers are chosen to be large enough to saturate the GPU.
 # Typically, mixed precision provides the greatest speedup when GPU is working hard.
 # Small networks may be CPU bound, in which case mixed precision won't improve performance.
-# Sizes are also chosen such that the linear layers' participating dimensions are multiples of 8,
-# to permit Tensor Core usage on Tensor Core-capable GPUs.
-# See :ref:`Troubleshooting <Troubleshooting>`.
+# Sizes are also chosen such that linear layers' participating dimensions are multiples of 8,
+# to permit Tensor Core usage on Tensor Core-capable GPUs (see :ref:`Troubleshooting <Troubleshooting>`).
+#
 # Exercise: Vary participating sizes and see how the mixed precision speedup changes.
-batch_size = 256 # Try, for example, 32, 33
+batch_size = 512 # Try, for example, 128, 256, 513.
 in_size = 4096
 out_size = 4096
-num_layers = 6
-num_batches = 128
+num_layers = 3
+num_batches = 50
 epochs = 3
 
+# Creates data in default precision.  The same data is used for both default and mixed precision trials below.
+# You don't need to manually change the type of input data when enabling mixed precision.
 data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batches)]
 targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
 loss_fn = torch.nn.MSELoss().cuda()
+
+######################################################################
+# Default Precision (Baseline)
+# ----------------------------
+#
+# Without torch.cuda.amp, the following simple network executes all ops in default precision (torch.float32):
 
 net = make_model(in_size, out_size, num_layers)
 opt = torch.optim.SGD(net.parameters(), lr=0.001)
@@ -86,7 +89,7 @@ end_timer_and_print("With default precision:")
 # Adding autocast
 # ---------------
 #
-for epoch in range(epochs):
+for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         # Runs the forward pass under autocast
         with torch.cuda.amp.autocast():
@@ -119,7 +122,7 @@ for epoch in range(epochs):
 # a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
 scaler = torch.cuda.amp.GradScaler()
 
-for epoch in range(epochs):
+for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         with torch.cuda.amp.autocast():
             output = net(input)
@@ -161,13 +164,13 @@ end_timer_and_print("With mixed precision:")
 
 ######################################################################
 # Inspecting/modifying gradients (e.g., gradient clipping)
-# ---------------
+# --------------------------------------------------------
 #
 # All gradients produced by ``scaler.scale(loss).backward()`` are scaled.  If you wish to modify or inspect
 # the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``,  you should
 # unscale them first using `scaler.unscale_(optimizer)`.
 
-for epoch in range(epochs):
+for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         with torch.cuda.amp.autocast():
             output = net(input)
