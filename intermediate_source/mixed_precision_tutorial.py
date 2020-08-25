@@ -112,8 +112,11 @@ for epoch in range(epochs):
 # See `Gradient Scaling <https://pytorch.org/docs/stable/amp.html#gradient-scaling>`_
 # for a full explanation of each step.
 
-# Constructs scaler with default args, which are effective for most networks.
+# Constructs scaler once, at the beginning of the convergence run, using default args.
 # If your network fails to converge with default GradScaler args, please file an issue.
+# The same GradScaler instance should be used for the entire convergence run.
+# If you perform multiple convergence runs in the same script, each run should use
+# a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
 scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(epochs):
