@@ -13,14 +13,19 @@ which can reduce your network's runtime and memory footprint.
 
 Ordinarily, "automatic mixed precision training" uses `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_ and
 `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_ together.
-Here we'll walk through adding ``autocast`` and ``GradScaler`` to a toy network.
-First we'll cover typical use, then describe more advanced cases.
+This tutorial measures the performance of a simple network in default precision,
+then walks through adding ``autocast`` and ``GradScaler`` to run the same network in
+mixed precision with improved performance.
+
+You may download and run this tutorial as a standalone Python script.
+The only requirements are Pytorch 1.6+ and a CUDA-capable GPU.
 
 .. contents:: :local:
 """
 
 import torch, time, gc
 
+# Timing utilities
 start_time = None
 
 def start_timer():
@@ -38,6 +43,12 @@ def end_timer_and_print(local_msg):
     print("Total execution time = {:.3f} sec".format(end_time - start_time))
     print("Max memory used by tensors = {} bytes".format(torch.cuda.max_memory_allocated()))
 
+##########################################################
+# A simple network
+# ----------------
+#
+# The following sequence of linear layers and ReLUs should show a nice speedup with mixed precision.
+
 def make_model(in_size, out_size, num_layers):
     layers = []
     for _ in range(num_layers - 1):
@@ -46,13 +57,15 @@ def make_model(in_size, out_size, num_layers):
     layers.append(torch.nn.Linear(in_size, out_size))
     return torch.nn.Sequential(*tuple(layers)).cuda()
 
-# batch_size, in_size, out_size, and num_layers are chosen to be large enough to saturate the GPU.
-# Typically, mixed precision provides the greatest speedup when GPU is working hard.
+##########################################################
+# ``batch_size``, ``in_size``, ``out_size``, and ``num_layers`` are chosen to be large enough to saturate the GPU with work.
+# Typically, mixed precision provides the greatest speedup when GPU is saturated.
 # Small networks may be CPU bound, in which case mixed precision won't improve performance.
 # Sizes are also chosen such that linear layers' participating dimensions are multiples of 8,
-# to permit Tensor Core usage on Tensor Core-capable GPUs (see :ref:`Troubleshooting <Troubleshooting>`).
+# to permit Tensor Core usage on Tensor Core-capable GPUs (see :ref:`Troubleshooting<troubleshooting>` below).
 #
 # Exercise: Vary participating sizes and see how the mixed precision speedup changes.
+
 batch_size = 512 # Try, for example, 128, 256, 513.
 in_size = 4096
 out_size = 4096
@@ -60,16 +73,18 @@ num_layers = 3
 num_batches = 50
 epochs = 3
 
-# Creates data in default precision.  The same data is used for both default and mixed precision trials below.
+# Creates data in default precision.
+# The same data is used for both default and mixed precision trials below.
 # You don't need to manually change the type of input data when enabling mixed precision.
 data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batches)]
 targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
+
 loss_fn = torch.nn.MSELoss().cuda()
 
-##############################
-# Default Precision (Baseline)
-# ----------------------------
-# Without torch.cuda.amp, the following simple network executes all ops in default precision (torch.float32):
+##########################################################
+# Default Precision
+# -----------------
+# Without torch.cuda.amp, the following simple network executes all ops in default precision (``torch.float32``):
 
 net = make_model(in_size, out_size, num_layers)
 opt = torch.optim.SGD(net.parameters(), lr=0.001)
@@ -84,7 +99,7 @@ for epoch in range(epochs):
         opt.zero_grad() # set_to_none=True here can modestly improve performance
 end_timer_and_print("With default precision:")
 
-#################
+##########################################################
 # Adding autocast
 # ---------------
 # Instances of `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#autocasting>`_ serve as context managers that allow regions of your script to run
@@ -114,7 +129,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         opt.step()
         opt.zero_grad() # set_to_none=True here can modestly improve performance
 
-###################
+##########################################################
 # Adding GradScaler
 # -----------------
 # `Gradient scaling <https://pytorch.org/docs/stable/amp.html#gradient-scaling>`_
@@ -128,6 +143,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # The same GradScaler instance should be used for the entire convergence run.
 # If you perform multiple convergence runs in the same script, each run should use
 # a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
+
 scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
@@ -149,18 +165,24 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 
         opt.zero_grad()
 
-##############
+##########################################################
 # All together
 # ------------
+#
+# The following also demonstrates ``enabled``, an optional convenience argument to ``autocast`` and ``GradScaler``.
+# If False, ``autocast`` and ``GradScaler``\ 's calls become no-ops.
+# This allows switching between default precision and mixed precision without if/else statements.
+
+use_amp = True
 
 net = make_model(in_size, out_size, num_layers)
 opt = torch.optim.SGD(net.parameters(), lr=0.001)
-scaler = torch.cuda.amp.GradScaler()
+scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
 
 start_timer()
 for epoch in range(epochs):
     for input, target in zip(data, targets):
-        with torch.cuda.amp.autocast():
+        with torch.cuda.amp.autocast(enabled=use_amp):
             output = net(input)
             loss = loss_fn(output, target)
         scaler.scale(loss).backward()
@@ -168,7 +190,6 @@ for epoch in range(epochs):
         scaler.update()
         opt.zero_grad()
 end_timer_and_print("With mixed precision:")
-
 
 ##########################################################
 # Inspecting/modifying gradients (e.g., gradient clipping)
@@ -196,24 +217,26 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         scaler.update()
         opt.zero_grad()
 
-#################
+##########################################################
 # Advanced topics
 # ---------------
 #
 # See the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_ for advanced use cases including:
 #
+# * Gradient accumulation
 # * Gradient penalty/double backward
 # * Networks with multiple models, optimizers, or losses
 # * Multiple GPUs (``torch.nn.DataParallel`` or ``torch.nn.parallel.DistributedDataParallel``)
 # * Custom autograd functions (subclasses of ``torch.autograd.Function``)
-
-#################
+#
+# .. _troubleshooting:
+#
 # Troubleshooting
 # ---------------
 #
 # Speedup with Amp is minor
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
-# 1. Your network may not be saturating the GPU(s) with work, and is therefore CPU bound. Amp's effect on GPU performance
+# 1. Your network may fail to saturate the GPU(s) with work, and is therefore CPU bound. Amp's effect on GPU performance
 #    won't matter.
 #
 #    * A rough rule of thumb to saturate the GPU is to increase batch and/or network size(s)
@@ -225,12 +248,27 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # 3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
 #    (For NLP models with encoders/decoders, this can be subtle.  Also. convolutions used to have similar size constraints
 #    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See
-#    `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>` for details).
+#    `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>`_ for guidance.)
 #
 # Loss is inf/NaN
 # ~~~~~~~~~~~~~~~
 # First, check if your network fits an advanced use case in the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_.
+# See also `Prefer binary_cross_entropy_with_logits over binary_cross_entropy <https://pytorch.org/docs/stable/amp.html#prefer-binary-cross-entropy-with-logits-over-binary-cross-entropy>`_.
+#
 # If you're confident your Amp usage is correct, you may need to file an issue, but before doing so, it's helpful to gather the following information:
-# 1. Try disabling ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if inf/NaN persist.
-# 2. ???
-# 3. profit
+#
+# 1. Try disabling ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if infs/NaNs persist.
+# 2. If you suspect some region of your network overflows (e.g., a complex loss function), run that forward region in ``float32``.
+#    `The autocast docstring <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_'s last code snippet
+#    shows running a subregion in ``float32`` (by locally disabling autocast and casting the subregion's inputs).
+#
+# Type mismatch error (may manifest as CUDNN_STATUS_BAD_PARAM)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Autocast tries to cover all ops that benefit from or require casting.  The
+# `ops that receive explicit coverage <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
+# are based on reasoning about numerical properties, but also on experience.
+# If you see a type mismatch error in an autocast-enabled forward region or a backward pass following that region,
+# it's possible autocast missed an op.
+#
+# Please file an issue with the error backtrace.  ``export TORCH_SHOW_CPP_STACKTRACES=1`` before running your script to provide
+# more fine-grained information on which backend op is failing.
