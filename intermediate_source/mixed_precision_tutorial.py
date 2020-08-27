@@ -97,7 +97,7 @@ for epoch in range(epochs):
         loss.backward()
         opt.step()
         opt.zero_grad() # set_to_none=True here can modestly improve performance
-end_timer_and_print("With default precision:")
+end_timer_and_print("Default precision:")
 
 ##########################################################
 # Adding autocast
@@ -189,7 +189,7 @@ for epoch in range(epochs):
         scaler.step(opt)
         scaler.update()
         opt.zero_grad()
-end_timer_and_print("With mixed precision:")
+end_timer_and_print("Mixed precision:")
 
 ##########################################################
 # Inspecting/modifying gradients (e.g., gradient clipping)
