@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Automatic Mixed Precision in PyTorch
-*******************************************************
+************************************
 **Author**: `Michael Carilli <https://github.com/mcarilli>`_
 
 `torch.cuda.amp <https://pytorch.org/docs/stable/amp.html>`_ provides convenience methods for mixed precision,
@@ -66,10 +66,9 @@ data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batch
 targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
 loss_fn = torch.nn.MSELoss().cuda()
 
-######################################################################
+##############################
 # Default Precision (Baseline)
 # ----------------------------
-#
 # Without torch.cuda.amp, the following simple network executes all ops in default precision (torch.float32):
 
 net = make_model(in_size, out_size, num_layers)
@@ -85,20 +84,27 @@ for epoch in range(epochs):
         opt.zero_grad() # set_to_none=True here can modestly improve performance
 end_timer_and_print("With default precision:")
 
-######################################################################
+#################
 # Adding autocast
 # ---------------
+# Instances of `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#autocasting>`_ serve as context managers that allow regions of your script to run
+# in mixed precision.
 #
+# In these regions, CUDA ops run in a dtype chosen by autocast
+# to improve performance while maintaining accuracy.
+# See the :ref:`Autocast Op Reference<autocast-op-reference>` for details on what precision
+# autocast chooses for each op, and under what circumstances.
+
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
-        # Runs the forward pass under autocast
-        with torch.cuda.amp.autocast():
+        # Runs the forward pass under autocast.
+        with torch.cuda.amp.autocast(enabled=try_amp):
             output = net(input)
-            # Linear layers with ``float32`` inputs `autocast to float16 <https://pytorch.org/docs/stable/amp.html#ops-that-can-autocast-to-float16>`_
+            # output is float16 because linear layers autocast to float16.
             assert output.dtype is torch.float16
 
             loss = loss_fn(output, target)
-            # ``mse_loss`` layers with ``float16`` inputs `autocast to float32 <https://pytorch.org/docs/stable/amp.html#ops-that-can-autocast-to-float16>`_
+            # loss is float32 because mse_loss layers autocast to float32.
             assert loss.dtype is torch.float32
 
         # Exits autocast before backward().
@@ -108,12 +114,14 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         opt.step()
         opt.zero_grad() # set_to_none=True here can modestly improve performance
 
-######################################################################
+###################
 # Adding GradScaler
 # -----------------
+# `Gradient scaling <https://pytorch.org/docs/stable/amp.html#gradient-scaling>`_
+# helps prevent gradients with small magnitudes from flushing to zero
+# ("underflowing") when training with mixed precision.
 #
-# See `Gradient Scaling <https://pytorch.org/docs/stable/amp.html#gradient-scaling>`_
-# for a full explanation of each step.
+# ``torch.cuda.amp.GradScaler`` performs the steps of gradient scaling conveniently.
 
 # Constructs scaler once, at the beginning of the convergence run, using default args.
 # If your network fails to converge with default GradScaler args, please file an issue.
@@ -141,7 +149,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 
         opt.zero_grad()
 
-######################################################################
+##############
 # All together
 # ------------
 
@@ -162,13 +170,13 @@ for epoch in range(epochs):
 end_timer_and_print("With mixed precision:")
 
 
-######################################################################
+##########################################################
 # Inspecting/modifying gradients (e.g., gradient clipping)
 # --------------------------------------------------------
 #
 # All gradients produced by ``scaler.scale(loss).backward()`` are scaled.  If you wish to modify or inspect
 # the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``,  you should
-# unscale them first using `scaler.unscale_(optimizer)`.
+# unscale them first using ``scaler.unscale_(optimizer)``.
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
@@ -188,33 +196,36 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         scaler.update()
         opt.zero_grad()
 
-######################################################################
+#################
 # Advanced topics
 # ---------------
 #
 # See the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_ for advanced use cases including:
+#
 # * Gradient penalty/double backward
 # * Networks with multiple models, optimizers, or losses
 # * Multiple GPUs (``torch.nn.DataParallel`` or ``torch.nn.parallel.DistributedDataParallel``)
 # * Custom autograd functions (subclasses of ``torch.autograd.Function``)
 
-######################################################################
+#################
 # Troubleshooting
 # ---------------
 #
 # Speedup with Amp is minor
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1. Your network may not be saturating the GPU(s) with work, and is therefore CPU bound. Amp's effect on GPU performance
-#    won't matter.  A rough rule of thumb to saturate the GPU is to increase batch and/or network size(s)
-#    as much as you can without running OOM.  Also, try to avoid excessive CPU-GPU synchronization (``.item()`` calls, or
-#    printing values from CUDA tensors), and try to avoid sequences of many small CUDA ops (coalesce these into a few
-#    large CUDA ops if you can).
+#    won't matter.
+#
+#    * A rough rule of thumb to saturate the GPU is to increase batch and/or network size(s)
+#      as much as you can without running OOM.
+#    * Try to avoid excessive CPU-GPU synchronization (``.item()`` calls, or printing values from CUDA tensors).
+#    * Try to avoid sequences of many small CUDA ops (coalesce these into a few large CUDA ops if you can).
 # 2. Your network may be compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
 #    In this case a more modest speedup is expected.
 # 3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
 #    (For NLP models with encoders/decoders, this can be subtle.  Also. convolutions used to have similar size constraints
-#    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>` for details).
-#
+#    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See
+#    `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>` for details).
 #
 # Loss is inf/NaN
 # ~~~~~~~~~~~~~~~
