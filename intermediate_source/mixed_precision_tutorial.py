@@ -46,8 +46,7 @@ def end_timer_and_print(local_msg):
 ##########################################################
 # A simple network
 # ----------------
-#
-# The following sequence of linear layers and ReLUs should show a nice speedup with mixed precision.
+# The following sequence of linear layers and ReLUs should show a speedup with mixed precision.
 
 def make_model(in_size, out_size, num_layers):
     layers = []
@@ -75,7 +74,7 @@ epochs = 3
 
 # Creates data in default precision.
 # The same data is used for both default and mixed precision trials below.
-# You don't need to manually change the type of input data when enabling mixed precision.
+# You don't need to manually change inputs' dtype when enabling mixed precision.
 data = [torch.randn(batch_size, in_size, device="cuda") for _ in range(num_batches)]
 targets = [torch.randn(batch_size, out_size, device="cuda") for _ in range(num_batches)]
 
@@ -102,8 +101,8 @@ end_timer_and_print("Default precision:")
 ##########################################################
 # Adding autocast
 # ---------------
-# Instances of `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#autocasting>`_ serve as context managers that allow regions of your script to run
-# in mixed precision.
+# Instances of `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#autocasting>`_
+# serve as context managers that allow regions of your script to run in mixed precision.
 #
 # In these regions, CUDA ops run in a dtype chosen by autocast
 # to improve performance while maintaining accuracy.
@@ -166,9 +165,8 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         opt.zero_grad()
 
 ##########################################################
-# All together
-# ------------
-#
+# All together ("Automatic Mixed Precision")
+# ------------------------------------------
 # The following also demonstrates ``enabled``, an optional convenience argument to ``autocast`` and ``GradScaler``.
 # If False, ``autocast`` and ``GradScaler``\ 's calls become no-ops.
 # This allows switching between default precision and mixed precision without if/else statements.
@@ -192,9 +190,8 @@ for epoch in range(epochs):
 end_timer_and_print("Mixed precision:")
 
 ##########################################################
-# Inspecting/modifying gradients (e.g., gradient clipping)
+# Inspecting/modifying gradients (e.g., clipping)
 # --------------------------------------------------------
-#
 # All gradients produced by ``scaler.scale(loss).backward()`` are scaled.  If you wish to modify or inspect
 # the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``,  you should
 # unscale them first using ``scaler.unscale_(optimizer)``.
@@ -218,6 +215,11 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         opt.zero_grad()
 
 ##########################################################
+# Inference/Evaluation
+# --------------------
+# ``autocast`` may be used by itself to wrap inference or evaluation forward passes. ``GradScaler`` is not necessary.
+#
+##########################################################
 # Advanced topics
 # ---------------
 #
@@ -228,6 +230,10 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # * Networks with multiple models, optimizers, or losses
 # * Multiple GPUs (``torch.nn.DataParallel`` or ``torch.nn.parallel.DistributedDataParallel``)
 # * Custom autograd functions (subclasses of ``torch.autograd.Function``)
+#
+# If you're registering a custom C++ op with the dispatcher, see the
+# `autocast section <https://pytorch.org/tutorials/advanced/dispatcher.html#autocast>`_
+# of the dispatcher tutorial.
 #
 # .. _troubleshooting:
 #
@@ -257,10 +263,11 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 #
 # If you're confident your Amp usage is correct, you may need to file an issue, but before doing so, it's helpful to gather the following information:
 #
-# 1. Try disabling ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if infs/NaNs persist.
-# 2. If you suspect some region of your network overflows (e.g., a complex loss function), run that forward region in ``float32``.
+# 1. Disable ``autocast`` or ``GradScaler`` individually (by passing ``enabled=False`` to their constructor) and see if infs/NaNs persist.
+# 2. If you suspect part of your network (e.g., a complicated loss function) overflows , run that forward region in ``float32``
+#    and see if infs/NaNs persist.
 #    `The autocast docstring <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_'s last code snippet
-#    shows running a subregion in ``float32`` (by locally disabling autocast and casting the subregion's inputs).
+#    shows forcing a subregion to run in ``float32`` (by locally disabling autocast and casting the subregion's inputs).
 #
 # Type mismatch error (may manifest as CUDNN_STATUS_BAD_PARAM)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
