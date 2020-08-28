@@ -206,7 +206,7 @@ Welcome to PyTorch Tutorials
    :header: (prototype) Introduction to Named Tensors in PyTorch
    :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
    :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
-   :link: /intermediate/named_tensor_tutorial.html
+   :link: intermediate/named_tensor_tutorial.html
    :tags: Frontend-APIs,Named-Tensor,Best-Practice
 
 .. customcarditem::
