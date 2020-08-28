@@ -271,9 +271,9 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 #
 # Type mismatch error (may manifest as CUDNN_STATUS_BAD_PARAM)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Autocast tries to cover all ops that benefit from or require casting.  The
-# `ops that receive explicit coverage <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
-# are based on reasoning about numerical properties, but also on experience.
+# Autocast tries to cover all ops that benefit from or require casting.
+# `Ops that receive explicit coverage <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
+# are chosen based on numerical properties, but also on experience.
 # If you see a type mismatch error in an autocast-enabled forward region or a backward pass following that region,
 # it's possible autocast missed an op.
 #
