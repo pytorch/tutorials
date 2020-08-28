@@ -13,6 +13,7 @@ which can reduce your network's runtime and memory footprint.
 
 Ordinarily, "automatic mixed precision training" uses `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_ and
 `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_ together.
+
 This tutorial measures the performance of a simple network in default precision,
 then walks through adding ``autocast`` and ``GradScaler`` to run the same network in
 mixed precision with improved performance.
@@ -106,8 +107,8 @@ end_timer_and_print("Default precision:")
 #
 # In these regions, CUDA ops run in a dtype chosen by autocast
 # to improve performance while maintaining accuracy.
-# See the :ref:`Autocast Op Reference<autocast-op-reference>` for details on what precision
-# autocast chooses for each op, and under what circumstances.
+# See the `Autocast Op Reference <https://pytorch.org/docs/stable/amp.html#autocast-op-reference>`_
+# for details on what precision autocast chooses for each op, and under what circumstances.
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
@@ -218,11 +219,10 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # Inference/Evaluation
 # --------------------
 # ``autocast`` may be used by itself to wrap inference or evaluation forward passes. ``GradScaler`` is not necessary.
-#
+
 ##########################################################
 # Advanced topics
 # ---------------
-#
 # See the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_ for advanced use cases including:
 #
 # * Gradient accumulation
@@ -234,12 +234,12 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # If you're registering a custom C++ op with the dispatcher, see the
 # `autocast section <https://pytorch.org/tutorials/advanced/dispatcher.html#autocast>`_
 # of the dispatcher tutorial.
-#
+
+##########################################################
 # .. _troubleshooting:
 #
 # Troubleshooting
 # ---------------
-#
 # Speedup with Amp is minor
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 # 1. Your network may fail to saturate the GPU(s) with work, and is therefore CPU bound. Amp's effect on GPU performance
@@ -250,7 +250,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 #    * Try to avoid excessive CPU-GPU synchronization (``.item()`` calls, or printing values from CUDA tensors).
 #    * Try to avoid sequences of many small CUDA ops (coalesce these into a few large CUDA ops if you can).
 # 2. Your network may be compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
-#    In this case a more modest speedup is expected.
+#    In this case a reduced speedup is expected.
 # 3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
 #    (For NLP models with encoders/decoders, this can be subtle.  Also. convolutions used to have similar size constraints
 #    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See
