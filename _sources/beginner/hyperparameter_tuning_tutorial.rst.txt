@@ -1,0 +1,2608 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_beginner_hyperparameter_tuning_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_beginner_hyperparameter_tuning_tutorial.py:
+
+
+Hyperparameter tuning with Ray Tune
+===================================
+
+Hyperparameter tuning can make the difference between an average model and a highly
+accurate one. Often simple things like choosing a different learning rate or changing
+a network layer size can have a dramatic impact on your model performance.
+
+Fortunately, there are tools that help with finding the best combination of parameters.
+`Ray Tune <https://docs.ray.io/en/latest/tune.html>`_ is an industry standard tool for
+distributed hyperparameter tuning. Ray Tune includes the latest hyperparameter search
+algorithms, integrates with TensorBoard and other analysis libraries, and natively
+supports distributed training through `Ray's distributed machine learning engine
+<https://ray.io/>`_.
+
+In this tutorial, we will show you how to integrate Ray Tune into your PyTorch
+training workflow. We will extend `this tutorial from the PyTorch documentation
+<https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_ for training
+a CIFAR10 image classifier.
+
+As you will see, we only need to add some slight modifications. In particular, we
+need to
+
+1. wrap data loading and training in functions,
+2. make some network parameters configurable,
+3. add checkpointing (optional),
+4. and define the search space for the model tuning
+
+|
+
+To run this tutorial, please make sure the following packages are
+installed:
+
+-  ``ray[tune]``: Distributed hyperparameter tuning library
+-  ``torchvision``: For the data transformers
+
+Setup / Imports
+---------------
+Let's start with the imports:
+
+
+.. code-block:: default
+
+    from functools import partial
+    import numpy as np
+    import os
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    import torch.optim as optim
+    from torch.utils.data import random_split
+    import torchvision
+    import torchvision.transforms as transforms
+    from ray import tune
+    from ray.tune import CLIReporter
+    from ray.tune.schedulers import ASHAScheduler
+
+
+
+
+
+
+
+Most of the imports are needed for building the PyTorch model. Only the last three
+imports are for Ray Tune.
+
+Data loaders
+------------
+We wrap the data loaders in their own function and pass a global data directory.
+This way we can share a data directory between different trials.
+
+
+.. code-block:: default
+
+
+
+    def load_data(data_dir="./data"):
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+
+        trainset = torchvision.datasets.CIFAR10(
+            root=data_dir, train=True, download=True, transform=transform)
+
+        testset = torchvision.datasets.CIFAR10(
+            root=data_dir, train=False, download=True, transform=transform)
+
+        return trainset, testset
+
+
+
+
+
+
+
+Configurable neural network
+---------------------------
+We can only tune those parameters that are configurable. In this example, we can specify
+the layer sizes of the fully connected layers:
+
+
+.. code-block:: default
+
+
+
+    class Net(nn.Module):
+        def __init__(self, l1=120, l2=84):
+            super(Net, self).__init__()
+            self.conv1 = nn.Conv2d(3, 6, 5)
+            self.pool = nn.MaxPool2d(2, 2)
+            self.conv2 = nn.Conv2d(6, 16, 5)
+            self.fc1 = nn.Linear(16 * 5 * 5, l1)
+            self.fc2 = nn.Linear(l1, l2)
+            self.fc3 = nn.Linear(l2, 10)
+
+        def forward(self, x):
+            x = self.pool(F.relu(self.conv1(x)))
+            x = self.pool(F.relu(self.conv2(x)))
+            x = x.view(-1, 16 * 5 * 5)
+            x = F.relu(self.fc1(x))
+            x = F.relu(self.fc2(x))
+            x = self.fc3(x)
+            return x
+
+
+
+
+
+
+
+The train function
+------------------
+Now it gets interesting, because we introduce some changes to the example `from the PyTorch
+documentation <https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html>`_.
+
+We wrap the training script in a function ``train_cifar(config, checkpoint_dir=None, data_dir=None)``.
+As you can guess, the ``config`` parameter will receive the hyperparameters we would like to
+train with. The ``checkpoint_dir`` parameter is used to restore checkpoints. The ``data_dir`` specifies
+the directory where we load and store the data, so multiple runs can share the same data source.
+
+.. code-block:: python
+
+    net = Net(config["l1"], config["l2"])
+
+    if checkpoint_dir:
+        model_state, optimizer_state = torch.load(
+            os.path.join(checkpoint_dir, "checkpoint"))
+        net.load_state_dict(model_state)
+        optimizer.load_state_dict(optimizer_state)
+
+The learning rate of the optimizer is made configurable, too:
+
+.. code-block:: python
+
+    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
+
+We also split the training data into a training and validation subset. We thus train on
+80% of the data and calculate the validation loss on the remaining 20%. The batch sizes
+with which we iterate through the training and test sets are configurable as well.
+
+Adding (multi) GPU support with DataParallel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Image classification benefits largely from GPUs. Luckily, we can continue to use
+PyTorch's abstractions in Ray Tune. Thus, we can wrap our model in ``nn.DataParallel``
+to support data parallel training on multiple GPUs:
+
+.. code-block:: python
+
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda:0"
+        if torch.cuda.device_count() > 1:
+            net = nn.DataParallel(net)
+    net.to(device)
+
+By using a ``device`` variable we make sure that training also works when we have
+no GPUs available. PyTorch requires us to send our data to the GPU memory explicitly,
+like this:
+
+.. code-block:: python
+
+    for i, data in enumerate(trainloader, 0):
+        inputs, labels = data
+        inputs, labels = inputs.to(device), labels.to(device)
+
+The code now supports training on CPUs, on a single GPU, and on multiple GPUs. Notably, Ray
+also supports `fractional GPUs <https://docs.ray.io/en/master/using-ray-with-gpus.html#fractional-gpus>`_
+so we can share GPUs among trials, as long as the model still fits on the GPU memory. We'll come back
+to that later.
+
+Communicating with Ray Tune
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The most interesting part is the communication with Ray Tune:
+
+.. code-block:: python
+
+    with tune.checkpoint_dir(epoch) as checkpoint_dir:
+        path = os.path.join(checkpoint_dir, "checkpoint")
+        torch.save((net.state_dict(), optimizer.state_dict()), path)
+
+    tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+
+Here we first save a checkpoint and then report some metrics back to Ray Tune. Specifically,
+we send the validation loss and accuracy back to Ray Tune. Ray Tune can then use these metrics
+to decide which hyperparameter configuration lead to the best results. These metrics
+can also be used to stop bad performing trials early in order to avoid wasting
+resources on those trials.
+
+The checkpoint saving is optional, however, it is necessary if we wanted to use advanced
+schedulers like
+`Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
+Also, by saving the checkpoint we can later load the trained models and validate them
+on a test set.
+
+Full training function
+~~~~~~~~~~~~~~~~~~~~~~
+
+The full code example looks like this:
+
+
+.. code-block:: default
+
+
+
+    def train_cifar(config, checkpoint_dir=None, data_dir=None):
+        net = Net(config["l1"], config["l2"])
+
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda:0"
+            if torch.cuda.device_count() > 1:
+                net = nn.DataParallel(net)
+        net.to(device)
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
+
+        if checkpoint_dir:
+            model_state, optimizer_state = torch.load(
+                os.path.join(checkpoint_dir, "checkpoint"))
+            net.load_state_dict(model_state)
+            optimizer.load_state_dict(optimizer_state)
+
+        trainset, testset = load_data(data_dir)
+
+        test_abs = int(len(trainset) * 0.8)
+        train_subset, val_subset = random_split(
+            trainset, [test_abs, len(trainset) - test_abs])
+
+        trainloader = torch.utils.data.DataLoader(
+            train_subset,
+            batch_size=int(config["batch_size"]),
+            shuffle=True,
+            num_workers=8)
+        valloader = torch.utils.data.DataLoader(
+            val_subset,
+            batch_size=int(config["batch_size"]),
+            shuffle=True,
+            num_workers=8)
+
+        for epoch in range(10):  # loop over the dataset multiple times
+            running_loss = 0.0
+            epoch_steps = 0
+            for i, data in enumerate(trainloader, 0):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = data
+                inputs, labels = inputs.to(device), labels.to(device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                outputs = net(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                # print statistics
+                running_loss += loss.item()
+                epoch_steps += 1
+                if i % 2000 == 1999:  # print every 2000 mini-batches
+                    print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
+                                                    running_loss / epoch_steps))
+                    running_loss = 0.0
+
+            # Validation loss
+            val_loss = 0.0
+            val_steps = 0
+            total = 0
+            correct = 0
+            for i, data in enumerate(valloader, 0):
+                with torch.no_grad():
+                    inputs, labels = data
+                    inputs, labels = inputs.to(device), labels.to(device)
+
+                    outputs = net(inputs)
+                    _, predicted = torch.max(outputs.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+
+                    loss = criterion(outputs, labels)
+                    val_loss += loss.cpu().numpy()
+                    val_steps += 1
+
+            with tune.checkpoint_dir(epoch) as checkpoint_dir:
+                path = os.path.join(checkpoint_dir, "checkpoint")
+                torch.save((net.state_dict(), optimizer.state_dict()), path)
+
+            tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+        print("Finished Training")
+
+
+
+
+
+
+
+As you can see, most of the code is adapted directly from the original example.
+
+Test set accuracy
+-----------------
+Commonly the performance of a machine learning model is tested on a hold-out test
+set with data that has not been used for training the model. We also wrap this in a
+function:
+
+
+.. code-block:: default
+
+
+
+    def test_accuracy(net, device="cpu"):
+        trainset, testset = load_data()
+
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=4, shuffle=False, num_workers=2)
+
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data in testloader:
+                images, labels = data
+                images, labels = images.to(device), labels.to(device)
+                outputs = net(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        return correct / total
+
+
+
+
+
+
+
+The function also expects a ``device`` parameter, so we can do the
+test set validation on a GPU.
+
+Configuring the search space
+----------------------------
+Lastly, we need to define Ray Tune's search space. Here is an example:
+
+.. code-block:: python
+
+    config = {
+        "l1": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
+        "l2": tune.sample_from(lambda _: 2**np.random.randint(2, 9)),
+        "lr": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([2, 4, 8, 16])
+    }
+
+The ``tune.sample_from()`` function makes it possible to define your own sample
+methods to obtain hyperparameters. In this example, the ``l1`` and ``l2`` parameters
+should be powers of 2 between 4 and 256, so either 4, 8, 16, 32, 64, 128, or 256.
+The ``lr`` (learning rate) should be uniformly sampled between 0.0001 and 0.1. Lastly,
+the batch size is a choice between 2, 4, 8, and 16.
+
+At each trial, Ray Tune will now randomly sample a combination of parameters from these
+search spaces. It will then train a number of models in parallel and find the best
+performing one among these. We also use the ``ASHAScheduler`` which will terminate bad
+performing trials early.
+
+We wrap the ``train_cifar`` function with ``functools.partial`` to set the constant
+``data_dir`` parameter. We can also tell Ray Tune what resources should be
+available for each trial:
+
+.. code-block:: python
+
+    gpus_per_trial = 2
+    # ...
+    result = tune.run(
+        partial(train_cifar, data_dir=data_dir),
+        resources_per_trial={"cpu": 8, "gpu": gpus_per_trial},
+        config=config,
+        num_samples=num_samples,
+        scheduler=scheduler,
+        progress_reporter=reporter,
+        checkpoint_at_end=True)
+
+You can specify the number of CPUs, which are then available e.g.
+to increase the ``num_workers`` of the PyTorch ``DataLoader`` instances. The selected
+number of GPUs are made visible to PyTorch in each trial. Trials do not have access to
+GPUs that haven't been requested for them - so you don't have to care about two trials
+using the same set of resources.
+
+Here we can also specify fractional GPUs, so something like ``gpus_per_trial=0.5`` is
+completely valid. The trials will then share GPUs among each other.
+You just have to make sure that the models still fit in the GPU memory.
+
+After training the models, we will find the best performing one and load the trained
+network from the checkpoint file. We then obtain the test set accuracy and report
+everything by printing.
+
+The full main function looks like this:
+
+
+.. code-block:: default
+
+
+
+    def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
+        data_dir = os.path.abspath("./data")
+        load_data(data_dir)
+        config = {
+            "l1": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+            "l2": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+            "lr": tune.loguniform(1e-4, 1e-1),
+            "batch_size": tune.choice([2, 4, 8, 16])
+        }
+        scheduler = ASHAScheduler(
+            metric="loss",
+            mode="min",
+            max_t=max_num_epochs,
+            grace_period=1,
+            reduction_factor=2)
+        reporter = CLIReporter(
+            # parameter_columns=["l1", "l2", "lr", "batch_size"],
+            metric_columns=["loss", "accuracy", "training_iteration"])
+        result = tune.run(
+            partial(train_cifar, data_dir=data_dir),
+            resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
+            config=config,
+            num_samples=num_samples,
+            scheduler=scheduler,
+            progress_reporter=reporter)
+
+        best_trial = result.get_best_trial("loss", "min", "last")
+        print("Best trial config: {}".format(best_trial.config))
+        print("Best trial final validation loss: {}".format(
+            best_trial.last_result["loss"]))
+        print("Best trial final validation accuracy: {}".format(
+            best_trial.last_result["accuracy"]))
+
+        best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda:0"
+            if gpus_per_trial > 1:
+                best_trained_model = nn.DataParallel(best_trained_model)
+        best_trained_model.to(device)
+
+        best_checkpoint_dir = best_trial.checkpoint.value
+        model_state, optimizer_state = torch.load(os.path.join(
+            best_checkpoint_dir, "checkpoint"))
+        best_trained_model.load_state_dict(model_state)
+
+        test_acc = test_accuracy(best_trained_model, device)
+        print("Best trial test set accuracy: {}".format(test_acc))
+
+
+    if __name__ == "__main__":
+        # You can change the number of GPUs per trial here:
+        main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to /var/lib/jenkins/workspace/beginner_source/data/cifar-10-python.tar.gz
+    Extracting /var/lib/jenkins/workspace/beginner_source/data/cifar-10-python.tar.gz to /var/lib/jenkins/workspace/beginner_source/data
+    Files already downloaded and verified
+    == Status ==
+    Memory usage on this node: 4.1/240.1 GiB
+    Using AsyncHyperBand: num_stopped=0
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: None | Iter 1.000: None
+    Resources requested: 2/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (9 PENDING, 1 RUNNING)
+    +---------------------+----------+-------+--------------+------+------+-------------+
+    | Trial name          | status   | loc   |   batch_size |   l1 |   l2 |          lr |
+    |---------------------+----------+-------+--------------+------+------+-------------|
+    | DEFAULT_c5914_00000 | RUNNING  |       |            2 |   16 |  128 | 0.0638566   |
+    | DEFAULT_c5914_00001 | PENDING  |       |            2 |   32 |   32 | 0.000296231 |
+    | DEFAULT_c5914_00002 | PENDING  |       |            2 |   64 |  128 | 0.0474373   |
+    | DEFAULT_c5914_00003 | PENDING  |       |            8 |   64 |   16 | 0.00198567  |
+    | DEFAULT_c5914_00004 | PENDING  |       |            4 |  128 |  128 | 0.0882289   |
+    | DEFAULT_c5914_00005 | PENDING  |       |            8 |   16 |   64 | 0.0209017   |
+    | DEFAULT_c5914_00006 | PENDING  |       |           16 |  128 |  128 | 0.000416211 |
+    | DEFAULT_c5914_00007 | PENDING  |       |            2 |  256 |   32 | 0.000999609 |
+    | DEFAULT_c5914_00008 | PENDING  |       |            4 |   32 |   16 | 0.000616997 |
+    | DEFAULT_c5914_00009 | PENDING  |       |           16 |  256 |  128 | 0.000253927 |
+    +---------------------+----------+-------+--------------+------+------+-------------+
+
+
+    [2m[36m(pid=1163)[0m Files already downloaded and verified
+    [2m[36m(pid=1100)[0m Files already downloaded and verified
+    [2m[36m(pid=1096)[0m Files already downloaded and verified
+    [2m[36m(pid=1091)[0m Files already downloaded and verified
+    [2m[36m(pid=1099)[0m Files already downloaded and verified
+    [2m[36m(pid=1089)[0m Files already downloaded and verified
+    [2m[36m(pid=1108)[0m Files already downloaded and verified
+    [2m[36m(pid=1107)[0m Files already downloaded and verified
+    [2m[36m(pid=1092)[0m Files already downloaded and verified
+    [2m[36m(pid=1081)[0m Files already downloaded and verified
+    [2m[36m(pid=1163)[0m Files already downloaded and verified
+    [2m[36m(pid=1100)[0m Files already downloaded and verified
+    [2m[36m(pid=1096)[0m Files already downloaded and verified
+    [2m[36m(pid=1091)[0m Files already downloaded and verified
+    [2m[36m(pid=1099)[0m Files already downloaded and verified
+    [2m[36m(pid=1089)[0m Files already downloaded and verified
+    [2m[36m(pid=1108)[0m Files already downloaded and verified
+    [2m[36m(pid=1092)[0m Files already downloaded and verified
+    [2m[36m(pid=1107)[0m Files already downloaded and verified
+    [2m[36m(pid=1081)[0m Files already downloaded and verified
+    [2m[36m(pid=1163)[0m [1,  2000] loss: 2.382
+    [2m[36m(pid=1096)[0m [1,  2000] loss: 2.304
+    [2m[36m(pid=1092)[0m [1,  2000] loss: 2.298
+    [2m[36m(pid=1089)[0m [1,  2000] loss: 2.201
+    [2m[36m(pid=1100)[0m [1,  2000] loss: 2.355
+    [2m[36m(pid=1091)[0m [1,  2000] loss: 2.349
+    [2m[36m(pid=1099)[0m [1,  2000] loss: 2.078
+    [2m[36m(pid=1107)[0m [1,  2000] loss: 2.092
+    [2m[36m(pid=1108)[0m [1,  2000] loss: 2.298
+    [2m[36m(pid=1081)[0m [1,  2000] loss: 2.301
+    [2m[36m(pid=1163)[0m [1,  4000] loss: 1.190
+    [2m[36m(pid=1096)[0m [1,  4000] loss: 1.146
+    [2m[36m(pid=1089)[0m [1,  4000] loss: 0.964
+    [2m[36m(pid=1092)[0m [1,  4000] loss: 1.060
+    [2m[36m(pid=1100)[0m [1,  4000] loss: 1.179
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.2062
+      date: 2020-08-31_19-47-48
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.230781386566162
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 31.795273065567017
+      time_this_iter_s: 31.795273065567017
+      time_total_s: 31.795273065567017
+      timestamp: 1598903268
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 8.9/240.1 GiB
+    Using AsyncHyperBand: num_stopped=0
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: None | Iter 1.000: -2.230781386566162
+    Resources requested: 20/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (10 RUNNING)
+    +---------------------+----------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status   | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+----------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING  |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING  |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING  |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING  |                 |            8 |   64 |   16 | 0.00198567  |         |            |                      |
+    | DEFAULT_c5914_00004 | RUNNING  |                 |            4 |  128 |  128 | 0.0882289   |         |            |                      |
+    | DEFAULT_c5914_00005 | RUNNING  |                 |            8 |   16 |   64 | 0.0209017   |         |            |                      |
+    | DEFAULT_c5914_00006 | RUNNING  | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 2.23078 |     0.2062 |                    1 |
+    | DEFAULT_c5914_00007 | RUNNING  |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING  |                 |            4 |   32 |   16 | 0.000616997 |         |            |                      |
+    | DEFAULT_c5914_00009 | RUNNING  |                 |           16 |  256 |  128 | 0.000253927 |         |            |                      |
+    +---------------------+----------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Result for DEFAULT_c5914_00009:
+      accuracy: 0.1715
+      date: 2020-08-31_19-47-49
+      done: true
+      experiment_id: 23af64bbf36142eaa1c3a452153ff1c6
+      experiment_tag: 9_batch_size=16,l1=256,l2=128,lr=0.00025393
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.2919665325164793
+      node_ip: 172.17.0.2
+      pid: 1081
+      should_checkpoint: true
+      time_since_restore: 31.87818455696106
+      time_this_iter_s: 31.87818455696106
+      time_total_s: 31.87818455696106
+      timestamp: 1598903269
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00009
+  
+    [2m[36m(pid=1099)[0m [1,  4000] loss: 0.841
+    [2m[36m(pid=1091)[0m [1,  4000] loss: 1.172
+    [2m[36m(pid=1107)[0m [1,  4000] loss: 1.089
+    [2m[36m(pid=1163)[0m [1,  6000] loss: 0.793
+    [2m[36m(pid=1096)[0m [1,  6000] loss: 0.725
+    [2m[36m(pid=1089)[0m [1,  6000] loss: 0.599
+    [2m[36m(pid=1092)[0m [1,  6000] loss: 0.636
+    [2m[36m(pid=1100)[0m [1,  6000] loss: 0.785
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.4307
+      date: 2020-08-31_19-47-59
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 1.5335982168197633
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 42.54085636138916
+      time_this_iter_s: 42.54085636138916
+      time_total_s: 42.54085636138916
+      timestamp: 1598903279
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 8.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=1
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: None | Iter 1.000: -2.230781386566162
+    Resources requested: 18/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (9 RUNNING, 1 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.5336  |     0.4307 |                    1 |
+    | DEFAULT_c5914_00004 | RUNNING    |                 |            4 |  128 |  128 | 0.0882289   |         |            |                      |
+    | DEFAULT_c5914_00005 | RUNNING    |                 |            8 |   16 |   64 | 0.0209017   |         |            |                      |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 2.23078 |     0.2062 |                    1 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    |                 |            4 |   32 |   16 | 0.000616997 |         |            |                      |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Result for DEFAULT_c5914_00005:
+      accuracy: 0.1296
+      date: 2020-08-31_19-48-00
+      done: false
+      experiment_id: 8f33e3e219f34ed9a7960e416fd51398
+      experiment_tag: 5_batch_size=8,l1=16,l2=64,lr=0.020902
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.2257658641815183
+      node_ip: 172.17.0.2
+      pid: 1107
+      should_checkpoint: true
+      time_since_restore: 43.05634021759033
+      time_this_iter_s: 43.05634021759033
+      time_total_s: 43.05634021759033
+      timestamp: 1598903280
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00005
+  
+    [2m[36m(pid=1091)[0m [1,  6000] loss: 0.783
+    [2m[36m(pid=1163)[0m [1,  8000] loss: 0.594
+    [2m[36m(pid=1096)[0m [1,  8000] loss: 0.508
+    [2m[36m(pid=1108)[0m [2,  2000] loss: 2.040
+    [2m[36m(pid=1089)[0m [1,  8000] loss: 0.421
+    [2m[36m(pid=1092)[0m [1,  8000] loss: 0.439
+    [2m[36m(pid=1100)[0m [1,  8000] loss: 0.588
+    [2m[36m(pid=1099)[0m [2,  2000] loss: 1.484
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.3321
+      date: 2020-08-31_19-48-11
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 1.8489415914535523
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 54.413233518600464
+      time_this_iter_s: 22.617960453033447
+      time_total_s: 54.413233518600464
+      timestamp: 1598903291
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 8.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=1
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2282736253738404
+    Resources requested: 18/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (9 RUNNING, 1 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.5336  |     0.4307 |                    1 |
+    | DEFAULT_c5914_00004 | RUNNING    |                 |            4 |  128 |  128 | 0.0882289   |         |            |                      |
+    | DEFAULT_c5914_00005 | RUNNING    | 172.17.0.2:1107 |            8 |   16 |   64 | 0.0209017   | 2.22577 |     0.1296 |                    1 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.84894 |     0.3321 |                    2 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    |                 |            4 |   32 |   16 | 0.000616997 |         |            |                      |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1107)[0m [2,  2000] loss: 2.115
+    [2m[36m(pid=1096)[0m [1, 10000] loss: 0.392
+    [2m[36m(pid=1163)[0m [1, 10000] loss: 0.474
+    [2m[36m(pid=1091)[0m [1,  8000] loss: 0.587
+    [2m[36m(pid=1089)[0m [1, 10000] loss: 0.321
+    [2m[36m(pid=1092)[0m [1, 10000] loss: 0.333
+    [2m[36m(pid=1100)[0m [1, 10000] loss: 0.470
+    [2m[36m(pid=1096)[0m [1, 12000] loss: 0.319
+    [2m[36m(pid=1163)[0m [1, 12000] loss: 0.396
+    [2m[36m(pid=1099)[0m [2,  4000] loss: 0.703
+    [2m[36m(pid=1107)[0m [2,  4000] loss: 1.084
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.3938
+      date: 2020-08-31_19-48-23
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 1.6305593385219574
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 66.57935619354248
+      time_this_iter_s: 66.57935619354248
+      time_total_s: 66.57935619354248
+      timestamp: 1598903303
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 8.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=1
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2257658641815183
+    Resources requested: 18/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (9 RUNNING, 1 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.5336  |     0.4307 |                    1 |
+    | DEFAULT_c5914_00004 | RUNNING    |                 |            4 |  128 |  128 | 0.0882289   |         |            |                      |
+    | DEFAULT_c5914_00005 | RUNNING    | 172.17.0.2:1107 |            8 |   16 |   64 | 0.0209017   | 2.22577 |     0.1296 |                    1 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.84894 |     0.3321 |                    2 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [1, 12000] loss: 0.269
+    [2m[36m(pid=1091)[0m [1, 10000] loss: 0.471
+    [2m[36m(pid=1108)[0m [3,  2000] loss: 1.753
+    [2m[36m(pid=1100)[0m [1, 12000] loss: 0.393
+    [2m[36m(pid=1096)[0m [1, 14000] loss: 0.263
+    [2m[36m(pid=1163)[0m [1, 14000] loss: 0.338
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5143
+      date: 2020-08-31_19-48-33
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 1.3857345456838608
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 76.00298309326172
+      time_this_iter_s: 33.46212673187256
+      time_total_s: 76.00298309326172
+      timestamp: 1598903313
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 8.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=1
+    Bracket: Iter 8.000: None | Iter 4.000: None | Iter 2.000: -1.6173380685687064 | Iter 1.000: -2.2257658641815183
+    Resources requested: 18/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (9 RUNNING, 1 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.38573 |     0.5143 |                    2 |
+    | DEFAULT_c5914_00004 | RUNNING    |                 |            4 |  128 |  128 | 0.0882289   |         |            |                      |
+    | DEFAULT_c5914_00005 | RUNNING    | 172.17.0.2:1107 |            8 |   16 |   64 | 0.0209017   | 2.22577 |     0.1296 |                    1 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.84894 |     0.3321 |                    2 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Result for DEFAULT_c5914_00005:
+      accuracy: 0.101
+      date: 2020-08-31_19-48-33
+      done: true
+      experiment_id: 8f33e3e219f34ed9a7960e416fd51398
+      experiment_tag: 5_batch_size=8,l1=16,l2=64,lr=0.020902
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 2.3121670808792114
+      node_ip: 172.17.0.2
+      pid: 1107
+      should_checkpoint: true
+      time_since_restore: 76.48619771003723
+      time_this_iter_s: 33.4298574924469
+      time_total_s: 76.48619771003723
+      timestamp: 1598903313
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00005
+  
+    Result for DEFAULT_c5914_00004:
+      accuracy: 0.1016
+      date: 2020-08-31_19-48-34
+      done: true
+      experiment_id: 0db657703e324357b8f344f7e717e3a4
+      experiment_tag: 4_batch_size=4,l1=128,l2=128,lr=0.088229
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.3584445528507234
+      node_ip: 172.17.0.2
+      pid: 1091
+      should_checkpoint: true
+      time_since_restore: 76.91131234169006
+      time_this_iter_s: 76.91131234169006
+      time_total_s: 76.91131234169006
+      timestamp: 1598903314
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00004
+  
+    [2m[36m(pid=1092)[0m [2,  2000] loss: 1.580
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.4059
+      date: 2020-08-31_19-48-34
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 3
+      loss: 1.6290517889022826
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 77.04371428489685
+      time_this_iter_s: 22.630480766296387
+      time_total_s: 77.04371428489685
+      timestamp: 1598903314
+      timesteps_since_restore: 0
+      training_iteration: 3
+      trial_id: c5914_00006
+  
+    [2m[36m(pid=1089)[0m [1, 14000] loss: 0.221
+    [2m[36m(pid=1100)[0m [1, 14000] loss: 0.337
+    [2m[36m(pid=1096)[0m [1, 16000] loss: 0.225
+    [2m[36m(pid=1163)[0m [1, 16000] loss: 0.297
+    [2m[36m(pid=1092)[0m [2,  4000] loss: 0.761
+    [2m[36m(pid=1089)[0m [1, 16000] loss: 0.190
+    [2m[36m(pid=1099)[0m [3,  2000] loss: 1.315
+    [2m[36m(pid=1100)[0m [1, 16000] loss: 0.294
+    [2m[36m(pid=1096)[0m [1, 18000] loss: 0.193
+    [2m[36m(pid=1108)[0m [4,  2000] loss: 1.597
+    [2m[36m(pid=1163)[0m [1, 18000] loss: 0.264
+    [2m[36m(pid=1092)[0m [2,  6000] loss: 0.498
+    [2m[36m(pid=1089)[0m [1, 18000] loss: 0.167
+    [2m[36m(pid=1099)[0m [3,  4000] loss: 0.634
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.4338
+      date: 2020-08-31_19-48-55
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 4
+      loss: 1.532374920654297
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 98.08398246765137
+      time_this_iter_s: 21.040268182754517
+      time_total_s: 98.08398246765137
+      timestamp: 1598903335
+      timesteps_since_restore: 0
+      training_iteration: 4
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 7.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=3
+    Bracket: Iter 8.000: None | Iter 4.000: -1.532374920654297 | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2282736253738404
+    Resources requested: 14/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (7 RUNNING, 3 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.38573 |     0.5143 |                    2 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.53237 |     0.4338 |                    4 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1100)[0m [1, 18000] loss: 0.262
+    [2m[36m(pid=1096)[0m [1, 20000] loss: 0.166
+    [2m[36m(pid=1163)[0m [1, 20000] loss: 0.237
+    [2m[36m(pid=1092)[0m [2,  8000] loss: 0.372
+    [2m[36m(pid=1089)[0m [1, 20000] loss: 0.147
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5358
+      date: 2020-08-31_19-49-04
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 3
+      loss: 1.2939328009366988
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 107.4800808429718
+      time_this_iter_s: 31.477097749710083
+      time_total_s: 107.4800808429718
+      timestamp: 1598903344
+      timesteps_since_restore: 0
+      training_iteration: 3
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 7.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=3
+    Bracket: Iter 8.000: None | Iter 4.000: -1.532374920654297 | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2282736253738404
+    Resources requested: 14/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (7 RUNNING, 3 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    |                 |            2 |   32 |   32 | 0.000296231 |         |            |                      |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.29393 |     0.5358 |                    3 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.53237 |     0.4338 |                    4 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1100)[0m [1, 20000] loss: 0.236
+    Result for DEFAULT_c5914_00001:
+      accuracy: 0.4048
+      date: 2020-08-31_19-49-10
+      done: false
+      experiment_id: 5f53a7073cd2494e9ed1f197a4006207
+      experiment_tag: 1_batch_size=2,l1=32,l2=32,lr=0.00029623
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 1.6271553094744682
+      node_ip: 172.17.0.2
+      pid: 1096
+      should_checkpoint: true
+      time_since_restore: 113.46745109558105
+      time_this_iter_s: 113.46745109558105
+      time_total_s: 113.46745109558105
+      timestamp: 1598903350
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00001
+  
+    == Status ==
+    Memory usage on this node: 7.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=3
+    Bracket: Iter 8.000: None | Iter 4.000: -1.532374920654297 | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2257658641815183
+    Resources requested: 14/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (7 RUNNING, 3 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | RUNNING    |                 |            2 |   16 |  128 | 0.0638566   |         |            |                      |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.29393 |     0.5358 |                    3 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.53237 |     0.4338 |                    4 |
+    | DEFAULT_c5914_00007 | RUNNING    |                 |            2 |  256 |   32 | 0.000999609 |         |            |                      |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1108)[0m [5,  2000] loss: 1.498
+    [2m[36m(pid=1092)[0m [2, 10000] loss: 0.291
+    Result for DEFAULT_c5914_00000:
+      accuracy: 0.1043
+      date: 2020-08-31_19-49-11
+      done: true
+      experiment_id: 0d8bc9250080424799cad05a1b39616a
+      experiment_tag: 0_batch_size=2,l1=16,l2=128,lr=0.063857
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.3686284111976623
+      node_ip: 172.17.0.2
+      pid: 1163
+      should_checkpoint: true
+      time_since_restore: 114.35882472991943
+      time_this_iter_s: 114.35882472991943
+      time_total_s: 114.35882472991943
+      timestamp: 1598903351
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00000
+  
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.4785
+      date: 2020-08-31_19-49-15
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 1.4473571622323245
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 117.91006898880005
+      time_this_iter_s: 117.91006898880005
+      time_total_s: 117.91006898880005
+      timestamp: 1598903355
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00007
+  
+    [2m[36m(pid=1099)[0m [4,  2000] loss: 1.196
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.4669
+      date: 2020-08-31_19-49-17
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 5
+      loss: 1.452766923046112
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 119.8301055431366
+      time_this_iter_s: 21.74612307548523
+      time_total_s: 119.8301055431366
+      timestamp: 1598903357
+      timesteps_since_restore: 0
+      training_iteration: 5
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 6.9/240.1 GiB
+    Using AsyncHyperBand: num_stopped=4
+    Bracket: Iter 8.000: None | Iter 4.000: -1.532374920654297 | Iter 2.000: -1.8489415914535523 | Iter 1.000: -2.2257658641815183
+    Resources requested: 12/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (6 RUNNING, 4 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | RUNNING    |                 |            2 |   64 |  128 | 0.0474373   |         |            |                      |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.29393 |     0.5358 |                    3 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.45277 |     0.4669 |                    5 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.63056 |     0.3938 |                    1 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.4714
+      date: 2020-08-31_19-49-18
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 1.4716140761971475
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 120.96662783622742
+      time_this_iter_s: 54.38727164268494
+      time_total_s: 120.96662783622742
+      timestamp: 1598903358
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00008
+  
+    Result for DEFAULT_c5914_00002:
+      accuracy: 0.097
+      date: 2020-08-31_19-49-19
+      done: true
+      experiment_id: dc6ca13cccb14858a540aa6bef45714d
+      experiment_tag: 2_batch_size=2,l1=64,l2=128,lr=0.047437
+      hostname: f89e5d69334f
+      iterations_since_restore: 1
+      loss: 2.3302530612707137
+      node_ip: 172.17.0.2
+      pid: 1100
+      should_checkpoint: true
+      time_since_restore: 122.04702973365784
+      time_this_iter_s: 122.04702973365784
+      time_total_s: 122.04702973365784
+      timestamp: 1598903359
+      timesteps_since_restore: 0
+      training_iteration: 1
+      trial_id: c5914_00002
+  
+    [2m[36m(pid=1096)[0m [2,  2000] loss: 1.636
+    [2m[36m(pid=1089)[0m [2,  2000] loss: 1.377
+    [2m[36m(pid=1099)[0m [4,  4000] loss: 0.603
+    [2m[36m(pid=1092)[0m [3,  2000] loss: 1.395
+    [2m[36m(pid=1096)[0m [2,  4000] loss: 0.800
+    [2m[36m(pid=1108)[0m [6,  2000] loss: 1.428
+    [2m[36m(pid=1089)[0m [2,  4000] loss: 0.703
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5642
+      date: 2020-08-31_19-49-35
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 4
+      loss: 1.2480904648542404
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 137.9215817451477
+      time_this_iter_s: 30.441500902175903
+      time_total_s: 137.9215817451477
+      timestamp: 1598903375
+      timesteps_since_restore: 0
+      training_iteration: 4
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 6.4/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: None | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.6602778338253499 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.24809 |     0.5642 |                    4 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.45277 |     0.4669 |                    5 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.47161 |     0.4714 |                    2 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [2,  6000] loss: 0.517
+    [2m[36m(pid=1092)[0m [3,  4000] loss: 0.679
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.4826
+      date: 2020-08-31_19-49-37
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 6
+      loss: 1.4091190921783447
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 140.59752011299133
+      time_this_iter_s: 20.767414569854736
+      time_total_s: 140.59752011299133
+      timestamp: 1598903377
+      timesteps_since_restore: 0
+      training_iteration: 6
+      trial_id: c5914_00006
+  
+    [2m[36m(pid=1089)[0m [2,  6000] loss: 0.473
+    [2m[36m(pid=1096)[0m [2,  8000] loss: 0.384
+    [2m[36m(pid=1092)[0m [3,  6000] loss: 0.451
+    [2m[36m(pid=1099)[0m [5,  2000] loss: 1.127
+    [2m[36m(pid=1089)[0m [2,  8000] loss: 0.339
+    [2m[36m(pid=1096)[0m [2, 10000] loss: 0.304
+    [2m[36m(pid=1108)[0m [7,  2000] loss: 1.366
+    [2m[36m(pid=1092)[0m [3,  8000] loss: 0.339
+    [2m[36m(pid=1099)[0m [5,  4000] loss: 0.569
+    [2m[36m(pid=1089)[0m [2, 10000] loss: 0.272
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.4885
+      date: 2020-08-31_19-49-58
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 7
+      loss: 1.398316632461548
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 160.92472314834595
+      time_this_iter_s: 20.327203035354614
+      time_total_s: 160.92472314834595
+      timestamp: 1598903398
+      timesteps_since_restore: 0
+      training_iteration: 7
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: None | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.6602778338253499 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.24809 |     0.5642 |                    4 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.39832 |     0.4885 |                    7 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.47161 |     0.4714 |                    2 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [2, 12000] loss: 0.252
+    [2m[36m(pid=1092)[0m [3, 10000] loss: 0.264
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.566
+      date: 2020-08-31_19-50-04
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 5
+      loss: 1.2513467593073846
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 167.6383616924286
+      time_this_iter_s: 29.716779947280884
+      time_total_s: 167.6383616924286
+      timestamp: 1598903404
+      timesteps_since_restore: 0
+      training_iteration: 5
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: None | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.6602778338253499 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.25135 |     0.566  |                    5 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.39832 |     0.4885 |                    7 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.47161 |     0.4714 |                    2 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [2, 12000] loss: 0.224
+    [2m[36m(pid=1096)[0m [2, 14000] loss: 0.208
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.5414
+      date: 2020-08-31_19-50-08
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 3
+      loss: 1.2786330901086331
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 171.5276448726654
+      time_this_iter_s: 50.56101703643799
+      time_total_s: 171.5276448726654
+      timestamp: 1598903408
+      timesteps_since_restore: 0
+      training_iteration: 3
+      trial_id: c5914_00008
+  
+    [2m[36m(pid=1108)[0m [8,  2000] loss: 1.308
+    [2m[36m(pid=1089)[0m [2, 14000] loss: 0.192
+    [2m[36m(pid=1096)[0m [2, 16000] loss: 0.184
+    [2m[36m(pid=1099)[0m [6,  2000] loss: 1.065
+    [2m[36m(pid=1092)[0m [4,  2000] loss: 1.262
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.5212
+      date: 2020-08-31_19-50-18
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 8
+      loss: 1.3030597567558289
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 181.42825984954834
+      time_this_iter_s: 20.503536701202393
+      time_total_s: 181.42825984954834
+      timestamp: 1598903418
+      timesteps_since_restore: 0
+      training_iteration: 8
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.6602778338253499 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.25135 |     0.566  |                    5 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.30306 |     0.5212 |                    8 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.27863 |     0.5414 |                    3 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [2, 16000] loss: 0.164
+    [2m[36m(pid=1096)[0m [2, 18000] loss: 0.159
+    [2m[36m(pid=1099)[0m [6,  4000] loss: 0.551
+    [2m[36m(pid=1092)[0m [4,  4000] loss: 0.634
+    [2m[36m(pid=1089)[0m [2, 18000] loss: 0.149
+    [2m[36m(pid=1096)[0m [2, 20000] loss: 0.147
+    [2m[36m(pid=1108)[0m [9,  2000] loss: 1.264
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5804
+      date: 2020-08-31_19-50-34
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 6
+      loss: 1.170373744726181
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 197.46014046669006
+      time_this_iter_s: 29.821778774261475
+      time_total_s: 197.46014046669006
+      timestamp: 1598903434
+      timesteps_since_restore: 0
+      training_iteration: 6
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.6602778338253499 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.62716 |     0.4048 |                    1 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17037 |     0.5804 |                    6 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.30306 |     0.5212 |                    8 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.27863 |     0.5414 |                    3 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [4,  6000] loss: 0.415
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.5303
+      date: 2020-08-31_19-50-38
+      done: false
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 9
+      loss: 1.3070046686172485
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 201.60788011550903
+      time_this_iter_s: 20.179620265960693
+      time_total_s: 201.60788011550903
+      timestamp: 1598903438
+      timesteps_since_restore: 0
+      training_iteration: 9
+      trial_id: c5914_00006
+  
+    [2m[36m(pid=1089)[0m [2, 20000] loss: 0.134
+    Result for DEFAULT_c5914_00001:
+      accuracy: 0.4649
+      date: 2020-08-31_19-50-42
+      done: false
+      experiment_id: 5f53a7073cd2494e9ed1f197a4006207
+      experiment_tag: 1_batch_size=2,l1=32,l2=32,lr=0.00029623
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 1.4756214376907795
+      node_ip: 172.17.0.2
+      pid: 1096
+      should_checkpoint: true
+      time_since_restore: 205.64674353599548
+      time_this_iter_s: 92.17929244041443
+      time_total_s: 205.64674353599548
+      timestamp: 1598903442
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00001
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.4756214376907795 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17037 |     0.5804 |                    6 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.307   |     0.5303 |                    9 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.44736 |     0.4785 |                    1 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.27863 |     0.5414 |                    3 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [4,  8000] loss: 0.312
+    [2m[36m(pid=1099)[0m [7,  2000] loss: 1.033
+    [2m[36m(pid=1096)[0m [3,  2000] loss: 1.427
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.514
+      date: 2020-08-31_19-50-50
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 2
+      loss: 1.3835479364569532
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 213.63222217559814
+      time_this_iter_s: 95.7221531867981
+      time_total_s: 213.63222217559814
+      timestamp: 1598903450
+      timesteps_since_restore: 0
+      training_iteration: 2
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=5
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17037 |     0.5804 |                    6 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.307   |     0.5303 |                    9 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.27863 |     0.5414 |                    3 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [4, 10000] loss: 0.245
+    [2m[36m(pid=1108)[0m [10,  2000] loss: 1.225
+    [2m[36m(pid=1099)[0m [7,  4000] loss: 0.522
+    [2m[36m(pid=1096)[0m [3,  4000] loss: 0.695
+    Result for DEFAULT_c5914_00006:
+      accuracy: 0.5518
+      date: 2020-08-31_19-50-59
+      done: true
+      experiment_id: 1678b99bfac042c18a34e3c5d4500f0e
+      experiment_tag: 6_batch_size=16,l1=128,l2=128,lr=0.00041621
+      hostname: f89e5d69334f
+      iterations_since_restore: 10
+      loss: 1.2460039553642273
+      node_ip: 172.17.0.2
+      pid: 1108
+      should_checkpoint: true
+      time_since_restore: 221.92022156715393
+      time_this_iter_s: 20.312341451644897
+      time_total_s: 221.92022156715393
+      timestamp: 1598903459
+      timesteps_since_restore: 0
+      training_iteration: 10
+      trial_id: c5914_00006
+  
+    == Status ==
+    Memory usage on this node: 6.3/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.3902326927542688 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 10/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (5 RUNNING, 5 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17037 |     0.5804 |                    6 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | RUNNING    | 172.17.0.2:1108 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.27863 |     0.5414 |                    3 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.5788
+      date: 2020-08-31_19-50-59
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 4
+      loss: 1.192007827064395
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 222.0494155883789
+      time_this_iter_s: 50.5217707157135
+      time_total_s: 222.0494155883789
+      timestamp: 1598903459
+      timesteps_since_restore: 0
+      training_iteration: 4
+      trial_id: c5914_00008
+  
+    [2m[36m(pid=1089)[0m [3,  2000] loss: 1.261
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5838
+      date: 2020-08-31_19-51-04
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 7
+      loss: 1.18652952811718
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 227.58623433113098
+      time_this_iter_s: 30.126093864440918
+      time_total_s: 227.58623433113098
+      timestamp: 1598903464
+      timesteps_since_restore: 0
+      training_iteration: 7
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.3030597567558289 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.18653 |     0.5838 |                    7 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.19201 |     0.5788 |                    4 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [3,  6000] loss: 0.463
+    [2m[36m(pid=1089)[0m [3,  4000] loss: 0.618
+    [2m[36m(pid=1092)[0m [5,  2000] loss: 1.192
+    [2m[36m(pid=1096)[0m [3,  8000] loss: 0.344
+    [2m[36m(pid=1099)[0m [8,  2000] loss: 0.994
+    [2m[36m(pid=1089)[0m [3,  6000] loss: 0.398
+    [2m[36m(pid=1092)[0m [5,  4000] loss: 0.585
+    [2m[36m(pid=1096)[0m [3, 10000] loss: 0.277
+    [2m[36m(pid=1089)[0m [3,  8000] loss: 0.304
+    [2m[36m(pid=1092)[0m [5,  6000] loss: 0.398
+    [2m[36m(pid=1099)[0m [8,  4000] loss: 0.510
+    [2m[36m(pid=1096)[0m [3, 12000] loss: 0.227
+    [2m[36m(pid=1089)[0m [3, 10000] loss: 0.255
+    [2m[36m(pid=1092)[0m [5,  8000] loss: 0.299
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5964
+      date: 2020-08-31_19-51-33
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 8
+      loss: 1.1590171397209168
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 256.36889362335205
+      time_this_iter_s: 28.78265929222107
+      time_total_s: 256.36889362335205
+      timestamp: 1598903493
+      timesteps_since_restore: 0
+      training_iteration: 8
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.15902 |     0.5964 |                    8 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.19201 |     0.5788 |                    4 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [3, 14000] loss: 0.194
+    [2m[36m(pid=1089)[0m [3, 12000] loss: 0.207
+    [2m[36m(pid=1092)[0m [5, 10000] loss: 0.237
+    [2m[36m(pid=1099)[0m [9,  2000] loss: 0.955
+    [2m[36m(pid=1096)[0m [3, 16000] loss: 0.168
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.587
+      date: 2020-08-31_19-51-47
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 5
+      loss: 1.1654695124536754
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 270.12223625183105
+      time_this_iter_s: 48.07282066345215
+      time_total_s: 270.12223625183105
+      timestamp: 1598903507
+      timesteps_since_restore: 0
+      training_iteration: 5
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.15902 |     0.5964 |                    8 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16547 |     0.587  |                    5 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [3, 14000] loss: 0.172
+    [2m[36m(pid=1096)[0m [3, 18000] loss: 0.147
+    [2m[36m(pid=1099)[0m [9,  4000] loss: 0.497
+    [2m[36m(pid=1092)[0m [6,  2000] loss: 1.119
+    [2m[36m(pid=1089)[0m [3, 16000] loss: 0.156
+    [2m[36m(pid=1096)[0m [3, 20000] loss: 0.131
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.5886
+      date: 2020-08-31_19-52-02
+      done: false
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 9
+      loss: 1.177840488255024
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 285.2012140750885
+      time_this_iter_s: 28.83232045173645
+      time_total_s: 285.2012140750885
+      timestamp: 1598903522
+      timesteps_since_restore: 0
+      training_iteration: 9
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.47562 |     0.4649 |                    2 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17784 |     0.5886 |                    9 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16547 |     0.587  |                    5 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [6,  4000] loss: 0.562
+    [2m[36m(pid=1089)[0m [3, 18000] loss: 0.133
+    Result for DEFAULT_c5914_00001:
+      accuracy: 0.5407
+      date: 2020-08-31_19-52-12
+      done: false
+      experiment_id: 5f53a7073cd2494e9ed1f197a4006207
+      experiment_tag: 1_batch_size=2,l1=32,l2=32,lr=0.00029623
+      hostname: f89e5d69334f
+      iterations_since_restore: 3
+      loss: 1.302563367055729
+      node_ip: 172.17.0.2
+      pid: 1096
+      should_checkpoint: true
+      time_since_restore: 295.08310174942017
+      time_this_iter_s: 89.43635821342468
+      time_total_s: 295.08310174942017
+      timestamp: 1598903532
+      timesteps_since_restore: 0
+      training_iteration: 3
+      trial_id: c5914_00001
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.30256 |     0.5407 |                    3 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17784 |     0.5886 |                    9 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.38355 |     0.514  |                    2 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16547 |     0.587  |                    5 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1099)[0m [10,  2000] loss: 0.929
+    [2m[36m(pid=1092)[0m [6,  6000] loss: 0.389
+    [2m[36m(pid=1089)[0m [3, 20000] loss: 0.123
+    [2m[36m(pid=1096)[0m [4,  2000] loss: 1.295
+    [2m[36m(pid=1092)[0m [6,  8000] loss: 0.285
+    [2m[36m(pid=1099)[0m [10,  4000] loss: 0.481
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5496
+      date: 2020-08-31_19-52-24
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 3
+      loss: 1.267208520972915
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 307.5838007926941
+      time_this_iter_s: 93.95157861709595
+      time_total_s: 307.5838007926941
+      timestamp: 1598903544
+      timesteps_since_restore: 0
+      training_iteration: 3
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=6
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.30256 |     0.5407 |                    3 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.17784 |     0.5886 |                    9 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.26721 |     0.5496 |                    3 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16547 |     0.587  |                    5 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [4,  4000] loss: 0.639
+    [2m[36m(pid=1092)[0m [6, 10000] loss: 0.229
+    Result for DEFAULT_c5914_00003:
+      accuracy: 0.6012
+      date: 2020-08-31_19-52-31
+      done: true
+      experiment_id: 92b50faf0a44415cb829dbcaa735e063
+      experiment_tag: 3_batch_size=8,l1=64,l2=16,lr=0.0019857
+      hostname: f89e5d69334f
+      iterations_since_restore: 10
+      loss: 1.168459724485874
+      node_ip: 172.17.0.2
+      pid: 1099
+      should_checkpoint: true
+      time_since_restore: 314.350075006485
+      time_this_iter_s: 29.148860931396484
+      time_total_s: 314.350075006485
+      timestamp: 1598903551
+      timesteps_since_restore: 0
+      training_iteration: 10
+      trial_id: c5914_00003
+  
+    == Status ==
+    Memory usage on this node: 5.8/240.1 GiB
+    Using AsyncHyperBand: num_stopped=7
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 8/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (4 RUNNING, 6 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.30256 |     0.5407 |                    3 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | RUNNING    | 172.17.0.2:1099 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.26721 |     0.5496 |                    3 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16547 |     0.587  |                    5 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [4,  2000] loss: 1.081
+    [2m[36m(pid=1096)[0m [4,  6000] loss: 0.430
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.5792
+      date: 2020-08-31_19-52-35
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 6
+      loss: 1.193606640574336
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 318.6906039714813
+      time_this_iter_s: 48.56836771965027
+      time_total_s: 318.6906039714813
+      timestamp: 1598903555
+      timesteps_since_restore: 0
+      training_iteration: 6
+      trial_id: c5914_00008
+  
+    [2m[36m(pid=1089)[0m [4,  4000] loss: 0.551
+    [2m[36m(pid=1096)[0m [4,  8000] loss: 0.324
+    [2m[36m(pid=1092)[0m [7,  2000] loss: 1.091
+    [2m[36m(pid=1089)[0m [4,  6000] loss: 0.389
+    [2m[36m(pid=1096)[0m [4, 10000] loss: 0.255
+    [2m[36m(pid=1092)[0m [7,  4000] loss: 0.538
+    [2m[36m(pid=1089)[0m [4,  8000] loss: 0.290
+    [2m[36m(pid=1096)[0m [4, 12000] loss: 0.212
+    [2m[36m(pid=1092)[0m [7,  6000] loss: 0.367
+    [2m[36m(pid=1089)[0m [4, 10000] loss: 0.229
+    [2m[36m(pid=1096)[0m [4, 14000] loss: 0.186
+    [2m[36m(pid=1092)[0m [7,  8000] loss: 0.277
+    [2m[36m(pid=1089)[0m [4, 12000] loss: 0.191
+    [2m[36m(pid=1096)[0m [4, 16000] loss: 0.161
+    [2m[36m(pid=1092)[0m [7, 10000] loss: 0.224
+    [2m[36m(pid=1096)[0m [4, 18000] loss: 0.141
+    [2m[36m(pid=1089)[0m [4, 14000] loss: 0.161
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.5946
+      date: 2020-08-31_19-53-23
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 7
+      loss: 1.16258807226941
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 366.29801535606384
+      time_this_iter_s: 47.60741138458252
+      time_total_s: 366.29801535606384
+      timestamp: 1598903603
+      timesteps_since_restore: 0
+      training_iteration: 7
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 5.2/240.1 GiB
+    Using AsyncHyperBand: num_stopped=7
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 6/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (3 RUNNING, 7 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.30256 |     0.5407 |                    3 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.26721 |     0.5496 |                    3 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16259 |     0.5946 |                    7 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1096)[0m [4, 20000] loss: 0.126
+    [2m[36m(pid=1089)[0m [4, 16000] loss: 0.145
+    [2m[36m(pid=1092)[0m [8,  2000] loss: 1.054
+    [2m[36m(pid=1089)[0m [4, 18000] loss: 0.132
+    Result for DEFAULT_c5914_00001:
+      accuracy: 0.5543
+      date: 2020-08-31_19-53-39
+      done: true
+      experiment_id: 5f53a7073cd2494e9ed1f197a4006207
+      experiment_tag: 1_batch_size=2,l1=32,l2=32,lr=0.00029623
+      hostname: f89e5d69334f
+      iterations_since_restore: 4
+      loss: 1.2708743109930307
+      node_ip: 172.17.0.2
+      pid: 1096
+      should_checkpoint: true
+      time_since_restore: 382.82081961631775
+      time_this_iter_s: 87.73771786689758
+      time_total_s: 382.82081961631775
+      timestamp: 1598903619
+      timesteps_since_restore: 0
+      training_iteration: 4
+      trial_id: c5914_00001
+  
+    == Status ==
+    Memory usage on this node: 5.2/240.1 GiB
+    Using AsyncHyperBand: num_stopped=8
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2594823879236356 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 6/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (3 RUNNING, 7 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | RUNNING    | 172.17.0.2:1096 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.26721 |     0.5496 |                    3 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16259 |     0.5946 |                    7 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [8,  4000] loss: 0.528
+    [2m[36m(pid=1089)[0m [4, 20000] loss: 0.115
+    [2m[36m(pid=1092)[0m [8,  6000] loss: 0.360
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5781
+      date: 2020-08-31_19-53-56
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 4
+      loss: 1.236138311549439
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 399.0250656604767
+      time_this_iter_s: 91.44126486778259
+      time_total_s: 399.0250656604767
+      timestamp: 1598903636
+      timesteps_since_restore: 0
+      training_iteration: 4
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 4.7/240.1 GiB
+    Using AsyncHyperBand: num_stopped=8
+    Bracket: Iter 8.000: -1.231038448238373 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 4/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (2 RUNNING, 8 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.23614 |     0.5781 |                    4 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.16259 |     0.5946 |                    7 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [8,  8000] loss: 0.272
+    [2m[36m(pid=1089)[0m [5,  2000] loss: 1.036
+    [2m[36m(pid=1092)[0m [8, 10000] loss: 0.215
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.6037
+      date: 2020-08-31_19-54-10
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 8
+      loss: 1.1318036108657719
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 413.24740076065063
+      time_this_iter_s: 46.94938540458679
+      time_total_s: 413.24740076065063
+      timestamp: 1598903650
+      timesteps_since_restore: 0
+      training_iteration: 8
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 4.7/240.1 GiB
+    Using AsyncHyperBand: num_stopped=8
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 4/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (2 RUNNING, 8 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.23614 |     0.5781 |                    4 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.1318  |     0.6037 |                    8 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [5,  4000] loss: 0.527
+    [2m[36m(pid=1092)[0m [9,  2000] loss: 1.017
+    [2m[36m(pid=1089)[0m [5,  6000] loss: 0.348
+    [2m[36m(pid=1092)[0m [9,  4000] loss: 0.528
+    [2m[36m(pid=1089)[0m [5,  8000] loss: 0.265
+    [2m[36m(pid=1092)[0m [9,  6000] loss: 0.347
+    [2m[36m(pid=1089)[0m [5, 10000] loss: 0.219
+    [2m[36m(pid=1092)[0m [9,  8000] loss: 0.269
+    [2m[36m(pid=1089)[0m [5, 12000] loss: 0.180
+    [2m[36m(pid=1092)[0m [9, 10000] loss: 0.208
+    [2m[36m(pid=1089)[0m [5, 14000] loss: 0.156
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.5892
+      date: 2020-08-31_19-54-57
+      done: false
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 9
+      loss: 1.1433597039192915
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 459.88019132614136
+      time_this_iter_s: 46.63279056549072
+      time_total_s: 459.88019132614136
+      timestamp: 1598903697
+      timesteps_since_restore: 0
+      training_iteration: 9
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 4.7/240.1 GiB
+    Using AsyncHyperBand: num_stopped=8
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 4/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (2 RUNNING, 8 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.23614 |     0.5781 |                    4 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.14336 |     0.5892 |                    9 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [5, 16000] loss: 0.139
+    [2m[36m(pid=1092)[0m [10,  2000] loss: 0.989
+    [2m[36m(pid=1089)[0m [5, 18000] loss: 0.120
+    [2m[36m(pid=1092)[0m [10,  4000] loss: 0.511
+    [2m[36m(pid=1089)[0m [5, 20000] loss: 0.107
+    [2m[36m(pid=1092)[0m [10,  6000] loss: 0.342
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5939
+      date: 2020-08-31_19-55-26
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 5
+      loss: 1.194519015330021
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 488.9614214897156
+      time_this_iter_s: 89.93635582923889
+      time_total_s: 488.9614214897156
+      timestamp: 1598903726
+      timesteps_since_restore: 0
+      training_iteration: 5
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 4.7/240.1 GiB
+    Using AsyncHyperBand: num_stopped=8
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 4/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (2 RUNNING, 8 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.19452 |     0.5939 |                    5 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.14336 |     0.5892 |                    9 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1092)[0m [10,  8000] loss: 0.258
+    [2m[36m(pid=1089)[0m [6,  2000] loss: 0.958
+    [2m[36m(pid=1092)[0m [10, 10000] loss: 0.208
+    [2m[36m(pid=1089)[0m [6,  4000] loss: 0.478
+    Result for DEFAULT_c5914_00008:
+      accuracy: 0.6052
+      date: 2020-08-31_19-55-44
+      done: true
+      experiment_id: cc5aee76c4b2423c815f5e509936cacf
+      experiment_tag: 8_batch_size=4,l1=32,l2=16,lr=0.000617
+      hostname: f89e5d69334f
+      iterations_since_restore: 10
+      loss: 1.1318627073608338
+      node_ip: 172.17.0.2
+      pid: 1092
+      should_checkpoint: true
+      time_since_restore: 507.0068624019623
+      time_this_iter_s: 47.12667107582092
+      time_total_s: 507.0068624019623
+      timestamp: 1598903744
+      timesteps_since_restore: 0
+      training_iteration: 10
+      trial_id: c5914_00008
+  
+    == Status ==
+    Memory usage on this node: 4.7/240.1 GiB
+    Using AsyncHyperBand: num_stopped=9
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 4/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (2 RUNNING, 8 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.19452 |     0.5939 |                    5 |
+    | DEFAULT_c5914_00008 | RUNNING    | 172.17.0.2:1092 |            4 |   32 |   16 | 0.000616997 | 1.13186 |     0.6052 |                   10 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [6,  6000] loss: 0.349
+    [2m[36m(pid=1089)[0m [6,  8000] loss: 0.248
+    [2m[36m(pid=1089)[0m [6, 10000] loss: 0.199
+    [2m[36m(pid=1089)[0m [6, 12000] loss: 0.169
+    [2m[36m(pid=1089)[0m [6, 14000] loss: 0.149
+    [2m[36m(pid=1089)[0m [6, 16000] loss: 0.134
+    [2m[36m(pid=1089)[0m [6, 18000] loss: 0.121
+    [2m[36m(pid=1089)[0m [6, 20000] loss: 0.104
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5756
+      date: 2020-08-31_19-56-54
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 6
+      loss: 1.2538282763378783
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 577.3340969085693
+      time_this_iter_s: 88.37267541885376
+      time_total_s: 577.3340969085693
+      timestamp: 1598903814
+      timesteps_since_restore: 0
+      training_iteration: 6
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 4.1/240.1 GiB
+    Using AsyncHyperBand: num_stopped=9
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 2/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (1 RUNNING, 9 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.25383 |     0.5756 |                    6 |
+    | DEFAULT_c5914_00008 | TERMINATED |                 |            4 |   32 |   16 | 0.000616997 | 1.13186 |     0.6052 |                   10 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [7,  2000] loss: 0.902
+    [2m[36m(pid=1089)[0m [7,  4000] loss: 0.481
+    [2m[36m(pid=1089)[0m [7,  6000] loss: 0.318
+    [2m[36m(pid=1089)[0m [7,  8000] loss: 0.246
+    [2m[36m(pid=1089)[0m [7, 10000] loss: 0.191
+    [2m[36m(pid=1089)[0m [7, 12000] loss: 0.165
+    [2m[36m(pid=1089)[0m [7, 14000] loss: 0.145
+    [2m[36m(pid=1089)[0m [7, 16000] loss: 0.125
+    [2m[36m(pid=1089)[0m [7, 18000] loss: 0.112
+    [2m[36m(pid=1089)[0m [7, 20000] loss: 0.102
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5825
+      date: 2020-08-31_19-58-22
+      done: false
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 7
+      loss: 1.2622106511353512
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 665.6394612789154
+      time_this_iter_s: 88.30536437034607
+      time_total_s: 665.6394612789154
+      timestamp: 1598903902
+      timesteps_since_restore: 0
+      training_iteration: 7
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 4.1/240.1 GiB
+    Using AsyncHyperBand: num_stopped=9
+    Bracket: Iter 8.000: -1.1590171397209168 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 2/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (1 RUNNING, 9 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.26221 |     0.5825 |                    7 |
+    | DEFAULT_c5914_00008 | TERMINATED |                 |            4 |   32 |   16 | 0.000616997 | 1.13186 |     0.6052 |                   10 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    [2m[36m(pid=1089)[0m [8,  2000] loss: 0.871
+    [2m[36m(pid=1089)[0m [8,  4000] loss: 0.454
+    [2m[36m(pid=1089)[0m [8,  6000] loss: 0.317
+    [2m[36m(pid=1089)[0m [8,  8000] loss: 0.231
+    [2m[36m(pid=1089)[0m [8, 10000] loss: 0.190
+    [2m[36m(pid=1089)[0m [8, 12000] loss: 0.159
+    [2m[36m(pid=1089)[0m [8, 14000] loss: 0.139
+    [2m[36m(pid=1089)[0m [8, 16000] loss: 0.120
+    [2m[36m(pid=1089)[0m [8, 18000] loss: 0.106
+    [2m[36m(pid=1089)[0m [8, 20000] loss: 0.097
+    Result for DEFAULT_c5914_00007:
+      accuracy: 0.5815
+      date: 2020-08-31_19-59-50
+      done: true
+      experiment_id: 985773aebfa74120886806c651095e3e
+      experiment_tag: 7_batch_size=2,l1=256,l2=32,lr=0.00099961
+      hostname: f89e5d69334f
+      iterations_since_restore: 8
+      loss: 1.2896738694841818
+      node_ip: 172.17.0.2
+      pid: 1089
+      should_checkpoint: true
+      time_since_restore: 753.6514232158661
+      time_this_iter_s: 88.01196193695068
+      time_total_s: 753.6514232158661
+      timestamp: 1598903990
+      timesteps_since_restore: 0
+      training_iteration: 8
+      trial_id: c5914_00007
+  
+    == Status ==
+    Memory usage on this node: 4.1/240.1 GiB
+    Using AsyncHyperBand: num_stopped=10
+    Bracket: Iter 8.000: -1.2243455046025493 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 2/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (1 RUNNING, 9 TERMINATED)
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc             |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |                 |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |                 |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |                 |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |                 |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |                 |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |                 |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |                 |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | RUNNING    | 172.17.0.2:1089 |            2 |  256 |   32 | 0.000999609 | 1.28967 |     0.5815 |                    8 |
+    | DEFAULT_c5914_00008 | TERMINATED |                 |            4 |   32 |   16 | 0.000616997 | 1.13186 |     0.6052 |                   10 |
+    | DEFAULT_c5914_00009 | TERMINATED |                 |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-----------------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    == Status ==
+    Memory usage on this node: 4.1/240.1 GiB
+    Using AsyncHyperBand: num_stopped=10
+    Bracket: Iter 8.000: -1.2243455046025493 | Iter 4.000: -1.2480904648542404 | Iter 2.000: -1.4736177569439635 | Iter 1.000: -2.2282736253738404
+    Resources requested: 0/32 CPUs, 0/2 GPUs, 0.0/157.76 GiB heap, 0.0/49.41 GiB objects
+    Result logdir: /var/lib/jenkins/ray_results/DEFAULT
+    Number of trials: 10 (10 TERMINATED)
+    +---------------------+------------+-------+--------------+------+------+-------------+---------+------------+----------------------+
+    | Trial name          | status     | loc   |   batch_size |   l1 |   l2 |          lr |    loss |   accuracy |   training_iteration |
+    |---------------------+------------+-------+--------------+------+------+-------------+---------+------------+----------------------|
+    | DEFAULT_c5914_00000 | TERMINATED |       |            2 |   16 |  128 | 0.0638566   | 2.36863 |     0.1043 |                    1 |
+    | DEFAULT_c5914_00001 | TERMINATED |       |            2 |   32 |   32 | 0.000296231 | 1.27087 |     0.5543 |                    4 |
+    | DEFAULT_c5914_00002 | TERMINATED |       |            2 |   64 |  128 | 0.0474373   | 2.33025 |     0.097  |                    1 |
+    | DEFAULT_c5914_00003 | TERMINATED |       |            8 |   64 |   16 | 0.00198567  | 1.16846 |     0.6012 |                   10 |
+    | DEFAULT_c5914_00004 | TERMINATED |       |            4 |  128 |  128 | 0.0882289   | 2.35844 |     0.1016 |                    1 |
+    | DEFAULT_c5914_00005 | TERMINATED |       |            8 |   16 |   64 | 0.0209017   | 2.31217 |     0.101  |                    2 |
+    | DEFAULT_c5914_00006 | TERMINATED |       |           16 |  128 |  128 | 0.000416211 | 1.246   |     0.5518 |                   10 |
+    | DEFAULT_c5914_00007 | TERMINATED |       |            2 |  256 |   32 | 0.000999609 | 1.28967 |     0.5815 |                    8 |
+    | DEFAULT_c5914_00008 | TERMINATED |       |            4 |   32 |   16 | 0.000616997 | 1.13186 |     0.6052 |                   10 |
+    | DEFAULT_c5914_00009 | TERMINATED |       |           16 |  256 |  128 | 0.000253927 | 2.29197 |     0.1715 |                    1 |
+    +---------------------+------------+-------+--------------+------+------+-------------+---------+------------+----------------------+
+
+
+    Best trial config: {'l1': 32, 'l2': 16, 'lr': 0.000616996686365655, 'batch_size': 4}
+    Best trial final validation loss: 1.1318627073608338
+    Best trial final validation accuracy: 0.6052
+    Files already downloaded and verified
+    Files already downloaded and verified
+    Best trial test set accuracy: 0.6021
+
+
+If you run the code, an example output could look like this:
+
+.. code-block::
+
+    Number of trials: 10 (10 TERMINATED)
+    +-----+------+------+-------------+--------------+---------+------------+--------------------+
+    | ... |   l1 |   l2 |          lr |   batch_size |    loss |   accuracy | training_iteration |
+    |-----+------+------+-------------+--------------+---------+------------+--------------------|
+    | ... |   64 |    4 | 0.00011629  |            2 | 1.87273 |     0.244  |                  2 |
+    | ... |   32 |   64 | 0.000339763 |            8 | 1.23603 |     0.567  |                  8 |
+    | ... |    8 |   16 | 0.00276249  |           16 | 1.1815  |     0.5836 |                 10 |
+    | ... |    4 |   64 | 0.000648721 |            4 | 1.31131 |     0.5224 |                  8 |
+    | ... |   32 |   16 | 0.000340753 |            8 | 1.26454 |     0.5444 |                  8 |
+    | ... |    8 |    4 | 0.000699775 |            8 | 1.99594 |     0.1983 |                  2 |
+    | ... |  256 |    8 | 0.0839654   |           16 | 2.3119  |     0.0993 |                  1 |
+    | ... |   16 |  128 | 0.0758154   |           16 | 2.33575 |     0.1327 |                  1 |
+    | ... |   16 |    8 | 0.0763312   |           16 | 2.31129 |     0.1042 |                  4 |
+    | ... |  128 |   16 | 0.000124903 |            4 | 2.26917 |     0.1945 |                  1 |
+    +-----+------+------+-------------+--------------+---------+------------+--------------------+
+
+
+    Best trial config: {'l1': 8, 'l2': 16, 'lr': 0.00276249, 'batch_size': 16, 'data_dir': '...'}
+    Best trial final validation loss: 1.181501
+    Best trial final validation accuracy: 0.5836
+    Best trial test set accuracy: 0.5806
+
+Most trials have been stopped early in order to avoid wasting resources.
+The best performing trial achieved a validation accuracy of about 58%, which could
+be confirmed on the test set.
+
+So that's it! You can now tune the parameters of your PyTorch models.
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 12 minutes  55.152 seconds)
+
+
+.. _sphx_glr_download_beginner_hyperparameter_tuning_tutorial.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: hyperparameter_tuning_tutorial.py <hyperparameter_tuning_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: hyperparameter_tuning_tutorial.ipynb <hyperparameter_tuning_tutorial.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
