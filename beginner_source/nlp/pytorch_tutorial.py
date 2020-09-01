@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""
+"""
 Introduction to PyTorch
 ***********************
 
@@ -281,5 +281,3 @@ print((x ** 2).requires_grad)
 
 with torch.no_grad():
 	print((x ** 2).requires_grad)
-
-
