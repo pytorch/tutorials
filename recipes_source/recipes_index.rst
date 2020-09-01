@@ -1,6 +1,6 @@
 PyTorch Recipes
 ---------------------------------------------
-Recipes are bite-sized bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
+Recipes are bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
 
 .. raw:: html
 
@@ -40,14 +40,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Defining a Neural Network
-   :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network the MNIST dataset.
+   :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: ../_static/img/thumbnails/cropped/defining-a-network.PNG
    :link: ../recipes/recipes/defining_a_neural_network.html
    :tags: Basics
 
 .. customcarditem::
    :header: What is a state_dict in PyTorch
-   :card_description: Learn how state_dict objects, Python dictionaries, are used in saving or loading models from PyTorch.
+   :card_description: Learn how state_dict objects and Python dictionaries are used in saving or loading models from PyTorch.
    :image: ../_static/img/thumbnails/cropped/what-is-a-state-dict.PNG
    :link: ../recipes/recipes/what_is_state_dict.html
    :tags: Basics
@@ -90,7 +90,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Zeroing out gradients in PyTorch
-   :card_description: Learn when you should zero out graidents and how doing so can help increase the accuracy of your model.
+   :card_description: Learn when you should zero out gradients and how doing so can help increase the accuracy of your model.
    :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
    :link: ../recipes/recipes/zeroing_out_gradients.html
    :tags: Basics
