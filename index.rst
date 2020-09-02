@@ -431,7 +431,7 @@ Additional Resources
 .. Page TOC
 .. -----------------------------------------
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 0
    :hidden:
    :includehidden:
    :caption: PyTorch Recipes
