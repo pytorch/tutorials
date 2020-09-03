@@ -34,6 +34,7 @@ conda activate testenv
 conda install sphinx
 pip install sphinx_gallery==0.3.1 flask pandas spacy ipython scipy pySoundFile scikit-image
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+pip install ray[tune]
 conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
 conda install torchaudio -c pytorch-test
 python -m spacy download de
@@ -41,9 +42,7 @@ python -m spacy download en
 pushd ${PROJECT_DIR}
 DIR=.jenkins
 python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
-python $DIR/remove_runnable_code.py beginner_source/data_loading_tutorial.py beginner_source/data_loading_tutorial.py || true
-python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py beginner_source/dcgan_faces_tutorial.py || true
+python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
 python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
-python $DIR/remove_runnable_code.py intermediate_source/memory_format_tutorial.py intermediate_source/memory_format_tutorial.py || true
 
 make docs
