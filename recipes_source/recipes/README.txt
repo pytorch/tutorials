@@ -57,6 +57,6 @@ PyTorch Recipes
          PyTorch Mobile Performance Recipes
          https://pytorch.org/tutorials/recipes/mobile_perf.html
 
-15. amp_tutorial.py
+15. amp_recipe.py
          Automatic Mixed Precision
-         https://pytorch.org/tutorials/recipes/amp_tutorial.html
+         https://pytorch.org/tutorials/recipes/amp_recipe.html
