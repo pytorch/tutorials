@@ -206,7 +206,7 @@ Welcome to PyTorch Tutorials
    :header: (prototype) Introduction to Named Tensors in PyTorch
    :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
    :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
-   :link: intermediate/memory_format_tutorial.html
+   :link: intermediate/named_tensor_tutorial.html
    :tags: Frontend-APIs,Named-Tensor,Best-Practice
 
 .. customcarditem::
@@ -259,6 +259,13 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,C++
 
 .. Model Optimization
+
+.. customcarditem::
+   :header: Hyperparameter Tuning Tutorial
+   :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
+   :image: _static/img/ray-tune.png
+   :link: beginner/hyperparameter_tuning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
    :header: Pruning Tutorial
@@ -516,6 +523,7 @@ Additional Resources
    :hidden:
    :caption: Model Optimization
 
+   beginner/hyperparameter_tuning_tutorial
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial

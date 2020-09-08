@@ -374,7 +374,7 @@ for i in range(len(transformed_dataset)):
 #
 
 dataloader = DataLoader(transformed_dataset, batch_size=4,
-                        shuffle=True, num_workers=4)
+                        shuffle=True, num_workers=0)
 
 
 # Helper function to show a batch
