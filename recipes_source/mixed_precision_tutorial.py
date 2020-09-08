@@ -20,8 +20,6 @@ mixed precision with improved performance.
 
 You may download and run this tutorial as a standalone Python script.
 The only requirements are Pytorch 1.6+ and a CUDA-capable GPU.
-
-.. contents:: :local:
 """
 
 import torch, time, gc
@@ -113,7 +111,7 @@ end_timer_and_print("Default precision:")
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
         # Runs the forward pass under autocast.
-        with torch.cuda.amp.autocast(enabled=try_amp):
+        with torch.cuda.amp.autocast():
             output = net(input)
             # output is float16 because linear layers autocast to float16.
             assert output.dtype is torch.float16
@@ -143,7 +141,6 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # The same GradScaler instance should be used for the entire convergence run.
 # If you perform multiple convergence runs in the same script, each run should use
 # a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
-
 scaler = torch.cuda.amp.GradScaler()
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
@@ -221,6 +218,8 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # ``autocast`` may be used by itself to wrap inference or evaluation forward passes. ``GradScaler`` is not necessary.
 
 ##########################################################
+# .. _advanced-topics:
+#
 # Advanced topics
 # ---------------
 # See the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_ for advanced use cases including:
@@ -249,7 +248,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 #      as much as you can without running OOM.
 #    * Try to avoid excessive CPU-GPU synchronization (``.item()`` calls, or printing values from CUDA tensors).
 #    * Try to avoid sequences of many small CUDA ops (coalesce these into a few large CUDA ops if you can).
-# 2. Your network may be compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
+# 2. Your network may be GPU compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
 #    In this case a reduced speedup is expected.
 # 3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
 #    (For NLP models with encoders/decoders, this can be subtle.  Also. convolutions used to have similar size constraints
@@ -258,7 +257,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 #
 # Loss is inf/NaN
 # ~~~~~~~~~~~~~~~
-# First, check if your network fits an advanced use case in the `Automatic Mixed Precision Examples <https://pytorch.org/docs/stable/notes/amp_examples.html>`_.
+# First, check if your network fits an :ref:`advanced use case<advanced-topics>`.
 # See also `Prefer binary_cross_entropy_with_logits over binary_cross_entropy <https://pytorch.org/docs/stable/amp.html#prefer-binary-cross-entropy-with-logits-over-binary-cross-entropy>`_.
 #
 # If you're confident your Amp usage is correct, you may need to file an issue, but before doing so, it's helpful to gather the following information:
@@ -278,4 +277,4 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # it's possible autocast missed an op.
 #
 # Please file an issue with the error backtrace.  ``export TORCH_SHOW_CPP_STACKTRACES=1`` before running your script to provide
-# more fine-grained information on which backend op is failing.
+# fine-grained information on which backend op is failing.
