@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Automatic Mixed Precision in PyTorch
-************************************
+Automatic Mixed Precision
+*************************
 **Author**: `Michael Carilli <https://github.com/mcarilli>`_
 
 `torch.cuda.amp <https://pytorch.org/docs/stable/amp.html>`_ provides convenience methods for mixed precision,

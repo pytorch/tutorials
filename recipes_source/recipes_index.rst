@@ -167,6 +167,15 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
 
+.. Automatic Mixed Precision
+
+.. customcarditem::
+   :header: Automatic Mixed Precision
+   :card_description: Use `torch.cuda.amp` to reduce runtime and save memory on NVIDIA GPUs.
+   :image: ../_static/img/thumbnails/cropped/amp.png
+   :link: ../recipes/amp_tutorial.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
