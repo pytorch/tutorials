@@ -173,7 +173,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: Automatic Mixed Precision
    :card_description: Use torch.cuda.amp to reduce runtime and save memory on NVIDIA GPUs.
    :image: ../_static/img/thumbnails/cropped/amp.png
-   :link: ../recipes/amp_recipe.html
+   :link: ../recipes/recipes/amp_recipe.html
    :tags: Model-Optimization
 
 .. End of tutorial card section
