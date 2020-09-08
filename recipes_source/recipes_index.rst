@@ -208,6 +208,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
+   /recipes/recipes/amp_tutorial
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
