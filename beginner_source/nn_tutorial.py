@@ -706,7 +706,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # nn.Sequential
 # ------------------------
 #
-# ``torch.nn`` has another handy class we can use to simply our code:
+# ``torch.nn`` has another handy class we can use to simplify our code:
 # `Sequential <https://pytorch.org/docs/stable/nn.html#torch.nn.Sequential>`_ .
 # A ``Sequential`` object runs each of the modules contained within it, in a
 # sequential manner. This is a simpler way of writing our neural network.
