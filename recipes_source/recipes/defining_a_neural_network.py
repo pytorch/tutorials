@@ -26,7 +26,7 @@ available.
 
 ::
 
-   pip install torchaudio
+   pip install torch
 
 
 """
