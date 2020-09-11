@@ -105,6 +105,8 @@ speaking, the structure of your registrations will look like this:
     that provides implementations for all basic operators on the XLA dispatch
     key.
 
+.. _autograd-support:
+
 Adding autograd support
 -----------------------
 
@@ -298,6 +300,28 @@ the safest choice for the execution type:
       return my_multiple_input_op(at::autocast::cached_cast(exec_type, t0),
                                   at::autocast::cached_cast(exec_type, t1));
     }
+
+If your custom op is :ref:`autograd-enabled<autograd-support>`, you only need to write and register
+an autocast wrapper for same name onto which the autograd wrapper is registered.
+For example, if you wanted an autocast wrapper for the ``myadd`` function shown
+in the autograd section, all you'd need is
+
+.. code-block:: cpp
+
+    Tensor myadd_autocast(const Tensor& self, const Tensor& other) {
+      c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
+      return myadd(at::autocast::cached_cast(<desired dtype>, self),
+                   at::autocast::cached_cast(<desired dtype>, other));
+    }
+
+    TORCH_LIBRARY_IMPL(myops, Autocast, m) {
+      m.impl("myadd", myadd_autocast);
+    }
+
+There are no separate gymnastics to make the backward method autocast compatible.
+However, the backward method defined in your custom autograd function will run in the same
+dtype as autocast sets for the forward method, so you should choose a ``<desired dtype>``
+suitable for both your forward and backward methods.
 
 Batched
 ^^^^^^^
