@@ -8,17 +8,17 @@ Automatic Mixed Precision
 where some operations use the ``torch.float32`` (``float``) datatype and other operations
 use ``torch.float16`` (``half``). Some ops, like linear layers and convolutions,
 are much faster in ``float16``. Other ops, like reductions, often require the dynamic
-range of ``float32``.  Mixed precision tries to match each op to its appropriate datatype.
+range of ``float32``.  Mixed precision tries to match each op to its appropriate datatype,
 which can reduce your network's runtime and memory footprint.
 
 Ordinarily, "automatic mixed precision training" uses `torch.cuda.amp.autocast <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_ and
 `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_ together.
 
-This tutorial measures the performance of a simple network in default precision,
+This recipe measures the performance of a simple network in default precision,
 then walks through adding ``autocast`` and ``GradScaler`` to run the same network in
 mixed precision with improved performance.
 
-You may download and run this tutorial as a standalone Python script.
+You may download and run this recipe as a standalone Python script.
 The only requirements are Pytorch 1.6+ and a CUDA-capable GPU.
 
 Mixed precision primarily benefits Tensor Core-enabled architectures (Volta, Turing, Ampere).
@@ -62,7 +62,7 @@ def make_model(in_size, out_size, num_layers):
 
 ##########################################################
 # ``batch_size``, ``in_size``, ``out_size``, and ``num_layers`` are chosen to be large enough to saturate the GPU with work.
-# Typically, mixed precision provides the greatest speedup when GPU is saturated.
+# Typically, mixed precision provides the greatest speedup when the GPU is saturated.
 # Small networks may be CPU bound, in which case mixed precision won't improve performance.
 # Sizes are also chosen such that linear layers' participating dimensions are multiples of 8,
 # to permit Tensor Core usage on Tensor Core-capable GPUs (see :ref:`Troubleshooting<troubleshooting>` below).
@@ -87,7 +87,7 @@ loss_fn = torch.nn.MSELoss().cuda()
 ##########################################################
 # Default Precision
 # -----------------
-# Without torch.cuda.amp, the following simple network executes all ops in default precision (``torch.float32``):
+# Without ``torch.cuda.amp``, the following simple network executes all ops in default precision (``torch.float32``):
 
 net = make_model(in_size, out_size, num_layers)
 opt = torch.optim.SGD(net.parameters(), lr=0.001)
@@ -139,7 +139,8 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 # helps prevent gradients with small magnitudes from flushing to zero
 # ("underflowing") when training with mixed precision.
 #
-# ``torch.cuda.amp.GradScaler`` performs the steps of gradient scaling conveniently.
+# `torch.cuda.amp.GradScaler <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler>`_
+# performs the steps of gradient scaling conveniently.
 
 # Constructs scaler once, at the beginning of the convergence run, using default args.
 # If your network fails to converge with default GradScaler args, please file an issue.
@@ -170,9 +171,9 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 ##########################################################
 # All together ("Automatic Mixed Precision")
 # ------------------------------------------
-# The following also demonstrates ``enabled``, an optional convenience argument to ``autocast`` and ``GradScaler``.
+# (The following also demonstrates ``enabled``, an optional convenience argument to ``autocast`` and ``GradScaler``.
 # If False, ``autocast`` and ``GradScaler``\ 's calls become no-ops.
-# This allows switching between default precision and mixed precision without if/else statements.
+# This allows switching between default precision and mixed precision without if/else statements.)
 
 use_amp = True
 
@@ -196,8 +197,8 @@ end_timer_and_print("Mixed precision:")
 # Inspecting/modifying gradients (e.g., clipping)
 # --------------------------------------------------------
 # All gradients produced by ``scaler.scale(loss).backward()`` are scaled.  If you wish to modify or inspect
-# the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``,  you should
-# unscale them first using ``scaler.unscale_(optimizer)``.
+# the parameters' ``.grad`` attributes between ``backward()`` and ``scaler.step(optimizer)``, you should
+# unscale them first using `scaler.unscale_(optimizer) <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.unscale_>`_.
 
 for epoch in range(0): # 0 epochs, this section is for illustration only
     for input, target in zip(data, targets):
@@ -232,6 +233,7 @@ checkpoint = {"model": net.state_dict(),
               "optimizer": opt.state_dict(),
               "scaler": scaler.state_dict()}
 
+##########################################################
 # (write checkpoint as desired, e.g., ``torch.save(checkpoint, "filename")``.)
 #
 # When resuming, load the scaler state dict alongside the model and optimizer state dicts.
@@ -242,11 +244,12 @@ net.load_state_dict(checkpoint["model"])
 opt.load_state_dict(checkpoint["optimizer"])
 scaler.load_state_dict(checkpoint["scaler"])
 
-# If a checkpoint was created from a run _without_ mixed precision, and you want to resume training _with_ mixed precision,
+##########################################################
+# If a checkpoint was created from a run *without* Amp, and you want to resume training *with* Amp,
 # load model and optimizer states from the checkpoint as usual.  The checkpoint won't contain a saved scaler state, so
 # use a fresh instance of ``GradScaler``.
 #
-# If a checkpoint was created from a run _with_ mixed precision and you want to resume training _without_ mixed precision,
+# If a checkpoint was created from a run *with* Amp and you want to resume training *without* Amp,
 # load model and optimizer states from the checkpoint as usual, and ignore the saved scaler state.
 
 ##########################################################
