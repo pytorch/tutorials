@@ -20,6 +20,11 @@ mixed precision with improved performance.
 
 You may download and run this tutorial as a standalone Python script.
 The only requirements are Pytorch 1.6+ and a CUDA-capable GPU.
+
+Mixed precision primarily benefits Tensor Core-enabled architectures (Volta, Turing, Ampere).
+This recipe should show significant (2-3X) speedup on those architectures.
+On earlier architectures (Kepler, Maxwell, Pascal), you may observe a modest speedup.
+Run ``nvidia-smi`` to display your GPU's architecture.
 """
 
 import torch, time, gc
@@ -211,6 +216,38 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         scaler.step(opt)
         scaler.update()
         opt.zero_grad()
+
+##########################################################
+# Saving/Resuming
+# ----------------
+# To save/resume Amp-enabled runs with bitwise accuracy, use
+# `scaler.state_dict <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.state_dict>`_ and
+# `scaler.load_state_dict <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.load_state_dict>`_.
+#
+# When saving, save the scaler state dict alongside the usual model and optimizer state dicts.
+# Do this either at the beginning of an iteration before any forward passes, or at the end of
+# an iteration after ``scaler.update()``.
+
+checkpoint = {"model": net.state_dict(),
+              "optimizer": opt.state_dict(),
+              "scaler": scaler.state_dict()}
+
+# (write checkpoint as desired, e.g., ``torch.save(checkpoint, "filename")``.)
+#
+# When resuming, load the scaler state dict alongside the model and optimizer state dicts.
+# (read checkpoint as desired, e.g.,
+# ``checkpoint = torch.load(args.resume, map_location = lambda storage, loc: storage.cuda(torch.cuda.current_device()))``)
+
+net.load_state_dict(checkpoint["model"])
+opt.load_state_dict(checkpoint["optimizer"])
+scaler.load_state_dict(checkpoint["scaler"])
+
+# If a checkpoint was created from a run _without_ mixed precision, and you want to resume training _with_ mixed precision,
+# load model and optimizer states from the checkpoint as usual.  The checkpoint won't contain a saved scaler state, so
+# use a fresh instance of ``GradScaler``.
+#
+# If a checkpoint was created from a run _with_ mixed precision and you want to resume training _without_ mixed precision,
+# load model and optimizer states from the checkpoint as usual, and ignore the saved scaler state.
 
 ##########################################################
 # Inference/Evaluation
