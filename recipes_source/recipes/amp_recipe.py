@@ -169,7 +169,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         opt.zero_grad()
 
 ##########################################################
-# All together ("Automatic Mixed Precision")
+# All together: "Automatic Mixed Precision"
 # ------------------------------------------
 # (The following also demonstrates ``enabled``, an optional convenience argument to ``autocast`` and ``GradScaler``.
 # If False, ``autocast`` and ``GradScaler``\ 's calls become no-ops.
@@ -269,6 +269,9 @@ scaler.load_state_dict(checkpoint["scaler"])
 # * Networks with multiple models, optimizers, or losses
 # * Multiple GPUs (``torch.nn.DataParallel`` or ``torch.nn.parallel.DistributedDataParallel``)
 # * Custom autograd functions (subclasses of ``torch.autograd.Function``)
+#
+# If you perform multiple convergence runs in the same script, each run should use
+# a dedicated fresh GradScaler instance.  GradScaler instances are lightweight.
 #
 # If you're registering a custom C++ op with the dispatcher, see the
 # `autocast section <https://pytorch.org/tutorials/advanced/dispatcher.html#autocast>`_
