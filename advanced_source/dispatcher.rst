@@ -302,7 +302,7 @@ the safest choice for the execution type:
     }
 
 If your custom op is :ref:`autograd-enabled<autograd-support>`, you only need to write and register
-an autocast wrapper for same name onto which the autograd wrapper is registered.
+an autocast wrapper for the same name onto which the autograd wrapper is registered.
 For example, if you wanted an autocast wrapper for the ``myadd`` function shown
 in the autograd section, all you'd need is
 

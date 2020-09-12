@@ -166,7 +166,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
         # Updates the scale for next iteration.
         scaler.update()
 
-        opt.zero_grad()
+        opt.zero_grad() # set_to_none=True here can modestly improve performance
 
 ##########################################################
 # All together: "Automatic Mixed Precision"
@@ -190,7 +190,7 @@ for epoch in range(epochs):
         scaler.scale(loss).backward()
         scaler.step(opt)
         scaler.update()
-        opt.zero_grad()
+        opt.zero_grad() # set_to_none=True here can modestly improve performance
 end_timer_and_print("Mixed precision:")
 
 ##########################################################
@@ -216,7 +216,7 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 
         scaler.step(opt)
         scaler.update()
-        opt.zero_grad()
+        opt.zero_grad() # set_to_none=True here can modestly improve performance
 
 ##########################################################
 # Saving/Resuming
@@ -232,14 +232,16 @@ for epoch in range(0): # 0 epochs, this section is for illustration only
 checkpoint = {"model": net.state_dict(),
               "optimizer": opt.state_dict(),
               "scaler": scaler.state_dict()}
+# Write checkpoint as desired, e.g.,
+# torch.save(checkpoint, "filename")
 
 ##########################################################
-# (write checkpoint as desired, e.g., ``torch.save(checkpoint, "filename")``.)
-#
 # When resuming, load the scaler state dict alongside the model and optimizer state dicts.
-# (read checkpoint as desired, e.g.,
-# ``checkpoint = torch.load(args.resume, map_location = lambda storage, loc: storage.cuda(torch.cuda.current_device()))``)
 
+# Read checkpoint as desired, e.g.,
+# dev = torch.cuda.current_device()
+# checkpoint = torch.load("filename",
+#                         map_location = lambda storage, loc: storage.cuda(dev))
 net.load_state_dict(checkpoint["model"])
 opt.load_state_dict(checkpoint["optimizer"])
 scaler.load_state_dict(checkpoint["scaler"])
@@ -294,7 +296,7 @@ scaler.load_state_dict(checkpoint["scaler"])
 # 2. Your network may be GPU compute bound (lots of matmuls/convolutions) but your GPU does not have Tensor Cores.
 #    In this case a reduced speedup is expected.
 # 3. Matmul dimensions are not Tensor Core-friendly.  Make sure matmuls' participating sizes are multiples of 8.
-#    (For NLP models with encoders/decoders, this can be subtle.  Also. convolutions used to have similar size constraints
+#    (For NLP models with encoders/decoders, this can be subtle.  Also, convolutions used to have similar size constraints
 #    for Tensor Core use, but for CuDNN versions 7.3 and later, no such constraints exist.  See
 #    `here <https://github.com/NVIDIA/apex/issues/221#issuecomment-478084841>`_ for guidance.)
 #
