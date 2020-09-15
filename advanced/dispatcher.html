@@ -353,7 +353,7 @@ key.</p>
 </div>
 </div>
 <div class="section" id="adding-autograd-support">
-<h2>Adding autograd support<a class="headerlink" href="#adding-autograd-support" title="Permalink to this headline">¶</a></h2>
+<span id="autograd-support"></span><h2>Adding autograd support<a class="headerlink" href="#adding-autograd-support" title="Permalink to this headline">¶</a></h2>
 <p>At this point, we have an operator with both CPU and CUDA implementations.  How
 can we add autograd support to it?  As you might guess, we will register an
 autograd kernel (similar to what’s described in the <a class="reference external" href="cpp_autograd">custom autograd function</a> tutorial)!
@@ -446,9 +446,9 @@ implement a glorified if-statement, along the lines of this:</p>
     <span class="n">AutogradContext</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">device</span><span class="p">().</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">::</span><span class="n">CPU</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="n">add_cpu</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nf">add_cpu</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
     <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">device</span><span class="p">().</span><span class="n">type</span><span class="p">()</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">::</span><span class="n">CUDA</span><span class="p">)</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="n">add_cuda</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nf">add_cuda</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
       <span class="n">TORCH_CHECK</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">"Unsupported device "</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">device</span><span class="p">().</span><span class="n">type</span><span class="p">());</span>
     <span class="p">}</span>
@@ -543,6 +543,25 @@ the safest choice for the execution type:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>If your custom op is <a class="reference internal" href="#autograd-support"><span class="std std-ref">autograd-enabled</span></a>, you only need to write and register
+an autocast wrapper for the same name onto which the autograd wrapper is registered.
+For example, if you wanted an autocast wrapper for the <code class="docutils literal notranslate"><span class="pre">myadd</span></code> function shown
+in the autograd section, all you’d need is</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Tensor</span> <span class="nf">myadd_autocast</span><span class="p">(</span><span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">self</span><span class="p">,</span> <span class="k">const</span> <span class="n">Tensor</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">c10</span><span class="o">::</span><span class="n">impl</span><span class="o">::</span><span class="n">ExcludeDispatchKeyGuard</span> <span class="n">no_autocast</span><span class="p">(</span><span class="n">c10</span><span class="o">::</span><span class="n">DispatchKey</span><span class="o">::</span><span class="n">Autocast</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">myadd</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="o">&lt;</span><span class="n">desired</span> <span class="n">dtype</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">self</span><span class="p">),</span>
+               <span class="n">at</span><span class="o">::</span><span class="n">autocast</span><span class="o">::</span><span class="n">cached_cast</span><span class="p">(</span><span class="o">&lt;</span><span class="n">desired</span> <span class="n">dtype</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">other</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">TORCH_LIBRARY_IMPL</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span> <span class="n">Autocast</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">m</span><span class="p">.</span><span class="n">impl</span><span class="p">(</span><span class="s">"myadd"</span><span class="p">,</span> <span class="n">myadd_autocast</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There are no separate gymnastics to make the backward method autocast compatible.
+However, the backward method defined in your custom autograd function will run in the same
+dtype as autocast sets for the forward method, so you should choose a <code class="docutils literal notranslate"><span class="pre">&lt;desired</span> <span class="pre">dtype&gt;</span></code>
+suitable for both your forward and backward methods.</p>
 </div>
 <div class="section" id="batched">
 <h3>Batched<a class="headerlink" href="#batched" title="Permalink to this headline">¶</a></h3>
