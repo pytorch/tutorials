@@ -176,6 +176,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/amp_recipe.html
    :tags: Model-Optimization
 
+.. Performance
+
+.. customcarditem::
+   :header: Performance Tuning Guide
+   :card_description: Tips for achieving optimal performance.
+   :image: ../_static/img/thumbnails/cropped/amp.png
+   :link: ../recipes/recipes/tuning_guide.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -209,6 +218,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
+   /recipes/recipes/tuning_guide
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
