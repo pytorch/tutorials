@@ -67,7 +67,8 @@ landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
 
 n = 65
 img_name = landmarks_frame.iloc[n, 0]
-landmarks = landmarks_frame.iloc[n, 1:].as_matrix()
+landmarks = landmarks_frame.iloc[n, 1:]
+landmarks = np.asarray(landmarks)
 landmarks = landmarks.astype('float').reshape(-1, 2)
 
 print('Image name: {}'.format(img_name))
@@ -373,7 +374,7 @@ for i in range(len(transformed_dataset)):
 #
 
 dataloader = DataLoader(transformed_dataset, batch_size=4,
-                        shuffle=True, num_workers=4)
+                        shuffle=True, num_workers=0)
 
 
 # Helper function to show a batch

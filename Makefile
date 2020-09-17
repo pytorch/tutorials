@@ -43,6 +43,7 @@ download:
 	mkdir -p advanced_source/data
 	mkdir -p beginner_source/data
 	mkdir -p intermediate_source/data
+	mkdir -p prototype_source/data
 
 	# transfer learning tutorial data
 	wget -N https://download.pytorch.org/tutorial/hymenoptera_data.zip -P $(DATADIR)
@@ -100,6 +101,14 @@ download:
 	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
 	unzip $(ZIPOPTS) $(DATADIR)/imagenet_1k.zip -d advanced_source/data/
 
+	# Download model for prototype_source/graph_mode_static_quantization_tutorial.py
+	wget -N https://download.pytorch.org/models/resnet18-5c106cde.pth -P $(DATADIR)
+	cp $(DATADIR)/resnet18-5c106cde.pth prototype_source/data/resnet18_pretrained_float.pth
+
+	# Download dataset for prototype_source/graph_mode_static_quantization_tutorial.py
+	wget -N https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip -P $(DATADIR)
+	unzip $(ZIPOPTS) $(DATADIR)/imagenet_1k.zip -d prototype_source/data/
+
 docs:
 	make download
 	make html
@@ -109,10 +118,10 @@ docs:
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(SPHINXOPTS) "$(SOURCEDIR)" "$(BUILDDIR)/html"
-	bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
+	# bash .jenkins/remove_invisible_code_block_batch.sh "$(BUILDDIR)/html"
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 clean-cache:
 	make clean
-	rm -rf advanced beginner intermediate
+	rm -rf advanced beginner intermediate recipes
