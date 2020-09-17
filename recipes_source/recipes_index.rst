@@ -172,7 +172,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
    :image: ../_static/img/thumbnails/cropped/profile.png
    :link: ../recipes/distributed_rpc_profiling.html
-   :tags: Distributed,RPC
+   :tags: Production
 
 .. Automatic Mixed Precision
 
