@@ -23,8 +23,8 @@ Presented techniques often can be implemented by changing only a few lines of co
 # ``num_workers`` should be tuned depending on the workload, CPU, accelerator, and location of training data.
 #
 # ``DataLoader`` accepts ``pin_memory`` argument, which defaults to ``False``.
-# In almost all settings it's better to set ``pin_memory=True``,
-# this instructs ``DataLoader`` to use pinned memory and enables faster and asynchronous memory copy from the host to the GPU.
+# When using an accelerator it's better to set ``pin_memory=True``,
+# this instructs ``DataLoader`` to use pinned memory and enables faster and asynchronous memory copy from the host to the accelerator.
 
 ##########################################################
 # Disable debugging APIs
@@ -128,7 +128,7 @@ for param in model.parameters():
 # Use mixed precision and AMP
 # ----------------
 # Mixed precision leverages `Tensor Cores <https://www.nvidia.com/en-us/data-center/tensor-cores/>`_ and offers up to 3x overall speedup on Volta and newer GPU architectures.
-# To use Tensor Cores AMP should be enabled and matrix/tensor dimensions should satisfy requirements for calling Tensor Cores kernels.
+# To use Tensor Cores AMP should be enabled and matrix/tensor dimensions should satisfy requirements for calling kernels that use Tensor Cores.
 #
 # To use Tensor Cores:
 #
