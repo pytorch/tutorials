@@ -166,6 +166,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
+   
+.. customcarditem::
+   :header: Profiling PyTorch RPC-Based Workloads
+   :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
+   :image: ../_static/img/thumbnails/cropped/profile.png
+   :link: ../recipes/distributed_rpc_profiling.html
+   :tags: Distributed,RPC
 
 .. Automatic Mixed Precision
 
