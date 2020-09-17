@@ -181,7 +181,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. customcarditem::
    :header: Performance Tuning Guide
    :card_description: Tips for achieving optimal performance.
-   :image: ../_static/img/thumbnails/cropped/amp.png
+   :image: ../_static/img/thumbnails/cropped/profiler.png
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
