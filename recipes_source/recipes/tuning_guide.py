@@ -8,14 +8,9 @@ accelerate training and inference of deep learning models in PyTorch. Presented
 techniques often can be implemented by changing only a few lines of code and can
 be applied to a wide range of deep learning models across all domains.
 
+General optimizations
+---------------------
 """
-
-# dummy text to correctly generate first header
-# TODO: how to fix this?
-
-###############################################################################
-# General optimizations
-# ---------------------
 
 ###############################################################################
 # Enable async data loading and augmentation
