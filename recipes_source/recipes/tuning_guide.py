@@ -86,7 +86,7 @@ General optimizations
 ###############################################################################
 # Use parameter.grad = None instead of model.zero_grad()
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Insted of calling:
+# Instead of calling:
 model.zero_grad()
 
 ###############################################################################
@@ -182,11 +182,10 @@ out = torch.split(out_, dim=0)
 # are recomputed during backward pass. The reduced memory requirements enables
 # increasing the batch size that can improve utilization.
 #
-# For efficient checkpointing, checkpointing targets should be selected
-# carefully. The best is not to store large layer outputs that have small
-# re-computation cost. The example target layers will be activation functions
-# (e.g. ``ReLU``, ``Sigmoid``, ``Tanh``), up/down sampling, matrix-vector
-# operations with small accumulation depth.
+# Checkpointing targets should be selected carefully. The best is not to store
+# large layer outputs that have small re-computation cost. The example target
+# layers are activation functions (e.g. ``ReLU``, ``Sigmoid``, ``Tanh``),
+# up/down sampling and matrix-vector operations with small accumulation depth.
 #
 # PyTorch supports a native
 # `torch.utils.checkpoint <https://pytorch.org/docs/stable/checkpoint.html>`_
@@ -211,8 +210,8 @@ out = torch.split(out_, dim=0)
 #    (either corresponding to max length in the training dataset or to some
 #    predefined threshold)
 # #. execute a forward and a backward pass with the generated batch, do not
-#    execute an optimizer or a learning rate scheduler, this step will
-#    pre-allocate buffers of maximum size, which can be reused in subsequent
+#    execute an optimizer or a learning rate scheduler, this step pre-allocates
+#    buffers of maximum size, which can be reused in subsequent
 #    training iterations
 # #. zero out gradients
 # #. proceed to regular training
@@ -340,7 +339,6 @@ torch.backends.cudnn.benchmark = True
 # `no_sync()` should applied to first ``N-1`` iterations of gradient
 # accumulation, the last iteration should follow the default execution and
 # perform the required gradient all-reduce.
-
 
 ###############################################################################
 # Match the order of layers in constructors with order during the execution if training with DistributedDataParallel
