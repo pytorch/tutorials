@@ -13,9 +13,13 @@ be applied to a wide range of deep learning models across all domains.
 # dummy text to correctly generate first header
 # TODO: how to fix this?
 
-##########################################################
+###############################################################################
+# General optimizations
+# ---------------------
+
+###############################################################################
 # Enable async data loading and augmentation
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`_
 # supports asynchronous data loading and data augmentation in separate worker
 # subprocesses. The default setting for ``DataLoader`` is ``num_workers=0``,
@@ -32,9 +36,9 @@ be applied to a wide range of deep learning models across all domains.
 # instructs ``DataLoader`` to use pinned memory and enables faster and
 # asynchronous memory copy from the host to the accelerator.
 
-##########################################################
+###############################################################################
 # Disable debugging APIs
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~
 # Many PyTorch APIs are intended for debugging and should be disabled for
 # regular training runs:
 #
@@ -51,30 +55,9 @@ be applied to a wide range of deep learning models across all domains.
 #   `torch.autograd.gradgradcheck <https://pytorch.org/docs/stable/autograd.html#torch.autograd.gradgradcheck>`_
 #
 
-##########################################################
-# Enable cuDNN auto-tuner
-# ----------------
-# `NVIDIA cuDNN <https://developer.nvidia.com/cudnn>`_ supports many algorithms
-# to compute convolution. Autotuner runs a short benchmark and selects the
-# kernel with the best performance on a given hardware for a given input size.
-#
-# For convolutional networks (other types currently not supported), enable cuDNN
-# autotuner before launching the training loop by setting:
-
-torch.backends.cudnn.benchmark = True
-##########################################################
-#
-# * the auto-tuner decisions may be non-deterministic; different algorithm may
-#   be selected for different runs.  For more details see
-#   `PyTorch: Reproducibility <https://pytorch.org/docs/stable/notes/randomness.html?highlight=determinism>`_
-# * in some rare cases, such as with highly variable input sizes,  it's better
-#   to run convolutional networks with autotuner disabled to avoid the overhead
-#   associated with algorithm selection for each input size.
-#
-
-##########################################################
+###############################################################################
 # Disable gradient calculation for validation or inference
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # PyTorch saves intermediate buffers from all operations which involve tensors
 # that require gradients. Typically gradients aren't needed for validation or
 # inference.
@@ -85,38 +68,9 @@ torch.backends.cudnn.benchmark = True
 # `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html#torch.no_grad>`_
 # can also be used as a function decorator.
 
-##########################################################
-# Avoid unnecessary CPU-GPU synchronization
-# ----------------
-# Avoid unnecessary synchronizations, to let the CPU run ahead of the
-# accelerator as much as possible to make sure that the accelerator work queue
-# contains many operations.
-#
-# When possible, avoid operations which require synchronizations, for example:
-#
-# * ``print(CUDA_tensor)``
-# * ``CUDA_tensor.item()``
-# * memory copies: ``tensor.cuda()``,  ``CUDA_tensor.cpu()`` and equivalent
-#   ``tensor.to(device)`` calls
-#
-
-##########################################################
-# Create tensors directly on the target device
-# ----------------
-# Instead of calling ``torch.rand(size).cuda()`` to generate a random tensor,
-# produce the output directly on the target device:
-# ``torch.rand(size, device=torch.device('cuda'))``.
-#
-# This is applicable to all functions which create new tensors and accept
-# ``device`` argument:
-# `torch.rand() <https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand>`_,
-# `torch.zeros() <https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros>`_,
-# `torch.full() <https://pytorch.org/docs/stable/generated/torch.full.html#torch.full>`_
-# and similar.
-
-##########################################################
+###############################################################################
 # Disable bias for convolutions directly followed by a batch norm
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.Conv2d() <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_
 # has ``bias`` parameter which defaults to ``True`` (same is true for
 # `Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d>`_
@@ -134,41 +88,198 @@ torch.backends.cudnn.benchmark = True
 # other normalization layer) normalizes on the same dimension as convolution's
 # bias.
 
-##########################################################
+###############################################################################
 # Use parameter.grad = None instead of model.zero_grad()
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Insted of calling:
 model.zero_grad()
 
-##########################################################
+###############################################################################
 # to zero out gradients, use the following method instead:
 
 for param in model.parameters():
     param.grad = None
 
-##########################################################
+###############################################################################
 # The second code snippet doesn't call memset on each individual parameter, also
 # the subsequent backward pass uses assignment instead of addition assignment to
 # store gradients, this reduces number of memory operations.
 
-##########################################################
-# Use efficient multi-GPU backend
-# ----------------
-# PyTorch has two ways to implement data-parallel training:
+###############################################################################
+# Fuse pointwise operations
+# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# Pointwise operations (elementwise addition, multiplication, math functions -
+# ``sin()``, ``cos()``, ``sigmoid()`` etc.) should be fused into a single kernel
+# to amortize memory access time and kernel launch time.
 #
-# * `torch.nn.DataParallel <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
-# * `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
+# `PyTorch JIT <https://pytorch.org/docs/stable/jit.html>`_ can fuse kernels
+# automatically, although there could be additional fusion opportunities not yet
+# implemented in the compiler, and not all device types are supported equally.
 #
-# ``DistributedDataParallel`` offers much better performance and scaling to
-# multiple-GPUs. In the case of ``DataParallel``, a single CPU core and a single
-# Python process schedules work for multiple GPUs, which results in a
-# significant cost of launching kernels. For more information refer to the
-# `relevant section of CUDA Best Practices <https://pytorch.org/docs/stable/notes/cuda.html#use-nn-parallel-distributeddataparallel-instead-of-multiprocessing-or-nn-dataparallel>`_
-# from PyTorch documentation.
+# Unfused pointwise operations are memory-bound, for each unfused operation
+# PyTorch launches a separate kernel. Each kernel loads data from the memory,
+# performs computation (this step is usually inexpensive) and stores results
+# back into the memory.
+#
+# Fused operator launches only one kernel for multiple fused pointwise ops and
+# loads/stores data only once to the memory. This makes JIT very useful for
+# activation functions, optimizers, custom RNN cells etc.
+#
+# In the simplest case fusion can be enabled by applying
+# `torch.jit.script <https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script>`_
+# decorator to the function definition.
+# Refer to
+# `TorchScript documentation <https://pytorch.org/docs/stable/jit.html>`_
+# for more advanced use cases.
 
-##########################################################
+###############################################################################
+# Enable channels_last memory format for computer vision models (experimental)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PyTorch 1.5 introduced support for `channels_last` memory format for
+# convolutional networks. This format is meant to be used in conjunction with
+# `AMP <https://pytorch.org/docs/stable/amp.html>`_ to further accelerate
+# convolutional neural networks with
+# `Tensor Cores <https://www.nvidia.com/en-us/data-center/tensor-cores/>`_.
+#
+# Support for `channels_last` is new and experimental, but it's expected to work
+# for standard computer vision models (e.g. ResNet-50, SSD). To convert models
+# to `channels_last` format follow
+# `Channels Last Memory Format Tutorial <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html>`_.
+# The tutorial includes a section on
+# `converting existing models <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html#converting-existing-models>`_.
+
+###############################################################################
+# Parallelize kernel execution
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# When short kernels are executed in serial, the execution efficiency becomes
+# low due to time needed to schedule and launch work on the accelerator.
+# `JIT <https://pytorch.org/docs/stable/jit.html>`_ can help alleviate this cost
+# but its benefit is restricted when inputs are not feedforward between kernels.
+#
+# When kernels do not have input dependency, aggregating the kernels with the
+# same input dimensions and executing work in parallel helps to reduce the
+# number of kernels to execute and increase the resource occupancy within each
+# kernel execution. Good examples to apply kernel vectorization are parameter
+# optimizers and modules with multiple heads (e.g. self-attention).
+
+# Build list of outputs
+out = []
+for block in layer_blocks:
+    out.append(block(x))
+
+# Construct stacked tensor
+out_ = torch.stack(out, dim=0)
+
+# Execute functions that are shared by all blocks in parallel
+out_ = element_wise_layers(out_)
+
+# Re-distribute outputs back to each head
+out = torch.split(out_, dim=0)
+
+# Continue processing layer sequences of each layer
+
+###############################################################################
+# Checkpoint intermediate buffers
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Buffer checkpointing is a technique to mitigate the memory capacity burden of
+# model training. Instead of storing inputs of all layers to compute upstream
+# gradients in back-prop, it stores the inputs of a few layers and the others
+# are recomputed during backward pass. The reduced memory requirements enables
+# increasing the batch size that can improve utilization.
+#
+# For efficient checkpointing, checkpointing targets should be selected
+# carefully. The best is not to store large layer outputs that have small
+# re-computation cost. The example target layers will be activation functions
+# (e.g. ``ReLU``, ``Sigmoid``, ``Tanh``), up/down sampling, matrix-vector
+# operations with small accumulation depth.
+#
+# PyTorch supports a native
+# `torch.utils.checkpoint <https://pytorch.org/docs/stable/checkpoint.html>`_
+# API to automatically perform checkpointing and recomputation.
+
+###############################################################################
+# Pre-allocate memory in case of variable input length
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Models for speech recognition or for NLP are often trained on input tensors
+# with variable sequence length. Variable length can be problematic for PyTorch
+# caching allocator and can lead to reduced performance or to unexpected
+# out-of-memory errors. If a batch with a short sequence length is followed by
+# an another batch with longer sequence length, then PyTorch is forced to
+# release intermediate buffers from previous iteration and to re-allocate new
+# buffers. This process is time consuming and causes fragmentation in the
+# caching allocator which may result in out-of-memory errors.
+#
+# A typical solution is to implement pre-allocation. It consists of the
+# following steps:
+#
+# #. generate a (usually random) batch of inputs with maximum sequence length
+#    (either corresponding to max length in the training dataset or to some
+#    predefined threshold)
+# #. execute a forward and a backward pass with the generated batch, do not
+#    execute an optimizer or a learning rate scheduler, this step will
+#    pre-allocate buffers of maximum size, which can be reused in subsequent
+#    training iterations
+# #. zero out gradients
+# #. proceed to regular training
+#
+
+###############################################################################
+# GPU specific optimizations
+# --------------------------
+
+###############################################################################
+# Enable cuDNN auto-tuner
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# `NVIDIA cuDNN <https://developer.nvidia.com/cudnn>`_ supports many algorithms
+# to compute convolution. Autotuner runs a short benchmark and selects the
+# kernel with the best performance on a given hardware for a given input size.
+#
+# For convolutional networks (other types currently not supported), enable cuDNN
+# autotuner before launching the training loop by setting:
+
+torch.backends.cudnn.benchmark = True
+###############################################################################
+#
+# * the auto-tuner decisions may be non-deterministic; different algorithm may
+#   be selected for different runs.  For more details see
+#   `PyTorch: Reproducibility <https://pytorch.org/docs/stable/notes/randomness.html?highlight=determinism>`_
+# * in some rare cases, such as with highly variable input sizes,  it's better
+#   to run convolutional networks with autotuner disabled to avoid the overhead
+#   associated with algorithm selection for each input size.
+#
+
+###############################################################################
+# Avoid unnecessary CPU-GPU synchronization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Avoid unnecessary synchronizations, to let the CPU run ahead of the
+# accelerator as much as possible to make sure that the accelerator work queue
+# contains many operations.
+#
+# When possible, avoid operations which require synchronizations, for example:
+#
+# * ``print(CUDA_tensor)``
+# * ``CUDA_tensor.item()``
+# * memory copies: ``tensor.cuda()``,  ``CUDA_tensor.cpu()`` and equivalent
+#   ``tensor.to(device)`` calls
+#
+
+###############################################################################
+# Create tensors directly on the target device
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Instead of calling ``torch.rand(size).cuda()`` to generate a random tensor,
+# produce the output directly on the target device:
+# ``torch.rand(size, device=torch.device('cuda'))``.
+#
+# This is applicable to all functions which create new tensors and accept
+# ``device`` argument:
+# `torch.rand() <https://pytorch.org/docs/stable/generated/torch.rand.html#torch.rand>`_,
+# `torch.zeros() <https://pytorch.org/docs/stable/generated/torch.zeros.html#torch.zeros>`_,
+# `torch.full() <https://pytorch.org/docs/stable/generated/torch.full.html#torch.full>`_
+# and similar.
+
+###############################################################################
 # Use mixed precision and AMP
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Mixed precision leverages
 # `Tensor Cores <https://www.nvidia.com/en-us/data-center/tensor-cores/>`_
 # and offers up to 3x overall speedup on Volta and newer GPU architectures. To
@@ -198,52 +309,28 @@ for param in model.parameters():
 #
 #
 
-##########################################################
-# Fuse pointwise operations
-# ----------------
-# Pointwise operations (elementwise addition, multiplication, math functions -
-# ``sin()``, ``cos()``, ``sigmoid()`` etc.) should be fused into a single kernel
-# to amortize memory access time and kernel launch time.
-#
-# `PyTorch JIT <https://pytorch.org/docs/stable/jit.html>`_ can fuse kernels
-# automatically, although there could be additional fusion opportunities not yet
-# implemented in the compiler, and not all device types are supported equally.
-#
-# Unfused pointwise operations are memory-bound, for each unfused operation
-# PyTorch launches a separate kernel. Each kernel loads data from the memory,
-# performs computation (this step is usually inexpensive) and stores results
-# back into the memory.
-#
-# Fused operator launches only one kernel for multiple fused pointwise ops and
-# loads/stores data only once to the memory. This makes JIT very useful for
-# activation functions, optimizers, custom RNN cells etc.
-#
-# In the simplest case fusion can be enabled by applying
-# `torch.jit.script <https://pytorch.org/docs/stable/generated/torch.jit.script.html#torch.jit.script>`_
-# decorator to the function definition.
-# Refer to
-# `TorchScript documentation <https://pytorch.org/docs/stable/jit.html>`_
-# for more advanced use cases.
+###############################################################################
+# Distributed optimizations
+# -------------------------
 
-##########################################################
-# Enable channels_last memory format for computer vision models (experimental)
-# ----------------
-# PyTorch 1.5 introduced support for `channels_last` memory format for
-# convolutional networks. This format is meant to be used in conjunction with
-# `AMP <https://pytorch.org/docs/stable/amp.html>`_ to further accelerate
-# convolutional neural networks with
-# `Tensor Cores <https://www.nvidia.com/en-us/data-center/tensor-cores/>`_.
+###############################################################################
+# Use efficient data-parallel backend
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# PyTorch has two ways to implement data-parallel training:
 #
-# Support for `channels_last` is new and experimental, but it's expected to work
-# for standard computer vision models (e.g. ResNet-50, SSD). To convert models
-# to `channels_last` format follow
-# `Channels Last Memory Format Tutorial <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html>`_.
-# The tutorial includes a section on
-# `converting existing models <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html#converting-existing-models>`_.
+# * `torch.nn.DataParallel <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
+# * `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
+#
+# ``DistributedDataParallel`` offers much better performance and scaling to
+# multiple-GPUs. In the case of ``DataParallel``, a single CPU core and a single
+# Python process schedules work for multiple GPUs, which results in a
+# significant cost of launching kernels. For more information refer to the
+# `relevant section of CUDA Best Practices <https://pytorch.org/docs/stable/notes/cuda.html#use-nn-parallel-distributeddataparallel-instead-of-multiprocessing-or-nn-dataparallel>`_
+# from PyTorch documentation.
 
-##########################################################
+###############################################################################
 # Skip unnecessary all-reduce if training with DistributedDataParallel and gradient accumulation
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # By default
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # executes gradient all-reduce after every backward pass to compute the average
@@ -259,9 +346,10 @@ for param in model.parameters():
 # accumulation, the last iteration should follow the default execution and
 # perform the required gradient all-reduce.
 
-##########################################################
+
+###############################################################################
 # Match the order of layers in constructors with order during the execution if training with DistributedDataParallel
-# ----------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # uses the order of layers and parameters from constructors to build buckets for
 # `DistributedDataParallel` gradient all-reduce. `DistributedDataParallel`
@@ -275,15 +363,15 @@ for param in model.parameters():
 # reduce the overlap between backward pass and all-reduce, all-reduce may end up
 # being exposed, which slows down the training.
 
-##########################################################
-# Load-balance workload in a multi-GPU setting
-# ----------------
+###############################################################################
+# Load-balance workload in a distributed setting
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Load imbalance typically may happen for models processing sequential data
-# (speech recognition, translation, language models etc.). If one GPU receives a
-# batch of data with sequence length longer than sequence lengths for the
-# remaining GPUs, then all GPUs wait for the worker which finishes last.
-# Backward pass functions as an implicit synchronization point in a multi-GPU
-# setting with
+# (speech recognition, translation, language models etc.). If one device
+# receives a batch of data with sequence length longer than sequence lengths for
+# the remaining devices, then all devices wait for the worker which finishes
+# last. Backward pass functions as an implicit synchronization point in a
+# distributed setting with
 # `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # backend.
 #
@@ -293,78 +381,3 @@ for param in model.parameters():
 # approximately constant number of tokens (and variable number of sequences in a
 # batch), other models solve imbalance by bucketing samples with similar
 # sequence length or even by sorting dataset by sequence length.
-
-##########################################################
-# Parallelize kernel execution
-# ----------------
-# When short kernels are executed in serial, the execution efficiency becomes
-# low due to time needed to schedule and launch work on the accelerator.
-# `JIT <https://pytorch.org/docs/stable/jit.html>`_ can help alleviate this cost
-# but its benefit is restricted when inputs are not feedforward between kernels.
-#
-# When kernels do not have input dependency, aggregating the kernels with the
-# same input dimensions and executing work in parallel helps to reduce the
-# number of kernels to execute and increase the resource occupancy within each
-# kernel execution. Good examples to apply kernel vectorization are parameter
-# optimizers and modules with multiple heads (e.g. self-attention).
-
-# Build list of outputs
-out = []
-for block in layer_blocks:
-    out.append(block(x))
-
-# Construct stacked tensor
-out_ = torch.stack(out, dim=0)
-
-# Execute functions that are shared by all blocks in parallel
-out_ = element_wise_layers(out_)
-
-# Re-distribute outputs back to each head
-out = torch.split(out_, dim=0)
-
-# Continue processing layer sequences of each layer
-
-##########################################################
-# Checkpoint intermediate buffers
-# ----------------
-# Buffer checkpointing is a technique to mitigate the memory capacity burden of
-# model training. Instead of storing inputs of all layers to compute upstream
-# gradients in back-prop, it stores the inputs of a few layers and the others
-# are recomputed during backward pass. The reduced memory requirements enables
-# increasing the batch size that can improve GPU utilization.
-#
-# For efficient checkpointing, checkpointing targets should be selected
-# carefully. The best is not to store large layer outputs that have small
-# re-computation cost. The example target layers will be activation functions
-# (e.g. ``ReLU``, ``Sigmoid``, ``Tanh``), up/down sampling, matrix-vector
-# operations with small accumulation depth.
-#
-# PyTorch supports a native
-# `torch.utils.checkpoint <https://pytorch.org/docs/stable/checkpoint.html>`_
-# API to automatically perform checkpointing and recomputation.
-
-##########################################################
-# Pre-allocate memory in case of variable input length
-# ----------------
-# Models for speech recognition or for NLP are often trained on input tensors
-# with variable sequence length. Variable length can be problematic for PyTorch
-# caching allocator and can lead to reduced performance or to unexpected
-# out-of-memory errors. If a batch with a short sequence length is followed by
-# an another batch with longer sequence length, then PyTorch is forced to
-# release intermediate buffers from previous iteration and to re-allocate new
-# buffers. This process is time consuming and causes fragmentation in the
-# caching allocator which may result in out-of-memory errors.
-#
-# A typical solution is to implement pre-allocation. It consists of the
-# following steps:
-#
-# #. generate a (usually random) batch of inputs with maximum sequence length
-#    (either corresponding to max length in the training dataset or to some
-#    predefined threshold)
-# #. execute a forward and a backward pass with the generated batch, do not
-#    execute an optimizer or a learning rate scheduler, this step will
-#    pre-allocate buffers of maximum size, which can be reused in subsequent
-#    training iterations
-# #. zero out gradients
-# #. proceed to regular training
-#
