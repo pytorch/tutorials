@@ -166,6 +166,22 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
+   
+.. customcarditem::
+   :header: Profiling PyTorch RPC-Based Workloads
+   :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
+   :image: ../_static/img/thumbnails/cropped/profile.png
+   :link: ../recipes/distributed_rpc_profiling.html
+   :tags: Production
+
+.. Automatic Mixed Precision
+
+.. customcarditem::
+   :header: Automatic Mixed Precision
+   :card_description: Use torch.cuda.amp to reduce runtime and save memory on NVIDIA GPUs.
+   :image: ../_static/img/thumbnails/cropped/amp.png
+   :link: ../recipes/recipes/amp_recipe.html
+   :tags: Model-Optimization
 
 .. End of tutorial card section
 
@@ -199,6 +215,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
+   /recipes/recipes/amp_recipe
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
