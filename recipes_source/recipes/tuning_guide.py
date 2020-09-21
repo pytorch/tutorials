@@ -306,9 +306,7 @@ torch.backends.cudnn.benchmark = True
 # * `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 #
 # ``DistributedDataParallel`` offers much better performance and scaling to
-# multiple-GPUs. In the case of ``DataParallel``, a single CPU core and a single
-# Python process schedules work for multiple GPUs, which results in a
-# significant cost of launching kernels. For more information refer to the
+# multiple-GPUs. For more information refer to the
 # `relevant section of CUDA Best Practices <https://pytorch.org/docs/stable/notes/cuda.html#use-nn-parallel-distributeddataparallel-instead-of-multiprocessing-or-nn-dataparallel>`_
 # from PyTorch documentation.
 
