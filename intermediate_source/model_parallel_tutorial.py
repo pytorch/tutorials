@@ -245,7 +245,7 @@ plot([mp_mean, rn_mean],
 # -----------------------------
 #
 # In the following experiments, we further divide each 120-image batch into
-# 20-image splits. As PyTorch launches CUDA operations asynchronizely, the
+# 20-image splits. As PyTorch launches CUDA operations asynchronously, the
 # implementation does not need to spawn multiple threads to achieve
 # concurrency.
 
