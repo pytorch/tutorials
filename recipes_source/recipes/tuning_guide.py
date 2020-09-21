@@ -48,7 +48,7 @@ General optimizations
 # Disable bias for convolutions directly followed by a batch norm
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.Conv2d() <https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d>`_
-# has ``bias`` parameter which defaults to ``True`` (same is true for
+# has ``bias`` parameter which defaults to ``True`` (the same is true for
 # `Conv1d <https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d>`_
 # and
 # `Conv3d <https://pytorch.org/docs/stable/generated/torch.nn.Conv3d.html#torch.nn.Conv3d>`_
@@ -84,7 +84,7 @@ for param in model.parameters():
 ###############################################################################
 # The second code snippet does not zero the memory of each individual parameter,
 # also the subsequent backward pass uses assignment instead of addition to store
-# gradients, this reduces number of memory operations.
+# gradients, this reduces the number of memory operations.
 #
 # Setting gradient to ``None`` has a slightly different numerical behavior than
 # setting it to zero, for more details refer to the
@@ -324,7 +324,7 @@ torch.backends.cudnn.benchmark = True
 # ``DistributedDataParallel`` provides
 # `no_sync() <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel.no_sync>`_
 # context manager which disables gradient all-reduce for particular iteration.
-# ``no_sync()`` should applied to first ``N-1`` iterations of gradient
+# ``no_sync()`` should be applied to first ``N-1`` iterations of gradient
 # accumulation, the last iteration should follow the default execution and
 # perform the required gradient all-reduce.
 
