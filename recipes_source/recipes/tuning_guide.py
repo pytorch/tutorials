@@ -329,20 +329,26 @@ torch.backends.cudnn.benchmark = True
 # perform the required gradient all-reduce.
 
 ###############################################################################
-# Match the order of layers in constructors with order during the execution if training with DistributedDataParallel
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Match the order of layers in constructors and during the execution if using DistributedDataParallel(find_unused_parameters=True)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
-# uses the order of layers and parameters from constructors to build buckets for
-# `DistributedDataParallel` gradient all-reduce. `DistributedDataParallel`
-# overlaps all-reduce with the backward pass. All-reduce for a particular bucket
-# is asynchronously triggered only when all gradients for parameters in a given
-# bucket are available.
+# with ``find_unused_parameters=True`` uses the order of layers and parameters
+# from constructors to build buckets for `DistributedDataParallel` gradient
+# all-reduce. `DistributedDataParallel` overlaps all-reduce with the backward
+# pass. All-reduce for a particular bucket is asynchronously triggered only when
+# all gradients for parameters in a given bucket are available.
 #
 # To maximize the amount of overlap, the order in constructors should match the
 # order during the execution. If the order doesn't match, then all-reduce for
 # the entire bucket waits for the gradient which is the last to arrive, this may
 # reduce the overlap between backward pass and all-reduce, all-reduce may end up
 # being exposed, which slows down the training.
+#
+# ``DistributedDataParallel`` with ``find_unused_parameters=False`` (which is
+# the default setting) relies on automatic bucket formation based on order of
+# operations encountered during the backward pass. With
+# ``find_unused_parameters=False`` it's not necessary to reorder layers or
+# parameters to achieve optimal performance.
 
 ###############################################################################
 # Load-balance workload in a distributed setting
