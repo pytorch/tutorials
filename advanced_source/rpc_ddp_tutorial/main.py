@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 import torch.distributed.autograd as dist_autograd
 import torch.distributed.rpc as rpc
-from torch.distributed.rpc import ProcessGroupRpcBackendOptions
+from torch.distributed.rpc import TensorPipeRpcBackendOptions
 import torch.multiprocessing as mp
 import torch.optim as optim
 from torch.distributed.optim import DistributedOptimizer
@@ -128,7 +128,7 @@ def run_worker(rank, world_size):
     os.environ['MASTER_PORT'] = '29500'
 
 
-    rpc_backend_options = ProcessGroupRpcBackendOptions()
+    rpc_backend_options = TensorPipeRpcBackendOptions()
     rpc_backend_options.init_method='tcp://localhost:29501'
 
     # Rank 2 is master, 3 is ps and 0 and 1 are trainers.
