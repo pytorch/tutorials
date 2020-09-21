@@ -83,8 +83,8 @@ for param in model.parameters():
 
 ###############################################################################
 # The second code snippet does not zero the memory of each individual parameter,
-# also the subsequent backward pass uses assignment instead of addition
-# assignment to store gradients, this reduces number of memory operations.
+# also the subsequent backward pass uses assignment instead of addition to store
+# gradients, this reduces number of memory operations.
 #
 # Setting gradient to ``None`` has a slightly different numerical behavior than
 # setting it to zero, for more details refer to the
