@@ -128,15 +128,15 @@ def fused_gelu(x):
 ###############################################################################
 # Enable channels_last memory format for computer vision models
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# PyTorch 1.5 introduced support for `channels_last` memory format for
+# PyTorch 1.5 introduced support for ``channels_last`` memory format for
 # convolutional networks. This format is meant to be used in conjunction with
 # `AMP <https://pytorch.org/docs/stable/amp.html>`_ to further accelerate
 # convolutional neural networks with
 # `Tensor Cores <https://www.nvidia.com/en-us/data-center/tensor-cores/>`_.
 #
-# Support for `channels_last` is experimental, but it's expected to work for
+# Support for ``channels_last`` is experimental, but it's expected to work for
 # standard computer vision models (e.g. ResNet-50, SSD). To convert models to
-# `channels_last` format follow
+# ``channels_last`` format follow
 # `Channels Last Memory Format Tutorial <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html>`_.
 # The tutorial includes a section on
 # `converting existing models <https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html#converting-existing-models>`_.
@@ -321,10 +321,10 @@ torch.backends.cudnn.benchmark = True
 # every training step, it's only required to perform all-reduce after the last
 # call to backward, just before the execution of the optimizer.
 #
-# `DistributedDataParallel` provides
+# ``DistributedDataParallel`` provides
 # `no_sync() <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel.no_sync>`_
 # context manager which disables gradient all-reduce for particular iteration.
-# `no_sync()` should applied to first ``N-1`` iterations of gradient
+# ``no_sync()`` should applied to first ``N-1`` iterations of gradient
 # accumulation, the last iteration should follow the default execution and
 # perform the required gradient all-reduce.
 
@@ -333,8 +333,8 @@ torch.backends.cudnn.benchmark = True
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # `torch.nn.parallel.DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel>`_
 # with ``find_unused_parameters=True`` uses the order of layers and parameters
-# from constructors to build buckets for `DistributedDataParallel` gradient
-# all-reduce. `DistributedDataParallel` overlaps all-reduce with the backward
+# from constructors to build buckets for ``DistributedDataParallel`` gradient
+# all-reduce. ``DistributedDataParallel`` overlaps all-reduce with the backward
 # pass. All-reduce for a particular bucket is asynchronously triggered only when
 # all gradients for parameters in a given bucket are available.
 #
