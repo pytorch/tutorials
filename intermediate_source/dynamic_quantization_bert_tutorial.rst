@@ -492,7 +492,7 @@ follows:
 
    | Prec | F1 score | Model Size | 1 thread | 4 threads |
    | FP32 |  0.9019  |   438 MB   | 160 sec  | 85 sec    |
-   | INT8 |  0.8953  |   181 MB   |  90 sec  | 46 sec    |
+   | INT8 |  0.902   |   181 MB   |  90 sec  | 46 sec    |
 
 We have 0.6% F1 score accuracy after applying the post-training dynamic
 quantization on the fine-tuned BERT model on the MRPC task. As a
@@ -520,15 +520,23 @@ processing the evaluation of MRPC dataset.
 3.3 Serialize the quantized model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We can serialize and save the quantized model for the future use.
+We can serialize and save the quantized model for the future use using
+`torch.jit.save` after tracing the model.
 
 .. code:: python
 
-    quantized_output_dir = configs.output_dir + "quantized/"
-    if not os.path.exists(quantized_output_dir):
-        os.makedirs(quantized_output_dir)
-        quantized_model.save_pretrained(quantized_output_dir)
+    input_ids = ids_tensor([8, 128], 2)
+    token_type_ids = ids_tensor([8, 128], 2)
+    attention_mask = ids_tensor([8, 128], vocab_size=2)
+    dummy_input = (input_ids, attention_mask, token_type_ids)
+    traced_model = torch.jit.trace(quantized_model, dummy_input)
+    torch.jit.save(traced_model, "bert_traced_eager_quant.pt")
 
+To load the quantized model, we can use `torch.jit.load`
+
+.. code:: python
+
+    loaded_quantized_model = torch.jit.load("bert_traced_eager_quant.pt")
 
 Conclusion
 ----------
