@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 import torch.distributed.autograd as dist_autograd
 import torch.distributed.rpc as rpc
-from torch.distributed.rpc import TensorPipeRpcBackendOption
+from torch.distributed.rpc import TensorPipeRpcBackendOptions
 import torch.multiprocessing as mp
 import torch.optim as optim
 from torch.distributed.optim import DistributedOptimizer
