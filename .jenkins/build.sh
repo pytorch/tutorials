@@ -8,41 +8,16 @@ fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-sudo apt-get update
-sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
-
-export PATH=/opt/conda/bin:$PATH
-rm -rf src
-pip install -r $DIR/../requirements.txt
-
 # export PATH=/opt/conda/bin:$PATH
 # pip install sphinx==1.8.2 pandas
-
-# For Tensorboard. Until 1.14 moves to the release channel.
-pip install tb-nightly
-
-# Install two language tokenizers for Translation with TorchText tutorial
-python -m spacy download en
-python -m spacy download de
-
-# PyTorch Theme
-rm -rf src
-pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-# pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
-# this is a workaround to the issue.
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
-
-aws configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
-  # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
-  # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
+  # Step 1: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   count=0
@@ -99,10 +74,10 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   done
   echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
-  # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
+  # Step 2: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
 
-  # Step 4: If any of the generated files are not related the tutorial files we want to run,
+  # Step 3: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
@@ -141,10 +116,10 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
     fi
   done
 
-  # Step 5: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
+  # Step 4: Remove INVISIBLE_CODE_BLOCK from .html/.rst.txt/.ipynb/.py files
   bash $DIR/remove_invisible_code_block_batch.sh docs
 
-  # Step 6: Copy generated files to S3, tag with commit ID
+  # Step 5: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
   aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
