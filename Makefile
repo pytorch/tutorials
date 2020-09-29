@@ -110,7 +110,6 @@ download:
 	unzip $(ZIPOPTS) $(DATADIR)/imagenet_1k.zip -d prototype_source/data/
 
 docs:
-	make download
 	make html
 	rm -rf docs
 	cp -r $(BUILDDIR)/html docs
