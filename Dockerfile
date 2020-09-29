@@ -5,7 +5,8 @@ ENV PATH=/opt/conda/bin:${PATH}
 RUN sudo apt-get update
 RUN sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-COPY /home/circleci/project/. /var/lib/jenkins/workspace
+# copy /home/circleci/project/. /var/lib/jenkins/workspace
+COPY . /var/lib/jenkins/workspace
 
 WORKDIR /var/lib/jenkins
 RUN rm -rf src \
