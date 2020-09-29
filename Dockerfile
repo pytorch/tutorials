@@ -9,7 +9,8 @@ RUN sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-
 COPY . /var/lib/jenkins/workspace
 
 WORKDIR /var/lib/jenkins/workspace
-RUN rm -rf src \
+RUN sudo chown -R /var/lib/jenkins /var/lib/jenkins/workspace \
+    && rm -rf src \
     && pip install -r requirements.txt
 
 # For Tensorboard. Until 1.14 moves to the release channel.
