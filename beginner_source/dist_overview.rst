@@ -195,3 +195,13 @@ RPC Tutorials are listed below:
    `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
    decorator, which can help speed up inference and training. It uses similar
    RL and PS examples employed in the above tutorials 1 and 2.
+5. The `Combining Distributed DataParallel with Distributed RPC Framework <../advanced/rpc_ddp_tutorial.html>`__
+   tutorial demonstrates how to combine DDP with RPC to train a model using 
+   distributed data parallelism combined with distributed model parallelism.
+
+
+PyTorch Distributed Developers
+------------------------------
+
+If you'd like to contribute to PyTorch Distributed, please refer to our 
+`Developer Guide <https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md>`_.
