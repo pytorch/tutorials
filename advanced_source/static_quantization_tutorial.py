@@ -1,5 +1,5 @@
 """
-(experimental) Static Quantization with Eager Mode in PyTorch
+(beta) Static Quantization with Eager Mode in PyTorch
 =========================================================
 
 **Author**: `Raghuraman Krishnamoorthi <https://github.com/raghuramank100>`_
