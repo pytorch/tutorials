@@ -1,10 +1,10 @@
-# These 2 parameters can be overriden by --build-arg <arg> when running docker build.
+# This parameter can be overriden by --build-arg <arg> when running docker build.
 ARG DOCKER_IMAGE=308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3:291
 FROM ${DOCKER_IMAGE}
 USER jenkins
 ENV PATH=/opt/conda/bin:${PATH}
-RUN sudo apt-get update
-RUN sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
+RUN sudo apt-get update \
+    && sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
 # copy /home/circleci/project/. /var/lib/jenkins/workspace
 COPY . /var/lib/jenkins/workspace
@@ -18,8 +18,8 @@ RUN sudo chown -R jenkins /var/lib/jenkins/workspace \
 RUN pip install tb-nightly
 
 # Install two language tokenizers for Translation with TorchText tutorial
-RUN python -m spacy download en
-RUN python -m spacy download de
+RUN python -m spacy download en \
+    && python -m spacy download de
 
 # PyTorch Theme
 RUN rm -rf src \
