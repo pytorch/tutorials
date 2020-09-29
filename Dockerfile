@@ -1,7 +1,6 @@
 # These 2 parameters can be overriden by --build-arg <arg> when running docker build.
-ARG pyTorchDockerImageTag=291
-ARG DOCKER_IMAGE=308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3
-FROM ${DOCKER_IMAGE}:${pyTorchDockerImageTag}
+ARG DOCKER_IMAGE=308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3:291
+FROM ${DOCKER_IMAGE}
 ENV PATH=/opt/conda/bin:${PATH}
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
