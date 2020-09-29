@@ -8,7 +8,7 @@ RUN sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-
 # copy /home/circleci/project/. /var/lib/jenkins/workspace
 COPY . /var/lib/jenkins/workspace
 
-WORKDIR /var/lib/jenkins
+WORKDIR /var/lib/jenkins/workspace
 RUN rm -rf src \
     && pip install -r requirements.txt
 
