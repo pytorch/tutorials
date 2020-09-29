@@ -10,7 +10,7 @@ RUN sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-
 COPY . /var/lib/jenkins/workspace
 
 WORKDIR /var/lib/jenkins/workspace
-RUN sudo chown -R /var/lib/jenkins /var/lib/jenkins/workspace \
+RUN sudo chown -R jenkins /var/lib/jenkins/workspace \
     && rm -rf src \
     && pip install -r requirements.txt
 
