@@ -21,7 +21,6 @@ VISUALIZING MODELS, DATA, AND TRAINING WITH TENSORBOARD
 #   - Write to TensorBoard.
 #   - Inspect a model architecture using TensorBoard.
 #   - Use TensorBoard to create interactive versions of the visualizations we created in last tutorial, with less code
-#
 # Specifically, on point #5, we’ll see:
 #
 #   - A couple of ways to inspect our training data
@@ -29,6 +28,7 @@ VISUALIZING MODELS, DATA, AND TRAINING WITH TENSORBOARD
 #   - How to assess our model’s performance once it is trained.
 #
 # We’ll begin with similar boilerplate code as in the CIFAR-10 tutorial: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+###############################################################################
 
 # imports
 import matplotlib.pyplot as plt
@@ -41,6 +41,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+###############################################################################
 
 # transforms
 transform = transforms.Compose(
@@ -68,6 +69,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=4,
 # constant for classes
 classes = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
         'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle Boot')
+###############################################################################
 
 # helper function to show an image
 # (used in the `plot_classes_preds` function below)
@@ -82,7 +84,7 @@ def matplotlib_imshow(img, one_channel=False):
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 ###############################################################################
-#We’ll define a similar model architecture from that tutorial, making only minor modifications to account for the fact that the **images are now one channel instead of three and 28x28 instead of 32x32**:"""
+#We’ll define a similar model architecture from that tutorial, making only minor modifications to account for the fact that the **images are now one channel instead of three and 28x28 instead of 32x32**:
 
 class Net(nn.Module):
     def __init__(self):
