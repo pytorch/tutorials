@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
 """
 VISUALIZING MODELS, DATA, AND TRAINING WITH TENSORBOARD
-============================
+=========================
 """
+
+# %% 
 
 # In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_, 
 # we show you how to load in data, feed it through a model we define as a subclass of nn.Module,
@@ -13,7 +14,7 @@ VISUALIZING MODELS, DATA, AND TRAINING WITH TENSORBOARD
 # PyTorch integrates with TensorBoard, a tool designed for visualizing the results of neural network training runs.
 # This tutorial illustrates some of its functionality, using the
 # `Fashion-MNIST dataset <https://github.com/zalandoresearch/fashion-mnist>`__
-# dataset which can be read into PyTorch using torchvision.datasets."""
+# dataset which can be read into PyTorch using torchvision.datasets."
 #
 # In this tutorial, we’ll learn how to:
 # ----------------
@@ -30,7 +31,7 @@ VISUALIZING MODELS, DATA, AND TRAINING WITH TENSORBOARD
 #   - How to assess our model’s performance once it is trained.
 #
 # We’ll begin with similar boilerplate code as in the CIFAR-10 tutorial: https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
-###############################################################################
+# ##############################################################################
 
 # imports
 import matplotlib.pyplot as plt
