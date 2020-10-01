@@ -168,7 +168,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Dispatcher in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul class="current">
@@ -675,7 +675,7 @@ for running the quantized BERT model inference on a Macbook Pro as the
 follows:</p>
 <div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">Prec</span> <span class="o">|</span> <span class="n">F1</span> <span class="n">score</span> <span class="o">|</span> <span class="n">Model</span> <span class="n">Size</span> <span class="o">|</span> <span class="mi">1</span> <span class="n">thread</span> <span class="o">|</span> <span class="mi">4</span> <span class="n">threads</span> <span class="o">|</span>
 <span class="o">|</span> <span class="n">FP32</span> <span class="o">|</span>  <span class="mf">0.9019</span>  <span class="o">|</span>   <span class="mi">438</span> <span class="n">MB</span>   <span class="o">|</span> <span class="mi">160</span> <span class="n">sec</span>  <span class="o">|</span> <span class="mi">85</span> <span class="n">sec</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">INT8</span> <span class="o">|</span>  <span class="mf">0.8953</span>  <span class="o">|</span>   <span class="mi">181</span> <span class="n">MB</span>   <span class="o">|</span>  <span class="mi">90</span> <span class="n">sec</span>  <span class="o">|</span> <span class="mi">46</span> <span class="n">sec</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">INT8</span> <span class="o">|</span>  <span class="mf">0.902</span>   <span class="o">|</span>   <span class="mi">181</span> <span class="n">MB</span>   <span class="o">|</span>  <span class="mi">90</span> <span class="n">sec</span>  <span class="o">|</span> <span class="mi">46</span> <span class="n">sec</span>    <span class="o">|</span>
 </pre></div>
 </div>
 <p>We have 0.6% F1 score accuracy after applying the post-training dynamic
@@ -701,11 +701,18 @@ processing the evaluation of MRPC dataset.</p>
 </div>
 <div class="section" id="serialize-the-quantized-model">
 <h3>3.3 Serialize the quantized model<a class="headerlink" href="#serialize-the-quantized-model" title="Permalink to this headline">¶</a></h3>
-<p>We can serialize and save the quantized model for the future use.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">quantized_output_dir</span> <span class="o">=</span> <span class="n">configs</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">+</span> <span class="s2">"quantized/"</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">quantized_output_dir</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">quantized_output_dir</span><span class="p">)</span>
-    <span class="n">quantized_model</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">quantized_output_dir</span><span class="p">)</span>
+<p>We can serialize and save the quantized model for the future use using
+<cite>torch.jit.save</cite> after tracing the model.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">input_ids</span> <span class="o">=</span> <span class="n">ids_tensor</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">token_type_ids</span> <span class="o">=</span> <span class="n">ids_tensor</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">attention_mask</span> <span class="o">=</span> <span class="n">ids_tensor</span><span class="p">([</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">vocab_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">dummy_input</span> <span class="o">=</span> <span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">token_type_ids</span><span class="p">)</span>
+<span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">,</span> <span class="n">dummy_input</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">traced_model</span><span class="p">,</span> <span class="s2">"bert_traced_eager_quant.pt"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To load the quantized model, we can use <cite>torch.jit.load</cite></p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loaded_quantized_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"bert_traced_eager_quant.pt"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
