@@ -23,7 +23,7 @@ aaa bbb"""
 #   - Write to TensorBoard.
 #   - Inspect a model architecture using TensorBoard.
 #   - Use TensorBoard to create interactive versions of the visualizations we created in last tutorial, with less code
-###############################################################################
+#
 # Specifically, on point #5, we’ll see:
 #
 #   - A couple of ways to inspect our training data
