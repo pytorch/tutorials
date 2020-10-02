@@ -262,7 +262,8 @@ functions to be familiar with:
 # as this contains buffers and parameters that are updated as the model
 # trains. Other items that you may want to save are the epoch you left off
 # on, the latest recorded training loss, external ``torch.nn.Embedding``
-# layers, etc.
+# layers, etc. As a result, such a checkpoint is often 2~3 times larger 
+# than the model alone.
 #
 # To save multiple components, organize them in a dictionary and use
 # ``torch.save()`` to serialize the dictionary. A common PyTorch

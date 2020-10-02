@@ -21,7 +21,7 @@ We can use the hidden state to predict words in a language model,
 part-of-speech tags, and a myriad of other things.
 
 
-LSTM's in Pytorch
+LSTMs in Pytorch
 ~~~~~~~~~~~~~~~~~
 
 Before getting to the example, note a few things. Pytorch's LSTM expects
