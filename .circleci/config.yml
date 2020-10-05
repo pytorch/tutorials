@@ -137,7 +137,10 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export DOCKER_IMAGE=${DOCKER_IMAGE}:${pyTorchDockerImageTag}
         echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
-        docker system prune
+        # clear out old images
+        docker images -f "dangling=true" --format "{{.ID}} {{.CreatedSince}}" \
+            | grep "weeks ago" | cut -f 1 -d " " \
+            | xargs --no-run-if-empty docker rmi
         docker pull ${DOCKER_IMAGE} >/dev/null
 
         echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
