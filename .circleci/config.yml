@@ -64,6 +64,15 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
     image: ubuntu-1604:201903-01
     docker_layer_caching: true
   steps:
+  - run
+      background: true
+      name: Monitor disk usage
+      command: |
+        while true ; do
+          sudo df -h
+          echo ""
+          sleep 5
+        done
   - checkout
   - run:
       <<: *setup_linux_system_environment
@@ -137,8 +146,6 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export DOCKER_IMAGE=${DOCKER_IMAGE}:${pyTorchDockerImageTag}
         echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
-        # clear out volume
-        docker volume prune --force
         docker pull ${DOCKER_IMAGE} >/dev/null
 
         echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
