@@ -140,9 +140,17 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           wget https://api.github.com/repos/pytorch/tutorials/pulls/${CIRCLE_PR_NUMBER}/files -O ${changeset}
           no_new_file="n"
           grep '"status": "added"' $changeset > /dev/null || no_new_file="y"
+
+          # Debug, TODO: delete it
+          no_new_file="y"
+
           if [[ $no_new_file == "y" ]]; then # No new files, check if all changed files are tutorial files.
             export use_cache="y"
             export changed_files=`grep '"filename":' ${changeset} |awk '{gsub(/^"/, "", $2); gsub(/",$/, "", $2); print $2;}'`
+            
+            # Debug, TODO: delete it
+            changed_files=(beginner_source/chatbot_tutorial.py)
+
             for changed_file in $changed_files
             do
               case $changed_file in
@@ -180,6 +188,8 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
             fi
           done
         fi
+
+        echo "Using cache: $use_cache"
 
         echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
 
