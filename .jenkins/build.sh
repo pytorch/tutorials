@@ -10,7 +10,7 @@ export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
-if [[ "${JOB_BASE_NAME}" == *worker_* && $USE_CACHE== "y" ]]; then
+if [[ $USE_CACHE== "y" ]]; then
   aws s3 cp circleci_build_cache/worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 else
   sudo apt-get update
