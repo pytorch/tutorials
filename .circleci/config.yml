@@ -138,8 +138,9 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         if [[ $CIRCLE_BRANCH != master ]]; then
           export changeset=$(mktemp)
           wget https://api.github.com/repos/pytorch/tutorials/pulls/${CIRCLE_PR_NUMBER}/files -O ${changeset}
-          grep '"status": "added"' $changeset
-          if [[ $? != 0 ]]; then # No new files, check if all changed files are tutorial files.
+          no_new_file="n"
+          grep '"status": "added"' $changeset > /dev/null || no_new_file="y"
+          if [[ $no_new_file == "y" ]]; then # No new files, check if all changed files are tutorial files.
             export use_cache="y"
             export changed_files=`grep '"filename":' ${changeset} |awk '{gsub(/^"/, "", $2); gsub(/",$/, "", $2); print $2;}'`
             for changed_file in $changed_files
@@ -165,8 +166,9 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
             # Check if there are any file changed.
             for changed_file in $changed_files
             do
-              grep $changed_file /home/circleci/project/circleci_build_cache/tutorial_files_included.txt
-              if [[ $? == 0 ]]; then
+              found_changed_file="y"
+              grep $changed_file /home/circleci/project/circleci_build_cache/tutorial_files_included.txt >/dev/null || found_changed_file="n"
+              if [[ $found_changed_file= == "y" ]]; then
                 # Found one, need to rebuild.
                 export use_cache="n"
                 break
