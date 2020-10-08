@@ -116,15 +116,13 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_ECR_READ_ONLY}
         export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_ECR_READ_ONLY}
         eval $(aws ecr get-login --region us-east-1 --no-include-email)
+  - restore_cache:
+      key: tutorial-{{ .Environment.CIRCLE_JOB }}
   - run:
       name: Build
       no_output_timeout: "20h"
       command: |
         set -e
-
-        export pyTorchDockerImageTag=291
-        echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
-
         cat >/home/circleci/project/ci_build_script.sh \<<EOL
         # =================== The following code will be executed inside Docker container ===================
         set -ex
@@ -134,9 +132,55 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         EOL
         chmod +x /home/circleci/project/ci_build_script.sh
 
+        export pyTorchDockerImageTag=291
+        export use_cache="n"
+
+        if [[ $CIRCLE_BRANCH != master ]]; then
+          export changeset=$(mktemp)
+          wget https://api.github.com/repos/pytorch/tutorials/pulls/${CIRCLE_PR_NUMBER}/files -O ${changeset}
+          grep '"status": "added"' $changeset
+          if [[ $? != 0 ]]; then # No new files, check if all changed files are tutorial files.
+            export use_cache="y"
+            export changed_files=`grep '"filename":' ${changeset} |awk '{gsub(/^"/, "", $2); gsub(/",$/, "", $2); print $2;}'`
+            for changed_file in $changed_files
+            do
+              case $changed_file in
+              beginner_source/*.py) echo "Beginner source $changed_file has changed.";;
+              intermediate_source/*.py) echo "Intermediate source $changed_file has changed.";;
+              advanced_source/*.py) echo "Advanced source $changed_file has changed.";;
+              recipes_source/*.py) echo "Recipes source $changed_file has changed.";;
+              prototype_source/*.py) echo "Prototype source $changed_file has changed.";;
+              *) echo "non-tutorial file found: $changed_file"; export use_cache="n";;
+              esac
+            done
+          fi
+
+          # Check if cache exists
+          if [[ ! -d /home/circleci/project/circleci_build_cache ]]; then
+            export use_cache="n"
+          fi
+        fi
+
+        if [[ $use_cache == "y" ]]; then
+            # Check if there are any file changed.
+            for changed_file in $changed_files
+            do
+              grep $changed_file /home/circleci/project/circleci_build_cache/tutorial_files_included.txt
+              if [[ $? == 0 ]]; then
+                # Found one, need to rebuild.
+                export use_cache="n"
+                break
+              fi
+            done
+          fi
+        fi
+
+        echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
+
         export DOCKER_IMAGE=${DOCKER_IMAGE}:${pyTorchDockerImageTag}
         echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
         docker pull ${DOCKER_IMAGE} >/dev/null
+
         if [ -n "${CUDA_VERSION}" ]; then
           export id=$(docker run --runtime=nvidia -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         else
@@ -146,6 +190,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "declare -x JOB_BASE_NAME=${CIRCLE_JOB}" > /home/circleci/project/env
         echo "declare -x COMMIT_ID=${CIRCLE_SHA1}" >> /home/circleci/project/env
         echo "declare -x COMMIT_SOURCE=${CIRCLE_BRANCH}" >> /home/circleci/project/env
+        echo "declare -x USE_CACHE=${use_cache}" >> /home/circleci/project/env
         # DANGER! DO NOT REMOVE THE `set +x` SETTING HERE!
         set +x
         if [[ "$CIRCLE_BRANCH" == master ]]; then
@@ -168,6 +213,13 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
+
+        # cp build to cache
+        docker cp /var/lib/jenkins/workspace/circleci_build_cache /home/circleci/project
+
+  - save_cache:
+      paths: /home/circleci/project/circleci_build_cache
+      key: tutorial-{{ .Environment.CIRCLE_JOB }}
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
