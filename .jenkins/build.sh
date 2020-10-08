@@ -212,3 +212,4 @@ else
   else
     make docs
   fi
+fi
