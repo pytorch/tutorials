@@ -220,8 +220,10 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         export COMMAND='((echo "source ./workspace/env" && echo "sudo chown -R jenkins workspace && cd workspace && ./ci_build_script.sh") | docker exec -u jenkins -i "$id" bash) 2>&1'
         echo ${COMMAND} > ./command.sh && unbuffer bash ./command.sh | ts
 
-        # cp build to cache
-        docker cp "$id:/var/lib/jenkins/workspace/circleci_build_cache" /home/circleci/project
+        # cp build to cache if it PR and a worker job
+        if [[ $CIRCLE_BRANCH != master && "${CIRCLE_JOB}" == *worker* ]]; then
+          docker cp "$id:/var/lib/jenkins/workspace/circleci_build_cache" /home/circleci/project
+        fi
 
   - save_cache:
       paths: /home/circleci/project/circleci_build_cache
