@@ -316,7 +316,7 @@ where the ``shutdown`` by default will block until all RPC participants finish.
     def run_worker(rank, world_size, num_split):
         os.environ['MASTER_ADDR'] = 'localhost'
         os.environ['MASTER_PORT'] = '29500'
-        options = rpc.ProcessGroupRpcBackendOptions(num_send_recv_threads=128)
+        options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128)
 
         if rank == 0:
             rpc.init_rpc(
