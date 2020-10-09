@@ -141,16 +141,10 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
           no_new_file="n"
           grep '"status": "added"' $changeset > /dev/null || no_new_file="y"
 
-          # Debug, TODO: delete it
-          no_new_file="y"
-
           if [[ $no_new_file == "y" ]]; then # No new files, check if all changed files are tutorial files.
             export use_cache="y"
             export changed_files=`grep '"filename":' ${changeset} |awk '{gsub(/^"/, "", $2); gsub(/",$/, "", $2); print $2;}'`
             
-            # Debug, TODO: delete it
-            changed_files=(beginner_source/chatbot_tutorial.py)
-
             for changed_file in $changed_files
             do
               case $changed_file in
@@ -177,21 +171,14 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         if [[ $use_cache == "y" ]]; then
           # Check if there are any file changed.
-          echo "${CIRCLE_JOB}'s tutorial files:"
+          echo "Tutorial files in cache:"
           cat /home/circleci/project/circleci_build_cache/tutorial_files_included.txt
           for changed_file in $changed_files
           do
             found_changed_file="y"
             changed_file=$(basename $changed_file)
 
-            # Debug, TODO: delete this
-            echo "changed_file=$changed_file"
-
             grep $changed_file /home/circleci/project/circleci_build_cache/tutorial_files_included.txt >/dev/null || found_changed_file="n"
-
-            # Debug, TODO: delete this
-            echo "found_changed_file=$found_changed_file"
-
             if [[ $found_changed_file == "y" ]]; then
               # Found one, need to rebuild.
               export use_cache="n"
