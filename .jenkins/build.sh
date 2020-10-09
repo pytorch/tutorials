@@ -7,6 +7,7 @@ else
 fi
 
 export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
+export PATH=/opt/conda/bin:$PATH
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
@@ -16,7 +17,6 @@ else
   sudo apt-get update
   sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
-  export PATH=/opt/conda/bin:$PATH
   rm -rf src
   pip install -r $DIR/../requirements.txt
 
