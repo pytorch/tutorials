@@ -1,198 +1,259 @@
 # -*- coding: utf-8 -*-
 """
-Autograd: Automatic Differentiation
-===================================
+A Gentle Introduction to Autograd
+---------------------------------
 
-Central to all neural networks in PyTorch is the ``autograd`` package.
-Let’s first briefly visit this, and we will then go to training our
-first neural network.
+Autograd is PyTorch’s automatic differentiation engine that powers
+neural network training. In this section, you will get a conceptual
+understanding of how autograd works under the hood.
 
+Skip to advanced readings:
 
-The ``autograd`` package provides automatic differentiation for all operations
-on Tensors. It is a define-by-run framework, which means that your backprop is
-defined by how your code is run, and that every single iteration can be
-different.
+-  `In-place operations & Multithreaded
+   Autograd <https://pytorch.org/docs/stable/notes/autograd.html>`__
+-  `Example implementation of reverse-mode
+   autodiff <https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC>`__
 
-Let us see this in more simple terms with some examples.
-
-Tensor
---------
-
-``torch.Tensor`` is the central class of the package. If you set its attribute
-``.requires_grad`` as ``True``, it starts to track all operations on it. When
-you finish your computation you can call ``.backward()`` and have all the
-gradients computed automatically. The gradient for this tensor will be
-accumulated into ``.grad`` attribute.
-
-To stop a tensor from tracking history, you can call ``.detach()`` to detach
-it from the computation history, and to prevent future computation from being
-tracked.
-
-To prevent tracking history (and using memory), you can also wrap the code block
-in ``with torch.no_grad():``. This can be particularly helpful when evaluating a
-model because the model may have trainable parameters with
-``requires_grad=True``, but for which we don't need the gradients.
-
-There’s one more class which is very important for autograd
-implementation - a ``Function``.
-
-``Tensor`` and ``Function`` are interconnected and build up an acyclic
-graph, that encodes a complete history of computation. Each tensor has
-a ``.grad_fn`` attribute that references a ``Function`` that has created
-the ``Tensor`` (except for Tensors created by the user - their
-``grad_fn is None``).
-
-If you want to compute the derivatives, you can call ``.backward()`` on
-a ``Tensor``. If ``Tensor`` is a scalar (i.e. it holds a one element
-data), you don’t need to specify any arguments to ``backward()``,
-however if it has more elements, you need to specify a ``gradient``
-argument that is a tensor of matching shape.
 """
 
-import torch
 
-###############################################################
-# Create a tensor and set ``requires_grad=True`` to track computation with it
-x = torch.ones(2, 2, requires_grad=True)
-print(x)
-
-###############################################################
-# Do a tensor operation:
-y = x + 2
-print(y)
-
-###############################################################
-# ``y`` was created as a result of an operation, so it has a ``grad_fn``.
-print(y.grad_fn)
-
-###############################################################
-# Do more operations on ``y``
-z = y * y * 3
-out = z.mean()
-
-print(z, out)
-
-################################################################
-# ``.requires_grad_( ... )`` changes an existing Tensor's ``requires_grad``
-# flag in-place. The input flag defaults to ``False`` if not given.
-a = torch.randn(2, 2)
-a = ((a * 3) / (a - 1))
-print(a.requires_grad)
-a.requires_grad_(True)
-print(a.requires_grad)
-b = (a * a).sum()
-print(b.grad_fn)
-
-###############################################################
-# Gradients
-# ---------
-# Let's backprop now.
-# Because ``out`` contains a single scalar, ``out.backward()`` is
-# equivalent to ``out.backward(torch.tensor(1.))``.
-
-out.backward()
-
-###############################################################
-# Print gradients d(out)/dx
+######################################################################
+# --------------
 #
 
-print(x.grad)
 
-###############################################################
-# You should have got a matrix of ``4.5``. Let’s call the ``out``
-# *Tensor* “:math:`o`”.
-# We have that :math:`o = \frac{1}{4}\sum_i z_i`,
-# :math:`z_i = 3(x_i+2)^2` and :math:`z_i\bigr\rvert_{x_i=1} = 27`.
-# Therefore,
-# :math:`\frac{\partial o}{\partial x_i} = \frac{3}{2}(x_i+2)`, hence
-# :math:`\frac{\partial o}{\partial x_i}\bigr\rvert_{x_i=1} = \frac{9}{2} = 4.5`.
+######################################################################
+# Background
+# ~~~~~~~~~~
+#
+# Neural networks (NNs) are a collection of nested functions that are
+# executed on some input data. These functions are defined by *parameters*
+# (consisting of weights and biases), which in PyTorch are stored in
+# tensors.
+#
+# Training a NN happens in two steps:
+#
+# **Forward Propagation**: In forward prop, the NN makes its best guess
+# about the correct output. It runs the input data through each of its
+# functions to make this guess.
+#
+# **Backward Propagation**: In backprop, the NN adjusts its parameters
+# proportionate to the error in its guess. It does this by traversing
+# backwards from the output, collecting the derivatives of the error with
+# respect to the parameters of the functions (*gradients*), and optimizing
+# the parameters using gradient descent. For a more detailed walkthrough
+# of backprop, check out this `video from
+# 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
+#
+# Most deep learning frameworks use automatic differentiation for
+# backprop; in PyTorch, it is handled by Autograd.
+#
 
-###############################################################
-# Mathematically, if you have a vector valued function :math:`\vec{y}=f(\vec{x})`,
-# then the gradient of :math:`\vec{y}` with respect to :math:`\vec{x}`
-# is a Jacobian matrix:
+
+######################################################################
+# --------------
+#
+
+
+######################################################################
+# Differentiation in Autograd
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# The ``requires_grad`` flag lets autograd know
+# if we need gradients w.r.t. these tensors. If it is ``True``, autograd
+# tracks all operations on them.
+#
+
+a = torch.tensor([2., 3.], requires_grad=True)
+b = torch.tensor([6., 4.], requires_grad=True)
+
+Q = 3*a**3 - b**2
+print(Q)
+
+
+######################################################################
+# ``a`` and ``b`` can be viewed as parameters of an NN, with ``Q``
+# analogous to the error. In training we want gradients of the error
+# w.r.t. parameters, i.e.
 #
 # .. math::
-#   J=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
-#    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#    \end{array}\right)
+#
+#
+#    \frac{\partial Q}{\partial a} = 9a^2
+#
+# .. math::
+#
+#
+#    \frac{\partial Q}{\partial b} = -2b
+#
+# Since ``Q`` is a vector, we pass a ``gradient`` argument in
+# ``.backward()``.
+#
+# ``gradient`` is a tensor of the same shape. Here it represents the
+# gradient of Q w.r.t. itself, i.e.
+#
+# .. math::
+#
+#
+#    \frac{dQ}{dQ} = 1
+#
+
+external_grad = torch.tensor([1., 1.])
+Q.backward(gradient=external_grad)
+
+# check if autograd's gradients are correct
+print(9*a**2 == a.grad)
+print(-2*b == b.grad)
+
+
+######################################################################
+# Optional Reading - Vector Calculus in Autograd
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# Mathematically, if you have a vector valued function
+# :math:`\vec{y}=f(\vec{x})`, then the gradient of :math:`\vec{y}` with
+# respect to :math:`\vec{x}` is a Jacobian matrix :math:`J`:
+#
+# .. math::
+#
+#
+#      J
+#      =
+#       \left(\begin{array}{cc}
+#       \frac{\partial \bf{y}}{\partial x_{1}} &
+#       ... &
+#       \frac{\partial \bf{y}}{\partial x_{n}}
+#       \end{array}\right)
+#      =
+#      \left(\begin{array}{ccc}
+#       \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
+#       \vdots & \ddots & \vdots\\
+#       \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#       \end{array}\right)
 #
 # Generally speaking, ``torch.autograd`` is an engine for computing
-# vector-Jacobian product. That is, given any vector
-# :math:`v=\left(\begin{array}{cccc} v_{1} & v_{2} & \cdots & v_{m}\end{array}\right)^{T}`,
-# compute the product :math:`v^{T}\cdot J`. If :math:`v` happens to be
-# the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`,
-# that is,
-# :math:`v=\left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}`,
+# vector-Jacobian product. That is, given any vector :math:`\vec{v}`, compute the product
+# :math:`J^{T}\cdot \vec{v}`
+#
+# If :math:`v` happens to be the gradient of a scalar function
+#
+# .. math::
+#
+#
+#    l
+#    =
+#    g\left(\vec{y}\right)
+#    =
+#    \left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}
+#
 # then by the chain rule, the vector-Jacobian product would be the
 # gradient of :math:`l` with respect to :math:`\vec{x}`:
 #
 # .. math::
-#   J^{T}\cdot v=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
-#    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#    \end{array}\right)\left(\begin{array}{c}
-#    \frac{\partial l}{\partial y_{1}}\\
-#    \vdots\\
-#    \frac{\partial l}{\partial y_{m}}
-#    \end{array}\right)=\left(\begin{array}{c}
-#    \frac{\partial l}{\partial x_{1}}\\
-#    \vdots\\
-#    \frac{\partial l}{\partial x_{n}}
-#    \end{array}\right)
 #
-# (Note that :math:`v^{T}\cdot J` gives a row vector which can be
-# treated as a column vector by taking :math:`J^{T}\cdot v`.)
 #
-# This characteristic of vector-Jacobian product makes it very
-# convenient to feed external gradients into a model that has
-# non-scalar output.
-
-###############################################################
-# Now let's take a look at an example of vector-Jacobian product:
-
-x = torch.randn(3, requires_grad=True)
-
-y = x * 2
-while y.data.norm() < 1000:
-    y = y * 2
-
-print(y)
-
-###############################################################
-# Now in this case ``y`` is no longer a scalar. ``torch.autograd``
-# could not compute the full Jacobian directly, but if we just
-# want the vector-Jacobian product, simply pass the vector to
-# ``backward`` as argument:
-v = torch.tensor([0.1, 1.0, 0.0001], dtype=torch.float)
-y.backward(v)
-
-print(x.grad)
-
-###############################################################
-# You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad=True`` either by wrapping the code block in
-# ``with torch.no_grad():``
-print(x.requires_grad)
-print((x ** 2).requires_grad)
-
-with torch.no_grad():
-	print((x ** 2).requires_grad)
-
-###############################################################
-# Or by using ``.detach()`` to get a new Tensor with the same
-# content but that does not require gradients:
-print(x.requires_grad)
-y = x.detach()
-print(y.requires_grad)
-print(x.eq(y).all())
-
-
-###############################################################
-# **Read Later:**
+#      J^{T}\cdot \vec{v}=\left(\begin{array}{ccc}
+#       \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
+#       \vdots & \ddots & \vdots\\
+#       \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#       \end{array}\right)\left(\begin{array}{c}
+#       \frac{\partial l}{\partial y_{1}}\\
+#       \vdots\\
+#       \frac{\partial l}{\partial y_{m}}
+#       \end{array}\right)=\left(\begin{array}{c}
+#       \frac{\partial l}{\partial x_{1}}\\
+#       \vdots\\
+#       \frac{\partial l}{\partial x_{n}}
+#       \end{array}\right)
 #
-# Document about ``autograd.Function`` is at
-# https://pytorch.org/docs/stable/autograd.html#function
+# This characteristic of vector-Jacobian product is what we use in the above example;
+# ``external_grad`` represents :math:`\vec{v}`.
+#
+
+
+######################################################################
+# --------------
+#
+
+
+######################################################################
+# Computational Graph
+# ~~~~~~~~~~~~~~~~~~~
+#
+# Conceptually, autograd keeps a record of data (tensors) & all executed
+# operations (along with the resulting new tensors) in a directed acyclic
+# graph (DAG) consisting of
+# `Function <https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function>`__
+# objects. In this DAG, leaves are the input tensors, roots are the output
+# tensors. By tracing this graph from roots to leaves, you can
+# automatically compute the gradients using the chain rule.
+#
+# In a forward pass, autograd does two things simultaneously: \* run the
+# requested operation to compute a resulting tensor, and \* maintain the
+# operation’s *gradient function* in the DAG. This is stored in the
+# resulting tensor’s .\ ``grad_fn`` attribute.
+#
+# The backward pass kicks off when ``.backward()`` is called on the DAG
+# root. Autograd then \* computes the gradients from each ``.grad_fn``, \*
+# accumulates them in the respective tensor’s ``.grad`` attribute, and \*
+# using the chain rule, propagates all the way to the leaf tensors.
+#
+# .. Note::
+#   **Autograd DAGs are dynamic in PyTorch**
+#   An important thing to note is that the graph is recreated from scratch; after each
+#   ``.backward()`` call, autograd starts populating a new graph. This is
+#   exactly what allows you to use control flow statements in your model;
+#   you can change the shape, size and operations at every iteration if
+#   needed. Autograd does not need you to encode all possible paths
+#   beforehand.
+#
+
+
+######################################################################
+# Exclusion from the DAG
+# ^^^^^^^^^^^^^^^^^^^^^^
+#
+# Autograd tracks operations on all tensors which have their
+# ``requires_grad`` flag set to ``True``. For tensors that don’t require
+# gradients, setting this attribute to ``False`` excludes it from the
+# gradient computation DAG and increases efficiency.
+#
+# The output tensor of an operation will require gradients even if only a
+# single input tensor has ``requires_grad=True``.
+#
+
+x = torch.rand(5, 5)
+y = torch.rand(5, 5)
+z = torch.rand((5, 5), requires_grad=True)
+
+a = x + y
+print("Does `a` require gradients?")
+print(a.requires_grad==True)
+b = x + z
+print("Does `b` require gradients?")
+print(b.requires_grad==True)
+
+
+######################################################################
+# This is especially useful when you want to freeze part of your model
+# (for instance, when you’re fine-tuning a pretrained model), or you know
+# in advance that you’re not going to use gradients w.r.t. some
+# parameters.
+#
+
+model = torchvision.models.resnet18(pretrained=True)
+
+for param in model.parameters():
+    param.requires_grad = False
+# Replace the last fully-connected layer
+# Parameters of nn.Module instances have requires_grad=True by default
+model.fc = nn.Linear(512, 100)
+
+# Optimize only the classifier
+optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
+
+
+######################################################################
+# The same functionality is available as a context manager in
+# `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html>`__
+#
