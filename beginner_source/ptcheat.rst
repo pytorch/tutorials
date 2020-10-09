@@ -10,7 +10,7 @@ General
 .. code-block:: python
 
     import torch                                        # root package
-    from torch.utils.data import Dataset, Dataloader    # dataset representation and loading
+    from torch.utils.data import Dataset, DataLoader    # dataset representation and loading
 
 Neural Network API
 ------------------
