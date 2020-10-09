@@ -79,11 +79,11 @@ be found in
 
 
     def setup(rank, world_size):
-        os.environ['MASTER_ADDR'] = 'localhost'
-        os.environ['MASTER_PORT'] = '12355'
+        #Example init_method="file:///f:/libtmp/some_file"
+        init_method="file:///{your local file path}"
 
         # initialize the process group
-        dist.init_process_group("gloo", rank=rank, world_size=world_size)
+        dist.init_process_group("gloo", init_method=init_method, rank=rank, world_size=world_size)
 
 
     def cleanup():
