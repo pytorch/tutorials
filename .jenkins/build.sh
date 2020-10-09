@@ -11,34 +11,34 @@ export PATH=/opt/conda/bin:$PATH
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
+
+rm -rf src
+pip install -r $DIR/../requirements.txt
+
+# export PATH=/opt/conda/bin:$PATH
+# pip install sphinx==1.8.2 pandas
+
+# For Tensorboard. Until 1.14 moves to the release channel.
+pip install tb-nightly
+
+# Install two language tokenizers for Translation with TorchText tutorial
+python -m spacy download en
+python -m spacy download de
+
+# PyTorch Theme
+rm -rf src
+pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+# pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
+# this is a workaround to the issue.
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
+
+aws configure set default.s3.multipart_threshold 5120MB
+
 if [[ $USE_CACHE == "y" ]]; then
   aws s3 cp circleci_build_cache/worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 else
-  sudo apt-get update
-  sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
-
-  rm -rf src
-  pip install -r $DIR/../requirements.txt
-
-  # export PATH=/opt/conda/bin:$PATH
-  # pip install sphinx==1.8.2 pandas
-
-  # For Tensorboard. Until 1.14 moves to the release channel.
-  pip install tb-nightly
-
-  # Install two language tokenizers for Translation with TorchText tutorial
-  python -m spacy download en
-  python -m spacy download de
-
-  # PyTorch Theme
-  rm -rf src
-  pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-  # pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
-  # this is a workaround to the issue.
-  pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
-
-  aws configure set default.s3.multipart_threshold 5120MB
-
   # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
   export NUM_WORKERS=20
   if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
