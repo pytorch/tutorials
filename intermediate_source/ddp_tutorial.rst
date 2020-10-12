@@ -81,9 +81,8 @@ be found in
 
     def setup(rank, world_size):
         if sys.platform == 'win32':
-            # Distributed package only covers collective communications with Gloo backend, FileStore
-            # on Windows platform. Set init_method parameter in init_process_group and point it to a
-            # local file.
+            # Distributed package only covers collective communications with Gloo backend and FileStore
+            # on Windows platform. Set init_method parameter in init_process_group to a local file.
             # Example init_method="file:///f:/libtmp/some_file"
             init_method="file:///{your local file path}"
 
