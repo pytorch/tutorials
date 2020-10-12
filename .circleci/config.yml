@@ -117,7 +117,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_ECR_READ_ONLY}
         eval $(aws ecr get-login --region us-east-1 --no-include-email)
   - restore_cache:
-      key: v1-tutorial-{{ .Environment.CIRCLE_JOB }}
+      key: v1.0-tutorial-{{ .Environment.CIRCLE_JOB }}
   - run:
       name: Build
       no_output_timeout: "20h"
@@ -175,13 +175,27 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         # Copy the last build from docker
         docker cp "$id:/var/lib/jenkins/workspace/_build" /home/circleci/project
         docker cp "$id:/var/lib/jenkins/workspace/docs" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/advanced" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/beginner" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/intermediate" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/index" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/prototype" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/recipes" /home/circleci/project
+        docker cp "$id:/var/lib/jenkins/workspace/src" /home/circleci/project
 
   - save_cache:
       # Save to cache for incremental build.
-      key: v1-tutorial-{{ .Environment.CIRCLE_JOB }}
+      key: v1.0-tutorial-{{ .Environment.CIRCLE_JOB }}
       paths:
         - /home/circleci/project/_build
         - /home/circleci/project/docs
+        - /home/circleci/project/advanced
+        - /home/circleci/project/beginner
+        - /home/circleci/project/intermediate
+        - /home/circleci/project/index
+        - /home/circleci/project/prototype
+        - /home/circleci/project/recipes
+        - /home/circleci/project/src
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
