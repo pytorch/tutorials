@@ -2,6 +2,8 @@ Getting Started with Distributed Data Parallel
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+**Edited by**: `Joe Zhu <https://github.com/gunandrose4u>`_
+
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
