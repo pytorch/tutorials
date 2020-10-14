@@ -65,6 +65,7 @@ Skip to advanced readings:
 #
 
 import torch
+
 a = torch.tensor([2., 3.], requires_grad=True)
 b = torch.tensor([6., 4.], requires_grad=True)
 
@@ -243,6 +244,8 @@ print(b.requires_grad==True)
 #
 
 import torchvision
+from torch import nn, optim
+
 model = torchvision.models.resnet18(pretrained=True)
 
 for param in model.parameters():
