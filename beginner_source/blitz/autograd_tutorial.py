@@ -242,6 +242,7 @@ print(b.requires_grad==True)
 # parameters.
 #
 
+import torchvision
 model = torchvision.models.resnet18(pretrained=True)
 
 for param in model.parameters():
