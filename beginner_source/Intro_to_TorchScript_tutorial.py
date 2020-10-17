@@ -77,7 +77,7 @@ print(my_cell(x, h))
 #    cell <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__–that
 #    is–it’s a function that is applied on a loop.
 #
-# We instantiated the module, and made ``x`` and ``y``, which are just 3x4
+# We instantiated the module, and made ``x`` and ``h``, which are just 3x4
 # matrices of random values. Then we invoked the cell with
 # ``my_cell(x, h)``. This in turn calls our ``forward`` function.
 #
