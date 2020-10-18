@@ -18,7 +18,7 @@ Since GPUs consume weights in a different order, the first step we have to do is
     cd PYTORCH_ROOT
     USE_PYTORCH_METAL=ON python setup.py install --cmake
 
-The command above will build a custom pytorch binary from master. The ``install`` argument simply tells ``setup.py`` to override the existing PyTorch on your desktop. Once the build finished, I would recommend opening another terminal and checking the PyTorch version to see if the installation successful. As the time of writing of this recipe, the version is ``1.8.0a0+41237a4``. The number might be different depending on when you check out the code from master, but it should be greater than 1.7.0.
+The command above will build a custom pytorch binary from master. The ``install`` argument simply tells ``setup.py`` to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is ``1.8.0a0+41237a4``. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.
 
 .. code:: python
 
@@ -26,7 +26,7 @@ The command above will build a custom pytorch binary from master. The ``install`
     torch.__version__ #1.8.0a0+41237a4
 
 
-The next step is going to be converting the mobilenetv2 torchscript model to a Metal compatible model. We'll be leveraging the ``optimize_for_mobile`` API from ``torch.utils`` as shown below
+The next step is going to be converting the mobilenetv2 torchscript model to a Metal compatible model. We'll be leveraging the ``optimize_for_mobile`` API from the ``torch.utils`` module. As shown below
 
 .. code:: python
 
@@ -38,7 +38,7 @@ The next step is going to be converting the mobilenetv2 torchscript model to a M
     torch.jit.export_opnames(optimized_model)
     torch.jit.save(optimized_model, './mobilenetv2_metal.pt')
 
-Note that the ``torch.jit.export_opnames(optimized_model)`` is going to dump all the optimized operators from the ``optimized_mobile``. If everything works well, you should be able to see the following ops printed out
+Note that the ``torch.jit.export_opnames(optimized_model)`` is going to dump all the optimized operators from the ``optimized_mobile``. If everything works well, you should be able to see the following ops being printed out from the console
 
 
 .. code:: shell
@@ -57,13 +57,13 @@ Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now
 Use C++ APIs
 ---------------------
 
-In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app>`_ to demonstrate how to use the C++ APIs to run our model. The first thing we need to do is to build a custom iOS LibTorch from Source. Make sure you have deleted the **build** folder from the previous step in PyTorch root directory. Then run the command below
+In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app>`_ to demonstrate how to use the C++ APIs. The first thing we need to do is to build a custom LibTorch from Source. Make sure you have deleted the **build** folder from the previous step in PyTorch root directory. Then run the command below
 
 .. code:: shell
     
     IOS_ARCH=arm64 ./scripts/build_ios.sh -DUSE_PYTORCH_METAL=ON
 
-Note `IOS_ARCH` tells the script to build a arm64 version of Libtorch. This is because the PyTorch Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the `Build PyTorch iOS libraries from source <https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source>`_ section from the iOS tutorial to setup the XCode settings properly. Also, don't forget to copy the `./mobilenetv2_metal.pt` to your XCode project.
+Note ``IOS_ARCH`` tells the script to build a arm64 version of Libtorch. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the `Build PyTorch iOS libraries from source <https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source>`_ section from the iOS tutorial to setup the XCode settings properly. Don't forget to copy the `./mobilenetv2_metal.pt` to your XCode project.
 
 The last step is to change the ``predictImage`` method in ``TorchModule.mm``
 
@@ -77,7 +77,7 @@ The last step is to change the ``predictImage`` method in ``TorchModule.mm``
       return nil;
     }
 
-As you can see, we simply just call ``.metal()`` to move our input tensor from CPU to GPU, and then call ``.cpu()`` to move the result back. Internally, ``.metal()`` will copy the data from the CPU buffer to a GPU buffer with proper memory format. When `.cpu()` is invoked, the GPU command buffer will be flushed and synced. The final result will then be copied back from the GPU buffer back to a CPU buffer.
+As you can see, we simply just call ``.metal()`` to move our input tensor from CPU to GPU, and then call ``.cpu()`` to move the result back. Internally, ``.metal()`` will copy the input data from the CPU buffer to a GPU buffer and convert the memory format. When `.cpu()` is invoked, the GPU command buffer will be flushed and synced. The final result will then be copied back from the GPU buffer back to a CPU buffer.
 
 If everything works fine, you should see the inference results being showed on the screen. The result below is captured from a iPhone11 device
 
