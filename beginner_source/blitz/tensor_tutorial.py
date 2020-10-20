@@ -1,5 +1,5 @@
 """
-Tensors - The building blocks of deep learning
+Tensors
 --------------------------------------------
 
 Tensors are a specialized data structure that are very similar to arrays
@@ -24,7 +24,7 @@ import numpy as np
 # Tensors can be initialized in various ways. Take a look at the following examples
 #
 # **Directly from data / NumPy arrays:**
-#
+# Tensors can be created directly by passing a Python list or sequence using the ``torch.tensor()`` constructor. The data type is automatically inferred from the data.
 
 data = [[1, 2],[3, 4]]
 np_array = np.array(data)
@@ -32,20 +32,10 @@ np_array = np.array(data)
 tnsr_from_data = torch.tensor(data)
 tnsr_from_np = torch.from_numpy(np_array)
 
-######################################################################
-# **With random or constant values:**
-#
-
-shape = (2,3,)
-rand_tnsr = torch.rand(shape)
-ones_tnsr = torch.ones(shape)
-zeros_tnsr = torch.zeros(shape)
-print(f"Random Tensor:\n{rand_tnsr}\n\nOnes Tensor:\n{ones_tnsr}\n\nZeros Tensor:\n{zeros_tnsr}")
-
 
 ###############################################################
 # **From another tensor:**
-# The new tensor retains the properties of the arg tensor, unless explicitly overridden
+# The new tensor retains the properties of the arg tensor, unless explicitly overridden.
 
 new_ones_tnsr = torch.ones_like(tnsr_from_data) # 2 x 2 matrix of ones
 
@@ -65,6 +55,20 @@ new_rand_tnsr = torch.rand_like(tnsr_from_data, dtype=torch.float)
 print(new_rand_tnsr)
 
 
+######################################################################
+# **With random or constant values:**
+#
+
+shape = (2,3,)
+rand_tnsr = torch.rand(shape)
+ones_tnsr = torch.ones(shape)
+zeros_tnsr = torch.zeros(shape)
+print(f"Random Tensor:\n{rand_tnsr} \n\n \
+        Ones Tensor:\n{ones_tnsr} \n\n \
+        Zeros Tensor:\n{zeros_tnsr}")
+
+
+
 
 ######################################################################
 # --------------
@@ -75,30 +79,13 @@ print(new_rand_tnsr)
 # Tensor Attributes
 # ~~~~~~~~~~~~~~~~~
 #
-# Tensors have attributes that describe their contents and functions. They
-# also have attributes that autograd uses to keep track of them in the
-# computational graph (more on this in the next section).
-#
-# **Docs Issues** - https://pytorch.org/docs/stable/tensor_attributes.html
-# is not comprehensive (missing data, grad, grad_fn, shape). Contains
-# ``memory_format`` which is not an attribute
-#
+# Tensor attributes describe their shape data type and where they live.
 
 tnsr = torch.rand(3,4)
 
-print(f"Data stored in tensor:\n{tnsr.data}\n")
 print(f"Shape of tensor: {tnsr.shape}")
 print(f"Datatype of tensor: {tnsr.dtype}")
 print(f"Device tensor lives on: {tnsr.device}")
-
-print("-------")
-
-# Autograd-related attributes; more on this later
-print(f"Is tensor a leaf on computational graph: {tnsr.is_leaf}")
-print(f"Does tensor require gradients: {tnsr.requires_grad}")
-print(f"Accumulated gradients of tensor: {tnsr.grad}")
-print(f"Function that computed this tensor's gradient: {tnsr.grad_fn}")
-
 
 
 ######################################################################
@@ -121,13 +108,12 @@ print(f"Function that computed this tensor's gradient: {tnsr.grad_fn}")
 #
 
 # We move our tensor to the GPU if available
-if torch.cuda.is_available:
-  tnsr.to('cuda')
+if torch.cuda.is_available():
+  tnsr = tnsr.to('cuda')
 
 
 ######################################################################
-# Try out some of the operations from the list. You may come across multiple
-# syntaxes for the same operation. Don’t get confused by the aliases!
+# Try out some of the operations from the list. If you're familiar with the NumPy API, you'll find the Tensor API a breeze to use.
 #
 
 ###############################################################
@@ -164,3 +150,40 @@ print(tnsr @ tnsr.T == tnsr.matmul(tnsr.T))
 print(tnsr)
 tnsr.t_()
 print(tnsr)
+
+######################################################################
+# --------------
+#
+
+
+######################################################################
+# Bridge with NumPy
+# ~~~~~~~~~~~~~~~~~
+# Tensors on the CPU and NumPy arrays can share their underlying memory
+# locations, and changing one will change	the other.
+
+
+######################################################################
+# Tensor to NumPy array
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+a = torch.ones(5)
+print(f"a: {a}")
+b = a.numpy()
+print(f"b: {b}")
+
+######################################################################
+# A change in ``a`` reflects in ``b``
+
+a.add_(1)
+print(f"a: {a}")
+print(f"b: {b}")
+
+
+######################################################################
+# NumPy array to Tensor
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+a = np.ones(5)
+b = torch.from_numpy(a)
+np.add(a, 1, out=a)
+print(f"a: {a}")
+print(f"b: {b}")

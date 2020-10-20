@@ -7,46 +7,52 @@ Autograd is PyTorch’s automatic differentiation engine that powers
 neural network training. In this section, you will get a conceptual
 understanding of how autograd works under the hood.
 
-Skip to advanced readings:
+Background
+~~~~~~~~~~
+Neural networks (NNs) are a collection of nested functions that are
+executed on some input data. These functions are defined by *parameters*
+(consisting of weights and biases), which in PyTorch are stored in
+tensors.
 
--  `In-place operations & Multithreaded
-   Autograd <https://pytorch.org/docs/stable/notes/autograd.html>`__
--  `Example implementation of reverse-mode
-   autodiff <https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC>`__
+Training a NN happens in two steps:
 
+**Forward Propagation**: In forward prop, the NN makes its best guess
+about the correct output. It runs the input data through each of its
+functions to make this guess.
+
+**Backward Propagation**: In backprop, the NN adjusts its parameters
+proportionate to the error in its guess. It does this by traversing
+backwards from the output, collecting the derivatives of the error with
+respect to the parameters of the functions (*gradients*), and optimizing
+the parameters using **gradient descent**. For a more detailed walkthrough
+of backprop, check out this `video from
+3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
+
+Most deep learning frameworks use automatic differentiation for
+backprop; in PyTorch, it is handled by Autograd.
+
+
+Usage in PyTorch
+~~~~~~~~~~~
+Backward propagation can be kicked off by calling ``.backward()`` on the error tensor.
+This collects the gradients for each parameter in the model.
 """
 
+import torch, torchvision
+
+model = torchvision.models.resnet18(pretrained=True)
+data = torch.rand(1, 3, 64, 64)
+labels = torch.rand(1, 1000)
+prediction = model(x) # forward pass
+loss = prediction - labels
+loss.backward() # backward pass
+
+optim = torch.optim.SGD(model.parameters())
+optim.step() #gradient descent
 
 ######################################################################
-# --------------
-#
-
-
-######################################################################
-# Background
-# ~~~~~~~~~~
-#
-# Neural networks (NNs) are a collection of nested functions that are
-# executed on some input data. These functions are defined by *parameters*
-# (consisting of weights and biases), which in PyTorch are stored in
-# tensors.
-#
-# Training a NN happens in two steps:
-#
-# **Forward Propagation**: In forward prop, the NN makes its best guess
-# about the correct output. It runs the input data through each of its
-# functions to make this guess.
-#
-# **Backward Propagation**: In backprop, the NN adjusts its parameters
-# proportionate to the error in its guess. It does this by traversing
-# backwards from the output, collecting the derivatives of the error with
-# respect to the parameters of the functions (*gradients*), and optimizing
-# the parameters using gradient descent. For a more detailed walkthrough
-# of backprop, check out this `video from
-# 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
-#
-# Most deep learning frameworks use automatic differentiation for
-# backprop; in PyTorch, it is handled by Autograd.
+# At this point, you have everything you need to build your neural network.
+# The below sections detail the workings of autograd - feel free to skip them.
 #
 
 
@@ -58,11 +64,11 @@ Skip to advanced readings:
 ######################################################################
 # Differentiation in Autograd
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#
+
 # The ``requires_grad`` flag lets autograd know
 # if we need gradients w.r.t. these tensors. If it is ``True``, autograd
 # tracks all operations on them.
-#
+
 
 import torch
 
@@ -173,10 +179,6 @@ print(-2*b == b.grad)
 #
 
 
-######################################################################
-# --------------
-#
-
 
 ######################################################################
 # Computational Graph
@@ -243,7 +245,6 @@ print(b.requires_grad==True)
 # parameters.
 #
 
-import torchvision
 from torch import nn, optim
 
 model = torchvision.models.resnet18(pretrained=True)
@@ -262,3 +263,14 @@ optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
 # The same functionality is available as a context manager in
 # `torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html>`__
 #
+
+######################################################################
+# --------------
+#
+
+######################################################################
+# Further readings:
+# ~~~~~~~~~~~~~~~~~~~
+#
+# -  `In-place operations & Multithreaded Autograd <https://pytorch.org/docs/stable/notes/autograd.html>`__
+# -  `Example implementation of reverse-mode autodiff <https://colab.research.google.com/drive/1VpeE6UvEPRz9HmsHh1KS0XxXjYu533EC>`__
