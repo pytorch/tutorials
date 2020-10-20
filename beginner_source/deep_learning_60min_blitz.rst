@@ -8,13 +8,18 @@ Deep Learning with PyTorch: A 60 Minute Blitz
      <iframe width="560" height="315" src="https://www.youtube.com/embed/u7x8RXwLKcA" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
 
-Goal of this tutorial:
+What is PyTorch?
+~~~~~~~~~~~~~~~~~~~~~
+PyTorch a Python-based scientific computing package for two broad purposes:
+- A replacement for NumPy to use the power of GPUs
+- A deep learning research platform that provides maximum flexibility and speed
 
+Goal of this tutorial:
+~~~~~~~~~~~~~~~~~~~~~~~~
 -  Understand PyTorch’s Tensor library and neural networks at a high
    level.
 -  Train a small neural network to classify images
 
-*This tutorial assumes that you have a basic familiarity of numpy*
 
 .. Note::
     Make sure you have the `torch`_ and `torchvision`_ packages installed.
