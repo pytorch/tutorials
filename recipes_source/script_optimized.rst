@@ -6,7 +6,7 @@ This recipe demonstrates how to convert a PyTorch model to TorchScript which can
 Introduction
 ------------
 
-After a PyTorch model is trained and optionally but preferably quantized (see the Quantization for Mobile Apps Recipe), one essential step before the model can be used in iOS and Android apps is to convert the Python-dependent model to TorchScript, which can then further be optimized for mobile apps. Conversion to TorchScript can be as simple as a single call, or as complicated as changing the original model in many different places.
+After a PyTorch model is trained and optionally but preferably quantized (see `Quantization Recipe <quantization.html>`_ for more details), one essential step before the model can be used in iOS and Android apps is to convert the Python-dependent model to TorchScript, which can then further be optimized for mobile apps. Conversion to TorchScript can be as simple as a single call, or as complicated as changing the original model in many different places.
 
 Pre-requisites
 --------------
@@ -56,9 +56,10 @@ But if a model has some flow control, then `trace` won't correctly record all th
     print(traced_cell.code)
 
 The code above will output:
-TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can't record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
 ::
+
+    TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can''t record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
     if x.sum() > 0:
     def forward(self,
@@ -71,7 +72,7 @@ TracerWarning: Converting a tensor to a Python boolean might cause the trace to 
       return (_3, _3)
 
 
-It is important to notice that "the trace might not generalize to other inputs" warning above means that if the model has any kind of data-dependent control flow, `trace` is not the right answer. But if we replace the last two lines of the Python code above with:
+Note that "the trace might not generalize to other inputs" warning above means that if the model has any kind of data-dependent control flow, `trace` is not the right answer. But if we replace the last two lines of the Python code snippet above (before the code output) with:
 
 ::
 
@@ -92,7 +93,7 @@ The output will be covering all possible inputs, thus generalizing to other inpu
       return _1
 
 
-This is another example of using `trace` and `script` - it converts the model trained in the PyTorch [neural machine translation tutorial]():
+This is another example of using `trace` and `script` - it converts the model trained in the PyTorch tutorial `NLP FROM SCRATCH: TRANSLATION WITH A SEQUENCE TO SEQUENCE NETWORK AND ATTENTION <https://pytorch.org/tutorials/intermediate/seq2seq_translation_tutorial.html>`_:
 
 ::
 
@@ -116,15 +117,18 @@ This is another example of using `trace` and `script` - it converts the model tr
     scripted_encoder = torch.jit.script(encoder)
     scripted_decoder = torch.jit.script(decoder)
 
-So is it true that one can simply always use the `script` call and the model is converted to TorchScript? The answer is no, because TorchScript is actually a subset of Python and to make `script` work, the PyTorch model definition must only use the language features of that TorchScript subset of Python. `TorchScript Language Reference <https://pytorch.org/docs/master/jit_language_reference.html#language-reference>`_ covers all the details of what is supported in TorchScript.
+So is it true that one can simply always use the `script` call and the model is converted to TorchScript? The answer is no, because TorchScript is actually a subset of Python and to make `script` work, the PyTorch model definition must only use the language features of that TorchScript subset of Python. `TorchScript Language Reference <https://pytorch.org/docs/master/jit_language_reference.html#language-reference>`_ covers all the details of what is supported in TorchScript. Below we will describe some of the common errors when using the `script` method.
 
 
-Fix Errors with the `script` Method
----------------------------------------------
+Fix Common Errors When Using the `script` Method
+----------------------------------------------------
 
 If you apply the `script` method to a non-trivial model, chances are you may encounter several types of errors. Check out `this tutorial <https://pytorch.org/tutorials/beginner/deploy_seq2seq_hybrid_frontend_tutorial.html>`_ for a complete example of converting a chatbot model to TorchScript. But follow the steps below to fix common errors when you run the `script` method:
 
-1. For RuntimeError `attribute lookup is not defined on python value of type` (of a model), pass the value of the model as a parameter in the constructor. This is because when calling `script` on a model that accepts another model as a parameter, the model passed is actually of type `TracedModule` or `ScriptModule`, not of type `Module`, making the the model attribute not defined when scripting.
+1. RuntimeError `attribute lookup is not defined on python value of type`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For this error, pass the value of the model as a parameter in the constructor. This is because when calling `script` on a model that accepts another model as a parameter, the model passed is actually of type `TracedModule` or `ScriptModule`, not of type `Module`, making the the model attribute not defined when scripting.
 
 For example, the `LuongAttnDecoderRNN` module in the tutorial above has an attribute `n_layers`, and the `GreedySearchDecoder` module refers to the `n_layers` attribute of a `decoder` instance of the `LuongAttnDecoderRNN` module, so in order to make `script` work, the `GreedySearchDecoder` module's constructor needs to be changed from:
 
@@ -143,7 +147,10 @@ to:
 
 and the `GreedySearchDecoder`'s `forward` method needs to refer `self._decoder_n_layers` instead of `decoder.n_layers`.
 
-2. For RuntimeError `python value of type '...' cannot be used as a value. Perhaps it is a closed over global variable? If so, please consider passing it in as an argument or use a local variable instead.`, store global variables' values as attributes in the model constructor (there's no need to add them to a special list called `__constants__`). The reason is that global values can be used conveniently in normal model training and inference, but the global values are not accessible during the scripting.
+2. RuntimeError `python value of type '...' cannot be used as a value.`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The complete error message for this one continues with `Perhaps it is a closed over global variable? If so, please consider passing it in as an argument or use a local variable instead.`, store global variables' values as attributes in the model constructor (there's no need to add them to a special list called `__constants__`). The reason is that global values can be used conveniently in normal model training and inference, but the global values are not accessible during the scripting.
 
 For example, `device` and `SOS_token` are global variables, and to make `script` work, they need to be added to the `GreedySearchDecoder`'s constructor:
 
@@ -154,7 +161,10 @@ For example, `device` and `SOS_token` are global variables, and to make `script`
 
 and referred to as `self._device` and `self._SOS_token` instead of `device` and `SOS_token` in the `GreedySearchDecoder`'s `forward` method.
 
-3. For RuntimeError `RuntimeError: all inputs of range must be '...', found Tensor (inferred) in argument`, add type definitions for each of the module's forward method arguments. Because all parameters to a TorchScript function are of the `torch.Tensor` type by default, you need to specifically declare the type for each parameter that is not of type 'Tensor'. For a complete list of TorchScript-supported types, see `here <https://pytorch.org/docs/master/jit_language_reference.html#supported-type>`_.
+3. RuntimeError `all inputs of range must be '...', found Tensor (inferred) in argument`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The error message continues with: `add type definitions for each of the module's forward method arguments. Because all parameters to a TorchScript function are of the `torch.Tensor` type by default, you need to specifically declare the type for each parameter that is not of type 'Tensor'. For a complete list of TorchScript-supported types, see `here <https://pytorch.org/docs/master/jit_language_reference.html#supported-type>`_.
 
 For example, the `GreedySearchDecoder`'s `forward` method signature needs to be changed from:
 
@@ -169,7 +179,6 @@ to:
     def forward(self, input_seq, input_length, max_length : int):
 
 After using the `trace` or `script` method above, and fixing possible errors, you should have a TorchScript model ready to be optimized for mobile.
-
 
 
 Optimize a TorchScript Model

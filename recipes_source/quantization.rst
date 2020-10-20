@@ -1,0 +1,114 @@
+Quantization Recipe
+=====================================
+
+This recipe demonstrates how to quantize a PyTorch model so it can be used on iOS and Android apps, or in other production . Follow the steps below on how to use four different methods to quantize different models.
+
+Introduction
+------------
+
+Quantization is a technique that converts 32-bit floating numbers in the model parameters to 8-bit integers. With quantization, the model size and memory footprint can be reduced to 1/4 of its original size, and the inference can be made about 2-4 times faster, while the accuracy stays about the same.
+
+There are overall three approaches or workflows to quantize a model: post training dynamic quantization, post training static quantization, and quantization aware training. But if the model you want to use already has a quantized version, you can use it directly without going through any of the three workflows above. For example, the `torchvision` library already includes quantized versions for models MobileNet v2, ResNet 18, ResNet 50, Inception v3, GoogleNet, among others. So we will make the last approach another workflow, albeit a simple one.
+
+Pre-requisites
+-----------------
+
+PyTorch 1.6.0 or 1.7.0
+
+torchvision 0.6.0 or 0.7.0
+
+Workflows
+------------
+
+Use one of the four workflows below to quantize a model.
+
+1. Use Pretrained Quantized MobileNet v2
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To get the MobileNet v2 quantized model, simply do:
+
+::
+
+    import torchvision
+    model_quantized = torchvision.models.quantization.mobilenet_v2(pretrained=True, quantize=True)
+
+
+To compare the size difference of a non-quantized MobileNet v2 model with its quantized version:
+
+::
+
+    model = torchvision.models.mobilenet_v2(pretrained=True)
+
+    import os
+    import torch
+
+    def print_model_size(mdl):
+        torch.save(mdl.state_dict(), "tmp.pt")
+        print("%.2f MB" %(os.path.getsize("tmp.pt")/1e6))
+        os.remove('tmp.pt')
+
+    print_model_size(model)
+    print_model_size(quantized_model)
+
+
+The outputs will be:
+
+::
+
+    14.27 MB
+    3.63 MB
+
+2. Post Training Dynamic Quantization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To apply dynamic quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn't convert the activations to int8 till just before performing the computation on the activations, simply call `torch.quantization.quantize_dynamic`:
+
+::
+
+    model_dynamic_quantized = torch.quantization.quantize_dynamic(
+        model, qconfig_spec={torch.nn.Linear}, dtype=torch.qint8
+    )
+
+where `qconfig_spec` specifies the list of submodule names in `model` to apply quantization to.
+
+The full documentation of the `quantize_dynamic` API call is `here <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_. Three other examples of using the post training dynamic quantization are `the Bert example <https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html>`_, `an LSTM model example <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html#test-dynamic-quantization>`_, and another `demo LSTM example <https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html#do-the-quantization>`_.
+
+3. Post Training Static Quantization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This method converts both the weights and the activations to 8-bit integers beforehand so there won't be on-the-fly conversion on the activations during the inference, as the dynamic quantization does, hence improving the performance significantly.
+
+To apply static quantization which converts both the weights and the activations to 8-bit integers beforehand so there won't be on-the-fly conversion on the activations during the inference, run the following code:
+
+::
+
+    backend = "qnnpack"
+    model.qconfig = torch.quantization.get_default_qconfig(backend)
+    torch.backends.quantized.engine = backend
+    model_static_quantized = torch.quantization.prepare(model, inplace=False)
+    model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
+
+After this, running `print_size_of_model(model_static_quantized)` shows the static quantized model is `3.98MB`.
+
+Notice that to make the model run on mobile devices which normally have arm architecture, you need to use the 'qnnpack' for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.
+
+4. Quantization Aware Training
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To apply quantization aware training, which inserts fake quantization to all the weights and activations during the model training process, use the following code snippet:
+
+::
+
+    model.qconfig = torch.quantization.get_default_qat_qconfig(backend)
+    model_qat = torch.quantization.prepare_qat(model, inplace=False)
+    # quantization aware training goes here
+    model_qat = torch.quantization.convert(model_qat.eval(), inplace=False)
+
+After a quantized model is generated using one of the steps above, before the model can be used to run on mobile devices, it needs to be further converted to the `TorchScript` format and then optimized for mobile apps. See the `Script and Optimize for Mobile recipe <script_optimized.html>`_ for details.
+
+For a complete example of the quantization aware training, read this `tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
+
+Learn More
+-----------------
+
+For more info on the different workflows of quantization, see `here <https://pytorch.org/docs/stable/quantization.html#quantization-workflows>`_ and `here <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/#post-training-static-quantization>`_.
