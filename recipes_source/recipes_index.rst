@@ -191,7 +191,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. customcarditem::
   :header: Model Preparation for iOS Recipe
   :card_description: Learn how to add the model in an iOS project and use PyTorch pod for iOS.
-  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :image: ../_static/img/thumbnails/cropped/ios.png
   :link: ../recipes/model_preparation_ios.html
   :tags: Mobile
 
