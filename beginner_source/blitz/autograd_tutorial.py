@@ -47,7 +47,7 @@ prediction = model(data) # forward pass
 loss = (prediction - labels).sum()
 loss.backward() # backward pass
 
-optim = torch.optim.SGD(model.parameters())
+optim = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 optim.step() #gradient descent
 
 ######################################################################
