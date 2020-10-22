@@ -20,6 +20,7 @@ installed for easier visualization.
 
 import torch
 import torchaudio
+import requests
 import matplotlib.pyplot as plt
 
 ######################################################################
@@ -30,7 +31,13 @@ import matplotlib.pyplot as plt
 # call waveform the resulting raw audio signal.
 # 
 
-filename = "../_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+url = "https://pytorch.org/tutorials/_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+r = requests.get(url)
+
+with open('steam-train-whistle-daniel_simon-converted-from-mp3.wav', 'wb') as f:
+    f.write(r.content)
+
+filename = "steam-train-whistle-daniel_simon-converted-from-mp3.wav"
 waveform, sample_rate = torchaudio.load(filename)
 
 print("Shape of waveform: {}".format(waveform.size()))
