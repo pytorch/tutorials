@@ -217,6 +217,7 @@ nhead = 2 # the number of heads in the multiheadattention models
 dropout = 0.2 # the dropout value
 model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
 
+
 ######################################################################
 # Run the model
 # -------------
