@@ -18,6 +18,8 @@ installed for easier visualization.
 
 """
 
+# Uncomment the following line to run in Google Colab
+# !pip install torchaudio 
 import torch
 import torchaudio
 import requests
