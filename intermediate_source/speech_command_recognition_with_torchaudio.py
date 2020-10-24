@@ -10,7 +10,6 @@ installed by following the instructions on the website.
 
 """
 
-# Uncomment to run in Google Colab
 # !pip install torch
 # !pip install torchaudio
 
@@ -66,14 +65,14 @@ class SubsetSC(SPEECHCOMMANDS):
             filepath = os.path.join(self._path, "validation_list.txt")
             with open(filepath) as f:
                 validation_list = [
-                    os.path.join(self._path, l.strip()) for l in f.readlines()
+                    os.path.join(self._path, line.strip()) for line in f.readlines()
                 ]
 
         if subset in ["training", "testing"]:
             filepath = os.path.join(self._path, "testing_list.txt")
             with open(filepath) as f:
                 testing_list = [
-                    os.path.join(self._path, l.strip()) for l in f.readlines()
+                    os.path.join(self._path, line.strip()) for line in f.readlines()
                 ]
 
         if subset == "validation":
@@ -216,15 +215,16 @@ def collate_fn(batch):
     return tensors, targets
 
 
+batch_size = 128
+
 kwargs = (
     {"num_workers": 1, "pin_memory": True} if device == "cuda" else {}
-)  # needed to run on gpu
-
+)  # needed for using datasets on gpu
 train_loader = torch.utils.data.DataLoader(
-    train_set, batch_size=128, shuffle=True, collate_fn=collate_fn, **kwargs
+    train_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, **kwargs
 )
 test_loader = torch.utils.data.DataLoader(
-    test_set, batch_size=128, shuffle=False, collate_fn=collate_fn, **kwargs
+    test_set, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, **kwargs
 )
 
 
@@ -236,31 +236,32 @@ test_loader = torch.utils.data.DataLoader(
 # the raw audio data. Usually more advanced transforms are applied to the
 # audio data, however CNNs can be used to accurately process the raw data.
 # The specific architecture is modeled after the M5 network architecture
-# described in https://arxiv.org/pdf/1610.00087.pdf. An important aspect
-# of models processing raw audio data is the receptive field of their
-# first layer’s filters. Our model’s first filter is length 80 so when
-# processing audio sampled at 8kHz the receptive field is around 10ms.
-# This size is similar to speech processing applications that often use
-# receptive fields ranging from 20ms to 40ms.
+# described in ``this paper <https://arxiv.org/pdf/1610.00087.pdf>``\ \_.
+# An important aspect of models processing raw audio data is the receptive
+# field of their first layer’s filters. Our model’s first filter is length
+# 80 so when processing audio sampled at 8kHz the receptive field is
+# around 10ms (and at 4kHz, around 20 ms). This size is similar to speech
+# processing applications that often use receptive fields ranging from
+# 20ms to 40ms.
 #
 
 
-class Net(nn.Module):
-    def __init__(self, n_output=10):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv1d(1, 128, 80, 4)
-        self.bn1 = nn.BatchNorm1d(128)
+class M5(nn.Module):
+    def __init__(self, stride=16, n_channel=32, n_output=35):
+        super().__init__()
+        self.conv1 = nn.Conv1d(1, n_channel, 80, stride=stride)
+        self.bn1 = nn.BatchNorm1d(n_channel)
         self.pool1 = nn.MaxPool1d(4)
-        self.conv2 = nn.Conv1d(128, 128, 3)
-        self.bn2 = nn.BatchNorm1d(128)
+        self.conv2 = nn.Conv1d(n_channel, n_channel, 3)
+        self.bn2 = nn.BatchNorm1d(n_channel)
         self.pool2 = nn.MaxPool1d(4)
-        self.conv3 = nn.Conv1d(128, 256, 3)
-        self.bn3 = nn.BatchNorm1d(256)
+        self.conv3 = nn.Conv1d(n_channel, 2 * n_channel, 3)
+        self.bn3 = nn.BatchNorm1d(2 * n_channel)
         self.pool3 = nn.MaxPool1d(4)
-        self.conv4 = nn.Conv1d(256, 512, 3)
-        self.bn4 = nn.BatchNorm1d(512)
+        self.conv4 = nn.Conv1d(2 * n_channel, 2 * n_channel, 3)
+        self.bn4 = nn.BatchNorm1d(2 * n_channel)
         self.pool4 = nn.MaxPool1d(4)
-        self.fc1 = nn.Linear(512, n_output)
+        self.fc1 = nn.Linear(2 * n_channel, n_output)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -275,15 +276,13 @@ class Net(nn.Module):
         x = self.conv4(x)
         x = F.relu(self.bn4(x))
         x = self.pool4(x)
-        x = F.avg_pool1d(
-            x, x.shape[-1]
-        )  # input should be 512x14 so this outputs a 512x1
-        x = x.permute(0, 2, 1)  # change the 512x1 to 1x512
+        x = F.avg_pool1d(x, x.shape[-1])
+        x = x.permute(0, 2, 1)
         x = self.fc1(x)
         return F.log_softmax(x, dim=2)
 
 
-model = Net(n_output=len(labels))
+model = M5(n_output=len(labels))
 model.to(device)
 print(model)
 
@@ -304,7 +303,9 @@ print("Number of parameters: %s" % n)
 #
 
 optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
-scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+scheduler = optim.lr_scheduler.StepLR(
+    optimizer, step_size=20, gamma=0.1
+)  # reduce the learning after 20 epochs by a factor of 10
 
 
 ######################################################################
@@ -321,11 +322,6 @@ scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 #
 
 
-def nll_loss(tensor, target):
-    # negative log-likelihood for a tensor of size (batch x 1 x n_output)
-    return F.nll_loss(tensor.squeeze(), target)
-
-
 def train(model, epoch, log_interval):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -334,7 +330,9 @@ def train(model, epoch, log_interval):
         target = target.to(device)
 
         output = model(data)
-        loss = nll_loss(output, target)
+
+        # negative log-likelihood for a tensor of size (batch x 1 x n_output)
+        loss = F.nll_loss(output.squeeze(), target)
 
         optimizer.zero_grad()
         loss.backward()
@@ -385,7 +383,7 @@ def test(model, epoch):
             pbar.update()
 
     print(
-        f"\nTest set: Accuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n"
+        f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n"
     )
 
 
@@ -412,12 +410,16 @@ with tqdm(total=n_epoch * (len(train_loader) + len(test_loader))) as pbar:
 
 waveform, sample_rate, utterance, *_ = train_set[-1]
 ipd.Audio(waveform.numpy(), rate=sample_rate)
+
+waveform = transform(waveform)
 output = model(waveform.unsqueeze(0))
 output = argmax(output).squeeze()
 print(f"Expected: {utterance}. Predicted: {labels[output]}.")
 
 waveform, sample_rate, utterance, *_ = test_set[-1]
 ipd.Audio(waveform.numpy(), rate=sample_rate)
+
+waveform = transform(waveform)
 output = model(waveform.unsqueeze(0))
 output = argmax(output).squeeze()
 print(f"Expected: {utterance}. Predicted: {labels[output]}.")
@@ -427,7 +429,7 @@ print(f"Expected: {utterance}. Predicted: {labels[output]}.")
 # Conclusion
 # ----------
 #
-# After one epoch, the network should be more than 65% accurate.
+# After two epochs, the network should be more than 70% accurate.
 #
 # In this tutorial, we used torchaudio to load a dataset and resample the
 # signal. We have then defined a neural network that we trained to
