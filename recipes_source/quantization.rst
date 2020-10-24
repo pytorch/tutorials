@@ -1,7 +1,7 @@
 Quantization Recipe
 =====================================
 
-This recipe demonstrates how to quantize a PyTorch model so it can be used on iOS and Android apps, or in other production . Follow the steps below on how to use four different methods to quantize different models.
+This recipe demonstrates how to quantize a PyTorch model so it can run with reduced size and faster inference speed with about the same accuracy as the original model. Quantization can be applied to both server and mobile model deployment, but it can be especially important or even critical on mobile, because a non-quantized model's size may exceed the limit that an iOS or Android app allows for, cause the deployment or OTA update to take too much time, and make the inference too slow for a good user experience.
 
 Introduction
 ------------
@@ -9,6 +9,9 @@ Introduction
 Quantization is a technique that converts 32-bit floating numbers in the model parameters to 8-bit integers. With quantization, the model size and memory footprint can be reduced to 1/4 of its original size, and the inference can be made about 2-4 times faster, while the accuracy stays about the same.
 
 There are overall three approaches or workflows to quantize a model: post training dynamic quantization, post training static quantization, and quantization aware training. But if the model you want to use already has a quantized version, you can use it directly without going through any of the three workflows above. For example, the `torchvision` library already includes quantized versions for models MobileNet v2, ResNet 18, ResNet 50, Inception v3, GoogleNet, among others. So we will make the last approach another workflow, albeit a simple one.
+
+.. note::
+    The quantization support is available for a limited set of operators. See `this <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/#device-and-operator-support>`_ for more information.
 
 Pre-requisites
 -----------------
@@ -78,7 +81,7 @@ The full documentation of the `quantize_dynamic` API call is `here <https://pyto
 
 This method converts both the weights and the activations to 8-bit integers beforehand so there won't be on-the-fly conversion on the activations during the inference, as the dynamic quantization does, hence improving the performance significantly.
 
-To apply static quantization which converts both the weights and the activations to 8-bit integers beforehand so there won't be on-the-fly conversion on the activations during the inference, run the following code:
+To apply static quantization on a model, run the following code:
 
 ::
 
@@ -90,12 +93,26 @@ To apply static quantization which converts both the weights and the activations
 
 After this, running `print_size_of_model(model_static_quantized)` shows the static quantized model is `3.98MB`.
 
-Notice that to make the model run on mobile devices which normally have arm architecture, you need to use the 'qnnpack' for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.
+A complete model definition and static quantization example is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
+
+.. note::
+  To make the model run on mobile devices which normally have arm architecture, you need to use `qnnpack` for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.
 
 4. Quantization Aware Training
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To apply quantization aware training, which inserts fake quantization to all the weights and activations during the model training process, use the following code snippet:
+Quantization aware training inserts fake quantization to all the weights and activations during the model training process and results in higher inference accuracy than the post-training quantization methods. It is typically used in CNN models.
+
+To enable a model for quantization aware traing, define in the `__init__` method of the model definition a `QuantStub` and a `DeQuantStub` to convert tensors from floating point to quantized type and vice versa:
+
+::
+
+    self.quant = torch.quantization.QuantStub()
+    self.dequant = torch.quantization.DeQuantStub()
+
+Then in the beginning and the end of the `forward` method of the model definition, call `x = self.quant(x)` and `x = self.dequant(x)`.
+
+To do a quantization aware training, use the following code snippet:
 
 ::
 
@@ -104,9 +121,11 @@ To apply quantization aware training, which inserts fake quantization to all the
     # quantization aware training goes here
     model_qat = torch.quantization.convert(model_qat.eval(), inplace=False)
 
-After a quantized model is generated using one of the steps above, before the model can be used to run on mobile devices, it needs to be further converted to the `TorchScript` format and then optimized for mobile apps. See the `Script and Optimize for Mobile recipe <script_optimized.html>`_ for details.
+For more detailed examples of the quantization aware training, see `here <https://pytorch.org/docs/master/quantization.html#quantization-aware-training>`_ and `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html#quantization-aware-training>`_.
 
-For a complete example of the quantization aware training, read this `tutorial <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
+A pre-trained quantized model can also be used for quantized aware transfer learning, using the same `quant` and `dequant` calls shown above. See `here <https://pytorch.org/tutorials/intermediate/quantized_transfer_learning_tutorial.html#part-1-training-a-custom-classifier-based-on-a-quantized-feature-extractor>`_ for a complete example.
+
+After a quantized model is generated using one of the steps above, before the model can be used to run on mobile devices, it needs to be further converted to the `TorchScript` format and then optimized for mobile apps. See the `Script and Optimize for Mobile recipe <script_optimized.html>`_ for details.
 
 Learn More
 -----------------

@@ -50,6 +50,9 @@ or
     torchscript_model = torch.jit.script(model_quantized)
 
 
+.. warning::
+    The `trace` method only scripts the code path executed during the trace, so it will not work properly for models that include decision branches. See the `Script and Optimize for Mobile Recipe <script_optimized.html>`_ for more details.
+
 Then optimize the TorchScript formatted model for mobile and save it:
 
 ::
