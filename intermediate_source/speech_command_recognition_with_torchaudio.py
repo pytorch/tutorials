@@ -10,6 +10,7 @@ installed by following the instructions on the website.
 
 """
 
+# Uncomment the following line to run in Google Colab
 # !pip install torch
 # !pip install torchaudio
 
@@ -61,43 +62,23 @@ class SubsetSC(SPEECHCOMMANDS):
     def __init__(self, subset: str = None):
         super().__init__("./", download=True)
 
-        if subset in ["training", "validation"]:
-            filepath = os.path.join(self._path, "validation_list.txt")
-            with open(filepath) as f:
-                validation_list = [
-                    os.path.join(self._path, line.strip()) for line in f.readlines()
-                ]
-
-        if subset in ["training", "testing"]:
-            filepath = os.path.join(self._path, "testing_list.txt")
-            with open(filepath) as f:
-                testing_list = [
-                    os.path.join(self._path, line.strip()) for line in f.readlines()
-                ]
+        def load_list(filename):
+            filepath = os.path.join(self._path, filename)
+            with open(filepath) as fileobj:
+                return [os.path.join(self._path, line.strip()) for line in fileobj]
 
         if subset == "validation":
-            walker = validation_list
+            self._walker = load_list("validation_list.txt")
         elif subset == "testing":
-            walker = testing_list
-        elif subset in ["training", None]:
-            walker = self._walker  # defined by SPEECHCOMMANDS parent class
-        else:
-            raise ValueError(
-                "When `subset` not None, it must take a value from {'training', 'validation', 'testing'}."
-            )
-
-        if subset == "training":
-            walker = filter(
-                lambda w: not (w in validation_list or w in testing_list), walker
-            )
-
-        self._walker = list(walker)
+            self._walker = load_list("testing_list.txt")
+        elif subset == "training":
+            excludes = load_list("validation_list.txt") + load_list("testing_list.txt")
+            self._walker = [w for w in self._walker if w not in excludes]
 
 
 train_set = SubsetSC("training")
 # valid_set = SubsetSC("validation")
 test_set = SubsetSC("testing")
-
 
 waveform, sample_rate, label, speaker_id, utterance_number = train_set[0]
 
@@ -111,8 +92,8 @@ waveform, sample_rate, label, speaker_id, utterance_number = train_set[0]
 print("Shape of waveform: {}".format(waveform.size()))
 print("Sample rate of waveform: {}".format(sample_rate))
 
-plt.figure()
-plt.plot(waveform.t().numpy())
+plt.figure();
+plt.plot(waveform.t().numpy());
 
 
 ######################################################################
@@ -147,31 +128,26 @@ ipd.Audio(waveform_last.numpy(), rate=sample_rate)
 # Formatting the Data
 # -------------------
 #
-# The dataset uses a single channel for audio. We do not need to down mix
-# the audio channels (which we could do for instance by either taking the
-# mean along the channel dimension, or simply keeping only one of the
-# channels).
+# This is a good place to apply transformations to the data. For the
+# waveform, we downsample the audio for faster processing without losing
+# too much of the classification power.
 #
-
-
-######################################################################
-# We downsample the audio for faster processing without losing too much of
-# the classification power.
+# We don’t need to apply other transformations here. It is common for some
+# datasets though to have to reduce the number of channels (say from
+# stereo to mono) by either taking the mean along the channel dimension,
+# or simply keeping only one of the channels. Since SpeechCommands uses a
+# single channel for audio, this is not needed here.
 #
 
 new_sample_rate = 8000
-transform = torchaudio.transforms.Resample(
-    orig_freq=sample_rate, new_freq=new_sample_rate
-)
+transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=new_sample_rate)
 transformed = transform(waveform)
 
 ipd.Audio(transformed.numpy(), rate=new_sample_rate)
 
 
 ######################################################################
-# To encode each word, we use a simple language model where we represent
-# each fo the 35 words by its corresponding position of the command in the
-# list above.
+# We are encoding each word using its index in the list of labels.
 #
 
 
@@ -183,18 +159,21 @@ encode("yes")
 
 
 ######################################################################
-# We now define a collate function that assembles a list of audio
-# recordings and a list of utterances into two batched tensors. In this
-# function, we also apply the resampling, and the encoding. The collate
-# function is used in the pytroch data loader that allow us to iterate
-# over a dataset by batches.
+# To turn a list of data point made of audio recordings and utterances
+# into two batched tensors for the model, we implement a collate function
+# which is used by the PyTorch DataLoader that allows us to iterate over a
+# dataset by batches. Please see `the
+# documentation <https://pytorch.org/docs/stable/data.html#working-with-collate-fn>`__
+# for more information about working with a collate function.
 #
-
+# In the collate function, we also apply the resampling, and the text
+# encoding.
+#
 
 def pad_sequence(batch):
     # Make all tensor in a batch the same length by padding with zeros
     batch = [item.t() for item in batch]
-    batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.0)
+    batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0.)
     return batch.permute(0, 2, 1)
 
 
@@ -202,14 +181,16 @@ def collate_fn(batch):
 
     # A data tuple has the form:
     # waveform, sample_rate, label, speaker_id, utterance_number
-    # and so we are only interested in item 0 and 2
 
-    # Apply transforms to waveforms
-    tensors = [transform(b[0]) for b in batch]
+    tensors, targets = [], []
+
+    # Apply transform and encode
+    for waveform, _, label, *_ in batch:
+        tensors += [transform(waveform)]
+        targets += [encode(label)]
+
+    # Group the list of tensors into a batched tensor
     tensors = pad_sequence(tensors)
-
-    # Apply transform to target utterance
-    targets = [encode(b[2]) for b in batch]
     targets = torch.stack(targets)
 
     return tensors, targets
@@ -217,14 +198,18 @@ def collate_fn(batch):
 
 batch_size = 128
 
-kwargs = (
-    {"num_workers": 1, "pin_memory": True} if device == "cuda" else {}
-)  # needed for using datasets on gpu
+if device == 'cuda':
+    num_workers = 1
+    pin_memory = True
+else:
+    num_workers = 0
+    pin_memory = False
+
 train_loader = torch.utils.data.DataLoader(
-    train_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, **kwargs
+    train_set, batch_size=batch_size, shuffle=True, collate_fn=collate_fn, num_workers=num_workers, pin_memory=pin_memory,
 )
 test_loader = torch.utils.data.DataLoader(
-    test_set, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, **kwargs
+    test_set, batch_size=batch_size, shuffle=False, collate_fn=collate_fn, num_workers=num_workers, pin_memory=pin_memory,
 )
 
 
@@ -255,13 +240,13 @@ class M5(nn.Module):
         self.conv2 = nn.Conv1d(n_channel, n_channel, 3)
         self.bn2 = nn.BatchNorm1d(n_channel)
         self.pool2 = nn.MaxPool1d(4)
-        self.conv3 = nn.Conv1d(n_channel, 2 * n_channel, 3)
-        self.bn3 = nn.BatchNorm1d(2 * n_channel)
+        self.conv3 = nn.Conv1d(n_channel, 2*n_channel, 3)
+        self.bn3 = nn.BatchNorm1d(2*n_channel)
         self.pool3 = nn.MaxPool1d(4)
-        self.conv4 = nn.Conv1d(2 * n_channel, 2 * n_channel, 3)
-        self.bn4 = nn.BatchNorm1d(2 * n_channel)
+        self.conv4 = nn.Conv1d(2*n_channel, 2*n_channel, 3)
+        self.bn4 = nn.BatchNorm1d(2*n_channel)
         self.pool4 = nn.MaxPool1d(4)
-        self.fc1 = nn.Linear(2 * n_channel, n_output)
+        self.fc1 = nn.Linear(2*n_channel, n_output)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -303,9 +288,7 @@ print("Number of parameters: %s" % n)
 #
 
 optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
-scheduler = optim.lr_scheduler.StepLR(
-    optimizer, step_size=20, gamma=0.1
-)  # reduce the learning after 20 epochs by a factor of 10
+scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # reduce the learning after 20 epochs by a factor of 10
 
 
 ######################################################################
@@ -340,11 +323,9 @@ def train(model, epoch, log_interval):
 
         # print training stats
         if batch_idx % log_interval == 0:
-            print(
-                f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss:.6f}"
-            )
+            print(f'Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss:.6f}')
 
-        if "pbar" in globals():
+        if 'pbar' in globals():
             pbar.update()
 
 
@@ -379,12 +360,10 @@ def test(model, epoch):
         pred = argmax(output)
         correct += number_of_correct(pred, target)
 
-        if "pbar" in globals():
-            pbar.update()
+        if 'pbar' in globals():
+          pbar.update()
 
-    print(
-        f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n"
-    )
+    print(f'\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n')
 
 
 ######################################################################
@@ -398,38 +377,60 @@ log_interval = 20
 n_epoch = 2
 
 with tqdm(total=n_epoch * (len(train_loader) + len(test_loader))) as pbar:
-    for epoch in range(1, n_epoch + 1):
+    for epoch in range(1, n_epoch+1):
         train(model, epoch, log_interval)
         test(model, epoch)
         scheduler.step()
 
 
 ######################################################################
-# Let’s try looking at one of the last words in the train and test set.
+# Let’s look at the last words in the train set, and see how the model did
+# on it.
 #
+
+def predict(waveform):
+    # Take a waveform and use the model to predict
+    waveform = transform(waveform)
+    output = model(waveform.unsqueeze(0))
+    output = argmax(output).squeeze()
+    output = labels[output]
+    return output
+
 
 waveform, sample_rate, utterance, *_ = train_set[-1]
 ipd.Audio(waveform.numpy(), rate=sample_rate)
 
-waveform = transform(waveform)
-output = model(waveform.unsqueeze(0))
-output = argmax(output).squeeze()
-print(f"Expected: {utterance}. Predicted: {labels[output]}.")
+print(f"Expected: {utterance}. Predicted: {predict(waveform)}.")
 
-waveform, sample_rate, utterance, *_ = test_set[-1]
-ipd.Audio(waveform.numpy(), rate=sample_rate)
 
-waveform = transform(waveform)
-output = model(waveform.unsqueeze(0))
-output = argmax(output).squeeze()
-print(f"Expected: {utterance}. Predicted: {labels[output]}.")
+######################################################################
+# Let’s find an example that isn’t classified correctly, if there is one.
+#
+
+for i, (waveform, sample_rate, utterance, *_) in enumerate(test_set):
+    output = predict(waveform)
+    if output != utterance:
+      ipd.Audio(waveform.numpy(), rate=sample_rate)
+      print(f"Data point #{i}. Expected: {utterance}. Predicted: {output}.")
+      break
+else:
+    print("All examples in this dataset were correctly classified!")
+    print("In this case, let's just look at the last data point")
+    ipd.Audio(waveform.numpy(), rate=sample_rate)
+    print(f"Data point #{i}. Expected: {utterance}. Predicted: {output}.")
+
+
+######################################################################
+# Feel free to try with one of your own recordings!
+#
 
 
 ######################################################################
 # Conclusion
 # ----------
 #
-# After two epochs, the network should be more than 70% accurate.
+# The network should be more than 70% accurate on the test set after 2
+# epochs, 80% after 14 epochs, and 85% after 21 epochs.
 #
 # In this tutorial, we used torchaudio to load a dataset and resample the
 # signal. We have then defined a neural network that we trained to
