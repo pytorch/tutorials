@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sequence-to-Sequence Modeling with nn.Transformer and TorchText — PyTorch Tutorials 1.6.0 documentation</title>
+<title>Sequence-to-Sequence Modeling with nn.Transformer and TorchText — PyTorch Tutorials 1.7.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
@@ -106,7 +106,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.6.0
+                  1.7.0
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -287,7 +287,6 @@ layer, which is followed by a log-Softmax function.</p>
         <span class="nb">super</span><span class="p">(</span><span class="n">TransformerModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">TransformerEncoder</span><span class="p">,</span> <span class="n">TransformerEncoderLayer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_type</span> <span class="o">=</span> <span class="s1">'Transformer'</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
         <span class="n">encoder_layers</span> <span class="o">=</span> <span class="n">TransformerEncoderLayer</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">nhead</span><span class="p">,</span> <span class="n">nhid</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span> <span class="o">=</span> <span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">encoder_layers</span><span class="p">,</span> <span class="n">nlayers</span><span class="p">)</span>
@@ -297,7 +296,7 @@ layer, which is followed by a log-Softmax function.</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_generate_square_subsequent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sz</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">generate_square_subsequent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sz</span><span class="p">):</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">mask</span>
@@ -308,15 +307,10 @@ layer, which is followed by a log-Softmax function.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">device</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_square_subsequent_mask</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="n">mask</span>
-
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">):</span>
         <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ninp</span><span class="p">)</span>
         <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 </pre></div>
@@ -417,7 +411,7 @@ with the <code class="docutils literal notranslate"><span class="pre">S</span></
 <span class="k">def</span> <span class="nf">get_batch</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
     <span class="n">seq_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">bptt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span>
 </pre></div>
 </div>
@@ -459,10 +453,13 @@ function to scale all the gradient together to prevent exploding.</p>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TEXT</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">bptt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">train_data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">)):</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">get_batch</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">bptt</span><span class="p">:</span>
+            <span class="n">src_mask</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">)</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">),</span> <span class="n">targets</span><span class="p">)</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="mf">0.5</span><span class="p">)</span>
@@ -486,10 +483,13 @@ function to scale all the gradient together to prevent exploding.</p>
     <span class="n">eval_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="c1"># Turn on the evaluation mode</span>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">TEXT</span><span class="o">.</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">bptt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">data_source</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bptt</span><span class="p">):</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">get_batch</span><span class="p">(</span><span class="n">data_source</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">bptt</span><span class="p">:</span>
+                <span class="n">src_mask</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">eval_model</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">)</span>
             <span class="n">output_flat</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ntokens</span><span class="p">)</span>
             <span class="n">total_loss</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output_flat</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
@@ -519,56 +519,56 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   200/ 2981 batches | lr 5.00 | ms/batch 29.42 | loss  8.08 | ppl  3226.91
-| epoch   1 |   400/ 2981 batches | lr 5.00 | ms/batch 28.48 | loss  6.81 | ppl   908.34
-| epoch   1 |   600/ 2981 batches | lr 5.00 | ms/batch 28.55 | loss  6.38 | ppl   588.93
-| epoch   1 |   800/ 2981 batches | lr 5.00 | ms/batch 28.53 | loss  6.24 | ppl   511.55
-| epoch   1 |  1000/ 2981 batches | lr 5.00 | ms/batch 29.26 | loss  6.12 | ppl   455.59
-| epoch   1 |  1200/ 2981 batches | lr 5.00 | ms/batch 39.14 | loss  6.09 | ppl   442.66
-| epoch   1 |  1400/ 2981 batches | lr 5.00 | ms/batch 36.04 | loss  6.05 | ppl   422.85
-| epoch   1 |  1600/ 2981 batches | lr 5.00 | ms/batch 28.52 | loss  6.05 | ppl   424.79
-| epoch   1 |  1800/ 2981 batches | lr 5.00 | ms/batch 28.49 | loss  5.95 | ppl   385.67
-| epoch   1 |  2000/ 2981 batches | lr 5.00 | ms/batch 28.50 | loss  5.96 | ppl   386.40
-| epoch   1 |  2200/ 2981 batches | lr 5.00 | ms/batch 28.52 | loss  5.84 | ppl   344.14
-| epoch   1 |  2400/ 2981 batches | lr 5.00 | ms/batch 28.47 | loss  5.89 | ppl   362.40
-| epoch   1 |  2600/ 2981 batches | lr 5.00 | ms/batch 28.39 | loss  5.90 | ppl   363.31
-| epoch   1 |  2800/ 2981 batches | lr 5.00 | ms/batch 28.47 | loss  5.80 | ppl   329.91
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   200/ 2981 batches | lr 5.00 | ms/batch 30.43 | loss  8.01 | ppl  3008.02
+| epoch   1 |   400/ 2981 batches | lr 5.00 | ms/batch 29.57 | loss  6.74 | ppl   848.42
+| epoch   1 |   600/ 2981 batches | lr 5.00 | ms/batch 29.64 | loss  6.34 | ppl   569.48
+| epoch   1 |   800/ 2981 batches | lr 5.00 | ms/batch 29.61 | loss  6.21 | ppl   499.90
+| epoch   1 |  1000/ 2981 batches | lr 5.00 | ms/batch 29.69 | loss  6.10 | ppl   445.60
+| epoch   1 |  1200/ 2981 batches | lr 5.00 | ms/batch 29.69 | loss  6.08 | ppl   436.98
+| epoch   1 |  1400/ 2981 batches | lr 5.00 | ms/batch 29.71 | loss  6.04 | ppl   418.77
+| epoch   1 |  1600/ 2981 batches | lr 5.00 | ms/batch 29.72 | loss  6.04 | ppl   421.65
+| epoch   1 |  1800/ 2981 batches | lr 5.00 | ms/batch 29.63 | loss  5.95 | ppl   385.08
+| epoch   1 |  2000/ 2981 batches | lr 5.00 | ms/batch 29.71 | loss  5.95 | ppl   382.80
+| epoch   1 |  2200/ 2981 batches | lr 5.00 | ms/batch 29.63 | loss  5.83 | ppl   342.06
+| epoch   1 |  2400/ 2981 batches | lr 5.00 | ms/batch 29.70 | loss  5.89 | ppl   362.22
+| epoch   1 |  2600/ 2981 batches | lr 5.00 | ms/batch 29.68 | loss  5.90 | ppl   364.30
+| epoch   1 |  2800/ 2981 batches | lr 5.00 | ms/batch 29.70 | loss  5.80 | ppl   328.82
 -----------------------------------------------------------------------------------------
-| end of epoch   1 | time: 92.34s | valid loss  5.76 | valid ppl   317.17
+| end of epoch   1 | time: 92.22s | valid loss  5.75 | valid ppl   315.17
 -----------------------------------------------------------------------------------------
-| epoch   2 |   200/ 2981 batches | lr 4.51 | ms/batch 28.69 | loss  5.80 | ppl   329.47
-| epoch   2 |   400/ 2981 batches | lr 4.51 | ms/batch 28.50 | loss  5.77 | ppl   320.95
-| epoch   2 |   600/ 2981 batches | lr 4.51 | ms/batch 28.56 | loss  5.60 | ppl   270.45
-| epoch   2 |   800/ 2981 batches | lr 4.51 | ms/batch 28.51 | loss  5.64 | ppl   280.44
-| epoch   2 |  1000/ 2981 batches | lr 4.51 | ms/batch 28.53 | loss  5.58 | ppl   264.31
-| epoch   2 |  1200/ 2981 batches | lr 4.51 | ms/batch 28.54 | loss  5.61 | ppl   272.58
-| epoch   2 |  1400/ 2981 batches | lr 4.51 | ms/batch 28.53 | loss  5.62 | ppl   276.05
-| epoch   2 |  1600/ 2981 batches | lr 4.51 | ms/batch 28.60 | loss  5.65 | ppl   284.86
-| epoch   2 |  1800/ 2981 batches | lr 4.51 | ms/batch 28.56 | loss  5.59 | ppl   267.60
-| epoch   2 |  2000/ 2981 batches | lr 4.51 | ms/batch 28.53 | loss  5.61 | ppl   274.12
-| epoch   2 |  2200/ 2981 batches | lr 4.51 | ms/batch 28.56 | loss  5.51 | ppl   246.43
-| epoch   2 |  2400/ 2981 batches | lr 4.51 | ms/batch 28.48 | loss  5.57 | ppl   263.23
-| epoch   2 |  2600/ 2981 batches | lr 4.51 | ms/batch 28.54 | loss  5.58 | ppl   265.08
-| epoch   2 |  2800/ 2981 batches | lr 4.51 | ms/batch 28.47 | loss  5.51 | ppl   246.02
+| epoch   2 |   200/ 2981 batches | lr 4.51 | ms/batch 29.73 | loss  5.79 | ppl   326.23
+| epoch   2 |   400/ 2981 batches | lr 4.51 | ms/batch 29.51 | loss  5.76 | ppl   318.35
+| epoch   2 |   600/ 2981 batches | lr 4.51 | ms/batch 29.42 | loss  5.59 | ppl   268.24
+| epoch   2 |   800/ 2981 batches | lr 4.51 | ms/batch 29.49 | loss  5.63 | ppl   279.27
+| epoch   2 |  1000/ 2981 batches | lr 4.51 | ms/batch 29.48 | loss  5.59 | ppl   266.64
+| epoch   2 |  1200/ 2981 batches | lr 4.51 | ms/batch 29.48 | loss  5.61 | ppl   273.01
+| epoch   2 |  1400/ 2981 batches | lr 4.51 | ms/batch 29.48 | loss  5.62 | ppl   275.76
+| epoch   2 |  1600/ 2981 batches | lr 4.51 | ms/batch 29.46 | loss  5.66 | ppl   286.80
+| epoch   2 |  1800/ 2981 batches | lr 4.51 | ms/batch 29.49 | loss  5.58 | ppl   265.57
+| epoch   2 |  2000/ 2981 batches | lr 4.51 | ms/batch 29.47 | loss  5.61 | ppl   273.73
+| epoch   2 |  2200/ 2981 batches | lr 4.51 | ms/batch 29.47 | loss  5.51 | ppl   247.49
+| epoch   2 |  2400/ 2981 batches | lr 4.51 | ms/batch 29.52 | loss  5.58 | ppl   264.29
+| epoch   2 |  2600/ 2981 batches | lr 4.51 | ms/batch 29.49 | loss  5.59 | ppl   267.76
+| epoch   2 |  2800/ 2981 batches | lr 4.51 | ms/batch 29.46 | loss  5.51 | ppl   247.03
 -----------------------------------------------------------------------------------------
-| end of epoch   2 | time: 88.49s | valid loss  5.61 | valid ppl   274.29
+| end of epoch   2 | time: 91.44s | valid loss  5.56 | valid ppl   259.50
 -----------------------------------------------------------------------------------------
-| epoch   3 |   200/ 2981 batches | lr 4.29 | ms/batch 28.68 | loss  5.54 | ppl   254.40
-| epoch   3 |   400/ 2981 batches | lr 4.29 | ms/batch 28.47 | loss  5.55 | ppl   257.05
-| epoch   3 |   600/ 2981 batches | lr 4.29 | ms/batch 28.51 | loss  5.36 | ppl   212.08
-| epoch   3 |   800/ 2981 batches | lr 4.29 | ms/batch 28.53 | loss  5.42 | ppl   225.82
-| epoch   3 |  1000/ 2981 batches | lr 4.29 | ms/batch 28.46 | loss  5.37 | ppl   215.78
-| epoch   3 |  1200/ 2981 batches | lr 4.29 | ms/batch 28.51 | loss  5.41 | ppl   223.88
-| epoch   3 |  1400/ 2981 batches | lr 4.29 | ms/batch 28.48 | loss  5.43 | ppl   227.71
-| epoch   3 |  1600/ 2981 batches | lr 4.29 | ms/batch 28.48 | loss  5.46 | ppl   236.22
-| epoch   3 |  1800/ 2981 batches | lr 4.29 | ms/batch 28.52 | loss  5.40 | ppl   221.77
-| epoch   3 |  2000/ 2981 batches | lr 4.29 | ms/batch 28.43 | loss  5.43 | ppl   227.65
-| epoch   3 |  2200/ 2981 batches | lr 4.29 | ms/batch 28.51 | loss  5.31 | ppl   202.34
-| epoch   3 |  2400/ 2981 batches | lr 4.29 | ms/batch 28.38 | loss  5.39 | ppl   218.59
-| epoch   3 |  2600/ 2981 batches | lr 4.29 | ms/batch 28.42 | loss  5.41 | ppl   223.90
-| epoch   3 |  2800/ 2981 batches | lr 4.29 | ms/batch 28.35 | loss  5.33 | ppl   207.46
+| epoch   3 |   200/ 2981 batches | lr 4.29 | ms/batch 29.62 | loss  5.53 | ppl   253.14
+| epoch   3 |   400/ 2981 batches | lr 4.29 | ms/batch 29.52 | loss  5.54 | ppl   255.19
+| epoch   3 |   600/ 2981 batches | lr 4.29 | ms/batch 29.54 | loss  5.36 | ppl   211.89
+| epoch   3 |   800/ 2981 batches | lr 4.29 | ms/batch 29.54 | loss  5.41 | ppl   223.80
+| epoch   3 |  1000/ 2981 batches | lr 4.29 | ms/batch 29.55 | loss  5.37 | ppl   215.73
+| epoch   3 |  1200/ 2981 batches | lr 4.29 | ms/batch 29.52 | loss  5.41 | ppl   223.75
+| epoch   3 |  1400/ 2981 batches | lr 4.29 | ms/batch 29.50 | loss  5.43 | ppl   228.44
+| epoch   3 |  1600/ 2981 batches | lr 4.29 | ms/batch 29.53 | loss  5.47 | ppl   238.36
+| epoch   3 |  1800/ 2981 batches | lr 4.29 | ms/batch 29.52 | loss  5.41 | ppl   222.86
+| epoch   3 |  2000/ 2981 batches | lr 4.29 | ms/batch 29.55 | loss  5.43 | ppl   228.73
+| epoch   3 |  2200/ 2981 batches | lr 4.29 | ms/batch 29.50 | loss  5.32 | ppl   204.27
+| epoch   3 |  2400/ 2981 batches | lr 4.29 | ms/batch 29.52 | loss  5.40 | ppl   221.36
+| epoch   3 |  2600/ 2981 batches | lr 4.29 | ms/batch 29.52 | loss  5.42 | ppl   225.95
+| epoch   3 |  2800/ 2981 batches | lr 4.29 | ms/batch 29.54 | loss  5.34 | ppl   208.49
 -----------------------------------------------------------------------------------------
-| end of epoch   3 | time: 88.31s | valid loss  5.60 | valid ppl   271.33
+| end of epoch   3 | time: 91.56s | valid loss  5.48 | valid ppl   240.46
 -----------------------------------------------------------------------------------------
 </pre></div>
 </div>
@@ -585,11 +585,11 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
-| End of training | test loss  5.51 | test ppl   245.94
+| End of training | test loss  5.38 | test ppl   218.10
 =========================================================================================
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  43.429 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  49.529 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-transformer-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/f53285338820248a7c04a947c5110f7b/transformer_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_tutorial.py</span></code></a></div>

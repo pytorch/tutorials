@@ -56,7 +56,7 @@ model from C++.
 
  .. code-block:: none
 
-    1.6.0
+    1.7.0
 
 
 Basics of PyTorch Model Authoring
@@ -102,11 +102,11 @@ Let’s examine a small example:
 
  .. code-block:: none
 
-    (tensor([[0.6577, 0.7287, 0.8876, 0.4796],
-            [0.7130, 0.8341, 0.7242, 0.8517],
-            [0.6251, 0.7798, 0.9437, 0.8257]]), tensor([[0.6577, 0.7287, 0.8876, 0.4796],
-            [0.7130, 0.8341, 0.7242, 0.8517],
-            [0.6251, 0.7798, 0.9437, 0.8257]]))
+    (tensor([[0.8611, 0.7937, 0.4701, 0.5575],
+            [0.8935, 0.5928, 0.9040, 0.9410],
+            [0.6618, 0.7839, 0.8724, 0.4179]]), tensor([[0.8611, 0.7937, 0.4701, 0.5575],
+            [0.8935, 0.5928, 0.9040, 0.9410],
+            [0.6618, 0.7839, 0.8724, 0.4179]]))
 
 
 So we’ve:
@@ -158,11 +158,11 @@ Let’s do something a little more interesting:
     MyCell(
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[0.6514, 0.8411, 0.9396, 0.3076],
-            [0.7245, 0.8781, 0.8534, 0.7449],
-            [0.7233, 0.7246, 0.9720, 0.6308]], grad_fn=<TanhBackward>), tensor([[0.6514, 0.8411, 0.9396, 0.3076],
-            [0.7245, 0.8781, 0.8534, 0.7449],
-            [0.7233, 0.7246, 0.9720, 0.6308]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.3148,  0.6891,  0.4627, -0.6949],
+            [ 0.7612,  0.3148,  0.3858, -0.0137],
+            [ 0.2239,  0.6711,  0.0222, -0.4635]], grad_fn=<TanhBackward>), tensor([[ 0.3148,  0.6891,  0.4627, -0.6949],
+            [ 0.7612,  0.3148,  0.3858, -0.0137],
+            [ 0.2239,  0.6711,  0.0222, -0.4635]], grad_fn=<TanhBackward>))
 
 
 We’ve redefined our module ``MyCell``, but this time we’ve added a
@@ -230,11 +230,11 @@ Now let’s examine said flexibility:
       (dg): MyDecisionGate()
       (linear): Linear(in_features=4, out_features=4, bias=True)
     )
-    (tensor([[0.6384, 0.6058, 0.8950, 0.7020],
-            [0.6488, 0.6329, 0.6741, 0.9155],
-            [0.4430, 0.0749, 0.8466, 0.8879]], grad_fn=<TanhBackward>), tensor([[0.6384, 0.6058, 0.8950, 0.7020],
-            [0.6488, 0.6329, 0.6741, 0.9155],
-            [0.4430, 0.0749, 0.8466, 0.8879]], grad_fn=<TanhBackward>))
+    (tensor([[0.3772, 0.6178, 0.5376, 0.1666],
+            [0.5649, 0.6204, 0.4931, 0.5502],
+            [0.5643, 0.4566, 0.3265, 0.5124]], grad_fn=<TanhBackward>), tensor([[0.3772, 0.6178, 0.5376, 0.1666],
+            [0.5649, 0.6204, 0.4931, 0.5502],
+            [0.5643, 0.4566, 0.3265, 0.5124]], grad_fn=<TanhBackward>))
 
 
 We’ve once again redefined our MyCell class, but here we’ve defined
@@ -336,14 +336,14 @@ examine the graph with the ``.graph`` property:
  .. code-block:: none
 
     graph(%self.1 : __torch__.MyCell,
-          %input : Float(3:4, 4:1),
-          %h : Float(3:4, 4:1)):
+          %input : Float(3:4, 4:1, requires_grad=0, device=cpu),
+          %h : Float(3:4, 4:1, requires_grad=0, device=cpu)):
       %19 : __torch__.torch.nn.modules.linear.Linear = prim::GetAttr[name="linear"](%self.1)
       %21 : Tensor = prim::CallMethod[name="forward"](%19, %input)
       %12 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %13 : Float(3:4, 4:1) = aten::add(%21, %h, %12) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %14 : Float(3:4, 4:1) = aten::tanh(%13) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
-      %15 : (Float(3:4, 4:1), Float(3:4, 4:1)) = prim::TupleConstruct(%14, %14)
+      %13 : Float(3:4, 4:1, requires_grad=1, device=cpu) = aten::add(%21, %h, %12) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %14 : Float(3:4, 4:1, requires_grad=1, device=cpu) = aten::tanh(%13) # /var/lib/jenkins/workspace/beginner_source/Intro_to_TorchScript_tutorial.py:188:0
+      %15 : (Float(3:4, 4:1, requires_grad=1, device=cpu), Float(3:4, 4:1, requires_grad=1, device=cpu)) = prim::TupleConstruct(%14, %14)
       return (%15)
 
 
@@ -414,18 +414,16 @@ the Python module:
 
  .. code-block:: none
 
-    (tensor([[ 0.6699,  0.6805, -0.3273,  0.7564],
-            [ 0.0903,  0.2862,  0.3600,  0.8739],
-            [ 0.6138,  0.1527, -0.5754,  0.7593]], grad_fn=<TanhBackward>), tensor([[ 0.6699,  0.6805, -0.3273,  0.7564],
-            [ 0.0903,  0.2862,  0.3600,  0.8739],
-            [ 0.6138,  0.1527, -0.5754,  0.7593]], grad_fn=<TanhBackward>))
-    (tensor([[ 0.6699,  0.6805, -0.3273,  0.7564],
-            [ 0.0903,  0.2862,  0.3600,  0.8739],
-            [ 0.6138,  0.1527, -0.5754,  0.7593]],
-           grad_fn=<DifferentiableGraphBackward>), tensor([[ 0.6699,  0.6805, -0.3273,  0.7564],
-            [ 0.0903,  0.2862,  0.3600,  0.8739],
-            [ 0.6138,  0.1527, -0.5754,  0.7593]],
-           grad_fn=<DifferentiableGraphBackward>))
+    (tensor([[ 0.1555,  0.7467,  0.7117,  0.8790],
+            [-0.4812,  0.5090,  0.2528,  0.4968],
+            [-0.3711,  0.3463,  0.7773,  0.1098]], grad_fn=<TanhBackward>), tensor([[ 0.1555,  0.7467,  0.7117,  0.8790],
+            [-0.4812,  0.5090,  0.2528,  0.4968],
+            [-0.3711,  0.3463,  0.7773,  0.1098]], grad_fn=<TanhBackward>))
+    (tensor([[ 0.1555,  0.7467,  0.7117,  0.8790],
+            [-0.4812,  0.5090,  0.2528,  0.4968],
+            [-0.3711,  0.3463,  0.7773,  0.1098]], grad_fn=<TanhBackward>), tensor([[ 0.1555,  0.7467,  0.7117,  0.8790],
+            [-0.4812,  0.5090,  0.2528,  0.4968],
+            [-0.3711,  0.3463,  0.7773,  0.1098]], grad_fn=<TanhBackward>))
 
 
 Using Scripting to Convert Modules
@@ -474,11 +472,9 @@ the control-flow-laden submodule. Let’s examine that now:
     def forward(self,
         input: Tensor,
         h: Tensor) -> Tuple[Tensor, Tensor]:
-      _0 = self.dg
-      _1 = (self.linear).forward(input, )
-      _2 = (_0).forward(_1, )
-      _3 = torch.tanh(torch.add(_1, h, alpha=1))
-      return (_3, _3)
+      _0 = (self.dg).forward((self.linear).forward(input, ), )
+      _1 = torch.tanh(torch.add(_0, h, alpha=1))
+      return (_1, _1)
 
 
 Looking at the ``.code`` output, we can see that the ``if-else`` branch
@@ -703,7 +699,7 @@ https://colab.research.google.com/drive/1HiICg6jRkBnr5hvK2-VnMi88Vi9pUzEJ
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.285 seconds)
+   **Total running time of the script:** ( 0 minutes  0.260 seconds)
 
 
 .. _sphx_glr_download_beginner_Intro_to_TorchScript_tutorial.py:
