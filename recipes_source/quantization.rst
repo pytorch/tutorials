@@ -51,7 +51,11 @@ To compare the size difference of a non-quantized MobileNet v2 model with its qu
         os.remove('tmp.pt')
 
     print_model_size(model)
+<<<<<<< HEAD
     print_model_size(model_quantized)
+=======
+    print_model_size(quantized_model)
+>>>>>>> master
 
 
 The outputs will be:
@@ -91,7 +95,11 @@ To apply static quantization on a model, run the following code:
     model_static_quantized = torch.quantization.prepare(model, inplace=False)
     model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
 
+<<<<<<< HEAD
 After this, running `print_model_size(model_static_quantized)` shows the static quantized model is `3.98MB`.
+=======
+After this, running `print_size_of_model(model_static_quantized)` shows the static quantized model is `3.98MB`.
+>>>>>>> master
 
 A complete model definition and static quantization example is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
