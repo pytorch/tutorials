@@ -19,3 +19,7 @@ Prototype Tutorials
 5. torchscript_freezing.py
 	   Model Freezing in TorchScript
 	   https://github.com/pytorch/tutorials/blob/master/prototype_source/torchscript_freezing.py
+
+6. vulkan_workflow.rst
+     Vulkan Backend User Workflow
+     https://pytorch.org/tutorials/intermediate/vulkan_workflow.html
