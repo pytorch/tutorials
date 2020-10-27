@@ -1,6 +1,6 @@
 """
-torchaudio Tutorial
-===================
+Audio I/O and Pre-Processing with torchaudio
+============================================
 
 PyTorch is an open source deep learning platform that provides a
 seamless path from research prototyping to production deployment with
@@ -10,15 +10,19 @@ Significant effort in solving machine learning problems goes into data
 preparation. ``torchaudio`` leverages PyTorch’s GPU support, and provides
 many tools to make data loading easy and more readable. In this
 tutorial, we will see how to load and preprocess data from a simple
-dataset.
+dataset. Please visit
+`Audio I/O and Pre-Processing with torchaudio <https://pytorch.org/tutorials/beginner/audio_preprocessing_tutorial.html>`__ to learn more.
 
 For this tutorial, please make sure the ``matplotlib`` package is
 installed for easier visualization.
 
 """
 
+# Uncomment the following line to run in Google Colab
+# !pip install torchaudio 
 import torch
 import torchaudio
+import requests
 import matplotlib.pyplot as plt
 
 ######################################################################
@@ -29,7 +33,13 @@ import matplotlib.pyplot as plt
 # call waveform the resulting raw audio signal.
 # 
 
-filename = "../_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+url = "https://pytorch.org/tutorials/_static/img/steam-train-whistle-daniel_simon-converted-from-mp3.wav"
+r = requests.get(url)
+
+with open('steam-train-whistle-daniel_simon-converted-from-mp3.wav', 'wb') as f:
+    f.write(r.content)
+
+filename = "steam-train-whistle-daniel_simon-converted-from-mp3.wav"
 waveform, sample_rate = torchaudio.load(filename)
 
 print("Shape of waveform: {}".format(waveform.size()))
@@ -207,7 +217,7 @@ plt.figure()
 plt.plot(mu_law_encoding_waveform[0,:].numpy())
 
 ######################################################################
-# You can see how the output fron ``torchaudio.functional.mu_law_encoding`` is the same as 
+# You can see how the output from ``torchaudio.functional.mu_law_encoding`` is the same as 
 # the output from ``torchaudio.transforms.MuLawEncoding``.
 #
 # Now let's experiment with a few of the other functionals and visualize their output. Taking our 
