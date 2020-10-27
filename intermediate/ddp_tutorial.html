@@ -243,6 +243,7 @@
 <div class="section" id="getting-started-with-distributed-data-parallel">
 <h1>Getting Started with Distributed Data Parallel<a class="headerlink" href="#getting-started-with-distributed-data-parallel" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://mrshenli.github.io/">Shen Li</a></p>
+<p><strong>Edited by</strong>: <a class="reference external" href="https://github.com/gunandrose4u">Joe Zhu</a></p>
 <p>Prerequisites:</p>
 <ul class="simple">
 <li><a class="reference external" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
@@ -300,6 +301,7 @@ for more generic distributed training support.</li>
 be found in
 <a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a>.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
@@ -311,12 +313,26 @@ be found in
 
 
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'12355'</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">'win32'</span><span class="p">:</span>
+        <span class="c1"># Distributed package only covers collective communications with Gloo</span>
+        <span class="c1"># backend and FileStore on Windows platform. Set init_method parameter</span>
+        <span class="c1"># in init_process_group to a local file.</span>
+        <span class="c1"># Example init_method="file:///f:/libtmp/some_file"</span>
+        <span class="n">init_method</span><span class="o">=</span><span class="s2">"file:///{your local file path}"</span>
 
-    <span class="c1"># initialize the process group</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+        <span class="c1"># initialize the process group</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span>
+            <span class="s2">"gloo"</span><span class="p">,</span>
+            <span class="n">init_method</span><span class="o">=</span><span class="n">init_method</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'12355'</span>
 
+        <span class="c1"># initialize the process group</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
