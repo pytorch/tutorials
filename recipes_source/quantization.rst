@@ -64,7 +64,7 @@ The outputs will be:
 2. Post Training Dynamic Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To apply dynamic quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn't convert the activations to int8 till just before performing the computation on the activations, simply call `torch.quantization.quantize_dynamic`:
+To apply Dynamic Quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn't convert the activations to int8 till just before performing the computation on the activations, simply call `torch.quantization.quantize_dynamic`:
 
 ::
 
@@ -73,6 +73,8 @@ To apply dynamic quantization, which converts all the weights in a model from 32
     )
 
 where `qconfig_spec` specifies the list of submodule names in `model` to apply quantization to.
+
+.. warning:: An important limitation of Dynamic Quantization, while it is the easiest workflow if you do not have a pre-trained quantized model ready for use, is that it currently only supports `nn.Linear` and `nn.LSTM` in `qconfig_spec`, meaning that you will have to use Static Quantization or Quantization Aware Training, to be discussed later, to quantize other modules such as `nn.Conv2d`.
 
 The full documentation of the `quantize_dynamic` API call is `here <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_. Three other examples of using the post training dynamic quantization are `the Bert example <https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html>`_, `an LSTM model example <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html#test-dynamic-quantization>`_, and another `demo LSTM example <https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html#do-the-quantization>`_.
 
