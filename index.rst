@@ -170,6 +170,14 @@ Welcome to PyTorch Tutorials
    :link: intermediate/reinforcement_q_learning.html
    :tags: Reinforcement-Learning
 
+.. customcarditem::
+   :header: Game-playing AI (Mario)
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :image: _static/img/mario.gif
+   :link: intermediate/mario_rl_tutorial.html
+   :tags: Reinforcement-Learning
+
+
 .. Deploying PyTorch Models in Production
 
 .. customcarditem::
@@ -366,7 +374,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
    :link: intermediate/rpc_async_execution.html
    :tags: Parallel-and-Distributed-Training
-   
+
 .. customcarditem::
    :header: Combining Distributed DataParallel with Distributed RPC Framework
    :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
@@ -489,6 +497,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/mario_rl_tutorial
 
 .. toctree::
    :maxdepth: 2
