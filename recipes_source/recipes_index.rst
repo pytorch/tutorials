@@ -1,6 +1,6 @@
 PyTorch Recipes
 ---------------------------------------------
-Recipes are bite-sized bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
+Recipes are bite-sized, actionable examples of how to use specific PyTorch features, different from our full-length tutorials.
 
 .. raw:: html
 
@@ -40,14 +40,14 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Defining a Neural Network
-   :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network the MNIST dataset.
+   :card_description: Learn how to use PyTorch's torch.nn package to create and define a neural network for the MNIST dataset.
    :image: ../_static/img/thumbnails/cropped/defining-a-network.PNG
    :link: ../recipes/recipes/defining_a_neural_network.html
    :tags: Basics
 
 .. customcarditem::
    :header: What is a state_dict in PyTorch
-   :card_description: Learn how state_dict objects, Python dictionaries, are used in saving or loading models from PyTorch.
+   :card_description: Learn how state_dict objects and Python dictionaries are used in saving or loading models from PyTorch.
    :image: ../_static/img/thumbnails/cropped/what-is-a-state-dict.PNG
    :link: ../recipes/recipes/what_is_state_dict.html
    :tags: Basics
@@ -90,7 +90,7 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
 
 .. customcarditem::
    :header: Zeroing out gradients in PyTorch
-   :card_description: Learn when you should zero out graidents and how doing so can help increase the accuracy of your model.
+   :card_description: Learn when you should zero out gradients and how doing so can help increase the accuracy of your model.
    :image: ../_static/img/thumbnails/cropped/zeroing-out-gradients.PNG
    :link: ../recipes/recipes/zeroing_out_gradients.html
    :tags: Basics
@@ -167,6 +167,66 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
 
+.. customcarditem::
+  :header: Fuse Modules recipe
+  :card_description: Learn how to fuse a list of PyTorch modules into a single module to reduce the model size before quantization.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/fuse.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Quantization for Mobile Recipe
+  :card_description: Learn how to reduce the model size and make it run faster without losing much on accuracy.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/quantization.html
+  :tags: Mobile,Quantization
+
+.. customcarditem::
+  :header: Script and Optimize for Mobile
+  :card_description: Learn how to convert the model to TorchScipt and (optional) optimize it for mobile apps.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/script_optimized.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Model Preparation for iOS Recipe
+  :card_description: Learn how to add the model in an iOS project and use PyTorch pod for iOS.
+  :image: ../_static/img/thumbnails/cropped/ios.png
+  :link: ../recipes/model_preparation_ios.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Model Preparation for Android Recipe
+  :card_description: Learn how to add the model in an Android project and use the PyTorch library for Android.
+  :image: ../_static/img/thumbnails/cropped/android.png
+  :link: ../recipes/model_preparation_android.html
+  :tags: Mobile
+
+.. customcarditem::
+   :header: Profiling PyTorch RPC-Based Workloads
+   :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
+   :image: ../_static/img/thumbnails/cropped/profile.png
+   :link: ../recipes/distributed_rpc_profiling.html
+   :tags: Production
+
+.. Automatic Mixed Precision
+
+.. customcarditem::
+   :header: Automatic Mixed Precision
+   :card_description: Use torch.cuda.amp to reduce runtime and save memory on NVIDIA GPUs.
+   :image: ../_static/img/thumbnails/cropped/amp.png
+   :link: ../recipes/recipes/amp_recipe.html
+   :tags: Model-Optimization
+
+.. Performance
+
+.. customcarditem::
+   :header: Performance Tuning Guide
+   :card_description: Tips for achieving optimal performance.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/tuning_guide.html
+   :tags: Model-Optimization
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -199,6 +259,9 @@ Recipes are bite-sized bite-sized, actionable examples of how to use specific Py
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
+   /recipes/recipes/amp_recipe
+   /recipes/recipes/tuning_guide
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
+   /recipes/distributed_rpc_profiling
    /recipes/distributed_rpc_profiling
