@@ -95,7 +95,7 @@ To apply static quantization on a model, run the following code:
 
 After this, running `print_model_size(model_static_quantized)` shows the static quantized model is `3.98MB`.
 
-A complete model definition and static quantization example is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
+A complete model definition and static quantization example is `here <https://pytorch.org/docs/stable/quantization.html#quantization-api-summary>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
 .. note::
   To make the model run on mobile devices which normally have arm architecture, you need to use `qnnpack` for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.
