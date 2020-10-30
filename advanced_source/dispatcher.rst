@@ -1,5 +1,5 @@
-Dispatcher in C++
-=================
+Registering a Dispatched Operator in C++
+========================================
 
 The dispatcher is an internal component of PyTorch which is responsible for
 figuring out what code should actually get run when you call a function like
