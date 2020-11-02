@@ -1,0 +1,44 @@
+name: PyTorch Tutorial Staging
+
+on:
+  push:
+    branches:
+        - seth-blitz
+  pull_request:
+    branches:
+        - seth-blitz
+
+jobs:
+  tutorial-staging:
+    runs-on: ubuntu-latest
+    env:
+        WEB_PATH: $web
+        ACCOUNT: ${{ secrets.stagingaccount }}
+        KEY: ${{ secrets.stagingkey }}
+        SOURCEDIR: .
+        BUILDDIR: _build/html
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+    -
+      # install requirements
+      name: install requirements
+      run: |
+          pip install --no-cache-dir -r requirements.txt
+    -
+      # build site
+      name: sphinx build
+      run: |
+          sphinx-build -D plot_gallery=0 -b html "$SOURCEDIR" "$BUILDDIR"
+    -
+      # clear old site
+      name: clear old site
+      run : |
+          az storage blob delete-batch --source $WEB_PATH --account-name $ACCOUNT --account-key $KEY
+    - 
+      # push to azure storage
+      name: push to azure storage
+      run : |
+          az storage blob upload-batch -s $BUILDDIR -d $WEB_PATH --account-name $ACCOUNT --account-key $KEY

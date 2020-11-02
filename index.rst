@@ -437,6 +437,7 @@ Additional Resources
    :includehidden:
    :caption: Learning PyTorch
 
+   beginner/quickstart_tutorial
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
