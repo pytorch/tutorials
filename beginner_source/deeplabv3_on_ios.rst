@@ -3,6 +3,8 @@ Image Segmentation DeepLabV3 on iOS
 
 **Author**: `Jeff Tang <https://github.com/jeffxtang>`_
 
+**Reviewed by**: `Jeremiah Chung <https://github.com/jeremiahschung>`_
+
 Introduction
 ------------
 
@@ -197,21 +199,13 @@ Now we are ready to complete the UI and the app to actually see the processed re
                     maxi = i; maxj = j; maxk = k;
                 }
             }
-            // showing color coding for person, dog, sheep and background
             int n = 3 * (maxj * width + maxk);
-            if (maxi == PERSON) { // red
-                buffer[n] = 255; buffer[n+1] = 0; buffer[n+2] = 0;
-            }
-            else if (maxi == DOG) { // green
-                buffer[n] = 0; buffer[n+1] = 255; buffer[n+2] = 0;
-            }
-            else if (maxi == SHEEP) { // blue
-                buffer[n] = 0; buffer[n+1] = 0; buffer[n+2] = 255;
-            }
-            else { // black
-                buffer[n] = 0; buffer[n+1] = 0; buffer[n+2] = 0;
-            }
-        }
+            // color coding for person (red), dog (green), sheep (blue)
+            // black color for background and other classes
+            buffer[n] = 0; buffer[n+1] = 0; buffer[n+2] = 0;
+            if (maxi == PERSON) buffer[n] = 255;
+            else if (maxi == DOG) buffer[n+1] = 255;
+            else if (maxi == SHEEP) buffer[n+2] = 255;        }
     }
 
 The implementation here is based on the understanding of the DeepLabV3 model, which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
