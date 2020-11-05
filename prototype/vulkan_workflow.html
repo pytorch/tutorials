@@ -416,18 +416,18 @@ USE_VULKAN=1 sh ./scripts/build_pytorch_android.sh
 </pre></div>
 </div>
 <p>Python script to save pretrained mobilenet_v2 to a file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>import torch
-import torchvision
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchvision</span>
 
-model = torchvision.models.mobilenet_v2(pretrained=True)
-model.eval()
-script_model = torch.jit.script(model)
-torch.jit.save(script_model, “mobilenet2.pt”)
+<span class="n">model</span> <span class="o">=</span> <span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">script_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">script_model</span><span class="p">,</span> <span class="s2">&quot;mobilenet2.pt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default model needs additional step that will optimize operators fusing</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.mobile_optimizer</span> <span class="kn">import</span> <span class="n">optimize_for_mobile</span>
-<span class="n">script_model_vulkan</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">script_model</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;Vulkan&#39;</span><span class="p">)</span>
+<span class="n">script_model_vulkan</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">script_model</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;vulkan&#39;</span><span class="p">)</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">script_model_vulkan</span><span class="p">,</span> <span class="s2">&quot;mobilenet2-vulkan.pt&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -438,12 +438,12 @@ torch.jit.save(script_model, “mobilenet2.pt”)
 </div>
 <div class="section" id="c-api">
 <h2>C++ API<a class="headerlink" href="#c-api" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>at::is_vulkan_available()
-auto tensor = at::rand({1, 2, 2, 3}, at::device(at::kCPU).dtype(at::kFloat));
-auto tensor_vulkan = t.vulkan();
-auto module = torch::jit::load(“$PATH”);
-auto tensor_output_vulkan = module.forward(inputs)
-auto tensor_output = tensor_output.cpu()
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">at</span><span class="p">::</span><span class="n">is_vulkan_available</span><span class="p">()</span>
+<span class="n">auto</span> <span class="n">tensor</span> <span class="o">=</span> <span class="n">at</span><span class="p">::</span><span class="n">rand</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">},</span> <span class="n">at</span><span class="p">::</span><span class="n">device</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kCPU</span><span class="p">)</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">at</span><span class="p">::</span><span class="n">kFloat</span><span class="p">));</span>
+<span class="n">auto</span> <span class="n">tensor_vulkan</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">vulkan</span><span class="p">();</span>
+<span class="n">auto</span> <span class="n">module</span> <span class="o">=</span> <span class="n">torch</span><span class="p">::</span><span class="n">jit</span><span class="p">::</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;$PATH&quot;</span><span class="p">);</span>
+<span class="n">auto</span> <span class="n">tensor_output_vulkan</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">toTensor</span><span class="p">();</span>
+<span class="n">auto</span> <span class="n">tensor_output</span> <span class="o">=</span> <span class="n">tensor_output</span><span class="o">.</span><span class="n">cpu</span><span class="p">();</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">at::is_vulkan_available()</span></code> function tries to initialize Vulkan backend and if Vulkan device is successfully found and context is created - it will return true, false otherwise.</p>
@@ -489,11 +489,11 @@ auto tensor_output = tensor_output.cpu()
 <div class="section" id="android-java-api">
 <h2>Android Java API<a class="headerlink" href="#android-java-api" title="Permalink to this headline">¶</a></h2>
 <p>For Android API to run model on Vulkan backend we have to specify this during model loading:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>import org.pytorch.Device;
-Module module = Module.load(“$PATH”, Device.VULKAN)
-FloatBuffer buffer = Tensor.allocateFloatBuffer(1 * 3 * 224 * 224);
-Tensor inputTensor = Tensor.fromBlob(buffer, new int[]{1, 3, 224, 224});
-Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">org.pytorch.Device</span><span class="p">;</span>
+<span class="n">Module</span> <span class="n">module</span> <span class="o">=</span> <span class="n">Module</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;$PATH&quot;</span><span class="p">,</span> <span class="n">Device</span><span class="o">.</span><span class="n">VULKAN</span><span class="p">)</span>
+<span class="n">FloatBuffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">Tensor</span><span class="o">.</span><span class="n">allocateFloatBuffer</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">224</span> <span class="o">*</span> <span class="mi">224</span><span class="p">);</span>
+<span class="n">Tensor</span> <span class="n">inputTensor</span> <span class="o">=</span> <span class="n">Tensor</span><span class="o">.</span><span class="n">fromBlob</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">new</span> <span class="nb">int</span><span class="p">[]{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">});</span>
+<span class="n">Tensor</span> <span class="n">outputTensor</span> <span class="o">=</span> <span class="n">mModule</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">IValue</span><span class="o">.</span><span class="n">from</span><span class="p">(</span><span class="n">inputTensor</span><span class="p">))</span><span class="o">.</span><span class="n">toTensor</span><span class="p">();</span>
 </pre></div>
 </div>
 <p>In this case, all inputs will be transparently copied from CPU to the Vulkan device, and model will be run on Vulkan device, the output will be copied transparently to CPU.</p>
