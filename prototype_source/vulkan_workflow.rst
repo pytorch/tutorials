@@ -185,7 +185,7 @@ For Android API to run model on Vulkan backend we have to specify this during mo
 ::
 
     import org.pytorch.Device;
-    Module module = Module.load(“$PATH”, Device.VULKAN)
+    Module module = Module.load("$PATH", Device.VULKAN)
     FloatBuffer buffer = Tensor.allocateFloatBuffer(1 * 3 * 224 * 224);
     Tensor inputTensor = Tensor.fromBlob(buffer, new int[]{1, 3, 224, 224});
     Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
