@@ -10,7 +10,7 @@ Introduction
 
 Semantic image segmentation is a computer vision task that uses semantic labels to mark specific regions of an input image. The PyTorch semantic image segmentation `DeepLabV3 model <https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101>`_ can be used to label image regions with `20 semantic classes <http://host.robots.ox.ac.uk:8080/pascal/VOC/voc2007/segexamples/index.html>`_ including, for example, bicycle, bus, car, dog, and person. Image segmentation models can be very useful in applications such as autonomous driving and scene understanding.
 
-In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorable pre-trained PyTorch models can run on iOS, and how to avoid pitfalls.
+In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorite pre-trained PyTorch models can run on iOS, and how to avoid pitfalls.
 
 .. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/ImageSegmentation>`_.
 
@@ -134,57 +134,61 @@ After the model loads in the previous step, let's verify that it works with expe
 .. code-block:: objective-c
 
     - (unsigned char*)predictImage:(void*)imageBuffer {
-        try {
-            // 1. the original deeplab.jpg is of size 400x400, and the model uses 21 classes for semantic segmentation
-            const int WIDTH = 400;
-            const int HEIGHT = 400;
-            const int CLASSNUM = 21;
+        // 1. the example deeplab.jpg size is size 400x400 and there are 21 semantic classes
+        const int WIDTH = 400;
+        const int HEIGHT = 400;
+        const int CLASSNUM = 21;
 
-            at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, WIDTH, HEIGHT}, at::kFloat);
-            torch::autograd::AutoGradMode guard(false);
-            at::AutoNonVariableTypeMode non_var_type_mode(true);
+        at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, WIDTH, HEIGHT}, at::kFloat);
+        torch::autograd::AutoGradMode guard(false);
+        at::AutoNonVariableTypeMode non_var_type_mode(true);
 
-            // 2. convert the input tensor to an NSMutableArray for debugging
-            float* floatInput = tensor.data_ptr<float>();
-            if (!floatInput) {
-                return nil;
-            }
-            NSMutableArray* inputs = [[NSMutableArray alloc] init];
-            for (int i = 0; i < 3 * WIDTH * HEIGHT; i++) {
-                [inputs addObject:@(floatInput[i])];
-            }
+        // 2. convert the input tensor to an NSMutableArray for debugging
+        float* floatInput = tensor.data_ptr<float>();
+        if (!floatInput) {
+            return nil;
+        }
+        NSMutableArray* inputs = [[NSMutableArray alloc] init];
+        for (int i = 0; i < 3 * WIDTH * HEIGHT; i++) {
+            [inputs addObject:@(floatInput[i])];
+        }
 
-            // 3. the output of the model is a dictionary of string and tensor, as
-            // specified at https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101
-            auto outputDict = _impl.forward({tensor}).toGenericDict();
+        // 3. the output of the model is a dictionary of string and tensor, as
+        // specified at https://pytorch.org/hub/pytorch_vision_deeplabv3_resnet101
+        auto outputDict = _impl.forward({tensor}).toGenericDict();
 
-            // 4. convert the output to another NSMutableArray for easy debugging
-            auto outputTensor = outputDict.at("out").toTensor();
-            float* floatBuffer = outputTensor.data_ptr<float>();
-            if (!floatBuffer) {
-              return nil;
-            }
-            NSMutableArray* results = [[NSMutableArray alloc] init];
-            for (int i = 0; i < CLASSNUM * WIDTH * HEIGHT; i++) {
-              [results addObject:@(floatBuffer[i])];
-            }
+        // 4. convert the output to another NSMutableArray for easy debugging
+        auto outputTensor = outputDict.at("out").toTensor();
+        float* floatBuffer = outputTensor.data_ptr<float>();
+        if (!floatBuffer) {
+          return nil;
+        }
+        NSMutableArray* results = [[NSMutableArray alloc] init];
+        for (int i = 0; i < CLASSNUM * WIDTH * HEIGHT; i++) {
+          [results addObject:@(floatBuffer[i])];
         }
 
 .. note::
-    The model output is a dictionary for the DeepLabV3 model, so we use `toGenericDict` to correctly extract the result. The model output may also be a single tensor or a tuple of tensors, among other things, for other models.
+    The model output is a dictionary for the DeepLabV3 model so we use `toGenericDict` to correctly extract the result. For other models, the model output may also be a single tensor or a tuple of tensors, among other things.
 
-With the code changes shown above, you can set breakpoints after the two for loops that populate `inputs` and `results`, and compare them with the model input and output data you see in Step 2 to see if they match. For the same inputs to the models running on iOS and Python, you should get the same outputs.
+With the code changes shown above, you can set breakpoints after the two for loops that populate `inputs` and `results` and compare them with the model input and output data you saw in Step 2 to see if they match. For the same inputs to the models running on iOS and Python, you should get the same outputs.
 
-All we have done so far is to confirm that the model of our interest can be scripted and run correctly in our iOS app as in Python. The steps involved so far for using a model in an iOS app take a lot, if not most, of our app development time, just like the data pre-processing task involved in a typical machine learning project does.
+All we have done so far is to confirm that the model of our interest can be scripted and run correctly in our iOS app as in Python. The steps we walked through so far for using a model in an iOS app consumes the bulk, if not most, of our app development time, similar to how data preprocessing is the heaviest lift for a typical machine learning project.
 
 5. Complete the UI, refactor, build and run the app
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now we are ready to complete the UI and the app to actually see the processed result as a new image. The UI for this app is also similar to that for HelloWorld, except that you do not need the `UITextView` to show the image classification result. Just change the button text and add another one to show back the original image after the segmentation result is shown. The output processing code should be like this, added to the end of the code snippet in Step 4 in `TorchModule.mm`:
+Now we are ready to complete the app and the UI to actually see the processed result as a new image. The output processing code should be like this, added to the end of the code snippet in Step 4 in `TorchModule.mm`:
 
 .. code-block:: objective-c
 
-    NSMutableData* data = [NSMutableData dataWithLength:sizeof(unsigned char) * 3 * width * height];
+    // see the 20 semantic classes link in Introduction
+    const int DOG = 12;
+    const int PERSON = 15;
+    const int SHEEP = 17;
+
+    NSMutableData* data = [NSMutableData dataWithLength:
+        sizeof(unsigned char) * 3 * WIDTH * HEIGHT];
     unsigned char* buffer = (unsigned char*)[data mutableBytes];
     // go through each element in the output of size [WIDTH, HEIGHT] and
     // set different color for different classnum
@@ -205,14 +209,20 @@ Now we are ready to complete the UI and the app to actually see the processed re
             buffer[n] = 0; buffer[n+1] = 0; buffer[n+2] = 0;
             if (maxi == PERSON) buffer[n] = 255;
             else if (maxi == DOG) buffer[n+1] = 255;
-            else if (maxi == SHEEP) buffer[n+2] = 255;        }
+            else if (maxi == SHEEP) buffer[n+2] = 255;
+        }
     }
+    return buffer;
 
-The implementation here is based on the understanding of the DeepLabV3 model, which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
+The implementation here is based on the understanding of the DeepLabV3 model which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
 
-After the output processing, you will also need to call a helper function `convertRGBBufferToUIImage` defined in the `UIImageHelper.mm` of the code repo to convert the RGB `buffer` to an `UIImage` instance to be shown on `UIImageView`.
+After the output processing, you will also need to call a helper function to convert the RGB `buffer` to an `UIImage` instance to be shown on `UIImageView`. You can refer to the example code `convertRGBBufferToUIImage` defined in `UIImageHelper.mm` in the code repo.
 
-Now just run the app on an iOS simulator or an actual iOS device, and you will see the following screens:
+The UI for this app is also similar to that for HelloWorld, except that you do not need the `UITextView` to show the image classification result. You can also add two buttons `Segment` and `Restart` as shown in the code repo to run the model inference and to show back the original image after the segmentation result is shown.
+
+The last step before we can run the app is to connect all the pieces together. Modify the `ViewController.swift` file to use the `predictImage`, which is refactored and changed to `segmentImage` in the repo, and helper functions you built as shown in the example code in the repo in `ViewController.swift`. Connect the buttons to the actions and you should be good to go.
+
+Now when you run the app on an iOS simulator or an actual iOS device, you will see the following screens:
 
 .. image:: /_static/img/deeplabv3_ios.png
    :width: 300 px

@@ -118,7 +118,7 @@ Then set a breakpoint at the line `finish()` and build and run the app. The app 
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the button click handler code in `MainActivity.java` with the following code:
+After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the code snippet between `line 50 <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java#L50>`_ and 73 in `MainActivity.java` with the following code:
 
 .. code-block:: java
 
@@ -139,20 +139,19 @@ After the model loads in the previous step, let's verify that it works with expe
     int height = bitmap.getHeight();
 
 .. note::
-    The model output is a dictionary for the DeepLabV3 model, so we use `toDictStringKey` to correctly extract the result. The model output may also be a single tensor or a tuple of tensors, among other things, for other models.
+    The model output is a dictionary for the DeepLabV3 model so we use `toDictStringKey` to correctly extract the result. For other models, the model output may also be a single tensor or a tuple of tensors, among other things.
 
-Set breakpoints at the lines after `final float[] inputs` and `final float[] outputs`, which populate the input tensor and output tensor data to float arrays for easy debugging. Run the app and when it stops at the breakpoints, compare the numbers in `inputs` and `outputs` with the model input and output data you see in Step 2 to see if they match. For the same inputs to the models running on Android and Python, you should get the same outputs.
+With the code changes shown above, you can set breakpoints after `final float[] inputs` and `final float[] outputs`, which populate the input tensor and output tensor data to float arrays for easy debugging. Run the app and when it stops at the breakpoints, compare the numbers in `inputs` and `outputs` with the model input and output data you see in Step 2 to see if they match. For the same inputs to the models running on Android and Python, you should get the same outputs.
 
 .. warning::
-    You may see different model outputs with the same image input when running on some Android emulator due to the emulator's floating point implementation. So it is best to test the app on a real Android device.
+    You may see different model outputs with the same image input when running on an Android emulator due to some Android emulator's floating point implementation issue. So it is best to test the app on a real Android device.
 
-All we have done so far is to confirm that the model of our interest can be scripted and run correctly in our Android app as in Python. The steps involved so far for using a model in an Android app take a lot, if not most, of our app development time, just like the data pre-processing task involved in a typical machine learning project usually does.
-
+All we have done so far is to confirm that the model of our interest can be scripted and run correctly in our Android app as in Python. The steps we walked through so far for using a model in an iOS app consumes the bulk, if not most, of our app development time, similar to how data preprocessing is the heaviest lift for a typical machine learning project.
 
 5. Complete the UI, refactor, build and run the app
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now we are ready to complete the UI and the app to actually see the processed result as a new image.  The UI for this app is also similar to that for HelloWorld, except that you do not need the `TextView` to show the image classification result. Just change the button text and add another one to show back the original image after the segmentation result is shown. The output processing code should be like this, added to the end of the code snippet in Step 4:
+Now we are ready to complete the app and the UI to actually see the processed result as a new image. The output processing code should be like this, added to the end of the code snippet in Step 4:
 
 .. code-block:: java
 
@@ -193,7 +192,7 @@ The constants used in the code above are defined in the beginning of the class `
     private static final int SHEEP = 17;
 
 
-The implementation here is based on the understanding of the DeepLabV3 model, which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
+The implementation here is based on the understanding of the DeepLabV3 model which outputs a tensor of size [21, width, height] for an input image of width*height. Each element in the width*height output array is a value between 0 and 20 (for a total of 21 semantic labels described in Introduction) and the value is used to set a specific color. Color coding of the segmentation here is based on the class with the highest probability, and you can extend the color coding for all classes in your own dataset.
 
 After the output processing, you will also need to call the code below to render the RGB `intValues` array to a bitmap instance `outputBitmap` before displaying it on an `ImageView`:
 
@@ -205,7 +204,9 @@ After the output processing, you will also need to call the code below to render
         outputBitmap.getWidth(), outputBitmap.getHeight());
     imageView.setImageBitmap(outputBitmap);
 
-Now build and run the app on an Android emulator or preferably an actual device, and you will see screens like the following:
+The UI for this app is also similar to that for HelloWorld, except that you do not need the `TextView` to show the image classification result. You can also add two buttons `Segment` and `Restart` as shown in the code repo to run the model inference and to show back the original image after the segmentation result is shown.
+
+Now when you run the app on an Android emulator or preferably an actual device, you will see screens like the following:
 
 .. image:: /_static/img/deeplabv3_android.png
    :width: 300 px
