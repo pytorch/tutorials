@@ -124,7 +124,7 @@ C++ API
     auto tensor = at::rand({1, 2, 2, 3}, at::device(at::kCPU).dtype(at::kFloat));
     auto tensor_vulkan = t.vulkan();
     auto module = torch::jit::load("$PATH");
-    auto tensor_output_vulkan = module.forward(inputs);
+    auto tensor_output_vulkan = module.forward(inputs).toTensor();
     auto tensor_output = tensor_output.cpu();
 
 ``at::is_vulkan_available()`` function tries to initialize Vulkan backend and if Vulkan device is successfully found and context is created - it will return true, false otherwise.
