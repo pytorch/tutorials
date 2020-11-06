@@ -120,7 +120,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
-   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
    :link: intermediate/speech_command_recognition_with_torchaudio.html
    :tags: Audio
 
