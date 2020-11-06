@@ -11,38 +11,32 @@ After the change, your runtime should automatically restart (which means
 information from executed cells disappear).
 
 First, let’s import the common torch packages such as
-``torchaudio <https://github.com/pytorch/audio>``\ \_ that can be
-installed by following the instructions on the website.
+`torchaudio <https://github.com/pytorch/audio>`__ that can be installed
+by following the instructions on the website.
 
 """
 
 # Uncomment the following line to run in Google Colab
 
-# GPU:
-# !pip install torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
-
 # CPU:
 # !pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
+# GPU:
+# !pip install torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+
 # For interactive demo at the end:
 # !pip install pydub
-
-import os
-from base64 import b64decode
-from io import BytesIO
-
-import IPython.display as ipd
-import matplotlib.pyplot as plt
-from tqdm.notebook import tqdm
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchaudio
-from google.colab import output as colab_output
-from pydub import AudioSegment
-from torchaudio.datasets import SPEECHCOMMANDS
+
+import matplotlib.pyplot as plt
+import IPython.display as ipd
+from tqdm.notebook import tqdm
+
 
 ######################################################################
 # Let’s check if a CUDA GPU is available and select our device. Running
@@ -58,21 +52,25 @@ print(device)
 # ---------------------
 #
 # We use torchaudio to download and represent the dataset. Here we use
-# SpeechCommands, which is a datasets of 35 commands spoken by different
-# people. The dataset ``SPEECHCOMMANDS`` is a ``torch.utils.data.Dataset``
-# version of the dataset.
+# `SpeechCommands <https://arxiv.org/abs/1804.03209>`__, which is a
+# datasets of 35 commands spoken by different people. The dataset
+# ``SPEECHCOMMANDS`` is a ``torch.utils.data.Dataset`` version of the
+# dataset. In this dataset, all audio files are about 1 second long (and
+# so about 16000 time frames long).
 #
-# The actual loading and formatting steps happen in the access function
-# ``__getitem__``. In ``__getitem__``, we use ``torchaudio.load()`` to
-# convert the audio files to tensors. ``torchaudio.load()`` returns a
-# tuple containing the newly created tensor along with the sampling
-# frequency of the audio file (16kHz for SpeechCommands). In this dataset,
-# all audio files are about 1 second long (and so about 16000 time frames
-# long).
+# The actual loading and formatting steps happen when a data point is
+# being accessed, and torchaudio takes care of converting the audio files
+# to tensors. If one wants to load an audio file directly instead,
+# ``torchaudio.load()`` can be used. It returns a tuple containing the
+# newly created tensor along with the sampling frequency of the audio file
+# (16kHz for SpeechCommands).
 #
-# Here we wrap it to split it into standard training, validation, testing
-# subsets.
+# Going back to the dataset, here we create a subclass that splits it into
+# standard training, validation, testing subsets.
 #
+
+from torchaudio.datasets import SPEECHCOMMANDS
+import os
 
 
 class SubsetSC(SPEECHCOMMANDS):
@@ -168,11 +166,22 @@ ipd.Audio(transformed.numpy(), rate=new_sample_rate)
 #
 
 
-def encode(word):
+def label_to_index(word):
+    # Return the position of the word in labels
     return torch.tensor(labels.index(word))
 
 
-encode("yes")
+def index_to_label(index):
+    # Return the word corresponding to the index in labels
+    # This is the inverse of label_to_index
+    return labels[index]
+
+
+word_start = "yes"
+index = label_to_index(word_start)
+word_recovered = index_to_label(index)
+
+print(word_start, "-->", index, "-->", word_recovered)
 
 
 ######################################################################
@@ -202,10 +211,10 @@ def collate_fn(batch):
 
     tensors, targets = [], []
 
-    # Gather in lists, and encode labels
+    # Gather in lists, and encode labels as indices
     for waveform, _, label, *_ in batch:
         tensors += [waveform]
-        targets += [encode(label)]
+        targets += [label_to_index(label)]
 
     # Group the list of tensors into a batched tensor
     tensors = pad_sequence(tensors)
@@ -250,8 +259,8 @@ test_loader = torch.utils.data.DataLoader(
 # the raw audio data. Usually more advanced transforms are applied to the
 # audio data, however CNNs can be used to accurately process the raw data.
 # The specific architecture is modeled after the M5 network architecture
-# described in ``this paper <https://arxiv.org/pdf/1610.00087.pdf>``\ \_.
-# An important aspect of models processing raw audio data is the receptive
+# described in `this paper <https://arxiv.org/pdf/1610.00087.pdf>`__. An
+# important aspect of models processing raw audio data is the receptive
 # field of their first layer’s filters. Our model’s first filter is length
 # 80 so when processing audio sampled at 8kHz the receptive field is
 # around 10ms (and at 4kHz, around 20 ms). This size is similar to speech
@@ -352,10 +361,12 @@ def train(model, epoch, log_interval):
 
         # print training stats
         if batch_idx % log_interval == 0:
-            print(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss:.6f}")
+            print(f"Train Epoch: {epoch} [{batch_idx * len(data)}/{len(train_loader.dataset)} ({100. * batch_idx / len(train_loader):.0f}%)]\tLoss: {loss.item():.6f}")
 
-        if "pbar" in globals() and "pbar_update" in globals():
-            pbar.update(pbar_update)
+        # update progress bar
+        pbar.update(pbar_update)
+        # record loss
+        losses.append(loss.item())
 
 
 ######################################################################
@@ -368,14 +379,14 @@ def train(model, epoch, log_interval):
 #
 
 
-def argmax(tensor):
-    # index of the max log-probability
-    return tensor.max(-1)[1]
-
-
 def number_of_correct(pred, target):
-    # compute number of correct predictions
+    # count number of correct predictions
     return pred.squeeze().eq(target).sum().item()
+
+
+def get_likely_index(tensor):
+    # find most likely label index for each element in the batch
+    return tensor.argmax(dim=-1)
 
 
 def test(model, epoch):
@@ -390,11 +401,11 @@ def test(model, epoch):
         data = transform(data)
         output = model(data)
 
-        pred = argmax(output)
+        pred = get_likely_index(output)
         correct += number_of_correct(pred, target)
 
-        if "pbar" in globals() and "pbar_update" in globals():
-            pbar.update(pbar_update)
+        # update progress bar
+        pbar.update(pbar_update)
 
     print(f"\nTest Epoch: {epoch}\tAccuracy: {correct}/{len(test_loader.dataset)} ({100. * correct / len(test_loader.dataset):.0f}%)\n")
 
@@ -408,16 +419,21 @@ def test(model, epoch):
 
 log_interval = 20
 n_epoch = 2
+
 pbar_update = 1 / (len(train_loader) + len(test_loader))
+losses = []
 
 # The transform needs to live on the same device as the model and the data.
 transform = transform.to(device)
-
 with tqdm(total=n_epoch) as pbar:
     for epoch in range(1, n_epoch + 1):
         train(model, epoch, log_interval)
         test(model, epoch)
         scheduler.step()
+
+# Let's plot the training loss versus the number of iteration.
+# plt.plot(losses);
+# plt.title("training loss");
 
 
 ######################################################################
@@ -427,14 +443,14 @@ with tqdm(total=n_epoch) as pbar:
 #
 
 
-def predict(waveform):
+def predict(tensor):
     # Use the model to predict the label of the waveform
-    waveform = waveform.to(device)
-    waveform = transform(waveform)
-    output = model(waveform.unsqueeze(0))
-    output = argmax(output).squeeze()
-    output = labels[output]
-    return output
+    tensor = tensor.to(device)
+    tensor = transform(tensor)
+    tensor = model(tensor.unsqueeze(0))
+    tensor = get_likely_index(tensor)
+    tensor = index_to_label(tensor.squeeze())
+    return tensor
 
 
 waveform, sample_rate, utterance, *_ = train_set[-1]
@@ -465,6 +481,11 @@ else:
 # For example, using Colab, say “Go” while executing the cell below. This
 # will record one second of audio and try to classify it.
 #
+
+from google.colab import output as colab_output
+from base64 import b64decode
+from io import BytesIO
+from pydub import AudioSegment
 
 
 RECORD = """
@@ -501,7 +522,6 @@ def record(seconds=1):
     fileformat = "wav"
     filename = f"_audio.{fileformat}"
     AudioSegment.from_file(BytesIO(b)).export(filename, format=fileformat)
-
     return torchaudio.load(filename)
 
 
