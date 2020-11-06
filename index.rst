@@ -121,7 +121,7 @@ Welcome to PyTorch Tutorials
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -467,7 +467,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
+   intermediate/speech_command_recognition_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
