@@ -168,6 +168,9 @@ After the model loads in the previous step, let's verify that it works with expe
           [results addObject:@(floatBuffer[i])];
         }
 
+        return nil;
+    }
+
 .. note::
     The model output is a dictionary for the DeepLabV3 model so we use `toGenericDict` to correctly extract the result. For other models, the model output may also be a single tensor or a tuple of tensors, among other things.
 
@@ -178,7 +181,7 @@ All we have done so far is to confirm that the model of our interest can be scri
 5. Complete the UI, refactor, build and run the app
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now we are ready to complete the app and the UI to actually see the processed result as a new image. The output processing code should be like this, added to the end of the code snippet in Step 4 in `TorchModule.mm`:
+Now we are ready to complete the app and the UI to actually see the processed result as a new image. The output processing code should be like this, added to the end of the code snippet in Step 4 in `TorchModule.mm` - remember to first remove the line `return nil;` temporarily put there to make the code build and run:
 
 .. code-block:: objective-c
 

@@ -113,7 +113,7 @@ Now let's add `deeplabv3_scripted.pt` and `deeplab.jpg` used in Step 2 to the An
       finish();
     }
 
-Then set a breakpoint at the line `finish()` and build and run the app. The app should stop at the breakpoint, meaning that the scripted model in Step 1 has been successfully loaded on Android.
+Then set a breakpoint at the line `finish()` and build and run the app. If the app doesn't stop at the breakpoint, it means  that the scripted model in Step 1 has been successfully loaded on Android.
 
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,8 +164,8 @@ Now we are ready to complete the app and the UI to actually see the processed re
             int maxi = 0, maxj = 0, maxk = 0;
             double maxnum = -100000.0;
             for (int i=0; i < CLASSNUM; i++) {
-                if (scores[i*(width*height) + j*width + k] > maxnum) {
-                    maxnum = scores[i*(width*height) + j*width + k];
+                if (outputs[i*(width*height) + j*width + k] > maxnum) {
+                    maxnum = outputs[i*(width*height) + j*width + k];
                     maxi = i; maxj = j; maxk= k;
                 }
             }
