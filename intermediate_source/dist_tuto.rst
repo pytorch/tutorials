@@ -46,7 +46,7 @@ the following template.
     import os
     import torch
     import torch.distributed as dist
-    from torch.multiprocessing import Process
+    import torch.multiprocessing as mp
 
     def run(rank, size):
         """ Distributed function to be implemented later. """
@@ -63,8 +63,9 @@ the following template.
     if __name__ == "__main__":
         size = 2
         processes = []
+         mp.set_start_method("spawn")
         for rank in range(size):
-            p = Process(target=init_process, args=(rank, size, run))
+            p = mp.Process(target=init_process, args=(rank, size, run))
             p.start()
             processes.append(p)
 
