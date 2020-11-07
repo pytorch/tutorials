@@ -16,22 +16,20 @@ by following the instructions on the website.
 
 """
 
-# Uncomment the following line to run in Google Colab
+# Uncomment the line corresponding to your "runtime type" to run in Google Colab
 
 # CPU:
-# !pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+# !pip install pydub torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # GPU:
-# !pip install torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
-
-# For interactive demo at the end:
-# !pip install pydub
+# !pip install pydub torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchaudio
+import sys
 
 import matplotlib.pyplot as plt
 import IPython.display as ipd
@@ -482,11 +480,6 @@ else:
 # will record one second of audio and try to classify it.
 #
 
-from google.colab import output as colab_output
-from base64 import b64decode
-from io import BytesIO
-from pydub import AudioSegment
-
 
 RECORD = """
 const sleep  = time => new Promise(resolve => setTimeout(resolve, time))
@@ -513,6 +506,12 @@ var record = time => new Promise(async resolve => {
 
 
 def record(seconds=1):
+
+    from google.colab import output as colab_output
+    from base64 import b64decode
+    from io import BytesIO
+    from pydub import AudioSegment
+
     display(ipd.Javascript(RECORD))
     print(f"Recording started for {seconds} seconds.")
     s = colab_output.eval_js("record(%d)" % (seconds * 1000))
@@ -523,6 +522,32 @@ def record(seconds=1):
     filename = f"_audio.{fileformat}"
     AudioSegment.from_file(BytesIO(b)).export(filename, format=fileformat)
     return torchaudio.load(filename)
+
+
+def record_noncolab(seconds=1):
+
+    import sounddevice
+    import scipy.io.wavfile
+
+    sample_rate = 44100
+
+    print(f"Recording started for {seconds} seconds.")
+    myrecording = sounddevice.rec(
+        int(seconds * sample_rate), samplerate=sample_rate, channels=1
+    )
+    sounddevice.wait()
+    print("Recording ended.")
+
+    filename = "_audio.wav"
+    scipy.io.wavfile.write(filename, sample_rate, myrecording)
+    return torchaudio.load(filename)
+
+
+# Detect whether notebook runs in google colab
+if "google.colab" in sys.modules:
+    record = record_colab
+else:
+    record = record_noncolab
 
 
 waveform, sample_rate = record()
