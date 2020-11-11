@@ -6,7 +6,6 @@ All the tutorials are now presented as sphinx style documentation at:
 ## [https://pytorch.org/tutorials](https://pytorch.org/tutorials)
 
 
-
 # Contributing
 
 We use sphinx-gallery's [notebook styled examples](https://sphinx-gallery.github.io/stable/tutorials/index.html) to create the tutorials. Syntax is very simple. In essence, you write a slightly well formatted python file and it shows up as documentation page.
@@ -18,6 +17,8 @@ Here's how to create a new tutorial or recipe:
 3. For Tutorials (except if it is a prototype feature), create a thumbnail in the [index.rst file](https://github.com/pytorch/tutorials/blob/master/index.rst) using a command like `.. customcarditem:: beginner/your_tutorial.html`. For Recipes, create a thumbnail in the [recipes_index.rst](https://github.com/pytorch/tutorials/blob/master/recipes_source/recipes_index.rst)
 
 In case you prefer to write your tutorial in jupyter, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to python file. After conversion and addition to the project, please make sure the sections headings etc are in logical order.
+
+See the (CONTRIBUTION)[CONTRIBUTION.md] file to submit your changes a a pull request.
 
 ## Building
 
