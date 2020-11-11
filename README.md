@@ -30,3 +30,7 @@ See the [CONTRIBUTION](CONTRIBUTION.md) file to submit your changes a a pull req
 - You can skip the computationally intensive graph generation by running `make html-noplot` to build basic html documentation to `_build/html`. This way, you can quickly preview your tutorial.
 
 > If you get **ModuleNotFoundError: No module named 'pytorch_sphinx_theme' make: *** [html-noplot] Error 2**, from /tutorials/src/pytorch-sphinx-theme run `python setup.py install`. 
+
+## License
+
+PyTorch is a BSD-style licensed, as found in the [LICENSE](LICENSE) file.
