@@ -18,7 +18,7 @@ Here's how to create a new tutorial or recipe:
 
 In case you prefer to write your tutorial in jupyter, you can use [this script](https://gist.github.com/chsasank/7218ca16f8d022e02a9c0deb94a310fe) to convert the notebook to python file. After conversion and addition to the project, please make sure the sections headings etc are in logical order.
 
-See the (CONTRIBUTION)[CONTRIBUTION.md] file to submit your changes a a pull request.
+See the [CONTRIBUTION](CONTRIBUTION.md) file to submit your changes a a pull request.
 
 ## Building
 
