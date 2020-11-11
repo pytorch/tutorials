@@ -10,10 +10,10 @@ Deep Learning with PyTorch: A 60 Minute Blitz
 
 What is PyTorch?
 ~~~~~~~~~~~~~~~~~~~~~
-PyTorch is a Python-based scientific computing package for two broad purposes:
+PyTorch is a Python-based scientific computing package serving two broad purposes:
 
--  A replacement for NumPy to use the power of GPUs.
--  A deep learning research platform that provides maximum flexibility and speed
+-  A replacement for NumPy to use the power of GPUs and other accelerators.
+-  An automatic differentiation library that is useful to implement neural networks.
 
 Goal of this tutorial:
 ~~~~~~~~~~~~~~~~~~~~~~~~
