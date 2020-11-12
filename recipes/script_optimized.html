@@ -381,7 +381,9 @@
 </pre></div>
 </div>
 <p>But if a model has some flow control, then <cite>trace</cite> won’t correctly record all the possible traces. Take some code snippet of an example model definition from <a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">here</a> for example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyDecisionGate</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">class</span> <span class="nc">MyDecisionGate</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">x</span>
@@ -394,17 +396,12 @@
 </pre></div>
 </div>
 <p>The code above will output:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can&#39;&#39;t record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can&#39;&#39;t record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
-if x.sum() &gt; 0:
+  if x.sum() &gt; 0:
 def forward(self,
-    input: Tensor,
-    h: Tensor) -&gt; Tuple[Tensor, Tensor]:
-  _0 = self.dg
-  _1 = (self.linear).forward(input, )
-  _2 = (_0).forward(_1, )
-  _3 = torch.tanh(torch.add(_1, h, alpha=1))
-  return (_3, _3)
+    x: Tensor) -&gt; Tensor:
+  return x
 </pre></div>
 </div>
 <p>Note that “the trace might not generalize to other inputs” warning above means that if the model has any kind of data-dependent control flow, <cite>trace</cite> is not the right answer. But if we replace the last two lines of the Python code snippet above (before the code output) with:</p>
@@ -412,7 +409,7 @@ def forward(self,
 <span class="nb">print</span><span class="p">(</span><span class="n">scripted_cell</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The output will be covering all possible inputs, thus generalizing to other inputs:</p>
+<p>The scripted model as shown by the <cite>print</cite> result below will be covering all possible inputs, thus generalizing to other inputs:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
   <span class="n">_0</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">gt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="mi">0</span><span class="p">))</span>

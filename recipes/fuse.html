@@ -394,6 +394,7 @@
 <h3>2. Generate Two Models with and without <cite>fuse_modules</cite><a class="headerlink" href="#generate-two-models-with-and-without-fuse-modules" title="Permalink to this headline">¶</a></h3>
 <p>Add the following code below the model definition above and run the script:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">AnnotatedConvBnReLUModel</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">prepare_save</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fused</span><span class="p">):</span>
     <span class="n">model</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qconfig</span><span class="p">(</span><span class="s1">&#39;qnnpack&#39;</span><span class="p">)</span>
@@ -404,11 +405,12 @@
     <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">torchscript_model_optimized</span><span class="p">,</span> <span class="s2">&quot;model.pt&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">fused</span> <span class="k">else</span> <span class="s2">&quot;model_fused.pt&quot;</span><span class="p">)</span>
 
 <span class="n">prepare_save</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-<span class="n">model_fused</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">[[</span><span class="s1">&#39;bn&#39;</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">]],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">prepare_save</span><span class="p">(</span><span class="n">model_fused</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AnnotatedConvBnReLUModel</span><span class="p">()</span>
+<span class="n">model_fused</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">fuse_modules</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">[[</span><span class="s1">&#39;bn&#39;</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">]],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model_fused</span><span class="p">)</span>
+
+<span class="n">prepare_save</span><span class="p">(</span><span class="n">model_fused</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The graphs of the original model and its fused version will be printed as follows:</p>

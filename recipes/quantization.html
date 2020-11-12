@@ -389,7 +389,7 @@
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;tmp.pt&#39;</span><span class="p">)</span>
 
 <span class="n">print_model_size</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="n">print_model_size</span><span class="p">(</span><span class="n">quantized_model</span><span class="p">)</span>
+<span class="n">print_model_size</span><span class="p">(</span><span class="n">model_quantized</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The outputs will be:</p>
@@ -400,13 +400,17 @@
 </div>
 <div class="section" id="post-training-dynamic-quantization">
 <h3>2. Post Training Dynamic Quantization<a class="headerlink" href="#post-training-dynamic-quantization" title="Permalink to this headline">¶</a></h3>
-<p>To apply dynamic quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn’t convert the activations to int8 till just before performing the computation on the activations, simply call <cite>torch.quantization.quantize_dynamic</cite>:</p>
+<p>To apply Dynamic Quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn’t convert the activations to int8 till just before performing the computation on the activations, simply call <cite>torch.quantization.quantize_dynamic</cite>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_dynamic_quantized</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">quantize_dynamic</span><span class="p">(</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">qconfig_spec</span><span class="o">=</span><span class="p">{</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">},</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">qint8</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 <p>where <cite>qconfig_spec</cite> specifies the list of submodule names in <cite>model</cite> to apply quantization to.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">An important limitation of Dynamic Quantization, while it is the easiest workflow if you do not have a pre-trained quantized model ready for use, is that it currently only supports <cite>nn.Linear</cite> and <cite>nn.LSTM</cite> in <cite>qconfig_spec</cite>, meaning that you will have to use Static Quantization or Quantization Aware Training, to be discussed later, to quantize other modules such as <cite>nn.Conv2d</cite>.</p>
+</div>
 <p>The full documentation of the <cite>quantize_dynamic</cite> API call is <a class="reference external" href="https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic">here</a>. Three other examples of using the post training dynamic quantization are <a class="reference external" href="https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html">the Bert example</a>, <a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html#test-dynamic-quantization">an LSTM model example</a>, and another <a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html#do-the-quantization">demo LSTM example</a>.</p>
 </div>
 <div class="section" id="post-training-static-quantization">
@@ -420,8 +424,8 @@
 <span class="n">model_static_quantized</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model_static_quantized</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>After this, running <cite>print_size_of_model(model_static_quantized)</cite> shows the static quantized model is <cite>3.98MB</cite>.</p>
-<p>A complete model definition and static quantization example is <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">here</a>. A dedicated static quantization tutorial is <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">here</a>.</p>
+<p>After this, running <cite>print_model_size(model_static_quantized)</cite> shows the static quantized model is <cite>3.98MB</cite>.</p>
+<p>A complete model definition and static quantization example is <a class="reference external" href="https://pytorch.org/docs/stable/quantization.html#quantization-api-summary">here</a>. A dedicated static quantization tutorial is <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">here</a>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">To make the model run on mobile devices which normally have arm architecture, you need to use <cite>qnnpack</cite> for <cite>backend</cite>; to run the model on computer with x86 architecture, use <cite>fbgemm</cite>.</p>
