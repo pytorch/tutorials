@@ -54,7 +54,7 @@ device = torch.device("cpu")
 # The above line disables TensorFloat32. This a feature that allows
 # networks to run at a much faster speed while sacrificing precision.
 # Although TensorFloat32 works well on most real models, for our toy model
-# in this tutorial, the sacrificed precision causes precision issue.
+# in this tutorial, the sacrificed precision causes convergence issue.
 # For more information, see:
 # https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices
 
