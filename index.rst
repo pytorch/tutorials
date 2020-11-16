@@ -467,7 +467,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
+   intermediate/speech_command_recognition
    
 
 .. toctree::
