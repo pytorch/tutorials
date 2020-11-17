@@ -18,7 +18,15 @@ import torch
 
 dtype = torch.float
 device = torch.device("cpu")
-# device = torch.device("cuda:0") # Uncomment this to run on GPU
+# device = torch.device("cuda:0")  # Uncomment this to run on GPU
+# torch.backends.cuda.matmul.allow_tf32 = False  # Uncomment this to run on GPU
+
+# The above line disables TensorFloat32. This a feature that allows
+# networks to run at a much faster speed while sacrificing precision.
+# Although TensorFloat32 works well on most real models, for our toy model
+# in this tutorial, the sacrificed precision causes convergence issue.
+# For more information, see:
+# https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices
 
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.
