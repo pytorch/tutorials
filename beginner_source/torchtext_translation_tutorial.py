@@ -35,8 +35,8 @@ By the end of this tutorial, you will be able to preprocess sentences into tenso
 #
 # ::
 #
-#   python -m spacy download en
-#   python -m spacy download de
+#    python -m spacy download en
+#    python -m spacy download de
 
 import torchtext
 import torch
@@ -395,7 +395,7 @@ import time
 
 
 def train(model: nn.Module,
-          iterator,
+          iterator: torch.utils.data.DataLoader,
           optimizer: optim.Optimizer,
           criterion: nn.Module,
           clip: float):
@@ -428,7 +428,7 @@ def train(model: nn.Module,
 
 
 def evaluate(model: nn.Module,
-             iterator,
+             iterator: torch.utils.data.DataLoader,
              criterion: nn.Module):
 
     model.eval()
