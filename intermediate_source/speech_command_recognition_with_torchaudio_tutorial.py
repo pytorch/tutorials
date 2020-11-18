@@ -33,7 +33,8 @@ import sys
 
 import matplotlib.pyplot as plt
 import IPython.display as ipd
-from tqdm.notebook import tqdm
+
+from tqdm import tqdm
 
 
 ######################################################################
