@@ -482,7 +482,7 @@ else:
 #
 
 
-def record(seconds=1):
+def record_colab(seconds=1):
 
     from google.colab import output as colab_output
     from base64 import b64decode
@@ -525,11 +525,35 @@ def record(seconds=1):
     return torchaudio.load(filename)
 
 
+def record_noncolab(seconds=1):
+
+    import sounddevice
+    import scipy.io.wavfile
+
+    sample_rate = 44100
+
+    print(f"Recording started for {seconds} seconds.")
+    myrecording = sounddevice.rec(
+        int(seconds * sample_rate), samplerate=sample_rate, channels=1
+    )
+    sounddevice.wait()
+    print("Recording ended.")
+
+    filename = "_audio.wav"
+    scipy.io.wavfile.write(filename, sample_rate, myrecording)
+    return torchaudio.load(filename)
+
+
 # Detect whether notebook runs in google colab
 if "google.colab" in sys.modules:
-    waveform, sample_rate = record()
-    print(f"Predicted: {predict(waveform)}.")
-    ipd.Audio(waveform.numpy(), rate=sample_rate)
+    record = record_colab
+else:
+    record = record_noncolab
+
+
+waveform, sample_rate = record()
+print(f"Predicted: {predict(waveform)}.")
+ipd.Audio(waveform.numpy(), rate=sample_rate)
 
 
 ######################################################################
