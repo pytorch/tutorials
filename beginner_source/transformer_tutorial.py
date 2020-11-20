@@ -157,9 +157,9 @@ vocab = build_vocab_from_iterator(map(tokenizer,
                                                    encoding="utf8"))))
 
 def data_process(raw_text_iter):
-  data_ = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                        dtype=torch.long) for item in raw_text_iter]
-  return torch.cat(tuple(filter(lambda t: t.numel() > 0, data_)))
+  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                       dtype=torch.long) for item in raw_text_iter]
+  return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
 train_data = data_process(iter(io.open(train_filepath)))
 val_data = data_process(iter(io.open(valid_filepath)))
