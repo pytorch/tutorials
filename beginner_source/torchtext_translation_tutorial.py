@@ -68,22 +68,20 @@ def build_vocab(filepath, tokenizer):
 de_vocab = build_vocab(train_filepaths[0], de_tokenizer)
 en_vocab = build_vocab(train_filepaths[1], en_tokenizer)
 
-def data_process(raw_de_iter, raw_en_iter):
-  data_ = []
+def data_process(filepaths):
+  raw_de_iter, raw_en_iter = iter(io.open(filepaths[0])), iter(io.open(filepaths[1]))
+  data = []
   for (raw_de, raw_en) in zip(raw_de_iter, raw_en_iter):
     de_tensor_ = torch.tensor([de_vocab[token] for token in de_tokenizer(raw_de)],
                             dtype=torch.long)
     en_tensor_ = torch.tensor([en_vocab[token] for token in en_tokenizer(raw_en)],
                             dtype=torch.long)
-    data_.append((de_tensor_, en_tensor_))
-  return data_
+    data.append((de_tensor_, en_tensor_))
+  return data
 
-train_data = data_process(iter(io.open(train_filepaths[0])),
-                          iter(io.open(train_filepaths[1])))
-val_data = data_process(iter(io.open(val_filepaths[0])),
-                        iter(io.open(val_filepaths[1])))
-test_data = data_process(iter(io.open(test_filepaths[0])),
-                         iter(io.open(test_filepaths[1])))
+train_data = data_process(train_filepaths)
+val_data = data_process(val_filepaths)
+test_data = data_process(test_filepaths)
 
 ######################################################################
 # ``DataLoader``
