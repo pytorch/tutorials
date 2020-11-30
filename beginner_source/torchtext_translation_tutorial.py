@@ -10,7 +10,7 @@ into English.
 It is based off of
 `this tutorial <https://github.com/bentrevett/pytorch-seq2seq/blob/master/3%20-%20Neural%20Machine%20Translation%20by%20Jointly%20Learning%20to%20Align%20and%20Translate.ipynb>`__
 from PyTorch community member `Ben Trevett <https://github.com/bentrevett>`__
-with Ben's permission. We update the tutorials by removing some legecy code.
+with Ben's permission. We update the tutorials by removing some legacy code.
 
 By the end of this tutorial, you will be able to preprocess sentences into tensors for NLP modeling and use `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__ for training and validing the model.
 """
