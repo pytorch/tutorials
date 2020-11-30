@@ -12,7 +12,7 @@ Semantic image segmentation is a computer vision task that uses semantic labels 
 
 In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorite pre-trained PyTorch models can run on iOS, and how to avoid pitfalls.
 
-.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/ImageSegmentation>`_.
+.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 Learning Objectives
 -------------------
@@ -236,7 +236,7 @@ Now when you run the app on an iOS simulator or an actual iOS device, you will s
 Recap
 --------
 
-In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repo is available `here <https://github.com/pytorch/ios-demo-app/ImageSegmentation>`_.
+In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repo is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 More advanced topics such as quantization and using models via transfer learning or of your own on iOS will be covered soon in future demo apps and tutorials.
 
