@@ -43,8 +43,8 @@ import torch.autograd.profiler as profiler
 # show up under its corresponding label.
 #
 #
-# Note that this incurs some overhead, and is best used only while
-# investigating the trace. Remove it if you are benchmarking runtimes.
+# Note that using Profiler incurs some overhead, and is best used only for investigating
+# code. Remember to remove it if you are benchmarking runtimes.
 #
 
 class MyModule(nn.Module):
