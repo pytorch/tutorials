@@ -1,12 +1,12 @@
 """
 Profiling your PyTorch Module
 ------------
+**Author:** `Suraj Subramanian <https://github.com/suraj813>`_
 
 PyTorch includes a profiler API that is useful to identify the time and
-memory costs of various PyTorch operations in your code. It records the
-events of functions executed in C++, and exposes them to Python.
-Profiler can be easily integrated in your code, and the results are
-printed in a pretty table or as a JSON trace file.
+memory costs of various PyTorch operations in your code. Profiler can be
+easily integrated in your code, and the results can be printed as a table
+or retured in a JSON trace file.
 
 .. note::
     Profiler supports multithreaded models. Profiler runs in the
@@ -23,7 +23,6 @@ for a quick walkthrough of the Profiler API.
 import torch
 import numpy as np
 from torch import nn
-import torchvision.models as models
 import torch.autograd.profiler as profiler
 
 
@@ -48,19 +47,20 @@ import torch.autograd.profiler as profiler
 # investigating the trace. Remove it if you are benchmarking runtimes.
 #
 
-class CustomLinear(torch.nn.Linear):
-    def __init__(self, in_features: int, out_features: int, bias: bool = True) -> None:
-        super().__init__(in_features, out_features, bias)
+class MyModule(nn.Module):
+    def __init__(self, in_features: int, out_features: int, bias: bool = True):
+        super(MyModule, self).__init__()
+        self.linear = nn.Linear(in_features, out_features, bias)
 
     def forward(self, input, mask):
-        # with profiler.record_function("LINEAR PASS"):
-            out = super().forward(input)
+        with profiler.record_function("LINEAR PASS"):
+            out = self.linear(input)
 
-        # with profiler.record_function("MASK INDICES"):
+        with profiler.record_function("MASK INDICES"):
             threshold = out.sum(axis=1).mean().item()
-            hi_idx = np.argwhere(mask.cpu().numpy() > threshold) # fix: use torch.nonzero()
+            hi_idx = np.argwhere(mask.cpu().numpy() > threshold)
 
-            return out, hi_idx
+        return out, hi_idx
 
 
 ######################################################################
@@ -68,17 +68,19 @@ class CustomLinear(torch.nn.Linear):
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # We initialize random input and mask tensors, and the ``CustomLinear`` module.
+#
 # Before we run the profiler, we warm-up CUDA to ensure accurate
 # performance benchmarking. We wrap the forward pass of our module in the
 # ``profiler.profile`` context manager. The ``with_stack=True`` parameter appends the
 # file and line number of the operation in the trace.
 #
 
-model = CustomLinear(500, 10).cuda()
+model = MyModule(500, 10).cuda()
 input = torch.rand(128, 500).cuda()
 mask = torch.rand((500, 500, 500), dtype=torch.double).cuda()
 
-model(input, mask) #warm up
+# warm-up
+model(input, mask)
 
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     out, idx = model(input, mask)
@@ -89,9 +91,10 @@ with profiler.profile(with_stack=True, profile_memory=True) as prof:
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # Finally, we print the profiler results. ``profiler.key_averages``
-# aggregates the results either by input shapes or stack trace events.
+# aggregates the results by operator name, and optionally by input
+# shapes and/or stack trace events.
 # Grouping by input shapes is useful to identify which tensor shapes
-# contribute to runtime.
+# are utilized by the model.
 #
 # Here, we use ``group_by_stack_n=5`` which aggregates runtimes by the
 # operation and its traceback (truncated to the most recent 5 events), and
@@ -115,11 +118,12 @@ print(prof.key_averages(group_by_stack_n=5).table())
 # it to ``torch.float``?
 #
 
-model = CustomLinear(500, 10).cuda()
+model = MyModule(500, 10).cuda()
 input = torch.rand(128, 500).cuda()
 mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
 
-model(input, mask) #warm up
+# warm-up
+model(input, mask)
 
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     out, idx = model(input, mask)
@@ -139,26 +143,28 @@ print(prof.key_averages(group_by_stack_n=5).table())
 # ``nonzero()`` here instead.
 #
 
-class CustomLinearLite(torch.nn.Linear):
-    def __init__(self, in_features: int, out_features: int, bias: bool = True) -> None:
-        super().__init__(in_features, out_features, bias)
+class MyModule(nn.Module):
+    def __init__(self, in_features: int, out_features: int, bias: bool = True):
+        super(MyModule, self).__init__()
+        self.linear = nn.Linear(in_features, out_features, bias)
 
     def forward(self, input, mask):
-        # with profiler.record_function("LINEAR PASS"):
-            out = super().forward(input)
+        with profiler.record_function("LINEAR PASS"):
+            out = self.linear(input)
 
-        # with profiler.record_function("INDEX SCORE"):
+        with profiler.record_function("INDEX SCORE"):
             threshold = out.sum(axis=1).mean()
             hi_idx = (mask > threshold).nonzero(as_tuple=True)
 
-            return out, hi_idx
+        return out, hi_idx
 
 
-model = CustomLinearLite(500, 10).cuda()
+model = MyModule(500, 10).cuda()
 input = torch.rand(128, 500).cuda()
 mask = torch.rand((500, 500, 500), dtype=torch.float).cuda()
 
-model(input, mask) #warm up
+# warm-up
+model(input, mask)
 
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     out, idx = model(input, mask)
@@ -179,27 +185,19 @@ print(prof.key_averages(group_by_stack_n=5).table())
 #
 # You might notice introducing ``torch.nonzero`` in our module has shown a
 # new memory footprint of 2.59 Gb that wasn’t in the stacktrace when we
-# used ``np.argwhere``. This is because Profiler tracks only operations in
-# ``torch``; it is likely that ``np.argwhere`` occupied a similar amount
-# of memory on the CPU but that will not be reported in the trace here.
+# used ``np.argwhere``. This is because Profiler currently tracks only PyTorch tensors
+# memory consumption and not NumPy arrays; it is likely that ``np.argwhere``
+# occupied a similar amount of memory on the CPU but that will not be reported
+# in the trace here.
 #
 
 
 ######################################################################
-# Some properties of Profiler:
+# Further Reading
 # ~~~~~~~~~~~~~~~~~
+# We have seen how Profiler can be used to identify time and memory bottlenecks in PyTorch models.
+# Read more about Profiler here:
 #
-# Thread local
-# ^^^^^^^^^^^^^^
-#
-# Profiler runs in the same thread as the operation but it will also
-# profile child operators that might run in another thread.
-# Concurrently-running profilers will be scoped to their own thread to
-# prevent mixing of results.
-#
-# Module-level, not low-level system profiling
-# ^^^^^^^^^^^^^^
-#
-# PyTorch profiler only reports runtime of PyTorch functions, and not at
-# the lower-level system operations.
-#
+# - `Profiler Usage Recipe <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`__
+# - `Profiling RPC-Based Workloads <https://pytorch.org/tutorials/recipes/distributed_rpc_profiling.html>`__
+# - `Profiler API Docs <https://pytorch.org/docs/stable/autograd.html?highlight=profiler#profiler>`__
