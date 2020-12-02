@@ -11,8 +11,8 @@ At its core, PyTorch provides two main features:
 - An n-dimensional Tensor, similar to numpy but can run on GPUs
 - Automatic differentiation for building and training neural networks
 
-We will use a fully-connected ReLU network as our running example. The
-network will have a single hidden layer, and will be trained with
+We will use a problem of fitting :math:`y=\sin(x)` with a third order polynomial
+as our running example. The network will have four parameters, and will be trained with
 gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.
 
@@ -39,7 +39,7 @@ learning, or gradients. However we can easily use numpy to fit a
 two-layer network to random data by manually implementing the forward
 and backward passes through the network using numpy operations:
 
-.. includenodoc:: /beginner/examples_tensor/two_layer_net_numpy.py
+.. includenodoc:: /beginner/examples_tensor/polynomial_numpy.py
 
 
 PyTorch: Tensors
@@ -62,11 +62,11 @@ Also unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
 their numeric computations. To run a PyTorch Tensor on GPU, you simply
 need to cast it to a new datatype.
 
-Here we use PyTorch Tensors to fit a two-layer network to random data.
+Here we use PyTorch Tensors to fit a third order polynomial to sine function.
 Like the numpy example above we need to manually implement the forward
 and backward passes through the network:
 
-.. includenodoc:: /beginner/examples_tensor/two_layer_net_tensor.py
+.. includenodoc:: /beginner/examples_tensor/polynomial_tensor.py
 
 
 Autograd
@@ -95,11 +95,11 @@ represents a node in a computational graph. If ``x`` is a Tensor that has
 ``x.requires_grad=True`` then ``x.grad`` is another Tensor holding the
 gradient of ``x`` with respect to some scalar value.
 
-Here we use PyTorch Tensors and autograd to implement our two-layer
-network; now we no longer need to manually implement the backward pass
-through the network:
+Here we use PyTorch Tensors and autograd to implement our fitting sine wave
+with third order polynomial example; now we no longer need to manually
+implement the backward pass through the network:
 
-.. includenodoc:: /beginner/examples_autograd/two_layer_net_autograd.py
+.. includenodoc:: /beginner/examples_autograd/polynomial_autograd.py
 
 PyTorch: Defining new autograd functions
 ----------------------------------------
@@ -117,11 +117,16 @@ and ``backward`` functions. We can then use our new autograd operator by
 constructing an instance and calling it like a function, passing
 Tensors containing input data.
 
-In this example we define our own custom autograd function for
-performing the ReLU nonlinearity, and use it to implement our two-layer
-network:
+In this example we define our model as :math:`y=a+b*P_3(c+dx)` instead of
+:math:`y=a+bx+cx^2+dx^3`, where :math:`P_3(x)=\frac{1/2}\left(5x^3-3x\right)`
+is the `Legendre polynomial`_ of degree three. We write our own custom autograd
+function for computing forward and backward of P3, and use it to implement our
+model:
 
-.. includenodoc:: /beginner/examples_autograd/two_layer_net_custom_function.py
+.. _Legendre polynomial:
+    https://en.wikipedia.org/wiki/Legendre_polynomials
+
+.. includenodoc:: /beginner/examples_autograd/polynomial_custom_function.py
 
 `nn` module
 ===========

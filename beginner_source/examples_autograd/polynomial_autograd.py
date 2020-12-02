@@ -3,8 +3,8 @@
 PyTorch: Tensors and autograd
 -------------------------------
 
-A fully-connected ReLU network with one hidden layer and no biases, trained to
-predict y from x by minimizing squared Euclidean distance.
+A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
+to :math:`pi` by minimizing squared Euclidean distance.
 
 This implementation computes the forward pass using operations on PyTorch
 Tensors, and uses PyTorch autograd to compute gradients.
@@ -15,42 +15,34 @@ Tensor that has ``x.requires_grad=True`` then ``x.grad`` is another Tensor
 holding the gradient of ``x`` with respect to some scalar value.
 """
 import torch
+import math
 
 dtype = torch.float
 device = torch.device("cpu")
 # device = torch.device("cuda:0")  # Uncomment this to run on GPU
-# torch.backends.cuda.matmul.allow_tf32 = False  # Uncomment this to run on GPU
 
-# The above line disables TensorFloat32. This a feature that allows
-# networks to run at a much faster speed while sacrificing precision.
-# Although TensorFloat32 works well on most real models, for our toy model
-# in this tutorial, the sacrificed precision causes convergence issue.
-# For more information, see:
-# https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices
-
-# N is batch size; D_in is input dimension;
-# H is hidden dimension; D_out is output dimension.
-N, D_in, H, D_out = 64, 1000, 100, 10
-
-# Create random Tensors to hold input and outputs.
+# Create Tensors to hold input and outputs.
 # Setting requires_grad=False indicates that we do not need to compute gradients
 # with respect to these Tensors during the backward pass.
-x = torch.randn(N, D_in, device=device, dtype=dtype)
-y = torch.randn(N, D_out, device=device, dtype=dtype)
+x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
+y = torch.sin(x)
 
-# Create random Tensors for weights.
+# Create random Tensors for weights. For a third order polynomial, we need
+# 4 weights: y = a + b x + c x^2 + d x^3
 # Setting requires_grad=True indicates that we want to compute gradients with
 # respect to these Tensors during the backward pass.
-w1 = torch.randn(D_in, H, device=device, dtype=dtype, requires_grad=True)
-w2 = torch.randn(H, D_out, device=device, dtype=dtype, requires_grad=True)
+a = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+b = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+c = torch.randn((), device=device, dtype=dtype, requires_grad=True)
+d = torch.randn((), device=device, dtype=dtype, requires_grad=True)
 
 learning_rate = 1e-6
-for t in range(500):
+for t in range(2000):
     # Forward pass: compute predicted y using operations on Tensors; these
     # are exactly the same operations we used to compute the forward pass using
     # Tensors, but we do not need to keep references to intermediate values since
     # we are not implementing the backward pass by hand.
-    y_pred = x.mm(w1).clamp(min=0).mm(w2)
+    y_pred = a + b * x + c * x ** 2 + d * x ** 3
 
     # Compute and print loss using operations on Tensors.
     # Now loss is a Tensor of shape (1,)
@@ -73,9 +65,15 @@ for t in range(500):
     # tensor, but doesn't track history.
     # You can also use torch.optim.SGD to achieve this.
     with torch.no_grad():
-        w1 -= learning_rate * w1.grad
-        w2 -= learning_rate * w2.grad
+        a -= learning_rate * a.grad
+        b -= learning_rate * b.grad
+        c -= learning_rate * c.grad
+        d -= learning_rate * d.grad
 
         # Manually zero the gradients after updating weights
-        w1.grad.zero_()
-        w2.grad.zero_()
+        a.grad = None
+        b.grad = None
+        c.grad = None
+        d.grad = None
+
+print(f'Result: y = {a.item()} + {b.item()} x + {c.item()} x^2 + {d.item()} x^3')
