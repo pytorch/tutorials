@@ -81,159 +81,159 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+    import numpy as np
+    import torch
+    import torch.nn as nn
+    import torchvision
+    from torch.utils.data import DataLoader
+    from torchvision import datasets
+    import torchvision.transforms as transforms
+    import os
+    import time
+    import sys
+    import torch.quantization
 
     # # Setup warnings
-
-
-
-
-
-
-
-
-
-
+    import warnings
+    warnings.filterwarnings(
+        action='ignore',
+        category=DeprecationWarning,
+        module=r'.*'
+    )
+    warnings.filterwarnings(
+        action='default',
+        module=r'torch.quantization'
+    )
 
     # Specify random seed for repeatable results
+    _ = torch.manual_seed(191009)
+
+
+    from torchvision.models.resnet import resnet18
+    from torch.quantization import get_default_qconfig, quantize_jit
+
+    class AverageMeter(object):
+        """Computes and stores the average and current value"""
+        def __init__(self, name, fmt=':f'):
+            self.name = name
+            self.fmt = fmt
+            self.reset()
+
+        def reset(self):
+            self.val = 0
+            self.avg = 0
+            self.sum = 0
+            self.count = 0
+
+        def update(self, val, n=1):
+            self.val = val
+            self.sum += val * n
+            self.count += n
+            self.avg = self.sum / self.count
+
+        def __str__(self):
+            fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+            return fmtstr.format(**self.__dict__)
+
+
+    def accuracy(output, target, topk=(1,)):
+        """Computes the accuracy over the k top predictions for the specified values of k"""
+        with torch.no_grad():
+            maxk = max(topk)
+            batch_size = target.size(0)
+
+            _, pred = output.topk(maxk, 1, True, True)
+            pred = pred.t()
+            correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+            res = []
+            for k in topk:
+                correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
+                res.append(correct_k.mul_(100.0 / batch_size))
+            return res
+
+
+    def evaluate(model, criterion, data_loader):
+        model.eval()
+        top1 = AverageMeter('Acc@1', ':6.2f')
+        top5 = AverageMeter('Acc@5', ':6.2f')
+        cnt = 0
+        with torch.no_grad():
+            for image, target in data_loader:
+                output = model(image)
+                loss = criterion(output, target)
+                cnt += 1
+                acc1, acc5 = accuracy(output, target, topk=(1, 5))
+                top1.update(acc1[0], image.size(0))
+                top5.update(acc5[0], image.size(0))
+        print('')
+
+        return top1, top5
+
+    def load_model(model_file):
+        model = resnet18(pretrained=False)
+        state_dict = torch.load(model_file)
+        model.load_state_dict(state_dict)
+        model.to('cpu')
+        return model
+
+    def print_size_of_model(model):
+        if isinstance(model, torch.jit.RecursiveScriptModule):
+            torch.jit.save(model, "temp.p")
+        else:
+            torch.jit.save(torch.jit.script(model), "temp.p")
+        print('Size (MB):', os.path.getsize("temp.p")/1e6)
+        os.remove('temp.p')
+
+    def prepare_data_loaders(data_path):
+
+        traindir = os.path.join(data_path, 'train')
+        valdir = os.path.join(data_path, 'val')
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+
+        dataset = torchvision.datasets.ImageFolder(
+            traindir,
+            transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
+
+        dataset_test = torchvision.datasets.ImageFolder(
+            valdir,
+            transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
+        train_sampler = torch.utils.data.RandomSampler(dataset)
+        test_sampler = torch.utils.data.SequentialSampler(dataset_test)
 
+        data_loader = torch.utils.data.DataLoader(
+            dataset, batch_size=train_batch_size,
+            sampler=train_sampler)
 
+        data_loader_test = torch.utils.data.DataLoader(
+            dataset_test, batch_size=eval_batch_size,
+            sampler=test_sampler)
 
+        return data_loader, data_loader_test
 
+    data_path = 'data/imagenet_1k'
+    saved_model_dir = 'data/'
+    float_model_file = 'resnet18_pretrained_float.pth'
 
+    train_batch_size = 30
+    eval_batch_size = 30
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    data_loader, data_loader_test = prepare_data_loaders(data_path)
+    criterion = nn.CrossEntropyLoss()
+    float_model = load_model(saved_model_dir + float_model_file).to('cpu')
+    float_model.eval();
 
 
 
@@ -245,6 +245,18 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
 3. Script/Trace the model
 --------------------------
 The input for graph mode quantization is a TorchScript model, so we'll need to either script or trace the model first.
+
+
+
+.. code-block:: default
+
+
+    ts_model = torch.jit.script(float_model).eval() # ts_model = torch.jit.trace(float_model, input)
+
+
+
+
+
 
 
 4. Specify how to quantize the model with ``qconfig_dict``
@@ -270,6 +282,20 @@ Right now ``qconfig_dict`` is the only way to configure how the model is quantiz
 Module ``sub.fc`` will be configured with ``qconfig_fc``, and all other child modules in ``sub`` will be configured with ``qconfig_sub`` and ``sub.conv`` will not be quantized. All other modules in the model will be quantized with ``qconfig_global``
 Utility functions related to ``qconfig`` can be found in https://github.com/pytorch/pytorch/blob/master/torch/quantization/qconfig.py.
 
+
+.. code-block:: default
+
+
+    qconfig = get_default_qconfig('fbgemm')
+    qconfig_dict = {'': qconfig}
+
+
+
+
+
+
+
+
 5. Define Calibration Function
 -------------------------
 
@@ -283,6 +309,23 @@ Calibration function is run after the observers are inserted in the model.
 The purpose for calibration is to run through some sample examples that is representative of the workload 
 (for example a sample of the training data set) so that the observers in the model are able to observe
 the statistics of the Tensors and we can later use this information to calculate quantization parameters.
+
+
+
+.. code-block:: default
+
+
+    def calibrate(model, data_loader):
+        model.eval()
+        with torch.no_grad():
+            for image, target in data_loader:
+                model(image)
+
+
+
+
+
+
 
 
 6. Quantize
@@ -317,6 +360,191 @@ If ``debug`` is set to ``True``:
 - We can still access the attributes of the quantized model the same way as the original floating point model, e.g. ``model.conv1.weight`` (might be harder if you use a module list or sequential)
 - The arithmetic operations all occur in floating point with the numerics being identical to the final quantized model, allowing for debugging.
 
+
+.. code-block:: default
+
+
+    quantized_model = quantize_jit(
+        ts_model,
+        {'': qconfig},
+        calibrate,
+        [data_loader_test])
+
+    print(quantized_model.graph)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    graph(%self : __torch__.torchvision.models.resnet.___torch_mangle_129.ResNet,
+          %x.2 : Tensor):
+      %639 : QInt8(1000:512, 512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %637 : QInt8(512:4608, 512:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %635 : QInt8(512:4608, 512:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %633 : QInt8(512:256, 256:1, 1:1, 1:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %631 : QInt8(512:4608, 512:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %629 : QInt8(512:2304, 256:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %627 : QInt8(256:2304, 256:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %625 : QInt8(256:2304, 256:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %623 : QInt8(256:128, 128:1, 1:1, 1:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %621 : QInt8(256:2304, 256:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %619 : QInt8(256:1152, 128:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %617 : QInt8(128:1152, 128:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %615 : QInt8(128:1152, 128:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %613 : QInt8(128:64, 64:1, 1:1, 1:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %611 : QInt8(128:1152, 128:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %609 : QInt8(128:576, 64:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %607 : QInt8(64:576, 64:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %605 : QInt8(64:576, 64:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %603 : QInt8(64:576, 64:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %601 : QInt8(64:576, 64:9, 3:3, 3:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %599 : QInt8(64:147, 3:49, 7:7, 7:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %14 : int = prim::Constant[value=-1]()
+      %13 : int = prim::Constant[value=1]() # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:214:29
+      %12 : int[] = prim::Constant[value=[2, 2]]()
+      %11 : int[] = prim::Constant[value=[3, 3]]()
+      %10 : int[] = prim::Constant[value=[1, 1]]()
+      %9 : int = prim::Constant[value=2]() # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/pooling.py:153:53
+      %8 : bool = prim::Constant[value=0]() # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/pooling.py:154:57
+      %7 : int[] = prim::Constant[value=[0, 0]]()
+      %6 : str = prim::Constant[value="AssertionError: "]()
+      %self.4_zero_point_0 : int = prim::Constant[value=33]()
+      %self.4_scale_0 : float = prim::Constant[value=0.32480660080909729]()
+      %self.fc.bias : Float(1000:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer4.1.out.14_scale_0 : float = prim::Constant[value=0.1888754665851593]()
+      %self.layer4.1.out.8_zero_point_0 : int = prim::Constant[value=42]()
+      %self.layer4.1.out.8_scale_0 : float = prim::Constant[value=0.25153809785842896]()
+      %self.layer4.1.conv2.bias : Float(512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer4.1.out.6_scale_0 : float = prim::Constant[value=0.0093407668173313141]()
+      %self.layer4.1.conv1.bias : Float(512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer4.0.out.14_scale_0 : float = prim::Constant[value=0.031063852831721306]()
+      %self.layer4.0.identity.2_zero_point_0 : int = prim::Constant[value=64]()
+      %self.layer4.0.identity.2_scale_0 : float = prim::Constant[value=0.037871591746807098]()
+      %self.layer4.0.downsample.0.bias : Float(512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer4.0.out.8_scale_0 : float = prim::Constant[value=0.049097951501607895]()
+      %self.layer4.0.conv2.bias : Float(512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer4.0.out.6_scale_0 : float = prim::Constant[value=0.014438155107200146]()
+      %self.layer4.0.conv1.bias : Float(512:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer3.1.out.14_scale_0 : float = prim::Constant[value=0.028827639296650887]()
+      %self.layer3.1.out.8_zero_point_0 : int = prim::Constant[value=77]()
+      %self.layer3.1.out.8_scale_0 : float = prim::Constant[value=0.049774069339036942]()
+      %self.layer3.1.conv2.bias : Float(256:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer3.1.out.6_scale_0 : float = prim::Constant[value=0.014620580710470676]()
+      %self.layer3.1.conv1.bias : Float(256:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer3.0.out.14_scale_0 : float = prim::Constant[value=0.026908500120043755]()
+      %self.layer3.0.identity.2_zero_point_0 : int = prim::Constant[value=83]()
+      %self.layer3.0.identity.2_scale_0 : float = prim::Constant[value=0.015510806813836098]()
+      %self.layer3.0.downsample.0.bias : Float(256:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer3.0.out.8_zero_point_0 : int = prim::Constant[value=45]()
+      %self.layer3.0.out.8_scale_0 : float = prim::Constant[value=0.0538480244576931]()
+      %self.layer3.0.conv2.bias : Float(256:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer3.0.out.6_scale_0 : float = prim::Constant[value=0.01943335123360157]()
+      %self.layer3.0.conv1.bias : Float(256:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer2.1.out.14_scale_0 : float = prim::Constant[value=0.034377451986074448]()
+      %self.layer2.1.out.8_zero_point_0 : int = prim::Constant[value=70]()
+      %self.layer2.1.out.8_scale_0 : float = prim::Constant[value=0.04630696028470993]()
+      %self.layer2.1.conv2.bias : Float(128:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer2.1.out.6_scale_0 : float = prim::Constant[value=0.016368737444281578]()
+      %self.layer2.1.conv1.bias : Float(128:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer2.0.out.14_scale_0 : float = prim::Constant[value=0.025238862261176109]()
+      %self.layer2.0.identity.2_zero_point_0 : int = prim::Constant[value=67]()
+      %self.layer2.0.identity.2_scale_0 : float = prim::Constant[value=0.034719575196504593]()
+      %self.layer2.0.downsample.0.bias : Float(128:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer2.0.out.8_scale_0 : float = prim::Constant[value=0.046192679554224014]()
+      %self.layer2.0.conv2.bias : Float(128:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer2.0.out.6_scale_0 : float = prim::Constant[value=0.016713038086891174]()
+      %self.layer2.0.conv1.bias : Float(128:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer1.1.out.14_scale_0 : float = prim::Constant[value=0.03661084920167923]()
+      %self.layer1.1.out.8_zero_point_0 : int = prim::Constant[value=78]()
+      %self.layer1.1.out.8_scale_0 : float = prim::Constant[value=0.064197555184364319]()
+      %self.layer1.1.conv2.bias : Float(64:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer1.1.out.6_scale_0 : float = prim::Constant[value=0.014453528448939323]()
+      %self.layer1.1.conv1.bias : Float(64:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer1.0.out.14_scale_0 : float = prim::Constant[value=0.030551694333553314]()
+      %self.layer1.0.out.8_zero_point_0 : int = prim::Constant[value=74]()
+      %self.layer1.0.out.8_scale_0 : float = prim::Constant[value=0.047997482120990753]()
+      %self.layer1.0.conv2.bias : Float(64:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.layer1.0.out.6_scale_0 : float = prim::Constant[value=0.019466333091259003]()
+      %self.layer1.0.conv1.bias : Float(64:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.x.8_scale_0 : float = prim::Constant[value=0.024595730006694794]()
+      %self.conv1.bias : Float(64:1, requires_grad=0, device=cpu) = prim::Constant[value=<Tensor>]()
+      %self.conv1.2_axis_0 : int = prim::Constant[value=0]()
+      %self.x.2_scalar_type_0 : int = prim::Constant[value=13]()
+      %self.x.2_zero_point_0 : int = prim::Constant[value=57]()
+      %self.x.2_scale_0 : float = prim::Constant[value=0.037445519119501114]()
+      %x.2.quant : Tensor = aten::quantize_per_tensor(%x.2, %self.x.2_scale_0, %self.x.2_zero_point_0, %self.x.2_scalar_type_0)
+      %641 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_0"](%self)
+      %27 : Tensor = quantized::conv2d_relu(%x.2.quant, %641, %self.x.8_scale_0, %self.conv1.2_axis_0)
+      %x.9 : Tensor = aten::max_pool2d(%27, %11, %12, %10, %10, %8) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:585:11
+      %642 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_1"](%self)
+      %48 : Tensor = quantized::conv2d_relu(%x.9, %642, %self.layer1.0.out.6_scale_0, %self.conv1.2_axis_0)
+      %643 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_2"](%self)
+      %61 : Tensor = quantized::conv2d(%48, %643, %self.layer1.0.out.8_scale_0, %self.layer1.0.out.8_zero_point_0)
+      %65 : Tensor = quantized::add_relu(%61, %x.9, %self.layer1.0.out.14_scale_0, %self.conv1.2_axis_0)
+      %644 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_3"](%self)
+      %78 : Tensor = quantized::conv2d_relu(%65, %644, %self.layer1.1.out.6_scale_0, %self.conv1.2_axis_0)
+      %645 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_4"](%self)
+      %91 : Tensor = quantized::conv2d(%78, %645, %self.layer1.1.out.8_scale_0, %self.layer1.1.out.8_zero_point_0)
+      %95 : Tensor = quantized::add_relu(%91, %65, %self.layer1.1.out.14_scale_0, %self.conv1.2_axis_0)
+      %646 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_5"](%self)
+      %111 : Tensor = quantized::conv2d_relu(%95, %646, %self.layer2.0.out.6_scale_0, %self.conv1.2_axis_0)
+      %647 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_6"](%self)
+      %124 : Tensor = quantized::conv2d(%111, %647, %self.layer2.0.out.8_scale_0, %self.x.2_zero_point_0)
+      %648 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_7"](%self)
+      %138 : Tensor = quantized::conv2d(%95, %648, %self.layer2.0.identity.2_scale_0, %self.layer2.0.identity.2_zero_point_0)
+      %142 : Tensor = quantized::add_relu(%124, %138, %self.layer2.0.out.14_scale_0, %self.conv1.2_axis_0)
+      %649 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_8"](%self)
+      %155 : Tensor = quantized::conv2d_relu(%142, %649, %self.layer2.1.out.6_scale_0, %self.conv1.2_axis_0)
+      %650 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_9"](%self)
+      %168 : Tensor = quantized::conv2d(%155, %650, %self.layer2.1.out.8_scale_0, %self.layer2.1.out.8_zero_point_0)
+      %172 : Tensor = quantized::add_relu(%168, %142, %self.layer2.1.out.14_scale_0, %self.conv1.2_axis_0)
+      %651 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_10"](%self)
+      %188 : Tensor = quantized::conv2d_relu(%172, %651, %self.layer3.0.out.6_scale_0, %self.conv1.2_axis_0)
+      %652 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_11"](%self)
+      %201 : Tensor = quantized::conv2d(%188, %652, %self.layer3.0.out.8_scale_0, %self.layer3.0.out.8_zero_point_0)
+      %653 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_12"](%self)
+      %215 : Tensor = quantized::conv2d(%172, %653, %self.layer3.0.identity.2_scale_0, %self.layer3.0.identity.2_zero_point_0)
+      %219 : Tensor = quantized::add_relu(%201, %215, %self.layer3.0.out.14_scale_0, %self.conv1.2_axis_0)
+      %654 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_13"](%self)
+      %232 : Tensor = quantized::conv2d_relu(%219, %654, %self.layer3.1.out.6_scale_0, %self.conv1.2_axis_0)
+      %655 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_14"](%self)
+      %245 : Tensor = quantized::conv2d(%232, %655, %self.layer3.1.out.8_scale_0, %self.layer3.1.out.8_zero_point_0)
+      %249 : Tensor = quantized::add_relu(%245, %219, %self.layer3.1.out.14_scale_0, %self.conv1.2_axis_0)
+      %656 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_15"](%self)
+      %265 : Tensor = quantized::conv2d_relu(%249, %656, %self.layer4.0.out.6_scale_0, %self.conv1.2_axis_0)
+      %657 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_16"](%self)
+      %278 : Tensor = quantized::conv2d(%265, %657, %self.layer4.0.out.8_scale_0, %self.layer2.0.identity.2_zero_point_0)
+      %658 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_17"](%self)
+      %292 : Tensor = quantized::conv2d(%249, %658, %self.layer4.0.identity.2_scale_0, %self.layer4.0.identity.2_zero_point_0)
+      %296 : Tensor = quantized::add_relu(%278, %292, %self.layer4.0.out.14_scale_0, %self.conv1.2_axis_0)
+      %659 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_18"](%self)
+      %309 : Tensor = quantized::conv2d_relu(%296, %659, %self.layer4.1.out.6_scale_0, %self.conv1.2_axis_0)
+      %660 : __torch__.torch.classes.quantized.Conv2dPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_19"](%self)
+      %322 : Tensor = quantized::conv2d(%309, %660, %self.layer4.1.out.8_scale_0, %self.layer4.1.out.8_zero_point_0)
+      %326 : Tensor = quantized::add_relu(%322, %296, %self.layer4.1.out.14_scale_0, %self.conv1.2_axis_0)
+      %328 : int[] = aten::size(%326) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:935:51
+      %329 : int = aten::len(%328) # <string>:5:9
+      %330 : bool = aten::gt(%329, %9) # <string>:5:9
+       = prim::If(%330) # <string>:5:2
+        block0():
+          -> ()
+        block1():
+           = prim::RaiseException(%6) # <string>:5:2
+          -> ()
+      %331 : Tensor = aten::adaptive_avg_pool2d(%326, %10)
+      %x.21 : Tensor = aten::flatten(%331, %13, %14) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:214:12
+      %661 : __torch__.torch.classes.quantized.LinearPackedParamsBase = prim::GetAttr[name="quantized._jit_pass_packed_weight_20"](%self)
+      %345 : Tensor = quantized::linear(%x.21, %661, %self.4_scale_0, %self.4_zero_point_0)
+      %4.dequant.0 : Tensor = aten::dequantize(%345)
+      return (%4.dequant.0)
+
+
 As we can see ``aten::conv2d`` is changed to ``quantized::conv2d`` and the floating point weight has been quantized 
 and packed into an attribute (``quantized._jit_pass_packed_weight_30``), so we don't need to quantize/pack in runtime.
 Also we can't access the weight attributes anymore after the debug option since they are frozen.
@@ -324,6 +552,43 @@ Also we can't access the weight attributes anymore after the debug option since 
 7. Evaluation
 --------------
 We can now print the size and accuracy of the quantized model.
+
+
+.. code-block:: default
+
+
+    print('Size of model before quantization')
+    print_size_of_model(ts_model)
+    print('Size of model after quantization')
+    print_size_of_model(quantized_model)
+    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
+    print('[before serilaization] Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
+
+    graph_mode_model_file = 'resnet18_graph_mode_quantized.pth'
+    torch.jit.save(quantized_model, saved_model_dir + graph_mode_model_file)
+    quantized_model = torch.jit.load(saved_model_dir + graph_mode_model_file)
+    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
+    print('[after serialization/deserialization] Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size of model before quantization
+    Size (MB): 46.870897
+    Size of model after quantization
+    Size (MB): 11.820899
+
+    [before serilaization] Evaluation accuracy on test dataset: 68.90, 89.40
+
+    [after serialization/deserialization] Evaluation accuracy on test dataset: 68.90, 89.40
+
 
 If you want to get better accuracy or performance,  try changing the `qconfig_dict`. 
 We plan to add support for graph mode in the Numerical Suite so that you can 
@@ -333,13 +598,519 @@ easily determine the sensitivity towards quantization of different modules in a 
 ---------------------------
 We can also use debug option:
 
+
+.. code-block:: default
+
+
+    quantized_debug_model = quantize_jit(
+        ts_model,
+        {'': qconfig},
+        calibrate,
+        [data_loader_test],
+        debug=True)
+
+    top1, top5 = evaluate(quantized_debug_model, criterion, data_loader_test)
+    print('[debug=True] quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [debug=True] quantized model Evaluation accuracy on test dataset: 69.00, 89.20
+
+
 Note that the accuracy of the debug version is close to, but not exactly the same as the non-debug 
 version as the debug version uses floating point ops to emulate quantized ops and the numerics match 
 is approximate. We are working on making this even more exact.
 
 
+
+.. code-block:: default
+
+
+    print(quantized_debug_model.graph)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    graph(%self : __torch__.torchvision.models.resnet.___torch_mangle_231.ResNet,
+          %x.2 : Tensor):
+      %7 : float = prim::GetAttr[name="x.2_scale_0"](%self)
+      %8 : int = prim::GetAttr[name="x.2_zero_point_0"](%self)
+      %9 : int = prim::GetAttr[name="x.2_scalar_type_0"](%self)
+      %x.2.quant : Tensor = aten::quantize_per_tensor(%x.2, %7, %8, %9)
+      %x.2.dequant.0 : Tensor = aten::dequantize(%x.2.quant)
+      %17 : str = prim::Constant[value="AssertionError: "]()
+      %18 : int[] = prim::Constant[value=[0, 0]]()
+      %19 : bool = prim::Constant[value=0]() # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/pooling.py:154:57
+      %20 : int = prim::Constant[value=2]() # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/pooling.py:153:53
+      %22 : int[] = prim::Constant[value=[1, 1]]()
+      %23 : int[] = prim::Constant[value=[3, 3]]()
+      %24 : int[] = prim::Constant[value=[2, 2]]()
+      %25 : int = prim::Constant[value=1]() # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:214:29
+      %26 : int = prim::Constant[value=-1]()
+      %27 : __torch__.torch.nn.modules.conv.___torch_mangle_232.Conv2d = prim::GetAttr[name="conv1"](%self)
+      %28 : Tensor = prim::GetAttr[name="weight"](%27)
+      %29 : Float(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%27)
+      %30 : Int(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%27)
+      %31 : int = prim::GetAttr[name="2_axis_0"](%27)
+      %32 : int = prim::GetAttr[name="2_scalar_type_0"](%27)
+      %2.quant.7 : Tensor = aten::quantize_per_channel(%28, %29, %30, %31, %32)
+      %2.dequant.7 : Tensor = aten::dequantize(%2.quant.7)
+      %35 : Tensor? = prim::GetAttr[name="bias"](%27)
+      %x.3 : Tensor = aten::conv2d(%x.2.dequant.0, %2.dequant.7, %35, %24, %23, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %x.8 : Tensor = aten::relu_(%x.3) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %38 : float = prim::GetAttr[name="x.8_scale_0"](%self)
+      %39 : int = prim::GetAttr[name="x.8_zero_point_0"](%self)
+      %40 : int = prim::GetAttr[name="x.8_scalar_type_0"](%self)
+      %x.8.quant : Tensor = aten::quantize_per_tensor(%x.8, %38, %39, %40)
+      %428 : int[] = prim::Constant[value=[3, 3]]()
+      %429 : int[] = prim::Constant[value=[2, 2]]()
+      %430 : int[] = prim::Constant[value=[1, 1]]()
+      %431 : int[] = prim::Constant[value=[1, 1]]()
+      %x.9 : Tensor = aten::max_pool2d(%x.8.quant, %428, %429, %430, %431, %19) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:585:11
+      %48 : __torch__.torch.nn.modules.container.___torch_mangle_237.Sequential = prim::GetAttr[name="layer1"](%self)
+      %49 : __torch__.torchvision.models.resnet.___torch_mangle_238.BasicBlock = prim::GetAttr[name="0"](%48)
+      %50 : __torch__.torchvision.models.resnet.___torch_mangle_238.BasicBlock = prim::GetAttr[name="1"](%48)
+      %51 : __torch__.torch.nn.modules.conv.___torch_mangle_239.Conv2d = prim::GetAttr[name="conv1"](%49)
+      %52 : Tensor = prim::GetAttr[name="weight"](%51)
+      %53 : Float(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%51)
+      %54 : Int(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%51)
+      %55 : int = prim::GetAttr[name="2_axis_0"](%51)
+      %56 : int = prim::GetAttr[name="2_scalar_type_0"](%51)
+      %2.quant.6 : Tensor = aten::quantize_per_channel(%52, %53, %54, %55, %56)
+      %2.dequant.6 : Tensor = aten::dequantize(%2.quant.6)
+      %59 : Tensor? = prim::GetAttr[name="bias"](%51)
+      %x.9.dequant.0 : Tensor = aten::dequantize(%x.9)
+      %out.3 : Tensor = aten::conv2d(%x.9.dequant.0, %2.dequant.6, %59, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.10 : Tensor = aten::relu_(%out.3) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %62 : float = prim::GetAttr[name="out.6_scale_0"](%49)
+      %63 : int = prim::GetAttr[name="out.6_zero_point_0"](%49)
+      %64 : int = prim::GetAttr[name="out.6_scalar_type_0"](%49)
+      %out.6.quant.2 : Tensor = aten::quantize_per_tensor(%out.10, %62, %63, %64)
+      %out.6.dequant.2 : Tensor = aten::dequantize(%out.6.quant.2)
+      %67 : __torch__.torch.nn.modules.conv.___torch_mangle_239.Conv2d = prim::GetAttr[name="conv2"](%49)
+      %68 : Tensor = prim::GetAttr[name="weight"](%67)
+      %69 : Float(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%67)
+      %70 : Int(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%67)
+      %71 : int = prim::GetAttr[name="2_axis_0"](%67)
+      %72 : int = prim::GetAttr[name="2_scalar_type_0"](%67)
+      %2.quant.5 : Tensor = aten::quantize_per_channel(%68, %69, %70, %71, %72)
+      %2.dequant.5 : Tensor = aten::dequantize(%2.quant.5)
+      %75 : Tensor? = prim::GetAttr[name="bias"](%67)
+      %out.13 : Tensor = aten::conv2d(%out.6.dequant.2, %2.dequant.5, %75, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %77 : float = prim::GetAttr[name="out.8_scale_0"](%49)
+      %78 : int = prim::GetAttr[name="out.8_zero_point_0"](%49)
+      %79 : int = prim::GetAttr[name="out.8_scalar_type_0"](%49)
+      %out.8.quant.2 : Tensor = aten::quantize_per_tensor(%out.13, %77, %78, %79)
+      %out.8.dequant.2 : Tensor = aten::dequantize(%out.8.quant.2)
+      %x.9.dequant.1 : Tensor = aten::dequantize(%x.9)
+      %out.16 : Tensor = aten::add_(%out.8.dequant.2, %x.9.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.17 : Tensor = aten::relu_(%out.16) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %84 : float = prim::GetAttr[name="out.14_scale_0"](%49)
+      %85 : int = prim::GetAttr[name="out.14_zero_point_0"](%49)
+      %86 : int = prim::GetAttr[name="out.14_scalar_type_0"](%49)
+      %out.14.quant.2 : Tensor = aten::quantize_per_tensor(%out.17, %84, %85, %86)
+      %89 : __torch__.torch.nn.modules.conv.___torch_mangle_239.Conv2d = prim::GetAttr[name="conv1"](%50)
+      %90 : Tensor = prim::GetAttr[name="weight"](%89)
+      %91 : Float(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%89)
+      %92 : Int(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%89)
+      %93 : int = prim::GetAttr[name="2_axis_0"](%89)
+      %94 : int = prim::GetAttr[name="2_scalar_type_0"](%89)
+      %2.quant.8 : Tensor = aten::quantize_per_channel(%90, %91, %92, %93, %94)
+      %2.dequant.8 : Tensor = aten::dequantize(%2.quant.8)
+      %97 : Tensor? = prim::GetAttr[name="bias"](%89)
+      %input.4.dequant.0 : Tensor = aten::dequantize(%out.14.quant.2)
+      %out.4 : Tensor = aten::conv2d(%input.4.dequant.0, %2.dequant.8, %97, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.18 : Tensor = aten::relu_(%out.4) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %100 : float = prim::GetAttr[name="out.6_scale_0"](%50)
+      %101 : int = prim::GetAttr[name="out.6_zero_point_0"](%50)
+      %102 : int = prim::GetAttr[name="out.6_scalar_type_0"](%50)
+      %out.6.quant.3 : Tensor = aten::quantize_per_tensor(%out.18, %100, %101, %102)
+      %out.6.dequant.3 : Tensor = aten::dequantize(%out.6.quant.3)
+      %105 : __torch__.torch.nn.modules.conv.___torch_mangle_239.Conv2d = prim::GetAttr[name="conv2"](%50)
+      %106 : Tensor = prim::GetAttr[name="weight"](%105)
+      %107 : Float(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%105)
+      %108 : Int(64:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%105)
+      %109 : int = prim::GetAttr[name="2_axis_0"](%105)
+      %110 : int = prim::GetAttr[name="2_scalar_type_0"](%105)
+      %2.quant.9 : Tensor = aten::quantize_per_channel(%106, %107, %108, %109, %110)
+      %2.dequant.9 : Tensor = aten::dequantize(%2.quant.9)
+      %113 : Tensor? = prim::GetAttr[name="bias"](%105)
+      %out.19 : Tensor = aten::conv2d(%out.6.dequant.3, %2.dequant.9, %113, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %115 : float = prim::GetAttr[name="out.8_scale_0"](%50)
+      %116 : int = prim::GetAttr[name="out.8_zero_point_0"](%50)
+      %117 : int = prim::GetAttr[name="out.8_scalar_type_0"](%50)
+      %out.8.quant.3 : Tensor = aten::quantize_per_tensor(%out.19, %115, %116, %117)
+      %out.8.dequant.3 : Tensor = aten::dequantize(%out.8.quant.3)
+      %input.4.dequant.1 : Tensor = aten::dequantize(%out.14.quant.2)
+      %out.20 : Tensor = aten::add_(%out.8.dequant.3, %input.4.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.21 : Tensor = aten::relu_(%out.20) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %122 : float = prim::GetAttr[name="out.14_scale_0"](%50)
+      %123 : int = prim::GetAttr[name="out.14_zero_point_0"](%50)
+      %124 : int = prim::GetAttr[name="out.14_scalar_type_0"](%50)
+      %out.14.quant.3 : Tensor = aten::quantize_per_tensor(%out.21, %122, %123, %124)
+      %127 : __torch__.torch.nn.modules.container.___torch_mangle_241.Sequential = prim::GetAttr[name="layer2"](%self)
+      %128 : __torch__.torchvision.models.resnet.___torch_mangle_242.BasicBlock = prim::GetAttr[name="0"](%127)
+      %129 : __torch__.torchvision.models.resnet.___torch_mangle_248.BasicBlock = prim::GetAttr[name="1"](%127)
+      %130 : __torch__.torch.nn.modules.conv.___torch_mangle_243.Conv2d = prim::GetAttr[name="conv1"](%128)
+      %131 : Tensor = prim::GetAttr[name="weight"](%130)
+      %132 : Float(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%130)
+      %133 : Int(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%130)
+      %134 : int = prim::GetAttr[name="2_axis_0"](%130)
+      %135 : int = prim::GetAttr[name="2_scalar_type_0"](%130)
+      %2.quant.10 : Tensor = aten::quantize_per_channel(%131, %132, %133, %134, %135)
+      %2.dequant.10 : Tensor = aten::dequantize(%2.quant.10)
+      %138 : Tensor? = prim::GetAttr[name="bias"](%130)
+      %x.11.dequant.0 : Tensor = aten::dequantize(%out.14.quant.3)
+      %out.5 : Tensor = aten::conv2d(%x.11.dequant.0, %2.dequant.10, %138, %24, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.22 : Tensor = aten::relu_(%out.5) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %141 : float = prim::GetAttr[name="out.6_scale_0"](%128)
+      %142 : int = prim::GetAttr[name="out.6_zero_point_0"](%128)
+      %143 : int = prim::GetAttr[name="out.6_scalar_type_0"](%128)
+      %out.6.quant.4 : Tensor = aten::quantize_per_tensor(%out.22, %141, %142, %143)
+      %out.6.dequant.4 : Tensor = aten::dequantize(%out.6.quant.4)
+      %146 : __torch__.torch.nn.modules.conv.___torch_mangle_245.Conv2d = prim::GetAttr[name="conv2"](%128)
+      %147 : Tensor = prim::GetAttr[name="weight"](%146)
+      %148 : Float(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%146)
+      %149 : Int(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%146)
+      %150 : int = prim::GetAttr[name="2_axis_0"](%146)
+      %151 : int = prim::GetAttr[name="2_scalar_type_0"](%146)
+      %2.quant.11 : Tensor = aten::quantize_per_channel(%147, %148, %149, %150, %151)
+      %2.dequant.11 : Tensor = aten::dequantize(%2.quant.11)
+      %154 : Tensor? = prim::GetAttr[name="bias"](%146)
+      %out.23 : Tensor = aten::conv2d(%out.6.dequant.4, %2.dequant.11, %154, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %156 : float = prim::GetAttr[name="out.8_scale_0"](%128)
+      %157 : int = prim::GetAttr[name="out.8_zero_point_0"](%128)
+      %158 : int = prim::GetAttr[name="out.8_scalar_type_0"](%128)
+      %out.8.quant.4 : Tensor = aten::quantize_per_tensor(%out.23, %156, %157, %158)
+      %out.8.dequant.4 : Tensor = aten::dequantize(%out.8.quant.4)
+      %161 : __torch__.torch.nn.modules.container.___torch_mangle_246.Sequential = prim::GetAttr[name="downsample"](%128)
+      %162 : __torch__.torch.nn.modules.conv.___torch_mangle_247.Conv2d = prim::GetAttr[name="0"](%161)
+      %163 : Tensor = prim::GetAttr[name="weight"](%162)
+      %164 : Float(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%162)
+      %165 : Int(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%162)
+      %166 : int = prim::GetAttr[name="2_axis_0"](%162)
+      %167 : int = prim::GetAttr[name="2_scalar_type_0"](%162)
+      %2.quant.12 : Tensor = aten::quantize_per_channel(%163, %164, %165, %166, %167)
+      %2.dequant.12 : Tensor = aten::dequantize(%2.quant.12)
+      %170 : Tensor? = prim::GetAttr[name="bias"](%162)
+      %x.11.dequant.1 : Tensor = aten::dequantize(%out.14.quant.3)
+      %identity.3 : Tensor = aten::conv2d(%x.11.dequant.1, %2.dequant.12, %170, %24, %18, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %172 : float = prim::GetAttr[name="identity.2_scale_0"](%128)
+      %173 : int = prim::GetAttr[name="identity.2_zero_point_0"](%128)
+      %174 : int = prim::GetAttr[name="identity.2_scalar_type_0"](%128)
+      %identity.2.quant.1 : Tensor = aten::quantize_per_tensor(%identity.3, %172, %173, %174)
+      %identity.2.dequant.1 : Tensor = aten::dequantize(%identity.2.quant.1)
+      %out.24 : Tensor = aten::add_(%out.8.dequant.4, %identity.2.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.25 : Tensor = aten::relu_(%out.24) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %179 : float = prim::GetAttr[name="out.14_scale_0"](%128)
+      %180 : int = prim::GetAttr[name="out.14_zero_point_0"](%128)
+      %181 : int = prim::GetAttr[name="out.14_scalar_type_0"](%128)
+      %out.14.quant.4 : Tensor = aten::quantize_per_tensor(%out.25, %179, %180, %181)
+      %184 : __torch__.torch.nn.modules.conv.___torch_mangle_245.Conv2d = prim::GetAttr[name="conv1"](%129)
+      %185 : Tensor = prim::GetAttr[name="weight"](%184)
+      %186 : Float(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%184)
+      %187 : Int(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%184)
+      %188 : int = prim::GetAttr[name="2_axis_0"](%184)
+      %189 : int = prim::GetAttr[name="2_scalar_type_0"](%184)
+      %2.quant.13 : Tensor = aten::quantize_per_channel(%185, %186, %187, %188, %189)
+      %2.dequant.13 : Tensor = aten::dequantize(%2.quant.13)
+      %192 : Tensor? = prim::GetAttr[name="bias"](%184)
+      %input.6.dequant.0 : Tensor = aten::dequantize(%out.14.quant.4)
+      %out.26 : Tensor = aten::conv2d(%input.6.dequant.0, %2.dequant.13, %192, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.27 : Tensor = aten::relu_(%out.26) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %195 : float = prim::GetAttr[name="out.6_scale_0"](%129)
+      %196 : int = prim::GetAttr[name="out.6_zero_point_0"](%129)
+      %197 : int = prim::GetAttr[name="out.6_scalar_type_0"](%129)
+      %out.6.quant.5 : Tensor = aten::quantize_per_tensor(%out.27, %195, %196, %197)
+      %out.6.dequant.5 : Tensor = aten::dequantize(%out.6.quant.5)
+      %200 : __torch__.torch.nn.modules.conv.___torch_mangle_245.Conv2d = prim::GetAttr[name="conv2"](%129)
+      %201 : Tensor = prim::GetAttr[name="weight"](%200)
+      %202 : Float(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%200)
+      %203 : Int(128:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%200)
+      %204 : int = prim::GetAttr[name="2_axis_0"](%200)
+      %205 : int = prim::GetAttr[name="2_scalar_type_0"](%200)
+      %2.quant.14 : Tensor = aten::quantize_per_channel(%201, %202, %203, %204, %205)
+      %2.dequant.14 : Tensor = aten::dequantize(%2.quant.14)
+      %208 : Tensor? = prim::GetAttr[name="bias"](%200)
+      %out.28 : Tensor = aten::conv2d(%out.6.dequant.5, %2.dequant.14, %208, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %210 : float = prim::GetAttr[name="out.8_scale_0"](%129)
+      %211 : int = prim::GetAttr[name="out.8_zero_point_0"](%129)
+      %212 : int = prim::GetAttr[name="out.8_scalar_type_0"](%129)
+      %out.8.quant.5 : Tensor = aten::quantize_per_tensor(%out.28, %210, %211, %212)
+      %out.8.dequant.5 : Tensor = aten::dequantize(%out.8.quant.5)
+      %input.6.dequant.1 : Tensor = aten::dequantize(%out.14.quant.4)
+      %out.29 : Tensor = aten::add_(%out.8.dequant.5, %input.6.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.30 : Tensor = aten::relu_(%out.29) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %217 : float = prim::GetAttr[name="out.14_scale_0"](%129)
+      %218 : int = prim::GetAttr[name="out.14_zero_point_0"](%129)
+      %219 : int = prim::GetAttr[name="out.14_scalar_type_0"](%129)
+      %out.14.quant.5 : Tensor = aten::quantize_per_tensor(%out.30, %217, %218, %219)
+      %222 : __torch__.torch.nn.modules.container.___torch_mangle_249.Sequential = prim::GetAttr[name="layer3"](%self)
+      %223 : __torch__.torchvision.models.resnet.___torch_mangle_250.BasicBlock = prim::GetAttr[name="0"](%222)
+      %224 : __torch__.torchvision.models.resnet.___torch_mangle_256.BasicBlock = prim::GetAttr[name="1"](%222)
+      %225 : __torch__.torch.nn.modules.conv.___torch_mangle_251.Conv2d = prim::GetAttr[name="conv1"](%223)
+      %226 : Tensor = prim::GetAttr[name="weight"](%225)
+      %227 : Float(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%225)
+      %228 : Int(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%225)
+      %229 : int = prim::GetAttr[name="2_axis_0"](%225)
+      %230 : int = prim::GetAttr[name="2_scalar_type_0"](%225)
+      %2.quant.15 : Tensor = aten::quantize_per_channel(%226, %227, %228, %229, %230)
+      %2.dequant.15 : Tensor = aten::dequantize(%2.quant.15)
+      %233 : Tensor? = prim::GetAttr[name="bias"](%225)
+      %x.13.dequant.0 : Tensor = aten::dequantize(%out.14.quant.5)
+      %out.31 : Tensor = aten::conv2d(%x.13.dequant.0, %2.dequant.15, %233, %24, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.32 : Tensor = aten::relu_(%out.31) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %236 : float = prim::GetAttr[name="out.6_scale_0"](%223)
+      %237 : int = prim::GetAttr[name="out.6_zero_point_0"](%223)
+      %238 : int = prim::GetAttr[name="out.6_scalar_type_0"](%223)
+      %out.6.quant.6 : Tensor = aten::quantize_per_tensor(%out.32, %236, %237, %238)
+      %out.6.dequant.6 : Tensor = aten::dequantize(%out.6.quant.6)
+      %241 : __torch__.torch.nn.modules.conv.___torch_mangle_253.Conv2d = prim::GetAttr[name="conv2"](%223)
+      %242 : Tensor = prim::GetAttr[name="weight"](%241)
+      %243 : Float(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%241)
+      %244 : Int(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%241)
+      %245 : int = prim::GetAttr[name="2_axis_0"](%241)
+      %246 : int = prim::GetAttr[name="2_scalar_type_0"](%241)
+      %2.quant.16 : Tensor = aten::quantize_per_channel(%242, %243, %244, %245, %246)
+      %2.dequant.16 : Tensor = aten::dequantize(%2.quant.16)
+      %249 : Tensor? = prim::GetAttr[name="bias"](%241)
+      %out.33 : Tensor = aten::conv2d(%out.6.dequant.6, %2.dequant.16, %249, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %251 : float = prim::GetAttr[name="out.8_scale_0"](%223)
+      %252 : int = prim::GetAttr[name="out.8_zero_point_0"](%223)
+      %253 : int = prim::GetAttr[name="out.8_scalar_type_0"](%223)
+      %out.8.quant.6 : Tensor = aten::quantize_per_tensor(%out.33, %251, %252, %253)
+      %out.8.dequant.6 : Tensor = aten::dequantize(%out.8.quant.6)
+      %256 : __torch__.torch.nn.modules.container.___torch_mangle_254.Sequential = prim::GetAttr[name="downsample"](%223)
+      %257 : __torch__.torch.nn.modules.conv.___torch_mangle_255.Conv2d = prim::GetAttr[name="0"](%256)
+      %258 : Tensor = prim::GetAttr[name="weight"](%257)
+      %259 : Float(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%257)
+      %260 : Int(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%257)
+      %261 : int = prim::GetAttr[name="2_axis_0"](%257)
+      %262 : int = prim::GetAttr[name="2_scalar_type_0"](%257)
+      %2.quant.17 : Tensor = aten::quantize_per_channel(%258, %259, %260, %261, %262)
+      %2.dequant.17 : Tensor = aten::dequantize(%2.quant.17)
+      %265 : Tensor? = prim::GetAttr[name="bias"](%257)
+      %x.13.dequant.1 : Tensor = aten::dequantize(%out.14.quant.5)
+      %identity.4 : Tensor = aten::conv2d(%x.13.dequant.1, %2.dequant.17, %265, %24, %18, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %267 : float = prim::GetAttr[name="identity.2_scale_0"](%223)
+      %268 : int = prim::GetAttr[name="identity.2_zero_point_0"](%223)
+      %269 : int = prim::GetAttr[name="identity.2_scalar_type_0"](%223)
+      %identity.2.quant.2 : Tensor = aten::quantize_per_tensor(%identity.4, %267, %268, %269)
+      %identity.2.dequant.2 : Tensor = aten::dequantize(%identity.2.quant.2)
+      %out.34 : Tensor = aten::add_(%out.8.dequant.6, %identity.2.dequant.2, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.35 : Tensor = aten::relu_(%out.34) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %274 : float = prim::GetAttr[name="out.14_scale_0"](%223)
+      %275 : int = prim::GetAttr[name="out.14_zero_point_0"](%223)
+      %276 : int = prim::GetAttr[name="out.14_scalar_type_0"](%223)
+      %out.14.quant.6 : Tensor = aten::quantize_per_tensor(%out.35, %274, %275, %276)
+      %279 : __torch__.torch.nn.modules.conv.___torch_mangle_253.Conv2d = prim::GetAttr[name="conv1"](%224)
+      %280 : Tensor = prim::GetAttr[name="weight"](%279)
+      %281 : Float(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%279)
+      %282 : Int(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%279)
+      %283 : int = prim::GetAttr[name="2_axis_0"](%279)
+      %284 : int = prim::GetAttr[name="2_scalar_type_0"](%279)
+      %2.quant.18 : Tensor = aten::quantize_per_channel(%280, %281, %282, %283, %284)
+      %2.dequant.18 : Tensor = aten::dequantize(%2.quant.18)
+      %287 : Tensor? = prim::GetAttr[name="bias"](%279)
+      %input.7.dequant.0 : Tensor = aten::dequantize(%out.14.quant.6)
+      %out.36 : Tensor = aten::conv2d(%input.7.dequant.0, %2.dequant.18, %287, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.37 : Tensor = aten::relu_(%out.36) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %290 : float = prim::GetAttr[name="out.6_scale_0"](%224)
+      %291 : int = prim::GetAttr[name="out.6_zero_point_0"](%224)
+      %292 : int = prim::GetAttr[name="out.6_scalar_type_0"](%224)
+      %out.6.quant.7 : Tensor = aten::quantize_per_tensor(%out.37, %290, %291, %292)
+      %out.6.dequant.7 : Tensor = aten::dequantize(%out.6.quant.7)
+      %295 : __torch__.torch.nn.modules.conv.___torch_mangle_253.Conv2d = prim::GetAttr[name="conv2"](%224)
+      %296 : Tensor = prim::GetAttr[name="weight"](%295)
+      %297 : Float(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%295)
+      %298 : Int(256:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%295)
+      %299 : int = prim::GetAttr[name="2_axis_0"](%295)
+      %300 : int = prim::GetAttr[name="2_scalar_type_0"](%295)
+      %2.quant.19 : Tensor = aten::quantize_per_channel(%296, %297, %298, %299, %300)
+      %2.dequant.19 : Tensor = aten::dequantize(%2.quant.19)
+      %303 : Tensor? = prim::GetAttr[name="bias"](%295)
+      %out.38 : Tensor = aten::conv2d(%out.6.dequant.7, %2.dequant.19, %303, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %305 : float = prim::GetAttr[name="out.8_scale_0"](%224)
+      %306 : int = prim::GetAttr[name="out.8_zero_point_0"](%224)
+      %307 : int = prim::GetAttr[name="out.8_scalar_type_0"](%224)
+      %out.8.quant.7 : Tensor = aten::quantize_per_tensor(%out.38, %305, %306, %307)
+      %out.8.dequant.7 : Tensor = aten::dequantize(%out.8.quant.7)
+      %input.7.dequant.1 : Tensor = aten::dequantize(%out.14.quant.6)
+      %out.39 : Tensor = aten::add_(%out.8.dequant.7, %input.7.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.40 : Tensor = aten::relu_(%out.39) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %312 : float = prim::GetAttr[name="out.14_scale_0"](%224)
+      %313 : int = prim::GetAttr[name="out.14_zero_point_0"](%224)
+      %314 : int = prim::GetAttr[name="out.14_scalar_type_0"](%224)
+      %out.14.quant.7 : Tensor = aten::quantize_per_tensor(%out.40, %312, %313, %314)
+      %317 : __torch__.torch.nn.modules.container.___torch_mangle_257.Sequential = prim::GetAttr[name="layer4"](%self)
+      %318 : __torch__.torchvision.models.resnet.___torch_mangle_258.BasicBlock = prim::GetAttr[name="0"](%317)
+      %319 : __torch__.torchvision.models.resnet.___torch_mangle_264.BasicBlock = prim::GetAttr[name="1"](%317)
+      %320 : __torch__.torch.nn.modules.conv.___torch_mangle_259.Conv2d = prim::GetAttr[name="conv1"](%318)
+      %321 : Tensor = prim::GetAttr[name="weight"](%320)
+      %322 : Float(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%320)
+      %323 : Int(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%320)
+      %324 : int = prim::GetAttr[name="2_axis_0"](%320)
+      %325 : int = prim::GetAttr[name="2_scalar_type_0"](%320)
+      %2.quant.3 : Tensor = aten::quantize_per_channel(%321, %322, %323, %324, %325)
+      %2.dequant.3 : Tensor = aten::dequantize(%2.quant.3)
+      %328 : Tensor? = prim::GetAttr[name="bias"](%320)
+      %x.15.dequant.0 : Tensor = aten::dequantize(%out.14.quant.7)
+      %out.2 : Tensor = aten::conv2d(%x.15.dequant.0, %2.dequant.3, %328, %24, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.7 : Tensor = aten::relu_(%out.2) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %331 : float = prim::GetAttr[name="out.6_scale_0"](%318)
+      %332 : int = prim::GetAttr[name="out.6_zero_point_0"](%318)
+      %333 : int = prim::GetAttr[name="out.6_scalar_type_0"](%318)
+      %out.6.quant.1 : Tensor = aten::quantize_per_tensor(%out.7, %331, %332, %333)
+      %out.6.dequant.1 : Tensor = aten::dequantize(%out.6.quant.1)
+      %336 : __torch__.torch.nn.modules.conv.___torch_mangle_261.Conv2d = prim::GetAttr[name="conv2"](%318)
+      %337 : Tensor = prim::GetAttr[name="weight"](%336)
+      %338 : Float(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%336)
+      %339 : Int(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%336)
+      %340 : int = prim::GetAttr[name="2_axis_0"](%336)
+      %341 : int = prim::GetAttr[name="2_scalar_type_0"](%336)
+      %2.quant.2 : Tensor = aten::quantize_per_channel(%337, %338, %339, %340, %341)
+      %2.dequant.2 : Tensor = aten::dequantize(%2.quant.2)
+      %344 : Tensor? = prim::GetAttr[name="bias"](%336)
+      %out.9 : Tensor = aten::conv2d(%out.6.dequant.1, %2.dequant.2, %344, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %346 : float = prim::GetAttr[name="out.8_scale_0"](%318)
+      %347 : int = prim::GetAttr[name="out.8_zero_point_0"](%318)
+      %348 : int = prim::GetAttr[name="out.8_scalar_type_0"](%318)
+      %out.8.quant.1 : Tensor = aten::quantize_per_tensor(%out.9, %346, %347, %348)
+      %out.8.dequant.1 : Tensor = aten::dequantize(%out.8.quant.1)
+      %351 : __torch__.torch.nn.modules.container.___torch_mangle_262.Sequential = prim::GetAttr[name="downsample"](%318)
+      %352 : __torch__.torch.nn.modules.conv.___torch_mangle_263.Conv2d = prim::GetAttr[name="0"](%351)
+      %353 : Tensor = prim::GetAttr[name="weight"](%352)
+      %354 : Float(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%352)
+      %355 : Int(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%352)
+      %356 : int = prim::GetAttr[name="2_axis_0"](%352)
+      %357 : int = prim::GetAttr[name="2_scalar_type_0"](%352)
+      %2.quant.4 : Tensor = aten::quantize_per_channel(%353, %354, %355, %356, %357)
+      %2.dequant.4 : Tensor = aten::dequantize(%2.quant.4)
+      %360 : Tensor? = prim::GetAttr[name="bias"](%352)
+      %x.15.dequant.1 : Tensor = aten::dequantize(%out.14.quant.7)
+      %identity.2 : Tensor = aten::conv2d(%x.15.dequant.1, %2.dequant.4, %360, %24, %18, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %362 : float = prim::GetAttr[name="identity.2_scale_0"](%318)
+      %363 : int = prim::GetAttr[name="identity.2_zero_point_0"](%318)
+      %364 : int = prim::GetAttr[name="identity.2_scalar_type_0"](%318)
+      %identity.2.quant : Tensor = aten::quantize_per_tensor(%identity.2, %362, %363, %364)
+      %identity.2.dequant.0 : Tensor = aten::dequantize(%identity.2.quant)
+      %out.12 : Tensor = aten::add_(%out.8.dequant.1, %identity.2.dequant.0, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.15 : Tensor = aten::relu_(%out.12) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %369 : float = prim::GetAttr[name="out.14_scale_0"](%318)
+      %370 : int = prim::GetAttr[name="out.14_zero_point_0"](%318)
+      %371 : int = prim::GetAttr[name="out.14_scalar_type_0"](%318)
+      %out.14.quant.1 : Tensor = aten::quantize_per_tensor(%out.15, %369, %370, %371)
+      %374 : __torch__.torch.nn.modules.conv.___torch_mangle_261.Conv2d = prim::GetAttr[name="conv1"](%319)
+      %375 : Tensor = prim::GetAttr[name="weight"](%374)
+      %376 : Float(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%374)
+      %377 : Int(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%374)
+      %378 : int = prim::GetAttr[name="2_axis_0"](%374)
+      %379 : int = prim::GetAttr[name="2_scalar_type_0"](%374)
+      %2.quant.1 : Tensor = aten::quantize_per_channel(%375, %376, %377, %378, %379)
+      %2.dequant.1 : Tensor = aten::dequantize(%2.quant.1)
+      %382 : Tensor? = prim::GetAttr[name="bias"](%374)
+      %input.3.dequant.0 : Tensor = aten::dequantize(%out.14.quant.1)
+      %out.1 : Tensor = aten::conv2d(%input.3.dequant.0, %2.dequant.1, %382, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %out.6 : Tensor = aten::relu_(%out.1) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %385 : float = prim::GetAttr[name="out.6_scale_0"](%319)
+      %386 : int = prim::GetAttr[name="out.6_zero_point_0"](%319)
+      %387 : int = prim::GetAttr[name="out.6_scalar_type_0"](%319)
+      %out.6.quant : Tensor = aten::quantize_per_tensor(%out.6, %385, %386, %387)
+      %out.6.dequant.0 : Tensor = aten::dequantize(%out.6.quant)
+      %390 : __torch__.torch.nn.modules.conv.___torch_mangle_261.Conv2d = prim::GetAttr[name="conv2"](%319)
+      %391 : Tensor = prim::GetAttr[name="weight"](%390)
+      %392 : Float(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_scale_0"](%390)
+      %393 : Int(512:1, requires_grad=0, device=cpu) = prim::GetAttr[name="2_zero_point_0"](%390)
+      %394 : int = prim::GetAttr[name="2_axis_0"](%390)
+      %395 : int = prim::GetAttr[name="2_scalar_type_0"](%390)
+      %2.quant : Tensor = aten::quantize_per_channel(%391, %392, %393, %394, %395)
+      %2.dequant.0 : Tensor = aten::dequantize(%2.quant)
+      %398 : Tensor? = prim::GetAttr[name="bias"](%390)
+      %out.8 : Tensor = aten::conv2d(%out.6.dequant.0, %2.dequant.0, %398, %22, %22, %22, %25) # /opt/conda/lib/python3.6/site-packages/torch/nn/modules/conv.py:419:15
+      %400 : float = prim::GetAttr[name="out.8_scale_0"](%319)
+      %401 : int = prim::GetAttr[name="out.8_zero_point_0"](%319)
+      %402 : int = prim::GetAttr[name="out.8_scalar_type_0"](%319)
+      %out.8.quant : Tensor = aten::quantize_per_tensor(%out.8, %400, %401, %402)
+      %out.8.dequant.0 : Tensor = aten::dequantize(%out.8.quant)
+      %input.3.dequant.1 : Tensor = aten::dequantize(%out.14.quant.1)
+      %out.11 : Tensor = aten::add_(%out.8.dequant.0, %input.3.dequant.1, %25) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:69:8
+      %out.14 : Tensor = aten::relu_(%out.11) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:1134:17
+      %407 : float = prim::GetAttr[name="out.14_scale_0"](%319)
+      %408 : int = prim::GetAttr[name="out.14_zero_point_0"](%319)
+      %409 : int = prim::GetAttr[name="out.14_scalar_type_0"](%319)
+      %out.14.quant : Tensor = aten::quantize_per_tensor(%out.14, %407, %408, %409)
+      %432 : int[] = prim::Constant[value=[1, 1]]()
+      %413 : int[] = aten::size(%out.14.quant) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:935:51
+      %414 : int = aten::len(%413) # <string>:5:9
+      %415 : bool = aten::gt(%414, %20) # <string>:5:9
+       = prim::If(%415) # <string>:5:2
+        block0():
+          -> ()
+        block1():
+           = prim::RaiseException(%17) # <string>:5:2
+          -> ()
+      %x.17.dequant.1 : Tensor = aten::dequantize(%out.14.quant)
+      %x.19 : Tensor = aten::adaptive_avg_pool2d(%x.17.dequant.1, %432) # /opt/conda/lib/python3.6/site-packages/torch/nn/functional.py:936:11
+      %out.14.quant.q_scale : float = aten::q_scale(%out.14.quant)
+      %out.14.quant.q_zero_point : int = aten::q_zero_point(%out.14.quant)
+      %out.14.quant.dtype : int = prim::dtype(%out.14.quant)
+      %x.19.quant : Tensor = aten::quantize_per_tensor(%x.19, %out.14.quant.q_scale, %out.14.quant.q_zero_point, %out.14.quant.dtype)
+      %x.21 : Tensor = aten::flatten(%x.19.quant, %25, %26) # /opt/conda/lib/python3.6/site-packages/torchvision/models/resnet.py:214:12
+      %418 : __torch__.torch.nn.modules.linear.___torch_mangle_266.Linear = prim::GetAttr[name="fc"](%self)
+      %419 : Tensor = prim::GetAttr[name="weight"](%418)
+      %420 : Float(1000:1, requires_grad=0, device=cpu) = prim::GetAttr[name="3_scale_0"](%418)
+      %421 : Int(1000:1, requires_grad=0, device=cpu) = prim::GetAttr[name="3_zero_point_0"](%418)
+      %422 : int = prim::GetAttr[name="3_axis_0"](%418)
+      %423 : int = prim::GetAttr[name="3_scalar_type_0"](%418)
+      %3.quant : Tensor = aten::quantize_per_channel(%419, %420, %421, %422, %423)
+      %3.dequant.0 : Tensor = aten::dequantize(%3.quant)
+      %426 : Tensor = prim::GetAttr[name="bias"](%418)
+      %x.21.dequant.0 : Tensor = aten::dequantize(%x.21)
+      %x.23 : Tensor = aten::linear(%x.21.dequant.0, %3.dequant.0, %426)
+      %12 : float = prim::GetAttr[name="4_scale_0"](%self)
+      %13 : int = prim::GetAttr[name="4_zero_point_0"](%self)
+      %14 : int = prim::GetAttr[name="4_scalar_type_0"](%self)
+      %4.quant : Tensor = aten::quantize_per_tensor(%x.23, %12, %13, %14)
+      %4.dequant.0 : Tensor = aten::dequantize(%4.quant)
+      return (%4.dequant.0)
+
+
 We can see that there is no ``quantized::conv2d`` in the model, but the numerically equivalent pattern 
 of ``aten::dequnatize - aten::conv2d - aten::quantize_per_tensor``.
+
+
+.. code-block:: default
+
+
+    print_size_of_model(quantized_debug_model)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size (MB): 46.956787
+
 
 Size of the debug model is the close to the floating point model because all the weights are 
 in float and not yet quantized and frozen, this allows people to inspect the weight. 
@@ -347,6 +1118,38 @@ You may access the weight attributes directly in the torchscript model, except f
 it is fused into the preceding convolutions. We will also develop graph mode ``Numeric Suite`` 
 to allow easier inspection of weights in the future. Accessing the weight in the debug model is 
 the same as accessing the weight in a TorchScript model:
+
+
+.. code-block:: default
+
+
+    def get_first_conv_weight(model):
+        return model.conv1.weight
+    w1 = get_first_conv_weight(ts_model)
+    w2 = get_first_conv_weight(quantized_debug_model)
+    print('first conv weight for input model:', str(w1)[:200])
+    print('first conv weight for quantized model:', str(w2)[:200])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    first conv weight for input model: Parameter containing:
+    tensor([[[[-1.0419e-02, -6.1356e-03, -1.8098e-03,  ...,  5.6615e-02,
+                1.7083e-02, -1.2694e-02],
+              [ 1.1083e-02,  9.5276e-03, -1.0993e-01,  ..., -2.7124e-01,
+  
+    first conv weight for quantized model: tensor([[[[-2.4267e-03, -1.4290e-03, -4.2151e-04,  ...,  1.3186e-02,
+                3.9788e-03, -2.9565e-03],
+              [ 2.5812e-03,  2.2190e-03, -2.5603e-02,  ..., -6.3173e-02,
+               -3.0062e-02,
+
 
 The weights are different because we fold the weights of BatchNorm to the previous conv before we quantize the model.
 More instructions on how to debug TorchScript model can be found `here <https://pytorch.org/docs/stable/jit.html#debugging>`_.
@@ -358,9 +1161,77 @@ and it will probably be the primary tool people use to debug numerical issues.
 9. Comparison with Baseline Float Model and Eager Mode Quantization
 ---------------------------
 
+
+.. code-block:: default
+
+
+    scripted_float_model_file = 'resnet18_scripted.pth'
+
+    print('Size of baseline model')
+    print_size_of_model(float_model)
+
+    top1, top5 = evaluate(float_model, criterion, data_loader_test)
+    print('Baseline Float Model Evaluation accuracy: %2.2f, %2.2f'%(top1.avg, top5.avg))
+    torch.jit.save(torch.jit.script(float_model), saved_model_dir + scripted_float_model_file)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size of baseline model
+    Size (MB): 46.870897
+
+    Baseline Float Model Evaluation accuracy: 68.90, 89.60
+
+
 In this section we compare the model quantized with graph mode quantization with the model 
 quantized in eager mode. Graph mode and eager mode produce very similar quantized models, 
 so the expectation is that the accuracy and speedup are similar as well.
+
+
+.. code-block:: default
+
+
+    print('Size of graph mode quantized model')
+    print_size_of_model(quantized_model)
+    top1, top5 = evaluate(quantized_model, criterion, data_loader_test)
+    print('graph mode quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
+
+    from torchvision.models.quantization.resnet import resnet18
+    eager_quantized_model = resnet18(pretrained=True, quantize=True).eval()
+    print('Size of eager mode quantized model')
+    eager_quantized_model = torch.jit.script(eager_quantized_model)
+    print_size_of_model(eager_quantized_model)
+    top1, top5 = evaluate(eager_quantized_model, criterion, data_loader_test)
+    print('eager mode quantized model Evaluation accuracy on test dataset: %2.2f, %2.2f'%(top1.avg, top5.avg))
+    eager_mode_model_file = 'resnet18_eager_mode_quantized.pth'
+    torch.jit.save(eager_quantized_model, saved_model_dir + eager_mode_model_file)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Size of graph mode quantized model
+    Size (MB): 11.820963
+
+    graph mode quantized model Evaluation accuracy on test dataset: 68.90, 89.40
+    Size of eager mode quantized model
+    Size (MB): 11.835107
+
+    eager mode quantized model Evaluation accuracy on test dataset: 69.40, 89.80
+
 
 We can see that the model size and accuracy of graph mode and eager mode quantized model are pretty similar.
 
@@ -383,21 +1254,9 @@ depending on model, device, build, input batch sizes, threading etc.
 
 
 
-.. code-block:: default
-
-
-
-
-    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
-
-
-
-
-
-
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.019 seconds)
+   **Total running time of the script:** ( 2 minutes  39.484 seconds)
 
 
 .. _sphx_glr_download_prototype_graph_mode_static_quantization_tutorial.py:
