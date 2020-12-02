@@ -69,7 +69,8 @@ de_vocab = build_vocab(train_filepaths[0], de_tokenizer)
 en_vocab = build_vocab(train_filepaths[1], en_tokenizer)
 
 def data_process(filepaths):
-  raw_de_iter, raw_en_iter = iter(io.open(filepaths[0])), iter(io.open(filepaths[1]))
+  raw_de_iter = iter(io.open(filepaths[0], encoding="utf8"))
+  raw_en_iter = iter(io.open(filepaths[1], encoding="utf8"))
   data = []
   for (raw_de, raw_en) in zip(raw_de_iter, raw_en_iter):
     de_tensor_ = torch.tensor([de_vocab[token] for token in de_tokenizer(raw_de)],
