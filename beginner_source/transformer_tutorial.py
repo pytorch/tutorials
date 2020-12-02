@@ -161,9 +161,9 @@ def data_process(raw_text_iter):
                        dtype=torch.long) for item in raw_text_iter]
   return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-train_data = data_process(iter(io.open(train_filepath)))
-val_data = data_process(iter(io.open(valid_filepath)))
-test_data = data_process(iter(io.open(test_filepath)))
+train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
+val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
+test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
