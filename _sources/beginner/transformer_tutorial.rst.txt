@@ -137,7 +137,7 @@ Load and batch data
 -------------------
 
 
-The training process uses Wikitext-2 dataset from ``torchtext``. The
+This tutorial uses ``torchtext`` to generate Wikitext-2 dataset. The
 vocab object is built based on the train dataset and is used to numericalize
 tokens into tensors. Starting from sequential data, the ``batchify()``
 function arranges the dataset into columns, trimming off any tokens remaining
@@ -167,18 +167,31 @@ efficient batch processing.
 .. code-block:: default
 
 
-    import torchtext
+    import io
+    import torch
+    from torchtext.utils import download_from_url, extract_archive
     from torchtext.data.utils import get_tokenizer
-    TEXT = torchtext.data.Field(tokenize=get_tokenizer("basic_english"),
-                                init_token='<sos>',
-                                eos_token='<eos>',
-                                lower=True)
-    train_txt, val_txt, test_txt = torchtext.datasets.WikiText2.splits(TEXT)
-    TEXT.build_vocab(train_txt)
+    from torchtext.vocab import build_vocab_from_iterator
+
+    url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
+    test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+    tokenizer = get_tokenizer('basic_english')
+    vocab = build_vocab_from_iterator(map(tokenizer,
+                                          iter(io.open(train_filepath,
+                                                       encoding="utf8"))))
+
+    def data_process(raw_text_iter):
+      data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                           dtype=torch.long) for item in raw_text_iter]
+      return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
+    train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
+    val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
+    test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def batchify(data, bsz):
-        data = TEXT.numericalize([data.examples[0].text])
         # Divide the dataset into bsz parts.
         nbatch = data.size(0) // bsz
         # Trim off any extra elements that wouldn't cleanly fit (remainders).
@@ -189,23 +202,15 @@ efficient batch processing.
 
     batch_size = 20
     eval_batch_size = 10
-    train_data = batchify(train_txt, batch_size)
-    val_data = batchify(val_txt, eval_batch_size)
-    test_data = batchify(test_txt, eval_batch_size)
+    train_data = batchify(train_data, batch_size)
+    val_data = batchify(val_data, eval_batch_size)
+    test_data = batchify(test_data, eval_batch_size)
 
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    downloading wikitext-2-v1.zip
-    extracting
 
 
 Functions to generate input and target sequence
@@ -255,7 +260,7 @@ equal to the length of the vocab object.
 .. code-block:: default
 
 
-    ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
+    ntokens = len(vocab.stoi) # the size of vocabulary
     emsize = 200 # embedding dimension
     nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
     nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -299,7 +304,6 @@ function to scale all the gradient together to prevent exploding.
         model.train() # Turn on the train mode
         total_loss = 0.
         start_time = time.time()
-        ntokens = len(TEXT.vocab.stoi)
         src_mask = model.generate_square_subsequent_mask(bptt).to(device)
         for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
             data, targets = get_batch(train_data, i)
@@ -329,7 +333,6 @@ function to scale all the gradient together to prevent exploding.
     def evaluate(eval_model, data_source):
         eval_model.eval() # Turn on the evaluation mode
         total_loss = 0.
-        ntokens = len(TEXT.vocab.stoi)
         src_mask = model.generate_square_subsequent_mask(bptt).to(device)
         with torch.no_grad():
             for i in range(0, data_source.size(0) - 1, bptt):
@@ -385,56 +388,56 @@ we've seen so far. Adjust the learning rate after each epoch.
 
  .. code-block:: none
 
-    | epoch   1 |   200/ 2981 batches | lr 5.00 | ms/batch 31.09 | loss  8.10 | ppl  3286.00
-    | epoch   1 |   400/ 2981 batches | lr 5.00 | ms/batch 29.91 | loss  6.83 | ppl   928.22
-    | epoch   1 |   600/ 2981 batches | lr 5.00 | ms/batch 29.80 | loss  6.38 | ppl   588.58
-    | epoch   1 |   800/ 2981 batches | lr 5.00 | ms/batch 29.89 | loss  6.23 | ppl   509.62
-    | epoch   1 |  1000/ 2981 batches | lr 5.00 | ms/batch 29.89 | loss  6.12 | ppl   454.57
-    | epoch   1 |  1200/ 2981 batches | lr 5.00 | ms/batch 29.90 | loss  6.09 | ppl   443.57
-    | epoch   1 |  1400/ 2981 batches | lr 5.00 | ms/batch 29.86 | loss  6.04 | ppl   420.88
-    | epoch   1 |  1600/ 2981 batches | lr 5.00 | ms/batch 29.83 | loss  6.05 | ppl   424.68
-    | epoch   1 |  1800/ 2981 batches | lr 5.00 | ms/batch 29.84 | loss  5.96 | ppl   389.23
-    | epoch   1 |  2000/ 2981 batches | lr 5.00 | ms/batch 29.86 | loss  5.97 | ppl   389.58
-    | epoch   1 |  2200/ 2981 batches | lr 5.00 | ms/batch 29.94 | loss  5.85 | ppl   347.61
-    | epoch   1 |  2400/ 2981 batches | lr 5.00 | ms/batch 29.89 | loss  5.90 | ppl   363.72
-    | epoch   1 |  2600/ 2981 batches | lr 5.00 | ms/batch 29.90 | loss  5.90 | ppl   366.47
-    | epoch   1 |  2800/ 2981 batches | lr 5.00 | ms/batch 29.87 | loss  5.79 | ppl   327.80
+    | epoch   1 |   200/ 2928 batches | lr 5.00 | ms/batch 30.80 | loss  8.25 | ppl  3838.55
+    | epoch   1 |   400/ 2928 batches | lr 5.00 | ms/batch 29.67 | loss  6.95 | ppl  1038.04
+    | epoch   1 |   600/ 2928 batches | lr 5.00 | ms/batch 29.76 | loss  6.48 | ppl   652.50
+    | epoch   1 |   800/ 2928 batches | lr 5.00 | ms/batch 29.87 | loss  6.33 | ppl   559.76
+    | epoch   1 |  1000/ 2928 batches | lr 5.00 | ms/batch 29.76 | loss  6.20 | ppl   493.22
+    | epoch   1 |  1200/ 2928 batches | lr 5.00 | ms/batch 29.90 | loss  6.16 | ppl   474.97
+    | epoch   1 |  1400/ 2928 batches | lr 5.00 | ms/batch 29.82 | loss  6.12 | ppl   454.07
+    | epoch   1 |  1600/ 2928 batches | lr 5.00 | ms/batch 29.75 | loss  6.11 | ppl   451.74
+    | epoch   1 |  1800/ 2928 batches | lr 5.00 | ms/batch 29.77 | loss  6.03 | ppl   417.01
+    | epoch   1 |  2000/ 2928 batches | lr 5.00 | ms/batch 29.86 | loss  6.03 | ppl   414.03
+    | epoch   1 |  2200/ 2928 batches | lr 5.00 | ms/batch 29.79 | loss  5.91 | ppl   367.26
+    | epoch   1 |  2400/ 2928 batches | lr 5.00 | ms/batch 29.82 | loss  5.97 | ppl   393.44
+    | epoch   1 |  2600/ 2928 batches | lr 5.00 | ms/batch 29.93 | loss  5.96 | ppl   385.99
+    | epoch   1 |  2800/ 2928 batches | lr 5.00 | ms/batch 29.82 | loss  5.89 | ppl   361.29
     -----------------------------------------------------------------------------------------
-    | end of epoch   1 | time: 92.94s | valid loss  5.70 | valid ppl   300.30
+    | end of epoch   1 | time: 91.09s | valid loss  5.83 | valid ppl   341.43
     -----------------------------------------------------------------------------------------
-    | epoch   2 |   200/ 2981 batches | lr 4.51 | ms/batch 30.05 | loss  5.81 | ppl   332.68
-    | epoch   2 |   400/ 2981 batches | lr 4.51 | ms/batch 29.89 | loss  5.78 | ppl   325.01
-    | epoch   2 |   600/ 2981 batches | lr 4.51 | ms/batch 29.92 | loss  5.61 | ppl   273.71
-    | epoch   2 |   800/ 2981 batches | lr 4.51 | ms/batch 29.90 | loss  5.64 | ppl   281.93
-    | epoch   2 |  1000/ 2981 batches | lr 4.51 | ms/batch 29.93 | loss  5.59 | ppl   267.45
-    | epoch   2 |  1200/ 2981 batches | lr 4.51 | ms/batch 29.90 | loss  5.62 | ppl   275.33
-    | epoch   2 |  1400/ 2981 batches | lr 4.51 | ms/batch 29.89 | loss  5.63 | ppl   277.44
-    | epoch   2 |  1600/ 2981 batches | lr 4.51 | ms/batch 29.85 | loss  5.66 | ppl   286.06
-    | epoch   2 |  1800/ 2981 batches | lr 4.51 | ms/batch 29.87 | loss  5.59 | ppl   266.45
-    | epoch   2 |  2000/ 2981 batches | lr 4.51 | ms/batch 29.78 | loss  5.61 | ppl   272.53
-    | epoch   2 |  2200/ 2981 batches | lr 4.51 | ms/batch 29.75 | loss  5.51 | ppl   246.55
-    | epoch   2 |  2400/ 2981 batches | lr 4.51 | ms/batch 29.81 | loss  5.58 | ppl   264.33
-    | epoch   2 |  2600/ 2981 batches | lr 4.51 | ms/batch 29.90 | loss  5.59 | ppl   268.62
-    | epoch   2 |  2800/ 2981 batches | lr 4.51 | ms/batch 29.88 | loss  5.51 | ppl   247.03
+    | epoch   2 |   200/ 2928 batches | lr 4.51 | ms/batch 30.01 | loss  5.87 | ppl   355.09
+    | epoch   2 |   400/ 2928 batches | lr 4.51 | ms/batch 29.88 | loss  5.87 | ppl   352.62
+    | epoch   2 |   600/ 2928 batches | lr 4.51 | ms/batch 29.88 | loss  5.68 | ppl   291.95
+    | epoch   2 |   800/ 2928 batches | lr 4.51 | ms/batch 29.79 | loss  5.71 | ppl   302.80
+    | epoch   2 |  1000/ 2928 batches | lr 4.51 | ms/batch 29.86 | loss  5.66 | ppl   288.54
+    | epoch   2 |  1200/ 2928 batches | lr 4.51 | ms/batch 29.87 | loss  5.69 | ppl   295.00
+    | epoch   2 |  1400/ 2928 batches | lr 4.51 | ms/batch 29.81 | loss  5.70 | ppl   298.85
+    | epoch   2 |  1600/ 2928 batches | lr 4.51 | ms/batch 29.82 | loss  5.72 | ppl   303.43
+    | epoch   2 |  1800/ 2928 batches | lr 4.51 | ms/batch 29.85 | loss  5.66 | ppl   286.81
+    | epoch   2 |  2000/ 2928 batches | lr 4.51 | ms/batch 29.83 | loss  5.68 | ppl   292.09
+    | epoch   2 |  2200/ 2928 batches | lr 4.51 | ms/batch 29.85 | loss  5.55 | ppl   257.97
+    | epoch   2 |  2400/ 2928 batches | lr 4.51 | ms/batch 29.84 | loss  5.65 | ppl   283.60
+    | epoch   2 |  2600/ 2928 batches | lr 4.51 | ms/batch 29.85 | loss  5.65 | ppl   284.43
+    | epoch   2 |  2800/ 2928 batches | lr 4.51 | ms/batch 29.86 | loss  5.58 | ppl   265.11
     -----------------------------------------------------------------------------------------
-    | end of epoch   2 | time: 92.71s | valid loss  5.57 | valid ppl   262.41
+    | end of epoch   2 | time: 91.05s | valid loss  5.66 | valid ppl   287.03
     -----------------------------------------------------------------------------------------
-    | epoch   3 |   200/ 2981 batches | lr 4.29 | ms/batch 30.06 | loss  5.55 | ppl   256.93
-    | epoch   3 |   400/ 2981 batches | lr 4.29 | ms/batch 29.91 | loss  5.55 | ppl   257.93
-    | epoch   3 |   600/ 2981 batches | lr 4.29 | ms/batch 29.96 | loss  5.36 | ppl   211.90
-    | epoch   3 |   800/ 2981 batches | lr 4.29 | ms/batch 29.93 | loss  5.41 | ppl   223.12
-    | epoch   3 |  1000/ 2981 batches | lr 4.29 | ms/batch 29.87 | loss  5.37 | ppl   214.94
-    | epoch   3 |  1200/ 2981 batches | lr 4.29 | ms/batch 29.84 | loss  5.40 | ppl   222.32
-    | epoch   3 |  1400/ 2981 batches | lr 4.29 | ms/batch 29.82 | loss  5.44 | ppl   229.92
-    | epoch   3 |  1600/ 2981 batches | lr 4.29 | ms/batch 29.80 | loss  5.47 | ppl   238.16
-    | epoch   3 |  1800/ 2981 batches | lr 4.29 | ms/batch 29.88 | loss  5.41 | ppl   223.02
-    | epoch   3 |  2000/ 2981 batches | lr 4.29 | ms/batch 29.89 | loss  5.43 | ppl   228.80
-    | epoch   3 |  2200/ 2981 batches | lr 4.29 | ms/batch 29.96 | loss  5.31 | ppl   202.01
-    | epoch   3 |  2400/ 2981 batches | lr 4.29 | ms/batch 29.93 | loss  5.39 | ppl   220.08
-    | epoch   3 |  2600/ 2981 batches | lr 4.29 | ms/batch 29.90 | loss  5.41 | ppl   224.19
-    | epoch   3 |  2800/ 2981 batches | lr 4.29 | ms/batch 29.92 | loss  5.34 | ppl   209.01
+    | epoch   3 |   200/ 2928 batches | lr 4.29 | ms/batch 30.01 | loss  5.60 | ppl   271.66
+    | epoch   3 |   400/ 2928 batches | lr 4.29 | ms/batch 29.87 | loss  5.63 | ppl   277.87
+    | epoch   3 |   600/ 2928 batches | lr 4.29 | ms/batch 29.89 | loss  5.43 | ppl   228.07
+    | epoch   3 |   800/ 2928 batches | lr 4.29 | ms/batch 29.88 | loss  5.48 | ppl   240.44
+    | epoch   3 |  1000/ 2928 batches | lr 4.29 | ms/batch 29.94 | loss  5.43 | ppl   229.11
+    | epoch   3 |  1200/ 2928 batches | lr 4.29 | ms/batch 29.89 | loss  5.47 | ppl   237.80
+    | epoch   3 |  1400/ 2928 batches | lr 4.29 | ms/batch 29.89 | loss  5.49 | ppl   241.46
+    | epoch   3 |  1600/ 2928 batches | lr 4.29 | ms/batch 29.91 | loss  5.52 | ppl   248.84
+    | epoch   3 |  1800/ 2928 batches | lr 4.29 | ms/batch 29.89 | loss  5.45 | ppl   233.81
+    | epoch   3 |  2000/ 2928 batches | lr 4.29 | ms/batch 29.90 | loss  5.48 | ppl   240.22
+    | epoch   3 |  2200/ 2928 batches | lr 4.29 | ms/batch 29.89 | loss  5.35 | ppl   210.99
+    | epoch   3 |  2400/ 2928 batches | lr 4.29 | ms/batch 29.86 | loss  5.46 | ppl   234.72
+    | epoch   3 |  2600/ 2928 batches | lr 4.29 | ms/batch 29.88 | loss  5.46 | ppl   234.85
+    | epoch   3 |  2800/ 2928 batches | lr 4.29 | ms/batch 29.85 | loss  5.39 | ppl   220.00
     -----------------------------------------------------------------------------------------
-    | end of epoch   3 | time: 92.79s | valid loss  5.52 | valid ppl   248.46
+    | end of epoch   3 | time: 91.16s | valid loss  5.57 | valid ppl   262.48
     -----------------------------------------------------------------------------------------
 
 
@@ -463,14 +466,14 @@ Apply the best model to check the result with the test dataset.
  .. code-block:: none
 
     =========================================================================================
-    | End of training | test loss  5.43 | test ppl   227.01
+    | End of training | test loss  5.48 | test ppl   240.05
     =========================================================================================
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  53.441 seconds)
+   **Total running time of the script:** ( 4 minutes  49.345 seconds)
 
 
 .. _sphx_glr_download_beginner_transformer_tutorial.py:
