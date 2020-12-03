@@ -204,8 +204,8 @@ chooses a random number between 3 and 5 and uses that many orders, reusing
 the same weights multiple times to compute the fourth and fifth order.
 
 For this model we can use normal Python flow control to implement the loop,
-and we can implement weight sharing among the innermost layers by simply
-reusing the same Module multiple times when defining the forward pass.
+and we can implement weight sharing by simply reusing the same parameter multiple
+times when defining the forward pass.
 
 We can easily implement this model as a Module subclass:
 
