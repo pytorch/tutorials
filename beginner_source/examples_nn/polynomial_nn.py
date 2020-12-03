@@ -42,9 +42,6 @@ model = torch.nn.Sequential(
     torch.nn.Flatten(0, 1)
 )
 
-# In order to use :class:`torch.nn.Linear`, we need to prepare our
-# input and output in a format of (batch, D_in) and (batch, D_out)
-
 # The nn package also contains definitions of popular loss functions; in this
 # case we will use Mean Squared Error (MSE) as our loss function.
 loss_fn = torch.nn.MSELoss(reduction='sum')
