@@ -190,7 +190,7 @@ Modules by subclassing ``nn.Module`` and defining a ``forward`` which
 receives input Tensors and produces output Tensors using other
 modules or other autograd operations on Tensors.
 
-In this example we implement our two-layer network as a custom Module
+In this example we implement our third order polynomial as a custom Module
 subclass:
 
 .. includenodoc:: /beginner/examples_nn/polynomial_module.py
