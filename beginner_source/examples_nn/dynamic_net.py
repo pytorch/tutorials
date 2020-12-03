@@ -16,8 +16,7 @@ import math
 class DynamicNet(torch.nn.Module):
     def __init__(self):
         """
-        In the constructor we instantiate four parameters and assign them as
-        member variables.
+        In the constructor we instantiate five parameters and assign them as members.
         """
         super().__init__()
         self.a = torch.nn.Parameter(torch.randn(()))
@@ -35,9 +34,8 @@ class DynamicNet(torch.nn.Module):
         Python control-flow operators like loops or conditional statements when
         defining the forward pass of the model.
 
-        Here we also see that it is perfectly safe to reuse the same Module many
-        times when defining a computational graph. This is a big improvement from Lua
-        Torch, where each Module could be used only once.
+        Here we also see that it is perfectly safe to reuse the same parameter many
+        times when defining a computational graph.
         """
         y = self.a + self.b * x + self.c * x ** 2 + self.d * x ** 3
         for exp in range(4, random.randint(4, 6)):
