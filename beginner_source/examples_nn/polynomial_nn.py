@@ -3,8 +3,8 @@
 PyTorch: nn
 -----------
 
-A fully-connected ReLU network with one hidden layer, trained to predict y from x
-by minimizing squared Euclidean distance.
+A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
+to :math:`pi` by minimizing squared Euclidean distance.
 
 This implementation uses the nn package from PyTorch to build the network.
 PyTorch autograd makes it easy to define computational graphs and take gradients,
@@ -14,41 +14,47 @@ which you can think of as a neural network layer that has produces output from
 input and may have some trainable weights.
 """
 import torch
+import math
 
-# N is batch size; D_in is input dimension;
-# H is hidden dimension; D_out is output dimension.
-N, D_in, H, D_out = 64, 1000, 100, 10
 
-# Create random Tensors to hold inputs and outputs
-x = torch.randn(N, D_in)
-y = torch.randn(N, D_out)
+# Create Tensors to hold input and outputs.
+x = torch.linspace(-math.pi, math.pi, 2000)
+y = torch.sin(x)
 
-# Use the nn package to define our model as a sequence of layers. nn.Sequential
-# is a Module which contains other Modules, and applies them in sequence to
-# produce its output. Each Linear Module computes output from input using a
-# linear function, and holds internal Tensors for its weight and bias.
-model = torch.nn.Sequential(
-    torch.nn.Linear(D_in, H),
-    torch.nn.ReLU(),
-    torch.nn.Linear(H, D_out),
-)
+# Use the nn package to define our model as a single layer or a sequence of layers.
+# For this example, the output y is a linear function of (x, x^2, x^3), so
+# we can consider it as a single linear layer neural network.
+model = torch.nn.Linear(3, 1)
+
+# If your model has multiple layers, you can use :class:`torch.nn.Sequential` them in
+# sequence to produce its output. Something like:
+# model = torch.nn.Sequential(
+#     torch.nn.Linear(D_in, H),
+#     torch.nn.ReLU(),
+#     torch.nn.Linear(H, D_out),
+# )
 
 # The nn package also contains definitions of popular loss functions; in this
 # case we will use Mean Squared Error (MSE) as our loss function.
 loss_fn = torch.nn.MSELoss(reduction='sum')
 
-learning_rate = 1e-4
-for t in range(500):
+learning_rate = 1e-6
+for t in range(2000):
+    # In order to use :class:`torch.nn.Linear`, we need to prepare our
+    # input and output in a format of (batch, D_in) and (batch, D_out)
+    xx = x.unsqueeze(-1).pow(torch.tensor([1, 2, 3]))
+    yy = y.unsqueeze(-1)
+
     # Forward pass: compute predicted y by passing x to the model. Module objects
     # override the __call__ operator so you can call them like functions. When
     # doing so you pass a Tensor of input data to the Module and it produces
     # a Tensor of output data.
-    y_pred = model(x)
+    y_pred = model(xx)
 
     # Compute and print loss. We pass Tensors containing the predicted and true
     # values of y, and the loss function returns a Tensor containing the
     # loss.
-    loss = loss_fn(y_pred, y)
+    loss = loss_fn(y_pred, yy)
     if t % 100 == 99:
         print(t, loss.item())
 
@@ -66,3 +72,5 @@ for t in range(500):
     with torch.no_grad():
         for param in model.parameters():
             param -= learning_rate * param.grad
+
+print(f'Result: y = {model.bias.item()} + {model.weight[:, 0].item()} x + {model.weight[:, 1].item()} x^2 + {model.weight[:, 2].item()} x^3')

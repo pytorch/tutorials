@@ -157,10 +157,10 @@ containing learnable parameters. The ``nn`` package also defines a set
 of useful loss functions that are commonly used when training neural
 networks.
 
-In this example we use the ``nn`` package to implement our two-layer
+In this example we use the ``nn`` package to implement our polynomial model
 network:
 
-.. includenodoc:: /beginner/examples_nn/two_layer_net_nn.py
+.. includenodoc:: /beginner/examples_nn/polynomial_nn.py
 
 PyTorch: optim
 --------------
@@ -177,10 +177,10 @@ algorithm and provides implementations of commonly used optimization
 algorithms.
 
 In this example we will use the ``nn`` package to define our model as
-before, but we will optimize the model using the Adam algorithm provided
+before, but we will optimize the model using the SGD algorithm provided
 by the ``optim`` package:
 
-.. includenodoc:: /beginner/examples_nn/two_layer_net_optim.py
+.. includenodoc:: /beginner/examples_nn/polynomial_optim.py
 
 PyTorch: Custom nn Modules
 --------------------------
@@ -194,7 +194,7 @@ modules or other autograd operations on Tensors.
 In this example we implement our two-layer network as a custom Module
 subclass:
 
-.. includenodoc:: /beginner/examples_nn/two_layer_net_module.py
+.. includenodoc:: /beginner/examples_nn/polynomial_module.py
 
 PyTorch: Control Flow + Weight Sharing
 --------------------------------------
@@ -228,12 +228,12 @@ Tensors
    :maxdepth: 2
    :hidden:
 
-   /beginner/examples_tensor/two_layer_net_numpy
-   /beginner/examples_tensor/two_layer_net_tensor
+   /beginner/examples_tensor/polynomial_numpy
+   /beginner/examples_tensor/polynomial_tensor
 
-.. galleryitem:: /beginner/examples_tensor/two_layer_net_numpy.py
+.. galleryitem:: /beginner/examples_tensor/polynomial_numpy.py
 
-.. galleryitem:: /beginner/examples_tensor/two_layer_net_tensor.py
+.. galleryitem:: /beginner/examples_tensor/polynomial_tensor.py
 
 .. raw:: html
 
@@ -246,16 +246,13 @@ Autograd
    :maxdepth: 2
    :hidden:
 
-   /beginner/examples_autograd/two_layer_net_autograd
-   /beginner/examples_autograd/two_layer_net_custom_function
-   /beginner/examples_autograd/tf_two_layer_net
+   /beginner/examples_autograd/polynomial_autograd
+   /beginner/examples_autograd/polynomial_custom_function
 
 
-.. galleryitem:: /beginner/examples_autograd/two_layer_net_autograd.py
+.. galleryitem:: /beginner/examples_autograd/polynomial_autograd.py
 
-.. galleryitem:: /beginner/examples_autograd/two_layer_net_custom_function.py
-
-.. galleryitem:: /beginner/examples_autograd/tf_two_layer_net.py
+.. galleryitem:: /beginner/examples_autograd/polynomial_custom_function.py
 
 .. raw:: html
 
@@ -268,17 +265,17 @@ Autograd
    :maxdepth: 2
    :hidden:
 
-   /beginner/examples_nn/two_layer_net_nn
-   /beginner/examples_nn/two_layer_net_optim
-   /beginner/examples_nn/two_layer_net_module
+   /beginner/examples_nn/polynomial_nn
+   /beginner/examples_nn/polynomial_optim
+   /beginner/examples_nn/polynomial_module
    /beginner/examples_nn/dynamic_net
 
 
-.. galleryitem:: /beginner/examples_nn/two_layer_net_nn.py
+.. galleryitem:: /beginner/examples_nn/polynomial_nn.py
 
-.. galleryitem:: /beginner/examples_nn/two_layer_net_optim.py
+.. galleryitem:: /beginner/examples_nn/polynomial_optim.py
 
-.. galleryitem:: /beginner/examples_nn/two_layer_net_module.py
+.. galleryitem:: /beginner/examples_nn/polynomial_module.py
 
 .. galleryitem:: /beginner/examples_nn/dynamic_net.py
 
