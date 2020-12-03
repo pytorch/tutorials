@@ -57,10 +57,6 @@ for t in range(2000):
     # Manually update weights using gradient descent. Wrap in torch.no_grad()
     # because weights have requires_grad=True, but we don't need to track this
     # in autograd.
-    # An alternative way is to operate on weight.data and weight.grad.data.
-    # Recall that tensor.data gives a tensor that shares the storage with
-    # tensor, but doesn't track history.
-    # You can also use torch.optim.SGD to achieve this.
     with torch.no_grad():
         a -= learning_rate * a.grad
         b -= learning_rate * b.grad
