@@ -15,10 +15,10 @@ import math
 
 
 class Polynomial3(torch.nn.Module):
-    def __init__(self,):
+    def __init__(self):
         """
         In the constructor we instantiate four parameters and assign them as
-        member variables.
+        member parameters.
         """
         super().__init__()
         self.a = torch.nn.Parameter(torch.randn(()))
