@@ -118,7 +118,7 @@ constructing an instance and calling it like a function, passing
 Tensors containing input data.
 
 In this example we define our model as :math:`y=a+b*P_3(c+dx)` instead of
-:math:`y=a+bx+cx^2+dx^3`, where :math:`P_3(x)=\frac{1/2}\left(5x^3-3x\right)`
+:math:`y=a+bx+cx^2+dx^3`, where :math:`P_3(x)=\frac{1}{2}\left(5x^3-3x\right)`
 is the `Legendre polynomial`_ of degree three. We write our own custom autograd
 function for computing forward and backward of P3, and use it to implement our
 model:
