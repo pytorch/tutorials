@@ -21,8 +21,15 @@ import math
 x = torch.linspace(-math.pi, math.pi, 2000)
 y = torch.sin(x)
 
+# Prepare the input tensor (x, x^2, x^3).
+p = torch.tensor([1, 2, 3])
+xx = x.unsqueeze(-1).pow(p)
+
 # Use the nn package to define our model and loss function.
-model = torch.nn.Linear(3, 1)
+model = torch.nn.Sequential(
+    torch.nn.Linear(3, 1),
+    torch.nn.Flatten(0, 1)
+)
 loss_fn = torch.nn.MSELoss(reduction='sum')
 
 # Use the optim package to define an Optimizer that will update the weights of
@@ -32,16 +39,11 @@ loss_fn = torch.nn.MSELoss(reduction='sum')
 learning_rate = 1e-6
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 for t in range(2000):
-    # In order to use :class:`torch.nn.Linear`, we need to prepare our
-    # input and output in a format of (batch, D_in) and (batch, D_out)
-    xx = x.unsqueeze(-1).pow(torch.tensor([1, 2, 3]))
-    yy = y.unsqueeze(-1)
-
     # Forward pass: compute predicted y by passing x to the model.
     y_pred = model(xx)
 
     # Compute and print loss.
-    loss = loss_fn(y_pred, yy)
+    loss = loss_fn(y_pred, y)
     if t % 100 == 99:
         print(t, loss.item())
 
@@ -61,4 +63,5 @@ for t in range(2000):
     optimizer.step()
 
 
-print(f'Result: y = {model.bias.item()} + {model.weight[:, 0].item()} x + {model.weight[:, 1].item()} x^2 + {model.weight[:, 2].item()} x^3')
+linear_layer = model[0]
+print(f'Result: y = {linear_layer.bias.item()} + {linear_layer.weight[:, 0].item()} x + {linear_layer.weight[:, 1].item()} x^2 + {linear_layer.weight[:, 2].item()} x^3')
