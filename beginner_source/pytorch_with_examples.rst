@@ -60,7 +60,7 @@ generic tool for scientific computing.
 
 Also unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
 their numeric computations. To run a PyTorch Tensor on GPU, you simply
-need to cast it to a new datatype.
+need to specify the correct device.
 
 Here we use PyTorch Tensors to fit a third order polynomial to sine function.
 Like the numpy example above we need to manually implement the forward
