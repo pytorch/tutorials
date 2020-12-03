@@ -33,11 +33,11 @@ model = torch.nn.Sequential(
 loss_fn = torch.nn.MSELoss(reduction='sum')
 
 # Use the optim package to define an Optimizer that will update the weights of
-# the model for us. Here we will use Adam; the optim package contains many other
-# optimization algorithms. The first argument to the Adam constructor tells the
+# the model for us. Here we will use RMSprop; the optim package contains many other
+# optimization algorithms. The first argument to the RMSprop constructor tells the
 # optimizer which Tensors it should update.
-learning_rate = 1e-6
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+learning_rate = 1e-3
+optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 for t in range(2000):
     # Forward pass: compute predicted y by passing x to the model.
     y_pred = model(xx)

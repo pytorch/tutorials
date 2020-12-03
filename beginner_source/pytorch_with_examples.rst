@@ -166,18 +166,17 @@ PyTorch: optim
 --------------
 
 Up to this point we have updated the weights of our models by manually
-mutating the Tensors holding learnable parameters (with ``torch.no_grad()``
-or ``.data`` to avoid tracking history in autograd). This is not a huge
-burden for simple optimization algorithms like stochastic gradient descent,
-but in practice we often train neural networks using more sophisticated
-optimizers like AdaGrad, RMSProp, Adam, etc.
+mutating the Tensors holding learnable parameters with ``torch.no_grad()``.
+This is not a huge burden for simple optimization algorithms like stochastic
+gradient descent, but in practice we often train neural networks using more
+sophisticated optimizers like AdaGrad, RMSProp, Adam, etc.
 
 The ``optim`` package in PyTorch abstracts the idea of an optimization
 algorithm and provides implementations of commonly used optimization
 algorithms.
 
 In this example we will use the ``nn`` package to define our model as
-before, but we will optimize the model using the SGD algorithm provided
+before, but we will optimize the model using the RMSprop algorithm provided
 by the ``optim`` package:
 
 .. includenodoc:: /beginner/examples_nn/polynomial_optim.py
