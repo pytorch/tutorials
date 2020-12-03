@@ -56,8 +56,8 @@ device = torch.device("cpu")
 # device = torch.device("cuda:0")  # Uncomment this to run on GPU
 
 # Create Tensors to hold input and outputs.
-# Setting requires_grad=False indicates that we do not need to compute gradients
-# with respect to these Tensors during the backward pass.
+# By default, requires_grad=False, which indicates that we do not need to
+# compute gradients with respect to these Tensors during the backward pass.
 x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
 y = torch.sin(x)
 

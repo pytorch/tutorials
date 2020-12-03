@@ -22,8 +22,8 @@ device = torch.device("cpu")
 # device = torch.device("cuda:0")  # Uncomment this to run on GPU
 
 # Create Tensors to hold input and outputs.
-# Setting requires_grad=False indicates that we do not need to compute gradients
-# with respect to these Tensors during the backward pass.
+# By default, requires_grad=False, which indicates that we do not need to
+# compute gradients with respect to these Tensors during the backward pass.
 x = torch.linspace(-math.pi, math.pi, 2000, device=device, dtype=dtype)
 y = torch.sin(x)
 
@@ -38,10 +38,7 @@ d = torch.randn((), device=device, dtype=dtype, requires_grad=True)
 
 learning_rate = 1e-6
 for t in range(2000):
-    # Forward pass: compute predicted y using operations on Tensors; these
-    # are exactly the same operations we used to compute the forward pass using
-    # Tensors, but we do not need to keep references to intermediate values since
-    # we are not implementing the backward pass by hand.
+    # Forward pass: compute predicted y using operations on Tensors.
     y_pred = a + b * x + c * x ** 2 + d * x ** 3
 
     # Compute and print loss using operations on Tensors.
@@ -53,8 +50,8 @@ for t in range(2000):
 
     # Use autograd to compute the backward pass. This call will compute the
     # gradient of loss with respect to all Tensors with requires_grad=True.
-    # After this call w1.grad and w2.grad will be Tensors holding the gradient
-    # of the loss with respect to w1 and w2 respectively.
+    # After this call a.grad, b.grad. c.grad and d.grad will be Tensors holding
+    # the gradient of the loss with respect to a, b, c, d respectively.
     loss.backward()
 
     # Manually update weights using gradient descent. Wrap in torch.no_grad()
