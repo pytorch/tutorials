@@ -13,7 +13,7 @@
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="examples_tensor/two_layer_net_numpy.html" rel="next" title="Warm-up: numpy"/>
+<link href="examples_tensor/polynomial_numpy.html" rel="next" title="Warm-up: numpy"/>
 <link href="blitz/cifar10_tutorial.html" rel="prev" title="Training a Classifier"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -253,8 +253,8 @@ examples.</p>
 <li>An n-dimensional Tensor, similar to numpy but can run on GPUs</li>
 <li>Automatic differentiation for building and training neural networks</li>
 </ul>
-<p>We will use a fully-connected ReLU network as our running example. The
-network will have a single hidden layer, and will be trained with
+<p>We will use a problem of fitting <span class="math notranslate nohighlight">\(y=\sin(x)\)</span> with a third order polynomial
+as our running example. The network will have four parameters, and will be trained with
 gradient descent to fit random data by minimizing the Euclidean distance
 between the network output and the true output.</p>
 <div class="admonition note">
@@ -265,85 +265,87 @@ between the network output and the true output.</p>
 <div class="contents local topic" id="table-of-contents">
 <p class="topic-title">Table of Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#tensors" id="id13">Tensors</a><ul>
-<li><a class="reference internal" href="#warm-up-numpy" id="id14">Warm-up: numpy</a></li>
-<li><a class="reference internal" href="#pytorch-tensors" id="id15">PyTorch: Tensors</a></li>
+<li><a class="reference internal" href="#tensors" id="id12">Tensors</a><ul>
+<li><a class="reference internal" href="#warm-up-numpy" id="id13">Warm-up: numpy</a></li>
+<li><a class="reference internal" href="#pytorch-tensors" id="id14">PyTorch: Tensors</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#autograd" id="id16">Autograd</a><ul>
-<li><a class="reference internal" href="#pytorch-tensors-and-autograd" id="id17">PyTorch: Tensors and autograd</a></li>
-<li><a class="reference internal" href="#pytorch-defining-new-autograd-functions" id="id18">PyTorch: Defining new autograd functions</a></li>
+<li><a class="reference internal" href="#autograd" id="id15">Autograd</a><ul>
+<li><a class="reference internal" href="#pytorch-tensors-and-autograd" id="id16">PyTorch: Tensors and autograd</a></li>
+<li><a class="reference internal" href="#pytorch-defining-new-autograd-functions" id="id17">PyTorch: Defining new autograd functions</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#nn-module" id="id19"><cite>nn</cite> module</a><ul>
-<li><a class="reference internal" href="#pytorch-nn" id="id20">PyTorch: nn</a></li>
-<li><a class="reference internal" href="#pytorch-optim" id="id21">PyTorch: optim</a></li>
-<li><a class="reference internal" href="#pytorch-custom-nn-modules" id="id22">PyTorch: Custom nn Modules</a></li>
-<li><a class="reference internal" href="#pytorch-control-flow-weight-sharing" id="id23">PyTorch: Control Flow + Weight Sharing</a></li>
+<li><a class="reference internal" href="#nn-module" id="id18"><cite>nn</cite> module</a><ul>
+<li><a class="reference internal" href="#pytorch-nn" id="id19">PyTorch: nn</a></li>
+<li><a class="reference internal" href="#pytorch-optim" id="id20">PyTorch: optim</a></li>
+<li><a class="reference internal" href="#pytorch-custom-nn-modules" id="id21">PyTorch: Custom nn Modules</a></li>
+<li><a class="reference internal" href="#pytorch-control-flow-weight-sharing" id="id22">PyTorch: Control Flow + Weight Sharing</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples" id="id24">Examples</a><ul>
-<li><a class="reference internal" href="#id1" id="id25">Tensors</a></li>
-<li><a class="reference internal" href="#id2" id="id26">Autograd</a></li>
-<li><a class="reference internal" href="#id3" id="id27"><cite>nn</cite> module</a></li>
+<li><a class="reference internal" href="#examples" id="id23">Examples</a><ul>
+<li><a class="reference internal" href="#id1" id="id24">Tensors</a></li>
+<li><a class="reference internal" href="#id2" id="id25">Autograd</a></li>
+<li><a class="reference internal" href="#id3" id="id26"><cite>nn</cite> module</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="tensors">
-<h2><a class="toc-backref" href="#id13">Tensors</a><a class="headerlink" href="#tensors" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id12">Tensors</a><a class="headerlink" href="#tensors" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="warm-up-numpy">
-<h3><a class="toc-backref" href="#id14">Warm-up: numpy</a><a class="headerlink" href="#warm-up-numpy" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id13">Warm-up: numpy</a><a class="headerlink" href="#warm-up-numpy" title="Permalink to this headline">¶</a></h3>
 <p>Before introducing PyTorch, we will first implement the network using
 numpy.</p>
 <p>Numpy provides an n-dimensional array object, and many functions for
 manipulating these arrays. Numpy is a generic framework for scientific
 computing; it does not know anything about computation graphs, or deep
 learning, or gradients. However we can easily use numpy to fit a
-two-layer network to random data by manually implementing the forward
+third order polynomial to sine function by manually implementing the forward
 and backward passes through the network using numpy operations:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 <span class="c1"># Create random input and output data</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Randomly initialize weights</span>
-<span class="n">w1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-<span class="n">w2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
 
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
     <span class="c1"># Forward pass: compute predicted y</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w1</span><span class="p">)</span>
-    <span class="n">h_relu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">h_relu</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
+    <span class="c1"># y = a + b x + c x^2 + d x^3</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
 
     <span class="c1"># Compute and print loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">99</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
 
-    <span class="c1"># Backprop to compute gradients of w1 and w2 with respect to loss</span>
+    <span class="c1"># Backprop to compute gradients of a, b, c, d with respect to loss</span>
     <span class="n">grad_y_pred</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">grad_w2</span> <span class="o">=</span> <span class="n">h_relu</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad_y_pred</span><span class="p">)</span>
-    <span class="n">grad_h_relu</span> <span class="o">=</span> <span class="n">grad_y_pred</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-    <span class="n">grad_h</span> <span class="o">=</span> <span class="n">grad_h_relu</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">grad_h</span><span class="p">[</span><span class="n">h</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">grad_w1</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad_h</span><span class="p">)</span>
+    <span class="n">grad_a</span> <span class="o">=</span> <span class="n">grad_y_pred</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_d</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
     <span class="c1"># Update weights</span>
-    <span class="n">w1</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_w1</span>
-    <span class="n">w2</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_w2</span>
+    <span class="n">a</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_a</span>
+    <span class="n">b</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_b</span>
+    <span class="n">c</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_c</span>
+    <span class="n">d</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_d</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="pytorch-tensors">
-<h3><a class="toc-backref" href="#id15">PyTorch: Tensors</a><a class="headerlink" href="#pytorch-tensors" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id14">PyTorch: Tensors</a><a class="headerlink" href="#pytorch-tensors" title="Permalink to this headline">¶</a></h3>
 <p>Numpy is a great framework, but it cannot utilize GPUs to accelerate its
 numerical computations. For modern deep neural networks, GPUs often
 provide speedups of <a class="reference external" href="https://github.com/jcjohnson/cnn-benchmarks">50x or
@@ -357,62 +359,63 @@ a computational graph and gradients, but they’re also useful as a
 generic tool for scientific computing.</p>
 <p>Also unlike numpy, PyTorch Tensors can utilize GPUs to accelerate
 their numeric computations. To run a PyTorch Tensor on GPU, you simply
-need to cast it to a new datatype.</p>
-<p>Here we use PyTorch Tensors to fit a two-layer network to random data.
+need to specify the correct device.</p>
+<p>Here we use PyTorch Tensors to fit a third order polynomial to sine function.
 Like the numpy example above we need to manually implement the forward
 and backward passes through the network:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
 <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 <span class="c1"># device = torch.device("cuda:0") # Uncomment this to run on GPU</span>
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
-
 <span class="c1"># Create random input and output data</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Randomly initialize weights</span>
-<span class="n">w1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">w2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
     <span class="c1"># Forward pass: compute predicted y</span>
-    <span class="n">h</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w1</span><span class="p">)</span>
-    <span class="n">h_relu</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">h_relu</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
 
     <span class="c1"># Compute and print loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">99</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="p">)</span>
 
-    <span class="c1"># Backprop to compute gradients of w1 and w2 with respect to loss</span>
+    <span class="c1"># Backprop to compute gradients of a, b, c, d with respect to loss</span>
     <span class="n">grad_y_pred</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">grad_w2</span> <span class="o">=</span> <span class="n">h_relu</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">grad_y_pred</span><span class="p">)</span>
-    <span class="n">grad_h_relu</span> <span class="o">=</span> <span class="n">grad_y_pred</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="o">.</span><span class="n">t</span><span class="p">())</span>
-    <span class="n">grad_h</span> <span class="o">=</span> <span class="n">grad_h_relu</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-    <span class="n">grad_h</span><span class="p">[</span><span class="n">h</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">grad_w1</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">grad_h</span><span class="p">)</span>
+    <span class="n">grad_a</span> <span class="o">=</span> <span class="n">grad_y_pred</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">grad_d</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad_y_pred</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
     <span class="c1"># Update weights using gradient descent</span>
-    <span class="n">w1</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_w1</span>
-    <span class="n">w2</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_w2</span>
+    <span class="n">a</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_a</span>
+    <span class="n">b</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_b</span>
+    <span class="n">c</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_c</span>
+    <span class="n">d</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">grad_d</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="autograd">
-<h2><a class="toc-backref" href="#id16">Autograd</a><a class="headerlink" href="#autograd" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id15">Autograd</a><a class="headerlink" href="#autograd" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="pytorch-tensors-and-autograd">
-<h3><a class="toc-backref" href="#id17">PyTorch: Tensors and autograd</a><a class="headerlink" href="#pytorch-tensors-and-autograd" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id16">PyTorch: Tensors and autograd</a><a class="headerlink" href="#pytorch-tensors-and-autograd" title="Permalink to this headline">¶</a></h3>
 <p>In the above examples, we had to manually implement both the forward and
 backward passes of our neural network. Manually implementing the
 backward pass is not a big deal for a small two-layer network, but can
@@ -430,47 +433,36 @@ gradients.</p>
 represents a node in a computational graph. If <code class="docutils literal notranslate"><span class="pre">x</span></code> is a Tensor that has
 <code class="docutils literal notranslate"><span class="pre">x.requires_grad=True</span></code> then <code class="docutils literal notranslate"><span class="pre">x.grad</span></code> is another Tensor holding the
 gradient of <code class="docutils literal notranslate"><span class="pre">x</span></code> with respect to some scalar value.</p>
-<p>Here we use PyTorch Tensors and autograd to implement our two-layer
-network; now we no longer need to manually implement the backward pass
-through the network:</p>
+<p>Here we use PyTorch Tensors and autograd to implement our fitting sine wave
+with third order polynomial example; now we no longer need to manually
+implement the backward pass through the network:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 <span class="c1"># device = torch.device("cuda:0")  # Uncomment this to run on GPU</span>
-<span class="c1"># torch.backends.cuda.matmul.allow_tf32 = False  # Uncomment this to run on GPU</span>
 
-<span class="c1"># The above line disables TensorFloat32. This a feature that allows</span>
-<span class="c1"># networks to run at a much faster speed while sacrificing precision.</span>
-<span class="c1"># Although TensorFloat32 works well on most real models, for our toy model</span>
-<span class="c1"># in this tutorial, the sacrificed precision causes convergence issue.</span>
-<span class="c1"># For more information, see:</span>
-<span class="c1"># https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="c1"># By default, requires_grad=False, which indicates that we do not need to</span>
+<span class="c1"># compute gradients with respect to these Tensors during the backward pass.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
-
-<span class="c1"># Create random Tensors to hold input and outputs.</span>
-<span class="c1"># Setting requires_grad=False indicates that we do not need to compute gradients</span>
-<span class="c1"># with respect to these Tensors during the backward pass.</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-
-<span class="c1"># Create random Tensors for weights.</span>
+<span class="c1"># Create random Tensors for weights. For a third order polynomial, we need</span>
+<span class="c1"># 4 weights: y = a + b x + c x^2 + d x^3</span>
 <span class="c1"># Setting requires_grad=True indicates that we want to compute gradients with</span>
 <span class="c1"># respect to these Tensors during the backward pass.</span>
-<span class="n">w1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">w2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
-    <span class="c1"># Forward pass: compute predicted y using operations on Tensors; these</span>
-    <span class="c1"># are exactly the same operations we used to compute the forward pass using</span>
-    <span class="c1"># Tensors, but we do not need to keep references to intermediate values since</span>
-    <span class="c1"># we are not implementing the backward pass by hand.</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w1</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
+    <span class="c1"># Forward pass: compute predicted y using operations on Tensors.</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
 
     <span class="c1"># Compute and print loss using operations on Tensors.</span>
     <span class="c1"># Now loss is a Tensor of shape (1,)</span>
@@ -481,29 +473,31 @@ through the network:</p>
 
     <span class="c1"># Use autograd to compute the backward pass. This call will compute the</span>
     <span class="c1"># gradient of loss with respect to all Tensors with requires_grad=True.</span>
-    <span class="c1"># After this call w1.grad and w2.grad will be Tensors holding the gradient</span>
-    <span class="c1"># of the loss with respect to w1 and w2 respectively.</span>
+    <span class="c1"># After this call a.grad, b.grad. c.grad and d.grad will be Tensors holding</span>
+    <span class="c1"># the gradient of the loss with respect to a, b, c, d respectively.</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
 
     <span class="c1"># Manually update weights using gradient descent. Wrap in torch.no_grad()</span>
     <span class="c1"># because weights have requires_grad=True, but we don't need to track this</span>
     <span class="c1"># in autograd.</span>
-    <span class="c1"># An alternative way is to operate on weight.data and weight.grad.data.</span>
-    <span class="c1"># Recall that tensor.data gives a tensor that shares the storage with</span>
-    <span class="c1"># tensor, but doesn't track history.</span>
-    <span class="c1"># You can also use torch.optim.SGD to achieve this.</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">w1</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w1</span><span class="o">.</span><span class="n">grad</span>
-        <span class="n">w2</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w2</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">a</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">b</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">b</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">c</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">c</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">d</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">grad</span>
 
         <span class="c1"># Manually zero the gradients after updating weights</span>
-        <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-        <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="pytorch-defining-new-autograd-functions">
-<h3><a class="toc-backref" href="#id18">PyTorch: Defining new autograd functions</a><a class="headerlink" href="#pytorch-defining-new-autograd-functions" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id17">PyTorch: Defining new autograd functions</a><a class="headerlink" href="#pytorch-defining-new-autograd-functions" title="Permalink to this headline">¶</a></h3>
 <p>Under the hood, each primitive autograd operator is really two functions
 that operate on Tensors. The <strong>forward</strong> function computes output
 Tensors from input Tensors. The <strong>backward</strong> function receives the
@@ -515,14 +509,17 @@ subclass of <code class="docutils literal notranslate"><span class="pre">torch.a
 and <code class="docutils literal notranslate"><span class="pre">backward</span></code> functions. We can then use our new autograd operator by
 constructing an instance and calling it like a function, passing
 Tensors containing input data.</p>
-<p>In this example we define our own custom autograd function for
-performing the ReLU nonlinearity, and use it to implement our two-layer
-network:</p>
+<p>In this example we define our model as <span class="math notranslate nohighlight">\(y=a+b P_3(c+dx)\)</span> instead of
+<span class="math notranslate nohighlight">\(y=a+bx+cx^2+dx^3\)</span>, where <span class="math notranslate nohighlight">\(P_3(x)=\frac{1}{2}\left(5x^3-3x\right)\)</span>
+is the <a class="reference external" href="https://en.wikipedia.org/wiki/Legendre_polynomials">Legendre polynomial</a> of degree three. We write our own custom autograd
+function for computing forward and backward of <span class="math notranslate nohighlight">\(P_3\)</span>, and use it to implement
+our model:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
-<span class="k">class</span> <span class="nc">MyReLU</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">LegendrePolynomial3</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    We can implement our own custom autograd Functions by subclassing</span>
 <span class="sd">    torch.autograd.Function and implementing the forward and backward passes</span>
@@ -538,7 +535,7 @@ network:</p>
 <span class="sd">        objects for use in the backward pass using the ctx.save_for_backward method.</span>
 <span class="sd">        """</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nb">input</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="nb">input</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
@@ -548,43 +545,37 @@ network:</p>
 <span class="sd">        with respect to the input.</span>
 <span class="sd">        """</span>
         <span class="nb">input</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
-        <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-        <span class="n">grad_input</span><span class="p">[</span><span class="nb">input</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="n">grad_input</span>
+        <span class="k">return</span> <span class="n">grad_output</span> <span class="o">*</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span> <span class="o">*</span> <span class="nb">input</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
 
 <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 <span class="c1"># device = torch.device("cuda:0")  # Uncomment this to run on GPU</span>
-<span class="c1"># torch.backends.cuda.matmul.allow_tf32 = False  # Uncomment this to run on GPU</span>
 
-<span class="c1"># The above line disables TensorFloat32. This a feature that allows</span>
-<span class="c1"># networks to run at a much faster speed while sacrificing precision.</span>
-<span class="c1"># Although TensorFloat32 works well on most real models, for our toy model</span>
-<span class="c1"># in this tutorial, the sacrificed precision causes convergence issue.</span>
-<span class="c1"># For more information, see:</span>
-<span class="c1"># https://pytorch.org/docs/stable/notes/cuda.html#tensorfloat-32-tf32-on-ampere-devices</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="c1"># By default, requires_grad=False, which indicates that we do not need to</span>
+<span class="c1"># compute gradients with respect to these Tensors during the backward pass.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
+<span class="c1"># Create random Tensors for weights. For this example, we need</span>
+<span class="c1"># 4 weights: y = a + b * P3(c + d * x), these weights need to be initialized</span>
+<span class="c1"># not too far from the correct result to ensure convergence.</span>
+<span class="c1"># Setting requires_grad=True indicates that we want to compute gradients with</span>
+<span class="c1"># respect to these Tensors during the backward pass.</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((),</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># Create random Tensors to hold input and outputs.</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
-
-<span class="c1"># Create random Tensors for weights.</span>
-<span class="n">w1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">w2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
-    <span class="c1"># To apply our Function, we use Function.apply method. We alias this as 'relu'.</span>
-    <span class="n">relu</span> <span class="o">=</span> <span class="n">MyReLU</span><span class="o">.</span><span class="n">apply</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">5e-6</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
+    <span class="c1"># To apply our Function, we use Function.apply method. We alias this as 'P3'.</span>
+    <span class="n">P3</span> <span class="o">=</span> <span class="n">LegendrePolynomial3</span><span class="o">.</span><span class="n">apply</span>
 
     <span class="c1"># Forward pass: compute predicted y using operations; we compute</span>
-    <span class="c1"># ReLU using our custom autograd operation.</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w1</span><span class="p">))</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w2</span><span class="p">)</span>
+    <span class="c1"># P3 using our custom autograd operation.</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">P3</span><span class="p">(</span><span class="n">c</span> <span class="o">+</span> <span class="n">d</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span>
 
     <span class="c1"># Compute and print loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -596,20 +587,26 @@ network:</p>
 
     <span class="c1"># Update weights using gradient descent</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">w1</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w1</span><span class="o">.</span><span class="n">grad</span>
-        <span class="n">w2</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">w2</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">a</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">a</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">b</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">b</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">c</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">c</span><span class="o">.</span><span class="n">grad</span>
+        <span class="n">d</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">d</span><span class="o">.</span><span class="n">grad</span>
 
         <span class="c1"># Manually zero the gradients after updating weights</span>
-        <span class="n">w1</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
-        <span class="n">w2</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">b</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> * P3(</span><span class="si">{</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x)'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="nn-module">
-<h2><a class="toc-backref" href="#id19"><cite>nn</cite> module</a><a class="headerlink" href="#nn-module" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id18"><cite>nn</cite> module</a><a class="headerlink" href="#nn-module" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="pytorch-nn">
-<h3><a class="toc-backref" href="#id20">PyTorch: nn</a><a class="headerlink" href="#pytorch-nn" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id19">PyTorch: nn</a><a class="headerlink" href="#pytorch-nn" title="Permalink to this headline">¶</a></h3>
 <p>Computational graphs and autograd are a very powerful paradigm for
 defining complex operators and automatically taking derivatives; however
 for large neural networks raw autograd can be a bit too low-level.</p>
@@ -629,40 +626,50 @@ output Tensors, but may also hold internal state such as Tensors
 containing learnable parameters. The <code class="docutils literal notranslate"><span class="pre">nn</span></code> package also defines a set
 of useful loss functions that are commonly used when training neural
 networks.</p>
-<p>In this example we use the <code class="docutils literal notranslate"><span class="pre">nn</span></code> package to implement our two-layer
+<p>In this example we use the <code class="docutils literal notranslate"><span class="pre">nn</span></code> package to implement our polynomial model
 network:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
 
-<span class="c1"># Create random Tensors to hold inputs and outputs</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># For this example, the output y is a linear function of (x, x^2, x^3), so</span>
+<span class="c1"># we can consider it as a linear layer neural network. Let's prepare the</span>
+<span class="c1"># tensor (x, x^2, x^3).</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="c1"># In the above code, x.unsqueeze(-1) has shape (2000, 1), and p has shape</span>
+<span class="c1"># (3,), for this case, broadcasting semantics will apply to obtain a tensor</span>
+<span class="c1"># of shape (2000, 3) </span>
 
 <span class="c1"># Use the nn package to define our model as a sequence of layers. nn.Sequential</span>
 <span class="c1"># is a Module which contains other Modules, and applies them in sequence to</span>
-<span class="c1"># produce its output. Each Linear Module computes output from input using a</span>
+<span class="c1"># produce its output. The Linear Module computes output from input using a</span>
 <span class="c1"># linear function, and holds internal Tensors for its weight and bias.</span>
+<span class="c1"># The Flatten layer flatens the output of the linear layer to a 1D tensor,</span>
+<span class="c1"># to match the shape of `y`.</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="c1"># The nn package also contains definitions of popular loss functions; in this</span>
 <span class="c1"># case we will use Mean Squared Error (MSE) as our loss function.</span>
 <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
 
-<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-4</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
+
     <span class="c1"># Forward pass: compute predicted y by passing x to the model. Module objects</span>
     <span class="c1"># override the __call__ operator so you can call them like functions. When</span>
     <span class="c1"># doing so you pass a Tensor of input data to the Module and it produces</span>
     <span class="c1"># a Tensor of output data.</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
 
     <span class="c1"># Compute and print loss. We pass Tensors containing the predicted and true</span>
     <span class="c1"># values of y, and the loss function returns a Tensor containing the</span>
@@ -685,51 +692,57 @@ network:</p>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
             <span class="n">param</span> <span class="o">-=</span> <span class="n">learning_rate</span> <span class="o">*</span> <span class="n">param</span><span class="o">.</span><span class="n">grad</span>
+
+<span class="c1"># You can access the first layer of `model` like accessing the first item of a list</span>
+<span class="n">linear_layer</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># For linear layer, its parameters are stored as `weight` and `bias`.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="pytorch-optim">
-<h3><a class="toc-backref" href="#id21">PyTorch: optim</a><a class="headerlink" href="#pytorch-optim" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id20">PyTorch: optim</a><a class="headerlink" href="#pytorch-optim" title="Permalink to this headline">¶</a></h3>
 <p>Up to this point we have updated the weights of our models by manually
-mutating the Tensors holding learnable parameters (with <code class="docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>
-or <code class="docutils literal notranslate"><span class="pre">.data</span></code> to avoid tracking history in autograd). This is not a huge
-burden for simple optimization algorithms like stochastic gradient descent,
-but in practice we often train neural networks using more sophisticated
-optimizers like AdaGrad, RMSProp, Adam, etc.</p>
+mutating the Tensors holding learnable parameters with <code class="docutils literal notranslate"><span class="pre">torch.no_grad()</span></code>.
+This is not a huge burden for simple optimization algorithms like stochastic
+gradient descent, but in practice we often train neural networks using more
+sophisticated optimizers like AdaGrad, RMSProp, Adam, etc.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">optim</span></code> package in PyTorch abstracts the idea of an optimization
 algorithm and provides implementations of commonly used optimization
 algorithms.</p>
 <p>In this example we will use the <code class="docutils literal notranslate"><span class="pre">nn</span></code> package to define our model as
-before, but we will optimize the model using the Adam algorithm provided
+before, but we will optimize the model using the RMSprop algorithm provided
 by the <code class="docutils literal notranslate"><span class="pre">optim</span></code> package:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
 
-<span class="c1"># Create random Tensors to hold inputs and outputs</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Prepare the input tensor (x, x^2, x^3).</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">xx</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
 <span class="c1"># Use the nn package to define our model and loss function.</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
 
 <span class="c1"># Use the optim package to define an Optimizer that will update the weights of</span>
-<span class="c1"># the model for us. Here we will use Adam; the optim package contains many other</span>
-<span class="c1"># optimization algorithms. The first argument to the Adam constructor tells the</span>
+<span class="c1"># the model for us. Here we will use RMSprop; the optim package contains many other</span>
+<span class="c1"># optimization algorithms. The first argument to the RMSprop constructor tells the</span>
 <span class="c1"># optimizer which Tensors it should update.</span>
-<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-4</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
     <span class="c1"># Forward pass: compute predicted y by passing x to the model.</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">xx</span><span class="p">)</span>
 
     <span class="c1"># Compute and print loss.</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -750,31 +763,38 @@ by the <code class="docutils literal notranslate"><span class="pre">optim</span>
     <span class="c1"># Calling the step function on an Optimizer makes an update to its</span>
     <span class="c1"># parameters</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+
+<span class="n">linear_layer</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: y = </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="n">linear_layer</span><span class="o">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="pytorch-custom-nn-modules">
-<h3><a class="toc-backref" href="#id22">PyTorch: Custom nn Modules</a><a class="headerlink" href="#pytorch-custom-nn-modules" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id21">PyTorch: Custom nn Modules</a><a class="headerlink" href="#pytorch-custom-nn-modules" title="Permalink to this headline">¶</a></h3>
 <p>Sometimes you will want to specify models that are more complex than a
 sequence of existing Modules; for these cases you can define your own
 Modules by subclassing <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> and defining a <code class="docutils literal notranslate"><span class="pre">forward</span></code> which
 receives input Tensors and produces output Tensors using other
 modules or other autograd operations on Tensors.</p>
-<p>In this example we implement our two-layer network as a custom Module
+<p>In this example we implement our third order polynomial as a custom Module
 subclass:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
-<span class="k">class</span> <span class="nc">TwoLayerNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">Polynomial3</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">"""</span>
-<span class="sd">        In the constructor we instantiate two nn.Linear modules and assign them as</span>
-<span class="sd">        member variables.</span>
+<span class="sd">        In the constructor we instantiate four parameters and assign them as</span>
+<span class="sd">        member parameters.</span>
 <span class="sd">        """</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TwoLayerNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">linear1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">linear2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">"""</span>
@@ -782,28 +802,28 @@ subclass:</p>
 <span class="sd">        a Tensor of output data. We can use Modules defined in the constructor as</span>
 <span class="sd">        well as arbitrary operators on Tensors.</span>
 <span class="sd">        """</span>
-        <span class="n">h_relu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear2</span><span class="p">(</span><span class="n">h_relu</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y_pred</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
+
+    <span class="k">def</span> <span class="nf">string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Just like any class in Python, you can also define custom method on PyTorch modules</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">'y = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3'</span>
 
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
-
-<span class="c1"># Create random Tensors to hold inputs and outputs</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Construct our model by instantiating the class defined above</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">TwoLayerNet</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Polynomial3</span><span class="p">()</span>
 
 <span class="c1"># Construct our loss function and an Optimizer. The call to model.parameters()</span>
-<span class="c1"># in the SGD constructor will contain the learnable parameters of the two</span>
-<span class="c1"># nn.Linear modules which are members of the model.</span>
+<span class="c1"># in the SGD constructor will contain the learnable parameters of the nn.Linear</span>
+<span class="c1"># module which is members of the model.</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2000</span><span class="p">):</span>
     <span class="c1"># Forward pass: Compute predicted y by passing x to the model</span>
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
@@ -816,147 +836,146 @@ subclass:</p>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">string</span><span class="p">()</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="pytorch-control-flow-weight-sharing">
-<h3><a class="toc-backref" href="#id23">PyTorch: Control Flow + Weight Sharing</a><a class="headerlink" href="#pytorch-control-flow-weight-sharing" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id22">PyTorch: Control Flow + Weight Sharing</a><a class="headerlink" href="#pytorch-control-flow-weight-sharing" title="Permalink to this headline">¶</a></h3>
 <p>As an example of dynamic graphs and weight sharing, we implement a very
-strange model: a fully-connected ReLU network that on each forward pass
-chooses a random number between 1 and 4 and uses that many hidden
-layers, reusing the same weights multiple times to compute the innermost
-hidden layers.</p>
+strange model: a third-fifth order polynomial that on each forward pass
+chooses a random number between 3 and 5 and uses that many orders, reusing
+the same weights multiple times to compute the fourth and fifth order.</p>
 <p>For this model we can use normal Python flow control to implement the loop,
-and we can implement weight sharing among the innermost layers by simply
-reusing the same Module multiple times when defining the forward pass.</p>
+and we can implement weight sharing by simply reusing the same parameter multiple
+times when defining the forward pass.</p>
 <p>We can easily implement this model as a Module subclass:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
 <span class="k">class</span> <span class="nc">DynamicNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">"""</span>
-<span class="sd">        In the constructor we construct three nn.Linear instances that we will use</span>
-<span class="sd">        in the forward pass.</span>
+<span class="sd">        In the constructor we instantiate five parameters and assign them as members.</span>
 <span class="sd">        """</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">middle_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">"""</span>
-<span class="sd">        For the forward pass of the model, we randomly choose either 0, 1, 2, or 3</span>
-<span class="sd">        and reuse the middle_linear Module that many times to compute hidden layer</span>
-<span class="sd">        representations.</span>
+<span class="sd">        For the forward pass of the model, we randomly choose either 4, 5</span>
+<span class="sd">        and reuse the e parameter to compute the contribution of these orders.</span>
 
 <span class="sd">        Since each forward pass builds a dynamic computation graph, we can use normal</span>
 <span class="sd">        Python control-flow operators like loops or conditional statements when</span>
 <span class="sd">        defining the forward pass of the model.</span>
 
-<span class="sd">        Here we also see that it is perfectly safe to reuse the same Module many</span>
-<span class="sd">        times when defining a computational graph. This is a big improvement from Lua</span>
-<span class="sd">        Torch, where each Module could be used only once.</span>
+<span class="sd">        Here we also see that it is perfectly safe to reuse the same parameter many</span>
+<span class="sd">        times when defining a computational graph.</span>
 <span class="sd">        """</span>
-        <span class="n">h_relu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
-            <span class="n">h_relu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">middle_linear</span><span class="p">(</span><span class="n">h_relu</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_linear</span><span class="p">(</span><span class="n">h_relu</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y_pred</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="n">exp</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Just like any class in Python, you can also define custom method on PyTorch modules</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">'y = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3 + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^4 ? + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^5 ?'</span>
 
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
-
-<span class="c1"># Create random Tensors to hold inputs and outputs</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Construct our model by instantiating the class defined above</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">DynamicNet</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DynamicNet</span><span class="p">()</span>
 
 <span class="c1"># Construct our loss function and an Optimizer. Training this strange model with</span>
 <span class="c1"># vanilla stochastic gradient descent is tough, so we use momentum</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30000</span><span class="p">):</span>
     <span class="c1"># Forward pass: Compute predicted y by passing x to the model</span>
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="c1"># Compute and print loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">99</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">2000</span> <span class="o">==</span> <span class="mi">1999</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
     <span class="c1"># Zero gradients, perform a backward pass, and update the weights.</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">string</span><span class="p">()</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="examples">
-<span id="examples-download"></span><h2><a class="toc-backref" href="#id24">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<span id="examples-download"></span><h2><a class="toc-backref" href="#id23">Examples</a><a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>You can browse the above examples here.</p>
 <div class="section" id="id1">
-<h3><a class="toc-backref" href="#id25">Tensors</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id24">Tensors</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 </div>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer and no biases, trained to predict y from x..."><div class="figure" id="id4">
-<img alt="../_images/sphx_glr_two_layer_net_numpy_thumb.png" src="../_images/sphx_glr_two_layer_net_numpy_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_tensor/two_layer_net_numpy.html#sphx-glr-beginner-examples-tensor-two-layer-net-numpy-py"><span class="std std-ref">Warm-up: numpy</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id4">
+<img alt="../_images/sphx_glr_polynomial_numpy_thumb.png" src="../_images/sphx_glr_polynomial_numpy_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_tensor/polynomial_numpy.html#sphx-glr-beginner-examples-tensor-polynomial-numpy-py"><span class="std std-ref">Warm-up: numpy</span></a></span></p>
 </div>
 </div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer and no biases, trained to predict y from x..."><div class="figure" id="id5">
-<img alt="../_images/sphx_glr_two_layer_net_tensor_thumb.png" src="../_images/sphx_glr_two_layer_net_tensor_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_tensor/two_layer_net_tensor.html#sphx-glr-beginner-examples-tensor-two-layer-net-tensor-py"><span class="std std-ref">PyTorch: Tensors</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id5">
+<img alt="../_images/sphx_glr_polynomial_tensor_thumb.png" src="../_images/sphx_glr_polynomial_tensor_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_tensor/polynomial_tensor.html#sphx-glr-beginner-examples-tensor-polynomial-tensor-py"><span class="std std-ref">PyTorch: Tensors</span></a></span></p>
 </div>
 </div></p>
 <div style="clear:both"></div></div>
 <div class="section" id="id2">
-<h3><a class="toc-backref" href="#id26">Autograd</a><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id25">Autograd</a><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 </div>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer and no biases, trained to predict y from x..."><div class="figure" id="id6">
-<img alt="../_images/sphx_glr_two_layer_net_autograd_thumb.png" src="../_images/sphx_glr_two_layer_net_autograd_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_autograd/two_layer_net_autograd.html#sphx-glr-beginner-examples-autograd-two-layer-net-autograd-py"><span class="std std-ref">PyTorch: Tensors and autograd</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id6">
+<img alt="../_images/sphx_glr_polynomial_autograd_thumb.png" src="../_images/sphx_glr_polynomial_autograd_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_autograd/polynomial_autograd.html#sphx-glr-beginner-examples-autograd-polynomial-autograd-py"><span class="std std-ref">PyTorch: Tensors and autograd</span></a></span></p>
 </div>
 </div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer and no biases, trained to predict y from x..."><div class="figure" id="id7">
-<img alt="../_images/sphx_glr_two_layer_net_custom_function_thumb.png" src="../_images/sphx_glr_two_layer_net_custom_function_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_autograd/two_layer_net_custom_function.html#sphx-glr-beginner-examples-autograd-two-layer-net-custom-function-py"><span class="std std-ref">PyTorch: Defining New autograd Functions</span></a></span></p>
-</div>
-</div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer and no biases, trained to predict y from x..."><div class="figure" id="id8">
-<img alt="../_images/sphx_glr_tf_two_layer_net_thumb.png" src="../_images/sphx_glr_tf_two_layer_net_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_autograd/tf_two_layer_net.html#sphx-glr-beginner-examples-autograd-tf-two-layer-net-py"><span class="std std-ref">TensorFlow: Static Graphs</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id7">
+<img alt="../_images/sphx_glr_polynomial_custom_function_thumb.png" src="../_images/sphx_glr_polynomial_custom_function_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_autograd/polynomial_custom_function.html#sphx-glr-beginner-examples-autograd-polynomial-custom-function-py"><span class="std std-ref">PyTorch: Defining New autograd Functions</span></a></span></p>
 </div>
 </div></p>
 <div style="clear:both"></div></div>
 <div class="section" id="id3">
-<h3><a class="toc-backref" href="#id27"><cite>nn</cite> module</a><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id26"><cite>nn</cite> module</a><a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
 <div class="toctree-wrapper compound">
 </div>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer, trained to predict y from x by minimizing..."><div class="figure" id="id9">
-<img alt="../_images/sphx_glr_two_layer_net_nn_thumb.png" src="../_images/sphx_glr_two_layer_net_nn_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/two_layer_net_nn.html#sphx-glr-beginner-examples-nn-two-layer-net-nn-py"><span class="std std-ref">PyTorch: nn</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id8">
+<img alt="../_images/sphx_glr_polynomial_nn_thumb.png" src="../_images/sphx_glr_polynomial_nn_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/polynomial_nn.html#sphx-glr-beginner-examples-nn-polynomial-nn-py"><span class="std std-ref">PyTorch: nn</span></a></span></p>
 </div>
 </div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer, trained to predict y from x by minimizing..."><div class="figure" id="id10">
-<img alt="../_images/sphx_glr_two_layer_net_optim_thumb.png" src="../_images/sphx_glr_two_layer_net_optim_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/two_layer_net_optim.html#sphx-glr-beginner-examples-nn-two-layer-net-optim-py"><span class="std std-ref">PyTorch: optim</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id9">
+<img alt="../_images/sphx_glr_polynomial_optim_thumb.png" src="../_images/sphx_glr_polynomial_optim_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/polynomial_optim.html#sphx-glr-beginner-examples-nn-polynomial-optim-py"><span class="std std-ref">PyTorch: optim</span></a></span></p>
 </div>
 </div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="A fully-connected ReLU network with one hidden layer, trained to predict y from x by minimizing..."><div class="figure" id="id11">
-<img alt="../_images/sphx_glr_two_layer_net_module_thumb.png" src="../_images/sphx_glr_two_layer_net_module_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/two_layer_net_module.html#sphx-glr-beginner-examples-nn-two-layer-net-module-py"><span class="std std-ref">PyTorch: Custom nn Modules</span></a></span></p>
+<p><div class="sphx-glr-thumbcontainer" tooltip="A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi` to :math:`pi` ..."><div class="figure" id="id10">
+<img alt="../_images/sphx_glr_polynomial_module_thumb.png" src="../_images/sphx_glr_polynomial_module_thumb.png"/>
+<p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/polynomial_module.html#sphx-glr-beginner-examples-nn-polynomial-module-py"><span class="std std-ref">PyTorch: Custom nn Modules</span></a></span></p>
 </div>
 </div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="To showcase the power of PyTorch dynamic graphs, we will implement a very strange model: a full..."><div class="figure" id="id12">
+<p><div class="sphx-glr-thumbcontainer" tooltip="To showcase the power of PyTorch dynamic graphs, we will implement a very strange model: a thir..."><div class="figure" id="id11">
 <img alt="../_images/sphx_glr_dynamic_net_thumb.png" src="../_images/sphx_glr_dynamic_net_thumb.png"/>
 <p class="caption"><span class="caption-text"><a class="reference internal" href="examples_nn/dynamic_net.html#sphx-glr-beginner-examples-nn-dynamic-net-py"><span class="std std-ref">PyTorch: Control Flow + Weight Sharing</span></a></span></p>
 </div>
@@ -968,7 +987,7 @@ reusing the same Module multiple times when defining the forward pass.</p>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="examples_tensor/two_layer_net_numpy.html" rel="next" title="Warm-up: numpy">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="examples_tensor/polynomial_numpy.html" rel="next" title="Warm-up: numpy">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="blitz/cifar10_tutorial.html" rel="prev" title="Training a Classifier"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="helpful-hr hr-top"/>

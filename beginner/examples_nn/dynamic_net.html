@@ -14,7 +14,7 @@
 <link href="../../genindex.html" rel="index" title="Index"/>
 <link href="../../search.html" rel="search" title="Search"/>
 <link href="../nn_tutorial.html" rel="next" title="What is torch.nn really?"/>
-<link href="two_layer_net_module.html" rel="prev" title="PyTorch: Custom nn Modules"/>
+<link href="polynomial_module.html" rel="prev" title="PyTorch: Custom nn Modules"/>
 <script src="../../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
 <link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
@@ -250,73 +250,76 @@
 <div class="sphx-glr-example-title section" id="pytorch-control-flow-weight-sharing">
 <span id="sphx-glr-beginner-examples-nn-dynamic-net-py"></span><h1>PyTorch: Control Flow + Weight Sharing<a class="headerlink" href="#pytorch-control-flow-weight-sharing" title="Permalink to this headline">¶</a></h1>
 <p>To showcase the power of PyTorch dynamic graphs, we will implement a very strange
-model: a fully-connected ReLU network that on each forward pass randomly chooses
-a number between 1 and 4 and has that many hidden layers, reusing the same
-weights multiple times to compute the innermost hidden layers.</p>
+model: a third-fifth order polynomial that on each forward pass
+chooses a random number between 3 and 5 and uses that many orders, reusing
+the same weights multiple times to compute the fourth and fifth order.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 
 <span class="k">class</span> <span class="nc">DynamicNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">"""</span>
-<span class="sd">        In the constructor we construct three nn.Linear instances that we will use</span>
-<span class="sd">        in the forward pass.</span>
+<span class="sd">        In the constructor we instantiate five parameters and assign them as members.</span>
 <span class="sd">        """</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">DynamicNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">input_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">middle_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">output_linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(()))</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="sd">"""</span>
-<span class="sd">        For the forward pass of the model, we randomly choose either 0, 1, 2, or 3</span>
-<span class="sd">        and reuse the middle_linear Module that many times to compute hidden layer</span>
-<span class="sd">        representations.</span>
+<span class="sd">        For the forward pass of the model, we randomly choose either 4, 5</span>
+<span class="sd">        and reuse the e parameter to compute the contribution of these orders.</span>
 
 <span class="sd">        Since each forward pass builds a dynamic computation graph, we can use normal</span>
 <span class="sd">        Python control-flow operators like loops or conditional statements when</span>
 <span class="sd">        defining the forward pass of the model.</span>
 
-<span class="sd">        Here we also see that it is perfectly safe to reuse the same Module many</span>
-<span class="sd">        times when defining a computational graph. This is a big improvement from Lua</span>
-<span class="sd">        Torch, where each Module could be used only once.</span>
+<span class="sd">        Here we also see that it is perfectly safe to reuse the same parameter many</span>
+<span class="sd">        times when defining a computational graph.</span>
 <span class="sd">        """</span>
-        <span class="n">h_relu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_linear</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)):</span>
-            <span class="n">h_relu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">middle_linear</span><span class="p">(</span><span class="n">h_relu</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_linear</span><span class="p">(</span><span class="n">h_relu</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">y_pred</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">3</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">)):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">e</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="n">exp</span>
+        <span class="k">return</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Just like any class in Python, you can also define custom method on PyTorch modules</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">'y = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^2 + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^3 + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^4 ? + </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">e</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s1"> x^5 ?'</span>
 
 
-<span class="c1"># N is batch size; D_in is input dimension;</span>
-<span class="c1"># H is hidden dimension; D_out is output dimension.</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">10</span>
-
-<span class="c1"># Create random Tensors to hold inputs and outputs</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_in</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="c1"># Create Tensors to hold input and outputs.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="c1"># Construct our model by instantiating the class defined above</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">DynamicNet</span><span class="p">(</span><span class="n">D_in</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">D_out</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DynamicNet</span><span class="p">()</span>
 
 <span class="c1"># Construct our loss function and an Optimizer. Training this strange model with</span>
 <span class="c1"># vanilla stochastic gradient descent is tough, so we use momentum</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30000</span><span class="p">):</span>
     <span class="c1"># Forward pass: Compute predicted y by passing x to the model</span>
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
     <span class="c1"># Compute and print loss</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">100</span> <span class="o">==</span> <span class="mi">99</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">2000</span> <span class="o">==</span> <span class="mi">1999</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
 
     <span class="c1"># Zero gradients, perform a backward pass, and update the weights.</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Result: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">string</span><span class="p">()</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
@@ -333,7 +336,7 @@ weights multiple times to compute the innermost hidden layers.</p>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
 <a accesskey="n" class="btn btn-neutral float-right" href="../nn_tutorial.html" rel="next" title="What is torch.nn really?">Next <img class="next-page" src="../../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="two_layer_net_module.html" rel="prev" title="PyTorch: Custom nn Modules"><img class="previous-page" src="../../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="p" class="btn btn-neutral" href="polynomial_module.html" rel="prev" title="PyTorch: Custom nn Modules"><img class="previous-page" src="../../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="helpful-hr hr-top"/>
 <div class="helpful-container">
