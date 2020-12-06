@@ -32,15 +32,16 @@ as your companion. The full code is available
 #
 #
 
-# !pip install gym-super-mario-bros==7.3.0 opencv-python
+# !pip install gym-super-mario-bros==7.3.0
 
-import os
-import copy
 import torch
 from torch import nn
+from torchvision import transforms as T
+from PIL import Image
+import numpy as np
 from pathlib import Path
 from collections import deque
-import random, datetime, numpy as np, cv2
+import random, datetime, os, copy
 
 # Gym is an OpenAI toolkit for RL
 import gym
@@ -156,7 +157,12 @@ class ResizeObservation(gym.ObservationWrapper):
         self.observation_space = Box(low=0, high=255, shape=obs_shape, dtype=np.uint8)
 
     def observation(self, observation):
-        observation = cv2.resize(observation, self.shape, interpolation=cv2.INTER_AREA)
+        observation = torch.tensor(observation, dtype=torch.float).unsqueeze(0)
+        transforms = T.Compose([
+            T.Resize(self.shape, interpolation=Image.BILINEAR),
+            T.Normalize(0, 255)
+        ])
+        observation = transforms(observation).squeeze(0)
         return observation
 
 
@@ -183,7 +189,6 @@ class SkipFrame(gym.Wrapper):
 env = SkipFrame(env, skip=4)
 env = GrayScaleObservation(env, keep_dim=False)
 env = ResizeObservation(env, shape=84)
-env = TransformObservation(env, f=lambda x: x / 255.)
 env = FrameStack(env, num_stack=4)
 
 
