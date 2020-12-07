@@ -80,7 +80,7 @@ To use the mobile-ready model `mobilenetv2_quantized.pt` in an iOS app, either c
 
 * Run `pod install` from the Terminal and then open your project's xcworkspace file;
 
-* Drag and drop the two files `TorchModule.h` and `TorchModule.mm` to your project. If your project is Swift based, a message box with the title "Would you like to configure an Objective-C bridging header?" will show up; click the "Create Bridging Header" button to create a Swift to Objective-c bridging header file, and add `#import "TorchModule.h"` to the header file `<your_project_name>-Bridging-Header.h`;
+* Save the two files `TorchModule.h` and `TorchModule.mm` from `here <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld/HelloWorld/HelloWorld/TorchBridge>`_ and drag and drop them to your project. If your project is Swift based, a message box with the title "Would you like to configure an Objective-C bridging header?" will show up; click the "Create Bridging Header" button to create a Swift to Objective-c bridging header file, and add `#import "TorchModule.h"` to the header file `<your_project_name>-Bridging-Header.h`;
 
 * Drag and drop the model file `mobilenetv2_quantized.pt` to the project.
 

@@ -44,6 +44,8 @@ But if a model has some flow control, then `trace` won't correctly record all th
 
 ::
 
+    import torch
+
     class MyDecisionGate(torch.nn.Module):
         def forward(self, x):
             if x.sum() > 0:
@@ -62,14 +64,9 @@ The code above will output:
     TracerWarning: Converting a tensor to a Python boolean might cause the trace to be incorrect. We can''t record the data flow of Python values, so this value will be treated as a constant in the future. This means that the trace might not generalize to other inputs!
 
     if x.sum() > 0:
-    def forward(self,
-        input: Tensor,
-        h: Tensor) -> Tuple[Tensor, Tensor]:
-      _0 = self.dg
-      _1 = (self.linear).forward(input, )
-      _2 = (_0).forward(_1, )
-      _3 = torch.tanh(torch.add(_1, h, alpha=1))
-      return (_3, _3)
+  def forward(self,
+      x: Tensor) -> Tensor:
+    return x
 
 
 Note that "the trace might not generalize to other inputs" warning above means that if the model has any kind of data-dependent control flow, `trace` is not the right answer. But if we replace the last two lines of the Python code snippet above (before the code output) with:
@@ -79,7 +76,7 @@ Note that "the trace might not generalize to other inputs" warning above means t
     scripted_cell = torch.jit.script(MyDecisionGate())
     print(scripted_cell.code)
 
-The output will be covering all possible inputs, thus generalizing to other inputs:
+The scripted model as shown by the `print` result below will be covering all possible inputs, thus generalizing to other inputs:
 
 ::
 

@@ -70,13 +70,14 @@ Note ``IOS_ARCH`` tells the script to build a arm64 version of Libtorch. This is
 Next we need to make some changes in ``TorchModule.mm``
 
 .. code:: objective-c
-    
+    //#import <LibTorch/LibTorch.h>
+    #import <torch/script.h>
+
     - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer {
       torch::jit::GraphOptimizerEnabledGuard opguard(false);
       at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, 224, 224}, at::kFloat).metal();
       auto outputTensor = _impl.forward({tensor}).toTensor().cpu();
       ...
-      return nil;
     }
 
 As you can see, we simply just call ``.metal()`` to move our input tensor from CPU to GPU, and then call ``.cpu()`` to move the result back. Internally, ``.metal()`` will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When `.cpu()` is invoked, the GPU command buffer will be flushed and synced. After `forward` finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.
