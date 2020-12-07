@@ -2,14 +2,17 @@
 Datasets & Dataloaders
 ===================
 """
+
 #################################################################
 # Getting Started With Data in PyTorch
 # -----------------
 #
 # Before we can even think about building a model with PyTorch, we need to first learn how to load and process data. Data can be sourced from local files, cloud datastores and database queries. It comes in all sorts of forms and formats from structured tables to image, audio, text, video files and more. 
-# 
-# .. figure:: /images/typesofdata.PNG
-#    :alt:
+#
+
+###############################################################
+# .. figure:: /_static/img/quickstart/typesdata.png
+#    :alt: typesdata
 # 
 # Different data types require different python libraries to load and process such as `openCV <https://opencv.org/>`_ and `PIL <https://pillow.readthedocs.io/en/stable/reference/Image.html>`_ for images, `NLTK <https://www.nltk.org/>`_ and `spaCy <https://spacy.io/>`_ for text and `Librosa <https://librosa.org/doc/latest/index.html>`_ for audio. 
 # 
@@ -17,20 +20,21 @@ Datasets & Dataloaders
 # 
 # A whole set of example datasets such as Fashion MNIST that implement this interface are built into PyTorch extension libraries. These are useful for benchmarking and testing your models before training on your own custom datasets.
 # 
-#  You can find some of them below. 
-#  * `Image Datasets <https://pytorch.org/docs/stable/torchvision/datasets.html>_`
-#  * `Text Datasets  <https://pytorch.org/text/datasets.html)>`_
-#  * `Audio Datasets <https://pytorch.org/audio/datasets.html>`_
+#  You can find some of them below.
 #
+#  - `Image Datasets <https://pytorch.org/docs/stable/torchvision/datasets.html>`_
+#  - `Text Datasets  <https://pytorch.org/text/datasets.html>`_
+#  - `Audio Datasets <https://pytorch.org/audio/datasets.html>`_
+#
+
 #################################################################
 # Iterating through a Dataset
 # -----------------
-# 
-# Once we have a Dataset we can index it manually like a list *clothing[index]*. 
+#
+# Once we have a Dataset we can index it manually like a list `clothing[index]`. 
 # 
 # Here is an example of how to load the fashion MNIST dataset from torch vision.
-# 
-# 
+#
 
 import torch 
 from torch.utils.data import Dataset
@@ -52,14 +56,17 @@ for i in range(1, cols*rows +1):
 plt.show()
 
 #################################################################
-# .. figure:: /images/fashion_mnist.PNG
-#    :alt:
+
+# .. figure:: /_static/img/quickstart/fashion_mnist.png
+#    :alt: fashion_mnist
 #
+
 #################################################################
 # Creating a Custom Dataset
 # -----------------
 #
 # To work with your own data lets look at the a simple custom image Dataset implementation:
+#
 
 import os
 import torch
@@ -95,10 +102,11 @@ class CustomImageDataset(Dataset):
 #################################################################
 # Imports 
 # -----------------
-# 
-# Import os for file handling, torch for PyTorch, [pandas](https://pandas.pydata.org/) for loading labels, [torch vision](https://pytorch.org/blog/pytorch-1.7-released/) to read image files, and Dataset to implement the Dataset interface.
+#
+# Import os for file handling, torch for PyTorch, `pandas <https://pandas.pydata.org/>`_ for loading labels, `torch vision <https://pytorch.org/blog/pytorch-1.7-released/>`_ to read image files, and Dataset to implement the Dataset interface.
 # 
 # Example:
+
 import os
 import torch
 import pandas as pd
@@ -109,7 +117,7 @@ from torch.utils.data import DataLoader
 #################################################################
 # Init
 # -----------------
-## 
+#
 # The init function is used for all the first time operations when our Dataset is loaded. In this case we use it to load our annotation labels to memory and the keep track of directory of our image file. Note that different types of data can take different init inputs you are not limited to just an annotations file, directory_path and transforms but for images this is a standard practice.
 # 
 # Example:
@@ -170,14 +178,17 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 #################################################################
 # With this we have all we need to know to load an process data of any kind in PyTorch to train deep learning models.
 # 
-##################################################################
-# More help with the FashionMNIST Pytorch Blitz
-# -----------------
+# Next: Learn more about how to `transform that data for training <transforms_tutorial.html>`_.
 #
-#| `Tensors <tensor_quickstart_tutorial.html>`_
+
+##################################################################
+# Pytorch Quickstart Topics
+# -----------------
+#| `Tensors <tensor_tutorial.html>`_
 #| `DataSets and DataLoaders <data_quickstart_tutorial.html>`_
-#| `Transformations <transforms_tutorial.html>`_
+#| `Transforms <transforms_tutorial.html>`_
 #| `Build Model <build_model_tutorial.html>`_
 #| `Optimization Loop <optimization_tutorial.html>`_
-#| `AutoGrad <autograd_quickstart_tutorial.html>`_
-#| `Back to FashionMNIST main code base <>`_
+#| `AutoGrad <autograd_tutorial.html>`_
+#| `Save, Load and Run Model <save_load_run_tutorial.html>`_
+

@@ -2,9 +2,24 @@
 PyTorch Quickstart
 ===================
 
-The basic machine learning concepts in any framework should include: Working with data, Creating models, Optimizing Parameters, Saving and Loading Models
 
+The basic machine learning concepts in any framework should include: Working with data, Creating models, Optimizing Parameters, Saving and Loading Models. In this quickstart we will go through an example of an applied machine learning model using the FashionMNIST dataset that demonstrates these core steps using Pytorch.
+
+Working with data
+-----------------
 """
+
+######################################################################
+#
+# PyTorch has two basic data primitives: ``DataSet`` and ``DataLoader``.
+# These ``DataSet`` objects include a ``transforms`` mechanism to
+# modify data in-place. Below is an example of how to load that data from the Pytorch open datasets and transform the data to a normalized tensor. 
+# 
+# To see more examples and details of how to work with Tensors, Datasets, DataLoaders and Transforms in Pytoch with this example checkout these resources:
+#  
+#  - `Tensors <quickstart/tensor_tutorial.html>`_
+#  - `DataSet and DataLoader <quickstart/data_quickstart_tutorial.html>`_
+#  - `Transforms <quickstart/transforms_tutorial.html>`_
 
 import torch
 import torch.nn as nn
@@ -12,14 +27,6 @@ import torch.onnx as onnx
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-
-######################################################################
-# Working with data
-# -----------------
-# 
-# PyTorch has two basic data primitives: ``DataSet`` and ``DataLoader``.
-# These ``DataSet`` objects include a ``transforms`` mechanism to
-# modify data in-place. 
 
 classes = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
@@ -37,34 +44,22 @@ test_data = datasets.FashionMNIST('data', train=False, download=True,
     ])
 )
 
-######################################################################
-# DataLoader
-
-# batch size
 batch_size = 64
 
-# loader
 train_dataloader = DataLoader(training_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 
-
-######################################################################
-# More details `DataSet and DataLoader <quickstart/data_quickstart_tutorial.html>`_
-# More details `Tensors <quickstart/tensor_quickstart_tutorial.html>`_
-# More details  `Transformations <transforms_tutorial.html>`_
-#
-#
 # Creating Models
 # ---------------
 # 
 # There are two ways of creating models: in-line or as a class. This
-# quickstart will consider an in-line definition.
+# quickstart will consider an in-line definition. For more examples checkout `building the model <quickstart/build_model_tutorial.html>`_.
 
-# where to run
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
 
-# model
+# in-line model
+
 model = nn.Sequential(
         nn.Flatten(),
         nn.Linear(28*28, 512),
@@ -78,13 +73,16 @@ model = nn.Sequential(
 print(model)
 
 ######################################################################
-# More details `on building the model <quickstart/build_model_tutorial.html>`_
-#
 # Optimizing Parameters
 # ---------------------
 # 
-# Optimizing model parameters requires a loss function, and optimizer,
+# Optimizing model parameters requires a loss function, optimizer,
 # and the optimization loop.
+#
+# To see more examples and details of how to work with Optimization and Training loops in Pytoch with this example checkout these resources:
+#  - `Optimization and training loops <quickstart/optimization_tutorial.html>`_
+#  - `Automatic differentiation and AutoGrad <quickstart/autograd_tutorial.html>`_
+#
 
 # cost function used to determine best parameters
 cost = torch.nn.BCELoss()
@@ -93,8 +91,8 @@ cost = torch.nn.BCELoss()
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-######################################################################
-# training function
+# Create the training function
+
 def train(dataloader, model, loss, optimizer):
     size = len(dataloader.dataset)
     for batch, (X, Y) in enumerate(dataloader):
@@ -109,8 +107,9 @@ def train(dataloader, model, loss, optimizer):
             loss, current = loss.item(), batch * len(X)
             print(f'loss: {loss:>7f}  [{current:>5d}/{size:>5d}]')
 
-######################################################################
-# validation/test function
+
+# Create the validation/test function
+
 def test(dataloader, model):
     size = len(dataloader.dataset)
     model.eval()
@@ -130,7 +129,12 @@ def test(dataloader, model):
     print(f'\nTest Error:\nacc: {(100*correct):>0.1f}%, avg loss: {test_loss:>8f}\n')
 
 ######################################################################
-# training loop
+# Training Models
+# -------------
+# 
+# Call the train and test function in a training loop with the number of epochs indicated
+#
+
 epochs = 5
 
 for t in range(epochs):
@@ -140,27 +144,22 @@ for t in range(epochs):
 print('Done!')
 
 ######################################################################
-# More details `optimization and training loops <quickstart/optimization_tutorial.html>`_
-# More deatils `AutoGrad <autograd_quickstart_tutorial.html>`_
-#
 # Saving Models
 # -------------
 # 
-# PyTorch has can serialize the internal model state to a file. It also
-# has built-in ONNX support.
+# PyTorch has different ways you can save your model. One way is to serialize the internal model state to a file. Another would be to use the built-in `ONNX <https://github.com/onnx/tutorials>`_ support.
+# Saving PyTorch Model Dictionary
 
-# saving PyTorch Model Dictionary
 torch.save(model.state_dict(), 'model.pth')
 print('Saved PyTorch Model to model.pth')
 
-# create dummy variable to traverse graph
+# Save to ONNX, create dummy variable to traverse graph
+
 x = torch.randint(255, (1, 28*28), dtype=torch.float).to(device) / 255
 onnx.export(model, x, 'model.onnx')
 print('Saved onnx model to model.onnx')
 
 ######################################################################
-# More details `Saving loading and running <quickstart/save_load_run_tutorial.html>`_
-#
 # Loading Models
 # ----------------------------
 # 
@@ -168,7 +167,8 @@ print('Saved onnx model to model.onnx')
 # parameters includes re-creating the model shape and then loading
 # the state dictionary. Once loaded the model can be used for either
 # retraining or inference purposes (in this example it is used for
-# inference)
+# inference). Check out more details on `saving, loading and running models with Pytorch <quickstart/save_load_run_tutorial.html>`_
+#
 
 loaded_model = nn.Sequential(
         nn.Flatten(),
@@ -189,4 +189,17 @@ with torch.no_grad():
     pred = loaded_model(x)
     predicted, actual = classes[pred[0].argmax(0)], classes[y.argmax(0)]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
+
+##################################################################
+# Pytorch Quickstart Topics
+# ----------------------------------------
+# | `Tensors <quickstart/tensor_tutorial.html>`_
+# | `DataSets and DataLoaders <quickstart/data_quickstart_tutorial.html>`_
+# | `Transforms <quickstart/transforms_tutorial.html>`_
+# | `Build Model <quickstart/build_model_tutorial.html>`_
+# | `Optimization Loop <quickstart/optimization_tutorial.html>`_
+# | `AutoGrad <quickstart/autograd_tutorial.html>`_
+# | `Save, Load and Run Model <save_load_run_tutorial.html>`_
+#
+# *Authors: Seth Juarez, Ari Bornstein, Cassie Breviu, Dmitry Soshnikov*
 
