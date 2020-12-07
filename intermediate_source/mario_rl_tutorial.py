@@ -199,7 +199,7 @@ env = FrameStack(env, num_stack=4)
 # the environment responds with a state of this structure. The structure
 # is represented by a 3-D array of size ``[4, 84, 84]``.
 #
-# .. figure:: /_static/img/mario_env.jpg
+# .. figure:: /_static/img/mario_env.png
 #    :alt: picture
 #
 #
