@@ -17,32 +17,37 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
 # image classes
-classes = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
+classes = ["T-shirt/top", "Trouser", "Pullover", "Dress",
+           "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
 # data used for training
 training_data = datasets.FashionMNIST('data', train=True, download=True,
-                        transform=transforms.Compose([transforms.ToTensor()]),
-                        target_transform=transforms.Compose([
-                            transforms.Lambda(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-                        ])
-                     )
+                                      transform=transforms.Compose(
+                                          [transforms.ToTensor()]),
+                                      target_transform=transforms.Compose([
+                                          transforms.Lambda(lambda y: torch.zeros(
+                                              10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+                                      ])
+                                      )
 
 # data used for testing
 test_data = datasets.FashionMNIST('data', train=False, download=True,
-                        transform=transforms.Compose([transforms.ToTensor()]),
-                        target_transform=transforms.Compose([
-                            transforms.Lambda(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-                        ])
-                     )
+                                  transform=transforms.Compose(
+                                      [transforms.ToTensor()]),
+                                  target_transform=transforms.Compose([
+                                      transforms.Lambda(lambda y: torch.zeros(
+                                          10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+                                  ])
+                                  )
 
 ##############################################
 # Pytorch Datasets
 # --------------------------
-# 
+#
 # We are using the built-in open FashionMNIST datasets from the PyTorch library. For more info on the Datasets and Loaders check out `this <data_quickstart_tutorial.html>`_ resource. The ``Train=True`` indicates we want to download the training dataset from the built-in datasets, ``Train=False`` indicates to download the testing dataset. This way we have data partitioned out for training and testing within the provided PyTorch datasets. We will apply the same transfoms to both the training and testing datasets.
-# 
+#
 # From the docs:
-# 
+#
 # ``torchvision.datasets.FashionMNIST(root, train=True, transform=None, target_transform=None, download=False)``
 
 ##############################################
@@ -51,7 +56,7 @@ test_data = datasets.FashionMNIST('data', train=False, download=True,
 # Example:
 #
 
-transform=transforms.Compose([transforms.ToTensor()])
+transform = transforms.Compose([transforms.ToTensor()])
 
 #####################################################
 # Compose
@@ -80,7 +85,8 @@ transform=transforms.Compose([transforms.ToTensor()])
 # Example:
 #
 
-target_transform= transforms.Lambda(lambda y: torch.zeros(10, dtype=torchfloat).scatter_(dim=0, index=torchtensor(y), value=1))
+target_transform = transforms.Lambda(lambda y: torch.zeros(
+    10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
 
 #################################################
 # This function is taking the y input and creating a tensor of size 10 with a float datatype. Then its calling scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to send each item to torch.zeros, according to the row, index and current item value.
@@ -89,7 +95,7 @@ target_transform= transforms.Lambda(lambda y: torch.zeros(10, dtype=torchfloat).
 #  - value = 1 is the source elemnt
 
 ##############################################
-# Using your own data 
+# Using your own data
 # --------------------------------------
 #
 # Below is an example for processing image data using a dataset from a local directory.
@@ -97,8 +103,8 @@ target_transform= transforms.Lambda(lambda y: torch.zeros(10, dtype=torchfloat).
 # Example:
 #
 
-data_dir='data'
-batch_size=4
+data_dir = 'data'
+batch_size = 4
 
 data_transforms = {
     'train': transforms.Compose([
@@ -116,12 +122,12 @@ data_transforms = {
 }
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
-                                          for x in ['train', 'val']}
+                  for x in ['train', 'val']}
 
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], 
-                                            batch_size=batch_size,
-                                            shuffle=True, num_workers=4)
-                                            for x in ['train', 'val']}
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x],
+                                              batch_size=batch_size,
+                                              shuffle=True, num_workers=4)
+               for x in ['train', 'val']}
 
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 
@@ -133,15 +139,5 @@ class_names = image_datasets['train'].classes
 #
 
 ##################################################################
-# Pytorch Quickstart Topics
-# ----------------------------------------
-# | `Tensors <tensor_tutorial.html>`_
-# | `DataSets and DataLoaders <data_quickstart_tutorial.html>`_
-# | `Transforms <transforms_tutorial.html>`
-# | `Build Model <build_model_tutorial.html>`_
-# | `Optimization Loop <optimization_tutorial.html>`_
-# | `AutoGrad <autograd_quickstart_tutorial.html>`_
-# | `Save, Load and Run Model <save_load_run_tutorial.html>`_
-
-
-
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
