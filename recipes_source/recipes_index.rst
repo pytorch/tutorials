@@ -96,6 +96,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: PyTorch Benchmark
+   :card_description: Learn how to use PyTorch's benchmark module to measure and compare the performance of your code
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/benchmark.html
+   :tags: Basics
+
+.. customcarditem::
    :header: PyTorch Profiler
    :card_description: Learn how to use PyTorch's profiler to measure operators time and memory consumption
    :image: ../_static/img/thumbnails/cropped/profiler.png

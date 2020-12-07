@@ -60,7 +60,7 @@ plt.plot(waveform.t().numpy())
 # ---------------
 # 
 # ``torchaudio`` supports a growing list of
-# `transformations <https://pytorch.org/audio/transforms.html>`_.
+# `transformations <https://pytorch.org/audio/stable/transforms.html>`_.
 # 
 # -  **Resample**: Resample waveform to a different sample rate.
 # -  **Spectrogram**: Create a spectrogram from a waveform.
