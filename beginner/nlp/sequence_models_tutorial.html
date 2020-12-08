@@ -298,7 +298,7 @@ part-of-speech tags, and a myriad of other things.</p>
 all of its inputs to be 3D tensors. The semantics of the axes of these
 tensors is important. The first axis is the sequence itself, the second
 indexes instances in the mini-batch, and the third indexes elements of
-the input. We haven’t discussed mini-batching, so lets just ignore that
+the input. We haven’t discussed mini-batching, so let’s just ignore that
 and assume we will always have just 1 dimension on the second axis. If
 we want to run the sequence model over the sentence “The cow jumped”,
 our input should look like</p>
@@ -368,7 +368,9 @@ case the 1st axis will have size 1 also.</p>
 <p>In this section, we will use an LSTM to get part of speech tags. We will
 not use Viterbi or Forward-Backward or anything like that, but as a
 (challenging) exercise to the reader, think about how Viterbi could be
-used after you have seen what is going on.</p>
+used after you have seen what is going on. In this example, we also refer
+to embeddings. If you are unfamiliar with embeddings, you can read up
+about them <a class="reference external" href="https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html">here</a>.</p>
 <p>The model is as follows: let our input sentence be
 <span class="math notranslate nohighlight">\(w_1, \dots, w_M\)</span>, where <span class="math notranslate nohighlight">\(w_i \in V\)</span>, our vocab. Also, let
 <span class="math notranslate nohighlight">\(T\)</span> be our tag set, and <span class="math notranslate nohighlight">\(y_i\)</span> the tag of word <span class="math notranslate nohighlight">\(w_i\)</span>.
@@ -393,16 +395,19 @@ target space of <span class="math notranslate nohighlight">\(A\)</span> is <span
 
 
 <span class="n">training_data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Tags are: DET - determiner; NN - noun; V - verb</span>
+    <span class="c1"># For example, the word "The" is a determiner</span>
     <span class="p">(</span><span class="s2">"The dog ate the apple"</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="p">[</span><span class="s2">"DET"</span><span class="p">,</span> <span class="s2">"NN"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"DET"</span><span class="p">,</span> <span class="s2">"NN"</span><span class="p">]),</span>
     <span class="p">(</span><span class="s2">"Everybody read that book"</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="p">[</span><span class="s2">"NN"</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">,</span> <span class="s2">"DET"</span><span class="p">,</span> <span class="s2">"NN"</span><span class="p">])</span>
 <span class="p">]</span>
 <span class="n">word_to_ix</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1"># For each words-list (sentence) and tags-list in each tuple of training_data</span>
 <span class="k">for</span> <span class="n">sent</span><span class="p">,</span> <span class="n">tags</span> <span class="ow">in</span> <span class="n">training_data</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">sent</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">word_to_ix</span><span class="p">:</span>
-            <span class="n">word_to_ix</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">word_to_ix</span><span class="p">:</span>  <span class="c1"># word has not been assigned an index yet</span>
+            <span class="n">word_to_ix</span><span class="p">[</span><span class="n">word</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">)</span>  <span class="c1"># Assign each word with a unique index</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">word_to_ix</span><span class="p">)</span>
-<span class="n">tag_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"DET"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"NN"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">tag_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"DET"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"NN"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"V"</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># Assign each tag with a unique index</span>
 
 <span class="c1"># These will usually be more like 32 or 64 dimensional.</span>
 <span class="c1"># We will keep them small, so we can see how the weights change as we train.</span>
@@ -522,7 +527,7 @@ outputs a character-level representation of each word.</li>
 <li>To do a sequence model over characters, you will have to embed characters.
 The character embeddings will be the input to the character LSTM.</li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.258 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.261 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-sequence-models-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/2541b9734d50383920a32879ba460d3d/sequence_models_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
