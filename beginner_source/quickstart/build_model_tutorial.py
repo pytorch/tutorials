@@ -1,100 +1,144 @@
 """
-Optimizing Model Parameters
-===================
-Now that we have a model and data it's time to train, validate and test our model by optimizating it's paramerters on our data! 
-To do this we need to understand a how to handle 5 core deep learning concepts in PyTorch
- 1. Hyperparameters (learning rates, batch sizes, epochs etc)
- 2. Optimization Loops
- 3. Loss
- 4. AutoGrad
- 5. Optimizers 
-Let's dissect these concepts one by one and look at some code at the end we'll see how it all fits together.
-Hyperparameters 
------------------
+Build Model Tutorial
+=======================================
 """
 
-######################################################
-# Hyperparameters are adjustable parameters that let you control the model optimization process. For example, with neural networks, you can configure:
+###############################################
+# The data has been loaded and transformed we can now build the model. 
+# We will leverage `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ 
+# predefined layers that Pytorch has that can simplify our code.
+# 
+# In the below example, for our FashionMNIT image dataset, we are using a `Sequential` 
+# container from class `torch.nn. Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ 
+# that allows us to define the model layers inline. 
+# The neural network modules layers will be added to it in the order they are passed in.
+# 
+# Another way to bulid this model is with a class 
+# using `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ This gives us more flexibility, because
+# we can construct layers of any complexity, including the ones with shared weights.
 #
-# - **Number of Epochs**- the number times iterate over the dataset to update model parameters
-# - **Batch Size** - the number of samples in the dataset to evaluate before you update model parameters
-# - **Cost Function** - the method used to decide how to evaluate the model on a data sample to update the model parameters
-# - **Learning Rate** - how much to update models parameters at each batch/epoch set this to large and you won't update optimally if you set it to small you will learn really slowly
-
-learning_rate = 1e-3
-batch_size = 64
-epochs = 5
-
-######################################################
-# Optimizaton Loops
-# -----------------
-#
-# Once we set our hyperparameters we can then optimize our our model with optimization loops.
-#
-# The optimziation loop is comprized of three main subloops in PyTorch.
+# Lets break down the steps to build this model below
 #
 
-############################################################
-# .. figure:: /_static/img/quickstart/optimizationloops.png
-#    :alt:
+##########################################
+# Inline nn.Sequential Example:
+# ----------------------------
 #
 
-#############################################################
-#  1. The Train Loop -  Core loop iterates over all the epochs
-#  2. The Validation Loop - Validate  loss after each weight parameter update and can be used to gauge hyper parameter performance and update them for the next batch.
-#  3. The Test Loop - is used to evaluate our models performance after each epoch on traditional metrics to show how much our model is generalizing from the train and validation dataset to the test dataset it's never seen before.
+import os
+import torch
+import torch.nn as nn
+import torch.onnx as onnx
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print('Using {} device'.format(device))
+
+# model
+model = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(28*28, 512),
+        nn.ReLU(),
+        nn.Linear(512, 512),
+        nn.ReLU(),
+        nn.Linear(512, len(classes)),
+        nn.Softmax(dim=1)
+    ).to(device)
+    
+print(model)
+
+#############################################
+# Class nn.Module Example:
+# --------------------------
 #
 
-for epoch in range(num_epochs):
-    # Optimization Loop
-    # Train loop over batches
-    model.train()  # set model to train
-    # Model Update Code
-    model.eval()  # After exiting batch loop set model to eval to speed up evaluation and not track gradients (this is explained below)
-    # Validation Loop
-    # - Put sample validation metric logging and hyperparameter update code here
-    # After exiting train loop set model to eval to speed up evaluation and not track gradients (this is explained below)
-    # Test Loop
-    # - Put sample test metric logging and hyperparameter update code here
+class NeuralNework(nn.Module):
+    def __init__(self, x):
+        super(NeuralNework, self).__init__()
+        self.layer1 = nn.Linear(28*28, 512)
+        self.layer2 = nn.Linear(512, 512)
+        self.output = nn.Linear(512, 10)
 
-######################################################
-# Loss
-# -----------------
-#
-# The loss is the value used to update our parameters. To calculate the loss we make a prediction using the inputs of our given data sample.
-#
+    def forward(self, x):
+        x = F.relu(self.layer1(x))
+        x = F.relu(self.layer2(x))
+        x = self.output(x)
+        return F.softmax(x, dim=1)
 
-preds = model(inputs)
-loss = cost_function(preds, labels)
-# Make sure previous gradients are cleared
-optimizer.zero_grad()
-# Calculates gradients with respect to loss
-loss.backward()
-optimizer.step()
-
-######################################################
-# The standard method for optimization is called Stochastic Gradient Descent, to learn more check out this awesome video by `3blue1brown <https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>`_. There are many different optimizers and variations of this method in PyTorch such as ADAM and RMSProp that work better for different kinds of models, they are out side the scope of this Blitz, but can check out the full list of optimizers `here <https://pytorch.org/docs/stable/optim.html>`_
-
-######################################################
-# Putting it all together lets look at a basic optimization loop
-# -----------------
+#############################################
+# Get Device for Training
+# -----------------------
+# Here we check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available to use the GPU, else we will use the CPU. 
 #
-# Initilize optimizer and example cost function
-#
-# For loop to iterate over epoch
-#   - Train loop over batches
-#       - Set model to train mode
-#       - Calculate loss using
-#           - clear optimizer gradient
-#           - loss.backword
-#           - optimizer step
-#       - Set model to evaluate mode and start validation loop
-#           - calculate validation loss and update optimizer hyper parameters
-#       - Set model to evaluate test loop
-#
-# Next: Learn more about `AutoGrad <autograd_tutorial.html>`_.
+# Example:
 #
 
-##################################################################
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+print('Using {} device'.format(device))
+
+##############################################
+# The Model Module Layers
+# -------------------------
+#
+# Lets break down each model layer in the FashionMNIST model.
+#
+
+##################################################
+# `nn.Flatten <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_ to reduce tensor dimensions to one.
+# -----------------------------------------------
+#
+# From the docs:
+# ``torch.nn.Flatten(start_dim: int = 1, end_dim: int = -1)``
+#
+
+# Here is an example using one of the training_data set items:
+tensor = training_data[0][0]
+print(tensor.size())
+
+# Output: torch.Size([1, 28, 28])
+
+model = nn.Sequential(
+    nn.Flatten()
+)
+flattened_tensor = model(tensor)
+flattened_tensor.size()
+
+# Output: torch.Size([1, 784])
+
+##############################################
+# `nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ to add a linear layer to the model.
+# -------------------------------
+#
+# Now that we have flattened our tensor dimension we will apply a linear layer transform that will calculate/learn the weights and the bias.
+#
+# From the docs:
+# 
+# ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``
+#
+
+input = training_data[0][0]
+print(input.size())
+model = nn.Sequential(
+    nn.Flatten(),    
+    nn.Linear(28*28, 512),
+)
+output = model(input)
+output.size()
+
+
+# Output: 
+# torch.Size([1, 28, 28])
+# torch.Size([1, 512])
+
+#################################################
+# Activation Functions
+# -------------------------
+#
+# - `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html)>`_ Activation
+# - `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ Activation
+#
+# Next: Learn more about how the `optimzation loop works with this example <optimization_tutorial.html>`_.
+#
 # .. include:: /beginner_source/quickstart/qs_toc.txt
 #
