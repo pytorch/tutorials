@@ -6,7 +6,8 @@ Build Model Tutorial
 ###############################################
 # The data has been loaded and transformed we can now build the model. 
 # We will leverage `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ 
-# predefined layers that Pytorch has that can simplify our code.
+
+# predefined layers that PyTorch has that can simplify our code.
 # 
 # In the below example, for our FashionMNIT image dataset, we are using a `Sequential` 
 # container from class `torch.nn. Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ 
@@ -53,18 +54,26 @@ print(model)
 # --------------------------
 #
 
-class NeuralNework(nn.Module):
-    def __init__(self, x):
-        super(NeuralNework, self).__init__()
+
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super(NeuralNetwork, self).__init__()
+        self.flatten = nn.Flatten()
         self.layer1 = nn.Linear(28*28, 512)
         self.layer2 = nn.Linear(512, 512)
         self.output = nn.Linear(512, 10)
 
     def forward(self, x):
+
+        x = self.flatten(x)
         x = F.relu(self.layer1(x))
         x = F.relu(self.layer2(x))
         x = self.output(x)
         return F.softmax(x, dim=1)
+model = NeuralNetwork().to(device)
+    
+print(model)
+
 
 #############################################
 # Get Device for Training
@@ -90,8 +99,6 @@ print('Using {} device'.format(device))
 #
 # From the docs:
 # ``torch.nn.Flatten(start_dim: int = 1, end_dim: int = -1)``
-#
-
 # Here is an example using one of the training_data set items:
 tensor = training_data[0][0]
 print(tensor.size())
@@ -112,6 +119,7 @@ flattened_tensor.size()
 #
 # Now that we have flattened our tensor dimension we will apply a linear layer transform that will calculate/learn the weights and the bias.
 #
+
 # From the docs:
 # 
 # ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``

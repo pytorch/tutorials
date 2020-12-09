@@ -13,11 +13,10 @@ Working with data
 #
 # PyTorch has two basic data primitives: ``DataSet`` and ``DataLoader``.
 # The `torchvision.datasets` ``DataSet`` object includes a ``transforms`` mechanism to
-# modify data in-place. Below is an example of how to load that data from the Pytorch open datasets and transform the data to a normalized tensor. 
-
+# modify data in-place. Below is an example of how to load that data from the PyTorch open datasets and transform the data to a normalized tensor. 
 # This example is using the `torchvision.datasets` which is a subclass from the primitive `torch.utils.data.Dataset`. Note that the primitive dataset doesnt have the built in transforms param like the built in dataset in `torchvision.datasets.`
 # 
-# To see more examples and details of how to work with Tensors, Datasets, DataLoaders and Transforms in Pytoch with this example checkout these resources:
+# To see more examples and details of how to work with Tensors, Datasets, DataLoaders and Transforms in PyTorch with this example checkout these resources:
 #  
 #  - `Tensors <quickstart/tensor_tutorial.html>`_
 #  - `DataSet and DataLoader <quickstart/data_quickstart_tutorial.html>`_
@@ -29,6 +28,7 @@ import torch.onnx as onnx
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+import torch.nn.functional as F
 
 classes = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
@@ -51,26 +51,32 @@ batch_size = 64
 train_dataloader = DataLoader(training_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 
+################################
 # Creating Models
 # ---------------
 # 
 # There are two ways of creating models: in-line or as a class. This
-# quickstart will consider an in-line definition. For more examples checkout `building the model <quickstart/build_model_tutorial.html>`_.
+# quickstart will consider a class definition. For more examples checkout `building the model <quickstart/build_model_tutorial.html>`_.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
 
-# in-line model
+# Define model
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super(NeuralNetwork, self).__init__()
+        self.flatten = nn.Flatten()
+        self.layer1 = nn.Linear(28*28, 512)
+        self.layer2 = nn.Linear(512, 512)
+        self.output = nn.Linear(512, 10)
 
-model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(28*28, 512),
-        nn.ReLU(),
-        nn.Linear(512, 512),
-        nn.ReLU(),
-        nn.Linear(512, len(classes)),
-        nn.Softmax(dim=1)
-    ).to(device)
+    def forward(self, x):
+        x = self.flatten(x)
+        x = F.relu(self.layer1(x))
+        x = F.relu(self.layer2(x))
+        x = self.output(x)
+        return F.softmax(x, dim=1)
+model = NeuralNetwork().to(device)
     
 print(model)
 
@@ -193,7 +199,7 @@ with torch.no_grad():
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
 ##################################################################
-# Pytorch Quickstart Topics
+# PyTorch Quickstart Topics
 # ----------------------------------------
 # | `Tensors <quickstart/tensor_tutorial.html>`_
 # | `DataSets and DataLoaders <quickstart/data_quickstart_tutorial.html>`_
