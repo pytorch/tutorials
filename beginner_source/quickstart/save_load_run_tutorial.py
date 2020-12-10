@@ -42,16 +42,7 @@ onnx.export(model, x, 'model.onnx')
 # These two steps are illustrated here:
 
 # recreate model
-loaded_model = nn.Sequential(
-    nn.Flatten(),
-    nn.Linear(28*28, 512),
-    nn.ReLU(),
-    nn.Linear(512, 512),
-    nn.ReLU(),
-    nn.Linear(512, len(classes)),
-    nn.Softmax(dim=1)
-)
-
+loaded_model = NeuralNetwork()
 # hydrate state dictionary
 loaded_model.load_state_dict(torch.load('model.pth'))
 

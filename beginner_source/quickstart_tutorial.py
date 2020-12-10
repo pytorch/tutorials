@@ -178,15 +178,7 @@ print('Saved onnx model to model.onnx')
 # inference). Check out more details on `saving, loading and running models with Pytorch <quickstart/save_load_run_tutorial.html>`_
 #
 
-loaded_model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(28*28, 512),
-        nn.ReLU(),
-        nn.Linear(512, 512),
-        nn.ReLU(),
-        nn.Linear(512, len(classes)),
-        nn.Softmax(dim=1)
-    )
+loaded_model = NeuralNetwork()
 
 loaded_model.load_state_dict(torch.load('model.pth'))
 loaded_model.eval()
