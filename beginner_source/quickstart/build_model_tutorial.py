@@ -1,22 +1,24 @@
 """
 Build Model Tutorial
-=======================================
-
-The data has been loaded and transformed we can now build the model. 
-We will leverage `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ predefined layers that PyTorch has that can simplify our code.
-
-In the below example, for our FashionMNIT image dataset, we are using a `Sequential` 
-container from class `torch.nn. Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ 
-that allows us to define the model layers inline. In the "Sequential" in-line model building format the ``forward()`` 
-method is created for you and the modules you add are passed in as a list or dictionary in the order that are they are defined.
-
-Another way to bulid this model is with a class 
-using `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
-A big plus with using a class that inherits ``nn.Module`` is better parameter management across all nested submodules.
-This gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
-
-Lets break down the steps to build this model below
+============================
 """
+
+##########################################
+# The data has been loaded and transformed we can now build the model. 
+# We will leverage `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ predefined layers that PyTorch has that can simplify our code.
+# 
+# In the below example, for our FashionMNIT image dataset, we are using a `Sequential` 
+# container from class `torch.nn. Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ 
+# that allows us to define the model layers inline. In the "Sequential" in-line model building format the ``forward()`` 
+# method is created for you and the modules you add are passed in as a list or dictionary in the order that are they are defined.
+# 
+# Another way to bulid this model is with a class 
+# using `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
+# A big plus with using a class that inherits ``nn.Module`` is better parameter management across all nested submodules.
+# This gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
+# 
+# Lets break down the steps to build this model below
+# 
 
 ##########################################
 # Inline nn.Sequential Example:
