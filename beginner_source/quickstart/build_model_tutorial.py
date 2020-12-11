@@ -176,13 +176,13 @@ print(model)
 # and pass the data (x) into the forward function and through each layer of our network.
 #
 #
-    def forward(self, x):
-        x = self.flatten(x)
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        x = self.output(x)
-        return F.softmax(x, dim=1)
-    model = NeuralNetwork().to(device)
+def forward(self, x):
+    x = self.flatten(x)
+    x = F.relu(self.layer1(x))
+    x = F.relu(self.layer2(x))
+    x = self.output(x)
+    return F.softmax(x, dim=1)
+model = NeuralNetwork().to(device)
 
 
 ################################################
