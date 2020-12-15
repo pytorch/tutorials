@@ -1,3 +1,38 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Codespaces
+Marketplace
+Explore
+ 
+@aribornstein 
+aribornstein
+/
+tutorials
+forked from sethjuarez/tutorials
+0
+0
+2.5k
+Code
+Pull requests
+Actions
+Projects
+Wiki
+Security
+Insights
+Settings
+tutorials/beginner_source/quickstart/data_quickstart_tutorial.py /
+@aribornstein
+aribornstein Update data_quickstart_tutorial.py
+…
+Latest commit 4d522bb 35 seconds ago
+ History
+ 3 contributors
+@sethjuarez@aribornstein@cassieview
+199 lines (172 sloc)  8.64 KB
+  
 """
 Datasets & Dataloaders
 ===================
@@ -35,7 +70,10 @@ Datasets & Dataloaders
 # 
 # Once we have a Dataset we can index it manually like a list `clothing[index]`. 
 # 
-# Here is an example of how to load the [Fashion-MNIST](https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/) dataset from torch vision. "[Fashion-MNIST](https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/) is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples. Each example is comprised of a 28×28 grayscale image, associated with a label from one of 10 classes. Read more [here](https://pytorch.org/docs/stable/torchvision/datasets.html#fashion-mnist).
+# Here is an example of how to load the `Fashion-MNIST<https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ dataset from torch vision.
+# `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples. 
+# Each example is comprised of a 28×28 grayscale image, associated with a label from one of 10 classes. Read more `here <https://pytorch.org/docs/stable/torchvision/datasets.html#fashion-mnist>`_.
+#
 # To load the FashionMNIST Dataset we need to provide the following three parameters:
 #  - root is the path where the train/test data is stored. 
 #  - train includes the training dataset. 
@@ -194,3 +232,15 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 # Next: Learn more about how to `transform that data for training <transforms_tutorial.html>`_.
 #
 # .. include:: /beginner_source/quickstart/qs_toc.txt
+© 2020 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
