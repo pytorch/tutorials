@@ -35,7 +35,7 @@ Datasets & Dataloaders
 # 
 # Once we have a Dataset we can index it manually like a list `clothing[index]`. 
 # 
-# Here is an example of how to load the `Fashion-MNIST<https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ dataset from torch vision.
+# Here is an example of how to load the `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ dataset from torch vision.
 # `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples. 
 # Each example is comprised of a 28×28 grayscale image, associated with a label from one of 10 classes. Read more `here <https://pytorch.org/docs/stable/torchvision/datasets.html#fashion-mnist>`_.
 #
