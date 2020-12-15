@@ -130,7 +130,6 @@ flattened_tensor.size()
 # Now that we have flattened our tensor dimension we will apply a linear layer 
 # transform that will calculate/learn the weights and the bias.
 #
-
 # From the docs:
 # 
 # ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``
