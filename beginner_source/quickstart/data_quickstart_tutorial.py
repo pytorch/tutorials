@@ -1,38 +1,3 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Codespaces
-Marketplace
-Explore
- 
-@aribornstein 
-aribornstein
-/
-tutorials
-forked from sethjuarez/tutorials
-0
-0
-2.5k
-Code
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-tutorials/beginner_source/quickstart/data_quickstart_tutorial.py /
-@aribornstein
-aribornstein Update data_quickstart_tutorial.py
-…
-Latest commit 4d522bb 35 seconds ago
- History
- 3 contributors
-@sethjuarez@aribornstein@cassieview
-199 lines (172 sloc)  8.64 KB
-  
 """
 Datasets & Dataloaders
 ===================
@@ -232,15 +197,4 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 # Next: Learn more about how to `transform that data for training <transforms_tutorial.html>`_.
 #
 # .. include:: /beginner_source/quickstart/qs_toc.txt
-© 2020 GitHub, Inc.
-Terms
-Privacy
-Security
-Status
-Help
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
+#
