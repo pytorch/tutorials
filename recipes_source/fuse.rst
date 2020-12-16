@@ -56,6 +56,7 @@ Add the following code below the model definition above and run the script:
 ::
 
     model = AnnotatedConvBnReLUModel()
+    print(model)
 
     def prepare_save(model, fused):
         model.qconfig = torch.quantization.get_default_qconfig('qnnpack')
@@ -66,13 +67,12 @@ Add the following code below the model definition above and run the script:
         torch.jit.save(torchscript_model_optimized, "model.pt" if not fused else "model_fused.pt")
 
     prepare_save(model, False)
-    model_fused = torch.quantization.fuse_modules(model, [['bn', 'relu']], inplace=False)
-    prepare_save(model_fused, True)
 
-    print(model)
+    model = AnnotatedConvBnReLUModel()
+    model_fused = torch.quantization.fuse_modules(model, [['bn', 'relu']], inplace=False)
     print(model_fused)
 
-
+    prepare_save(model_fused, True)
 
 
 The graphs of the original model and its fused version will be printed as follows:

@@ -100,14 +100,14 @@ Python script to save pretrained mobilenet_v2 to a file:
     model = torchvision.models.mobilenet_v2(pretrained=True)
     model.eval()
     script_model = torch.jit.script(model)
-    torch.jit.save(script_model, “mobilenet2.pt”)
+    torch.jit.save(script_model, "mobilenet2.pt")
 
 PyTorch 1.7 Vulkan backend supports only float 32bit operators. The default model needs additional step that will optimize operators fusing 
 
 ::
 
     from torch.utils.mobile_optimizer import optimize_for_mobile
-    script_model_vulkan = optimize_for_mobile(script_model, backend='Vulkan')
+    script_model_vulkan = optimize_for_mobile(script_model, backend='vulkan')
     torch.jit.save(script_model_vulkan, "mobilenet2-vulkan.pt")
 
 The result model can be used only on Vulkan backend as it contains specific to the Vulkan backend operators.
@@ -123,9 +123,9 @@ C++ API
     at::is_vulkan_available()
     auto tensor = at::rand({1, 2, 2, 3}, at::device(at::kCPU).dtype(at::kFloat));
     auto tensor_vulkan = t.vulkan();
-    auto module = torch::jit::load(“$PATH”);
-    auto tensor_output_vulkan = module.forward(inputs)
-    auto tensor_output = tensor_output.cpu()
+    auto module = torch::jit::load("$PATH");
+    auto tensor_output_vulkan = module.forward(inputs).toTensor();
+    auto tensor_output = tensor_output.cpu();
 
 ``at::is_vulkan_available()`` function tries to initialize Vulkan backend and if Vulkan device is successfully found and context is created - it will return true, false otherwise.
 
@@ -185,7 +185,7 @@ For Android API to run model on Vulkan backend we have to specify this during mo
 ::
 
     import org.pytorch.Device;
-    Module module = Module.load(“$PATH”, Device.VULKAN)
+    Module module = Module.load("$PATH", Device.VULKAN)
     FloatBuffer buffer = Tensor.allocateFloatBuffer(1 * 3 * 224 * 224);
     Tensor inputTensor = Tensor.fromBlob(buffer, new int[]{1, 3, 224, 224});
     Tensor outputTensor = mModule.forward(IValue.from(inputTensor)).toTensor();
