@@ -773,7 +773,7 @@ for e in range(episodes):
 
     logger.log_episode()
 
-    if e % 4 == 0:
+    if e % 10 == 0:
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 
@@ -781,6 +781,6 @@ for e in range(episodes):
 # Conclusion
 # """""""""""""""
 #
-# In this tutorial, we saw how we can use torch and torchvision to train a game-playing AI. You can use the same approach
-# to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.com/>`__. Hope you enjoyed this tutorial, feel free to reach out to us at
+# In this tutorial, we saw how we can use PyTorch to train a game-playing AI. You can use the same methods
+# to train an AI to play any of the games at the `OpenAI gym <https://gym.openai.com/>`__. Hope you enjoyed this tutorial, feel free to reach us at
 # `our github <https://github.com/yuansongFeng/MadMario/>`__!
