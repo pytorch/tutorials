@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>AI-powered Mario — PyTorch Tutorials 1.7.1 documentation</title>
+<title>Train a Mario-playing RL Agent — PyTorch Tutorials 1.7.1 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -183,7 +183,7 @@
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">AI-powered Mario</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Train a Mario-playing RL Agent</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
 <ul>
@@ -240,7 +240,7 @@
           
         </a> &gt;
       </li>
-<li>AI-powered Mario</li>
+<li>Train a Mario-playing RL Agent</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/intermediate/mario_rl_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -278,8 +278,8 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-intermediate-mario-rl-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="ai-powered-mario">
-<span id="sphx-glr-intermediate-mario-rl-tutorial-py"></span><h1>AI-powered Mario<a class="headerlink" href="#ai-powered-mario" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="train-a-mario-playing-rl-agent">
+<span id="sphx-glr-intermediate-mario-rl-tutorial-py"></span><h1>Train a Mario-playing RL Agent<a class="headerlink" href="#train-a-mario-playing-rl-agent" title="Permalink to this headline">¶</a></h1>
 <p>Authors: <a class="reference external" href="https://github.com/YuansongFeng">Yuansong Feng</a>, <a class="reference external" href="https://github.com/suraj813">Suraj
 Subramanian</a>, <a class="reference external" href="https://github.com/hw26">Howard
 Wang</a>, <a class="reference external" href="https://github.com/GuoYuzhang">Steven
@@ -688,7 +688,7 @@ later).</p>
 action <span class="math notranslate nohighlight">\(a'\)</span> maximizes <span class="math notranslate nohighlight">\(Q_{online}\)</span> in the next state
 <span class="math notranslate nohighlight">\(s'\)</span>.</p>
 <p>Notice we use the
-[@torch.no_grad()](<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad">https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad</a>)
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad">@torch.no_grad()</a>
 decorator on <code class="docutils literal notranslate"><span class="pre">td_target()</span></code> to disable gradient calculations here
 (because we don’t need to backpropagate on <span class="math notranslate nohighlight">\(\theta_{target}\)</span>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
@@ -718,10 +718,11 @@ decorator on <code class="docutils literal notranslate"><span class="pre">td_tar
 <p>As Mario samples inputs from his replay buffer, we compute <span class="math notranslate nohighlight">\(TD_t\)</span>
 and <span class="math notranslate nohighlight">\(TD_e\)</span> and backpropagate this loss down <span class="math notranslate nohighlight">\(Q_{online}\)</span> to
 update its parameters <span class="math notranslate nohighlight">\(\theta_{online}\)</span> (<span class="math notranslate nohighlight">\(\alpha\)</span> is the
-learning rate <code class="docutils literal notranslate"><span class="pre">lr</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">Adam</span> <span class="pre">optimizer</span></code>)</p>
+learning rate <code class="docutils literal notranslate"><span class="pre">lr</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code>)</p>
 <div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}  \theta_{online} \leftarrow \theta_{online} + \alpha \nabla(TD_e - TD_t)\\:math:`\theta_{target}` does not update through backpropagation.\end{aligned}\end{align} \]</div>
-<p>Instead, we periodically copy <span class="math notranslate nohighlight">\(\theta_{online}\)</span> to
+\[\theta_{online} \leftarrow \theta_{online} + \alpha \nabla(TD_e - TD_t)\]</div>
+<p><span class="math notranslate nohighlight">\(\theta_{target}\)</span> does not update through backpropagation.
+Instead, we periodically copy <span class="math notranslate nohighlight">\(\theta_{online}\)</span> to
 <span class="math notranslate nohighlight">\(\theta_{target}\)</span></p>
 <div class="math notranslate nohighlight">
 \[\theta_{target} \leftarrow \theta_{online}\]</div>
@@ -955,7 +956,7 @@ his world, we suggest running the loop for at least 40,000 episodes!</p>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">log_episode</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">e</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">e</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">episode</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">curr_step</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -963,7 +964,7 @@ his world, we suggest running the loop for at least 40,000 episodes!</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Using CUDA: True
 
-Episode 0 - Step 40 - Epsilon 0.9999900000487484 - Mean Reward 231.0 - Mean Length 40.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 0.448 - Time 2020-12-18T01:08:58
+Episode 0 - Step 167 - Epsilon 0.9999582508662946 - Mean Reward 603.0 - Mean Length 167.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.867 - Time 2020-12-18T16:36:59
 </pre></div>
 </div>
 </div>
@@ -972,7 +973,7 @@ Episode 0 - Step 40 - Epsilon 0.9999900000487484 - Mean Reward 231.0 - Mean Leng
 <p>In this tutorial, we saw how we can use PyTorch to train a game-playing AI. You can use the same methods
 to train an AI to play any of the games at the <a class="reference external" href="https://gym.openai.com/">OpenAI gym</a>. Hope you enjoyed this tutorial, feel free to reach us at
 <a class="reference external" href="https://github.com/yuansongFeng/MadMario/">our github</a>!</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  27.716 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  17.586 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-mario-rl-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/5f9fbaa1fe608e9c6ceeeae4c9bea7ed/mario_rl_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">mario_rl_tutorial.py</span></code></a></div>
@@ -1013,7 +1014,7 @@ to train an AI to play any of the games at the <a class="reference external" hre
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">AI-powered Mario</a><ul>
+<li><a class="reference internal" href="#">Train a Mario-playing RL Agent</a><ul>
 <li><a class="reference internal" href="#rl-definitions">RL Definitions</a></li>
 <li><a class="reference internal" href="#environment">Environment</a><ul>
 <li><a class="reference internal" href="#initialize-environment">Initialize Environment</a></li>
