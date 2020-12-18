@@ -116,7 +116,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
    :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
-   
+
 .. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
@@ -178,7 +178,7 @@ Welcome to PyTorch Tutorials
    :tags: Reinforcement-Learning
 
 .. customcarditem::
-   :header: Game-playing AI (Mario)
+   :header: Train a Mario-playing RL Agent
    :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
@@ -476,7 +476,7 @@ Additional Resources
 
    beginner/audio_preprocessing_tutorial
    intermediate/speech_command_recognition_with_torchaudio
-   
+
 
 .. toctree::
    :maxdepth: 2
