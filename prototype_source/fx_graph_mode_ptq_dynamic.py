@@ -34,7 +34,7 @@ and omit the descriptions.
 
 ###################################################
 # 1. Define the Model, Download Data and Model
-# -------------------------------------------
+# --------------------------------------------
 #
 # Download the `data <https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip>`_ 
 # and unzip to data folder
