@@ -16,8 +16,10 @@ or retured in a JSON trace file.
 
 Head on over to `this
 recipe <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`__
-for a quick walkthrough of the Profiler API.
+for a quicker walkthrough of Profiler API usage.
 
+
+--------------
 """
 
 import torch
@@ -28,7 +30,7 @@ import torch.autograd.profiler as profiler
 
 ######################################################################
 # Performance debugging using Profiler
-# ~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Profiler can be useful to identify performance bottlenecks in your
 # models. In this example, we build a custom module that performs two
@@ -59,20 +61,25 @@ class MyModule(nn.Module):
         with profiler.record_function("MASK INDICES"):
             threshold = out.sum(axis=1).mean().item()
             hi_idx = np.argwhere(mask.cpu().numpy() > threshold)
+            hi_idx = torch.from_numpy(hi_idx).cuda()
 
         return out, hi_idx
 
 
 ######################################################################
 # Profile the forward pass
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# We initialize random input and mask tensors, and the ``CustomLinear`` module.
+# We initialize random input and mask tensors, and the model.
 #
 # Before we run the profiler, we warm-up CUDA to ensure accurate
 # performance benchmarking. We wrap the forward pass of our module in the
 # ``profiler.profile`` context manager. The ``with_stack=True`` parameter appends the
 # file and line number of the operation in the trace.
+#
+# .. WARNING::
+#     ``with_stack=True`` incurs an additional overhead, and is better suited for investigating code.
+#     Remember to remove it if you are benchmarking performance.
 #
 
 model = MyModule(500, 10).cuda()
@@ -87,8 +94,8 @@ with profiler.profile(with_stack=True, profile_memory=True) as prof:
 
 
 ######################################################################
-# Pretty print profiler results
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^
+# Print profiler results
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Finally, we print the profiler results. ``profiler.key_averages``
 # aggregates the results by operator name, and optionally by input
@@ -103,19 +110,22 @@ with profiler.profile(with_stack=True, profile_memory=True) as prof:
 # `docs <https://pytorch.org/docs/stable/autograd.html#profiler>`__ for
 # valid sorting keys).
 #
+# .. Note::
+#   When running profiler in a notebook, you might see entries like ``<ipython-input-18-193a910735e8>(13): forward``
+#   instead of filenames in the stacktrace. These correspond to ``<notebook-cell>(line number): calling-function``.
 
-print(prof.key_averages(group_by_stack_n=5).table())
+print(prof.key_averages(group_by_stack_n=5).table(sort_by='cpu_time_total', row_limit=15))
 
 
 ######################################################################
 # Improve memory performance
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Note that the most expensive operations - in terms of memory and time -
-# are at ``forward (11)`` or where we get the mask indices. Let’s try to
+# are at ``forward (10)`` representing the operations within MASK INDICES. Let’s try to
 # tackle the memory consumption first. We can see that the ``.to()``
-# operation consumes 953.67 Mb. ``mask`` is initialized with a
-# ``torch.double`` datatype. Can we reduce the memory footprint by casting
-# it to ``torch.float``?
+# operation at line 12 consumes 953.67 Mb. This operation copies ``mask`` to the CPU.
+# ``mask`` is initialized with a ``torch.double`` datatype. Can we reduce the memory footprint by casting
+# it to ``torch.float`` instead?
 #
 
 model = MyModule(500, 10).cuda()
@@ -128,19 +138,20 @@ model(input, mask)
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     out, idx = model(input, mask)
 
-print(prof.key_averages(group_by_stack_n=5).table())
-
+print(prof.key_averages(group_by_stack_n=5).table(sort_by='cpu_time_total', row_limit=15))
 
 ######################################################################
+#
+# We can see the CPU memory footprint for this operation has halved.
+#
 # Improve time performance
-# ^^^^^^^^^^^^^^^^^^^^^^^^^
-# That worked, the memory footprint has halved - but while the time
-# consumed has reduced a bit (previously 283ms), it’s still too high at
-# 194ms. Turns out copying a matrix from CUDA to CPU is pretty expensive!
-# The ``aten::copy_`` operator in ``forward (11)`` copies ``mask`` to CPU
-# so that it can use the NumPy ``argwhere`` function. We could eliminate
-# the need to copy into a NumPy array if we use a ``torch`` function
-# ``nonzero()`` here instead.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# While the time consumed has also reduced a bit, it’s still too high.
+# Turns out copying a matrix from CUDA to CPU is pretty expensive!
+# The ``aten::copy_`` operator in ``forward (12)`` copies ``mask`` to CPU
+# so that it can use the NumPy ``argwhere`` function. ``aten::copy_`` at ``forward(13)``
+# copies the array back to CUDA as a tensor. We could eliminate both of these if we use a
+# ``torch`` function ``nonzero()`` here instead.
 #
 
 class MyModule(nn.Module):
@@ -152,7 +163,7 @@ class MyModule(nn.Module):
         with profiler.record_function("LINEAR PASS"):
             out = self.linear(input)
 
-        with profiler.record_function("INDEX SCORE"):
+        with profiler.record_function("MASK INDICES"):
             threshold = out.sum(axis=1).mean()
             hi_idx = (mask > threshold).nonzero(as_tuple=True)
 
@@ -169,33 +180,14 @@ model(input, mask)
 with profiler.profile(with_stack=True, profile_memory=True) as prof:
     out, idx = model(input, mask)
 
-print(prof.key_averages(group_by_stack_n=5).table())
+print(prof.key_averages(group_by_stack_n=5).table(sort_by='cpu_time_total', row_limit=15))
 
-
-######################################################################
-# Replacing ``np.argwhere`` with ``torch.nonzero`` reduced the total
-# runtime to about 36ms (from 195ms) by eliminating the need to copy to
-# CPU and instead running on the GPU.
-#
-
-
-######################################################################
-# Caveat
-# ^^^^^^^^^^^^^^
-#
-# You might notice introducing ``torch.nonzero`` in our module has shown a
-# new memory footprint of 2.59 Gb that wasn’t in the stacktrace when we
-# used ``np.argwhere``. This is because Profiler currently tracks only PyTorch tensors
-# memory consumption and not NumPy arrays; it is likely that ``np.argwhere``
-# occupied a similar amount of memory on the CPU but that will not be reported
-# in the trace here.
-#
 
 
 ######################################################################
 # Further Reading
 # ~~~~~~~~~~~~~~~~~
-# We have seen how Profiler can be used to identify time and memory bottlenecks in PyTorch models.
+# We have seen how Profiler can be used to investigate time and memory bottlenecks in PyTorch models.
 # Read more about Profiler here:
 #
 # - `Profiler Usage Recipe <https://pytorch.org/tutorials/recipes/recipes/profiler.html>`__
