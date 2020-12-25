@@ -18,7 +18,7 @@ For example, look at this network that classifies digit images:
    convnet
 
 It is a simple feed-forward network. It takes the input, feeds it
-through several layers one after the other, and then finally gives the
+through several layers one after the other, and finally gives the
 output.
 
 A typical training procedure for a neural network is as follows:
