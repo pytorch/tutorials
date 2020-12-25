@@ -7,7 +7,7 @@ Neural networks can be constructed using the ``torch.nn`` package.
 
 Now that you had a glimpse of ``autograd``, ``nn`` depends on
 ``autograd`` to define models and differentiate them.
-An ``nn.Module`` contains layers, and a method ``forward(input)``\ that
+An ``nn.Module`` contains layers and a method ``forward(input)``\ that
 returns the ``output``.
 
 For example, look at this network that classifies digit images:
