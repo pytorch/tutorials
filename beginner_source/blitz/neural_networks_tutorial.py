@@ -23,7 +23,7 @@ output.
 
 A typical training procedure for a neural network is as follows:
 
-- Define the neural network that has some learnable parameters (or
+- Define the neural network that has learnable parameters (or
   weights)
 - Iterate over a dataset of inputs
 - Process input through the network
