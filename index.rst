@@ -116,7 +116,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
    :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
-   
+
 .. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
@@ -176,6 +176,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/cartpole.gif
    :link: intermediate/reinforcement_q_learning.html
    :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Train a Mario-playing RL Agent
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :image: _static/img/mario.gif
+   :link: intermediate/mario_rl_tutorial.html
+   :tags: Reinforcement-Learning
+
 
 .. Deploying PyTorch Models in Production
 
@@ -366,7 +374,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
    :link: intermediate/rpc_async_execution.html
    :tags: Parallel-and-Distributed-Training
-   
+
 .. customcarditem::
    :header: Combining Distributed DataParallel with Distributed RPC Framework
    :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
@@ -468,7 +476,7 @@ Additional Resources
 
    beginner/audio_preprocessing_tutorial
    intermediate/speech_command_recognition_with_torchaudio
-   
+
 
 .. toctree::
    :maxdepth: 2
@@ -491,6 +499,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/mario_rl_tutorial
 
 .. toctree::
    :maxdepth: 2
