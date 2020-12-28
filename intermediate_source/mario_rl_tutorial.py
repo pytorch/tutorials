@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AI-powered Mario
+Train a Mario-playing RL Agent
 ================
 
 Authors: `Yuansong Feng <https://github.com/YuansongFeng>`__, `Suraj
@@ -482,7 +482,7 @@ class MarioNet(nn.Module):
 # :math:`s'`.
 #
 # Notice we use the
-# [@torch.no_grad()](https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad)
+# `@torch.no_grad() <https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad>`__
 # decorator on ``td_target()`` to disable gradient calculations here
 # (because we don’t need to backpropagate on :math:`\theta_{target}`).
 #
@@ -516,14 +516,14 @@ class Mario(Mario):
 # As Mario samples inputs from his replay buffer, we compute :math:`TD_t`
 # and :math:`TD_e` and backpropagate this loss down :math:`Q_{online}` to
 # update its parameters :math:`\theta_{online}` (:math:`\alpha` is the
-# learning rate ``lr`` passed to the ``Adam optimizer``)
+# learning rate ``lr`` passed to the ``optimizer``)
 #
 # .. math::
 #
 #
 #    \theta_{online} \leftarrow \theta_{online} + \alpha \nabla(TD_e - TD_t)
 #
-#  :math:`\theta_{target}` does not update through backpropagation.
+# :math:`\theta_{target}` does not update through backpropagation.
 # Instead, we periodically copy :math:`\theta_{online}` to
 # :math:`\theta_{target}`
 #
@@ -773,7 +773,7 @@ for e in range(episodes):
 
     logger.log_episode()
 
-    if e % 10 == 0:
+    if e % 20 == 0:
         logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
 
 

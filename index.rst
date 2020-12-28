@@ -178,7 +178,7 @@ Welcome to PyTorch Tutorials
    :tags: Reinforcement-Learning
 
 .. customcarditem::
-   :header: Game-playing AI (Mario)
+   :header: Train a Mario-playing RL Agent
    :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
