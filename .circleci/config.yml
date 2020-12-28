@@ -182,7 +182,7 @@ pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_default
   resource_class: medium
   <<: *pytorch_tutorial_build_defaults
 
-pytorch_windows_build: &pytorch_windows_build
+pytorch_windows_build_worker: &pytorch_windows_build_worker
   executor: windows-with-nvidia-gpu
   steps:
     - checkout
@@ -192,9 +192,24 @@ pytorch_windows_build: &pytorch_windows_build
         command: |
           .circleci/scripts/windows_cuda_install.sh
     - run:
+        name: Generate cache key
+        # This will refresh cache on Sundays, build should generate new cache.
+        command: echo "$(date +"%Y-%U")" > .circleci-weekly
+    - restore_cache:
+        keys:
+          - data-{{ checksum "Makefile" }}-{{ checksum ".circleci-weekly" }}
+    - run:
         name: test
+        no_output_timeout: "1h"
         command: |
           .circleci/scripts/build_for_windows.sh
+    - save_cache:
+        key: data-{{ checksum "Makefile" }}-{{ checksum ".circleci-weekly" }}
+        paths:
+          - advanced_source/data
+          - beginner_source/data
+          - intermediate_source/data
+          - prototype_source/data
 
 jobs:
   pytorch_tutorial_pr_build_worker_0:
@@ -323,8 +338,29 @@ jobs:
   pytorch_tutorial_master_build_manager:
     <<: *pytorch_tutorial_build_manager_defaults
 
-  pytorch_windows_build_worker:
-    <<: *pytorch_windows_build
+  pytorch_tutorial_windows_pr_build_worker_0:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_1:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_2:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_3:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_0:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_1:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_2:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_3:
+    <<: *pytorch_windows_build_worker
 
 workflows:
   build:
@@ -562,11 +598,48 @@ workflows:
             branches:
               only:
                 - master
-#      - pytorch_windows_build_worker:
-#          name: win_test_worker
-#          type: approval
-#          filters:
-#            branches:
-#              only:
-#                - master
+      - pytorch_tutorial_windows_pr_build_worker_0:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_1:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_2:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_3:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_0:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_1:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_2:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_3:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
 
