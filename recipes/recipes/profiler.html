@@ -270,6 +270,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/profiler.html">Profiling your PyTorch Module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
@@ -419,20 +420,11 @@ use profiler to analyze model performance.</p>
 <h3>1. Import all necessary libraries<a class="headerlink" href="#import-all-necessary-libraries" title="Permalink to this headline">¶</a></h3>
 <p>In this recipe we will use <code class="docutils literal notranslate"><span class="pre">torch</span></code>, <code class="docutils literal notranslate"><span class="pre">torchvision.models</span></code>
 and <code class="docutils literal notranslate"><span class="pre">profiler</span></code> modules:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
-<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="instantiate-a-simple-resnet-model">
 <h3>2. Instantiate a simple Resnet model<a class="headerlink" href="#instantiate-a-simple-resnet-model" title="Permalink to this headline">¶</a></h3>
 <p>Let’s create an instance of a Resnet model and prepare an input
 for it:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span>
-<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 <div class="section" id="use-profiler-to-analyze-execution-time">
 <h3>3. Use profiler to analyze execution time<a class="headerlink" href="#use-profiler-to-analyze-execution-time" title="Permalink to this headline">¶</a></h3>
@@ -445,11 +437,6 @@ model’s Tensors;</li>
 <li><code class="docutils literal notranslate"><span class="pre">use_cuda</span></code> - whether to measure execution time of CUDA kernels.</li>
 </ul>
 <p>Let’s see how we can use profiler to analyze the execution time:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>Note that we can use <code class="docutils literal notranslate"><span class="pre">record_function</span></code> context manager to label
 arbitrary code ranges with user provided names
 (<code class="docutils literal notranslate"><span class="pre">model_inference</span></code> is used as a label in the example above).
@@ -462,9 +449,6 @@ Profiler also automatically profiles the async tasks launched
 with <code class="docutils literal notranslate"><span class="pre">torch.jit._fork</span></code> and (in case of a backward pass)
 the backward pass operators launched with <code class="docutils literal notranslate"><span class="pre">backward()</span></code> call.</p>
 <p>Let’s print out the stats for the execution above:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-</pre></div>
-</div>
 <p>The output will look like (omitting some columns):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -------------------------  --------------  ----------  ------------  ---------</span>
 <span class="c1"># Name                       Self CPU total   CPU total  CPU time avg  # Calls</span>
@@ -487,9 +471,7 @@ for PyTorch compiled with MKL-DNN support).
 Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time exludes time
 spent in children operator calls, while total cpu time includes it.</p>
 <p>To get a finer granularity of results and include operator input shapes, pass <code class="docutils literal notranslate"><span class="pre">group_by_input_shape=True</span></code>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-
-<span class="c1"># (omitting some columns)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># (omitting some columns)</span>
 <span class="c1"># -------------------------  -----------  --------  -------------------------------------</span>
 <span class="c1"># Name                       CPU total    # Calls         Input Shapes</span>
 <span class="c1"># -------------------------  -----------  --------  -------------------------------------</span>
@@ -514,12 +496,7 @@ that was allocated (or released) during the execution of the model’s operators
 In the output below, ‘self’ memory corresponds to the memory allocated (released)
 by the operator, excluding the children calls to the other operators.
 To enable memory profiling functionality pass <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;self_cpu_memory_usage&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
-
-<span class="c1"># (omitting some columns)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># (omitting some columns)</span>
 <span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
 <span class="c1"># Name                         CPU Mem          Self CPU Mem     Number of Calls</span>
 <span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
@@ -530,7 +507,7 @@ To enable memory profiling functionality pass <code class="docutils literal notr
 <span class="c1"># conv2d                       47.37 Mb         0 b              20</span>
 <span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_memory_usage&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+
 
 <span class="c1"># (omitting some columns)</span>
 <span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
@@ -558,13 +535,6 @@ To enable memory profiling functionality pass <code class="docutils literal notr
 <div class="section" id="using-tracing-functionality">
 <h3>5. Using tracing functionality<a class="headerlink" href="#using-tracing-functionality" title="Permalink to this headline">¶</a></h3>
 <p>Profiling results can be outputted as a .json trace file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-
-<span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s2">&quot;trace.json&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>User can examine the sequence of profiled operators after loading the trace file
 in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code>):</p>
 <a class="reference internal image-reference" href="../../_images/trace_img.png"><img alt="../../_images/trace_img.png" src="../../_images/trace_img.png" style="width: 823.5px; height: 78.5px;" /></a>
@@ -577,6 +547,9 @@ in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome:/
 <li><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/benchmark.html">PyTorch Benchmark</a></li>
 <li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html">Visualizing models, data, and training with TensorBoard</a> tutorial</li>
 </ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%%%%%RUNNABLE_CODE_REMOVED%%%%%%</span>
+</pre></div>
+</div>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-recipes-recipes-profiler-py">
 <div class="sphx-glr-download docutils container">

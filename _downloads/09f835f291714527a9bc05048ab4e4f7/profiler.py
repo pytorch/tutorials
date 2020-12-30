@@ -41,9 +41,9 @@ To install ``torch`` and ``torchvision`` use the following command:
 # and ``profiler`` modules:
 #
 
-import torch
-import torchvision.models as models
-import torch.autograd.profiler as profiler
+
+
+
 
 
 ######################################################################
@@ -54,8 +54,8 @@ import torch.autograd.profiler as profiler
 # for it:
 #
 
-model = models.resnet18()
-inputs = torch.randn(5, 3, 224, 224)
+
+
 
 ######################################################################
 # 3. Use profiler to analyze execution time
@@ -71,9 +71,9 @@ inputs = torch.randn(5, 3, 224, 224)
 #
 # Let's see how we can use profiler to analyze the execution time:
 
-with profiler.profile(record_shapes=True) as prof:
-    with profiler.record_function("model_inference"):
-        model(inputs)
+
+
+
 
 ######################################################################
 # Note that we can use ``record_function`` context manager to label
@@ -90,7 +90,7 @@ with profiler.profile(record_shapes=True) as prof:
 #
 # Let's print out the stats for the execution above:
 
-print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
+
 
 ######################################################################
 # The output will look like (omitting some columns):
@@ -118,7 +118,7 @@ print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=10))
 #
 # To get a finer granularity of results and include operator input shapes, pass ``group_by_input_shape=True``:
 
-print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total", row_limit=10))
+
 
 # (omitting some columns)
 # -------------------------  -----------  --------  -------------------------------------
@@ -147,10 +147,10 @@ print(prof.key_averages(group_by_input_shape=True).table(sort_by="cpu_time_total
 # by the operator, excluding the children calls to the other operators.
 # To enable memory profiling functionality pass ``profile_memory=True``.
 
-with profiler.profile(profile_memory=True, record_shapes=True) as prof:
-    model(inputs)
 
-print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
+
+
+
 
 # (omitting some columns)
 # ---------------------------  ---------------  ---------------  ---------------
@@ -163,7 +163,7 @@ print(prof.key_averages().table(sort_by="self_cpu_memory_usage", row_limit=10))
 # conv2d                       47.37 Mb         0 b              20
 # ---------------------------  ---------------  ---------------  ---------------
 
-print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
+
 
 # (omitting some columns)
 # ---------------------------  ---------------  ---------------  ---------------
@@ -192,11 +192,11 @@ print(prof.key_averages().table(sort_by="cpu_memory_usage", row_limit=10))
 #
 # Profiling results can be outputted as a .json trace file:
 
-with profiler.profile() as prof:
-    with profiler.record_function("model_inference"):
-        model(inputs)
 
-prof.export_chrome_trace("trace.json")
+
+
+
+
 
 ######################################################################
 # User can examine the sequence of profiled operators after loading the trace file
@@ -214,3 +214,5 @@ prof.export_chrome_trace("trace.json")
 # -  `PyTorch Benchmark <https://pytorch.org/tutorials/recipes/recipes/benchmark.html>`_
 # -  `Visualizing models, data, and training with TensorBoard <https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html>`_ tutorial
 #
+
+# %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
