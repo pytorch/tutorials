@@ -27,3 +27,7 @@ Prototype Tutorials
 7. fx_graph_mode_static_quantization.py
 	   FX Graph Mode Post Training Static Quantization
 	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static_tutorial.html
+
+8. fx_graph_mode_dynamic_quantization.py
+	   FX Graph Mode Post Training Dynamic Quantization
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic_tutorial.html
