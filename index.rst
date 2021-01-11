@@ -279,7 +279,7 @@ Welcome to PyTorch Tutorials
    :header: Performance Profiling in PyTorch
    :card_description: Learn how to use the PyTorch Profiler to benchmark your module's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
-   :link: beginner/profiler_tutorial_.html
+   :link: beginner/profiler.html
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
@@ -541,7 +541,7 @@ Additional Resources
    :hidden:
    :caption: Model Optimization
 
-   beginner/profiler_tutorial_
+   beginner/profiler
    beginner/hyperparameter_tuning_tutorial
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
