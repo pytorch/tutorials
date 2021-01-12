@@ -19,7 +19,7 @@ Working with data
 # To see more examples and details of how to work with Tensors, Datasets, DataLoaders and Transforms in PyTorch with this example checkout these resources:
 #  
 #  - `Tensors <quickstart/tensor_tutorial.html>`_
-#  - `DataSet and DataLoader <quickstart/data_quickstart_tutorial.html>`_
+#  - `DataSet and DataLoader <quickstart/dataquickstart_tutorial.html>`_
 #  - `Transforms <quickstart/transforms_tutorial.html>`_
 
 import torch
@@ -56,7 +56,7 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pi
 # ---------------
 # 
 # There are two ways of creating models: in-line or as a class. This
-# quickstart will consider a class definition. For more examples checkout `building the model <quickstart/build_model_tutorial.html>`_.
+# quickstart will consider a class definition. For more examples checkout `building the model <quickstart/buildmodel_tutorial.html>`_.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
@@ -175,7 +175,7 @@ print('Saved onnx model to model.onnx')
 # parameters includes re-creating the model shape and then loading
 # the state dictionary. Once loaded the model can be used for either
 # retraining or inference purposes (in this example it is used for
-# inference). Check out more details on `saving, loading and running models with Pytorch <quickstart/save_load_run_tutorial.html>`_
+# inference). Check out more details on `saving, loading and running models with Pytorch <quickstart/saveloadrun_tutorial.html>`_
 #
 
 loaded_model = NeuralNetwork()
@@ -194,12 +194,12 @@ with torch.no_grad():
 # PyTorch Quickstart Topics
 # ----------------------------------------
 # | `Tensors <quickstart/tensor_tutorial.html>`_
-# | `DataSets and DataLoaders <quickstart/data_quickstart_tutorial.html>`_
+# | `DataSets and DataLoaders <quickstart/dataquickstart_tutorial.html>`_
 # | `Transforms <quickstart/transforms_tutorial.html>`_
-# | `Build Model <quickstart/build_model_tutorial.html>`_
+# | `Build Model <quickstart/buildmodel_tutorial.html>`_
 # | `Optimization Loop <quickstart/optimization_tutorial.html>`_
 # | `AutoGrad <quickstart/autograd_tutorial.html>`_
-# | `Save, Load and Run Model <save_load_run_tutorial.html>`_
+# | `Save, Load and Run Model <saveloadrun_tutorial.html>`_
 #
 # *Authors: Seth Juarez, Ari Bornstein, Cassie Breviu, Dmitry Soshnikov*
 

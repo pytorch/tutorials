@@ -1,3 +1,7 @@
+####################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 Build the Neural Network
 ===================
@@ -149,6 +153,4 @@ print(model)
 # In the next section you will learn about how to train the model and the optimization loop for this example.
 #
 # Next: Learn more about how the `optimzation loop works with this example <optimization_tutorial.html>`_.
-#
-# .. include:: /beginner_source/quickstart/qs_toc.txt
 #

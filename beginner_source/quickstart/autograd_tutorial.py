@@ -1,3 +1,7 @@
+######################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 Automatic Differentiation with ``torch.autograd``
 =======================================
@@ -274,5 +278,4 @@ print("\nCall after zeroing gradients\n", inp.grad)
 ######################################################################
 # Next: Learn more about `how to use automatic differentiation to train a neural network model <optimization_tutorial.html>`_.
 #
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
+

@@ -1,3 +1,7 @@
+##################################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 Transforms
 ===================
@@ -44,7 +48,7 @@ test_data = datasets.FashionMNIST('data', train=False, download=True,
 # Pytorch Datasets
 # --------------------------
 #
-# We are using the built-in open FashionMNIST datasets from the PyTorch library. For more info on the Datasets and Loaders check out `this <data_quickstart_tutorial.html>`_ resource. The ``Train=True`` indicates we want to download the training dataset from the built-in datasets, ``Train=False`` indicates to download the testing dataset. This way we have data partitioned out for training and testing within the provided PyTorch datasets. We will apply the same transfoms to both the training and testing datasets.
+# We are using the built-in open FashionMNIST datasets from the PyTorch library. For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ resource. The ``Train=True`` indicates we want to download the training dataset from the built-in datasets, ``Train=False`` indicates to download the testing dataset. This way we have data partitioned out for training and testing within the provided PyTorch datasets. We will apply the same transfoms to both the training and testing datasets.
 #
 # From the docs:
 #
@@ -135,9 +139,5 @@ class_names = image_datasets['train'].classes
 
 
 ##################################################################
-# Next learn how to `build the model <build_model_tutorial.html>`_
-#
-
-##################################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
+# Next learn how to `build the model <buildmodel_tutorial.html>`_
 #

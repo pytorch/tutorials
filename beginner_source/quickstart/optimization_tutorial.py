@@ -1,3 +1,7 @@
+####################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 Optimizing Model Parameters
 ===========================
@@ -193,5 +197,4 @@ optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 ##################################################################
 # Next: Learn more about `Automatic Differentiation with AutoGrad <autograd_tutorial.html>`_.
 #
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
+

@@ -1,3 +1,7 @@
+##################################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 .. raw:: html
 
@@ -257,7 +261,5 @@ print(z.to("cpu", torch.double))
 # computational time, because we need to copy and transform the data when
 # moving it from GPU anyway.
 #
-# Next learn how to load built in and custom `datasets with dataloaders <data_quickstart_tutorial.html>`_
-#
-# .. include:: /beginner_source/quickstart/qs_toc.txt
+# Next learn how to load built in and custom `datasets with dataloaders <dataquickstart_tutorial.html>`_
 #

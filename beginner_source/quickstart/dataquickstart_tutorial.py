@@ -1,13 +1,8 @@
+###################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
-.. raw:: html
-
-    <div>
-        <a href="https://torchtutorialstaging.z5.web.core.windows.net/beginner/quickstart/tensor_tutorial.html">Tensors &gt; </a> 
-        <a href="https://torchtutorialstaging.z5.web.core.windows.net/beginner/quickstart/data_quickstart_tutorial.html">Datasets & Dataloaders</a>
-    </div>
-
-.. raw:: html
-
 Datasets & Dataloaders
 ===================
 """
@@ -209,5 +204,4 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 # 
 # Next: Learn more about how to `transform that data for training <transforms_tutorial.html>`_.
 #
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
+

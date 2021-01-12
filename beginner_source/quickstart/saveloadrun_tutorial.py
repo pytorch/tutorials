@@ -1,3 +1,7 @@
+##################################################################
+# .. include:: /beginner_source/quickstart/qs_toc.txt
+#
+
 """
 Save, Load and Use the Model
 ============================
@@ -65,6 +69,4 @@ with torch.no_grad():
     predicted, actual = classes[pred[0].argmax(0)], classes[y.argmax(0)]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
-##################################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
+
