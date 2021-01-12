@@ -3,6 +3,8 @@
 #
 
 """
+.. include:: /beginner_source/quickstart/qs_toc.txt
+
 Optimizing Model Parameters
 ===========================
 Now that we have a model and data it's time to train, validate and test our model by optimizating it's paramerters on our data! 

@@ -2,6 +2,8 @@
 PyTorch Quickstart
 ===================
 
+.. include:: /beginner_source/quickstart/qs_toc.txt
+
 
 The basic machine learning concepts in any framework should include: Working with data, Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch Quickstart we will go through these concepts and how to apply them with PyTorch. That dataset we will be using is the FashionMNIST clothing images dataset that demonstrates these core steps applied to create ML Models. You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step. Using this dataset we will be able to predict if the image is one of the following classes: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, or Ankle boot. Lets get started!
 

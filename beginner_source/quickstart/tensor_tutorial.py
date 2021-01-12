@@ -11,6 +11,7 @@
 
 .. raw:: html
 
+.. include:: /beginner_source/quickstart/qs_toc.txt
 
 Tensors and Operations
 ----------------------
