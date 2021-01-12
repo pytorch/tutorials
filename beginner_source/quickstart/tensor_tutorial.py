@@ -1,19 +1,7 @@
-##################################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
-
 """
-.. raw:: html
-
-    <div>
-        <a href="https://torchtutorialstaging.z5.web.core.windows.net/beginner/quickstart/tensor_tutorial.html">Tensors</a>
-    </div>
-
-.. raw:: html
-
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-Tensors and Operations
+1. Tensors and Operations
 ----------------------
 **Tensor** is the basic computational unit in PyTorch. It is very
 similar to **NumPy array**, and supports similar operations. However,

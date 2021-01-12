@@ -1,12 +1,7 @@
-######################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
-
 """
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-
-Automatic Differentiation with ``torch.autograd``
+5. Automatic Differentiation with ``torch.autograd``
 =======================================
 
 When training neural networks, the most frequently used algorithm is

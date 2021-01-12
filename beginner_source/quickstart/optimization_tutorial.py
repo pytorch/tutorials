@@ -1,11 +1,7 @@
-####################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
-
 """
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-Optimizing Model Parameters
+6. Optimizing Model Parameters
 ===========================
 Now that we have a model and data it's time to train, validate and test our model by optimizating it's paramerters on our data! 
 To get started lets take a look at some example model optimization code:

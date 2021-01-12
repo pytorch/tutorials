@@ -1,12 +1,7 @@
-####################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
-
 """
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-
-Build the Neural Network
+4. Build the Neural Network
 ===================
 """
 

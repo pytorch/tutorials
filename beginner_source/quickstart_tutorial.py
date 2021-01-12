@@ -2,10 +2,25 @@
 PyTorch Quickstart
 ===================
 
+The basic machine learning concepts in any framework should include: Working with data, 
+Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch Quickstart we will
+go through these concepts and how to apply them with PyTorch. That dataset we will be using is the 
+FashionMNIST clothing images dataset that demonstrates these core steps applied to create ML Models. 
+
+You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step. 
+Using this dataset we will be able to predict if the image is one of the following classes: T-shirt/top, 
+Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, or Ankle boot. Lets get started!
+
+
+How to Use this Guide
+-----------------
+This guide is setup to cover machine learning concepts and how to apply them with PyTorch. This main page is a
+highlevel intro to each step with the code examples to build the model. You have the option to jump 
+into the concepts introduced in each section to get more details and explanations to better understand each concept 
+and how to apply them with PyTorch. The topics are introduceds in a sequenced order as listed below:
+
+
 .. include:: /beginner_source/quickstart/qs_toc.txt
-
-
-The basic machine learning concepts in any framework should include: Working with data, Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch Quickstart we will go through these concepts and how to apply them with PyTorch. That dataset we will be using is the FashionMNIST clothing images dataset that demonstrates these core steps applied to create ML Models. You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step. Using this dataset we will be able to predict if the image is one of the following classes: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, or Ankle boot. Lets get started!
 
 Working with data
 -----------------
@@ -193,15 +208,8 @@ with torch.no_grad():
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
 ##################################################################
-# PyTorch Quickstart Topics
-# ----------------------------------------
-# | `Tensors <quickstart/tensor_tutorial.html>`_
-# | `DataSets and DataLoaders <quickstart/dataquickstart_tutorial.html>`_
-# | `Transforms <quickstart/transforms_tutorial.html>`_
-# | `Build Model <quickstart/buildmodel_tutorial.html>`_
-# | `Optimization Loop <quickstart/optimization_tutorial.html>`_
-# | `AutoGrad <quickstart/autograd_tutorial.html>`_
-# | `Save, Load and Run Model <saveloadrun_tutorial.html>`_
+# 
+# .. include:: /beginner_source/quickstart/qs_toc.txt
 #
 # *Authors: Seth Juarez, Ari Bornstein, Cassie Breviu, Dmitry Soshnikov*
 

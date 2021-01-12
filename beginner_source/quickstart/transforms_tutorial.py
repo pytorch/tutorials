@@ -1,12 +1,7 @@
-##################################################################
-# .. include:: /beginner_source/quickstart/qs_toc.txt
-#
-
 """
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-
-Transforms
+3. Transforms
 ===================
 
 Data does not come ready to be processed in the machine learning algorithm. We need to do different data manipulations or transforms to prepare it for training. There are many types of transformations and it depends on the type of model you are building and the state of your data as to which ones you should use. 
