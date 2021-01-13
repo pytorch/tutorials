@@ -1,8 +1,9 @@
 """
+1. Tensors and Operations
+==========================
+
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-1. Tensors and Operations
-----------------------
 **Tensor** is the basic computational unit in PyTorch. It is very
 similar to **NumPy array**, and supports similar operations. However,
 there are two very important features of Torch tensors that make them

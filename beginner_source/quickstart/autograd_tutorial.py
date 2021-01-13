@@ -1,8 +1,8 @@
 """
-.. include:: /beginner_source/quickstart/qs_toc.txt
-
 5. Automatic Differentiation with ``torch.autograd``
 =======================================
+
+.. include:: /beginner_source/quickstart/qs_toc.txt
 
 When training neural networks, the most frequently used algorithm is
 **back propagation**. In this algorithm, parameters (model weights) are

@@ -1,15 +1,31 @@
 """
-.. include:: /beginner_source/quickstart/qs_toc.txt
-
 3. Transforms
 ===================
+
+.. include:: /beginner_source/quickstart/qs_toc.txt
 
 Data does not come ready to be processed in the machine learning algorithm. We need to do different data manipulations or transforms to prepare it for training. There are many types of transformations and it depends on the type of model you are building and the state of your data as to which ones you should use. 
 
 In the below example, for our FashionMNIT image dataset, we are taking our image features (x), turning it into a tensor and normalizing it. Then taking the labels (y) padding with zeros to get a consistent shape. We will break down each of these steps and the why below.
 
-Full Section Example:
 """
+
+##############################################
+# Pytorch Datasets
+# --------------------------
+#
+# We are using the built-in open FashionMNIST datasets from the PyTorch library. 
+# For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ resource. 
+# The ``Train=True`` indicates we want to download the training dataset from the 
+# built-in datasets, ``Train=False`` indicates to download the testing dataset. 
+# This way we have data partitioned out for training and testing within the provided PyTorch datasets. 
+# We will apply the same transforms to both the training and testing datasets.
+#
+# From the docs:
+#
+# ``torchvision.datasets.FashionMNIST(root, train=True, transform=None, target_transform=None, download=False)``
+
+# import packages
 import os
 import torch
 import torch.nn as nn
@@ -18,11 +34,16 @@ import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-# image classes
+# Here we define the image classes.
 classes = ["T-shirt/top", "Trouser", "Pullover", "Dress",
            "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
-# data used for training
+##############################################
+# Transform: Features
+# ---------------------------
+#
+
+# Create training data from the built in PyTorch dataset.
 training_data = datasets.FashionMNIST('data', train=True, download=True,
                                       transform=transforms.Compose(
                                           [transforms.ToTensor()]),
@@ -32,40 +53,15 @@ training_data = datasets.FashionMNIST('data', train=True, download=True,
                                       ])
                                       )
 
-# data used for testing
-test_data = datasets.FashionMNIST('data', train=False, download=True,
-                                  transform=transforms.Compose(
-                                      [transforms.ToTensor()]),
-                                  target_transform=transforms.Compose([
-                                      transforms.Lambda(lambda y: torch.zeros(
-                                          10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-                                  ])
-                                  )
-
-##############################################
-# Pytorch Datasets
-# --------------------------
-#
-# We are using the built-in open FashionMNIST datasets from the PyTorch library. For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ resource. The ``Train=True`` indicates we want to download the training dataset from the built-in datasets, ``Train=False`` indicates to download the testing dataset. This way we have data partitioned out for training and testing within the provided PyTorch datasets. We will apply the same transfoms to both the training and testing datasets.
-#
-# From the docs:
-#
-# ``torchvision.datasets.FashionMNIST(root, train=True, transform=None, target_transform=None, download=False)``
-
-##############################################
-# Transform: Features
-# ---------------------------
-# Example:
-#
-
-transform = transforms.Compose([transforms.ToTensor()])
-
 #####################################################
 # Compose
 # ------------------------
 #
-# The `transforms.compose`` allows us to string together different steps of transformations in a sequential order. This allows us to add an array of transforms for both the features and labels when preparing our data for training.
+# The ``transforms.compose`` allows us to string together different steps of transformations in a 
+# sequential order. This allows us to add an array of transforms for both the features and labels 
+# when preparing our data for training.
 #
+transform = transforms.Compose([transforms.ToTensor()])
 
 #################################################
 # ToTensor()
@@ -84,17 +80,26 @@ transform = transforms.Compose([transforms.ToTensor()])
 # Target_Transform: Labels
 # -------------------------------
 #
-# Example:
-#
 
-target_transform = transforms.Lambda(lambda y: torch.zeros(
-    10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
+# Create testing data from the built in PyTorch dataset.
+test_data = datasets.FashionMNIST('data', train=False, download=True,
+                                  transform=transforms.Compose(
+                                      [transforms.ToTensor()]),
+                                  target_transform=transforms.Compose([
+                                      transforms.Lambda(lambda y: torch.zeros(
+                                          10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
+                                  ])
+                                  )
+
 
 #################################################
 # This function is taking the y input and creating a tensor of size 10 with a float datatype. Then its calling scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to send each item to torch.zeros, according to the row, index and current item value.
 #  - Dim=0  is row wise index
 #  - index = torchtensor(y) is the index of the element toscatter
 #  - value = 1 is the source elemnt
+
+target_transform = transforms.Lambda(lambda y: torch.zeros(
+    10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
 
 ##############################################
 # Using your own data

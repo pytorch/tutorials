@@ -1,8 +1,9 @@
 """
-.. include:: /beginner_source/quickstart/qs_toc.txt
-
 7. Save, Load and Use the Model
 ============================
+
+.. include:: /beginner_source/quickstart/qs_toc.txt
+
 In this section we will look at how to save, load and use persisted model state
 to run predictions.
 """

@@ -1,8 +1,9 @@
 """
-.. include:: /beginner_source/quickstart/qs_toc.txt
-
 2. Datasets & Dataloaders
 ===================
+
+.. include:: /beginner_source/quickstart/qs_toc.txt
+
 """
 
 #################################################################

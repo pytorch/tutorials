@@ -17,10 +17,18 @@ How to Use this Guide
 This guide is setup to cover machine learning concepts and how to apply them with PyTorch. This main page is a
 highlevel intro to each step with the code examples to build the model. You have the option to jump 
 into the concepts introduced in each section to get more details and explanations to better understand each concept 
-and how to apply them with PyTorch. The topics are introduceds in a sequenced order as listed below:
+and how to apply them with PyTorch. The topics are introduced in a sequenced order as listed below:
 
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+Pytorch Quickstart Topics
+-------------------------
+| 1. `Tensors <quickstart/tensor_tutorial.html>`_
+| 2. `DataSets and DataLoaders <quickstart/dataquickstart_tutorial.html>`_
+| 3. `Transforms <quickstart/transforms_tutorial.html>`_
+| 4. `Build Model <quickstart/buildmodel_tutorial.html>`_
+| 5. `Automatic Differentiation <quickstart/autograd_tutorial.html>`_
+| 6. `Optimization Loop <quickstart/optimization_tutorial.html>`_
+| 7. `Save, Load and Use Model <quickstart/saveloadrun_tutorial.html>`_
 
 Working with data
 -----------------
@@ -33,11 +41,6 @@ Working with data
 # modify data in-place. Below is an example of how to load that data from the PyTorch open datasets and transform the data to a normalized tensor. 
 # This example is using the `torchvision.datasets` which is a subclass from the primitive `torch.utils.data.Dataset`. Note that the primitive dataset doesnt have the built in transforms param like the built in dataset in `torchvision.datasets.`
 # 
-# To see more examples and details of how to work with Tensors, Datasets, DataLoaders and Transforms in PyTorch with this example checkout these resources:
-#  
-#  - `Tensors <quickstart/tensor_tutorial.html>`_
-#  - `DataSet and DataLoader <quickstart/dataquickstart_tutorial.html>`_
-#  - `Transforms <quickstart/transforms_tutorial.html>`_
 
 import torch
 import torch.nn as nn
@@ -103,10 +106,6 @@ print(model)
 # 
 # Optimizing model parameters requires a loss function, optimizer,
 # and the optimization loop.
-#
-# To see more examples and details of how to work with Optimization and Training loops in Pytoch with this example checkout these resources:
-#  - `Optimization and training loops <quickstart/optimization_tutorial.html>`_
-#  - `Automatic differentiation and AutoGrad <quickstart/autograd_tutorial.html>`_
 #
 
 # cost function used to determine best parameters
@@ -208,8 +207,6 @@ with torch.no_grad():
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
 ##################################################################
-# 
-# .. include:: /beginner_source/quickstart/qs_toc.txt
 #
 # *Authors: Seth Juarez, Ari Bornstein, Cassie Breviu, Dmitry Soshnikov*
 
