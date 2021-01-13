@@ -19,6 +19,7 @@ PyTorch in the following manner:
 """
 
 import torch
+
 x = torch.ones(5)  # input tensor
 y = torch.zeros(3)  # expected output
 w = torch.randn(5, 3, requires_grad=True)
@@ -55,7 +56,8 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
-print(z.grad_fn, loss.grad_fn, sep='\n')
+print('Gradient function for z =',z.grad_fn)
+print('Gradient function for loss =', loss.grad_fn)
 
 ######################################################################
 # Computing Gradients
@@ -152,8 +154,9 @@ print(z_det.requires_grad)
 #
 
 x = torch.zeros(2, requires_grad=True)
-def f(x): return (x-torch.tensor([3, -2])).pow(2).sum()
 
+def f(x):
+    return (x-torch.tensor([3, -2])).pow(2).sum()
 
 lr = 0.1
 

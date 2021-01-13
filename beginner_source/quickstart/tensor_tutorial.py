@@ -8,9 +8,9 @@
 similar to **NumPy array**, and supports similar operations. However,
 there are two very important features of Torch tensors that make them
 especially useful for training large-scale neural networks:
--  Tensor operations can be performed on GPUs or other specialized hardware to accelerate computing
--  Tensor operations support automatic differentiation using
-   `pytorch.autograd engine <autograd_tutorial.html>`__
+
+ *  Tensor operations can be performed on GPUs or other specialized hardware to accelerate computing
+ *  Tensor operations support automatic differentiation using `pytorch.autograd engine <autograd_tutorial.html>`__
 Conversion between Torch tensors and NumPy arrays can be done easily:
 """
 
@@ -178,9 +178,9 @@ x.add_(y)  # x will be modified
 # using different dimensions:
 #
 
-print(x.size())  # original size of x is 3x5
-print(x.view(5, 3, 1).size())  # will give size 5x3x1
-print(x.view(5, -1))  # will result in size 5x3
+print('Original size of x =',x.size())  # original size of x is 3x5
+print('Size after reshaping is',x.view(5, 3, 1).size())  # will give size 5x3x1
+print('Reshaped tensor:\n',x.view(5, -1))  # will result in size 5x3
 
 
 ######################################################################
@@ -205,7 +205,9 @@ print(x.view(5, -1))  # will result in size 5x3
 #
 
 print(x.size())  # original size of x is 3x5
-print(x[0].size(), x[:, 0].size(), x[..., 1].size())  # will give 5, 3, 3
+print('First row: ',x[0])
+print('First column: ', x[:, 0])
+print('Last column:', x[..., -1])
 
 
 ######################################################################
@@ -215,7 +217,7 @@ print(x[0].size(), x[:, 0].size(), x[..., 1].size())  # will give 5, 3, 3
 #
 
 val = x.sum().item()  # will compute the sum of all elements
-
+print(val)
 
 ######################################################################
 # Hardware-Accelerated Computations
@@ -241,7 +243,6 @@ x = torch.randn(3, 5, device=device)  # create tensor on specified device
 y = torch.ones_like(x)  # create tensor on CPU
 y = y.to(device)  # move tensor to another device
 z = x+y  # this is performed on GPU if it is available
-print(z)
 print(z.to("cpu", torch.double))
 
 

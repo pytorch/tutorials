@@ -4,26 +4,34 @@
 
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
-Data does not come ready to be processed in the machine learning algorithm. We need to do different data manipulations or transforms to prepare it for training. There are many types of transformations and it depends on the type of model you are building and the state of your data as to which ones you should use. 
+In most of the practical tasks, data does not come in its final form that is required for training machine learning algorithm. We need to do different data manipulations or **transformations** to prepare it for training. There are many types of transformations, and it depends on the type of model you are building and the state of your data as to which ones you should use. 
 
-In the below example, for our FashionMNIT image dataset, we are taking our image features (x), turning it into a tensor and normalizing it. Then taking the labels (y) padding with zeros to get a consistent shape. We will break down each of these steps and the why below.
-
+In the example below, let's take FashionMNIST image dataset, which is available from ``torchvision.datasets`` using the following function:
 """
+import torchvision
+
+ds = torchvision.datasets.FashionMNIST(
+ 'data',                # specifies data directory to store data
+ train=True,            # specifies training or test dataset to use
+ transform=None,        # specifies transforms to apply to features (images) 
+ target_transform=None, # specifies transforms to apply to labels
+ download=False)        # should the data be downloaded from the Internet
+
+################################
+#To prepare data for training the neural network, we need to take our image (also called features, x), turn it into a tensor and normalize it. We also need to convert labels (y) into one-hot encoding.
+#
+#We will break down each of these steps below.
 
 ##############################################
 # Pytorch Datasets
 # --------------------------
 #
-# We are using the built-in open FashionMNIST datasets from the PyTorch library. 
-# For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ resource. 
+# We are using the built-in FashionMNIST dataset from the PyTorch library. 
+# For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ section of the tutorial. 
 # The ``Train=True`` indicates we want to download the training dataset from the 
 # built-in datasets, ``Train=False`` indicates to download the testing dataset. 
 # This way we have data partitioned out for training and testing within the provided PyTorch datasets. 
 # We will apply the same transforms to both the training and testing datasets.
-#
-# From the docs:
-#
-# ``torchvision.datasets.FashionMNIST(root, train=True, transform=None, target_transform=None, download=False)``
 
 # import packages
 import os
@@ -39,107 +47,111 @@ classes = ["T-shirt/top", "Trouser", "Pullover", "Dress",
            "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
 ##############################################
-# Transform: Features
-# ---------------------------
+# Feature Transforms and Label Transforms
+# ---------------------------------------
 #
+# Below is the code to load the FashionMNIST dataset and apply required transforms:
 
-# Create training data from the built in PyTorch dataset.
-training_data = datasets.FashionMNIST('data', train=True, download=True,
-                                      transform=transforms.Compose(
-                                          [transforms.ToTensor()]),
-                                      target_transform=transforms.Compose([
-                                          transforms.Lambda(lambda y: torch.zeros(
-                                              10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-                                      ])
-                                      )
+training_data = datasets.FashionMNIST(
+    'data', 
+    train=True, download=True,
+    transform=transforms.ToTensor(),
+    target_transform=transforms.Lambda(
+        lambda y: torch.zeros(10, dtype=torch.float)
+        .scatter_(0, torch.tensor(y), value=1)))
 
-#####################################################
-# Compose
-# ------------------------
+########################################
+# Here we define two transformations:
 #
-# The ``transforms.compose`` allows us to string together different steps of transformations in a 
-# sequential order. This allows us to add an array of transforms for both the features and labels 
-# when preparing our data for training.
-#
-transform = transforms.Compose([transforms.ToTensor()])
+# * ``transform`` is the transformation we apply to features, in our case - to images. Because dataset contains images in PIL format, we need to convert them to tensors using ``ToTensor()`` transform.
+# * ``target_transform`` defines a transformation that is applied to labels. In our case label is a class number from 0 to 9, and we need to convert it to one-hot encoding.
 
 #################################################
 # ToTensor()
 # -------------------------------
 #
-# For the feature transforms we have an array of transforms to process our image data for training. The first transform in the array is ``transforms.ToTensor()`` this is from class `torchvision.transforms.ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_. We need to take our images and turn them into a tensor. (To learn more about Tensors check out `this <tensor_tutorial.html>`_ resource.) The ``ToTensor()`` transformation is doing more than converting our image into a tensor. Its also normalizing our data for us by scaling the images to be between 0 and 1.
-#
+# `torchvision.transforms.ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_ transform is required to prepare an image for training. It takes PIL image, converts it into a `tensor <tensor_tutorial.html>`_, and also normalizes our data by scaling the image pixel intensity values to be between 0 and 1.
 #
 # .. note:: ToTensor only normalized image data that is in PIL mode of (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1) or if the numpy.ndarray has dtype = np.uint8. In the other cases, tensors are returned without scaling.
 #
-#
-# Check out the other `TorchVision Transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
-#
 
 ##############################################
-# Target_Transform: Labels
+# Lambda Transform
 # -------------------------------
 #
-
-# Create testing data from the built in PyTorch dataset.
-test_data = datasets.FashionMNIST('data', train=False, download=True,
-                                  transform=transforms.Compose(
-                                      [transforms.ToTensor()]),
-                                  target_transform=transforms.Compose([
-                                      transforms.Lambda(lambda y: torch.zeros(
-                                          10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
-                                  ])
-                                  )
-
-
-#################################################
-# This function is taking the y input and creating a tensor of size 10 with a float datatype. Then its calling scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to send each item to torch.zeros, according to the row, index and current item value.
-#  - Dim=0  is row wise index
-#  - index = torchtensor(y) is the index of the element toscatter
-#  - value = 1 is the source elemnt
+# To turn class number into one-hot encoding, we use **lambda transform**, i.e. a transformation defined by an arbitrary function. This function takes y as an input and creates a zero tensor of size 10. Then it calls scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to take a value 1 and store it into the correct position of the zero vector defined by the class number.
 
 target_transform = transforms.Lambda(lambda y: torch.zeros(
     10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
+
+###############################################
+# Check out the other `TorchVision Transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+#
+
+#####################################################
+# Compose
+# ------------------------
+#
+# In many cases, we need to perform several transformations on the data sequentially. ``transforms.compose`` allows us to string together different steps of transformations in a sequential order. We will see an example of using composition transform in the next section.
+
 
 ##############################################
 # Using your own data
 # --------------------------------------
 #
-# Below is an example for processing image data using a dataset from a local directory.
+# Below is an example for processing image data using a dataset from a local directory. It assumes the we have ``train`` and ``val`` subdirectories with training and validation dataset accordingly, and we want to apply different sets of transforms for training and validation dataset:
 #
-# Example:
+# * For training data, we want to perform some **data augmentation**, and do random croping/resizing of the original image. We also introduce random horizontal flips.
+# * For testing, we typically want to be consistent and always use the same images - thus we do not do any augmentation, just resizing. 
 #
-
-data_dir = 'data'
-batch_size = 4
-
-data_transforms = {
-    'train': transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]),
-    'val': transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]),
-}
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
-                                          data_transforms[x])
-                  for x in ['train', 'val']}
-
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x],
-                                              batch_size=batch_size,
-                                              shuffle=True, num_workers=4)
-               for x in ['train', 'val']}
-
-dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-
-class_names = image_datasets['train'].classes
-
+# We also normalize values by subtracting the mean, which was computed along the whole dataset.
+#
+# To be able to unify the code for train and validation datasets, we use a special trick and create a dictionary of transforms for each dataset: train and validation:
+#
+# .. code-block:: Python
+#
+#   data_transforms = {
+#        'train': 
+#           transforms.Compose([
+#             transforms.RandomResizedCrop(224),
+#             transforms.RandomHorizontalFlip(),
+#             transforms.ToTensor(),
+#             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+#       ]),
+#       'val': 
+#           transforms.Compose([
+#             transforms.Resize(256),
+#             transforms.CenterCrop(224),
+#             transforms.ToTensor(),
+#             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+#       ]),
+#   }
+#
+# Next, we define a similar dictionary of train and validation datasets by using ``datasets.ImageFolder`` class. This class allows us to create a dataset from all files in a folder, and apply any transformations to them:
+#
+# .. code-block:: Python
+#
+#   data_dir = 'data'
+#
+#   image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+#                                              data_transforms[x])
+#                     for x in ['train', 'val']}
+# 
+# In a similar manner, we define a dictionary of dataloaders, which can prepare our datasets for neural network training. They allow us to shuffle data and group them into batches of a specified size:
+#
+# .. code-block:: Python
+#
+#   batch_size = 4
+#
+#   dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x],
+#                                                  batch_size=batch_size,
+#                                                  shuffle=True, num_workers=4)
+#                  for x in ['train', 'val']}
+#
+#   dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+#
+#   class_names = image_datasets['train'].classes
+#
 
 ##################################################################
 # Next learn how to `build the model <buildmodel_tutorial.html>`_
