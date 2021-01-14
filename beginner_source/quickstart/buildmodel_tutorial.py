@@ -9,14 +9,13 @@
 # Get Started Building the Model
 # -----------------
 #
-# The data has been loaded and transformed we can now build the model. 
-# We will leverage `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ predefined layers that PyTorch has that can simplify our code.
+# Having loaded and transformed the data, we can now build the neural network model. In many simple cases neural network consists of a number of layers, and `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides predefined layers that can simplify our code.
 # 
-# In the below example, for our FashionMNIT image dataset, we are using `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
-# A big plus with using a class that inherits ``nn.Module`` is better parameter management across all nested submodules.
-# This gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
+# The most common way to define a neural network is to use a class inherited from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
+# It provides great parameter management across all nested submodules, which gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
 # 
-# Lets break down the steps to build this model below
+# In the below example, for our FashionMNIST image dataset, we will create simplest dense multi-layer network.  
+# Lets break down the steps to build this model below.
 # 
 
 #############################################
@@ -27,6 +26,7 @@
 import os
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torch.onnx as onnx
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
@@ -35,7 +35,7 @@ from torchvision import datasets, transforms
 #############################################
 # Get Device for Training
 # -----------------------
-# Here we check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ 
+# We want to be able to train our model on both CPU and GPU, if it is available. It is common practice to define a variable ``device`` which will designate the device we will be training on. We check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ 
 # is available to use the GPU, else we will use the CPU. 
 #
 # Example:
@@ -71,6 +71,7 @@ class NeuralNetwork(nn.Module):
         x = F.relu(self.layer2(x))
         x = self.output(x)
         return F.softmax(x, dim=1)
+
 model = NeuralNetwork().to(device)
     
 print(model)
@@ -79,11 +80,11 @@ print(model)
 # The Model Module Layers
 # -------------------------
 #
-# Lets break down each model layer in the FashionMNIST model. In the below example we are using a `Sequential` 
-# container from class `torch.nn. Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ 
-# that allows us to define the model layers inline. In the "Sequential" in-line model building format the ``forward()`` 
-# method is created for you and the modules you add are passed in as a list or dictionary in the order that are they are defined.
+# Lets break down each model layer in the FashionMNIST model. To illustrate it, we will take a sample minibatch of 100 images of size 28x28 and see what happens to it as we pass it through the network. The code in the sections below would essentially explain what happens inside the ``forward`` method of our ``NeuralNetwork`` class. 
 #
+
+input_image = torch.rand(100,28,28)
+print(input_image.size())
 
 ##################################################
 # `nn.Flatten <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_ 
@@ -94,15 +95,10 @@ print(model)
 # From the docs:
 # ``torch.nn.Flatten(start_dim: int = 1, end_dim: int = -1)``
 #
-# Here is an example using one of the training_data set items:
-tensor = training_data[0][0]
-print(tensor.size())
-
-model = nn.Sequential(
-    nn.Flatten()
-)
-flattened_tensor = model(tensor)
-flattened_tensor.size()
+# In our case, flatten keeps the minibatch dimension, but two image dimensions are reduced to one:
+flatten = nn.Flatten()
+flat_image = flatten(input_image)
+print(flat_image.size())
 
 ##############################################
 # `nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ to add a linear layer to the model.
@@ -116,36 +112,33 @@ flattened_tensor.size()
 # ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``
 #
 
-input = training_data[0][0]
-print(input.size())
-model = nn.Sequential(
-    nn.Flatten(),    
-    nn.Linear(28*28, 512),
-)
-output = model(input)
-output.size()
+layer1 = nn.Linear(28*28,512)
+hidden1 = layer1(flat_image)
+print(hidden1.size())
 
 #################################################
 # Activation Functions
 # -------------------------
 #
-# After the first two linear layer we will call the `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html)>`_ 
-# activation function. Then after the third linear layer we call the `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ 
-# activation to rescale between 0 and 1 and sum to one.
+# In between layers of a neural network, we need to put non-linear activation functions, such as `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html)>`_ (which is often used in between hidden layers) or `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_, which turns output of the network into probabilities by rescaling them in such a way that all values are between 0 and 1, and all sum to one.
 #
 
-model = nn.Sequential(
-        nn.Flatten(),
-        nn.Linear(28*28, 512),
-        nn.ReLU(),
-        nn.Linear(512, 512),
-        nn.ReLU(),
-        nn.Linear(512, len(classes)),
-        nn.Softmax(dim=1)
-    ).to(device)
-    
-print(model)
+layer2 = nn.Linear(512,512)
+output = nn.Linear(512,10)
+hidden2 = layer2(F.relu(hidden1))
+print('Hidden 2 output size =',hidden2.size())
+z = output(F.relu(hidden2))
+out = F.softmax(z)
+print('Output size =',out.size())
 
+#################################################
+# Parameter Tracking
+# -------------------------
+#
+# The main reason to put all code inside a class inherited from ``nn.Module`` is to utilize **parameter tracking**. Most of the layers inside a neural network, in our case all linear layers, have associtated weights and biases that need to be adjusted during training. ``nn.Module`` automatically tracks all fields defined inside the class, and makes all parameters accessible using ``parameters()`` or ``named_parameters()`` methods. Let's have a look at the first two parameters of our neural network that has been defined in the beginning of this section:
+#
+
+print(list(model.named_parameters())[0:2])
 
 ################################################
 # In the next section you will learn about how to train the model and the optimization loop for this example.
