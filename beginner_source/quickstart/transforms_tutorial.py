@@ -30,7 +30,7 @@ ds = torchvision.datasets.FashionMNIST(
 #We will break down each of these steps below.
 
 ##############################################
-# Pytorch Datasets
+# PyTorch Datasets
 # --------------------------
 #
 # We are using the built-in FashionMNIST dataset from the PyTorch library. 

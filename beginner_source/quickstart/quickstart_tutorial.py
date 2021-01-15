@@ -191,7 +191,7 @@ print('Saved onnx model to model.onnx')
 # parameters includes re-creating the model shape and then loading
 # the state dictionary. Once loaded the model can be used for either
 # retraining or inference purposes (in this example it is used for
-# inference). Check out more details on `saving, loading and running models with Pytorch <quickstart/saveloadrun_tutorial.html>`_
+# inference). Check out more details on `saving, loading and running models with PyTorch <quickstart/saveloadrun_tutorial.html>`_
 #
 
 loaded_model = NeuralNetwork()

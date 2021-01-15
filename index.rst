@@ -15,6 +15,12 @@ Welcome to PyTorch Tutorials
    :button_text: Start 60-min blitz
 
 .. customcalloutitem::
+   :description: In this quickstart we will cover the basics of machine learning and how to apply them with PyTorch. You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step!
+   :header: PyTorch Quickstart
+   :button_link:  beginner/quickstart/quickstart_tutorial.html
+   :button_text: Get started with PyTorch
+
+.. customcalloutitem::
    :description: Bite-size, ready-to-deploy PyTorch code examples.
    :header: PyTorch Recipes
    :button_link: recipes/recipes_index.html
@@ -55,6 +61,13 @@ Welcome to PyTorch Tutorials
    :card_description: Understand PyTorch’s Tensor library and neural networks at a high level.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: beginner/deep_learning_60min_blitz.html
+   :tags: Getting-Started
+
+.. customcarditem::
+   :header: PyTorch Quickstart
+   :card_description: Get started with a step-by-step guide to building neural networks with PyTorch.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: beginner/quickstart/quickstart_tutorial.html
    :tags: Getting-Started
 
 .. customcarditem::
