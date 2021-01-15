@@ -1,8 +1,16 @@
 """
-5. Automatic Differentiation with ``torch.autograd``
-=======================================
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+**Autograd** >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
+
+Automatic Differentiation with ``torch.autograd``
+=======================================
 
 When training neural networks, the most frequently used algorithm is
 **back propagation**. In this algorithm, parameters (model weights) are

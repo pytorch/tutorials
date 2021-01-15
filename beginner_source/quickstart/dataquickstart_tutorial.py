@@ -1,8 +1,16 @@
 """
-2. Datasets & Dataloaders
-===================
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+**DataSets & DataLoaders** >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Autograd <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
+
+Datasets & Dataloaders
+===================
 
 """
 

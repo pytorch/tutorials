@@ -1,4 +1,13 @@
 """
+**Quickstart** >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Autograd <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
+
 PyTorch Quickstart
 ===================
 
@@ -19,16 +28,7 @@ highlevel intro to each step with the code examples to build the model. You have
 into the concepts introduced in each section to get more details and explanations to better understand each concept 
 and how to apply them with PyTorch. The topics are introduced in a sequenced order as listed below:
 
-
-Pytorch Quickstart Topics
--------------------------
-| 1. `Tensors <quickstart/tensor_tutorial.html>`_
-| 2. `DataSets and DataLoaders <quickstart/dataquickstart_tutorial.html>`_
-| 3. `Transforms <quickstart/transforms_tutorial.html>`_
-| 4. `Build Model <quickstart/buildmodel_tutorial.html>`_
-| 5. `Automatic Differentiation <quickstart/autograd_tutorial.html>`_
-| 6. `Optimization Loop <quickstart/optimization_tutorial.html>`_
-| 7. `Save, Load and Use Model <quickstart/saveloadrun_tutorial.html>`_
+.. include:: /beginner_source/quickstart/qs_toc.txt
 
 Working with data
 -----------------

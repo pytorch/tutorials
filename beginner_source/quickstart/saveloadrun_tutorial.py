@@ -1,8 +1,15 @@
 """
-7. Save, Load and Use the Model
-============================
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Automgrad <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+**Save & Load Model**
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+Save, Load and Use the Model
+============================
 
 In this section we will look at how to save, load and use persisted model state
 to run predictions.

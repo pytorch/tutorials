@@ -1,8 +1,17 @@
 """
-4. Build the Neural Network
+
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+**Build Model** >
+`Autograd <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
+
+Build the Neural Network
 ===================
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
 """
 
 #################################################################

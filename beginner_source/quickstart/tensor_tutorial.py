@@ -1,8 +1,15 @@
 """
-1. Tensors and Operations
-==========================
+`Quickstart <quickstart_tutorial.html>`_ >
+**Tensors** > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Autograd <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+Tensors and Operations
+==========================
 
 **Tensor** is the basic computational unit in PyTorch. It is very
 similar to **NumPy array**, and supports similar operations. However,

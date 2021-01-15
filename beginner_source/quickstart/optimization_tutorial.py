@@ -1,8 +1,15 @@
 """
-6. Optimizing Model Parameters
-===========================
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Transforms <transforms_tutorial.html>`_ >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Automgrad <autograd_tutorial.html>`_ >
+**Optimization** >
+`Save & Load Model <saveloadrun_tutorial.html>`_
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+Optimizing Model Parameters
+===========================
 
 Now that we have a model and data it's time to train, validate and test our model by optimizating it's paramerters on our data! 
 To get started lets take a look at some example model optimization code:

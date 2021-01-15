@@ -1,8 +1,15 @@
 """
-3. Transforms
-===================
+`Quickstart <quickstart_tutorial.html>`_ >
+`Tensors <tensor_tutorial.html>`_ > 
+`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+**Transforms** >
+`Build Model <buildmodel_tutorial.html>`_ >
+`Automgrad <autograd_tutorial.html>`_ >
+`Optimization <optimization_tutorial.html>`_ >
+`Save & Load Model <saveloadrun_tutorial.html>`_
 
-.. include:: /beginner_source/quickstart/qs_toc.txt
+Transforms
+===================
 
 In most of the practical tasks, data does not come in its final form that is required for training machine learning algorithm. We need to do different data manipulations or **transformations** to prepare it for training. There are many types of transformations, and it depends on the type of model you are building and the state of your data as to which ones you should use. 
 
