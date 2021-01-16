@@ -4,7 +4,7 @@
 `DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
 **Transforms** >
 `Build Model <buildmodel_tutorial.html>`_ >
-`Automgrad <autograd_tutorial.html>`_ >
+`Autograd <autograd_tutorial.html>`_ >
 `Optimization <optimization_tutorial.html>`_ >
 `Save & Load Model <saveloadrun_tutorial.html>`_
 

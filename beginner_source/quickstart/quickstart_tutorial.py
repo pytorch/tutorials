@@ -32,13 +32,14 @@ and how to apply them with PyTorch. The topics are introduced in a sequenced ord
 
 Running the Tutorial Code
 ------------------
-To run the tutorial code you have some options. The navigation above allows you to run the Jupyter Notebook on the cloud.
+The navigation above allows you to run the Jupyter Notebook on the cloud, download the Jupyter Notebook 
+or download the python file to run locally.
 If you want to run the code locally on your machine you will need some tools you may or may not have installed already.
 Below are some good tool options for configuring local development:
 
 - `Visual Studio Code <https://code.visualstudio.com/Download>`_ : You can open run python code in Visual Studio Code or open a Jupyter Notebook in VS Code.
 
-- `Anaconda for Package Management <https://www.anaconda.com/products/individual>`_ : You will need to install the package using the either ``pip`` or ``conda`` to run the code locally.
+- `Anaconda for Package Management <https://www.anaconda.com/products/individual>`_ : You will need to install the packages using either ``pip`` or ``conda`` to run the code locally.
 
 Working with data
 -----------------
@@ -50,7 +51,8 @@ Working with data
 # The `torchvision.datasets` ``DataSet`` object includes a ``transforms`` mechanism to
 # modify data in-place. Below is an example of how to load that data from the PyTorch open datasets and transform the data to a normalized tensor. 
 # This example is using the `torchvision.datasets` which is a subclass from the primitive `torch.utils.data.Dataset`. Note that the primitive dataset doesnt have the built in transforms param like the built in dataset in `torchvision.datasets.`
-# 
+# For more details on datasets and dataloaders check out `DataSets & DataLoaders <dataquickstart_tutorial.html>`_. 
+#
 
 import torch
 import torch.nn as nn
@@ -85,8 +87,12 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pi
 # Creating Models
 # ---------------
 # 
-# There are two ways of creating models: in-line or as a class. This
-# quickstart will consider a class definition. For more examples checkout `building the model <quickstart/buildmodel_tutorial.html>`_.
+# There are two ways of creating models: in-line or as a class.
+# The most common way to define a neural network is to use a class inherited 
+# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_.
+# It provides great parameter management across all nested submodules, which gives us more 
+# flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
+# For more details checkout `building the model <buildmodel_tutorial.html>`_.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
@@ -115,7 +121,7 @@ print(model)
 # ---------------------
 # 
 # Optimizing model parameters requires a loss function, optimizer,
-# and the optimization loop.
+# and the optimization loop. Read more about the `Optimization Loop<optimization_tutorial.html>`_.
 #
 
 # cost function used to determine best parameters
@@ -201,7 +207,7 @@ print('Saved onnx model to model.onnx')
 # parameters includes re-creating the model shape and then loading
 # the state dictionary. Once loaded the model can be used for either
 # retraining or inference purposes (in this example it is used for
-# inference). Check out more details on `saving, loading and running models with PyTorch <quickstart/saveloadrun_tutorial.html>`_
+# inference). Check out more details on `saving, loading and running models with PyTorch <saveloadrun_tutorial.html>`_
 #
 
 loaded_model = NeuralNetwork()

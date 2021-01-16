@@ -23,7 +23,7 @@ Build the Neural Network
 # The most common way to define a neural network is to use a class inherited from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
 # It provides great parameter management across all nested submodules, which gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
 # 
-# In the below example, for our FashionMNIST image dataset, we will create simplest dense multi-layer network.  
+# In the below example, for our FashionMNIST image dataset, we will create a dense multi-layer network.  
 # Lets break down the steps to build this model below.
 # 
 
