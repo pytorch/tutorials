@@ -13,7 +13,7 @@ PyTorch Quickstart
 
 The basic machine learning concepts in any framework should include: Working with data, 
 Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch Quickstart we will
-go through these concepts and how to apply them with PyTorch. That dataset we will be using is the 
+go through these concepts and how to apply them with PyTorch. The dataset we will be using is the 
 FashionMNIST clothing images dataset that demonstrates these core steps applied to create ML Models. 
 
 You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step. 
@@ -29,6 +29,16 @@ into the concepts introduced in each section to get more details and explanation
 and how to apply them with PyTorch. The topics are introduced in a sequenced order as listed below:
 
 .. include:: /beginner_source/quickstart/qs_toc.txt
+
+Running the Tutorial Code
+------------------
+To run the tutorial code you have some options. The navigation above allows you to run the Jupyter Notebook on the cloud.
+If you want to run the code locally on your machine you will need some tools you may or may not have installed already.
+Below are some good tool options for configuring local development:
+
+- `Visual Studio Code <https://code.visualstudio.com/Download>`_ : You can open run python code in Visual Studio Code or open a Jupyter Notebook in VS Code.
+
+- `Anaconda for Package Management <https://www.anaconda.com/products/individual>`_ : You will need to install the package using the either ``pip`` or ``conda`` to run the code locally.
 
 Working with data
 -----------------
