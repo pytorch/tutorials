@@ -27,13 +27,15 @@ In our case, we need to define the following hyperparameters:
  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 
 .. code-block:: Python
+
     learning_rate = 1e-3
     batch_size = 64
     epochs = 5
 
 We also need to create the model class instance (defined in the previous section):
-..code-block:: Python
-    # Initilize model
+
+.. code-block:: Python
+
     model = NeuralNework()
 
 Optimizaton Loop
@@ -50,7 +52,8 @@ Once we set our hyperparameters, we can then train and optimize our model with a
 Here is a high-level view of optimization loop:
 
 .. code-block:: Python
-for epoch in range(num_epochs):  # Iterate over all epochs
+
+  for epoch in range(num_epochs):  # Iterate over all epochs
 
     # Training loop:
     for train_features, train_labels in train_dataloader: # Go over all minibatches
@@ -74,13 +77,12 @@ Loss Function
 
 When presented with some training data, our untrained network is likely not to give the correct answer. **Loss function** measures the degree of dissimilarity of obtained result to the target value, and it is the loss function that we want to minimize during training. To calculate the loss we make a prediction using the inputs of our given data sample and compare it against the true data label value.
 
-Common loss functions include `Mean Square Error <https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html#torch.nn.MSELoss>`_ (for regression tasks),
- `Negative Log Likelihood <https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss>`_,
- and `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss>`_ (for classification tasks).
+Common loss functions include `Mean Square Error <https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html#torch.nn.MSELoss>`_ (for regression tasks), `Negative Log Likelihood <https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss>`_, and `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss>`_ (for classification tasks).
 
 In our example, we will use the built-in Cross Entropy Loss function:
 
 .. code-block:: Python
+
     # Initialize the loss function
     loss_function = nn.CrossEntropyLoss()
 
@@ -92,6 +94,7 @@ Optimization is the process of adjusting model paramters on each training step. 
 All optimization logic is encapsulated in ``optimizer`` object. In our case, we will instantiate the stochastic gradient descent optimizer:
 
 .. code-block:: Python
+
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
 In addition to SGD there are many different optimizers and variations of this method in PyTorch such
@@ -100,13 +103,12 @@ of this quickstart, but you can check out the full list of optimizers `here <htt
 
 Inside the training loop, optimization happens in three steps:
 
- * Call ``optimizer.zero_grad()` function to zero the gradients. As you have seen in the previous section on automatic differentiation, gradients by default add up, so we need to explicitly zero them on each step.
+ * Call ``optimizer.zero_grad()`` function to zero the gradients. As you have seen in the previous section on automatic differentiation, gradients by default add up, so we need to explicitly zero them on each step.
  * Calculate the loss using loss function. This builds a computation graph, which PyTorch uses to automatically update parameters with respect to our model's loss during training. This is done with one call to ``loss.backwards()``. 
- * Once we have our gradients, we call ``optimizer.step()`` to propgate the gradients from the backwards command to update all the parameters in our model.  
+ * Once we have our gradients, we call ``optimizer.step()`` to propagate the gradients from the backwards command to update all the parameters in our model.  
 
-.. figure:: https://discuss.pytorch.org/uploads/default/original/1X/c7e0a44b7bcebfb41315b56f8418ce37f0adbfeb.png
-   :alt: tensor graph
-
+#.. figure:: https://discuss.pytorch.org/uploads/default/original/1X/c7e0a44b7bcebfb41315b56f8418ce37f0adbfeb.png
+#   :alt: tensor graph
 
 Putting it all together
 -----------------------
@@ -114,7 +116,8 @@ Putting it all together
 Below is the complete code for the optimization loop. If you want a complete runnable example of training the model, refer to the `main quickstart page <quickstart_tutorial.html>`_. The code below is commented to explain what goes on, but essentially it is put together from concepts that we have described above.  
 
 .. code-block:: Python
-for epoch in range(num_epochs): # Do training for each epoch
+
+  for epoch in range(num_epochs): # Do training for each epoch
 
     # Training loop over all data in minibatches
     for train_batch, (train_inputs, train_labels) in enumerate(train_dataloader):
@@ -143,7 +146,7 @@ for epoch in range(num_epochs): # Do training for each epoch
 
     test_loss /= len(test_dataloader.dataset)
     correct /= len(test_dataloader.dataset)
-    print('\nEpoch {} test Error:'.format(epoch))
+    print('Epoch {} test Error:'.format(epoch))
     print('acc: {:>0.1f}%, avg loss: {:>8f}'.format(100*correct, test_loss))
 
 Creating Custom Cost Functions
@@ -152,6 +155,7 @@ Creating Custom Cost Functions
 In addition to the included PyTorch cost functions you can create your own custom cost functions as long as they are differentiable. Here is an example of custom Cross Entropy Loss implementation from the `Stanford CS230 <https://cs230.stanford.edu/blog/pytorch/#loss-function>`_ course:
 
 .. code-block:: Python
+
     def myCrossEntropyLoss(outputs, labels):
         batch_size = outputs.size()[0]
         # compute the log of softmax values
@@ -163,6 +167,7 @@ In addition to the included PyTorch cost functions you can create your own custo
 It can be called just like the out of the box implementation above.
 
 .. code-block::Python
+
     loss = myCrossEntropyLoss(model_prediction, true_value)
 
 A more in depth explanation of PyTorch cost functions is outside the scope of the blitz but you can learn more
@@ -181,3 +186,4 @@ We will not consider hyperparameter optimization further in this quickstart.
 
 Next: Learn how to `save our trained model <saveloadrun_tutorial.html>`_.
 
+"""
