@@ -29,15 +29,14 @@ Datasets & Dataloaders
 ############################################################
 # Different data types require different python libraries to load and process such as `openCV <https://opencv.org/>`_ and `PIL <https://pillow.readthedocs.io/en/stable/reference/Image.html>`_ for images, `NLTK <https://www.nltk.org/>`_ and `spaCy <https://spacy.io/>`_ for text and `Librosa <https://librosa.org/doc/latest/index.html>`_ for audio. 
 # 
-# If not properly organized, code for processing data samples can quickly get messy and become hard to maintain. Since different model architectures can be applied to many data types, we ideally want our dataset code to be decoupled from our model training code. To this end, PyTorch provides a simple Datasets interface for linking managing collections of data. 
+# If not properly organized, code for processing data samples can quickly get messy and become hard to maintain. Since different model architectures can be applied to many data types, we ideally want our dataset code to be decoupled from our model training code. To this end, PyTorch provides a simple Datasets interface for linking and managing collections of data. 
 # 
 # A whole set of example datasets such as Fashion MNIST that implement this interface are built into PyTorch extension libraries. They are subclasses of `torch.utils.data.Dataset` that have parameters and functions specific to the type of data and the particular dataset. The actual data samples can be downloaded from the internet. These are useful for benchmarking and testing your models before training on your own custom datasets.
 # 
-# You can find some of them below. 
-#
-#  - `Image Datasets <https://pytorch.org/docs/stable/torchvision/datasets.html>`_
-#  - `Text Datasets  <https://pytorch.org/text/datasets.html>`_
-#  - `Audio Datasets <https://pytorch.org/audio/datasets.html>`_
+# You can find some of these datasets 
+# here: `Image Datasets <https://pytorch.org/docs/stable/torchvision/datasets.html>`_,
+# `Text Datasets  <https://pytorch.org/text/stable/datasets.html>`_, and
+# `Audio Datasets <https://pytorch.org/audio/stable/datasets.html>`_
 #
 
 #################################################################
@@ -51,9 +50,9 @@ Datasets & Dataloaders
 # Each example is comprised of a 28×28 grayscale image, associated with a label from one of 10 classes. Read more `here <https://pytorch.org/docs/stable/torchvision/datasets.html#fashion-mnist>`_.
 #
 # To load the FashionMNIST Dataset we need to provide the following three parameters:
-#  - root is the path where the train/test data is stored. 
-#  - train includes the training dataset. 
-#  - setting download to true downloads the data from the internet if it's not available at root.
+#  - ``root`` is the path where the train/test data is stored. 
+#  - ``train`` includes the training dataset. 
+#  - ``download=True`` downloads the data from the internet if it's not available at root.
 
 
 import torch 
@@ -85,7 +84,7 @@ plt.show()
 # Creating a Custom Dataset
 # -----------------
 #
-# To work with your own data, we need to implement a custom class that inherits from  ``Dataset```. Let's look at a custom image dataset implementation. In this example, we have a number of images stored in a directory, and their labels stored separately in CSV annotation file.
+# To work with your own data, we need to implement a custom class that inherits from ``Dataset``. Let's look at a custom image dataset implementation. In this example, we have a number of images stored in a directory, and their labels stored separately in CSV annotation file. Below is the full example and we will break down whats happening in each function.
 #
 
 import os
@@ -120,10 +119,10 @@ class CustomImageDataset(Dataset):
         return sample 
         
 #################################################################
-# Imports 
+# Import the packages
 # -------
 # 
-# Import `os` for file handling, torch for PyTorch, `pandas <https://pandas.pydata.org/>`_ for loading labels, `torch vision <https://pytorch.org/blog/pytorch-1.7-released/>`_ to read image files, and Dataset to implement the Dataset interface.
+# Import ``os`` for file handling, ``torch`` for PyTorch, `pandas <https://pandas.pydata.org/>`_ for loading labels, `torch vision <https://pytorch.org/blog/pytorch-1.7-released/>`_ to read image files, and ``Dataset`` to implement the Dataset interface.
 # 
 # Example:
 #
@@ -139,7 +138,7 @@ from torch.utils.data import DataLoader
 # Init
 # -----------------
 #
-# The init function is used for all the first time operations when our Dataset is loaded. In this case we use it to load our annotation labels to memory and the keep track of directory of our image file. Note that different types of data can take different init inputs. You are not limited to just an annotations file, directory path and transforms, but for images this is a standard practice.
+# The init function is used for all the first time operations when our Dataset is loaded. In this case we use it to load our annotation labels to memory and then keep track of the directory of our image file. Note that different types of data can take different init inputs. You are not limited to just an annotations file, directory path and transforms, but for images this is a standard practice.
 # A sample csv annotations file may look as follows: ::
 #
 #     tshirt1.jpg, 0
@@ -159,7 +158,7 @@ def __init__(self, annotations_file, img_dir, transform=None):
 # __len__
 # -----------------
 #
-# The __len__ function is very simple, we just need to return the number of samples in our dataset. 
+# The __len__ function is needed to return the number of samples in our dataset. 
 # 
 # Example:
 
@@ -170,9 +169,9 @@ def __len__(self):
 # __getitem__
 # -----------------
 #
-# The __getitem__ function is the most important function in the Datasets interface. It takes a tensor or an index as input and returns a loaded sample from you dataset at the given indices.
+# The __getitem__ function is the most important function in the Datasets interface. It takes a tensor or an index as input and returns a loaded sample from your dataset at the given indices.
 # 
-# If provided a tensor as an index, we convert the tensor to a list first. We then load the file at the given index from our image directory, as well as the image label from our pandas annotations DataFrame. This image and label are then wrapped in a single sample dictionary which we can apply a Transform on and return. To learn more about Transforms see the next section of the Blitz. 
+# If provided a tensor as an index, we convert the tensor to a list first. We then load the file at the given index from our image directory, as well as the image label from our pandas annotations DataFrame. This image and label are then wrapped in a single sample dictionary which we can apply a transform on and return. Transforms will be discussed in more detail in the next section: `Transforms <transforms_tutorial.html>`_
 # 
 # Example:
 #
@@ -193,12 +192,12 @@ def __getitem__(self, idx):
 # Preparing your data for training with DataLoaders
 # -------------------------------------------------
 #
-# Now we have a organized mechansim for managing data which is great, but there is still a lot of manual work we would have to do train a model with our Dataset. 
+# Now we have an organized mechanism for managing data which is great, but there is still a lot of manual work we would have to do to train a model with our Dataset. 
 # 
 # For example we would have to manually maintain the code for: 
 #
 # * Batching 
-# * Suffling 
+# * Shuffling 
 # * Parallel batch distribution 
 # 
 # The PyTorch Dataloader ``torch.utils.data.DataLoader`` is an iterator that handles all of this complexity for us, enabling us to load a dataset and focus on training our model.
@@ -208,6 +207,6 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 #################################################################
 # With this we have all we need to know to load and process data of any kind in PyTorch to train deep learning models.
 # 
-# Next: Learn more about how to `transform that data for training <transforms_tutorial.html>`_.
+# Next learn more about how to `transform data for training <transforms_tutorial.html>`_.
 #
 
