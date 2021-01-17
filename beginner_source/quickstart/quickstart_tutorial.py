@@ -51,7 +51,9 @@ Working with data
 # The `torchvision.datasets` ``DataSet`` object includes a ``transforms`` mechanism to
 # modify data in-place. Below is an example of how to load that data from the PyTorch open datasets and transform the data to a normalized tensor. 
 # This example is using the `torchvision.datasets` which is a subclass from the primitive `torch.utils.data.Dataset`. Note that the primitive dataset doesnt have the built in transforms param like the built in dataset in `torchvision.datasets.`
-# For more details on datasets and dataloaders check out `DataSets & DataLoaders <dataquickstart_tutorial.html>`_. 
+# For more details on the concepts introduced here check out `Tensors <tensor_tutorial.html>`_,
+# `DataSets & DataLoaders <dataquickstart_tutorial.html>`_,
+# and `Transforms <transforms_tutorial.html>`_. 
 #
 
 import torch
@@ -64,6 +66,7 @@ import torch.nn.functional as F
 
 classes = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]
 
+# Download training data from open datasets.
 training_data = datasets.FashionMNIST('data', train=True, download=True,
     transform=transforms.Compose([transforms.ToTensor()]),
     target_transform=transforms.Compose([
@@ -71,15 +74,18 @@ training_data = datasets.FashionMNIST('data', train=True, download=True,
     ])
 )
 
+# Download test data from open datasets.
 test_data = datasets.FashionMNIST('data', train=False, download=True,
     transform=transforms.Compose([transforms.ToTensor()]),
     target_transform=transforms.Compose([
         transforms.Lambda(lambda y: torch.zeros(10, dtype=torch.float).scatter_(0, torch.tensor(y), value=1))
     ])
+
 )
 
 batch_size = 64
 
+# Create data loaders.
 train_dataloader = DataLoader(training_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pin_memory=True)
 
@@ -94,6 +100,7 @@ test_dataloader = DataLoader(test_data, batch_size=batch_size, num_workers=0, pi
 # flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
 # For more details checkout `building the model <buildmodel_tutorial.html>`_.
 
+# Get cpu or gpu device for training.
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
 
@@ -117,22 +124,26 @@ model = NeuralNetwork().to(device)
 print(model)
 
 ######################################################################
-# Optimizing Parameters
+# Optimizing Parameters and Training
 # ---------------------
 # 
 # Optimizing model parameters requires a loss function, optimizer,
-# and the optimization loop. Read more about the `Optimization Loop<optimization_tutorial.html>`_.
+# and the optimization loop. 
+# Training a model is essentially an optimization process similar to the one we described in the
+# `Autograd <autograd_tutorial.html>`_ section. We run the optimization process on the whole dataset 
+# several times, and each run is refered to as an **epoch**. During each run, we present data 
+# in **minibatches**, and for each minibatch compute gradients and correct parameters of the model 
+# according to back propagation algorithm. Read more about the `Optimization Loop <optimization_tutorial.html>`_.
 #
 
-# cost function used to determine best parameters
+# Cost function used to determine best parameters.
 cost = torch.nn.BCELoss()
 
-# used to create optimal parameters
+# This is used to create optimal parameters.
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
-# Create the training function
-
+# Create the training function.
 def train(dataloader, model, loss, optimizer):
     size = len(dataloader.dataset)
     for batch, (X, Y) in enumerate(dataloader):
@@ -168,12 +179,8 @@ def test(dataloader, model):
 
     print(f'\nTest Error:\nacc: {(100*correct):>0.1f}%, avg loss: {test_loss:>8f}\n')
 
-######################################################################
-# Training Models
-# -------------
-# 
-# Call the train and test function in a training loop with the number of epochs indicated
-#
+
+# Call the train and test function in a training loop with the number of epochs indicated.
 
 epochs = 5
 
@@ -222,7 +229,13 @@ with torch.no_grad():
     predicted, actual = classes[pred[0].argmax(0)], classes[y.argmax(0)]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
+
+#############################################################
+#
+# Looking for more resources? Check out the other tutorials on the `tutorials home page <https://pytorch.org/tutorials/>`_.
+#
+
 ##################################################################
 #
-# *Authors: Seth Juarez, Ari Bornstein, Cassie Breviu, Dmitry Soshnikov*
+# *Authors: Seth Juarez, Cassie Breviu, Dmitry Soshnikov, Ari Bornstein,*
 
