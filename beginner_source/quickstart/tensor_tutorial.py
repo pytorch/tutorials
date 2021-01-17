@@ -14,11 +14,11 @@ Tensors and Operations
 **Tensor** is the basic computational unit in PyTorch. It is very
 similar to **NumPy array**, and supports similar operations. However,
 there are two very important features of Torch tensors that make them
-especially useful for training large-scale neural networks:
+especially useful for training large-scale neural networks. First, tensor operations can be performed on 
+GPUs or other specialized hardware to accelerate computing. Second, tensor operations support 
+automatic differentiation using `pytorch.autograd engine <autograd_tutorial.html>`__.
 
- *  Tensor operations can be performed on GPUs or other specialized hardware to accelerate computing
- *  Tensor operations support automatic differentiation using `pytorch.autograd engine <autograd_tutorial.html>`__
-Conversion between Torch tensors and NumPy arrays can be done easily:
+Lets look at how we can easily convert between Torch tensors and NumPy arrays:
 """
 
 import torch
@@ -43,8 +43,8 @@ print(f"Tensor={tensor}, Array={tensor.numpy()}")
 # ~~~~~~~~~~~~~~~~
 #
 # The fastest way to create a tensor is to define an *uninitialized*
-# tensor - the values of this tensor are not set, and depend on the
-# whatever data was there in memory:
+# tensor. This means the values of this tensor are not set and depend on the
+# data that was there in memory:
 #
 
 x = torch.empty(3, 6)
@@ -52,7 +52,7 @@ x = torch.empty(3, 6)
 
 ######################################################################
 # In practice, we often want to create tensors initialized to some values,
-# such as zeros, ones or random values. Note that you can also specify the
+# such as zeros, ones or random values. You can also specify the
 # type of elements using ``dtype`` parameter, and chosing one of ``torch``
 # types:
 #
@@ -62,7 +62,7 @@ y = torch.zeros(3, 5, dtype=torch.int)
 z = torch.ones(3, 5, dtype=torch.double)
 
 ######################################################################
-# You can also create random tensors with values sampled from different
+# You can create random tensors with values sampled from different
 # distributions, as described `in the
 # documentation <https://pytorch.org/docs/stable/torch.html#random-sampling>`__.
 #
@@ -74,7 +74,7 @@ I = torch.eye(10)
 
 
 ######################################################################
-# You can also create new tensors with the same properties or size as
+# You can create new tensors with the same properties or size as
 # existing tensors:
 #
 
@@ -208,7 +208,7 @@ print('Reshaped tensor:\n',x.view(5, -1))  # will result in size 5x3
 
 
 ######################################################################
-# Tensors support all slicing operations that exist in NymPy:
+# Tensors support all slicing operations that exist in NumPy:
 #
 
 print(x.size())  # original size of x is 3x5
