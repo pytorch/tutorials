@@ -11,7 +11,7 @@
 Transforms
 ===================
 
-In most of the practical tasks, data does not come in its final form that is required for training machine learning algorithm. We need to do different data manipulations or **transformations** to prepare it for training. There are many types of transformations, and it depends on the type of model you are building and the state of your data as to which ones you should use. 
+In most cases data does not come in its final processed form that is required for training machine learning algorithms. We need to do different data manipulations or **transformations** to prepare it for training. There are many types of transformations, and it depends on the type of model you are building and the state of your data as to which ones you should use. 
 
 In the example below, let's take FashionMNIST image dataset, which is available from ``torchvision.datasets`` using the following function:
 """
@@ -25,7 +25,7 @@ ds = torchvision.datasets.FashionMNIST(
  download=False)        # should the data be downloaded from the Internet
 
 ################################
-#To prepare data for training the neural network, we need to take our image (also called features, x), turn it into a tensor and normalize it. We also need to convert labels (y) into one-hot encoding.
+#To prepare data for training we need to take our image (also called features, x), turn it into a tensor and normalize it. Then we need to convert labels (y) into one-hot encoding.
 #
 #We will break down each of these steps below.
 
@@ -57,7 +57,7 @@ classes = ["T-shirt/top", "Trouser", "Pullover", "Dress",
 # Feature Transforms and Label Transforms
 # ---------------------------------------
 #
-# Below is the code to load the FashionMNIST dataset and apply required transforms:
+# Below is the code to load the FashionMNIST dataset and apply the transforms:
 
 training_data = datasets.FashionMNIST(
     'data', 
@@ -70,23 +70,23 @@ training_data = datasets.FashionMNIST(
 ########################################
 # Here we define two transformations:
 #
-# * ``transform`` is the transformation we apply to features, in our case - to images. Because dataset contains images in PIL format, we need to convert them to tensors using ``ToTensor()`` transform.
+# * ``transform`` is the transformation we apply to features, in our case - to images. The dataset contains images in PIL format so we need to convert them to tensors using the ``ToTensor()`` transform.
 # * ``target_transform`` defines a transformation that is applied to labels. In our case label is a class number from 0 to 9, and we need to convert it to one-hot encoding.
 
 #################################################
 # ToTensor()
 # -------------------------------
 #
-# `torchvision.transforms.ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_ transform is required to prepare an image for training. It takes PIL image, converts it into a `tensor <tensor_tutorial.html>`_, and also normalizes our data by scaling the image pixel intensity values to be between 0 and 1.
+# `torchvision.transforms.ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_ transform is required to prepare an image for training. It takes the PIL image, converts it into a `tensor <tensor_tutorial.html>`_, and normalizes our data by scaling the image pixel intensity values to be between 0 and 1.
 #
-# .. note:: ToTensor only normalized image data that is in PIL mode of (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1) or if the numpy.ndarray has dtype = np.uint8. In the other cases, tensors are returned without scaling.
+# .. note:: ToTensor only normalizes images that are in PIL mode of (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1) or if the numpy.ndarray has dtype = np.uint8. In the other cases, tensors are returned without scaling.
 #
 
 ##############################################
 # Lambda Transform
 # -------------------------------
 #
-# To turn class number into one-hot encoding, we use **lambda transform**, i.e. a transformation defined by an arbitrary function. This function takes y as an input and creates a zero tensor of size 10. Then it calls scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to take a value 1 and store it into the correct position of the zero vector defined by the class number.
+# We use a **lambda transform** to turn the class number into one-hot encoding. This function takes y as an input and creates a zero tensor of size 10. Then it calls scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to take a value 1 and store it into the correct position of the zero vector defined by the class number.
 
 target_transform = transforms.Lambda(lambda y: torch.zeros(
     10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
@@ -106,14 +106,14 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 # Using your own data
 # --------------------------------------
 #
-# Below is an example for processing image data using a dataset from a local directory. It assumes the we have ``train`` and ``val`` subdirectories with training and validation dataset accordingly, and we want to apply different sets of transforms for training and validation dataset:
+# Below is an example for processing image data using a dataset from a local directory. It assumes that we have ``train`` and ``val`` subdirectories with training and validation dataset. In this example we want to apply different sets of transforms for training and validation dataset:
 #
 # * For training data, we want to perform some **data augmentation**, and do random croping/resizing of the original image. We also introduce random horizontal flips.
 # * For testing, we typically want to be consistent and always use the same images - thus we do not do any augmentation, just resizing. 
 #
 # We also normalize values by subtracting the mean, which was computed along the whole dataset.
 #
-# To be able to unify the code for train and validation datasets, we use a special trick and create a dictionary of transforms for each dataset: train and validation:
+# To be able to unify the code for train and validation datasets, we use a special trick and create a dictionary of transforms for the train and validation dataset:
 #
 # .. code-block:: Python
 #
@@ -144,7 +144,7 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 #                                              data_transforms[x])
 #                     for x in ['train', 'val']}
 # 
-# In a similar manner, we define a dictionary of dataloaders, which can prepare our datasets for neural network training. They allow us to shuffle data and group them into batches of a specified size:
+# Similarly we define a dictionary of dataloaders to prepare our datasets for training. They allow us to shuffle data and group them into batches of a specified size:
 #
 # .. code-block:: Python
 #
@@ -159,7 +159,4 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 #
 #   class_names = image_datasets['train'].classes
 #
-
-##################################################################
 # Next learn how to `build the model <buildmodel_tutorial.html>`_
-#
