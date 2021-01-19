@@ -285,6 +285,6 @@ print("\nCall after zeroing gradients\n", inp.grad)
 
 
 ######################################################################
-# Next: Learn more about `how to use automatic differentiation to train a neural network model <optimization_tutorial.html>`_.
+# Next learn more about how the `optimization loop works with this example <optimization_tutorial.html>`_.
 #
 

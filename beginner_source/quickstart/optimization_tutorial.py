@@ -11,14 +11,21 @@
 Optimizing Model Parameters
 ===========================
 
-Now that we have a model and data it's time to train, validate and test our model by optimizating it's paramerters on our data! 
+Now that we have a model and data it's time to train, validate and test our model by optimizing it's parameters on 
+our data! 
 
-Training a model is essentially an optimization process similar to the one we described in the previous section on `Autograd <autograd_tutorial.html>`_. We run the optimization process on the whole dataset several times, and each run is refered to as an **epoch**. During each run, we present data in **minibatches**, and for each minibatch compute gradients and correct parameters of the model according to back propagation algorithm.
+Training a model is essentially an optimization process similar to the one we described in the previous section 
+on `Autograd <autograd_tutorial.html>`_. We run the optimization process on the whole dataset several times, 
+and each run is referred to as an **epoch**. During each run, we present data in **minibatches**, and for each 
+minibatch compute gradients and correct parameters of the model according to back propagation algorithm.
 
 Hyperparameters
 -----------------
 
-Hyperparameters are adjustable parameters that let you control the model optimization process. Unlike model parameters that we will optimize during training, hyperparameters are configured for the whole training process. However, you may achieve different model performance with different hyperparameters, so you may want to try out different values for them to perform hyperparameter optimization.
+Hyperparameters are adjustable parameters that let you control the model optimization process. 
+Unlike model parameters that we will optimize during training, hyperparameters are configured for the whole 
+training process. However, you may achieve different model performance with different hyperparameters, so you may
+ want to try out different values for them to perform hyperparameter optimization.
 
 In our case, we need to define the following hyperparameters:
 
@@ -38,13 +45,14 @@ We also need to create the model class instance (defined in the previous section
 
     model = NeuralNework()
 
-Optimizaton Loop
+Optimization Loop
 -----------------
 
 .. figure:: /_static/img/quickstart/optimizationloops.png
    :alt:
 
-Once we set our hyperparameters, we can then train and optimize our model with an optimization loop. Each iteration of the optimiziation loop is called an **epoch**. Each epoch is comprized of two main parts:
+Once we set our hyperparameters, we can then train and optimize our model with an optimization loop. Each 
+iteration of the optimization loop is called an **epoch**. Each epoch is comprized of two main parts:
 
   1. **The Train Loop** - main loop that iterates over all dataset and performs training
   2. **The Validation/Test Loop** - goes through the validation / test dataset to evaluate model performance on the test data. 
@@ -75,7 +83,10 @@ Complete code for optimization loop will be presented at the end of this section
 Loss Function
 -------------
 
-When presented with some training data, our untrained network is likely not to give the correct answer. **Loss function** measures the degree of dissimilarity of obtained result to the target value, and it is the loss function that we want to minimize during training. To calculate the loss we make a prediction using the inputs of our given data sample and compare it against the true data label value.
+When presented with some training data, our untrained network is likely not to give the correct 
+answer. **Loss function** measures the degree of dissimilarity of obtained result to the target value, 
+and it is the loss function that we want to minimize during training. To calculate the loss we make a 
+prediction using the inputs of our given data sample and compare it against the true data label value.
 
 Common loss functions include `Mean Square Error <https://pytorch.org/docs/stable/generated/torch.nn.MSELoss.html#torch.nn.MSELoss>`_ (for regression tasks), `Negative Log Likelihood <https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss>`_, and `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss>`_ (for classification tasks).
 
@@ -89,7 +100,9 @@ In our example, we will use the built-in Cross Entropy Loss function:
 Optimizer
 ---------
 
-Optimization is the process of adjusting model paramters on each training step. **Optimization algorithm** defines how this process is performed. The standard method for optimization is called Stochastic Gradient Descent. To learn more check out this awesome video by `3blue1brown <https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>`_.
+Optimization is the process of adjusting model paramters on each training step. **Optimization algorithm** defines 
+how this process is performed. The standard method for optimization is called Stochastic Gradient Descent. 
+To learn more check out this awesome video by `3blue1brown <https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>`_.
 
 All optimization logic is encapsulated in ``optimizer`` object. In our case, we will instantiate the stochastic gradient descent optimizer:
 
@@ -107,8 +120,8 @@ Inside the training loop, optimization happens in three steps:
  * Calculate the loss using loss function. This builds a computation graph, which PyTorch uses to automatically update parameters with respect to our model's loss during training. This is done with one call to ``loss.backwards()``. 
  * Once we have our gradients, we call ``optimizer.step()`` to propagate the gradients from the backwards command to update all the parameters in our model.  
 
-#.. figure:: https://discuss.pytorch.org/uploads/default/original/1X/c7e0a44b7bcebfb41315b56f8418ce37f0adbfeb.png
-#   :alt: tensor graph
+.. figure:: https://discuss.pytorch.org/uploads/default/original/1X/c7e0a44b7bcebfb41315b56f8418ce37f0adbfeb.png
+   :alt: tensor graph
 
 Putting it all together
 -----------------------
@@ -184,6 +197,6 @@ In our example, we have split the data between train and test datasets. However,
 
 We will not consider hyperparameter optimization further in this quickstart. 
 
-Next: Learn how to `save our trained model <saveloadrun_tutorial.html>`_.
+Next learn how to `save our trained model <saveloadrun_tutorial.html>`_.
 
 """

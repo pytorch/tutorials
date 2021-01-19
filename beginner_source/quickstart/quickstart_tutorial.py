@@ -34,8 +34,9 @@ Running the Tutorial Code
 ------------------
 The navigation above allows you to run the Jupyter Notebook on the cloud, download the Jupyter Notebook 
 or download the python file to run locally.
-If you want to run the code locally on your machine you will need some tools you may or may not have installed already.
-Below are some good tool options for configuring local development:
+If you want to run the code locally on your machine you will need some tools you 
+may or may not have installed already.
+Below are some good tool options for configuring local development or for more detailed instructions check out `Get Started Locally <https://pytorch.org/get-started/locally/>`_
 
 - `Visual Studio Code <https://code.visualstudio.com/Download>`_ : You can open run python code in Visual Studio Code or open a Jupyter Notebook in VS Code.
 
@@ -195,7 +196,7 @@ print('Done!')
 # -------------
 # 
 # PyTorch has different ways you can save your model. One way is to serialize the internal model state to a file. Another would be to use the built-in `ONNX <https://github.com/onnx/tutorials>`_ support.
-# Saving PyTorch Model Dictionary
+# 
 
 torch.save(model.state_dict(), 'model.pth')
 print('Saved PyTorch Model to model.pth')

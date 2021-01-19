@@ -169,5 +169,5 @@ print(list(model.named_parameters())[0:2])
 
 ################################################
 #
-# Next learn more about how the `optimization loop works with this example <optimization_tutorial.html>`_.
+# Next learn more about `how to use automatic differentiation to train a neural network model <autograd_tutorial.html>`_.
 #
