@@ -9,19 +9,21 @@
 `Optimization <optimization_tutorial.html>`_ >
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-Build the Neural Network
+Build the Neural Network Model
 ===================
 
 """
 
 #################################################################
-# Get Started Building the Model
-# -----------------
 #
-# Having loaded and transformed the data, we can now build the neural network model. In many simple cases neural network consists of a number of layers, and `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides predefined layers that can simplify our code.
+# Now that we have loaded and transformed the data, we can build the neural network model. 
+# Neural network consists of a number of layers and PyTorch `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides predefined layers 
+# that helps us build the model.
 # 
-# The most common way to define a neural network is to use a class inherited from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_ 
-# It provides great parameter management across all nested submodules, which gives us more flexibility, because we can construct layers of any complexity, including the ones with shared weights. 
+# The most common way to define a neural network is to use a class inherited 
+# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. 
+# It provides great parameter management across all nested submodules, which gives us more 
+# flexibility, because we can construct layers of any complexity, including ones with shared weights. 
 # 
 # In the below example, for our FashionMNIST image dataset, we will create a dense multi-layer network.  
 # Lets break down the steps to build this model below.
@@ -44,7 +46,9 @@ from torchvision import datasets, transforms
 #############################################
 # Get Device for Training
 # -----------------------
-# We want to be able to train our model on both CPU and GPU, if it is available. It is common practice to define a variable ``device`` which will designate the device we will be training on. We check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ 
+# We want to be able to train our model on both CPU and GPU, if it is available. It is common practice to 
+# define a variable ``device`` which will designate the device we will be training on.
+# We check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ 
 # is available to use the GPU, else we will use the CPU. 
 #
 # Example:
@@ -89,7 +93,10 @@ print(model)
 # The Model Module Layers
 # -------------------------
 #
-# Lets break down each model layer in the FashionMNIST model. To illustrate it, we will take a sample minibatch of 100 images of size 28x28 and see what happens to it as we pass it through the network. The code in the sections below would essentially explain what happens inside the ``forward`` method of our ``NeuralNetwork`` class. 
+# Lets break down each model layer in the FashionMNIST model. To illustrate it, we 
+# will take a sample minibatch of 100 images of size 28x28 and see what happens to it as 
+# we pass it through the network. The code in the sections below would essentially explain 
+# what happens inside the ``forward`` method of our ``NeuralNetwork`` class. 
 #
 
 input_image = torch.rand(100,28,28)
@@ -104,13 +111,15 @@ print(input_image.size())
 # From the docs:
 # ``torch.nn.Flatten(start_dim: int = 1, end_dim: int = -1)``
 #
-# In our case, flatten keeps the minibatch dimension, but two image dimensions are reduced to one:
+# In our case, flatten keeps the minibatch dimension, but two image dimensions are 
+# reduced to one:
+
 flatten = nn.Flatten()
 flat_image = flatten(input_image)
 print(flat_image.size())
 
 ##############################################
-# `nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ to add a linear layer to the model.
+# `nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ to add a linear layer
 # -------------------------------
 #
 # Now that we have flattened our tensor dimension we will apply a linear layer. The linear layer is 
@@ -129,7 +138,10 @@ print(hidden1.size())
 # Activation Functions
 # -------------------------
 #
-# In between layers of a neural network, we need to put non-linear activation functions, such as `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html)>`_ (which is often used in between hidden layers) or `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_, which turns output of the network into probabilities by rescaling them in such a way that all values are between 0 and 1, and all sum to one.
+# In between layers of a neural network, we need to put non-linear activation functions, 
+# such as `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ (which is often 
+# used in between hidden layers) or `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_, 
+# which turns the output of the network into probabilities by rescaling values between 0 and 1, and all sum to one.
 #
 
 layer2 = nn.Linear(512,512)
@@ -144,13 +156,18 @@ print('Output size =',out.size())
 # Parameter Tracking
 # -------------------------
 #
-# The main reason to put all code inside a class inherited from ``nn.Module`` is to utilize **parameter tracking**. Most of the layers inside a neural network, in our case all linear layers, have associtated weights and biases that need to be adjusted during training. ``nn.Module`` automatically tracks all fields defined inside the class, and makes all parameters accessible using ``parameters()`` or ``named_parameters()`` methods. Let's have a look at the first two parameters of our neural network that has been defined in the beginning of this section:
+# The main reason to put all code inside a class inherited from ``nn.Module`` is to 
+# utilize **parameter tracking**. Most of the layers inside a neural network, 
+# in our case all linear layers, have associated weights and biases that need to 
+# be adjusted during training. ``nn.Module`` automatically tracks all fields defined 
+# inside the class, and makes all parameters accessible using ``parameters()`` 
+# or ``named_parameters()`` methods. Let's have a look at the first two parameters of 
+# our neural network that were defined in the beginning of this section:
 #
 
 print(list(model.named_parameters())[0:2])
 
 ################################################
-# In the next section you will learn about how to train the model and the optimization loop for this example.
 #
-# Next: Learn more about how the `optimzation loop works with this example <optimization_tutorial.html>`_.
+# Next learn more about how the `optimization loop works with this example <optimization_tutorial.html>`_.
 #
