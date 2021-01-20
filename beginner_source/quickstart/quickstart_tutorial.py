@@ -36,7 +36,7 @@ The navigation above allows you to run the Jupyter Notebook on the cloud, downlo
 or download the python file to run locally.
 If you want to run the code locally on your machine you will need some tools you 
 may or may not have installed already.
-Below are some good tool options for configuring local development or for more detailed instructions check out `Get Started Locally <https://pytorch.org/get-started/locally/>`_
+Below are some good tool options for configuring local development or for more detailed instructions check out `get started locally <https://pytorch.org/get-started/locally/>`_.
 
 - `Visual Studio Code <https://code.visualstudio.com/Download>`_ : You can open run python code in Visual Studio Code or open a Jupyter Notebook in VS Code.
 

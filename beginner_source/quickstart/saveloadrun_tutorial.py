@@ -11,8 +11,7 @@
 Save, Load and Use the Model
 ============================
 
-In this section we will look at how to save, load and use persisted model state
-to run predictions.
+In this section we will look at how to presist model state with saving, loading and running model predictions.
 """
 
 import torch
@@ -22,7 +21,10 @@ import torch.onnx as onnx
 # Pre-trained Models
 # ------------------
 # 
-# Many tasks, such as object classification in computer vision, rely on some pre-trained models. While you can find some pre-trained models for common tasks online, PyTorch already includes the most common model architectures. For example, to initialize a VGG-16 model for image classification, we can use the following code:
+# Many tasks, such as object classification in computer vision, rely on some pre-trained models. 
+# While you can find some pre-trained models for common tasks online, PyTorch already includes the most 
+# common model architectures. For example, to initialize a VGG-16 model for image classification, 
+# we can use the following code:
 
 import torchvision.models as models
 model = models.vgg16(pretrained=True)
@@ -34,12 +36,17 @@ model = models.vgg16(pretrained=True)
 #
 #    res = model(imgs)
 #
-# Let us see how a picture of a cat can be classified using this VGG-16 model. Once we load a picture from the internet, we need to apply a series of trainsformations to it, to turn it into a tensor of the appropriate size:
+# Let us see how a picture of a cat can be classified using this VGG-16 model. Once we load a 
+# picture from the internet, we need to apply a series of transformations to it, to turn it into a 
+# tensor of the appropriate size:
+#
 # * Resize image to 224x224 pixels
 # * Convert it to tensor
 # * Apply normalization with a given mean and standard deviation  
+#
 # Also, we need to turn a single tensor into a batch by adding one more dimension with ``unsqueeze()`` call.
-# After doing the inference, we obtain a tensor of probabilities for each of the classes, and we get the index of most probable class by calling ``.argmax()``. 
+# After doing the inference, we obtain a tensor of probabilities for each of the classes, and we get the index of the 
+# most probable class by calling ``.argmax()``. 
 
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -59,6 +66,7 @@ with torch.no_grad():
 
 ######################
 # The result obtained is a number of imagenet predicted class, in this case, *tiger cat*.
+#
 # .. note:: When running model inference, it is recommended to wrap the code into ``torch.no_grad()``, because  `automatic differentiation  <autograd_tutorial.html>`_ is unnecessary.
 
 #######################################################################
@@ -71,19 +79,22 @@ with torch.no_grad():
 torch.save(model.state_dict(), 'model_weights.pth')
 
 ##########################
-# To load model weights, you need to create a model class first, and then load the parameters using ``load_state_dict()`` method.
+# To load model weights, you need to create a model class first, and then load the parameters 
+# using ``load_state_dict()`` method.
 
 model = models.vgg16() # we do not specify pretrained=True, i.e. do not load default weights
 model.load_state_dict(torch.load('model_weights.pth'))
 model.eval()
 
 ###########################
-# .. note:: Before inference, do not forget to call ``model.eval()`` method to set dropout and batch normalization layers to evaluation mode. Failing to do this will yield inconsistent inference results.
+# .. note:: be sure to call ``model.eval()`` method before inferencing to set the dropout and batch normalization layers to evaluation mode. Failing to do this will yield inconsistent inference results.
 
 #######################################################################
 # Saving and Loading Models with Shapes
 # -------------------------------------
-# When loading model weights, we needed to instantiate the model class first, because the class defines the structure of a network. We might want to save the structure of this class together with the model, in which case we can pass ``model`` (and not ``model.state_dict()``) to the saving function:
+# When loading model weights, we needed to instantiate the model class first, because the class 
+# defines the structure of a network. We might want to save the structure of this class together with 
+# the model, in which case we can pass ``model`` (and not ``model.state_dict()``) to the saving function:
 
 torch.save(model, 'model.pth')
 
@@ -107,6 +118,11 @@ model = torch.load('model.pth')
 onnx.export(model, input_image, 'model.onnx')
 
 ###########################
-# There are a lot of things you can do with ONNX model, including running inference on different platforms and in different programming languages. For more details, we recommend visiting `ONNX tutorial <https://github.com/onnx/tutorials>`_.
+# There are a lot of things you can do with ONNX model, including running inference on different platforms 
+# and in different programming languages. For more details, we recommend 
+# visiting `ONNX tutorial <https://github.com/onnx/tutorials>`_.
 #
-# **You have reached the end of the detailed PyTorch beginner tutorial.** You can now `return to the first page <quickstart_tutorial.html>`_ and go over the sample code again - we hope you have gained much better understanding of all the details.
+# Congratulations! You have completed the PyTorch beginner tutorial! You can 
+# now `return to the first page <quickstart_tutorial.html>`_ and go over the sample code 
+# again and we hope you have a better understanding of how to do deep learning with PyTorch. 
+# Good luck on your deep learning journey!
