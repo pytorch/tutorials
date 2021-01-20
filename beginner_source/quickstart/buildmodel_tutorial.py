@@ -106,7 +106,7 @@ input_image = torch.rand(100,28,28)
 print(input_image.size())
 
 ##################################################
-# `nn.Flatten <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_ 
+# nn.Flatten
 # -----------------------------------------------
 #
 # First we call nn.Flatten to reduce tensor dimensions to one.
