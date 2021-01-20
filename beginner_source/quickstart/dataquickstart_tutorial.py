@@ -150,7 +150,7 @@ from torch.utils.data import DataLoader
 # 
 
 def __init__(self, labels_file, img_dir, transform=None):
-    self.img_labels = pd.read_csv(annotations_file)
+    self.img_labels = pd.read_csv(labels_file)
     self.img_dir = img_dir
     self.transform = transform
 
