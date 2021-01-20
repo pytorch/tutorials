@@ -128,10 +128,6 @@ print(flat_image.size())
 # Now that we have flattened our tensor dimension we will pass our data through a `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_. The linear layer is 
 # a module that applies a linear transformation on the input using it's stored weights and biases.
 #
-# From the docs:
-# 
-# ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``
-#
 
 layer1 = nn.Linear(in_features=28*28, out_features=512)
 hidden1 = layer1(flat_image)
