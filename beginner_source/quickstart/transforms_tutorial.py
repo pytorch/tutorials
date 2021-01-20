@@ -35,8 +35,7 @@ ds = torchvision.datasets.FashionMNIST(
 #
 # We are using the built-in FashionMNIST dataset from the PyTorch library. 
 # For more info on the Datasets and Loaders check out `this <dataquickstart_tutorial.html>`_ section of the tutorial. 
-# The ``Train=True`` indicates we want to download the training dataset from the 
-# built-in datasets, ``Train=False`` indicates to download the testing dataset. 
+# The ``train=True`` argument indicates we want the training split of the dataset (``train=False`` downloads the test split instead). 
 # This way we have data partitioned out for training and testing within the provided PyTorch datasets. 
 # We will apply the same transforms to both the training and testing datasets.
 
