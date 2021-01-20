@@ -101,7 +101,7 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 # Compose
 # ------------------------
 #
-# In many cases, we need to perform several transformations on the data sequentially. ``transforms.compose`` allows us to string together different steps of transformations in a sequential order. We will see an example of using composition transform in the next section.
+# In many cases, we need to perform several transformations on the data sequentially. `transforms.Compose <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Compose>__` allows us to string together different steps of transformations in a sequential order. We will see an example of using composition transform in the next section.
 
 
 ##############################################
