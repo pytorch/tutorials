@@ -85,7 +85,7 @@ training_data = datasets.FashionMNIST(
 #
 
 ##############################################
-# Lambda Transform
+# Lambda Transforms
 # -------------------------------
 #
 # We use a **lambda transform** to turn the class number into one-hot encoding. This function takes y as an input and creates a zero tensor of size 10. Then it calls scatter `torch.Tensor.scatter_ class <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ to take a value 1 and store it into the correct position of the zero vector defined by the class number.
