@@ -122,7 +122,7 @@ flat_image = flatten(input_image)
 print(flat_image.size())
 
 ##############################################
-# `nn.Linear <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_ to add a linear layer
+# nn.Linear 
 # -------------------------------
 #
 # Now that we have flattened our tensor dimension we will apply a linear layer. The linear layer is 
