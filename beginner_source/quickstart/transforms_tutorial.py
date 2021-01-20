@@ -81,7 +81,6 @@ training_data = datasets.FashionMNIST(
 #
 # `transforms.ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_ transform is required to prepare an image for training. It takes the PIL image, converts it into a `tensor <tensor_tutorial.html>`_, and normalizes our data by scaling the image pixel intensity values to be between 0 and 1.
 #
-# .. note:: ToTensor only normalizes images that are in PIL mode of (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1) or if the numpy.ndarray has dtype = np.uint8. In the other cases, tensors are returned without scaling.
 #
 
 ##############################################
