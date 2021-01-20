@@ -86,8 +86,12 @@ class NeuralNetwork(nn.Module):
         return F.softmax(x, dim=1)
 
 model = NeuralNetwork().to(device)
-    
 print(model)
+
+input = torch.rand(5, 28, 28)
+
+# equivalent to model.forward(input)
+model(input)
 
 ##############################################
 # The Model Module Layers
