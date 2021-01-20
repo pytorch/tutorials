@@ -60,12 +60,15 @@ classes = ["T-shirt/top", "Trouser", "Pullover", "Dress",
 # Below is the code to load the FashionMNIST dataset and apply the transforms:
 
 training_data = datasets.FashionMNIST(
-    'data', 
-    train=True, download=True,
+    "data",
+    train=True,
+    download=True,
     transform=transforms.ToTensor(),
     target_transform=transforms.Lambda(
         lambda y: torch.zeros(10, dtype=torch.float)
-        .scatter_(0, torch.tensor(y), value=1)))
+        .scatter_(0, torch.tensor(y), value=1)
+    )
+)
 
 ########################################
 # Here we define two transformations:
