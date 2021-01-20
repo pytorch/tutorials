@@ -12,11 +12,7 @@ Optimizing Model Parameters
 ===========================
 
 Now that we have a model and data it's time to train, validate and test our model by optimizing it's parameters on 
-our data. Training a model is essentially an optimization process similar to the one we described in the previous section 
-on `Autograd <autograd_tutorial.html>`_. We run the optimization process on the whole dataset several times, 
-and each run is referred to as an **epoch**. During each run, we present data in **minibatches**, and for each 
-minibatch compute gradients and correct parameters of the model according to back propagation algorithm.
-
+our data. Training a model is an iterative process; in each iteration(called an *epoch*) the model makes a guess about the output, calculates the error in its guess (*loss*), collects the derivatives of the error with respect to its parameters (as we saw in the `previous section  <autograd_tutorial.html>`_), and **optimizes** these parameters using gradient descent. For a more detailed walkthrough of this process, check out this video on `backpropagation from 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
 Hyperparameters
 -----------------
 
