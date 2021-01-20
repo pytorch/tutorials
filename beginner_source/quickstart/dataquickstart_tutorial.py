@@ -84,7 +84,7 @@ plt.show()
 # Creating a Custom Dataset
 # -----------------
 #
-# To work with your own data, we need to implement a custom class that inherits from ``Dataset``. Let's look at a custom image dataset implementation. In this example, we have a number of images stored in a directory, and their labels stored separately in CSV annotation file. Below is the full example and we will break down whats happening in each function.
+# To work with your own data, we can implement a custom class that inherits from ``Dataset``. This custom class must implement three functions: `__init__`, `__len__`, and `__getitem__`. Let's look at a custom image dataset implementation. In this example, we have a number of images stored in a directory, and their labels stored separately in a CSV file. Here's what it looks like; in the following sections, we will break down what's happening in each function.
 #
 
 import os
