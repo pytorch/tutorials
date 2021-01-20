@@ -96,7 +96,7 @@ model(input)
 # The Model Module Layers
 # -------------------------
 #
-# Lets break down each model layer in the FashionMNIST model. To illustrate it, we 
+# Lets break down each layer in the FashionMNIST model. To illustrate it, we 
 # will take a sample minibatch of 100 images of size 28x28 and see what happens to it as 
 # we pass it through the network. The code in the sections below would essentially explain 
 # what happens inside the ``forward`` method of our ``NeuralNetwork`` class. 
