@@ -125,7 +125,7 @@ print(flat_image.size())
 # nn.Linear 
 # -------------------------------
 #
-# Now that we have flattened our tensor dimension we will apply a linear layer. The linear layer is 
+# Now that we have flattened our tensor dimension we will pass our data through a `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_. The linear layer is 
 # a module that applies a linear transformation on the input using it's stored weights and biases.
 #
 # From the docs:
