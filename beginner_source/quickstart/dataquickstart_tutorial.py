@@ -158,7 +158,7 @@ def __init__(self, labels_file, img_dir, transform=None):
 # __len__
 # -----------------
 #
-# The __len__ function is needed to return the number of samples in our dataset. 
+# The __len__ function returns the number of samples in our dataset. 
 # 
 # Example:
 
