@@ -61,9 +61,8 @@ print('Using {} device'.format(device))
 # Define the Class
 # -------------------------
 #
-# Here we define the `NeuralNetwork` class which inherits from ``nn.Module`` which is the base class for 
-# building neural network modules. The ``init`` function defines the layers in the neural network
-# then it initializes the modules to be called in the ``forward`` function.
+# First we define the `NeuralNetwork` class which inherits from ``nn.Module``, the base class for 
+# building all neural network modules in PyTorch. We use the ``__init__`` function to define and initialize the NN layers that will be then called in the module's ``forward`` function.
 # Then we call the ``NeuralNetwork`` class and assign the device. When training 
 # the model we will call ``model`` and pass the data (x) into the forward function and 
 # through each layer of our network.
