@@ -149,7 +149,7 @@ from torch.utils.data import DataLoader
 # Example:
 # 
 
-def __init__(self, annotations_file, img_dir, transform=None):
+def __init__(self, labels_file, img_dir, transform=None):
     self.img_labels = pd.read_csv(annotations_file)
     self.img_dir = img_dir
     self.transform = transform
@@ -209,4 +209,3 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 # 
 # Next learn more about how to `transform data for training <transforms_tutorial.html>`_.
 #
-
