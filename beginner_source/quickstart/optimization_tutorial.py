@@ -12,9 +12,7 @@ Optimizing Model Parameters
 ===========================
 
 Now that we have a model and data it's time to train, validate and test our model by optimizing it's parameters on 
-our data! 
-
-Training a model is essentially an optimization process similar to the one we described in the previous section 
+our data. Training a model is essentially an optimization process similar to the one we described in the previous section 
 on `Autograd <autograd_tutorial.html>`_. We run the optimization process on the whole dataset several times, 
 and each run is referred to as an **epoch**. During each run, we present data in **minibatches**, and for each 
 minibatch compute gradients and correct parameters of the model according to back propagation algorithm.
@@ -25,7 +23,7 @@ Hyperparameters
 Hyperparameters are adjustable parameters that let you control the model optimization process. 
 Unlike model parameters that we will optimize during training, hyperparameters are configured for the whole 
 training process. However, you may achieve different model performance with different hyperparameters, so you may
- want to try out different values for them to perform hyperparameter optimization.
+want to try out different values for them to perform hyperparameter optimization.
 
 In our case, we need to define the following hyperparameters:
 
@@ -179,11 +177,11 @@ In addition to the included PyTorch cost functions you can create your own custo
 
 It can be called just like the out of the box implementation above.
 
-.. code-block::Python
+.. code-block:: Python
 
     loss = myCrossEntropyLoss(model_prediction, true_value)
 
-A more in depth explanation of PyTorch cost functions is outside the scope of the blitz but you can learn more
+A more in depth explanation of PyTorch cost functions is outside the scope of the quickstart but you can learn more
 about the different common cost functions for deep learning in the PyTorch `documentation <https://pytorch.org/docs/stable/nn.html#loss-functions>`_.
 
 Using Train/Validation/Test Split to Optimize Hyperparameters

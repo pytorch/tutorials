@@ -60,7 +60,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # compute the function in the *forward* direction, and also how to compute
 # it's derivative during the *backward propagation* step. A reference to
 # the backward propagation function is stored in ``grad_fn`` property of a
-# tensor. You can find more information of ``Function`` `in
+# tensor. You can find more information of ``Function`` `in the
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
@@ -89,7 +89,7 @@ print(b.grad)
 # .. note::
 #   - We can only obtain the ``grad`` properties for the leaf
 #     nodes of the computational graph, which have ``requires_grad`` property
-#     set to ``True``. For all other nodes in our graph gradients will not be
+#     set to ``True``. All other nodes in our graph gradients will not be
 #     available.
 #   - We can only perform gradient calculations using
 #     ``backward`` once on a given graph, for performance reasons. If we need
@@ -108,7 +108,7 @@ print(b.grad)
 # trained the model and just want to apply it to some input data, i.e. we
 # only want to do *forward* computations through the network. We can stop
 # tracking computations by surrounding our computation code with
-# ``with torch.no_grad()`` block:
+# ``torch.no_grad()`` block:
 #
 
 z = torch.matmul(x, w)+b
@@ -129,7 +129,7 @@ z_det = z.detach()
 print(z_det.requires_grad)
 
 ######################################################################
-# There are several reasons you might want to disable gradient tracking:
+# There are reasons you might want to disable gradient tracking:
 #   - To mark some parameters in your neural network at **frozen parameters**. This is
 #     a very common scenario for
 #     `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
@@ -186,14 +186,14 @@ for i in range(15):
 
 ######################################################################
 # As you can see, we have obtained the values close to the optimal point
-# :math:`(3,-2)`. `Training a neural network <optimization_tutorial.html>`_ is in fact a very similar
+# :math:`(3,-2)`. Training a neural network is in fact a very similar
 # process, we will need to do a number of iterations to minimize the value
-# of **loss function**.
+# of the **loss function**.
 
 ######################################################################
 # More on Computational Graphs
 # ----------------------------
-# Conceptually, autograd keeps a record of data (tensors) & all executed
+# Conceptually, autograd keeps a record of data (tensors) and all executed
 # operations (along with the resulting new tensors) in a directed acyclic
 # graph (DAG) consisting of
 # `Function <https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function>`__
@@ -203,14 +203,14 @@ for i in range(15):
 #
 # In a forward pass, autograd does two things simultaneously:
 #
-# - run the requested operation to compute a resulting tensor, and
+# - run the requested operation to compute a resulting tensor
 # - maintain the operation’s *gradient function* in the DAG.
 #
 # The backward pass kicks off when ``.backward()`` is called on the DAG
 # root. ``autograd`` then:
 #
 # - computes the gradients from each ``.grad_fn``,
-# - accumulates them in the respective tensor’s ``.grad`` attribute, and
+# - accumulates them in the respective tensor’s ``.grad`` attribute
 # - using the chain rule, propagates all the way to the leaf tensors.
 #
 # .. note::
