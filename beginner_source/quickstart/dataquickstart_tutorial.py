@@ -135,7 +135,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 #################################################################
-# Init
+# __init__
 # -----------------
 #
 # The init function is used for all the first time operations when our Dataset is loaded. In this case we use it to load our annotation labels to memory and then keep track of the directory of our image file. Note that different types of data can take different init inputs. You are not limited to just an annotations file, directory path and transforms, but for images this is a standard practice.
