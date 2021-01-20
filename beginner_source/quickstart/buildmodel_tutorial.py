@@ -133,7 +133,7 @@ print(flat_image.size())
 # ``torch.nn.Linear(in_features: int, out_features: int, bias: bool = True)``
 #
 
-layer1 = nn.Linear(28*28,512)
+layer1 = nn.Linear(in_features=28*28, out_features=512)
 hidden1 = layer1(flat_image)
 print(hidden1.size())
 
