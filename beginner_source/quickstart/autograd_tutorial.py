@@ -89,7 +89,7 @@ print(b.grad)
 # .. note::
 #   - We can only obtain the ``grad`` properties for the leaf
 #     nodes of the computational graph, which have ``requires_grad`` property
-#     set to ``True``. All other nodes in our graph gradients will not be
+#     set to ``True``. For all other nodes in our graph, gradients will not be
 #     available.
 #   - We can only perform gradient calculations using
 #     ``backward`` once on a given graph, for performance reasons. If we need
