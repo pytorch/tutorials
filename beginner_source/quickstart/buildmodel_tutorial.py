@@ -93,7 +93,7 @@ input = torch.rand(5, 28, 28)
 model(input)
 
 ##############################################
-# The Model Module Layers
+# Model Layers
 # -------------------------
 #
 # Lets break down each layer in the FashionMNIST model. To illustrate it, we 
