@@ -73,7 +73,7 @@ training_data = datasets.FashionMNIST(
 # Here we define two transformations:
 #
 # * ``transform`` is the transformation we apply to features, in our case - to images. The dataset contains images in PIL format so we need to convert them to tensors using the ``ToTensor()`` transform.
-# * ``target_transform`` defines a transformation that is applied to labels. In our case label is a class number from 0 to 9, and we need to convert it to one-hot encoding.
+# * ``target_transform`` defines a transformation that is applied to labels in the dataset. Here, the  label is a class number from 0 to 9, and we need to convert it to one-hot encoding.
 
 #################################################
 # ToTensor()
