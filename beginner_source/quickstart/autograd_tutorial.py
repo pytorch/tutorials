@@ -138,57 +138,6 @@ print(z_det.requires_grad)
 
 
 ######################################################################
-# Example of Gradient Descent
-# ---------------------------
-#
-# Let's use the AutoGrad functionality to minimize a simple function of
-# two variables :math:`f(x_1,x_2)=(x_1-3)^2+(x_2+2)^2`. We will use the
-# ``x`` tensor to represent the coordinates of a point. To do the gradient
-# descent, we start with some initial value :math:`x^{(0)}=(0,0)`, and
-# compute each consecutive step using:
-#
-# .. math::
-#
-#
-#    x^{(n+1)} = x^{(n)} - \eta\nabla f
-#
-# Here :math:`\eta` is so-called **learning rate** (we will call it ``lr``
-# in our code), and
-# :math:`\nabla f = (\frac{\partial f}{\partial x_1},\frac{\partial f}{\partial x_2})`
-# is the gradient of :math:`f`.
-#
-# We will start by defining the initial value of ``x`` and the function
-# ``f``:
-#
-
-x = torch.zeros(2, requires_grad=True)
-
-def f(x):
-    return (x-torch.tensor([3, -2])).pow(2).sum()
-
-lr = 0.1
-
-
-######################################################################
-# For the gradient descent, let's do 15 iterations. On each iteration, we
-# will update the coordinate tensor ``x`` and print its coordinates to
-# make sure that we are approaching the minimum:
-#
-
-for i in range(15):
-    y = f(x)
-    y.backward()
-    gr = x.grad
-    x.data.add_(-lr*gr)
-    x.grad.zero_()
-    print("Step {}: x[0]={}, x[1]={}".format(i, x[0], x[1]))
-
-
-######################################################################
-# As you can see, we have obtained the values close to the optimal point
-# :math:`(3,-2)`. Training a neural network is in fact a very similar
-# process, we will need to do a number of iterations to minimize the value
-# of the **loss function**.
 
 ######################################################################
 # More on Computational Graphs
@@ -287,4 +236,3 @@ print("\nCall after zeroing gradients\n", inp.grad)
 ######################################################################
 # Next learn more about how the `optimization loop works with this example <optimization_tutorial.html>`_.
 #
-
