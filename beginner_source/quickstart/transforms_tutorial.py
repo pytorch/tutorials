@@ -94,7 +94,7 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
     10, dtype=torch.float).scatter_(dim=0, index=torch.tensor(y), value=1))
 
 ###############################################
-# Check out the other `TorchVision Transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
+# Check out more `torchvision transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_
 #
 
 #####################################################
