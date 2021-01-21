@@ -8,7 +8,7 @@
 `Optimization <optimization_tutorial.html>`_ >
 **Save & Load Model**
 
-Save, Load and Use the Model
+Save and Load the Model
 ============================
 
 In this section we will look at how to presist model state with saving, loading and running model predictions.
