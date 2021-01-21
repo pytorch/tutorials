@@ -175,16 +175,6 @@ It can be called just like the out of the box implementation above.
 A more in depth explanation of PyTorch cost functions is outside the scope of the quickstart but you can learn more
 about the different common cost functions for deep learning in the PyTorch `documentation <https://pytorch.org/docs/stable/nn.html#loss-functions>`_.
 
-Using Train/Validation/Test Split to Optimize Hyperparameters
--------------------------------------------------------------
-
-In our example, we have split the data between train and test datasets. However, as we mentioned above, different hyperparameters can yield different model performance. Thus, it makes sense to use a part of the dataset for **hyperparameter optimization**. In this case, we split the dataset into three parts:
-
- * Training data
- * Validation data, which is used inside optimization loop to determine the accuracy of the current model and the optimal number of epochs. After a certain number of epochs, validation accuracy typically starts to decrease, which means that we have reached optimal performance for given hyperparameters.
- * Test data, which is used to measure the performance of the model for given hyperparameters. It is important that test data are independent from validation data, i.e. the same dataset cannot be used for both validation and test purposes.
-
-We will not consider hyperparameter optimization further in this quickstart. 
 
 Next learn how to `save our trained model <saveloadrun_tutorial.html>`_.
 
