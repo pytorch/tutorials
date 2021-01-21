@@ -93,9 +93,8 @@ In our example, we will use the built-in Cross Entropy Loss function:
 Optimizer
 ---------
 
-Optimization is the process of adjusting model paramters on each training step. **Optimization algorithm** defines 
-how this process is performed. In this example we use Stochastic Gradient Descent.
-All optimization logic is encapsulated in ``optimizer`` object. In our case, we will instantiate the stochastic gradient descent optimizer:
+Optimization is the process of adjusting model parameters to reduce model error in each training step. **Optimization algorithms** define how this process is performed (in this example we use Stochastic Gradient Descent).
+All optimization logic is encapsulated in  the``optimizer`` object. In this case, we use the SGD optimizer:
 
 .. code-block:: Python
 
