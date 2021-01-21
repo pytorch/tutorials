@@ -32,16 +32,13 @@ Defining schema and backend implementations
 
 The general principle behind the dispatcher is that it divides the
 implementation of an operator into multiple kernels, each of which implements
-functionality for a specific *dispatch key*; for example, CPU, CUDA, AutogradCPU
-or AutogradCUDA.  Starting from 1.8 release the dispatcher allows separate registration
-to Autograd backend dispatch keys, and introduced the notion of alias dispatch keys
-for `dispatch table precomputation <https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md#dispatch>`_.
-The dispatcher determines what the highest priority dispatch key is at the time
+functionality for a specific *dispatch key*, e.g. CPU, CUDA.  The dispatcher
+determines what the highest priority dispatch key is at the time
 you call an operator (this is done by looking at both the tensor arguments as
 well as some thread local state), and transfers control to the kernel for that
 dispatch key.  The end effect is that when you call an operator, we first
-check the device type of the passed in tensors and execute the corresponding Autograd
-kernel, and then we redispatch to the CPU or CUDA kernel for inference.
+execute the Autograd kernel, and then we redispatch to the backend kernel
+depending on the device types of the passed in tensors.
 
 Let's take a look at the various parts involved in making this
 happen.  First, we must define the schema for the operator in question.
@@ -117,8 +114,8 @@ At this point, we have an operator with both CPU and CUDA implementations.  How
 can we add autograd support to it?  As you might guess, we will register an
 autograd kernel (similar to what's described in the `custom autograd function <cpp_autograd>`_ tutorial)!
 However, there is a twist: unlike the CPU and CUDA kernels, the autograd kernel
-usually has *redispatch*: it does proper backward node setup in autograd kernel,
-then calls back into the dispatcher to get to the CPU/CUDA inference implementations.
+needs to *redispatch*: it needs to call back into the dispatcher to get to
+the inference kernels, e.g. CPU or CUDA implementations.
 
 Thus, before we write the autograd kernel, let's write a *dispatching function*
 which calls into the dispatcher to find the right kernel for your operator.
@@ -182,16 +179,16 @@ functions:
   :start-after: BEGIN TORCH_LIBRARY_IMPL Autograd
   :end-before: END TORCH_LIBRARY_IMPL Autograd
 
-Here in the example we register the kernel to ``Autograd``, which is an alias
-dispatch key that propagates the kernel to all Autograd backend keys, e.g. ``AutogradCPU``,
-``AutogradCUDA``, ``AutogradXLA``, ``AutogradOther`` etc.  The propagation happens
-in dispatch table precomputation when the process starts up.  Optionally you
-can register optimized autograd kernel for a backend (e.g. CPU) to its corresponding
-Autograd dispatch key (e.g. AutogradCPU) as well.  When registration to ``AutogradCPU``
-and ``Autograd`` both exist, the direct registration to ``AutogradCPU`` takes precedence.
-To better understand the precompute logic and precedence among all dispatch keys, you can use
-``PythonDispatcher`` provided in `tools/python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/tools/python_dispacher.py`_.
-For a certain operator, it shows how the computed dispatch table looks like after your registrations.
+
+.. note::
+
+    In this example we register the kernel to ``Autograd``, which installs it as the
+    autograd kernel for all backends. You can also register optimized kernels for specific
+    backends by using the corresponding backend-specific dispatch key - for example,
+    ``AutogradCPU`` or ``AutogradCUDA``. To explore these and other dispatch key
+    options in more detail, check out the ``PythonDispatcher`` tool provided in
+    `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py>`_.
+
 
 Going beyond autograd
 ---------------------
