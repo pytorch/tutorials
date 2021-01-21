@@ -94,9 +94,7 @@ Optimizer
 ---------
 
 Optimization is the process of adjusting model paramters on each training step. **Optimization algorithm** defines 
-how this process is performed. The standard method for optimization is called Stochastic Gradient Descent. 
-To learn more check out this awesome video by `3blue1brown <https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi>`_.
-
+how this process is performed. In this example we use Stochastic Gradient Descent.
 All optimization logic is encapsulated in ``optimizer`` object. In our case, we will instantiate the stochastic gradient descent optimizer:
 
 .. code-block:: Python
