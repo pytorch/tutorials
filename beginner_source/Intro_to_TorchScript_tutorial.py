@@ -60,8 +60,7 @@ class MyCell(torch.nn.Module):
         return new_h, new_h
 
 my_cell = MyCell()
-x = torch.rand(3, 4)
-h = torch.rand(3, 4)
+x, h = torch.rand(3, 4), torch.rand(3, 4)
 print(my_cell(x, h))
 
 
@@ -94,6 +93,7 @@ class MyCell(torch.nn.Module):
         return new_h, new_h
 
 my_cell = MyCell()
+x, h = torch.rand(3, 4), torch.rand(3, 4)
 print(my_cell)
 print(my_cell(x, h))
 
@@ -142,6 +142,7 @@ class MyCell(torch.nn.Module):
         return new_h, new_h
 
 my_cell = MyCell()
+x, h = torch.rand(3, 4), torch.rand(3, 4)
 print(my_cell)
 print(my_cell(x, h))
 
@@ -273,6 +274,7 @@ class MyCell(torch.nn.Module):
         return new_h, new_h
 
 my_cell = MyCell(MyDecisionGate())
+x, h = torch.rand(3, 4), torch.rand(3, 4)
 traced_cell = torch.jit.trace(my_cell, (x, h))
 print(traced_cell.code)
 
