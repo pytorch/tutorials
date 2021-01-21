@@ -16,6 +16,7 @@ In this section we will look at how to presist model state with saving, loading 
 
 import torch
 import torch.onnx as onnx
+import torchvision.models as models
 
 #######################################################################
 # Pre-trained Models
