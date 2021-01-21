@@ -101,9 +101,7 @@ All optimization logic is encapsulated in ``optimizer`` object. In our case, we 
 
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
-In addition to SGD there are many different optimizers and variations of this method in PyTorch such
-as ADAM and RMSProp, that work better for different kinds of models. They are outside the scope
-of this quickstart, but you can check out the full list of optimizers `here <https://pytorch.org/docs/stable/optim.html>`_.
+In addition to SGD there are many `different optimizers <https://pytorch.org/docs/stable/optim.html>`_ available in PyTorch such as ADAM and RMSProp, that work better for different kinds of models.
 
 Inside the training loop, optimization happens in three steps:
 
