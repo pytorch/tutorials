@@ -72,7 +72,7 @@ with torch.no_grad():
 #######################################################################
 # Saving and Loading Model Weights
 # --------------------------------
-# PyTorch stores the learned parameters in the model's internal
+# PyTorch models store the learned parameters in an internal
 # state dictionary, called ``state_dict``. These can be persisted via the ``torch.save``
 # method:
 
