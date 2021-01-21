@@ -18,57 +18,6 @@ import torch
 import torch.onnx as onnx
 import torchvision.models as models
 
-#######################################################################
-# Pre-trained Models
-# ------------------
-# 
-# Many tasks, such as object classification in computer vision, rely on some pre-trained models. 
-# While you can find some pre-trained models for common tasks online, PyTorch already includes the most 
-# common model architectures. For example, to initialize a VGG-16 model for image classification, 
-# we can use the following code:
-
-import torchvision.models as models
-model = models.vgg16(pretrained=True)
-
-#############################
-# To use this network on the input batch of images ``imgs``, we can just call it as an ordinary function:
-#
-# .. code-block:: Python
-#
-#    res = model(imgs)
-#
-# Let us see how a picture of a cat can be classified using this VGG-16 model. Once we load a 
-# picture from the internet, we need to apply a series of transformations to it, to turn it into a 
-# tensor of the appropriate size:
-#
-# * Resize image to 224x224 pixels
-# * Convert it to tensor
-# * Apply normalization with a given mean and standard deviation  
-#
-# Also, we need to turn a single tensor into a batch by adding one more dimension with ``unsqueeze()`` call.
-# After doing the inference, we obtain a tensor of probabilities for each of the classes, and we get the index of the 
-# most probable class by calling ``.argmax()``. 
-
-import matplotlib.pyplot as plt
-from PIL import Image
-import requests
-import torchvision.transforms as T
-
-url = "https://upload.wikimedia.org/wikipedia/commons/6/66/An_up-close_picture_of_a_curious_male_domestic_shorthair_tabby_cat.jpg"
-im = Image.open(requests.get(url, stream=True).raw)
-plt.imshow(im)
-
-transform = T.Compose([T.Resize(224), T.ToTensor(), 
-                       T.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
-input_image = transform(im).unsqueeze(0)
-with torch.no_grad():
-    res = model(input_image).argmax().item()
-    print(res)
-
-######################
-# The result obtained is a number of imagenet predicted class, in this case, *tiger cat*.
-#
-# .. note:: When running model inference, it is recommended to wrap the code into ``torch.no_grad()``, because  `automatic differentiation  <autograd_tutorial.html>`_ is unnecessary.
 
 #######################################################################
 # Saving and Loading Model Weights
