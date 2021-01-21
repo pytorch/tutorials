@@ -23,7 +23,7 @@ Different hyperparameter values can impact model training and convergence rates 
 In our case, we need to define the following hyperparameters:
 
  - **Number of Epochs**- the number times to iterate over the dataset
- - **Batch Size** - the number of samples in the dataset to take for each update cycle
+ - **Batch Size** - the number of data samples seen by the model in each epoch
  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 
 .. code-block:: Python
