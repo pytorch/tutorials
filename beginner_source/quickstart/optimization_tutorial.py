@@ -18,9 +18,7 @@ Hyperparameters
 -----------------
 
 Hyperparameters are adjustable parameters that let you control the model optimization process. 
-Unlike model parameters that we will optimize during training, hyperparameters are configured for the whole 
-training process. However, you may achieve different model performance with different hyperparameters, so you may
-want to try out different values for them to perform hyperparameter optimization.
+Different hyperparameter values can impact model training and convergence rates (`read more <https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html>`__ about hyperparameter tuning)
 
 In our case, we need to define the following hyperparameters:
 
