@@ -76,6 +76,7 @@ with torch.no_grad():
 # state dictionary, called ``state_dict``. These can be persisted via the ``torch.save``
 # method:
 
+model = models.vgg16(pretrained=True)
 torch.save(model.state_dict(), 'model_weights.pth')
 
 ##########################
