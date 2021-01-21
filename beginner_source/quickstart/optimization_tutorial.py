@@ -109,7 +109,7 @@ Inside the training loop, optimization happens in three steps:
 
  * Call ``optimizer.zero_grad()`` function to zero the gradients. As you have seen in the previous section on automatic differentiation, gradients by default add up, so we need to explicitly zero them on each step.
  * Calculate the loss using loss function. This builds a computation graph, which PyTorch uses to automatically update parameters with respect to our model's loss during training. This is done with one call to ``loss.backwards()``. 
- * Once we have our gradients, we call ``optimizer.step()`` to propagate the gradients from the backwards command to update all the parameters in our model.  
+ * Once we have our gradients, we call ``optimizer.step()`` to adjust the parameters by the gradients collected in the backward pass.  
 
 .. figure:: https://discuss.pytorch.org/uploads/default/original/1X/c7e0a44b7bcebfb41315b56f8418ce37f0adbfeb.png
    :alt: tensor graph
