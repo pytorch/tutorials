@@ -45,7 +45,7 @@ Optimization Loop
    :alt:
 
 Once we set our hyperparameters, we can then train and optimize our model with an optimization loop. Each 
-iteration of the optimization loop is called an **epoch**. Each epoch is comprized of two main parts:
+iteration of the optimization loop is called an **epoch**. Each epoch consists of two main parts:
 
   1. **The Train Loop** - main loop that iterates over all dataset and performs training
   2. **The Validation/Test Loop** - goes through the validation / test dataset to evaluate model performance on the test data. 
