@@ -36,7 +36,7 @@ We also need to create the model class instance (defined in the previous section
 
 .. code-block:: Python
 
-    model = NeuralNework()
+    model = NeuralNetwork()
 
 Optimization Loop
 -----------------
