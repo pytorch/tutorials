@@ -104,7 +104,7 @@ torch.save(model, 'model.pth')
 model = torch.load('model.pth')
 
 ########################
-# .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, this it relies on the actual class definition to be available when loading the model.
+# .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.
 
 #######################################################################
 # Exporting Model to ONNX
