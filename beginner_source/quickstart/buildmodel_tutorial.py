@@ -168,6 +168,6 @@ print(list(model.named_parameters())[0:2])
 
 ################################################
 #
-# `< prev <transforms_tutorial.html>`_ |
-# `next > <autograd_tutorial.html>`_
+# `< Previous <transforms_tutorial.html>`_ |
+# `Next > <autograd_tutorial.html>`_
 # 

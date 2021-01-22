@@ -234,6 +234,6 @@ print("\nCall after zeroing gradients\n", inp.grad)
 
 
 ######################################################################
-# `< prev <buildmodel_tutorial.html>`_ |
-# `next > <optimization_tutorial.html>`_
+# `< Previous <buildmodel_tutorial.html>`_ |
+# `Next > <optimization_tutorial.html>`_
 #

@@ -259,6 +259,6 @@ print(z.to("cpu", torch.double))
 # computational time, because we need to copy and transform the data when
 # moving it from GPU anyway.
 #
-# `< prev <quickstart_tutorial.html>`_ |
-# `next > <dataquickstart_tutorial.html>`_
+# `< Previous <quickstart_tutorial.html>`_ |
+# `Next > <dataquickstart_tutorial.html>`_
 # 

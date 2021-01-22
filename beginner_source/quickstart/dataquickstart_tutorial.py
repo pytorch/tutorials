@@ -207,6 +207,6 @@ dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
 #################################################################
 # With this we have all we need to know to load and process data of any kind in PyTorch to train deep learning models.
 # 
-# `< prev <tensor_tutorial.html>`_ |
-# `next > <buildmodel_tutorial.html>`_
+# `< Previous <tensor_tutorial.html>`_ |
+# `Next > <transforms_tutorial.html>`_
 #
