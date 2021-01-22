@@ -30,6 +30,18 @@ and how to apply them with PyTorch. The topics are introduced in a sequenced ord
 
 .. include:: /beginner_source/quickstart/qs_toc.txt
 
+.. toctree::
+   :hidden:
+
+   /beginner/quickstart/tensor_tutorial
+   /beginner/quickstart/dataquickstart_tutorial
+   /beginner/quickstart/transforms_tutorial
+   /beginner/quickstart/buildmodel_tutorial
+   /beginner/quickstart/autograd_tutorial
+   /beginner/quickstart/optimization_tutorial
+   /beginner/quickstart/saveloadrun_tutorial
+
+
 Running the Tutorial Code
 ------------------
 The navigation above allows you to run the Jupyter Notebook on the cloud, download the Jupyter Notebook 
