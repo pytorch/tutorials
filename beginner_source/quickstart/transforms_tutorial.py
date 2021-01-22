@@ -160,4 +160,5 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 #
 #   class_names = image_datasets['train'].classes
 #
-# Next learn how to `build the model <buildmodel_tutorial.html>`_
+# `< prev <dataquickstart_tutorial.html>`_ |
+# `next > <buildmodel_tutorial.html>`_

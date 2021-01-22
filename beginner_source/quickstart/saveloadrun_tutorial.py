@@ -77,3 +77,6 @@ onnx.export(model, input_image, 'model.onnx')
 # now `return to the first page <quickstart_tutorial.html>`_ and go over the sample code 
 # again and we hope you have a better understanding of how to do deep learning with PyTorch. 
 # Good luck on your deep learning journey!
+#
+#
+# `< prev <optimization_tutorial.html>`_

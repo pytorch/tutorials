@@ -175,6 +175,7 @@ A more in depth explanation of PyTorch cost functions is outside the scope of th
 about the different common cost functions for deep learning in the PyTorch `documentation <https://pytorch.org/docs/stable/nn.html#loss-functions>`_.
 
 
-Next learn how to `save our trained model <saveloadrun_tutorial.html>`_.
+`< prev <autograd_tutorial.html>`_ |
+`next > <saveloadrun_tutorial.html>`_
 
 """

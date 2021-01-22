@@ -168,5 +168,6 @@ print(list(model.named_parameters())[0:2])
 
 ################################################
 #
-# Next learn more about `how to use automatic differentiation to train a neural network model <autograd_tutorial.html>`_.
-#
+# `< prev <transforms_tutorial.html>`_ |
+# `next > <autograd_tutorial.html>`_
+# 

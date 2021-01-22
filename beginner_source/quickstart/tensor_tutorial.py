@@ -259,5 +259,6 @@ print(z.to("cpu", torch.double))
 # computational time, because we need to copy and transform the data when
 # moving it from GPU anyway.
 #
-# Next learn how to load built in and custom `datasets with dataloaders <dataquickstart_tutorial.html>`_
-#
+# `< prev <quickstart_tutorial.html>`_ |
+# `next > <dataquickstart_tutorial.html>`_
+# 

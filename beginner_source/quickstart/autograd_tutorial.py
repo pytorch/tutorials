@@ -234,5 +234,6 @@ print("\nCall after zeroing gradients\n", inp.grad)
 
 
 ######################################################################
-# Next learn more about how the `optimization loop works with this example <optimization_tutorial.html>`_.
+# `< prev <buildmodel_tutorial.html>`_ |
+# `next > <optimization_tutorial.html>`_
 #
