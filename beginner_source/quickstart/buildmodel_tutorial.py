@@ -166,8 +166,3 @@ print('Output size =',out.size())
 
 print(list(model.named_parameters())[0:2])
 
-################################################
-#
-# `< Previous <transforms_tutorial.html>`_ |
-# `Next > <autograd_tutorial.html>`_
-# 

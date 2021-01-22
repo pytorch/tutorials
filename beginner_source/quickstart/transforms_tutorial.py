@@ -159,8 +159,4 @@ target_transform = transforms.Lambda(lambda y: torch.zeros(
 #   dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 #
 #   class_names = image_datasets['train'].classes
-
-#########################################
-# `< Previous <dataquickstart_tutorial.html>`_ |
-# `Next > <buildmodel_tutorial.html>`_
 # 

@@ -258,7 +258,4 @@ print(z.to("cpu", torch.double))
 # also change the ``dtype``. This does not result in additional
 # computational time, because we need to copy and transform the data when
 # moving it from GPU anyway.
-#
-# `< Previous <quickstart_tutorial.html>`_ |
-# `Next > <dataquickstart_tutorial.html>`_
 # 

@@ -79,5 +79,3 @@ onnx.export(model, input_image, 'model.onnx')
 # Good luck on your deep learning journey!
 #
 #
-# `< Previous <optimization_tutorial.html>`_
-# 

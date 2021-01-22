@@ -231,9 +231,3 @@ print("\nCall after zeroing gradients\n", inp.grad)
 #           gradients in case of a scalar-valued function, such as loss during
 #           neural network training.
 #
-
-
-######################################################################
-# `< Previous <buildmodel_tutorial.html>`_ |
-# `Next > <optimization_tutorial.html>`_
-#
