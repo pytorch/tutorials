@@ -11,7 +11,7 @@
 Save and Load the Model
 ============================
 
-In this section we will look at how to presist model state with saving, loading and running model predictions.
+In this section we will look at how to persist model state with saving, loading and running model predictions.
 """
 
 import torch
@@ -64,8 +64,9 @@ model = torch.load('model.pth')
 # PyTorch execution graph, however, the export process must
 # traverse the execution graph to produce a persisted ONNX model. For this reason, a
 # test variable of the appropriate size should be passed in to the
-# export routine:
+# export routine (in our case, we will create a dummy zero tensor of the correct size):
 
+input_image = torch.zeros((1,3,224,224))
 onnx.export(model, input_image, 'model.onnx')
 
 ###########################
