@@ -250,4 +250,4 @@ with torch.no_grad():
 
 ##################################################################
 #
-# *Authors: Seth Juarez, Cassie Breviu, Dmitry Soshnikov, Ari Bornstein*
+# *Authors: `Seth Juarez <https://github.com/sethjuarez/>`_, `Cassie Breviu <https://github.com/cassieview/>`_, `Dmitry Soshnikov <https://soshnikov.com/>`_, `Ari Bornstein <https://github.com/aribornstein/>`_*
