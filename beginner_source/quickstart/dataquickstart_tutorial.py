@@ -39,11 +39,9 @@ Datasets & Dataloaders
 # `Audio Datasets <https://pytorch.org/audio/stable/datasets.html>`_
 #
 
-#################################################################
-# Iterating through a Dataset
-# -----------------
-# 
-# Once we have a Dataset ``ds``, we can index it manually like a list: ``ds[index]``. 
+############################################################
+# Loading a Dataset
+# -------------------
 # 
 # Here is an example of how to load the `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ dataset from torch vision.
 # `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples. 
@@ -53,7 +51,7 @@ Datasets & Dataloaders
 #  - ``root`` is the path where the train/test data is stored. 
 #  - ``train`` includes the training dataset. 
 #  - ``download=True`` downloads the data from the internet if it's not available at root.
-
+#
 
 import torch 
 from torch.utils.data import Dataset
@@ -61,7 +59,20 @@ import torchvision.datasets as datasets
 import matplotlib.pyplot as plt
 import numpy as np
 
-clothing = datasets.FashionMNIST(root='data', train=True, download=True)
+clothing = torchvision.datasets.FashionMNIST(
+ 'data',                # specifies data directory to store data
+ train=True,            # specifies training or test dataset to use
+ transform=None,        # specifies transforms to apply to features (images)
+ target_transform=None, # specifies transforms to apply to labels
+ download=True)        # should the data be downloaded from the Internet
+
+
+#################################################################
+# Iterating and Visualizing the Dataset
+# -----------------
+# 
+# Once we have the ``clothing`` dataset, we can index it manually like a list: ``clothing[index]``. Then use ``matplotlib`` to visualize the dataset.
+
 labels_map = {0 : 'T-Shirt', 1 : 'Trouser', 2 : 'Pullover', 3 : 'Dress', 4 : 'Coat', 5 : 'Sandal', 6 : 'Shirt', 7 : 'Sneaker', 8 : 'Bag', 9 : 'Ankle Boot'}
 figure = plt.figure(figsize=(8,8))
 cols, rows = 3, 3
