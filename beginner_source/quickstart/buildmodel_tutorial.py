@@ -109,15 +109,12 @@ print(input_image.size())
 # nn.Flatten
 # -----------------------------------------------
 #
-# First we call nn.Flatten to reduce tensor dimensions to one.
-#
-# From the docs:
-# ``torch.nn.Flatten(start_dim: int = 1, end_dim: int = -1)``
+# First we call `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_  to reduce tensor dimensions to one.
 #
 # In our case, flatten keeps the minibatch dimension, but two image dimensions are 
 # reduced to one:
 
-flatten = nn.Flatten()
+flatten = nn.Flatten(start_dim=1, end_dim=2)
 flat_image = flatten(input_image)
 print(flat_image.size())
 
