@@ -149,8 +149,11 @@ from torch.utils.data import DataLoader
 # __init__
 # -----------------
 #
-# The init function is used for all the first time operations when our Dataset is loaded. In this case we use it to load our annotation labels to memory and then keep track of the directory of our image file. Note that different types of data can take different init inputs. You are not limited to just an annotations file, directory path and transforms, but for images this is a standard practice.
-# A sample csv annotations file may look as follows: ::
+# The __init__ function is run once when instantiating our Dataset object. Here, we use it to load 
+# the directory containing the images, and their labels (contained in a csv file). While creating the 
+# Dataset object, we can optionally pass it the transform that should be run on the images.
+#
+# The labels.csv file looks like: ::
 #
 #     tshirt1.jpg, 0
 #     tshirt2.jpg, 0
