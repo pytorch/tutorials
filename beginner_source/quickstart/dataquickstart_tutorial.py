@@ -2,7 +2,7 @@
 
 `Quickstart <quickstart_tutorial.html>`_ >
 `Tensors <tensor_tutorial.html>`_ > 
-**DataSets & DataLoaders** >
+**Datasets & DataLoaders** >
 `Transforms <transforms_tutorial.html>`_ >
 `Build Model <buildmodel_tutorial.html>`_ >
 `Autograd <autograd_tutorial.html>`_ >
