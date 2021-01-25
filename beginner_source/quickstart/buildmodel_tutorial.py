@@ -2,7 +2,7 @@
 
 `Quickstart <quickstart_tutorial.html>`_ >
 `Tensors <tensor_tutorial.html>`_ > 
-`DataSets & DataLoaders <dataquickstart_tutorial.html>`_ >
+`Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
 `Transforms <transforms_tutorial.html>`_ >
 **Build Model** >
 `Autograd <autograd_tutorial.html>`_ >
@@ -165,4 +165,3 @@ print('Output size =',out.size())
 #
 
 print(list(model.named_parameters())[0:2])
-
