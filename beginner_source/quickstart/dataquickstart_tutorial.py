@@ -59,7 +59,7 @@ import torchvision.datasets as datasets
 import matplotlib.pyplot as plt
 import numpy as np
 
-clothing = torchvision.datasets.FashionMNIST(
+clothing = datasets.FashionMNIST(
  'data',                # specifies data directory to store data
  train=True,            # specifies training or test dataset to use
  transform=None,        # specifies transforms to apply to features (images)
@@ -217,6 +217,28 @@ def __getitem__(self, idx):
 # The PyTorch Dataloader ``torch.utils.data.DataLoader`` is an iterator that handles all of this complexity for us, enabling us to load a dataset and focus on training our model.
 
 dataloader = DataLoader(clothing, batch_size=4, shuffle=True, num_workers=0)
+
+###########################
+# Iterate through the Dataset
+# --------------------------
+#
+# We have loaded that dataset into the ``dataloader`` and can iterate through the dataset as needed.
+# Below is a simple example of how to iterate and display an image or return a label count:
+
+
+# Display image and label.
+for train_features, train_labels in dataloader.dataset:
+    print(train_labels)
+    plt.imshow(train_features, cmap='gray')
+    plt.show()
+    break;
+
+# Count the number of occurances for label number 9 which is for the 'Bag'
+count = 0
+for train_features, train_labels in dataloader.dataset:
+    if(train_labels==9):
+        count+=1
+print(count)
 
 #################################################################
 # With this we have all we need to know to load and process data of any kind in PyTorch to train deep learning models.
