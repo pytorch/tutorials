@@ -1,5 +1,5 @@
 """
-`Quickstart <quickstart_tutorial.html>`_ >
+`Learn the Basics <quickstart_tutorial.html>`_ >
 `Tensors <tensor_tutorial.html>`_ > 
 `Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
 `Transforms <transforms_tutorial.html>`_ >

@@ -1,5 +1,5 @@
 """
-`Quickstart <quickstart_tutorial.html>`_ >
+`Learn the Basics <quickstart_tutorial.html>`_ >
 `Tensors <tensor_tutorial.html>`_ > 
 `Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
 `Transforms <transforms_tutorial.html>`_ >
@@ -114,7 +114,7 @@ Inside the training loop, optimization happens in three steps:
 Putting it all together
 -----------------------
 
-Below is the complete code for the optimization loop. If you want a complete runnable example of training the model, refer to the `main quickstart page <quickstart_tutorial.html>`_. The code below is commented to explain what goes on, but essentially it is put together from concepts that we have described above.  
+Below is the complete code for the optimization loop. If you want a complete runnable example of training the model, refer to the `main page <quickstart_tutorial.html>`_. The code below is commented to explain what goes on, but essentially it is put together from concepts that we have described above.  
 
 .. code-block:: Python
 
@@ -171,7 +171,7 @@ It can be called just like the out of the box implementation above.
 
     loss = myCrossEntropyLoss(model_prediction, true_value)
 
-A more in depth explanation of PyTorch cost functions is outside the scope of the quickstart but you can learn more
+A more in depth explanation of PyTorch cost functions is outside the scope of the tutorial but you can learn more
 about the different common cost functions for deep learning in the PyTorch `documentation <https://pytorch.org/docs/stable/nn.html#loss-functions>`_.
 
 """

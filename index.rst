@@ -16,7 +16,7 @@ Welcome to PyTorch Tutorials
 
 .. customcalloutitem::
    :description: In this quickstart we will cover the basics of machine learning and how to apply them with PyTorch. You will be introduced to the complete ML workflow using PyTorch with links to learn more at each step!
-   :header: PyTorch Quickstart
+   :header: Learn the Basics
    :button_link:  beginner/quickstart/quickstart_tutorial.html
    :button_text: Get started with PyTorch
 
@@ -64,7 +64,7 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
-   :header: PyTorch Quickstart
+   :header: Learn the Basics
    :card_description: Get started with a step-by-step guide to building neural networks with PyTorch.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: beginner/quickstart/quickstart_tutorial.html

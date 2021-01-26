@@ -1,5 +1,5 @@
 """
-**Quickstart** >
+**Learn the Basics** >
 `Tensors <tensor_tutorial.html>`_ > 
 `Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
 `Transforms <transforms_tutorial.html>`_ >
@@ -8,11 +8,11 @@
 `Optimization <optimization_tutorial.html>`_ >
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-PyTorch Quickstart
+Learn the Basics
 ===================
 
 The basic machine learning concepts in any framework should include: Working with data, 
-Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch Quickstart we will
+Creating models, Optimizing Parameters, Saving and Loading Models. In this PyTorch tutorial we will
 go through these concepts and how to apply them with PyTorch. The dataset we will be using is the 
 FashionMNIST clothing images dataset that demonstrates these core steps applied to create ML Models. 
 

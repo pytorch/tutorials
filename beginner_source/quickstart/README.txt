@@ -1,4 +1,4 @@
-PyTorch Quickstart
+Learn the Basics
 ----------------------------------
 
 1. data_tutorial.py
