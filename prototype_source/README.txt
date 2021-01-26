@@ -33,6 +33,6 @@ Prototype Tutorials
 	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html	   
 
 9. fx_graph_mode_quant_guide.py
-	   User Guide on using FX Graph Mode Quantization
+	   FX Graph Mode Quantization User Guide
 	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html	   
 

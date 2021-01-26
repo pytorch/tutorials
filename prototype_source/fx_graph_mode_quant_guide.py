@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-(prototype) User Guide on using FX Graph Mode Quantization
+(prototype) FX Graph Mode Quantization User Guide
 ===========================================================
 
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_
