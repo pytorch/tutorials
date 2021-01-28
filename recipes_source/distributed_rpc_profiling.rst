@@ -239,10 +239,10 @@ call to the following:
     # Initialize RPC framework.
     num_worker_threads = 1
     rpc.init_rpc(
-        name=worker_name,
-        rank=rank,
-        world_size=world_size,
-        rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads)
+      name=worker_name,
+      rank=rank,
+      world_size=world_size,
+      rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads)
     )
 
 This will initialize the [TensorPipe RPC backend](https://pytorch.org/docs/stable/rpc.html#tensorpipe-backend) with only one thread for processing RPC requests. Next, add
