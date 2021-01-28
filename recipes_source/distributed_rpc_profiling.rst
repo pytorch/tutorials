@@ -11,7 +11,7 @@ In this recipe, you will learn:
 Requirements
 ------------
 
--  PyTorch 1.6
+-  PyTorch 1.6+
 
 The instructions for installing PyTorch are
 available at `pytorch.org`_.
@@ -120,7 +120,7 @@ happening under the hood. Let's add to the above ``worker`` function:
 
             print(prof.key_averages().table())
 
-The aformentioned code creates 2 RPCs, specifying ``torch.add`` and ``torch.mul``, respectively, 
+The aforementioned code creates 2 RPCs, specifying ``torch.add`` and ``torch.mul``, respectively, 
 to be run with two random input tensors on worker 1. Since we use the ``rpc_async`` API, 
 we are returned a ``torch.futures.Future`` object, which must be awaited for the result
 of the computation. Note that this wait must take place within the scope created by
@@ -149,7 +149,7 @@ from ``worker0``. In particular, the first 2 entries in the table show details (
 the operator name, originating worker, and destination worker) about each RPC call made
 and the ``CPU total`` column indicates the end-to-end latency of the RPC call. 
 
-We also have visibility into the actual operators invoked remotely on worker 1 due RPC.
+We also have visibility into the actual operators invoked remotely on worker 1 due to RPC.
 We can see operations that took place on ``worker1`` by checking the ``Node ID`` column. For 
 example, we can interpret the row with name ``rpc_async#aten::mul(worker0 -> worker1)#remote_op: mul``
 as a ``mul`` operation taking place on the remote node, as a result of the RPC sent to ``worker1``
@@ -251,13 +251,13 @@ the following function somewhere outside of the ``worker`` main function:
 ::
 
     def num_workers_udf_with_ops():
-        t = torch.randn((100, 100))
-        for i in range(10):
-            t.mul(t)
-            t.add(t)
-            t = t.relu()
-            t = t.sigmoid()
-        return t
+      t = torch.randn((100, 100))
+      for i in range(10):
+        t.mul(t)
+        t.add(t)
+        t = t.relu()
+        t = t.sigmoid()
+    return t
 
 This function is mainly intended to be a dummy CPU-intensive function for demonstration purposes. Next, we add the
 following RPC and profiling code to our main ``worker`` function:
@@ -265,12 +265,12 @@ following RPC and profiling code to our main ``worker`` function:
 ::
 
     with profiler.profile() as p:
-            futs = []
-            for i in range(4):
-                fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
-                futs.append(fut)
-            for f in futs:
-                f.wait()
+      futs = []
+      for i in range(4):
+        fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
+        futs.append(fut)
+      for f in futs:
+        f.wait()
 
     print(p.key_averages().table())
 
@@ -315,7 +315,7 @@ Taking a look at the trace visualization helps with this. Below is the trace whe
 .. image:: ../_static/img/oneworker.png
    :scale: 25 %
 
-Focusing in on the trace for ``node 1``, we can see that the RPCs are ran serially on the server.
+Focusing on the trace for ``node 1``, we can see that the RPCs are ran serially on the server.
 
 Next, the following is the trace where we set ``num_worker_threads=8``:
 
@@ -352,14 +352,14 @@ Putting it all together, we have the following code for this recipe:
       torch.add(t1, t2)
       torch.mul(t1, t2)
 
-    def num_workers_udf_with_ops():
-        t = torch.randn((100, 100))
-        for i in range(10):
-            t.mul(t)
-            t.add(t)
-            t = t.relu()
-            t = t.sigmoid()
-        return t
+    def num_workers_udf_with_ops():  
+      t = torch.randn((100, 100))
+      for i in range(10):
+          t.mul(t)
+          t.add(t)
+          t = t.relu()
+          t = t.sigmoid()
+      return t
 
     def worker(rank, world_size):
       os.environ["MASTER_ADDR"] = "localhost"
@@ -369,10 +369,10 @@ Putting it all together, we have the following code for this recipe:
       # Initialize RPC framework.
       num_worker_threads =8
       rpc.init_rpc(
-          name=worker_name,
-          rank=rank,
-          world_size=world_size,
-          rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads),
+        name=worker_name,
+        rank=rank,
+        world_size=world_size,
+        rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads),
       )
       logger.debug(f"{worker_name} successfully initialized RPC.")
 
@@ -381,21 +381,21 @@ Putting it all together, we have the following code for this recipe:
         dst_worker_name = f"worker{dst_worker_rank}"
         t1, t2 = random_tensor(), random_tensor()
         # Send and wait RPC completion under profiling scope.
-        with profiler.profile() as prof:
-            fut1 = rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))
-            fut2 = rpc.rpc_async(dst_worker_name, torch.mul, args=(t1, t2))
-            # RPCs must be awaited within profiling scope.
-            fut1.wait()
-            fut2.wait()
+        with profiler.profile() as prof:  
+          fut1 = rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))
+          fut2 = rpc.rpc_async(dst_worker_name, torch.mul, args=(t1, t2))
+          # RPCs must be awaited within profiling scope.
+          fut1.wait()
+          fut2.wait()
         print(prof.key_averages().table())
 
         with profiler.profile() as p:
-            futs = []
-            for i in range(4):
-                fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
-                futs.append(fut)
+          futs = []
+          for i in range(4):
+            fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
+            futs.append(fut)
             for f in futs:
-                f.wait()
+              f.wait()
 
         print(p.key_averages().table())
 
