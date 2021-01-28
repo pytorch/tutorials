@@ -19,3 +19,20 @@ Prototype Tutorials
 5. torchscript_freezing.py
 	   Model Freezing in TorchScript
 	   https://github.com/pytorch/tutorials/blob/master/prototype_source/torchscript_freezing.py
+
+6. vulkan_workflow.rst
+     Vulkan Backend User Workflow
+     https://pytorch.org/tutorials/intermediate/vulkan_workflow.html
+
+7. fx_graph_mode_ptq_static.py
+	   FX Graph Mode Post Training Static Quantization
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html
+
+8. fx_graph_mode_ptq_dynamic.py
+	   FX Graph Mode Post Training Dynamic Quantization
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html	   
+
+9. fx_graph_mode_quant_guide.py
+	   FX Graph Mode Quantization User Guide
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html	   
+

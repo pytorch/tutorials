@@ -117,6 +117,13 @@ Welcome to PyTorch Tutorials
    :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
 
+.. customcarditem::
+   :header: Speech Command Recognition
+   :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :tags: Audio
+
 .. Text
 
 .. customcarditem::
@@ -169,6 +176,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/cartpole.gif
    :link: intermediate/reinforcement_q_learning.html
    :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Train a Mario-playing RL Agent
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :image: _static/img/mario.gif
+   :link: intermediate/mario_rl_tutorial.html
+   :tags: Reinforcement-Learning
+
 
 .. Deploying PyTorch Models in Production
 
@@ -261,6 +276,13 @@ Welcome to PyTorch Tutorials
 .. Model Optimization
 
 .. customcarditem::
+   :header: Performance Profiling in PyTorch
+   :card_description: Learn how to use the PyTorch Profiler to benchmark your module's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: beginner/profiler.html
+   :tags: Model-Optimization,Best-Practice,Profiling
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
@@ -326,13 +348,6 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
-   :header: (advanced) PyTorch 1.0 Distributed Trainer with Amazon AWS
-   :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
-   :image: _static/img/thumbnails/cropped/advanced-PyTorch-1point0-Distributed-Trainer-with-Amazon-AWS.png
-   :link: beginner/aws_distributed_training_tutorial.html
-   :tags: Parallel-and-Distributed-Training
-
-.. customcarditem::
    :header: Writing Distributed Applications with PyTorch
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
@@ -366,7 +381,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
    :link: intermediate/rpc_async_execution.html
    :tags: Parallel-and-Distributed-Training
-   
+
 .. customcarditem::
    :header: Combining Distributed DataParallel with Distributed RPC Framework
    :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
@@ -467,6 +482,8 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
+   intermediate/speech_command_recognition_with_torchaudio
+
 
 .. toctree::
    :maxdepth: 2
@@ -489,6 +506,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/mario_rl_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -523,6 +541,7 @@ Additional Resources
    :hidden:
    :caption: Model Optimization
 
+   beginner/profiler
    beginner/hyperparameter_tuning_tutorial
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
@@ -541,7 +560,6 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/rpc_tutorial
-   beginner/aws_distributed_training_tutorial
    intermediate/rpc_param_server_tutorial
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
