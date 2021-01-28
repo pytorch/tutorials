@@ -235,6 +235,7 @@ the ``num_worker_threads`` parameter used during RPC initialization. First, we m
 call to the following:
 
 ::
+
     # Initialize RPC framework.
     num_worker_threads = 1
     rpc.init_rpc(
@@ -248,6 +249,7 @@ This will initialize the [TensorPipe RPC backend]() with only one thread for pro
 the following function somewhere outside of the ``worker`` main function:
 
 ::
+
 	def num_workers_udf_with_ops():
 	    t = torch.randn((100, 100))
 	    for i in range(10):
@@ -261,6 +263,7 @@ This function is mainly intended to be a dummy CPU-intensive function for demons
 following RPC and profiling code to our main ``worker`` function:
 
 ::
+
 	with profiler.profile() as p:
 	        futs = []
 	        for i in range(4):
@@ -279,6 +282,7 @@ following RPC and profiling code to our main ``worker`` function:
 Running the code should return the following profiling statistics (exact output subject to randomness):
 
 ::
+
 	-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
                                                    Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls       Node ID
 	-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
@@ -294,6 +298,7 @@ parameter we set earlier, by changing it to ``num_worker_threads = 8``. Running 
 the following profiling statistics (exact output subject to randomness):
 
 ::
+
 	-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
                                                    Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls       Node ID
 	-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
@@ -355,8 +360,6 @@ Putting it all together, we have the following code for this recipe:
 	        t = t.relu()
 	        t = t.sigmoid()
 	    return t
-
-	#torchscript_udf_with_ops = torch.jit.script(torchscript_udf_with_ops)
 
 	def worker(rank, world_size):
 	  os.environ["MASTER_ADDR"] = "localhost"
