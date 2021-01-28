@@ -344,7 +344,7 @@ plt.imshow(mfcc.t().numpy(), cmap='gray')
 # The datasets ``torchaudio`` currently supports are:
 #
 # -  **VCTK**: Speech data uttered by 109 native speakers of English with various accents
-#    (`Read more here <https://homepages.inf.ed.ac.uk/jyamagis/page3/page58/page58.html>`_).
+#    (`Read more here <https://datashare.ed.ac.uk/handle/10283/2950>`_).
 # -  **Yesno**: Sixty recordings of one individual saying yes or no in Hebrew; each
 #    recording is eight words long (`Read more here <https://www.openslr.org/1/>`_).
 # -  **Common Voice**: An open source, multi-language dataset of voices that anyone can use
