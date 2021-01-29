@@ -310,20 +310,6 @@ Welcome to PyTorch Tutorials
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
 
-.. customcarditem::
-   :header: (beta) Static Quantization with Eager Mode in PyTorch
-   :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training.
-   :image: _static/img/thumbnails/cropped/experimental-Static-Quantization-with-Eager-Mode-in-PyTorch.png
-   :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
-   :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training.
-   :image: _static/img/thumbnails/cropped/experimental-Quantized-Transfer-Learning-for-Computer-Vision-Tutorial.png
-   :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video,Quantization,Model-Optimization
-
 .. Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -547,7 +533,6 @@ Additional Resources
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
-   advanced/static_quantization_tutorial
    intermediate/quantized_transfer_learning_tutorial
 
 .. toctree::

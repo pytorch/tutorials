@@ -2,8 +2,8 @@ Extending dispatcher for a new backend in C++
 =============================================
 
 In this tutorial we will walk through all necessary steps to extend the dispatcher to
-add a new backend living outside ``pytorch/pytorch`` repo and maintain it to keep in
-sync with native PyTorch backends.  Here we'll assume that you're familiar with how
+add a new device living outside ``pytorch/pytorch`` repo and maintain it to keep in
+sync with native PyTorch devices.  Here we'll assume that you're familiar with how
 to `register a dispatched operator in C++ <dispatcher>`_ and how to write a
 `custom autograd function <cpp_autograd>`_.
 
@@ -14,53 +14,23 @@ to `register a dispatched operator in C++ <dispatcher>`_ and how to write a
    please expect changes to APIs if you decide to follow this tutorial.  We'll keep this tutorial
    up to date with the latest APIs.
 
-What's a valid new backend?
----------------------------
+What's a new backend?
+---------------------
 
-Before adding a new backend, let's first look at your use cases.  If you have better ideas about
-how to make a few operators run faster on CPU/GPU, you don't need create a new backend
-to enable the optimization.  You are welcome to send PRs to ``pytorch/pytorch`` to
-upstream those CPU/CUDA kernels directly.  Adding a new backend is only applicable for cases where
-the way you write kernels are fundamentally different, for example:
+Adding a new backend to PyTorch requires a lot of developement and maintainence from backend extenders.
+Before adding a new backend, let's first consider a few common use cases and recommended solutions for them:
 
-* supporting a new hardware like Google TPU and customized chips, which often requires using
-  hardware-specific API to write kernels.
-* supporting operators with a different Tensor layout/representation like sparse and quantized, which
-  enforces your kernels to be written in a way that's more efficient given the layout/representation
-  limitation.
+* If you have new algorithms for an existing PyTorch operator, send a PR to PyTorch.
+* If you want to propose a new operator, send a feature request/PR to PyTorch.
+* If you want to add support for a new device/hardware like Google TPU and customized chips, which often requires using
+  hardware-specific API to write kernels, follow this tutorial and add a out-of-tree backend to PyTorch.
+* If you want to add support for existing operators but with a different Tensor layout/representation
+  like sparse and quantized, which enforces your kernels to be written in a way that's more efficient
+  given the layout/representation limitation, follow this tutorial and add a out-of-tree backend to PyTorch.
 
-Build an extension
-------------------
-
-Out-of-tree backend is supported by adding a C++ extension to PyTorch.  You can build a C++ extension by
-writing a `setup.py` script that uses `setuptools` to compile C++ code.  Here's a simplified example from
-`pytorch/xla repo <https://github.com/pytorch/xla/blob/master/setup.py>`_::
-
-  from setuptools import setup
-  from torch.utils.cpp_extension import BuildExtension, CppExtension
-
-  setup(
-      name='torch_xla',
-      ext_modules=[
-          CppExtension(
-              '_XLAC',
-              torch_xla_sources,
-              include_dirs=include_dirs,
-              extra_compile_args=extra_compile_args,
-              library_dirs=library_dirs,
-              extra_link_args=extra_link_args + \
-                  [make_relative_rpath('torch_xla/lib')],
-          ),
-      ],
-      cmdclass={
-          'build_ext': Build,  # Build is a derived class of BuildExtension
-      }
-      # more configs...
-  )
-
-
-See `our C++ extension tutorial <https://pytorch.org/tutorials/advanced/cpp_extension.html#building-with-setuptools>`_
-for more details.
+In this tutorial we'll mainly focus on adding a new out-of-tree device below.  Adding out-of-tree support
+for a different tensor layout might share many common steps with devices, but we haven't seen an example of
+such integrations yet so it might require addtional work from PyTorch to support it.
 
 Get a dispatch key for your backend
 -----------------------------------
@@ -71,17 +41,37 @@ associated with a specific dispatch key.  Supporting a new backend in PyTorch es
 a kernel for each PyTorch operator in C++ and then registering them to a dispatch key representing your
 customized backend in the dispatcher.
 
-To make sure dispatcher is aware of your backend and dispatches operators to the kernels you provide, you first
-need to get a dispatch key to represent your backend in the system.  PyTorch provides three reserved dispatch keys
+Dispatch key is your identifier in the dispatcher system. The dispatcher looks at the dispatch keys carried on
+input tensors and calls the right kernel accordingly.  PyTorch provides three reserved dispatch keys
 (and their corresponding Autograd keys) for prototyping out-of-tree backend extensions:
 
 * PrivateUse1/AutogradPrivateUse1
 * PrivateUse2/AutogradPrivateUse2
 * PrivateUse3/AutogradPrivateUse3
 
-You can choose any of keys above to prototype your customized backend.  Once the prototype is done and you plan
-to do regular releases for your backend extension,  please feel free to submit a PR to ``pytorch/pytorch`` to
-reserve a dedicated dispath key for your backend.
+You can choose any of keys above to prototype your customized backend.
+To create a Tensor on ``PrivateUse1`` backend, you need to set dispatch key in ``TensorImpl`` constructor.
+
+.. code-block:: cpp
+  /* Example TensorImpl constructor */
+  TensorImpl(
+      Storage&& storage,
+      DispatchKeySet ks,
+      const caffe2::TypeMeta data_type);
+
+  // To create a TensorImpl on PrivateUse1 backend, pass in the following ks to TensorImpl creation.
+  DispatchKeySet ks = c10::DispatchKeySet{c10::DispatchKey::PrivateUse1, c10::DispatchKey::AutogradPrivateUse1};
+
+
+Note that ``TensorImpl`` class above assumes your Tensor is backed by a storage like CPU/CUDA. We also
+provide ``OpaqueTensorImpl`` for backends without a storage. And you might need to tweak/override certain
+methods to fit your customized hardware.
+One example in pytorch repo is `Vulkan TensorImpl <https://github.com/pytorch/pytorch/blob/1.7/aten/src/ATen/native/vulkan/VulkanOpaqueTensorImpl.h>`_.
+
+
+.. note::
+   Once the prototype is done and you plan to do regular releases for your backend extension,  please feel free to
+   submit a PR to ``pytorch/pytorch`` to reserve a dedicated dispath key for your backend.
 
 
 Get the full list of PyTorch operators
@@ -108,9 +98,9 @@ There're multiple fields associated with a single operator. Let's break it down 
 
 * ``Tensor & abs_out(Tensor & out, const Tensor & self);`` is the C++ signature of the operator, your C++
   kernel should match this signature exactly.
-* ``aten::abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)`` is the unique JIT schema representing the operator.
-  Since C++ allows overloads but JIT schema is guaranteed to be unique, operator name in JIT schema might be different
-  from the C++ signature to differentiate between multiple overloads of the same operator.
+* ``aten::abs.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)`` is the unique schema representing the operator,
+  which also contains aliasing and mutation annotations compared to the C++ signature.  This is the unique identifier
+  the dispatcher uses to find an operator.
 * ``dispatch`` and ``default`` are boolean fields that provide information about what native PyTorch kernels
   can do, thus implies whether it's required for backend extenders to implement the kernel.
   More details can be found in :ref:`register kernels for the new backend<register-kernel>`.
@@ -149,14 +139,16 @@ PyTorch operators can be classified into two categories:
 * Ops that require registration: PyTorch native implementation for these ops is backend specific
   and thus it’s required to provide a kernel for customized backend.  Otherwise calling such op
   on the customized backend will error out.
-    * In ``RegistrationDeclarations.h`` these operators have `dispatch` set to True *and* `default` set to False
+    * In ``RegistrationDeclarations.h`` these operators have ``dispatch`` set to True *and* ``default`` set to False
       in the metadata found in their accompanying comments.
 
 
 * Registration is optional: backend extenders can skip registering to these ops without sacrificing any support.
   However, if a backend extender wants to override the default kernel provided by PyTorch, they can still
-  optionally register their customized kernel to their backend and the dispatcher will use it for your backend only.
-    * In ``RegistrationDeclarations.h`` these operators have `dispatch` set to False *or* `default` set to True
+  register their customized kernel to their backend and the dispatcher will use it for your backend only.
+  For example, current implementation of PyTorch's ``max_pool2d`` returns ``indices`` as part of forward outputs which
+  creates overhead in torch_xla, so torch_xla registers its own kernel for ``max_pool2d`` instead.
+    * In ``RegistrationDeclarations.h`` these operators have ``dispatch`` set to False *or* ``default`` set to True
       in the metadata found in their accompanying comments.
 
 
@@ -168,14 +160,14 @@ Gradient formulas are mostly purely mathematical and thus are general for all ba
 PyTorch often registers a kernel to alias dispatch key Autograd, which means it can be used by all backends.
 
 For these operators you don't have to worry about their derivative formulas,
-you can just write kernels for operators in ``RegistrationDeclarations.h`` and PyTorch handles
-backward for you automatically.  Typically your kernels can be written in a inference style:
+you can just write forward definitions for operators in ``RegistrationDeclarations.h`` and PyTorch handles
+backward for you automatically.
 
 .. code-block:: cpp
 
 
   Tensor my_op1(const Tensor& self, const Tensor& other) {
-    // call your backend-specific APIs to implment my_op so that
+    // call your backend-specific APIs to implement my_op so that
     // it matches PyTorch's native behavior
   }
   TORCH_LIBRARY_IMPL(aten, PrivateUse1, m) {
@@ -243,7 +235,42 @@ you're using PrivateUse1 for your backend):
 
 
 With this trick you have full control over both training and inference behavior for ``my_add`` operator in your backend.
-Here's `an example <https://github.com/pytorch/xla/blob/master/torch_xla/csrc/aten_autograd_ops.h>`_ in the ``pytorch/xla`` repository.
+Here's `an example <https://github.com/pytorch/xla/blob/r1.7/torch_xla/csrc/aten_autograd_ops.h>`_ in the ``pytorch/xla`` repository.
+
+
+Build an extension
+------------------
+
+Out-of-tree backend is supported by adding a C++ extension to PyTorch.
+Once you have kernels and registrations ready, you can build a C++ extension by
+writing a ``setup.py`` script that uses ``setuptools`` to compile C++ code.  Here's a simplified example from
+`pytorch/xla repo <https://github.com/pytorch/xla/blob/master/setup.py>`_::
+
+  from setuptools import setup
+  from torch.utils.cpp_extension import BuildExtension, CppExtension
+
+  setup(
+      name='torch_xla',
+      ext_modules=[
+          CppExtension(
+              '_XLAC',
+              torch_xla_sources,
+              include_dirs=include_dirs,
+              extra_compile_args=extra_compile_args,
+              library_dirs=library_dirs,
+              extra_link_args=extra_link_args + \
+                  [make_relative_rpath('torch_xla/lib')],
+          ),
+      ],
+      cmdclass={
+          'build_ext': Build,  # Build is a derived class of BuildExtension
+      }
+      # more configs...
+  )
+
+
+See `our C++ extension tutorial <https://pytorch.org/tutorials/advanced/cpp_extension.html#building-with-setuptools>`_
+for more details.
 
 
 Custom operator support
@@ -298,7 +325,10 @@ Backward Compatibility
 ----------------------
 
 Currently PyTorch can’t guarantee backward compatibility for registered operators.
-In other words, operators, as well as their schemas, might be added/modified/deleted as needed.
+Operators, as well as their schemas, might be added/modified/deleted as needed.  Registered
+kernels must be *exactly* the same as PyTorch version.  If PyTorch adds more parameters (
+even with defaults) for an operator, your old registration won't work until it's updated
+to match PyTorch's new signature.
 
 As a result, we *highly recommend* out-of-tree backend extenders only sync with major PyTorch
 releases to minimize interruptions in development.  PyTorch is on a quarterly release cadence.
