@@ -96,10 +96,17 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: PyTorch Benchmark
+   :card_description: Learn how to use PyTorch's benchmark module to measure and compare the performance of your code
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/benchmark.html
+   :tags: Basics
+
+.. customcarditem::
    :header: PyTorch Profiler
    :card_description: Learn how to use PyTorch's profiler to measure operators time and memory consumption
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/profiler.html
+   :link: ../recipes/recipes/profiler_recipe.html
    :tags: Basics
 
 .. Customization
@@ -254,7 +261,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/warmstarting_model_using_parameters_from_a_different_model
    /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
-   /recipes/recipes/profiler
+   /recipes/recipes/profiler_recipe
    /recipes/recipes/custom_dataset_transforms_loader
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
