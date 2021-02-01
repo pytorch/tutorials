@@ -74,9 +74,9 @@ onnx.export(model, input_image, 'model.onnx')
 # and in different programming languages. For more details, we recommend 
 # visiting `ONNX tutorial <https://github.com/onnx/tutorials>`_.
 #
-# Congratulations! You have completed the PyTorch beginner tutorial! You can 
-# now `return to the first page <quickstart_tutorial.html>`_ and go over the sample code 
-# again and we hope you have a better understanding of how to do deep learning with PyTorch. 
-# Good luck on your deep learning journey!
+# Congratulations! You have completed the PyTorch beginner tutorial! Try 
+# `revisting the first page <quickstart_tutorial.html>`_ to see the tutorial in its entirety
+# again. We hope this tutorial has helped you get started with deep learning on PyTorch. 
+# Good luck!
 #
-#
+

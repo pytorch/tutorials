@@ -1,5 +1,4 @@
 """
-
 `Learn the Basics <quickstart_tutorial.html>`_ >
 `Tensors <tensor_tutorial.html>`_ > 
 `Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
@@ -9,36 +8,22 @@
 `Optimization <optimization_tutorial.html>`_ >
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-Build the Neural Network Model
+Build the Neural Network
 ===================
+
+Neural networks comprise of layers/modules that perform operations on data. 
+The `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides all the building blocks you need to 
+build your own neural network. Every module in PyTorch subclasses the `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. 
+A neural network is a module itself that consists of other modules (layers). This nested structure allows for
+building and managing complex architectures easily.
+
+In the following sections, we'll build a neural network to classify images in the FashionMNIST dataset.
 
 """
 
-#################################################################
-#
-# Now that we have loaded and transformed the data, we can build the neural network model. 
-# Neural network consists of a number of layers and PyTorch `torch.nn <https://pytorch.org/docs/stable/nn.html>`_ namespace provides predefined layers 
-# that helps us build the model.
-# 
-# The most common way to define a neural network is to use a class inherited 
-# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. 
-# It provides great parameter management across all nested submodules, which gives us more 
-# flexibility, because we can construct layers of any complexity, including ones with shared weights. 
-# 
-# In the below example, for our FashionMNIST image dataset, we will create a dense multi-layer network.  
-# Lets break down the steps to build this model below.
-# 
-
-#############################################
-# Import the Packages
-# --------------------------
-#
-
 import os
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.onnx as onnx
+from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
@@ -46,13 +31,10 @@ from torchvision import datasets, transforms
 #############################################
 # Get Device for Training
 # -----------------------
-# We want to be able to train our model on both CPU and GPU, if it is available. It is common practice to 
-# define a variable ``device`` which will designate the device we will be training on.
-# We check to see if `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ 
-# is available to use the GPU, else we will use the CPU. 
-#
-# Example:
-#
+# We want to be able to train our model on a hardware accelerator like the GPU, 
+# if it is available. Let's check to see if 
+# `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we 
+# continue to use the CPU. 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using {} device'.format(device))
@@ -60,105 +42,150 @@ print('Using {} device'.format(device))
 ##############################################
 # Define the Class
 # -------------------------
-#
-# First we define the `NeuralNetwork` class which inherits from ``nn.Module``, the base class for 
-# building all neural network modules in PyTorch. We use the ``__init__`` function to define and initialize the NN layers that will be then called in the module's ``forward`` function.
-# Then we call the ``NeuralNetwork`` class and assign the device. When training 
-# the model we will call ``model`` and pass the data (x) into the forward function and 
-# through each layer of our network.
-#
-#
+# We define our neural network by subclassing ``nn.Module``, and 
+# initialize the neural network layers in ``__init__``. Every ``nn.Module`` subclass implements
+# the operations on input data in the ``forward`` method. 
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super(NeuralNetwork, self).__init__()
         self.flatten = nn.Flatten()
-        self.layer1 = nn.Linear(28*28, 512)
-        self.layer2 = nn.Linear(512, 512)
-        self.output = nn.Linear(512, 10)
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(28*28, 512),
+            nn.ReLU(),
+            nn.Linear(512, 512),
+            nn.ReLU(),
+            nn.Linear(512, 10),
+            nn.ReLU()
+        )
 
     def forward(self, x):
         x = self.flatten(x)
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        x = self.output(x)
-        return F.softmax(x, dim=1)
+        logits = self.linear_relu_stack(x)
+        return logits
+
+##############################################
+# We create an instance of ``NeuralNetwork``, and move it to the ``device``, and print 
+# it's structure.
 
 model = NeuralNetwork().to(device)
 print(model)
 
-input = torch.rand(5, 28, 28)
 
-# equivalent to model.forward(input)
-model(input)
+##############################################
+# To use the model, we pass it the input data. This executes the model's ``forward``,
+# along with some `background operations <https://github.com/pytorch/pytorch/blob/270111b7b611d174967ed204776985cefca9c144/torch/nn/modules/module.py#L866>`_. 
+# Do not call ``model.forward()`` directly!
+# 
+# Calling the model on the input returns a 10-dimensional tensor with raw predicted values for each class.
+# We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
+
+X = torch.rand(1, 28, 28)
+logits = model(X) 
+pred_probab = nn.Softmax(dim=1)(logits)
+y_pred = pred_probab.argmax(1)
+print(f"Predicted class: {y_pred}")
+
+
+######################################################################
+# --------------
+#
+
 
 ##############################################
 # Model Layers
 # -------------------------
 #
-# Lets break down each layer in the FashionMNIST model. To illustrate it, we 
-# will take a sample minibatch of 100 images of size 28x28 and see what happens to it as 
-# we pass it through the network. The code in the sections below would essentially explain 
-# what happens inside the ``forward`` method of our ``NeuralNetwork`` class. 
-#
+# Lets break down the layers in the FashionMNIST model. To illustrate it, we 
+# will take a sample minibatch of 3 images of size 28x28 and see what happens to it as 
+# we pass it through the network. 
 
-input_image = torch.rand(100,28,28)
+input_image = torch.rand(3,28,28)
 print(input_image.size())
 
 ##################################################
 # nn.Flatten
-# -----------------------------------------------
-#
-# First we call `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_  to reduce tensor dimensions to one.
-#
-# In our case, flatten keeps the minibatch dimension, but two image dimensions are 
-# reduced to one:
-
-flatten = nn.Flatten(start_dim=1, end_dim=2)
+# ^^^^^^^^^^^^^^^^^^^^^^
+# We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_ 
+# layer to convert each 2D 28x28 image into a contiguous array of 784 pixel values (
+# the minibatch dimension (at dim=0) is maintained).
+ 
+flatten = nn.Flatten()
 flat_image = flatten(input_image)
 print(flat_image.size())
 
 ##############################################
 # nn.Linear 
-# -------------------------------
+# ^^^^^^^^^^^^^^^^^^^^^^
+# The `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_
+# is a module that applies a linear transformation on the input using it's stored weights and biases.
 #
-# Now that we have flattened our tensor dimension we will pass our data through a `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_. The linear layer is 
-# a module that applies a linear transformation on the input using it's stored weights and biases.
-#
-
-layer1 = nn.Linear(in_features=28*28, out_features=512)
+layer1 = nn.Linear(in_features=28*28, out_features=20)
 hidden1 = layer1(flat_image)
 print(hidden1.size())
 
-#################################################
-# Activation Functions
-# -------------------------
-#
-# In between layers of a neural network, we need to put non-linear activation functions, 
-# such as `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ (which is often 
-# used in between hidden layers) or `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_, 
-# which turns the output of the network into probabilities by rescaling values between 0 and 1, and all sum to one.
-#
-
-layer2 = nn.Linear(512,512)
-output = nn.Linear(512,10)
-hidden2 = layer2(F.relu(hidden1))
-print('Hidden 2 output size =',hidden2.size())
-z = output(F.relu(hidden2))
-out = F.softmax(z)
-print('Output size =',out.size())
 
 #################################################
-# Parameter Tracking
-# -------------------------
+# nn.ReLU
+# ^^^^^^^^^^^^^^^^^^^^^^
+# Non-linear activations are what create the complex mappings between the model's inputs and outputs.
+# They are applied after linear transformations to introduce *nonlinearity*, helping neural networks
+# learn a wide variety of phenomena.
 #
-# The main reason to put all code inside a class inherited from ``nn.Module`` is to 
-# utilize **parameter tracking**. Most of the layers inside a neural network, 
-# in our case all linear layers, have associated weights and biases that need to 
-# be adjusted during training. ``nn.Module`` automatically tracks all fields defined 
-# inside the class, and makes all parameters accessible using ``parameters()`` 
-# or ``named_parameters()`` methods. Let's have a look at the first two parameters of 
-# our neural network that were defined in the beginning of this section:
+# In this model, we use `nn.ReLU <https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html>`_ between our
+# linear layers, but there's other activations to introduce non-linearity in your model.
+
+print(f"Before ReLU: {hidden1}\n\n")
+hidden1 = nn.ReLU()(hidden1)
+print(f"After ReLU: {hidden1}")
+
+
+#################################################
+# nn.Sequential
+# ^^^^^^^^^^^^^^^^^^^^^^
+# `nn.Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ is an ordered 
+# container of modules. The data is passed through all the modules in the same order as defined. You can use
+# sequential containers to put together a quick network like ``seq_modules``.
+
+seq_modules = nn.Sequential(
+    flatten,
+    layer1,
+    nn.ReLU(),
+    nn.Linear(20, 10)
+)
+input_image = torch.rand(3,28,28)
+logits = seq_modules(input_image)
+
+################################################################
+# nn.Softmax
+# ^^^^^^^^^^^^^^^^^^^^^^
+# The last linear layer of the neural network returns `logits` - raw values in [-\infty, \infty] - which are passed to the
+# `nn.Softmax <https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html>`_ module. The logits are scaled to values 
+# [0, 1] representing the model's predicted probabilities for each class. ``dim`` parameter indicates the dimension along 
+# which the values must sum to 1. 
+
+softmax = nn.Softmax(dim=1)
+pred_probab = softmax(logits)
+
+
+#################################################
+# Model Parameters
+# -------------------------
+# Many layers inside a neural network are *parameterized*, i.e. have associated weights 
+# and biases that are optimized during training. Subclassing ``nn.Module`` automatically 
+# tracks all fields defined inside your model object, and makes all parameters 
+# accessible using your model's ``parameters()`` or ``named_parameters()`` methods. 
+# 
+# In this example, we iterate over each parameter, and print its size and a preview of its values. 
 #
 
-print(list(model.named_parameters())[0:2])
+print("Model structure: ", model, "\n\n")
+
+for name, param in model.named_parameters():
+    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+
+
+#################################################################
+# Further Reading
+# ~~~~~~~~~~~~~~~~~
+# - `torch.nn API <https://pytorch.org/docs/stable/nn.html>`_

@@ -231,3 +231,12 @@ print("\nCall after zeroing gradients\n", inp.grad)
 #           gradients in case of a scalar-valued function, such as loss during
 #           neural network training.
 #
+
+######################################################################
+# --------------
+#
+
+#################################################################
+# Further Reading
+# ~~~~~~~~~~~~~~~~~
+# - `Autograd Mechanics <https://pytorch.org/docs/stable/notes/autograd.html>`_
