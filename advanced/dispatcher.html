@@ -13,7 +13,7 @@
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="../beginner/profiler.html" rel="next" title="Profiling your PyTorch Module"/>
+<link href="extend_dispatcher.html" rel="next" title="Extending dispatcher for a new backend in C++"/>
 <link href="cpp_autograd.html" rel="prev" title="Autograd in C++ Frontend"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -203,6 +203,7 @@
 <li class="toctree-l1"><a class="reference internal" href="torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul>
@@ -304,12 +305,12 @@ a <a class="reference external" href="cpp_autograd">custom autograd function</a>
 <h2>Defining schema and backend implementations<a class="headerlink" href="#defining-schema-and-backend-implementations" title="Permalink to this headline">¶</a></h2>
 <p>The general principle behind the dispatcher is that it divides the
 implementation of an operator into multiple kernels, each of which implements
-functionality for a specific <em>dispatch key</em>; for example, CPU, CUDA or Autograd.
-The dispatcher determines what the highest priority dispatch key is at the time
+functionality for a specific <em>dispatch key</em>, e.g. CPU, CUDA.  The dispatcher
+determines what the highest priority dispatch key is at the time
 you call an operator (this is done by looking at both the tensor arguments as
 well as some thread local state), and transfers control to the kernel for that
 dispatch key.  The end effect is that when you call an operator, we first
-execute the Autograd kernel, and then we redispatch to the CPU or CUDA kernel
+execute the Autograd kernel, and then we redispatch to the backend kernel
 depending on the device types of the passed in tensors.</p>
 <p>Let’s take a look at the various parts involved in making this
 happen.  First, we must define the schema for the operator in question.
@@ -392,7 +393,7 @@ can we add autograd support to it?  As you might guess, we will register an
 autograd kernel (similar to what’s described in the <a class="reference external" href="cpp_autograd">custom autograd function</a> tutorial)!
 However, there is a twist: unlike the CPU and CUDA kernels, the autograd kernel
 needs to <em>redispatch</em>: it needs to call back into the dispatcher to get to
-the final CPU and CUDA implementations.</p>
+the inference kernels, e.g. CPU or CUDA implementations.</p>
 <p>Thus, before we write the autograd kernel, let’s write a <em>dispatching function</em>
 which calls into the dispatcher to find the right kernel for your operator.
 This function constitutes the public C++ API for your operators–in fact, all of
@@ -468,6 +469,15 @@ functions:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In this example we register the kernel to <code class="docutils literal notranslate"><span class="pre">Autograd</span></code>, which installs it as the
+autograd kernel for all backends. You can also register optimized kernels for specific
+backends by using the corresponding backend-specific dispatch key - for example,
+<code class="docutils literal notranslate"><span class="pre">AutogradCPU</span></code> or <code class="docutils literal notranslate"><span class="pre">AutogradCUDA</span></code>. To explore these and other dispatch key
+options in more detail, check out the <code class="docutils literal notranslate"><span class="pre">PythonDispatcher</span></code> tool provided in
+<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py">torch/_python_dispatcher.py</a>.</p>
+</div>
 </div>
 <div class="section" id="going-beyond-autograd">
 <h2>Going beyond autograd<a class="headerlink" href="#going-beyond-autograd" title="Permalink to this headline">¶</a></h2>
@@ -496,7 +506,8 @@ implement a glorified if-statement, along the lines of this:</p>
 (CPU, CUDA, Autograd) without having to write a single, centralized
 if statement that refers to all of them.  Importantly, third parties can
 register extra implementations for other aspects without having to patch the
-original definition of an operator.</li>
+original definition of an operator.  We’ll talk more about extending the
+dispatcher in <a class="reference external" href="extend_dispatcher">extending dispatcher for a new backend</a>.</li>
 <li>It supports more dispatch keys than CPU, CUDA and Autograd.  You can
 see a full list of dispatch keys that are currently implemented
 in PyTorch in <code class="docutils literal notranslate"><span class="pre">c10/core/DispatchKey.h</span></code>.  These dispatch keys
@@ -618,7 +629,7 @@ progress.</p>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/profiler.html" rel="next" title="Profiling your PyTorch Module">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="extend_dispatcher.html" rel="next" title="Extending dispatcher for a new backend in C++">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="cpp_autograd.html" rel="prev" title="Autograd in C++ Frontend"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="helpful-hr hr-top"/>

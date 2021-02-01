@@ -203,6 +203,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul>
@@ -506,9 +507,9 @@ pre-computing batches of Tensors.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.9664, -2.9906, -2.9242, -2.8507, -2.9601, -2.9399, -2.9351, -2.9330,
-         -2.7838, -2.9063, -2.8828, -2.8726, -2.9085, -2.8286, -2.8161, -2.8876,
-         -2.8078, -2.8622]], grad_fn=&lt;LogSoftmaxBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-2.8142, -2.9935, -2.8080, -2.8330, -2.9876, -2.9133, -2.9381, -2.8963,
+         -2.7956, -2.7843, -2.9033, -2.9624, -2.8686, -2.9517, -2.8922, -2.9479,
+         -2.8906, -2.8821]], grad_fn=&lt;LogSoftmaxBackward&gt;)
 </pre></div>
 </div>
 <p>As you can see the output is a <code class="docutils literal notranslate"><span class="pre">&lt;1</span> <span class="pre">x</span> <span class="pre">n_categories&gt;</span></code> Tensor, where
@@ -531,7 +532,7 @@ of the greatest value:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Portuguese', 8)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>('Japanese', 9)
 </pre></div>
 </div>
 <p>We will also want a quick way to get a training example (a name and its
@@ -554,16 +555,16 @@ language):</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Italian / line = Rotolo
-category = English / line = Elford
-category = Spanish / line = Bosque
-category = English / line = Galliford
-category = Polish / line = Rog
-category = Russian / line = Yaikbaev
-category = Czech / line = Dinko
-category = Italian / line = Cassano
-category = Greek / line = Antonakos
-category = Vietnamese / line = Bach
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>category = Dutch / line = Amersvoort
+category = Spanish / line = Bermudez
+category = Greek / line = Angelopoulos
+category = Spanish / line = Mas
+category = Japanese / line = Omura
+category = Russian / line = Himichev
+category = German / line = Hintzen
+category = Russian / line = Awturhanoff
+category = Chinese / line = Meng
+category = Irish / line = Mulryan
 </pre></div>
 </div>
 </div>
@@ -653,26 +654,26 @@ average of the loss.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 15s) 2.9042 Schwartz / Greek ✗ (Czech)
-10000 10% (0m 27s) 2.4226 Rocha / Japanese ✗ (Portuguese)
-15000 15% (0m 39s) 2.7194 Artliff / Irish ✗ (English)
-20000 20% (0m 51s) 2.3512 Cote / German ✗ (French)
-25000 25% (1m 3s) 2.1746 Awdiyants / Greek ✗ (Russian)
-30000 30% (1m 15s) 0.4895 O'Donnell / Irish ✓
-35000 35% (1m 27s) 1.7322 Rossem / Polish ✗ (Dutch)
-40000 40% (1m 40s) 0.7072 Shahlevich / Russian ✓
-45000 45% (1m 52s) 0.3605 Naldi / Italian ✓
-50000 50% (2m 3s) 0.6544 Krusen / Dutch ✓
-55000 55% (2m 15s) 2.1255 Sandoval / Czech ✗ (Spanish)
-60000 60% (2m 26s) 0.7641 Araujo / Portuguese ✓
-65000 65% (2m 38s) 1.3347 Salib / Arabic ✓
-70000 70% (2m 49s) 1.6573 Senft / German ✓
-75000 75% (3m 1s) 3.7526 Sorge / Portuguese ✗ (German)
-80000 80% (3m 12s) 2.2239 Janda / Czech ✗ (Polish)
-85000 85% (3m 24s) 0.0476 Koumanidis / Greek ✓
-90000 90% (3m 36s) 1.1021 Ustohal / Czech ✓
-95000 95% (3m 47s) 2.6026 Volk / Czech ✗ (German)
-100000 100% (3m 59s) 3.2604 Babich / Czech ✗ (Russian)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>5000 5% (0m 15s) 1.2932 Papoutsis / Greek ✓
+10000 10% (0m 26s) 1.1211 Kolovos / Greek ✓
+15000 15% (0m 38s) 0.8475 Lillis / Greek ✓
+20000 20% (0m 49s) 1.6867 Nagel / German ✓
+25000 25% (1m 0s) 1.9564 Colombera / Spanish ✗ (Italian)
+30000 30% (1m 12s) 2.1239 Melo / Italian ✗ (Portuguese)
+35000 35% (1m 23s) 0.4720 Assaf / Arabic ✓
+40000 40% (1m 35s) 1.8937 Palfrey / Spanish ✗ (English)
+45000 45% (1m 47s) 1.3933 Villanueva / Spanish ✓
+50000 50% (1m 59s) 2.6920 Nicholl / Scottish ✗ (English)
+55000 55% (2m 11s) 0.0972 Vuong / Vietnamese ✓
+60000 60% (2m 23s) 0.6805 Bosko / Polish ✓
+65000 65% (2m 35s) 3.2194 Zuraw / Vietnamese ✗ (Polish)
+70000 70% (2m 47s) 0.4331 Chun / Korean ✓
+75000 75% (2m 59s) 1.3568 Zawisza / Polish ✓
+80000 80% (3m 11s) 1.6488 Pak / Vietnamese ✗ (Korean)
+85000 85% (3m 22s) 0.9805 Phung / Vietnamese ✓
+90000 90% (3m 34s) 4.3775 Cennetig / French ✗ (Irish)
+95000 95% (3m 45s) 0.7917 An / Vietnamese ✓
+100000 100% (3m 57s) 3.5006 Nave / Irish ✗ (Italian)
 </pre></div>
 </div>
 </div>
@@ -769,19 +770,19 @@ English (perhaps because of overlap with other languages).</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; Dovesky
-(-0.66) Russian
-(-0.93) Czech
-(-3.27) Polish
+(-0.88) Russian
+(-1.09) Czech
+(-1.90) Polish
 
 &gt; Jackson
-(-0.41) Scottish
-(-1.64) English
-(-2.80) Russian
+(-0.08) Scottish
+(-3.10) English
+(-4.16) Dutch
 
 &gt; Satoshi
-(-1.00) Italian
-(-1.73) Japanese
-(-1.91) Arabic
+(-0.79) Japanese
+(-1.80) Italian
+(-1.90) Arabic
 </pre></div>
 </div>
 <p>The final versions of the scripts <a class="reference external" href="https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification">in the Practical PyTorch
@@ -823,7 +824,7 @@ output of predictions.</p>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  11.141 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  9.016 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-char-rnn-classification-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/ccb15f8365bdae22a0a019e57216d7c6/char_rnn_classification_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">char_rnn_classification_tutorial.py</span></code></a></div>

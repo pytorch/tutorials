@@ -203,6 +203,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Model Optimization</span></p>
 <ul>
@@ -541,7 +542,7 @@ Counting words...
 Counted words:
 fra 4345
 eng 2803
-['elle est hors sujet .', 'she is missing the point .']
+['tu es tres curieux .', 'you re very curious .']
 </pre></div>
 </div>
 </div>
@@ -986,66 +987,66 @@ encoder and decoder are initialized and run <code class="docutils literal notran
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>2m 5s (- 29m 17s) (5000 6%) 2.8549
-4m 7s (- 26m 45s) (10000 13%) 2.2877
-6m 6s (- 24m 26s) (15000 20%) 1.9914
-8m 6s (- 22m 17s) (20000 26%) 1.7104
-10m 5s (- 20m 11s) (25000 33%) 1.5227
-12m 6s (- 18m 10s) (30000 40%) 1.4025
-14m 7s (- 16m 8s) (35000 46%) 1.2161
-16m 6s (- 14m 5s) (40000 53%) 1.1221
-18m 6s (- 12m 4s) (45000 60%) 1.0143
-20m 6s (- 10m 3s) (50000 66%) 0.9191
-22m 6s (- 8m 2s) (55000 73%) 0.8407
-24m 7s (- 6m 1s) (60000 80%) 0.7440
-26m 7s (- 4m 1s) (65000 86%) 0.6931
-28m 6s (- 2m 0s) (70000 93%) 0.6109
-30m 8s (- 0m 0s) (75000 100%) 0.5925
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>2m 11s (- 30m 35s) (5000 6%) 2.8531
+4m 15s (- 27m 38s) (10000 13%) 2.2946
+6m 17s (- 25m 9s) (15000 20%) 1.9810
+8m 21s (- 23m 0s) (20000 26%) 1.7159
+10m 26s (- 20m 53s) (25000 33%) 1.5375
+12m 30s (- 18m 45s) (30000 40%) 1.3546
+14m 34s (- 16m 39s) (35000 46%) 1.2521
+16m 38s (- 14m 34s) (40000 53%) 1.0625
+18m 43s (- 12m 29s) (45000 60%) 1.0061
+20m 47s (- 10m 23s) (50000 66%) 0.9068
+22m 50s (- 8m 18s) (55000 73%) 0.8116
+24m 54s (- 6m 13s) (60000 80%) 0.7816
+26m 59s (- 4m 9s) (65000 86%) 0.6751
+29m 2s (- 2m 4s) (70000 93%) 0.6425
+31m 6s (- 0m 0s) (75000 100%) 0.5880
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je ne vous vends pas ma voiture .
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je prends francais l annee prochaine .
+= i am taking french next year .
+&lt; i am going to new next . . &lt;EOS&gt;
+
+&gt; nous sommes depourvues de talent .
+= we re untalented .
+&lt; we re untalented . &lt;EOS&gt;
+
+&gt; nous sommes toutes en danger .
+= we re all at risk .
+&lt; we re all in danger . &lt;EOS&gt;
+
+&gt; elle est six ans plus agee que moi .
+= she s six years older than me .
+&lt; she s two years older than me . &lt;EOS&gt;
+
+&gt; je ne suis pas un saint .
+= i m not a saint .
+&lt; i m no saint . &lt;EOS&gt;
+
+&gt; je ne vous vends pas ma voiture .
 = i m not selling you my car .
 &lt; i m not selling you my car . &lt;EOS&gt;
 
-&gt; nous fetons ca .
-= we re celebrating .
-&lt; we re celebrating . &lt;EOS&gt;
+&gt; il manque de confiance en lui .
+= he s insecure .
+&lt; he is raking in him . &lt;EOS&gt;
 
-&gt; elle lui est apparentee par alliance .
-= she is related to him by marriage .
-&lt; she is related to him by marriage . &lt;EOS&gt;
+&gt; je suis habituee a vivre seule .
+= i am used to living alone .
+&lt; i am used to living alone . &lt;EOS&gt;
 
-&gt; vous etes probablement fatigue .
-= you re probably tired .
-&lt; you re tired tired . &lt;EOS&gt;
+&gt; il a trois ans de plus que moi .
+= he s three years older than i am .
+&lt; he s three years older than me . &lt;EOS&gt;
 
-&gt; je meurs d envie d un cafe .
-= i m dying for a cup of coffee .
-&lt; i m dying for a cup . &lt;EOS&gt;
-
-&gt; elle ecrit une lettre maintenant .
-= she is writing a letter now .
-&lt; she is writing now now . &lt;EOS&gt;
-
-&gt; elles s ennuient .
-= they are bored .
-&lt; they re bored . &lt;EOS&gt;
-
-&gt; je vais en ville .
-= i m going downtown .
-&lt; i m going downtown . &lt;EOS&gt;
-
-&gt; je suis juste un monsieur tout le monde .
-= i am just a nobody .
-&lt; i am just a . . . &lt;EOS&gt;
-
-&gt; tu es grossier .
-= you re rude .
-&lt; you re rude . &lt;EOS&gt;
+&gt; vous etes plein de ressources .
+= you re very resourceful .
+&lt; you re resourceful . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1113,13 +1114,13 @@ and labels:</p>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>input = elle a cinq ans de moins que moi .
-output = she is five years younger than me . &lt;EOS&gt;
+output = she s two years younger than me . &lt;EOS&gt;
 input = elle est trop petit .
-output = she s too too . &lt;EOS&gt;
+output = she is too loud . &lt;EOS&gt;
 input = je ne crains pas de mourir .
-output = i m not afraid to die . &lt;EOS&gt;
+output = i m not afraid of dying . &lt;EOS&gt;
 input = c est un jeune directeur plein de talent .
-output = he is a teacher teacher teacher . &lt;EOS&gt;
+output = he is a talented young of . . &lt;EOS&gt;
 </pre></div>
 </div>
 </div>
@@ -1147,7 +1148,7 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 30 minutes  16.055 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 31 minutes  13.489 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a96a2daac1918ec72f68233dfe3f2c47/seq2seq_translation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>
