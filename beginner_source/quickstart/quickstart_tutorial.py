@@ -246,11 +246,6 @@ print("Saved PyTorch Model State to model.pth")
 
 
 ######################################################################
-# --------------
-#
-
-
-######################################################################
 # Loading Models
 # ----------------------------
 #
@@ -282,3 +277,8 @@ with torch.no_grad():
     pred = model(x)
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
+      
+######################################################################
+# Read more about `Saving & Loading your model <saveloadrun_tutorial.html>`_.
+#
+
