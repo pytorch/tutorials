@@ -26,7 +26,7 @@ We'll use the FashionMNIST dataset to train a neural network that predicts if an
 to one of the following classes: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, 
 Bag, or Ankle boot. 
 
-This tutorial assumes a basic familiarity with Python and Deep Learning concepts.
+`This tutorial assumes a basic familiarity with Python and Deep Learning concepts.`
 
 Running the Tutorial Code
 ------------------
@@ -76,6 +76,10 @@ from torchvision.transforms import ToTensor, Lambda, Compose
 import matplotlib.pyplot as plt
 
 ######################################################################
+# PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_, 
+# `TorchVision <https://pytorch.org/vision/stable/index.html>`_, and `TorchAudio <https://pytorch.org/audio/stable/index.html>`_, 
+# all of which include datasets. For this tutorial, we  will be using a TorchVision dataset.
+#
 # The ``torchvision.datasets`` module contains ``Dataset`` objects for many real-world vision data like 
 # CIFAR, COCO (`full list here <https://pytorch.org/docs/stable/torchvision/datasets.html>`_). In this tutorial, we
 # use the FashionMNIST dataset. Every TorchVision ``Dataset`` includes two arguments: ``transform`` and
