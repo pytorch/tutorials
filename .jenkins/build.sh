@@ -15,6 +15,10 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
+#Install PyTorch Nightly for test. 
+--pre
+torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
+
 # export PATH=/opt/conda/bin:$PATH
 # pip install sphinx==1.8.2 pandas
 
