@@ -167,14 +167,14 @@ def generate_batch(batch):
 
 from torch.utils.data import DataLoader
 
-def train_func(sub_train_):
+def train(data_):
 
     # Train the model
     train_loss = 0
     train_acc = 0
-    data = DataLoader(sub_train_, batch_size=BATCH_SIZE, shuffle=True,
+    data = DataLoader(data_, batch_size=BATCH_SIZE, shuffle=True,
                       collate_fn=generate_batch)
-    for i, (text, offsets, cls) in enumerate(data):
+    for text, offsets, cls in data:
         optimizer.zero_grad()
         text, offsets, cls = text.to(device), offsets.to(device), cls.to(device)
         output = model(text, offsets)
@@ -187,21 +187,21 @@ def train_func(sub_train_):
     # Adjust the learning rate
     scheduler.step()
 
-    return train_loss / len(sub_train_), train_acc / len(sub_train_)
+    return train_loss / len(data_), train_acc / len(data_)
 
 def test(data_):
-    loss = 0
-    acc = 0
+    test_loss = 0
+    test_acc = 0
     data = DataLoader(data_, batch_size=BATCH_SIZE, collate_fn=generate_batch)
     for text, offsets, cls in data:
         text, offsets, cls = text.to(device), offsets.to(device), cls.to(device)
         with torch.no_grad():
             output = model(text, offsets)
             loss = criterion(output, cls)
-            loss += loss.item()
-            acc += (output.argmax(1) == cls).sum().item()
+            test_loss += loss.item()
+            test_acc += (output.argmax(1) == cls).sum().item()
 
-    return loss / len(data_), acc / len(data_)
+    return test_loss / len(data_), test_acc / len(data_)
 
 
 ######################################################################
@@ -240,7 +240,7 @@ sub_train_, sub_valid_ = \
 for epoch in range(N_EPOCHS):
 
     start_time = time.time()
-    train_loss, train_acc = train_func(sub_train_)
+    train_loss, train_acc = train(sub_train_)
     valid_loss, valid_acc = test(sub_valid_)
 
     secs = int(time.time() - start_time)
