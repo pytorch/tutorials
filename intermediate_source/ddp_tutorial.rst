@@ -80,12 +80,16 @@ be found in
 
     from torch.nn.parallel import DistributedDataParallel as DDP
 
-    # Distributed package only covers collective communications with Gloo
-    # backend, FileStore and TcpStore on Windows platform.
+    # On Windows platform, the torch.distributed package only
+    # supports Gloo backend, FileStore and TcpStore.
     # For FileStore, set init_method parameter in init_process_group
     # to a local file. Example as follow:
     # init_method="file:///f:/libtmp/some_file"
-    # dist.init_process_group("gloo", rank=rank, init_method=init_method, world_size=world_size)
+    # dist.init_process_group(
+    #    "gloo",
+    #    rank=rank,
+    #    init_method=init_method,
+    #    world_size=world_size)
     # For TcpStore, same way as on Linux.
 
     def setup(rank, world_size):
