@@ -168,7 +168,6 @@ def generate_batch(batch):
 from torch.utils.data import DataLoader
 
 def train(data_):
-
     # Train the model
     train_loss = 0
     train_acc = 0
