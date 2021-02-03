@@ -44,6 +44,7 @@ print(measure(b_size=1), "\n")
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     (The top half of the __repr__ has been trimmed for convenience.)
 #
 #     Case A: {128} x {128}
@@ -80,6 +81,7 @@ print(measure_cpp(b_size=1), "\n")
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     Case A: {128} x {128}
 #       Median: 1.47 us
 #       IQR:    0.02 us (1.46 to 1.48)
@@ -116,6 +118,7 @@ for _ in range(3):
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     587972
 #     587972
 #     587972
@@ -147,6 +150,7 @@ print(s0)
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.CallgrindStats object at 0x7f40c0e15a90>
 #     x * y;
 #     setup:
@@ -180,6 +184,7 @@ print(s0.stats())
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ebadd0>
 #       41137  ???:_int_free [/usr/lib64/libc-2.28.so]
 #       26975  ???:_int_malloc [/usr/lib64/libc-2.28.so]
@@ -216,6 +221,7 @@ print(s0.as_standardized().stats())
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ec7c50>
 #       41137  ???:_int_free
 #       26975  ???:_int_malloc
@@ -292,6 +298,7 @@ print(delta)
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ebadd0>
 #         9300  build/../aten/src/ATen/TensorIterator.cpp:at::TensorIteratorBase::compute_strides(at::TensorIteratorConfig const&)
 #         8900  build/../c10/util/SmallVector.h:c10::SmallVectorImpl<long>::operator=(c10::SmallVectorImpl<long>&&)
@@ -341,6 +348,7 @@ print(pretty_delta)
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ec7cd0>
 #         9300  TensorIterator.cpp            at::TensorIteratorBase::compute_strides(at::TensorIteratorConfig const&)
 #         8900  SmallVector.h                 c10::SmallVectorImpl<long>::operator=(c10::SmallVectorImpl<long>&&)
@@ -374,6 +382,7 @@ print(tensor_iterator_delta)
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ec7f50>
 #         9300  TensorIterator.cpp            at::TensorIteratorBase::compute_strides(at::TensorIteratorConfig const&)
 #         8200  TensorIterator.cpp            at::TensorIteratorBase::allocate_or_resize_outputs()
@@ -411,6 +420,7 @@ print(pretty_delta - tensor_iterator_delta)
 ###############################################################################
 # .. code-block:: none
 #    :caption: Output
+#
 #     <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f40c0ec7bd0>
 #         8900  SmallVector.h                 c10::SmallVectorImpl<long>::operator=(c10::SmallVectorImpl<long>&&)
 #         6000  ???                           _int_free
