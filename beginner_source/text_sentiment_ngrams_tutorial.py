@@ -186,7 +186,7 @@ def train(data_):
     # Adjust the learning rate
     scheduler.step()
 
-    return train_loss / len(data_), train_acc / len(data_)
+    return train_loss / len(data), train_acc / len(data_)
 
 def test(data_):
     test_loss = 0
@@ -200,7 +200,7 @@ def test(data_):
             test_loss += loss.item()
             test_acc += (output.argmax(1) == cls).sum().item()
 
-    return test_loss / len(data_), test_acc / len(data_)
+    return test_loss / len(data), test_acc / len(data_)
 
 
 ######################################################################
