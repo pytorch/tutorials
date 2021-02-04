@@ -32,7 +32,7 @@ conda create -qyn testenv python=3.7
 conda activate testenv
 
 conda install sphinx
-pip install -r $PROJECT_DIR/requirements.txt
+pip install -r  $(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PROJECT_DIR/requirements.txt  | grep .)
 conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
 conda install torchaudio -c pytorch-test
 python -m spacy download de
