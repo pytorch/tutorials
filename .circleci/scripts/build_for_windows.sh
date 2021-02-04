@@ -38,8 +38,8 @@ pip install pySoundFile
 # Force uninstall torch & related packages, we'll install them using conda later.
 pip uninstall -y torch torchvision torchtext
 conda install -yq -c pytorch "cudatoolkit=10.2" pytorch torchvision torchtext torchaudio
-python -m spacy download de
-python -m spacy download en
+python -m spacy download de_core_news_sm
+python -m spacy download en_core_web_sm
 pushd ${PROJECT_DIR}
 DIR=.jenkins
 export NUM_WORKERS=4
