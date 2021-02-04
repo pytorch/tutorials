@@ -106,17 +106,8 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: PyTorch Profiler
    :card_description: Learn how to use PyTorch's profiler to measure operators time and memory consumption
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/profiler.html
+   :link: ../recipes/recipes/profiler_recipe.html
    :tags: Basics
-
-.. Customization
-
-.. customcarditem::
-   :header: Custom Datasets, Transforms & Dataloaders
-   :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader.
-   :image: ../_static/img/thumbnails/cropped/custom-datasets-transforms-and-dataloaders.png
-   :link: ../recipes/recipes/custom_dataset_transforms_loader.html
-   :tags: Data-Customization
 
 .. Interpretability
 
@@ -261,8 +252,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/warmstarting_model_using_parameters_from_a_different_model
    /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
-   /recipes/recipes/profiler
-   /recipes/recipes/custom_dataset_transforms_loader
+   /recipes/recipes/profiler_recipe
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
