@@ -32,9 +32,7 @@ conda create -qyn testenv python=3.7
 conda activate testenv
 
 conda install sphinx
-pip install sphinx_gallery==0.3.1 sphinx-copybutton flask pandas spacy ipython scipy pySoundFile scikit-image gym gym-super-mario-bros==7.3.0
-pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-pip install ray[tune] tabulate
+pip install -r PROJECT_DIR/requirements.txt
 conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
 conda install torchaudio -c pytorch-test
 python -m spacy download de
