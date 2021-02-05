@@ -34,6 +34,7 @@ conda activate testenv
 REQUIREMENTS="$(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PROJECT_DIR/requirements.txt  | grep .)"
 echo $REQUIREMENTS > requirements.txt
 pip install -r requirements.txt
+pip install pySoundFile
 conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
 conda install torchaudio -c pytorch-test
 python -m spacy download de
