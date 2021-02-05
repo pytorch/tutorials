@@ -33,12 +33,20 @@ Prerequisites:
 # such that half of the ``nn.TransformerEncoderLayer`` are in ``TransformerModelStage1``
 # and the other half are in ``TransformerModelStage2``.
 
+import sys
 import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import tempfile
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
+
+if sys.platform == 'win32':
+    print('Windows platform is not supported for pipeline parallelism')
+    sys.exit(0)
+if torch.cuda.device_count() < 2:
+    print('Need at least two GPU devices for this tutorial')
+    sys.exit(0)
 
 class TransformerModelStage1(nn.Module):
 
