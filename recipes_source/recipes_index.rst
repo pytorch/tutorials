@@ -96,20 +96,18 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: PyTorch Benchmark
+   :card_description: Learn how to use PyTorch's benchmark module to measure and compare the performance of your code
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/benchmark.html
+   :tags: Basics
+
+.. customcarditem::
    :header: PyTorch Profiler
    :card_description: Learn how to use PyTorch's profiler to measure operators time and memory consumption
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/profiler.html
+   :link: ../recipes/recipes/profiler_recipe.html
    :tags: Basics
-
-.. Customization
-
-.. customcarditem::
-   :header: Custom Datasets, Transforms & Dataloaders
-   :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader.
-   :image: ../_static/img/thumbnails/cropped/custom-datasets-transforms-and-dataloaders.png
-   :link: ../recipes/recipes/custom_dataset_transforms_loader.html
-   :tags: Data-Customization
 
 .. Interpretability
 
@@ -166,7 +164,42 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../recipes/android_native_app_with_custom_op.html
    :tags: Mobile
-   
+
+.. customcarditem::
+  :header: Fuse Modules recipe
+  :card_description: Learn how to fuse a list of PyTorch modules into a single module to reduce the model size before quantization.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/fuse.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Quantization for Mobile Recipe
+  :card_description: Learn how to reduce the model size and make it run faster without losing much on accuracy.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/quantization.html
+  :tags: Mobile,Quantization
+
+.. customcarditem::
+  :header: Script and Optimize for Mobile
+  :card_description: Learn how to convert the model to TorchScipt and (optional) optimize it for mobile apps.
+  :image: ../_static/img/thumbnails/cropped/mobile.png
+  :link: ../recipes/script_optimized.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Model Preparation for iOS Recipe
+  :card_description: Learn how to add the model in an iOS project and use PyTorch pod for iOS.
+  :image: ../_static/img/thumbnails/cropped/ios.png
+  :link: ../recipes/model_preparation_ios.html
+  :tags: Mobile
+
+.. customcarditem::
+  :header: Model Preparation for Android Recipe
+  :card_description: Learn how to add the model in an Android project and use the PyTorch library for Android.
+  :image: ../_static/img/thumbnails/cropped/android.png
+  :link: ../recipes/model_preparation_android.html
+  :tags: Mobile
+
 .. customcarditem::
    :header: Profiling PyTorch RPC-Based Workloads
    :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
@@ -219,8 +252,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/warmstarting_model_using_parameters_from_a_different_model
    /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
-   /recipes/recipes/profiler
-   /recipes/recipes/custom_dataset_transforms_loader
+   /recipes/recipes/profiler_recipe
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
@@ -228,4 +260,5 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/tuning_guide
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
+   /recipes/distributed_rpc_profiling
    /recipes/distributed_rpc_profiling
