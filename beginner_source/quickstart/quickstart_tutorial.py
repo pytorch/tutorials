@@ -28,6 +28,7 @@ Bag, or Ankle boot.
 
 `This tutorial assumes a basic familiarity with Python and Deep Learning concepts.`
 
+
 Running the Tutorial Code
 ------------------
 You can run this tutorial in a couple of ways:
@@ -168,6 +169,7 @@ print(model)
 # --------------
 #
 
+
 #####################################################################
 # Optimizing the Model Parameters
 # ----------------------------------------
@@ -176,6 +178,7 @@ print(model)
 
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+
 
 ####################################################################### 
 # In a single training loop, the model makes predictions on the training dataset (fed to it in batches), and 
@@ -245,6 +248,7 @@ torch.save(model.state_dict(), "model.pth")
 print("Saved PyTorch Model State to model.pth")
 
 
+
 ######################################################################
 # Loading Models
 # ----------------------------
@@ -277,8 +281,10 @@ with torch.no_grad():
     pred = model(x)
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
+
       
 ######################################################################
 # Read more about `Saving & Loading your model <saveloadrun_tutorial.html>`_.
 #
+
 

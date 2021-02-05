@@ -8,12 +8,11 @@ Welcome to PyTorch Tutorials
 
 .. Add callout items below this line
 
-
 .. customcalloutitem::
-   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
-   :header: Learn the Basics
-   :button_link:  beginner/quickstart/quickstart_tutorial.html
-   :button_text: Get started with PyTorch
+   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all the way to constructing deep neural networks.
+   :header: New to PyTorch?
+   :button_link: beginner/deep_learning_60min_blitz.html
+   :button_text: Start 60-min blitz
 
 .. customcalloutitem::
    :description: Bite-size, ready-to-deploy PyTorch code examples.
@@ -52,10 +51,10 @@ Welcome to PyTorch Tutorials
 .. Learning PyTorch
 
 .. customcarditem::
-   :header: Learn the Basics
-   :card_description: A step-by-step guide to building a complete ML workflow with PyTorch.
+   :header: Deep Learning with PyTorch: A 60 Minute Blitz
+   :card_description: Understand PyTorch’s Tensor library and neural networks at a high level.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: beginner/quickstart/quickstart_tutorial.html
+   :link: beginner/deep_learning_60min_blitz.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -166,7 +165,7 @@ Welcome to PyTorch Tutorials
    :header: Language Translation with Torchtext
    :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation_tutorial.html
+   :link: beginner/torchtext_translation.html
    :tags: Text
 
 .. Reinforcement Learning
@@ -446,7 +445,6 @@ Additional Resources
    :includehidden:
    :caption: Learning PyTorch
 
-   beginner/quickstart/quickstart_tutorial
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
@@ -484,7 +482,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation_tutorial
+   beginner/torchtext_translation
 
 
 .. toctree::

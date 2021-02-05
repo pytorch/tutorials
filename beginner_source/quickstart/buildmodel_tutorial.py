@@ -140,6 +140,7 @@ hidden1 = nn.ReLU()(hidden1)
 print(f"After ReLU: {hidden1}")
 
 
+
 #################################################
 # nn.Sequential
 # ^^^^^^^^^^^^^^^^^^^^^^
@@ -179,6 +180,7 @@ pred_probab = softmax(logits)
 # In this example, we iterate over each parameter, and print its size and a preview of its values. 
 #
 
+
 print("Model structure: ", model, "\n\n")
 
 for name, param in model.named_parameters():
@@ -192,5 +194,6 @@ for name, param in model.named_parameters():
 # Further Reading
 # --------------
 # - `torch.nn API <https://pytorch.org/docs/stable/nn.html>`_
+
 
 
