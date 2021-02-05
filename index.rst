@@ -550,3 +550,4 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
+   intermediate/pipeline_tutorial
