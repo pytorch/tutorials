@@ -80,7 +80,7 @@ print(model)
 # Calling the model on the input returns a 10-dimensional tensor with raw predicted values for each class.
 # We get the prediction probabilities by passing it through an instance of the ``nn.Softmax`` module.
 
-X = torch.rand(1, 28, 28)
+X = torch.rand(1, 28, 28, device=device)
 logits = model(X) 
 pred_probab = nn.Softmax(dim=1)(logits)
 y_pred = pred_probab.argmax(1)
