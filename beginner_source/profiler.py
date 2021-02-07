@@ -14,6 +14,10 @@ or retured in a JSON trace file.
     that might run in another thread. Concurrently-running profilers will be
     scoped to their own thread to prevent mixing of results.
 
+.. note::
+    PyTorch 1.8 introduces the new API that will replace the older profiler API
+    in the future releases. Check the new API at `this page <https://pytorch.org/docs/master/profiler.html>`__.
+
 Head on over to `this
 recipe <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`__
 for a quicker walkthrough of Profiler API usage.
