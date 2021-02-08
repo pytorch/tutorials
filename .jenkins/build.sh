@@ -18,7 +18,8 @@ pip install -r $DIR/../requirements.txt
 #Install PyTorch Nightly for test. 
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
-pip install -f https://download.pytorch.org/whl/test/cu112/torch_test.html torch torchvision torchaudio
+pip uninstall torch torchvision torchaudio torchtext
+pip install -f https://download.pytorch.org/whl/test/cu112/torch_test.html torch torchvision torchaudio torchtext
 
 
 # export PATH=/opt/conda/bin:$PATH
