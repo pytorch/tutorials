@@ -1,5 +1,5 @@
 from docutils.parsers.rst import Directive, directives
-from docutils.statemachine import StringList 
+from docutils.statemachine import StringList
 from docutils import nodes
 import re
 import os
@@ -142,7 +142,7 @@ class CustomGalleryItemDirective(Directive):
     """Create a sphinx gallery style thumbnail.
 
     tooltip and figure are self explanatory. Description could be a link to
-    a document like in below example. 
+    a document like in below example.
 
     Example usage:
 
@@ -206,3 +206,140 @@ class CustomGalleryItemDirective(Directive):
         thumb = nodes.paragraph()
         self.state.nested_parse(thumbnail, self.content_offset, thumb)
         return [thumb]
+
+
+class CustomCardItemDirective(Directive):
+    option_spec = {'header': directives.unchanged,
+                   'image': directives.unchanged,
+                   'link': directives.unchanged,
+                   'card_description': directives.unchanged,
+                   'tags': directives.unchanged}
+
+    def run(self):
+        try:
+            if 'header' in self.options:
+                header = self.options['header']
+            else:
+                raise ValueError('header not doc found')
+
+            if 'image' in self.options:
+                image = "<img src='" + self.options['image'] + "'>"
+            else:
+                image = '_static/img/thumbnails/default.png'
+
+            if 'link' in self.options:
+                link = self.options['link']
+            else:
+                link = ''
+
+            if 'card_description' in self.options:
+                card_description = self.options['card_description']
+            else:
+                card_description = ''
+
+            if 'tags' in self.options:
+                tags = self.options['tags']
+            else:
+                tags = ''
+
+        except FileNotFoundError as e:
+            print(e)
+            return []
+        except ValueError as e:
+            print(e)
+            raise
+            return []
+
+        card_rst = CARD_TEMPLATE.format(header=header,
+                                        image=image,
+                                        link=link,
+                                        card_description=card_description,
+                                        tags=tags)
+        card_list = StringList(card_rst.split('\n'))
+        card = nodes.paragraph()
+        self.state.nested_parse(card_list, self.content_offset, card)
+        return [card]
+
+
+CARD_TEMPLATE = """
+.. raw:: html
+
+    <div class="col-md-12 tutorials-card-container" data-tags={tags}>
+
+    <div class="card tutorials-card" link={link}>
+
+    <div class="card-body">
+
+    <div class="card-title-container">
+        <h4>{header}</h4>
+    </div>
+
+    <p class="card-summary">{card_description}</p>
+
+    <p class="tags">{tags}</p>
+
+    <div class="tutorials-image">{image}</div>
+
+    </div>
+
+    </div>
+
+    </div>
+"""
+
+class CustomCalloutItemDirective(Directive):
+    option_spec = {'header': directives.unchanged,
+                   'description': directives.unchanged,
+                   'button_link': directives.unchanged,
+                   'button_text': directives.unchanged}
+
+    def run(self):
+        try:
+            if 'description' in self.options:
+                description = self.options['description']
+            else:
+                description = ''
+
+            if 'header' in self.options:
+                header = self.options['header']
+            else:
+                raise ValueError('header not doc found')
+
+            if 'button_link' in self.options:
+                button_link = self.options['button_link']
+            else:
+                button_link = ''
+
+            if 'button_text' in self.options:
+                button_text = self.options['button_text']
+            else:
+                button_text = ''
+
+        except FileNotFoundError as e:
+            print(e)
+            return []
+        except ValueError as e:
+            print(e)
+            raise
+            return []
+
+        callout_rst = CALLOUT_TEMPLATE.format(description=description,
+                                              header=header,
+                                              button_link=button_link,
+                                              button_text=button_text)
+        callout_list = StringList(callout_rst.split('\n'))
+        callout = nodes.paragraph()
+        self.state.nested_parse(callout_list, self.content_offset, callout)
+        return [callout]
+
+CALLOUT_TEMPLATE = """
+.. raw:: html
+
+    <div class="col-md-6">
+        <div class="text-container">
+            <h3>{header}</h3>
+            <p class="body-paragraph">{description}</p>
+            <a class="btn with-right-arrow callout-button" href="{button_link}">{button_text}</a>
+        </div>
+    </div>
+"""
