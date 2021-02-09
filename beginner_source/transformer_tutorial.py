@@ -145,25 +145,25 @@ class PositionalEncoding(nn.Module):
 
 import io
 import torch
-from torchtext.utils import download_from_url, extract_archive
+# With torchtext 0.9.0 rc
+# from torchtext.datasets import WikiText2
+from torchtext.experimental.datasets.raw import WikiText2
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 
-url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+train_iter, = WikiText2(split=('train'))
 tokenizer = get_tokenizer('basic_english')
-vocab = build_vocab_from_iterator(map(tokenizer,
-                                      iter(io.open(train_filepath,
-                                                   encoding="utf8"))))
+vocab = build_vocab_from_iterator(map(tokenizer, train_iter))
 
 def data_process(raw_text_iter):
   data = [torch.tensor([vocab[token] for token in tokenizer(item)],
                        dtype=torch.long) for item in raw_text_iter]
   return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+train_iter, val_iter, test_iter = WikiText2()
+train_data = data_process(train_iter)
+val_data = data_process(val_iter)
+test_data = data_process(test_iter)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
