@@ -1,64 +1,17 @@
 """
-**Learn the Basics** >
-`Tensors <tensor_tutorial.html>`_ > 
-`Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
-`Transforms <transforms_tutorial.html>`_ >
-`Build Model <buildmodel_tutorial.html>`_ >
-`Autograd <autograd_tutorial.html>`_ >
-`Optimization <optimization_tutorial.html>`_ >
+`Learn the Basics <intro.html>`_ ||
+**Quickstart** || 
+`Tensors <tensor_tutorial.html>`_ || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+`Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-Learn the Basics
+Quickstart
 ===================
-
-Authors: 
-`Suraj Subramanian <https://github.com/suraj813>`_,
-`Seth Juarez <https://github.com/sethjuarez/>`_, 
-`Cassie Breviu <https://github.com/cassieview/>`_, 
-`Dmitry Soshnikov <https://soshnikov.com/>`_, 
-`Ari Bornstein <https://github.com/aribornstein/>`_ 
-
-Most machine learning workflows involve working with data, creating models, optimizing model 
-parameters, and saving the trained models. This tutorial introduces you to a complete ML workflow 
-implemented in PyTorch, with links to learn more about each of these concepts.
-
-We'll use the FashionMNIST dataset to train a neural network that predicts if an input image belongs 
-to one of the following classes: T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, 
-Bag, or Ankle boot. 
-
-`This tutorial assumes a basic familiarity with Python and Deep Learning concepts.`
-
-
-Running the Tutorial Code
-------------------
-You can run this tutorial in a couple of ways:
-
-- **In the cloud**: This is the easiest way to get started! Each section has a Colab link at the top, which opens a notebook with the code in a fully-hosted environment. Pro tip: Use Colab with a GPU runtime to speed up operations *Runtime > Change runtime type > GPU*
-- **Locally**: This option requires you to setup PyTorch and TorchVision first on your local machine (`installation instructions <https://pytorch.org/get-started/locally/>`_). Download the notebook or copy the code into your favorite IDE.
-
-
-How to Use this Guide
------------------
-The rest of this page contains an *overview* of the code used in the complete ML workflow. 
-If you're familiar with other deep learning frameworks, this is a quick way to get acquainted with PyTorch's API. 
-
-If this is your first time working with deep learning frameworks, head right into our step-by-step guide:
-
-.. include:: /beginner_source/quickstart/qs_toc.txt
-
-.. toctree::
-   :hidden:
-
-   /beginner/quickstart/tensor_tutorial
-   /beginner/quickstart/dataquickstart_tutorial
-   /beginner/quickstart/transforms_tutorial
-   /beginner/quickstart/buildmodel_tutorial
-   /beginner/quickstart/autograd_tutorial
-   /beginner/quickstart/optimization_tutorial
-   /beginner/quickstart/saveloadrun_tutorial
-
---------------
-
+This section runs through the API for common tasks in machine learning. Refer to the links in each section to dive deeper.
 
 Working with data
 -----------------
@@ -119,7 +72,7 @@ for X, y in test_dataloader:
     break
 
 ######################################################################
-# Read more about `loading data in PyTorch <dataquickstart_tutorial.html>`_.
+# Read more about `loading data in PyTorch <data_tutorial.html>`_.
 #
 
 ######################################################################

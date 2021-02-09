@@ -1,11 +1,12 @@
 """
-`Learn the Basics <quickstart_tutorial.html>`_ >
-`Tensors <tensor_tutorial.html>`_ > 
-`Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
-`Transforms <transforms_tutorial.html>`_ >
-`Build Model <buildmodel_tutorial.html>`_ >
-`Autograd <autograd_tutorial.html>`_ >
-**Optimization** >
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+`Tensors <tensor_tutorial.html>`_ || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+**Optimization** ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Optimizing Model Parameters
@@ -19,7 +20,7 @@ detailed walkthrough of this process, check out this video on `backpropagation f
 
 Pre-requisite Code 
 -----------------
-We load the code from the previous sections on `Datasets & DataLoaders <dataquickstart_tutorial.html>`_ 
+We load the code from the previous sections on `Datasets & DataLoaders <data_tutorial.html>`_ 
 and `Build Model  <buildmodel_tutorial.html>`_.
 """
 

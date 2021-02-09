@@ -1,11 +1,12 @@
 """
-`Learn the Basics <quickstart_tutorial.html>`_ >
-`Tensors <tensor_tutorial.html>`_ > 
-`Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
-**Transforms** >
-`Build Model <buildmodel_tutorial.html>`_ >
-`Autograd <autograd_tutorial.html>`_ >
-`Optimization <optimization_tutorial.html>`_ >
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+`Tensors <tensor_tutorial.html>`_ || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+**Transforms** ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+`Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Transforms

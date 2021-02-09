@@ -1,12 +1,12 @@
 """
-
-`Learn the Basics <quickstart_tutorial.html>`_ >
-`Tensors <tensor_tutorial.html>`_ > 
-**Datasets & DataLoaders** >
-`Transforms <transforms_tutorial.html>`_ >
-`Build Model <buildmodel_tutorial.html>`_ >
-`Autograd <autograd_tutorial.html>`_ >
-`Optimization <optimization_tutorial.html>`_ >
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+`Tensors <tensor_tutorial.html>`_ ||
+**Datasets & DataLoaders** ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+`Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Datasets & Dataloaders
@@ -99,7 +99,7 @@ plt.show()
 
 #################################################################
 # ..
-#  .. figure:: /_static/img/quickstart/fashion_mnist.png
+#  .. figure:: /_static/img/basics/fashion_mnist.png
 #    :alt: fashion_mnist
 
 

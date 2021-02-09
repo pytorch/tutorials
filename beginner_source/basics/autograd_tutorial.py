@@ -1,12 +1,12 @@
 """
-
-`Learn the Basics <quickstart_tutorial.html>`_ >
-`Tensors <tensor_tutorial.html>`_ > 
-`Datasets & DataLoaders <dataquickstart_tutorial.html>`_ >
-`Transforms <transforms_tutorial.html>`_ >
-`Build Model <buildmodel_tutorial.html>`_ >
-**Autograd** >
-`Optimization <optimization_tutorial.html>`_ >
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+`Tensors <tensor_tutorial.html>`_ || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+**Autograd** ||
+`Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
 Automatic Differentiation with ``torch.autograd``
@@ -42,7 +42,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 #
 # This code defines the following **computational graph**:
 #
-# .. figure:: /_static/img/quickstart/comp-graph.png
+# .. figure:: /_static/img/basics/comp-graph.png
 #    :alt:
 #
 # In this network, ``w`` and ``b`` are **parameters**, which we need to
