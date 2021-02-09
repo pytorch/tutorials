@@ -6,6 +6,10 @@ else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
 fi
 
+# set locale for click dependency in spacy
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
