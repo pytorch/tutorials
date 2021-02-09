@@ -5,15 +5,16 @@ Text classification with the new torchtext library
 In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. In the nightly release of torchtext libraries, we provide a few prototype building blocks for data processing. With the new torchtext library, you will have the flexibility to
 
    - Access to the raw data as an iterator
-   - Build data processing pipeline to convert the raw text strings into torch.Tensor that can be used to train the model
-   - Shuffle and iterate the data with torch.utils.data.DataLoader
-
-Access to the raw dataset iterators
------------------------------------
-
-For some advanced users, they prefer to work on the raw data strings with their custom data process pipeline. The new torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the AG_NEWS dataset iterators yield the raw data as a tuple of label and text.
-
+   - Build data processing pipeline to convert the raw text strings into ``torch.Tensor`` that can be used to train the model
+   - Shuffle and iterate the data with `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
 """
+
+
+######################################################################
+# Access to the raw dataset iterators
+# -----------------------------------
+#
+# The new library provides users the access to the raw datasets with their custom data process pipeline. The new torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the ``AG_NEWS`` dataset iterators yield the raw data as a tuple of label and text.
 
 import torch
 # With torchtext 0.9.0 rc
@@ -21,31 +22,37 @@ import torch
 from torchtext.experimental.datasets.raw import AG_NEWS
 train_iter, = AG_NEWS(split=('train'))
 
-"""
-next(train_iter)
->>> (3, "Wall St. Bears Claw Back Into the Black (Reuters) Reuters - 
-Short-sellers, Wall Street's dwindling\\band of ultra-cynics, are seeing green 
-again.")
- 
-next(train_iter)
->>> (3, 'Carlyle Looks Toward Commercial Aerospace (Reuters) Reuters - Private 
-investment firm Carlyle Group,\\which has a reputation for making well-timed 
-and occasionally\\controversial plays in the defense industry, has quietly 
-placed\\its bets on another part of the market.')
- 
-next(train_iter)
->>> (3, "Oil and Economy Cloud Stocks' Outlook (Reuters) Reuters - Soaring 
-crude prices plus worries\\about the economy and the outlook for earnings are 
-expected to\\hang over the stock market next week during the depth of 
-the\\summer doldrums.")
 
-Prepare data processing pipelines
----------------------------------
+######################################################################
+# ::
+#
+#     next(train_iter)
+#     >>> (3, "Wall St. Bears Claw Back Into the Black (Reuters) Reuters - 
+#     Short-sellers, Wall Street's dwindling\\band of ultra-cynics, are seeing green 
+#     again.")
+# 
+#     next(train_iter)
+#     >>> (3, 'Carlyle Looks Toward Commercial Aerospace (Reuters) Reuters - Private 
+#     investment firm Carlyle Group,\\which has a reputation for making well-timed 
+#     and occasionally\\controversial plays in the defense industry, has quietly 
+#     placed\\its bets on another part of the market.')
+# 
+#     next(train_iter)
+#     >>> (3, "Oil and Economy Cloud Stocks' Outlook (Reuters) Reuters - Soaring 
+#     crude prices plus worries\\about the economy and the outlook for earnings are 
+#     expected to\\hang over the stock market next week during the depth of 
+#     the\\summer doldrums.")
+#
 
-We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer backed by regular expression, and sentencepiece. Those are the basic data processing building blocks for raw text string.
 
-Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. We provide a function build_vocab_from_iterator to build the vocabulary from a text iterator. Users can set up the minimum frequency for the tokens to be included.
-"""
+######################################################################
+# Prepare data processing pipelines
+# ---------------------------------
+#
+# We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer backed by regular expression, and SentencePiece. Those are the basic data processing building blocks for raw text string.
+#
+# Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. We provide a function ``build_vocab_from_iterator`` to build the vocabulary from a text iterator. Users can set up the minimum frequency for the tokens to be included.
+
 
 from torchtext.experimental.vocab import build_vocab_from_iterator
 from torchtext.experimental.transforms import basic_english_normalize
@@ -53,39 +60,48 @@ tokenizer = basic_english_normalize()
 train_iter, = AG_NEWS(split=('train',))
 vocab = build_vocab_from_iterator(iter(tokenizer(line) for label, line in train_iter), min_freq=1)
 
-"""
-The vocabulary block converts a list of tokens into integers.
 
-vocab(['here', 'is', 'an', 'example'])
->>> [475, 21, 30, 5286]
+######################################################################
+# The vocabulary block converts a list of tokens into integers.
+#
+# ::
+#
+#     vocab(['here', 'is', 'an', 'example'])
+#     >>> [475, 21, 30, 5286]
+#
+# Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used for the raw data strings from the dataset iterators.
 
-Prepare data pipeline with the tokenizer and vocabulary. The pipelines will be used for the raw data strings from the dataset iterators.
-"""
 
-def generate_text_pipeline(tokenizer, vocab):
-  def _forward(text):
-    return vocab(tokenizer(text))
-  return _forward
-text_pipeline = generate_text_pipeline(basic_english_normalize(), vocab)
+text_pipeline = lambda x: vocab(tokenizer(x))
 label_pipeline = lambda x: int(x) - 1
 
-"""
-The text pipeline converts a text string into a list of integers based on the lookup defined in the vocab. The label pipeline converts the label into integers. For example,
 
-text_pipeline('here is the an example')
->>> [475, 21, 2, 30, 5286]
-label_pipeline('10')
->>> 9
+######################################################################
+# The text pipeline converts a text string into a list of integers based on the lookup defined in the vocab. The label pipeline converts the label into integers. For example,
+#
+# ::
+#
+#     text_pipeline('here is the an example')
+#     >>> [475, 21, 2, 30, 5286]
+#     label_pipeline('10')
+#     >>> 9
+#
 
-Generate data batch and iterator
---------------------------------
 
-The PyTorch data loading utility is the torch.utils.data.DataLoader class. It works with a map-style dataset that implements the getitem() and len() protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnet of False.
 
-Before sending to the model, collate_fn function works on a batch of samples generated from DataLoader. The input to collat_fn is a batch of data with the batch size in DataLoader, and collate_fn processes them according to the data processing pipelines declared on Step 2. Pay attention here and make sure that collate_fn is declared as a top level def. This ensures that the function is available in each worker.
+######################################################################
+# Generate data batch and iterator 
+# --------------------------------
+#
+# `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
+# is recommended for PyTorch users (a tutorial is `here <https://pytorch.org/tutorials/beginner/data_loading_tutorial.html>`__).
+# It works with a map-style dataset that implements the ``getitem()`` and ``len()`` protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnet of ``False``.
+#
+# Before sending to the model, ``collate_fn`` function works on a batch of samples generated from ``DataLoader``. The input to ``collat_fn`` is a batch of data with the batch size in ``DataLoader``, and ``collate_fn`` processes them according to the data processing pipelines declared on Step 2. Pay attention here and make sure that ``collate_fn`` is declared as a top level def. This ensures that the function is available in each worker.
+#
+# In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of ``nn.EmbeddingBag``. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of indidividual text entries.
 
-In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of nn.EmbeddingBag. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of indidividual text entries.
-"""
+
 from torch.utils.data import DataLoader
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -143,7 +159,7 @@ class TextClassificationModel(nn.Module):
 # Initiate an instance
 # --------------------
 #
-# We build a model with the embedding dimension of 64. The AG_NEWS dataset has four labels and therefore the number of classes is four.
+# We build a model with the embedding dimension of 64. The ``AG_NEWS`` dataset has four labels and therefore the number of classes is four.
 #
 # ::
 #
@@ -154,7 +170,7 @@ class TextClassificationModel(nn.Module):
 #
 # The vocab size is equal to the length of vocab (including single word
 # and ngrams). The number of classes is equal to the number of labels,
-# which is four in AG_NEWS case.
+# which is four in ``AG_NEWS`` case.
 #
 
 train_iter, = AG_NEWS(split=('train'))
@@ -169,15 +185,6 @@ model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
 # ---------------------------------------------------------
 #
 
-
-######################################################################
-# `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
-# is recommended for PyTorch users, and it makes data loading in parallel
-# easily (a tutorial is
-# `here <https://pytorch.org/tutorials/beginner/data_loading_tutorial.html>`__).
-# We use ``DataLoader`` here to load AG_NEWS datasets and send it to the
-# model for training/validation.
-#
 
 import time
 
@@ -225,18 +232,18 @@ def evaluate(model, dataloader):
 # Split the dataset and run the model
 # -----------------------------------
 #
-# Since the original AG_NEWS has no valid dataset, we split the training
+# Since the original ``AG_NEWS`` has no valid dataset, we split the training
 # dataset into train/valid sets with a split ratio of 0.95 (train) and
 # 0.05 (valid). Here we use
 # `torch.utils.data.dataset.random_split <https://pytorch.org/docs/stable/data.html?highlight=random_split#torch.utils.data.random_split>`__
 # function in PyTorch core library.
 #
 # `CrossEntropyLoss <https://pytorch.org/docs/stable/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
-# criterion combines nn.LogSoftmax() and nn.NLLLoss() in a single class.
+# criterion combines ``nn.LogSoftmax()`` and ``nn.NLLLoss()`` in a single class.
 # It is useful when training a classification problem with C classes.
 # `SGD <https://pytorch.org/docs/stable/_modules/torch/optim/sgd.html>`__
 # implements stochastic gradient descent method as optimizer. The initial
-# learning rate is set to 4.0.
+# learning rate is set to 5.0.
 # `StepLR <https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR>`__
 # is used here to adjust the learning rate through epochs.
 #
@@ -334,15 +341,17 @@ for epoch in range(1, EPOCHS + 1):
 
 ######################################################################
 # Checking the results of test dataset…
+
+print('Checking the results of test dataset...')
+accu_test = evaluate(model, test_dataloader)
+print('test accuracy {:8.3f}'.format(accu_test))
+
+################################################
 #
 # ::
 #
 #        Loss: 0.0237(test)      |       Acc: 90.5%(test)
 #
-
-print('Checking the results of test dataset...')
-accu_test = evaluate(model, test_dataloader)
-print('test accuracy {:8.3f}'.format(accu_test))
 
 
 ######################################################################
@@ -385,15 +394,13 @@ model = model.to("cpu")
 print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
 
 
-
-"""
-Other data processing pipeline - SentencePiece
-----------------------------------------------
-
-SentencePiece is an unsupervised text tokenizer and detokenizer mainly for Neural Network-based text generation systems where the vocabulary size is predetermined prior to the neural model training. For sentencepiece transforms in torchtext, both subword units (e.g., byte-pair-encoding (BPE) ) and unigram language model are supported. We provide a few pretrained SentencePiece models and they are accessable from PRETRAINED_SP_MODEL. Here is an example to apply SentencePiece transform to build the dataset.
-
-By using spm_transform transform in collate_batch function, you can re-run the tutorial with slightly improved results.
-"""
+################################################
+# Other data processing pipeline - SentencePiece
+# ----------------------------------------------
+#
+# SentencePiece is an unsupervised text tokenizer and detokenizer mainly for Neural Network-based text generation systems where the vocabulary size is predetermined prior to the neural model training. For SentencePiece transforms in torchtext, both subword units (e.g., byte-pair-encoding (BPE) ) and unigram language model are supported. We provide a few pretrained SentencePiece models and they are accessable from PRETRAINED_SP_MODEL. Here is an example to apply SentencePiece transform to build the dataset.
+#
+# By using ``spm_transform`` transform in ``collate_batch`` function, you can re-run the tutorial with new results.
 
 from torchtext.experimental.transforms import (
     PRETRAINED_SP_MODEL,
@@ -405,11 +412,13 @@ spm_filepath = download_from_url(PRETRAINED_SP_MODEL['text_unigram_25000'])
 spm_transform = sentencepiece_processor(spm_filepath)
 sp_model = load_sp_model(spm_filepath)
 
-"""
-The sentecepiece processor converts a text string into a list of integers. You can use the decode method to convert a list of integers back to the original string.
 
-spm_transform('here is the an example')
->>> [130, 46, 9, 76, 1798]
-spm_transform.decode([6468, 17151, 4024, 8246, 16887, 87, 23985, 12, 581, 15120])
->>> 'torchtext sentencepiece processor can encode and decode'
-"""
+################################################
+# The SentecePiece processor converts a text string into a list of integers. You can use the decode method to convert a list of integers back to the original string.
+#
+# ::
+#
+#     spm_transform('here is the an example')
+#     >>> [130, 46, 9, 76, 1798]
+#     spm_transform.decode([6468, 17151, 4024, 8246, 16887, 87, 23985, 12, 581, 15120])
+#     >>> 'torchtext sentencepiece processor can encode and decode'
