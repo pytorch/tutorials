@@ -11,7 +11,7 @@ Welcome to PyTorch Tutorials
 .. customcalloutitem::
    :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
    :header: Learn the Basics
-   :button_link:  beginner/quickstart/quickstart_tutorial.html
+   :button_link:  beginner/basics/intro.html
    :button_text: Get started with PyTorch
 
 .. customcalloutitem::
@@ -54,7 +54,7 @@ Welcome to PyTorch Tutorials
    :header: Learn the Basics
    :card_description: A step-by-step guide to building a complete ML workflow with PyTorch.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: beginner/quickstart/quickstart_tutorial.html
+   :link: beginner/basics/intro.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -461,7 +461,7 @@ Additional Resources
    :includehidden:
    :caption: Learning PyTorch
 
-   beginner/quickstart/quickstart_tutorial
+   beginner/basics/intro
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
