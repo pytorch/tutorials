@@ -2,11 +2,14 @@
 Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
 ====================================================================================
 
+**Author**: `Pritam Damania <https://github.com/pritamdamania87>`_
+
 This tutorial demonstrates how to train a large Transformer model across
 multiple GPUs using `Distributed Data Parallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__ and
 `Pipeline Parallelism <https://pytorch.org/docs/stable/pipeline.html>`__. This tutorial is an extension of the
-`Sequence-to-Sequence Modeling with nn.Transformer and TorchText <https://pytorch.org/tutorials/beginner/transformer_tutorial.html>`__ tutorial and scales up the same model to
-demonstrate how Distributed Data Parallel and Pipeline Parallelism can be used to train Transformer models.
+`Sequence-to-Sequence Modeling with nn.Transformer and TorchText <https://pytorch.org/tutorials/beginner/transformer_tutorial.html>`__ tutorial
+and scales up the same model to demonstrate how Distributed Data Parallel and
+Pipeline Parallelism can be used to train Transformer models.
 
 Prerequisites:
 
