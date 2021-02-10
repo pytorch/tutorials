@@ -2,10 +2,13 @@
 Training Transformer models using Pipeline Parallelism
 ======================================================
 
+**Author**: `Pritam Damania <https://github.com/pritamdamania87>`_
+
 This tutorial demonstrates how to train a large Transformer model across
 multiple GPUs using pipeline parallelism. This tutorial is an extension of the
-`Sequence-to-Sequence Modeling with nn.Transformer and TorchText <https://pytorch.org/tutorials/beginner/transformer_tutorial.html>`__ tutorial and scales up the same model to
-demonstrate how pipeline parallelism can be used to train Transformer models.
+`Sequence-to-Sequence Modeling with nn.Transformer and TorchText <https://pytorch.org/tutorials/beginner/transformer_tutorial.html>`__ tutorial
+and scales up the same model to demonstrate how pipeline parallelism can be
+used to train Transformer models.
 
 Prerequisites:
 
