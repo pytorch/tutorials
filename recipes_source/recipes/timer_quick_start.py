@@ -100,8 +100,8 @@ print(cpp_timer.blocked_autorange(min_run_time=1))
 # Instruction counts: `Timer.collect_callgrind(...)`
 # --------------------------------------------------
 #
-# For deep dive investigations, `Timer.collect_callgrind` wrapps
-# [Callgrind](https://valgrind.org/docs/manual/cl-manual.html) in order to
+# For deep dive investigations, `Timer.collect_callgrind` wraps
+# `Callgrind <https://valgrind.org/docs/manual/cl-manual.html>` in order to
 # collect instruction counts. These are useful as they offer fine grained and
 # deterministic (or very low noise in the case of Python) insights into how a
 # snippet is run.
@@ -331,7 +331,7 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 
 ###############################################################################
 # This makes plain what is going on: there is a fast path in TensorIterator
-# setup, but in the {128} x 1 case we miss it and have to do a more general
+# setup, but in the {128} x {1} case we miss it and have to do a more general
 # analysis which is more expensive. The most prominent call omitted by the
 # filter is `c10::SmallVectorImpl<long>::operator=(...)`, which is also part
 # of the more general setup.
