@@ -1,16 +1,24 @@
 """
-Tensors
---------------------------------------------
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+**Tensors** || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+`Optimization <optimization_tutorial.html>`_ ||
+`Save & Load Model <saveloadrun_tutorial.html>`_
 
-Tensors are a specialized data structure that are very similar to arrays
-and matrices. In PyTorch, we use tensors to encode the inputs and
-outputs of a model, as well as the model’s parameters.
+Tensors 
+==========================
 
-Tensors are similar to NumPy’s ndarrays, except that tensors can run on
-GPUs or other specialized hardware to accelerate computing. If you’re familiar with ndarrays, you’ll
-be right at home with the Tensor API. If not, follow along in this quick
-API walkthrough.
+Tensors are a specialized data structure that are very similar to arrays and matrices. 
+In PyTorch, we use tensors to encode the inputs and outputs of a model, as well as the model’s parameters.
 
+Tensors are similar to `NumPy’s <https://numpy.org/>`_ ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and
+NumPy arrays can often share the same underlying memory, eliminating the need to copy data (see :ref:`bridge-to-np-label`). Tensors 
+are also optimized for automatic differentiation (we'll see more about that later in the `Autograd <autograd_tutorial.html>`__ 
+section). If you’re familiar with ndarrays, you’ll be right at home with the Tensor API. If not, follow along!
 """
 
 import torch
@@ -18,7 +26,7 @@ import numpy as np
 
 
 ######################################################################
-# Tensor Initialization
+# Initializing a Tensor
 # ~~~~~~~~~~~~~~~~~~~~~
 #
 # Tensors can be initialized in various ways. Take a look at the following examples:
@@ -66,14 +74,12 @@ print(f"Zeros Tensor: \n {zeros_tensor}")
 
 
 
-
 ######################################################################
 # --------------
 #
 
-
 ######################################################################
-# Tensor Attributes
+# Attributes of a Tensor
 # ~~~~~~~~~~~~~~~~~
 #
 # Tensor attributes describe their shape, datatype, and the device on which they are stored.
@@ -89,20 +95,20 @@ print(f"Device tensor is stored on: {tensor.device}")
 # --------------
 #
 
-
 ######################################################################
-# Tensor Operations
+# Operations on Tensors
 # ~~~~~~~~~~~~~~~~~
 #
-# Over 100 tensor operations, including transposing, indexing, slicing,
-# mathematical operations, linear algebra, random sampling, and more are
-# comprehensively described
-# `here <https://pytorch.org/docs/stable/torch.html>`__.
+# Over 100 tensor operations, including arithmetic, linear algebra, matrix manipulation (transposing, 
+# indexing, slicing), sampling and more are
+# comprehensively described `here <https://pytorch.org/docs/stable/torch.html>`__.
 #
-# Each of them can be run on the GPU (at typically higher speeds than on a
-# CPU). If you’re using Colab, allocate a GPU by going to Edit > Notebook
-# Settings.
-#
+# Each of these operations can be run on the GPU (at typically higher speeds than on a
+# CPU). If you’re using Colab, allocate a GPU by going to Runtime > Change runtime type > GPU.
+# 
+# By default, tensors are created on the CPU. We need to explicitly move tensors to the GPU using 
+# ``.to`` method (after checking for GPU availability). Keep in mind that copying large tensors
+# across devices can be expensive in terms of time and memory!
 
 # We move our tensor to the GPU if available
 if torch.cuda.is_available():
@@ -118,6 +124,9 @@ if torch.cuda.is_available():
 # **Standard numpy-like indexing and slicing:**
 
 tensor = torch.ones(4, 4)
+print('First row: ',tensor[0])
+print('First column: ', tensor[:, 0])
+print('Last column:', tensor[..., -1])
 tensor[:,1] = 0
 print(tensor)
 
@@ -128,25 +137,40 @@ print(tensor)
 t1 = torch.cat([tensor, tensor, tensor], dim=1)
 print(t1)
 
-######################################################################
-# **Multiplying tensors**
-
-# This computes the element-wise product
-print(f"tensor.mul(tensor) \n {tensor.mul(tensor)} \n")
-# Alternative syntax:
-print(f"tensor * tensor \n {tensor * tensor}")
 
 ######################################################################
-#
-# This computes the matrix multiplication between two tensors
-print(f"tensor.matmul(tensor.T) \n {tensor.matmul(tensor.T)} \n")
-# Alternative syntax:
-print(f"tensor @ tensor.T \n {tensor @ tensor.T}")
+# **Arithmetic operations**
+
+# This computes the matrix multiplication between two tensors. y1, y2, y3 will have the same value
+y1 = tensor @ tensor.T
+y2 = tensor.matmul(tensor.T)
+
+y3 = torch.rand_like(tensor)
+torch.matmul(tensor, tensor.T, out=y3)
+
+
+# This computes the element-wise product. z1, z2, z3 will have the same value
+z1 = tensor * tensor
+z2 = tensor.mul(tensor)
+
+z3 = torch.rand_like(tensor)
+torch.mul(tensor, tensor, out=z3)
+
+
+######################################################################
+# **Single-element tensors** If you have a one-element tensor, for example by aggregating all
+# values of a tensor into one value, you can convert it to a Python
+# numerical value using ``item()``:
+
+agg = tensor.sum()
+agg_item = agg.item()  
+print(agg_item, type(agg_item))
 
 
 ######################################################################
 # **In-place operations**
-# Operations that have a ``_`` suffix are in-place. For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
+# Operations that store the result into the operand are called in-place. They are denoted by a ``_`` suffix. 
+# For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
 
 print(tensor, "\n")
 tensor.add_(5)
@@ -156,6 +180,8 @@ print(tensor)
 # .. note::
 #      In-place operations save some memory, but can be problematic when computing derivatives because of an immediate loss
 #      of history. Hence, their use is discouraged.
+
+
 
 ######################################################################
 # --------------

@@ -1,24 +1,32 @@
 .. note::
     :class: sphx-glr-download-link-note
 
-    Click :ref:`here <sphx_glr_download_beginner_blitz_tensor_tutorial.py>` to download the full example code
+    Click :ref:`here <sphx_glr_download_beginner_basics_tensorqs_tutorial.py>` to download the full example code
 .. rst-class:: sphx-glr-example-title
 
-.. _sphx_glr_beginner_blitz_tensor_tutorial.py:
+.. _sphx_glr_beginner_basics_tensorqs_tutorial.py:
 
 
-Tensors
---------------------------------------------
+`Learn the Basics <intro.html>`_ ||
+`Quickstart <quickstart_tutorial.html>`_ || 
+**Tensors** || 
+`Datasets & DataLoaders <data_tutorial.html>`_ ||
+`Transforms <transforms_tutorial.html>`_ ||
+`Build Model <buildmodel_tutorial.html>`_ ||
+`Autograd <autograd_tutorial.html>`_ ||
+`Optimization <optimization_tutorial.html>`_ ||
+`Save & Load Model <saveloadrun_tutorial.html>`_
 
-Tensors are a specialized data structure that are very similar to arrays
-and matrices. In PyTorch, we use tensors to encode the inputs and
-outputs of a model, as well as the model’s parameters.
+Tensors 
+==========================
 
-Tensors are similar to NumPy’s ndarrays, except that tensors can run on
-GPUs or other specialized hardware to accelerate computing. If you’re familiar with ndarrays, you’ll
-be right at home with the Tensor API. If not, follow along in this quick
-API walkthrough.
+Tensors are a specialized data structure that are very similar to arrays and matrices. 
+In PyTorch, we use tensors to encode the inputs and outputs of a model, as well as the model’s parameters.
 
+Tensors are similar to `NumPy’s <https://numpy.org/>`_ ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and
+NumPy arrays can often share the same underlying memory, eliminating the need to copy data (see :ref:`bridge-to-np-label`). Tensors 
+are also optimized for automatic differentiation (we'll see more about that later in the `Autograd <autograd_tutorial.html>`__ 
+section). If you’re familiar with ndarrays, you’ll be right at home with the Tensor API. If not, follow along!
 
 
 .. code-block:: default
@@ -34,7 +42,7 @@ API walkthrough.
 
 
 
-Tensor Initialization
+Initializing a Tensor
 ~~~~~~~~~~~~~~~~~~~~~
 
 Tensors can be initialized in various ways. Take a look at the following examples:
@@ -103,8 +111,8 @@ The new tensor retains the properties (shape, datatype) of the argument tensor, 
             [1, 1]]) 
 
     Random Tensor: 
-     tensor([[0.3483, 0.9411],
-            [0.7310, 0.6100]])
+     tensor([[0.1034, 0.3199],
+            [0.9854, 0.1928]])
 
 
 **With random or constant values:**
@@ -130,7 +138,6 @@ The new tensor retains the properties (shape, datatype) of the argument tensor, 
 
 
 
-
 .. rst-class:: sphx-glr-script-out
 
  Out:
@@ -138,8 +145,8 @@ The new tensor retains the properties (shape, datatype) of the argument tensor, 
  .. code-block:: none
 
     Random Tensor: 
-     tensor([[0.3210, 0.9966, 0.0818],
-            [0.6463, 0.1976, 0.5196]]) 
+     tensor([[0.7294, 0.1143, 0.7813],
+            [0.8723, 0.2691, 0.4051]]) 
 
     Ones Tensor: 
      tensor([[1., 1., 1.],
@@ -153,7 +160,7 @@ The new tensor retains the properties (shape, datatype) of the argument tensor, 
 --------------
 
 
-Tensor Attributes
+Attributes of a Tensor
 ~~~~~~~~~~~~~~~~~
 
 Tensor attributes describe their shape, datatype, and the device on which they are stored.
@@ -187,18 +194,19 @@ Tensor attributes describe their shape, datatype, and the device on which they a
 --------------
 
 
-Tensor Operations
+Operations on Tensors
 ~~~~~~~~~~~~~~~~~
 
-Over 100 tensor operations, including transposing, indexing, slicing,
-mathematical operations, linear algebra, random sampling, and more are
-comprehensively described
-`here <https://pytorch.org/docs/stable/torch.html>`__.
+Over 100 tensor operations, including arithmetic, linear algebra, matrix manipulation (transposing, 
+indexing, slicing), sampling and more are
+comprehensively described `here <https://pytorch.org/docs/stable/torch.html>`__.
 
-Each of them can be run on the GPU (at typically higher speeds than on a
-CPU). If you’re using Colab, allocate a GPU by going to Edit > Notebook
-Settings.
+Each of these operations can be run on the GPU (at typically higher speeds than on a
+CPU). If you’re using Colab, allocate a GPU by going to Runtime > Change runtime type > GPU.
 
+By default, tensors are created on the CPU. We need to explicitly move tensors to the GPU using 
+``.to`` method (after checking for GPU availability). Keep in mind that copying large tensors
+across devices can be expensive in terms of time and memory!
 
 
 .. code-block:: default
@@ -226,6 +234,9 @@ If you're familiar with the NumPy API, you'll find the Tensor API a breeze to us
 
 
     tensor = torch.ones(4, 4)
+    print('First row: ',tensor[0])
+    print('First column: ', tensor[:, 0])
+    print('Last column:', tensor[..., -1])
     tensor[:,1] = 0
     print(tensor)
 
@@ -239,6 +250,9 @@ If you're familiar with the NumPy API, you'll find the Tensor API a breeze to us
 
  .. code-block:: none
 
+    First row:  tensor([1., 1., 1., 1.])
+    First column:  tensor([1., 1., 1., 1.])
+    Last column: tensor([1., 1., 1., 1.])
     tensor([[1., 0., 1., 1.],
             [1., 0., 1., 1.],
             [1., 0., 1., 1.],
@@ -259,6 +273,7 @@ another tensor joining op that is subtly different from ``torch.cat``.
 
 
 
+
 .. rst-class:: sphx-glr-script-out
 
  Out:
@@ -271,16 +286,46 @@ another tensor joining op that is subtly different from ``torch.cat``.
             [1., 0., 1., 1., 1., 0., 1., 1., 1., 0., 1., 1.]])
 
 
-**Multiplying tensors**
+**Arithmetic operations**
 
 
 .. code-block:: default
 
 
-    # This computes the element-wise product
-    print(f"tensor.mul(tensor) \n {tensor.mul(tensor)} \n")
-    # Alternative syntax:
-    print(f"tensor * tensor \n {tensor * tensor}")
+    # This computes the matrix multiplication between two tensors. y1, y2, y3 will have the same value
+    y1 = tensor @ tensor.T
+    y2 = tensor.matmul(tensor.T)
+
+    y3 = torch.rand_like(tensor)
+    torch.matmul(tensor, tensor.T, out=y3)
+
+
+    # This computes the element-wise product. z1, z2, z3 will have the same value
+    z1 = tensor * tensor
+    z2 = tensor.mul(tensor)
+
+    z3 = torch.rand_like(tensor)
+    torch.mul(tensor, tensor, out=z3)
+
+
+
+
+
+
+
+
+**Single-element tensors** If you have a one-element tensor, for example by aggregating all
+values of a tensor into one value, you can convert it to a Python
+numerical value using ``item()``:
+
+
+.. code-block:: default
+
+
+    agg = tensor.sum()
+    agg_item = agg.item()  
+    print(agg_item, type(agg_item))
+
 
 
 
@@ -292,54 +337,12 @@ another tensor joining op that is subtly different from ``torch.cat``.
 
  .. code-block:: none
 
-    tensor.mul(tensor) 
-     tensor([[1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.]]) 
-
-    tensor * tensor 
-     tensor([[1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.],
-            [1., 0., 1., 1.]])
-
-
-This computes the matrix multiplication between two tensors
-
-
-.. code-block:: default
-
-    print(f"tensor.matmul(tensor.T) \n {tensor.matmul(tensor.T)} \n")
-    # Alternative syntax:
-    print(f"tensor @ tensor.T \n {tensor @ tensor.T}")
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    tensor.matmul(tensor.T) 
-     tensor([[3., 3., 3., 3.],
-            [3., 3., 3., 3.],
-            [3., 3., 3., 3.],
-            [3., 3., 3., 3.]]) 
-
-    tensor @ tensor.T 
-     tensor([[3., 3., 3., 3.],
-            [3., 3., 3., 3.],
-            [3., 3., 3., 3.],
-            [3., 3., 3., 3.]])
+    12.0 <class 'float'>
 
 
 **In-place operations**
-Operations that have a ``_`` suffix are in-place. For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
+Operations that store the result into the operand are called in-place. They are denoted by a ``_`` suffix. 
+For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
 
 
 .. code-block:: default
@@ -474,10 +477,10 @@ Changes in the NumPy array reflects in the tensor.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  5.996 seconds)
+   **Total running time of the script:** ( 0 minutes  6.114 seconds)
 
 
-.. _sphx_glr_download_beginner_blitz_tensor_tutorial.py:
+.. _sphx_glr_download_beginner_basics_tensorqs_tutorial.py:
 
 
 .. only :: html
@@ -489,13 +492,13 @@ Changes in the NumPy array reflects in the tensor.
 
   .. container:: sphx-glr-download
 
-     :download:`Download Python source code: tensor_tutorial.py <tensor_tutorial.py>`
+     :download:`Download Python source code: tensorqs_tutorial.py <tensorqs_tutorial.py>`
 
 
 
   .. container:: sphx-glr-download
 
-     :download:`Download Jupyter notebook: tensor_tutorial.ipynb <tensor_tutorial.ipynb>`
+     :download:`Download Jupyter notebook: tensorqs_tutorial.ipynb <tensorqs_tutorial.ipynb>`
 
 
 .. only:: html
