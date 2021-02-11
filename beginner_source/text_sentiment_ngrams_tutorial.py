@@ -341,12 +341,12 @@ for epoch in range(1, EPOCHS + 1):
 #        | epoch   9 |  1000/ 1782 batches | accuracy    0.941
 #        | epoch   9 |  1500/ 1782 batches | accuracy    0.942
 #        -----------------------------------------------------------
-#|         end of epoch   9 | time:  8.16s | valid accuracy    0.904
+#          end of epoch   9 | time:  8.16s | valid accuracy    0.904
 #        -----------------------------------------------------------
 #        | epoch  10 |   500/ 1782 batches | accuracy    0.940
 #        | epoch  10 |  1000/ 1782 batches | accuracy    0.942
 #        | epoch  10 |  1500/ 1782 batches | accuracy    0.942
-#i       -----------------------------------------------------------
+#        -----------------------------------------------------------
 #        | end of epoch  10 | time:  8.15s | valid accuracy    0.904
 #        -----------------------------------------------------------
 
