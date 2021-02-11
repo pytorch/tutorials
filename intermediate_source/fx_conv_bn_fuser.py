@@ -216,7 +216,7 @@ jit_rn18 = torch.jit.script(fused_rn18)
 print("jit time: ", benchmark(jit_rn18))
 
 
-
+############
 # Conclusion
 # ----------
 # As we can see, using FX we can easily write static graph transformations on
