@@ -95,9 +95,9 @@ label_pipeline = lambda x: int(x) - 1
 #
 # `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
 # is recommended for PyTorch users (a tutorial is `here <https://pytorch.org/tutorials/beginner/data_loading_tutorial.html>`__).
-# It works with a map-style dataset that implements the ``getitem()`` and ``len()`` protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnet of ``False``.
+# It works with a map-style dataset that implements the ``getitem()`` and ``len()`` protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnent of ``False``.
 #
-# Before sending to the model, ``collate_fn`` function works on a batch of samples generated from ``DataLoader``. The input to ``collat_fn`` is a batch of data with the batch size in ``DataLoader``, and ``collate_fn`` processes them according to the data processing pipelines declared previouly. Pay attention here and make sure that ``collate_fn`` is declared as a top level def. This ensures that the function is available in each worker.
+# Before sending to the model, ``collate_fn`` function works on a batch of samples generated from ``DataLoader``. The input to ``collate_fn`` is a batch of data with the batch size in ``DataLoader``, and ``collate_fn`` processes them according to the data processing pipelines declared previouly. Pay attention here and make sure that ``collate_fn`` is declared as a top level def. This ensures that the function is available in each worker.
 #
 # In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of ``nn.EmbeddingBag``. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of indidividual text entries.
 
@@ -118,7 +118,7 @@ def collate_batch(batch):
     return label_list.to(device), text_list.to(device), offsets.to(device)    
 
 train_iter = AG_NEWS(split='train')
-dataloader = DataLoader(list(train_iter), batch_size=8, shuffle=True, collate_fn=collate_batch)
+dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch)
 
 
 ######################################################################
@@ -259,6 +259,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.1)
 total_accu = None
 train_iter, test_iter = AG_NEWS()
 train_dataset = list(train_iter)
+test_dataset = list(test_iter)
 num_train = int(len(train_dataset) * 0.95)
 split_train_, split_valid_ = \
     random_split(train_dataset, [num_train, len(train_dataset) - num_train])
@@ -267,7 +268,7 @@ train_dataloader = DataLoader(split_train_, batch_size=BATCH_SIZE,
                               shuffle=True, collate_fn=collate_batch)
 valid_dataloader = DataLoader(split_valid_, batch_size=BATCH_SIZE,
                               shuffle=True, collate_fn=collate_batch)
-test_dataloader = DataLoader(list(test_iter), batch_size=BATCH_SIZE,
+test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
                              shuffle=True, collate_fn=collate_batch)
 
 for epoch in range(1, EPOCHS + 1):
