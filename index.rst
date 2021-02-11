@@ -215,6 +215,15 @@ Welcome to PyTorch Tutorials
    :link: advanced/super_resolution_with_onnxruntime.html
    :tags: Production
 
+.. Code Transformations with FX
+.. customcarditem::
+   :header: Building a Convolution/Batch Norm fuser in FX
+   :card_description: Build a simple FX interpreter to record the runtime of op, module, and function calls and report statistics
+   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
+   :link: intermediate/fx_conv_bn_fuser.html
+   :tags: FX
+
+
 .. Frontend APIs
 
 .. customcarditem::
@@ -575,4 +584,4 @@ Additional Resources
 
    beginner/deeplabv3_on_ios.html
    beginner/deeplabv3_on_android.html
-   
+
