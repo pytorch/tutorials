@@ -2,7 +2,7 @@
 Text classification with the new torchtext library
 ==================================
 
-In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. In the nightly release of torchtext libraries, we provide a few prototype building blocks for data processing. With the new torchtext library, you will have the flexibility to
+In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. In the nightly release of the torchtext library, we provide a few prototype building blocks for data processing. Users will have the flexibility to
 
    - Access to the raw data as an iterator
    - Build data processing pipeline to convert the raw text strings into ``torch.Tensor`` that can be used to train the model
@@ -20,7 +20,7 @@ import torch
 # With torchtext 0.9.0 rc
 # from torchtext.datasets import AG_NEWS
 from torchtext.experimental.datasets.raw import AG_NEWS
-train_iter, = AG_NEWS(split=('train'))
+train_iter = AG_NEWS(split='train')
 
 
 ######################################################################
@@ -57,7 +57,7 @@ train_iter, = AG_NEWS(split=('train'))
 from torchtext.experimental.vocab import build_vocab_from_iterator
 from torchtext.experimental.transforms import basic_english_normalize
 tokenizer = basic_english_normalize()
-train_iter, = AG_NEWS(split=('train',))
+train_iter = AG_NEWS(split='train')
 vocab = build_vocab_from_iterator(iter(tokenizer(line) for label, line in train_iter), min_freq=1)
 
 
@@ -69,7 +69,7 @@ vocab = build_vocab_from_iterator(iter(tokenizer(line) for label, line in train_
 #     vocab(['here', 'is', 'an', 'example'])
 #     >>> [475, 21, 30, 5286]
 #
-# Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used for the raw data strings from the dataset iterators.
+# Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.
 
 
 text_pipeline = lambda x: vocab(tokenizer(x))
@@ -77,7 +77,7 @@ label_pipeline = lambda x: int(x) - 1
 
 
 ######################################################################
-# The text pipeline converts a text string into a list of integers based on the lookup defined in the vocab. The label pipeline converts the label into integers. For example,
+# The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,
 #
 # ::
 #
@@ -97,7 +97,7 @@ label_pipeline = lambda x: int(x) - 1
 # is recommended for PyTorch users (a tutorial is `here <https://pytorch.org/tutorials/beginner/data_loading_tutorial.html>`__).
 # It works with a map-style dataset that implements the ``getitem()`` and ``len()`` protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnet of ``False``.
 #
-# Before sending to the model, ``collate_fn`` function works on a batch of samples generated from ``DataLoader``. The input to ``collat_fn`` is a batch of data with the batch size in ``DataLoader``, and ``collate_fn`` processes them according to the data processing pipelines declared on Step 2. Pay attention here and make sure that ``collate_fn`` is declared as a top level def. This ensures that the function is available in each worker.
+# Before sending to the model, ``collate_fn`` function works on a batch of samples generated from ``DataLoader``. The input to ``collat_fn`` is a batch of data with the batch size in ``DataLoader``, and ``collate_fn`` processes them according to the data processing pipelines declared previouly. Pay attention here and make sure that ``collate_fn`` is declared as a top level def. This ensures that the function is available in each worker.
 #
 # In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of ``nn.EmbeddingBag``. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of indidividual text entries.
 
@@ -117,7 +117,7 @@ def collate_batch(batch):
     text_list = torch.cat(text_list)
     return label_list.to(device), text_list.to(device), offsets.to(device)    
 
-train_iter, = AG_NEWS(split=('train'))
+train_iter = AG_NEWS(split='train')
 dataloader = DataLoader(list(train_iter), batch_size=8, shuffle=True, collate_fn=collate_batch)
 
 
@@ -159,7 +159,7 @@ class TextClassificationModel(nn.Module):
 # Initiate an instance
 # --------------------
 #
-# We build a model with the embedding dimension of 64. The ``AG_NEWS`` dataset has four labels and therefore the number of classes is four.
+# The ``AG_NEWS`` dataset has four labels and therefore the number of classes is four.
 #
 # ::
 #
@@ -168,12 +168,10 @@ class TextClassificationModel(nn.Module):
 #    3 : Business
 #    4 : Sci/Tec
 #
-# The vocab size is equal to the length of vocab (including single word
-# and ngrams). The number of classes is equal to the number of labels,
-# which is four in ``AG_NEWS`` case.
+# We build a model with the embedding dimension of 64. The vocab size is equal to the length of the vocabulary instance. The number of classes is equal to the number of labels,
 #
 
-train_iter, = AG_NEWS(split=('train'))
+train_iter = AG_NEWS(split='train')
 num_class = len(set([label for (label, text) in train_iter]))
 vocab_size = len(vocab)
 emsize = 64
@@ -242,7 +240,7 @@ def evaluate(model, dataloader):
 # criterion combines ``nn.LogSoftmax()`` and ``nn.NLLLoss()`` in a single class.
 # It is useful when training a classification problem with C classes.
 # `SGD <https://pytorch.org/docs/stable/_modules/torch/optim/sgd.html>`__
-# implements stochastic gradient descent method as optimizer. The initial
+# implements stochastic gradient descent method as the optimizer. The initial
 # learning rate is set to 5.0.
 # `StepLR <https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR>`__
 # is used here to adjust the learning rate through epochs.
@@ -291,45 +289,68 @@ for epoch in range(1, EPOCHS + 1):
 ######################################################################
 # Running the model on GPU with the following information:
 #
-# Epoch: 1 \| time in 0 minutes, 11 seconds
-#
 # ::
 #
-#        Loss: 0.0263(train)     |       Acc: 84.5%(train)
-#        Loss: 0.0001(valid)     |       Acc: 89.0%(valid)
-#
-#
-# Epoch: 2 \| time in 0 minutes, 10 seconds
-#
-# ::
-#
-#        Loss: 0.0119(train)     |       Acc: 93.6%(train)
-#        Loss: 0.0000(valid)     |       Acc: 89.6%(valid)
-#
-#
-# Epoch: 3 \| time in 0 minutes, 9 seconds
-#
-# ::
-#
-#        Loss: 0.0069(train)     |       Acc: 96.4%(train)
-#        Loss: 0.0000(valid)     |       Acc: 90.5%(valid)
-#
-#
-# Epoch: 4 \| time in 0 minutes, 11 seconds
-#
-# ::
-#
-#        Loss: 0.0038(train)     |       Acc: 98.2%(train)
-#        Loss: 0.0000(valid)     |       Acc: 90.4%(valid)
-#
-#
-# Epoch: 5 \| time in 0 minutes, 11 seconds
-#
-# ::
-#
-#        Loss: 0.0022(train)     |       Acc: 99.0%(train)
-#        Loss: 0.0000(valid)     |       Acc: 91.0%(valid)
-#
+#        | epoch   1 |   500/ 1782 batches | lr 5.00000 | ms/batch  4.75 | accuracy    0.684
+#        | epoch   1 |  1000/ 1782 batches | lr 5.00000 | ms/batch  4.42 | accuracy    0.852
+#        | epoch   1 |  1500/ 1782 batches | lr 5.00000 | ms/batch  4.43 | accuracy    0.877
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   1 | time:  8.33s | valid accuracy    0.867
+#        -----------------------------------------------------------------------------------------
+#        | epoch   2 |   500/ 1782 batches | lr 5.00000 | ms/batch  4.45 | accuracy    0.895
+#        | epoch   2 |  1000/ 1782 batches | lr 5.00000 | ms/batch  4.43 | accuracy    0.900
+#        | epoch   2 |  1500/ 1782 batches | lr 5.00000 | ms/batch  4.43 | accuracy    0.903
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   2 | time:  8.18s | valid accuracy    0.890
+#        -----------------------------------------------------------------------------------------
+#        | epoch   3 |   500/ 1782 batches | lr 5.00000 | ms/batch  4.46 | accuracy    0.914
+#        | epoch   3 |  1000/ 1782 batches | lr 5.00000 | ms/batch  4.44 | accuracy    0.914
+#        | epoch   3 |  1500/ 1782 batches | lr 5.00000 | ms/batch  4.43 | accuracy    0.916
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   3 | time:  8.20s | valid accuracy    0.897
+#        -----------------------------------------------------------------------------------------
+#        | epoch   4 |   500/ 1782 batches | lr 5.00000 | ms/batch  4.44 | accuracy    0.926
+#        | epoch   4 |  1000/ 1782 batches | lr 5.00000 | ms/batch  4.44 | accuracy    0.924
+#        | epoch   4 |  1500/ 1782 batches | lr 5.00000 | ms/batch  4.43 | accuracy    0.921
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   4 | time:  8.18s | valid accuracy    0.895
+#        -----------------------------------------------------------------------------------------
+#        | epoch   5 |   500/ 1782 batches | lr 0.50000 | ms/batch  4.44 | accuracy    0.938
+#        | epoch   5 |  1000/ 1782 batches | lr 0.50000 | ms/batch  4.42 | accuracy    0.935
+#        | epoch   5 |  1500/ 1782 batches | lr 0.50000 | ms/batch  4.41 | accuracy    0.937
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   5 | time:  8.16s | valid accuracy    0.902
+#        -----------------------------------------------------------------------------------------
+#        | epoch   6 |   500/ 1782 batches | lr 0.50000 | ms/batch  4.43 | accuracy    0.939
+#        | epoch   6 |  1000/ 1782 batches | lr 0.50000 | ms/batch  4.41 | accuracy    0.939
+#        | epoch   6 |  1500/ 1782 batches | lr 0.50000 | ms/batch  4.41 | accuracy    0.938
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   6 | time:  8.16s | valid accuracy    0.906
+#        -----------------------------------------------------------------------------------------
+#        | epoch   7 |   500/ 1782 batches | lr 0.50000 | ms/batch  4.44 | accuracy    0.941
+#        | epoch   7 |  1000/ 1782 batches | lr 0.50000 | ms/batch  4.42 | accuracy    0.939
+#        | epoch   7 |  1500/ 1782 batches | lr 0.50000 | ms/batch  4.44 | accuracy    0.939
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   7 | time:  8.19s | valid accuracy    0.903
+#        -----------------------------------------------------------------------------------------
+#        | epoch   8 |   500/ 1782 batches | lr 0.05000 | ms/batch  4.44 | accuracy    0.942
+#        | epoch   8 |  1000/ 1782 batches | lr 0.05000 | ms/batch  4.41 | accuracy    0.941
+#        | epoch   8 |  1500/ 1782 batches | lr 0.05000 | ms/batch  4.42 | accuracy    0.942
+#        -----------------------------------------------------------------------------------------
+#        | end of epoch   8 | time:  8.16s | valid accuracy    0.904
+#        -----------------------------------------------------------------------------------------
+#        | epoch   9 |   500/ 1782 batches | lr 0.00500 | ms/batch  4.44 | accuracy    0.942
+#        | epoch   9 |  1000/ 1782 batches | lr 0.00500 | ms/batch  4.42 | accuracy    0.941
+#        | epoch   9 |  1500/ 1782 batches | lr 0.00500 | ms/batch  4.42 | accuracy    0.942
+#        -----------------------------------------------------------------------------------------
+#|         end of epoch   9 | time:  8.16s | valid accuracy    0.904
+#        -----------------------------------------------------------------------------------------
+#        | epoch  10 |   500/ 1782 batches | lr 0.00050 | ms/batch  4.43 | accuracy    0.940
+#        | epoch  10 |  1000/ 1782 batches | lr 0.00050 | ms/batch  4.41 | accuracy    0.942
+#        | epoch  10 |  1500/ 1782 batches | lr 0.00050 | ms/batch  4.41 | accuracy    0.942
+#i       -----------------------------------------------------------------------------------------
+#        | end of epoch  10 | time:  8.15s | valid accuracy    0.904
+#        -----------------------------------------------------------------------------------------
 
 
 ######################################################################
@@ -340,9 +361,9 @@ for epoch in range(1, EPOCHS + 1):
 
 
 ######################################################################
-# Checking the results of test dataset…
+# Checking the results of the test dataset…
 
-print('Checking the results of test dataset...')
+print('Checking the results of test dataset.')
 accu_test = evaluate(model, test_dataloader)
 print('test accuracy {:8.3f}'.format(accu_test))
 
@@ -350,7 +371,7 @@ print('test accuracy {:8.3f}'.format(accu_test))
 #
 # ::
 #
-#        Loss: 0.0237(test)      |       Acc: 90.5%(test)
+#        test accuracy    0.906
 #
 
 
@@ -361,17 +382,13 @@ print('test accuracy {:8.3f}'.format(accu_test))
 # Use the best model so far and test a golf news.
 #
 
-import re
-from torchtext.data.utils import ngrams_iterator
-from torchtext.data.utils import get_tokenizer
 
-ag_news_label = {1 : "World",
-                 2 : "Sports",
-                 3 : "Business",
-                 4 : "Sci/Tec"}
+ag_news_label = {1: "World",
+                 2: "Sports",
+                 3: "Business",
+                 4: "Sci/Tec"}
 
 def predict(text, text_pipeline):
-    tokenizer = get_tokenizer("basic_english")
     with torch.no_grad():
         text = torch.tensor(text_pipeline(text))
         output = model(text, torch.tensor([0]))
@@ -395,12 +412,19 @@ print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
 
 
 ################################################
+#
+# ::
+#
+#        This is a Sports news
+#
+
+################################################
 # Other data processing pipeline - SentencePiece
 # ----------------------------------------------
 #
-# SentencePiece is an unsupervised text tokenizer and detokenizer mainly for Neural Network-based text generation systems where the vocabulary size is predetermined prior to the neural model training. For SentencePiece transforms in torchtext, both subword units (e.g., byte-pair-encoding (BPE) ) and unigram language model are supported. We provide a few pretrained SentencePiece models and they are accessable from PRETRAINED_SP_MODEL. Here is an example to apply SentencePiece transform to build the dataset.
+# SentencePiece is an unsupervised text tokenizer and detokenizer mainly for Neural Network-based text generation systems where the vocabulary size is pre-determined prior to the neural model training. For SentencePiece transforms in torchtext, both subword units (e.g., byte-pair-encoding) and unigram language model are supported. We provide a few pretrained SentencePiece models and they are accessable from PRETRAINED_SP_MODEL. Here is an example to apply SentencePiece transform to build the dataset.
 #
-# By using ``spm_transform`` transform in ``collate_batch`` function, you can re-run the tutorial with new results.
+# By using ``spm_transform`` transform in ``collate_batch`` function, you can re-run the tutorial to have the new results.
 
 from torchtext.experimental.transforms import (
     PRETRAINED_SP_MODEL,
