@@ -6,11 +6,10 @@
 
 In this tutorial, we are going to use FX to do the following:
 
-1) Find patterns of conv/batch norm.
+1) Find patterns of conv/batch norm in the data dependencies.
 2) Fold the batch norm statistics into the convolution weights.
 
-Despite this being a fairly trivial graph rewrite, this has been surprisingly
-difficult to do in PyTorch for quite some time.
+Note that this optimization only works for models in inference mode.
 
 We will be building the fuser that exists here:
 https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py
@@ -31,10 +30,10 @@ import torch.nn as nn
 ######################################################################
 # For this tutorial, we are going to create a model consisting of convolutions
 # and batch norms. Note that this model has some tricky components - some of
-# the modules are hidden within sequentials and one of the modules is wrapped
-# inside of another PyTorch module.
+# the conv/batch norm patterns are hidden within Sequentials and one of the
+# BatchNorms is wrapped in another module.
 
-class Wrapper(nn.Module):
+class WrappedBatchnorm(nn.Module):
     def __init__(self):
         super().__init__()
         self.mod = nn.BatchNorm2d(1)
@@ -51,7 +50,7 @@ class M(nn.Module):
             nn.BatchNorm2d(1),
             nn.Conv2d(1, 1, 1),
         )
-        self.wrapped = Wrapper()
+        self.wrapped = WrappedBatchnorm()
 
     def forward(self, x):
         x = self.conv1(x)
@@ -77,7 +76,7 @@ print(traced_model.graph)
 
 ######################################################################
 # This gives us a graph representation of our model. Note that both the modules
-# hidden within the sequential as well as the wrapped modue have been inlined
+# hidden within the sequential as well as the wrapped module have been inlined
 # into the graph. More information can be found at the FX documentation
 # https://pytorch.org/docs/master/fx.html.
 
@@ -86,7 +85,7 @@ print(traced_model.graph)
 # Fusing Convolution with Batch Norm
 # ----------------------------------
 # Unlike some other fusions, fusion of convolution with batch norm does not
-# require any additional kernels. Instead, as batch norm during inference
+# require any new operators. Instead, as batch norm during inference
 # consists of a pointwise add and multiply, these operations can be "baked"
 # into the preceding convolution's weights. Read
 # https://nenadmarkus.com/p/fusing-batchnorm-and-conv/ for further details. The
@@ -162,6 +161,8 @@ def fuse(model: torch.nn.Module) -> torch.nn.Module:
             # safely remove the batch norm.
             fx_model.graph.erase_node(node)
     fx_model.graph.lint()
+    # After we've modified our graph, we need to recompile our graph in order
+    # to keep the generated code in sync.
     fx_model.recompile()
     return fx_model
 
@@ -182,9 +183,10 @@ def fuse(model: torch.nn.Module) -> torch.nn.Module:
 
 fused_model = fuse(model)
 inp = torch.randn(5, 1, 1, 1)
-assert(abs(fused_model(inp).sum() - model(inp).sum()) < 1e-5)
+torch.testing.assert_allclose(fused_model(inp), model(inp))
 
 
+######################################################################
 # Benchmarking our Fusion on ResNet18
 # ----------
 # We can test our fusion pass on a larger model like ResNet18 and see how much
