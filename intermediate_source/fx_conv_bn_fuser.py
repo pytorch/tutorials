@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-(beta) Building a Conv/BN fuser in FX
+(beta) Building a Convolution/Batch Norm fuser in FX
 *******************************************************
 **Author**: `Horace He <https://github.com/chillee>`_
 
-In this tutorial, we are going to use FX to do the following:
+In this tutorial, we are going to use FX, a Py to do the following:
 
 1) Find patterns of conv/batch norm in the data dependencies.
-2) Fold the batch norm statistics into the convolution weights.
+2) For the patterns found in 1), fold the batch norm statistics into the convolution weights.
 
-Note that this optimization only works for models in inference mode.
+Note that this optimization only works for models in inference mode (i.e. `mode.eval()`)
 
 We will be building the fuser that exists here:
-https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py
+https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py
 
 """
 
@@ -31,9 +31,9 @@ import torch.nn as nn
 # For this tutorial, we are going to create a model consisting of convolutions
 # and batch norms. Note that this model has some tricky components - some of
 # the conv/batch norm patterns are hidden within Sequentials and one of the
-# BatchNorms is wrapped in another module.
+# BatchNorms is wrapped in another Module.
 
-class WrappedBatchnorm(nn.Module):
+class WrappedBatchNorm(nn.Module):
     def __init__(self):
         super().__init__()
         self.mod = nn.BatchNorm2d(1)
@@ -69,16 +69,20 @@ model.eval()
 # -----------------------------------------
 # One of the primary challenges with trying to automatically fuse convolution
 # and batch norm in PyTorch is that PyTorch does not provide an easy way of
-# accessing the computational graph. FX resolves that problem.
+# accessing the computational graph. FX resolves this problem by symbolically
+# tracing the actual operations called, so that we can track the computations
+# through the `forward` call, nested within Sequential modules, or wrapped in
+# an user-defined module.
 
 traced_model = torch.fx.symbolic_trace(model)
 print(traced_model.graph)
 
 ######################################################################
 # This gives us a graph representation of our model. Note that both the modules
-# hidden within the sequential as well as the wrapped module have been inlined
-# into the graph. More information can be found at the FX documentation
-# https://pytorch.org/docs/master/fx.html.
+# hidden within the sequential as well as the wrapped Module have been inlined
+# into the graph. This is the default level of abstraction, but it can be
+# configured by the pass writer. More information can be found at the FX
+# overview https://pytorch.org/docs/master/fx.html#module-torch.fx
 
 
 ####################################
@@ -87,12 +91,17 @@ print(traced_model.graph)
 # Unlike some other fusions, fusion of convolution with batch norm does not
 # require any new operators. Instead, as batch norm during inference
 # consists of a pointwise add and multiply, these operations can be "baked"
-# into the preceding convolution's weights. Read
+# into the preceding convolution's weights. This allows us to remove the batch
+# norm entirely from our model! Read
 # https://nenadmarkus.com/p/fusing-batchnorm-and-conv/ for further details. The
 # code here is copied from
-# https://github.com/pytorch/pytorch/blob/master/torch/nn/utils/fusion.py for
+# https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/nn/utils/fusion.py
 # clarity purposes.
 def fuse_conv_bn_eval(conv, bn):
+    """
+    Given a conv Module `A` and an batch_norm module `B`, returns a conv
+    module `C` such that C(x) == B(A(x)) in inference mode.
+    """
     assert(not (conv.training or bn.training)), "Fusion only for eval!"
     fused_conv = copy.deepcopy(conv)
 
@@ -141,12 +150,29 @@ def replace_node_module(node: fx.Node, modules: Dict[str, Any], new_module: torc
 
 def fuse(model: torch.nn.Module) -> torch.nn.Module:
     model = copy.deepcopy(model)
-    fx_model = fx.symbolic_trace(model) # We symbolically trace our model here
+    # The first step of most FX passes is to symbolically trace our model to
+    # obtain a `GraphModule`. This is a representation of our original model
+    # that is functionally identical to our original model, except that we now
+    # also have a graph representation of our forward pass.
+    fx_model: fx.GraphModule = fx.symbolic_trace(model)
     modules = dict(fx_model.named_modules())
 
+    # The primary representation for working with FX are the `Graph` and the
+    # `Node`. Each `GraphModule` has a `Graph` associated with it - this
+    # `Graph` is also what generates `GraphModule.code`.
+    # The `Graph` itself is represented as a list of `Node` objects. Thus, to
+    # iterate through all of the operations in our graph, we iterate over each
+    # `Node` in our `Graph`.
     for node in fx_model.graph.nodes:
-        if node.op != 'call_module': # If our current node isn't calling a module then we can ignore it.
+        # The FX IR contains several types of nodes, which generally represent
+        # call sites to modules, functions, or methods. The type of node is
+        # determined by `Node.op`.
+        if node.op != 'call_module': # If our current node isn't calling a Module then we can ignore it.
             continue
+        # For call sites, `Node.target` represents the module/function/method
+        # that's being called. Here, we check `Node.target` to see if it's a
+        # batch norm module, and then check `Node.args[0].target` to see if the
+        # input `Node` is a convolution.
         if type(modules[node.target]) is nn.BatchNorm2d and type(modules[node.args[0].target]) is nn.Conv2d:
             if len(node.args[0].users) > 1:  # Output of conv is used by other nodes
                 continue
@@ -178,10 +204,12 @@ def fuse(model: torch.nn.Module) -> torch.nn.Module:
 # Testing out our Fusion Pass
 # -----------------------------------------
 # We can now run this fusion pass on our initial toy model and verify that our
-# results are identical.
+# results are identical. In addition, we can print out the code for our fused
+# model and verify that there are no more batch norms.
 
 
 fused_model = fuse(model)
+print(fused_model.code)
 inp = torch.randn(5, 1, 1, 1)
 torch.testing.assert_allclose(fused_model(inp), model(inp))
 
@@ -211,9 +239,11 @@ def benchmark(model, iters=20):
 fused_rn18 = fuse(rn18)
 print("Unfused time: ", benchmark(rn18))
 print("Fused time: ", benchmark(fused_rn18))
-# As FX is a source to source transformation, our transformation can still
-# compose with Torchscript with no issues. So we can still script our model to
-# try and increase our performance more.
+######################################################################
+# As we previously saw, the output of FX is (Torchscriptable) PyTorch code, we
+# can easily `jit.script` the output to try and increase our performance even
+# more. In this way, our FX model transformation composes with Torchscript with
+# no issues.
 jit_rn18 = torch.jit.script(fused_rn18)
 print("jit time: ", benchmark(jit_rn18))
 
