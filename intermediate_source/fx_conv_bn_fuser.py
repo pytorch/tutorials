@@ -4,7 +4,8 @@
 *******************************************************
 **Author**: `Horace He <https://github.com/chillee>`_
 
-In this tutorial, we are going to use FX, a Py to do the following:
+In this tutorial, we are going to use FX, a toolkit for composable function
+transformations of PyTorch, to do the following:
 
 1) Find patterns of conv/batch norm in the data dependencies.
 2) For the patterns found in 1), fold the batch norm statistics into the convolution weights.
@@ -240,10 +241,10 @@ fused_rn18 = fuse(rn18)
 print("Unfused time: ", benchmark(rn18))
 print("Fused time: ", benchmark(fused_rn18))
 ######################################################################
-# As we previously saw, the output of FX is (Torchscriptable) PyTorch code, we
-# can easily `jit.script` the output to try and increase our performance even
-# more. In this way, our FX model transformation composes with Torchscript with
-# no issues.
+# As we previously saw, the output of our FX transformation is
+# (Torchscriptable) PyTorch code, we can easily `jit.script` the output to try
+# and increase our performance even more. In this way, our FX model
+# transformation composes with Torchscript with no issues.
 jit_rn18 = torch.jit.script(fused_rn18)
 print("jit time: ", benchmark(jit_rn18))
 
