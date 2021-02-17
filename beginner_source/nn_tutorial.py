@@ -105,7 +105,7 @@ print(y_train.min(), y_train.max())
 # so that it can calculate the gradient during back-propagation *automatically*!
 #
 # For the weights, we set ``requires_grad`` **after** the initialization, since we
-# don't want that step included in the gradient. (Note that a trailling ``_`` in
+# don't want that step included in the gradient. (Note that a trailing ``_`` in
 # PyTorch signifies that the operation is performed in-place.)
 #
 # .. note:: We are initializing the weights here with
@@ -541,7 +541,7 @@ print(loss_func(model(xb), yb))
 ###############################################################################
 # Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
 # our training loop is now dramatically smaller and easier to understand. Let's
-# now try to add the basic features necessary to create effecive models in practice.
+# now try to add the basic features necessary to create effective models in practice.
 #
 # Add validation
 # -----------------------
@@ -706,7 +706,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # nn.Sequential
 # ------------------------
 #
-# ``torch.nn`` has another handy class we can use to simply our code:
+# ``torch.nn`` has another handy class we can use to simplify our code:
 # `Sequential <https://pytorch.org/docs/stable/nn.html#torch.nn.Sequential>`_ .
 # A ``Sequential`` object runs each of the modules contained within it, in a
 # sequential manner. This is a simpler way of writing our neural network.
@@ -758,7 +758,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 # pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
-# single channel image. First, we can remove the initial Lambda layer but
+# single channel image. First, we can remove the initial Lambda layer by
 # moving the data preprocessing into a generator:
 
 def preprocess(x, y):
