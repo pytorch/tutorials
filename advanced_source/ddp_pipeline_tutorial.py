@@ -24,6 +24,40 @@ Prerequisites:
 # ----------------
 #
 
+######################################################################
+# ``PositionalEncoding`` module injects some information about the
+# relative or absolute position of the tokens in the sequence. The
+# positional encodings have the same dimension as the embeddings so that
+# the two can be summed. Here, we use ``sine`` and ``cosine`` functions of
+# different frequencies.
+
+import sys
+import os
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import tempfile
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
+
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model, dropout=0.1, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
 
 ######################################################################
 # In this tutorial, we will split a Transformer model across two GPUs and use
@@ -41,15 +75,6 @@ Prerequisites:
 # As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
 # such that half of the ``nn.TransformerEncoderLayer`` are in ``TransformerModelStage1``
 # and the other half are in ``TransformerModelStage2``.
-
-import sys
-import os
-import math
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import tempfile
-from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 if sys.platform == 'win32':
     print('Windows platform is not supported for pipeline parallelism')
@@ -123,33 +148,6 @@ class TransformerModelStage2(nn.Module):
         return output
 
 ######################################################################
-# ``PositionalEncoding`` module injects some information about the
-# relative or absolute position of the tokens in the sequence. The
-# positional encodings have the same dimension as the embeddings so that
-# the two can be summed. Here, we use ``sine`` and ``cosine`` functions of
-# different frequencies.
-
-
-class PositionalEncoding(nn.Module):
-
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
-
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0).transpose(0, 1)
-        self.register_buffer('pe', pe)
-
-    def forward(self, x):
-        x = x + self.pe[:x.size(0), :]
-        return self.dropout(x)
-
-
-######################################################################
 # Start multiple processes for training
 # -------------------------------------
 #
@@ -199,18 +197,29 @@ def run_worker(rank, world_size):
     def print_with_rank(msg):
         print('[RANK {}]: {}'.format(rank, msg))
 
-    import torchtext
+    import io
+    from torchtext.utils import download_from_url, extract_archive
     from torchtext.data.utils import get_tokenizer
-    TEXT = torchtext.data.Field(tokenize=get_tokenizer("basic_english"),
-                                init_token='<sos>',
-                                eos_token='<eos>',
-                                lower=True)
-    train_txt, val_txt, test_txt = torchtext.datasets.WikiText2.splits(TEXT)
-    TEXT.build_vocab(train_txt)
+    from torchtext.vocab import build_vocab_from_iterator
+
+    url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
+    test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url, root=".data{}".format(rank)))
+    tokenizer = get_tokenizer('basic_english')
+    vocab = build_vocab_from_iterator(map(tokenizer,
+                                          iter(io.open(train_filepath,
+                                                       encoding="utf8"))))
+
+    def data_process(raw_text_iter):
+      data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                           dtype=torch.long) for item in raw_text_iter]
+      return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
+    train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
+    val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
+    test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
     device = torch.device(2 * rank)
 
     def batchify(data, bsz, rank, world_size, is_train=False):
-        data = TEXT.numericalize([data.examples[0].text])
         # Divide the dataset into bsz parts.
         nbatch = data.size(0) // bsz
         # Trim off any extra elements that wouldn't cleanly fit (remainders).
@@ -225,9 +234,9 @@ def run_worker(rank, world_size):
 
     batch_size = 20
     eval_batch_size = 10
-    train_data = batchify(train_txt, batch_size, rank, world_size, True)
-    val_data = batchify(val_txt, eval_batch_size, rank, world_size)
-    test_data = batchify(test_txt, eval_batch_size, rank, world_size)
+    train_data = batchify(train_data, batch_size, rank, world_size, True)
+    val_data = batchify(val_data, eval_batch_size, rank, world_size)
+    test_data = batchify(test_data, eval_batch_size, rank, world_size)
 
 
 ######################################################################
@@ -282,7 +291,7 @@ def run_worker(rank, world_size):
 # another across GPUs 2 and 3. Both pipes are then replicated using DistributedDataParallel.
 
 # In 'run_worker'
-    ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
+    ntokens = len(vocab.stoi) # the size of vocabulary
     emsize = 4096 # embedding dimension
     nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
     nlayers = 8 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -318,7 +327,7 @@ def run_worker(rank, world_size):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '29500'
     dist.init_process_group(
-                backend="nccl", rank=rank, world_size=2)
+                backend="nccl", rank=rank, world_size=world_size)
     model = DistributedDataParallel(model)
 
     def get_total_params(module: torch.nn.Module):
@@ -358,7 +367,7 @@ def run_worker(rank, world_size):
         model.train() # Turn on the train mode
         total_loss = 0.
         start_time = time.time()
-        ntokens = len(TEXT.vocab.stoi)
+        ntokens = len(vocab.stoi)
 
         # Train only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -394,7 +403,7 @@ def run_worker(rank, world_size):
     def evaluate(eval_model, data_source):
         eval_model.eval() # Turn on the evaluation mode
         total_loss = 0.
-        ntokens = len(TEXT.vocab.stoi)
+        ntokens = len(vocab.stoi)
         # Evaluate only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, data_source.size(0) - 1)
         with torch.no_grad():
