@@ -49,16 +49,21 @@ train_iter = AG_NEWS(split='train')
 # Prepare data processing pipelines
 # ---------------------------------
 #
-# We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer backed by regular expression, and SentencePiece. Those are the basic data processing building blocks for raw text string.
+# We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer. Those are the basic data processing building blocks for raw text string.
 #
-# Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. We provide a function ``build_vocab_from_iterator`` to build the vocabulary from a text iterator. Users can set up the minimum frequency for the tokens to be included.
+# Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. Users can have a customized vocab by setting up arguments in the constructor of the Vocab class, for example the minimum frequency for the tokens to be included.
 
 
-from torchtext.experimental.vocab import build_vocab_from_iterator
-from torchtext.experimental.transforms import basic_english_normalize
-tokenizer = basic_english_normalize()
+from torchtext.data.utils import get_tokenizer
+from collections import Counter
+from torchtext.vocab import Vocab
+
+tokenizer = get_tokenizer('basic_english')
 train_iter = AG_NEWS(split='train')
-vocab = build_vocab_from_iterator(iter(tokenizer(line) for label, line in train_iter), min_freq=1)
+counter = Counter()
+for (label, line) in train_iter:
+    counter.update(tokenizer(line))
+vocab = Vocab(counter, min_freq=1)
 
 
 ######################################################################
@@ -66,13 +71,12 @@ vocab = build_vocab_from_iterator(iter(tokenizer(line) for label, line in train_
 #
 # ::
 #
-#     vocab(['here', 'is', 'an', 'example'])
-#     >>> [475, 21, 30, 5286]
+#     [vocab[token] for token in ['here', 'is', 'an', 'example']]
+#     >>> [476, 22, 31, 5298]
 #
 # Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.
 
-
-text_pipeline = lambda x: vocab(tokenizer(x))
+text_pipeline = lambda x: [vocab[token] for token in tokenizer(x)]
 label_pipeline = lambda x: int(x) - 1
 
 
@@ -415,32 +419,3 @@ print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
 #
 #        This is a Sports news
 #
-
-################################################
-# Other data processing pipeline - SentencePiece
-# ----------------------------------------------
-#
-# SentencePiece is an unsupervised text tokenizer and detokenizer mainly for Neural Network-based text generation systems where the vocabulary size is pre-determined prior to the neural model training. For SentencePiece transforms in torchtext, both subword units (e.g., byte-pair-encoding) and unigram language model are supported. We provide a few pretrained SentencePiece models and they are accessable from PRETRAINED_SP_MODEL. Here is an example to apply SentencePiece transform to build the dataset.
-#
-# By using ``spm_transform`` transform in ``collate_batch`` function, you can re-run the tutorial to have the new results.
-
-from torchtext.experimental.transforms import (
-    PRETRAINED_SP_MODEL,
-    sentencepiece_processor,
-    load_sp_model,
-)
-from torchtext.utils import download_from_url
-spm_filepath = download_from_url(PRETRAINED_SP_MODEL['text_unigram_25000'])
-spm_transform = sentencepiece_processor(spm_filepath)
-sp_model = load_sp_model(spm_filepath)
-
-
-################################################
-# The SentecePiece processor converts a text string into a list of integers. You can use the decode method to convert a list of integers back to the original string.
-#
-# ::
-#
-#     spm_transform('here is the an example')
-#     >>> [130, 46, 9, 76, 1798]
-#     spm_transform.decode([6468, 17151, 4024, 8246, 16887, 87, 23985, 12, 581, 15120])
-#     >>> 'torchtext sentencepiece processor can encode and decode'
