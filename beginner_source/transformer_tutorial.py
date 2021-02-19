@@ -145,15 +145,17 @@ class PositionalEncoding(nn.Module):
 
 import io
 import torch
-# With torchtext 0.9.0 rc
-# from torchtext.datasets import WikiText2
-from torchtext.experimental.datasets.raw import WikiText2
+from torchtext.datasets import WikiText2
 from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
+from collections import Counter
+from torchtext.vocab import Vocab
 
-train_iter, = WikiText2(split=('train'))
+train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
-vocab = build_vocab_from_iterator(map(tokenizer, train_iter))
+counter = Counter()
+for line in train_iter:
+    counter.update(tokenizer(line))
+vocab = Vocab(counter)
 
 def data_process(raw_text_iter):
   data = [torch.tensor([vocab[token] for token in tokenizer(item)],
