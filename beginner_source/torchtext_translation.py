@@ -40,14 +40,12 @@ By the end of this tutorial, you will be able to preprocess sentences into tenso
 
 import torchtext
 import torch
-# With torchtext 0.9.0 rc
-# from torchtext.datasets import Multi30k
-from torchtext.experimental.datasets.raw import Multi30k
+from torchtext.datasets import Multi30k
 from torchtext.data.utils import get_tokenizer
 from collections import Counter
 from torchtext.vocab import Vocab
 
-train_iter, = Multi30k(split=('train'))
+train_iter = Multi30k(split='train')
 de_tokenizer = get_tokenizer('spacy', language='de_core_news_sm')
 en_tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
