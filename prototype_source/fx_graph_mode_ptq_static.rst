@@ -7,7 +7,7 @@ This tutorial introduces the steps to do post training static quantization in gr
 The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model    
 although there might some effort required to make the model compatible with FX Graph Mode Quantizatiion (symbolically traceable with ``torch.fx``), 
 we'll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.   
-We also have a tutorial for FX Graph Mode Post Training Dynamic Quantization(todo).     
+We also have a tutorial for `FX Graph Mode Post Training Dynamic Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html>`_.
 tldr; The FX Graph Mode API looks like the following:
 
 .. code:: python    
