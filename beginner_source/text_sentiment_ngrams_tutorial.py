@@ -1,5 +1,5 @@
 """
-Text classification with the new torchtext library
+Text classification with the torchtext library
 ==================================
 
 In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. In the nightly release of the torchtext library, we provide a few prototype building blocks for data processing. Users will have the flexibility to
@@ -17,9 +17,7 @@ In this tutorial, we will show how to use the new torchtext library to build the
 # The new library provides users the access to the raw datasets with their custom data process pipeline. The new torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the ``AG_NEWS`` dataset iterators yield the raw data as a tuple of label and text.
 
 import torch
-# With torchtext 0.9.0 rc
-# from torchtext.datasets import AG_NEWS
-from torchtext.experimental.datasets.raw import AG_NEWS
+from torchtext.datasets import AG_NEWS
 train_iter = AG_NEWS(split='train')
 
 
