@@ -347,28 +347,24 @@ be found in
 
 <span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
 
+<span class="c1"># On Windows platform, the torch.distributed package only</span>
+<span class="c1"># supports Gloo backend, FileStore and TcpStore.</span>
+<span class="c1"># For FileStore, set init_method parameter in init_process_group</span>
+<span class="c1"># to a local file. Example as follow:</span>
+<span class="c1"># init_method="file:///f:/libtmp/some_file"</span>
+<span class="c1"># dist.init_process_group(</span>
+<span class="c1">#    "gloo",</span>
+<span class="c1">#    rank=rank,</span>
+<span class="c1">#    init_method=init_method,</span>
+<span class="c1">#    world_size=world_size)</span>
+<span class="c1"># For TcpStore, same way as on Linux.</span>
 
 <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s1">'win32'</span><span class="p">:</span>
-        <span class="c1"># Distributed package only covers collective communications with Gloo</span>
-        <span class="c1"># backend and FileStore on Windows platform. Set init_method parameter</span>
-        <span class="c1"># in init_process_group to a local file.</span>
-        <span class="c1"># Example init_method="file:///f:/libtmp/some_file"</span>
-        <span class="n">init_method</span><span class="o">=</span><span class="s2">"file:///{your local file path}"</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'12355'</span>
 
-        <span class="c1"># initialize the process group</span>
-        <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span>
-            <span class="s2">"gloo"</span><span class="p">,</span>
-            <span class="n">init_method</span><span class="o">=</span><span class="n">init_method</span><span class="p">,</span>
-            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_PORT'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'12355'</span>
-
-        <span class="c1"># initialize the process group</span>
-        <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+    <span class="c1"># initialize the process group</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"gloo"</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">cleanup</span><span class="p">():</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
