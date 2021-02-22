@@ -2,7 +2,7 @@
 Text classification with the torchtext library
 ==================================
 
-In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. In the nightly release of the torchtext library, we provide a few prototype building blocks for data processing. Users will have the flexibility to
+In this tutorial, we will show how to use the new torchtext library to build the dataset for the text classification analysis. Users will have the flexibility to
 
    - Access to the raw data as an iterator
    - Build data processing pipeline to convert the raw text strings into ``torch.Tensor`` that can be used to train the model
@@ -49,7 +49,7 @@ train_iter = AG_NEWS(split='train')
 #
 # We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer. Those are the basic data processing building blocks for raw text string.
 #
-# Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. Users can have a customized vocab by setting up arguments in the constructor of the Vocab class, for example the minimum frequency for the tokens to be included.
+# Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. Users can have a customized vocab by setting up arguments in the constructor of the Vocab class. For example, the minimum frequency ``min_freq`` for the tokens to be included.
 
 
 from torchtext.data.utils import get_tokenizer
@@ -287,7 +287,7 @@ for epoch in range(1, EPOCHS + 1):
 
 
 ######################################################################
-# Running the model on GPU with the following information:
+# Running the model on GPU with the following printout:
 #
 # ::
 #
