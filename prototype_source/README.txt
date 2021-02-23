@@ -24,7 +24,7 @@ Prototype Tutorials
      Vulkan Backend User Workflow
      https://pytorch.org/tutorials/intermediate/vulkan_workflow.html
 
-7. fx_graph_mode_ptq_static.py
+7. fx_graph_mode_ptq_static.rst
 	   FX Graph Mode Post Training Static Quantization
 	   https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html
 

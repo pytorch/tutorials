@@ -6,6 +6,10 @@ else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
 fi
 
+# set locale for click dependency in spacy
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
@@ -28,9 +32,7 @@ python -m spacy download de
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-# pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
-# this is a workaround to the issue.
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==8.1.0
 
 aws configure set default.s3.multipart_threshold 5120MB
 
