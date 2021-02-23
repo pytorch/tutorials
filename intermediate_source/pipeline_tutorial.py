@@ -176,18 +176,31 @@ class PositionalEncoding(nn.Module):
 # efficient batch processing.
 #
 
-import torchtext
+import io
+import torch
+from torchtext.utils import download_from_url, extract_archive
 from torchtext.data.utils import get_tokenizer
-TEXT = torchtext.data.Field(tokenize=get_tokenizer("basic_english"),
-                            init_token='<sos>',
-                            eos_token='<eos>',
-                            lower=True)
-train_txt, val_txt, test_txt = torchtext.datasets.WikiText2.splits(TEXT)
-TEXT.build_vocab(train_txt)
+from torchtext.vocab import build_vocab_from_iterator
+
+url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
+test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+tokenizer = get_tokenizer('basic_english')
+vocab = build_vocab_from_iterator(map(tokenizer,
+                                      iter(io.open(train_filepath,
+                                                   encoding="utf8"))))
+
+def data_process(raw_text_iter):
+  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                       dtype=torch.long) for item in raw_text_iter]
+  return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
+train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
+val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
+test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+
 device = torch.device("cuda")
 
 def batchify(data, bsz):
-    data = TEXT.numericalize([data.examples[0].text])
     # Divide the dataset into bsz parts.
     nbatch = data.size(0) // bsz
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
@@ -198,9 +211,9 @@ def batchify(data, bsz):
 
 batch_size = 20
 eval_batch_size = 10
-train_data = batchify(train_txt, batch_size)
-val_data = batchify(val_txt, eval_batch_size)
-test_data = batchify(test_txt, eval_batch_size)
+train_data = batchify(train_data, batch_size)
+val_data = batchify(val_data, eval_batch_size)
+test_data = batchify(test_data, eval_batch_size)
 
 
 ######################################################################
@@ -252,7 +265,7 @@ def get_batch(source, i):
 # The pipeline is then initialized with 8 transformer layers on one GPU and 8
 # transformer layers on the other GPU.
 
-ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
+ntokens = len(vocab.stoi) # the size of vocabulary
 emsize = 4096 # embedding dimension
 nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 16 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -315,7 +328,7 @@ def train():
     model.train() # Turn on the train mode
     total_loss = 0.
     start_time = time.time()
-    ntokens = len(TEXT.vocab.stoi)
+    ntokens = len(vocab.stoi)
 
     # Train only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -351,7 +364,7 @@ def train():
 def evaluate(eval_model, data_source):
     eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
-    ntokens = len(TEXT.vocab.stoi)
+    ntokens = len(vocab.stoi)
     # Evaluate only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, data_source.size(0) - 1)
     with torch.no_grad():
