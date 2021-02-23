@@ -26,7 +26,7 @@ Workflows
 Use one of the four workflows below to quantize a model.
 
 1. Use Pretrained Quantized MobileNet v2
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 To get the MobileNet v2 quantized model, simply do:
 
@@ -51,7 +51,7 @@ To compare the size difference of a non-quantized MobileNet v2 model with its qu
         os.remove('tmp.pt')
 
     print_model_size(model)
-    print_model_size(quantized_model)
+    print_model_size(model_quantized)
 
 
 The outputs will be:
@@ -64,7 +64,7 @@ The outputs will be:
 2. Post Training Dynamic Quantization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-To apply dynamic quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn't convert the activations to int8 till just before performing the computation on the activations, simply call `torch.quantization.quantize_dynamic`:
+To apply Dynamic Quantization, which converts all the weights in a model from 32-bit floating numbers to 8-bit integers but doesn't convert the activations to int8 till just before performing the computation on the activations, simply call `torch.quantization.quantize_dynamic`:
 
 ::
 
@@ -73,6 +73,8 @@ To apply dynamic quantization, which converts all the weights in a model from 32
     )
 
 where `qconfig_spec` specifies the list of submodule names in `model` to apply quantization to.
+
+.. warning:: An important limitation of Dynamic Quantization, while it is the easiest workflow if you do not have a pre-trained quantized model ready for use, is that it currently only supports `nn.Linear` and `nn.LSTM` in `qconfig_spec`, meaning that you will have to use Static Quantization or Quantization Aware Training, to be discussed later, to quantize other modules such as `nn.Conv2d`.
 
 The full documentation of the `quantize_dynamic` API call is `here <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_. Three other examples of using the post training dynamic quantization are `the Bert example <https://pytorch.org/tutorials/intermediate/dynamic_quantization_bert_tutorial.html>`_, `an LSTM model example <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html#test-dynamic-quantization>`_, and another `demo LSTM example <https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html#do-the-quantization>`_.
 
@@ -91,9 +93,9 @@ To apply static quantization on a model, run the following code:
     model_static_quantized = torch.quantization.prepare(model, inplace=False)
     model_static_quantized = torch.quantization.convert(model_static_quantized, inplace=False)
 
-After this, running `print_size_of_model(model_static_quantized)` shows the static quantized model is `3.98MB`.
+After this, running `print_model_size(model_static_quantized)` shows the static quantized model is `3.98MB`.
 
-A complete model definition and static quantization example is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
+A complete model definition and static quantization example is `here <https://pytorch.org/docs/stable/quantization.html#quantization-api-summary>`_. A dedicated static quantization tutorial is `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.
 
 .. note::
   To make the model run on mobile devices which normally have arm architecture, you need to use `qnnpack` for `backend`; to run the model on computer with x86 architecture, use `fbgemm`.

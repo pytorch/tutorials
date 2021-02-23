@@ -117,6 +117,13 @@ Welcome to PyTorch Tutorials
    :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
 
+.. customcarditem::
+   :header: Speech Command Recognition
+   :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :tags: Audio
+
 .. Text
 
 .. customcarditem::
@@ -158,7 +165,7 @@ Welcome to PyTorch Tutorials
    :header: Language Translation with Torchtext
    :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation_tutorial.html
+   :link: beginner/torchtext_translation.html
    :tags: Text
 
 .. Reinforcement Learning
@@ -169,6 +176,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/cartpole.gif
    :link: intermediate/reinforcement_q_learning.html
    :tags: Reinforcement-Learning
+
+.. customcarditem::
+   :header: Train a Mario-playing RL Agent
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :image: _static/img/mario.gif
+   :link: intermediate/mario_rl_tutorial.html
+   :tags: Reinforcement-Learning
+
 
 .. Deploying PyTorch Models in Production
 
@@ -261,6 +276,13 @@ Welcome to PyTorch Tutorials
 .. Model Optimization
 
 .. customcarditem::
+   :header: Performance Profiling in PyTorch
+   :card_description: Learn how to use the PyTorch Profiler to benchmark your module's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: beginner/profiler.html
+   :tags: Model-Optimization,Best-Practice,Profiling
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
@@ -287,20 +309,6 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Static Quantization with Eager Mode in PyTorch
-   :card_description: Learn techniques to impove a model's accuracy =  post-training static quantization, per-channel quantization, and quantization-aware training.
-   :image: _static/img/thumbnails/cropped/experimental-Static-Quantization-with-Eager-Mode-in-PyTorch.png
-   :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video,Quantization,Model-Optimization
-
-.. customcarditem::
-   :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
-   :card_description: Learn techniques to impove a model's accuracy -  post-training static quantization, per-channel quantization, and quantization-aware training.
-   :image: _static/img/thumbnails/cropped/experimental-Quantized-Transfer-Learning-for-Computer-Vision-Tutorial.png
-   :link: advanced/static_quantization_tutorial.html
-   :tags: Image/Video,Quantization,Model-Optimization
 
 .. Parallel-and-Distributed-Training
 
@@ -359,13 +367,29 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Implementing-Batch-RPC-Processing-Using-Asynchronous-Executions.png
    :link: intermediate/rpc_async_execution.html
    :tags: Parallel-and-Distributed-Training
-   
+
 .. customcarditem::
    :header: Combining Distributed DataParallel with Distributed RPC Framework
    :card_description: Walk through a through a simple example of how to combine distributed data parallelism with distributed model parallelism.
    :image: _static/img/thumbnails/cropped/Combining-Distributed-DataParallel-with-Distributed-RPC-Framework.png
    :link: advanced/rpc_ddp_tutorial.html
    :tags: Parallel-and-Distributed-Training
+
+.. Mobile
+
+.. customcarditem::
+   :header: Image Segmentation DeepLabV3 on iOS
+   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on iOS.
+   :image: _static/img/thumbnails/cropped/ios.png
+   :link: beginner/deeplabv3_on_ios.html
+   :tags: Mobile
+
+.. customcarditem::
+   :header: Image Segmentation DeepLabV3 on Android
+   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on Android.
+   :image: _static/img/thumbnails/cropped/android.png
+   :link: beginner/deeplabv3_on_android.html
+   :tags: Mobile
 
 .. End of tutorial card section
 
@@ -460,6 +484,8 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
+   intermediate/speech_command_recognition_with_torchaudio
+
 
 .. toctree::
    :maxdepth: 2
@@ -472,7 +498,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation_tutorial
+   beginner/torchtext_translation
 
 
 .. toctree::
@@ -482,6 +508,7 @@ Additional Resources
    :caption: Reinforcement Learning
 
    intermediate/reinforcement_q_learning
+   intermediate/mario_rl_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -509,6 +536,7 @@ Additional Resources
    advanced/torch-script-parallelism
    advanced/cpp_autograd
    advanced/dispatcher
+   advanced/extend_dispatcher
 
 .. toctree::
    :maxdepth: 2
@@ -516,11 +544,11 @@ Additional Resources
    :hidden:
    :caption: Model Optimization
 
+   beginner/profiler
    beginner/hyperparameter_tuning_tutorial
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
-   advanced/static_quantization_tutorial
    intermediate/quantized_transfer_learning_tutorial
 
 .. toctree::
@@ -538,3 +566,13 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Mobile
+
+   beginner/deeplabv3_on_ios.html
+   beginner/deeplabv3_on_android.html
+   
