@@ -371,7 +371,7 @@ actively working on might improve the experience in the future:
 Stay in touch
 -------------
 
-Please use `PyTorch dev discussions<dev-discuss.pytorch.org>`_ for questions and discussions. If you have
+Please use `PyTorch dev discussions <https://dev-discuss.pytorch.org/>`_ for questions and discussions. If you have
 any feature requests or bug reports, please `file an issue on github <https://github.com/pytorch/pytorch/issues>`_.
 
 If you're interested in helping in any of the future work items above (e.g adding more ``Math``
