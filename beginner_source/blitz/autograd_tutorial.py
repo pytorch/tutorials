@@ -170,14 +170,12 @@ print(-2*b == b.grad)
 # vector-Jacobian product. That is, given any vector :math:`\vec{v}`, compute the product
 # :math:`J^{T}\cdot \vec{v}`
 #
-# If :math:`v` happens to be the gradient of a scalar function
+# If :math:`\vec{v}` happens to be the gradient of a scalar function :math:`l=g\left(\vec{y}\right)`:
 #
 # .. math::
 #
 #
-#    l
-#    =
-#    g\left(\vec{y}\right)
+#   \vec{v}
 #    =
 #    \left(\begin{array}{ccc}\frac{\partial l}{\partial y_{1}} & \cdots & \frac{\partial l}{\partial y_{m}}\end{array}\right)^{T}
 #
