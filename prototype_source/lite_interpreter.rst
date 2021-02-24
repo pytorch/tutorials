@@ -9,6 +9,12 @@ Introduction
 This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Since lite interpreter is currently in the prototype stage, a custom pytorch binary from source is required.
 
 
+To get ImageSegmenation demo app,
+
+**iOS**: https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation
+
+
+
 Android
 -------------------
 Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
@@ -74,8 +80,6 @@ Update `all projects` part in ``ImageSegmentation/build.gradle`` to
         }
     }
 
-Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now that you have the ``mobilenetv2_metal.pt`` saved on your disk, let's move on to the iOS part.
-
 4. **Update model loader api**: Update ``ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java`` by
 
   4.1 Add new import: `import org.pytorch.LiteModuleLoader`
@@ -99,14 +103,14 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 .. code-block:: bash
 
-   $BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
+   BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
 
 
 3. **Remove Cocoapods from the project**:
 
 .. code-block:: bash
 
-   $pod deintegrate
+   pod deintegrate
 
 4. **Link ImageSegmentation demo app with the custom built library**:
 Open your project in XCode, go to your project Target’s **Build Phases - Link Binaries With Libraries**, click the **+** sign and add all the library files located in `build_ios/install/lib`. Navigate to the project **Build Settings**, set the value **Header Search Paths** to `build_ios/install/include` and **Library Search Paths** to `build_ios/install/lib`.
@@ -177,20 +181,49 @@ Finally, disable bitcode for your target by selecting the Build Settings, search
         fatalError("Can't find the model file!")
     }
 
+6. Build and test the app in Xcode.
+
 How to use lite interpreter + custom build
 ------------------------------------------
+1. Verify your PyTorch version is 1.4.0 or above. You can do that by checking the value of `torch.__version__`.
 
+2. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:
+
+.. code-block:: python
+
+    # Dump list of operators used by deeplabv3_scripted:
+    import torch, yaml
+    model = torch.jit.load('deeplabv3_scripted.ptl')
+    ops = torch.jit.export_opnames(model)
+    with open('deeplabv3_scripted.yaml', 'w') as output:
+        yaml.dump(ops, output)
+
+In the snippet above, you first need to load the ScriptModule. Then, use export_opnames to return a list of operator names of the ScriptModule and its submodules. Lastly, save the result in a yaml file.
+
+3. To run the build script locally with the prepared yaml list of operators, pass in the yaml file generate from the last step into the environment variable SELECTED_OP_LIST. Also in the arguments, specify BUILD_PYTORCH_MOBILE=1 as well as the platform/architechture type.
+
+**iOS**: Take the simulator build for example, the command should be:
+
+.. code-block:: bash
+
+   SELECTED_OP_LIST=deeplabv3_scripted.yaml BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
+
+**Android**: Take the x86 build for example, the command should be:
+
+.. code-block:: bash
+
+   SELECTED_OP_LIST=deeplabv3_scripted.yaml BBUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86
 
 
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to convert a mobilenetv2 model to a GPU compatible model. We walked through a HelloWorld example to show how to use the C++ APIs to run models on iOS GPU. Please be aware of that GPU feature is still under development, new operators will continue to be added. APIs are subject to change in the future versions.
+In this tutorial, we demonstrated how to use lite interpreter in Android and iOS app. We walked through an Image Segmentation example to show how to dump the model, build torch library from source and use the new api to run model. Please be aware of that lite interpreter is still under development, more library size reduction will be introduced in the future. APIs are subject to change in the future versions.
 
 Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
 
 Learn More
 ----------
 
-- The `Mobilenetv2 <https://pytorch.org/hub/pytorch_vision_mobilenet_v2/>`_ from Torchvision
-- To learn more about how to use ``optimize_for_mobile``, please refer to the `Mobile Perf Recipe <https://pytorch.org/tutorials/recipes/mobile_perf.html>`_
+- To learn more about PyTorch Mobile, please refer to `PyTorch Mobile Home Page <https://pytorch.org/mobile/home/>`_
+- To learn more about Image Segmentation, please refer to the `Image Segmentation DeepLabV3 on Android Recipe <https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html>`_
