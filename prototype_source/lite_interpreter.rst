@@ -135,7 +135,6 @@ Learn More
 
 - The `Mobilenetv2 <https://pytorch.org/hub/pytorch_vision_mobilenet_v2/>`_ from Torchvision
 - To learn more about how to use ``optimize_for_mobile``, please refer to the `Mobile Perf Recipe <https://pytorch.org/tutorials/recipes/mobile_perf.html>`_
-=======
 (Prototype) Use Lite Interpreter in PyTorch
 ==================================
 
