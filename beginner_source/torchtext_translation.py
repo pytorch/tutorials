@@ -323,6 +323,8 @@ class Seq2Seq(nn.Module):
 
 INPUT_DIM = len(de_vocab)
 OUTPUT_DIM = len(en_vocab)
+
+# Uncomment to have a larger model but need larger time to run
 # ENC_EMB_DIM = 256
 # DEC_EMB_DIM = 256
 # ENC_HID_DIM = 512
