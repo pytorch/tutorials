@@ -9,12 +9,6 @@ Introduction
 This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Since lite interpreter is currently in the prototype stage, a custom pytorch binary from source is required.
 
 
-To get ImageSegmenation demo app,
-
-**iOS**: https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation
-
-
-
 Android
 -------------------
 Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
