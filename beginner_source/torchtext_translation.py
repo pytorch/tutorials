@@ -40,7 +40,7 @@ By the end of this tutorial, you will be able to preprocess sentences into tenso
 
 import torchtext
 import torch
-from torchtext.datasets import Multi30k
+from torchtext.experimental.datasets.raw import Multi30k
 from torchtext.data.utils import get_tokenizer
 from collections import Counter
 from torchtext.vocab import Vocab
