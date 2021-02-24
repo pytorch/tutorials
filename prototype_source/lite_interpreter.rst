@@ -1,4 +1,5 @@
 (Prototype) Introduce lite interpreter workflow in Android and iOS
+==================================================================
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
 
@@ -7,10 +8,12 @@ Introduction
 
 This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Since lite interpreter is currently in the prototype stage, a custom pytorch binary from source is required.
 
+
 Android
 -------------------
+Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
 
-1. **Prepare model**: Prepare the lite interpreter version of model by run the script below to generate the scripted model deeplabv3_scripted.pt and deeplabv3_scripted.ptl
+1. **Prepare model**: Prepare the lite interpreter version of model by run the script below to generate the scripted model `deeplabv3_scripted.pt` and `deeplabv3_scripted.ptl`
 
 .. code:: python
 
@@ -37,7 +40,7 @@ Android
    -rw-r--r--  1 chenlai  staff    13M Feb 11 11:48 /Users/chenlai/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
    -rw-r--r--  1 chenlai  staff    36K Feb  9 16:45 /Users/chenlai/pytorch/android/pytorch_android_torchvision/build/outputs/aar/pytorch_android_torchvision-release.aar
 
-3. **Use the PyTorch Android libraries built from source in the ImageSegmentation app**: Create a folder `libs` in the path, the path from repository root will be `ImageSegmentation/app/libs`. Copy `pytorch_android-release` to the path `ImageSegmentation/app/libs/pytorch_android-release.aar`. Copy `pytorch_android_torchvision` (downloaded from `Pytorch Android Torchvision Nightly <https://oss.sonatype.org/#nexus-search;quick~torchvision_android/>`_) to the path `ImageSegmentation/app/libs/pytorch_android_torchvision.aar`. Update the `dependencies` part of `ImageSegmentation/app/build.gradle` to
+3. **Use the PyTorch Android libraries built from source in the ImageSegmentation app**: Create a folder `libs` in the path, the path from repository root will be `ImageSegmentation/app/libs`. Copy `pytorch_android-release` to the path ``ImageSegmentation/app/libs/pytorch_android-release.aar``. Copy `pytorch_android_torchvision` (downloaded from `Pytorch Android Torchvision Nightly <https://oss.sonatype.org/#nexus-search;quick~torchvision_android/>`_) to the path ``ImageSegmentation/app/libs/pytorch_android_torchvision.aar``. Update the `dependencies` part of ``ImageSegmentation/app/build.gradle`` to
 
 .. code:: gradle
 
@@ -56,7 +59,7 @@ Android
        implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
    }
 
-Update `all projects` part in `ImageSegmentation/build.gradle` to
+Update `all projects` part in ``ImageSegmentation/build.gradle`` to
 
 
 .. code:: gradle
@@ -73,7 +76,7 @@ Update `all projects` part in `ImageSegmentation/build.gradle` to
 
 Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now that you have the ``mobilenetv2_metal.pt`` saved on your disk, let's move on to the iOS part.
 
-4. **Update model loader api**: Update `ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java` by
+4. **Update model loader api**: Update ``ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java`` by
 
   4.1 Add new import: `import org.pytorch.LiteModuleLoader`
 
@@ -84,43 +87,99 @@ Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now
     // mModule = Module.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted.pt"));
     mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted.ptl"));
 
-Use C++ APIs
----------------------
+5. **Test app**: Build and run the `ImageSegmentation` app in Android Studio
 
-In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app>`_ to demonstrate how to use the C++ APIs. The first thing we need to do is to build a custom LibTorch from Source. Make sure you have deleted the **build** folder from the previous step in PyTorch root directory. Then run the command below
+iOS
+-------------------
+Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation
 
-.. code:: shell
+1. **Prepare model**: Same as Android.
 
-    IOS_ARCH=arm64 USE_PYTORCH_METAL=1 ./scripts/build_ios.sh
+2. **Build libtorch lite for android**:
 
-Note ``IOS_ARCH`` tells the script to build a arm64 version of Libtorch. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the `Build PyTorch iOS libraries from source <https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source>`_ section from the iOS tutorial to setup the XCode settings properly. Don't forget to copy the `./mobilenetv2_metal.pt` to your XCode project.
+.. code-block:: bash
 
-Next we need to make some changes in ``TorchModule.mm``
+   $BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
 
-.. code:: objective-c
+
+3. **Remove Cocoapods from the project**:
+
+.. code-block:: bash
+
+   $pod deintegrate
+
+4. **Link ImageSegmentation demo app with the custom built library**:
+Open your project in XCode, go to your project Target’s **Build Phases - Link Binaries With Libraries**, click the **+** sign and add all the library files located in `build_ios/install/lib`. Navigate to the project **Build Settings**, set the value **Header Search Paths** to `build_ios/install/include` and **Library Search Paths** to `build_ios/install/lib`.
+In the build settings, search for **other linker flags**. Add a custom linker flag below
+```
+-all_load
+```
+Finally, disable bitcode for your target by selecting the Build Settings, searching for Enable Bitcode, and set the value to **No**.
+
+5. **Update library and api**
+
+  5.1 Update ``TorchModule.mm``: To use the custom built libraries the project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via Cocoapods with the code below:
+
+.. code-block:: swift
+
     //#import <LibTorch/LibTorch.h>
-    #import <torch/script.h>
+    #include "ATen/ATen.h"
+    #include "caffe2/core/timer.h"
+    #include "caffe2/utils/string_utils.h"
+    #include "torch/csrc/autograd/grad_mode.h"
+    #include "torch/script.h"
+    #include <torch/csrc/jit/mobile/function.h>
+    #include <torch/csrc/jit/mobile/import.h>
+    #include <torch/csrc/jit/mobile/interpreter.h>
+    #include <torch/csrc/jit/mobile/module.h>
+    #include <torch/csrc/jit/mobile/observer.h>
 
-    - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer {
-      torch::jit::GraphOptimizerEnabledGuard opguard(false);
-      at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, 224, 224}, at::kFloat).metal();
-      auto outputTensor = _impl.forward({tensor}).toTensor().cpu();
-      ...
+.. code-block:: swift
+
+    @implementation TorchModule {
+    @protected
+    // torch::jit::script::Module _impl;
+     torch::jit::mobile::Module _impl;
     }
 
-As you can see, we simply just call ``.metal()`` to move our input tensor from CPU to GPU, and then call ``.cpu()`` to move the result back. Internally, ``.metal()`` will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When `.cpu()` is invoked, the GPU command buffer will be flushed and synced. After `forward` finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.
+    - (nullable instancetype)initWithFileAtPath:(NSString*)filePath {
+      self = [super init];
+      if (self) {
+          try {
+              _impl = torch::jit::_load_for_mobile(filePath.UTF8String);
+             //  _impl = torch::jit::load(filePath.UTF8String);
+             //  _impl.eval();
+            } catch (const std::exception& exception) {
+                NSLog(@"%s", exception.what());
+                return nil;
+            }
+        }
+        return self;
+    }
 
-The last step we have to do is to add the `Accelerate.framework` and the `MetalShaderPerformance.framework` to your xcode project.
 
-If everything works fine, you should be able to see the inference results on your phone. The result below was captured from an iPhone11 device
+5.2 Update ``ViewController.swift``
 
-.. code:: shell
+.. code-block:: swift
 
-    - timber wolf, grey wolf, gray wolf, Canis lupus
-    - malamute, malemute, Alaskan malamute
-    - Eskimo dog, husky
+    //  if let filePath = Bundle.main.path(forResource:
+    //      "deeplabv3_scripted", ofType: "pt"),
+    //      let module = TorchModule(fileAtPath: filePath) {
+    //      return module
+    //  } else {
+    //      fatalError("Can't find the model file!")
+    //  }
+    if let filePath = Bundle.main.path(forResource:
+        "deeplabv3_scripted", ofType: "ptl"),
+        let module = TorchModule(fileAtPath: filePath) {
+        return module
+    } else {
+        fatalError("Can't find the model file!")
+    }
 
-You may notice that the results are slighly different from the `results <https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods>`_ we got from the CPU model as shown in the iOS tutorial. This is because by default Metal uses fp16 rather than fp32 to compute. The precision loss is expected.
+How to use lite interpreter + custom build
+------------------------------------------
+
 
 
 Conclusion
@@ -135,10 +194,3 @@ Learn More
 
 - The `Mobilenetv2 <https://pytorch.org/hub/pytorch_vision_mobilenet_v2/>`_ from Torchvision
 - To learn more about how to use ``optimize_for_mobile``, please refer to the `Mobile Perf Recipe <https://pytorch.org/tutorials/recipes/mobile_perf.html>`_
-=======
-(Prototype) Use Lite Interpreter in PyTorch
-==================================
-
-
-Introduction
-------------
