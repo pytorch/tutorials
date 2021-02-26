@@ -93,7 +93,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 1. **Prepare model**: Same as Android.
 
-2. **Build libtorch lite for android**:
+2. **Build libtorch lite for iOS**:
 
 .. code-block:: bash
 
