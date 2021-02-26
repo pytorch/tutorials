@@ -206,7 +206,7 @@ In the snippet above, you first need to load the ScriptModule. Then, use export_
 
 .. code-block:: bash
 
-   SELECTED_OP_LIST=deeplabv3_scripted.yaml BBUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86
+   SELECTED_OP_LIST=deeplabv3_scripted.yaml BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86
 
 
 Conclusion
