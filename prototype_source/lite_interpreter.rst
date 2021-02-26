@@ -100,7 +100,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
    BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
 
 
-3. **Remove Cocoapods from the project**:
+3. **Remove Cocoapods from the project** (this step is only needed if you ran `pod install`):
 
 .. code-block:: bash
 
@@ -179,9 +179,7 @@ Finally, disable bitcode for your target by selecting the Build Settings, search
 
 How to use lite interpreter + custom build
 ------------------------------------------
-1. Verify your PyTorch version is 1.4.0 or above. You can do that by checking the value of `torch.__version__`.
-
-2. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:
+1. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:
 
 .. code-block:: python
 
@@ -192,9 +190,9 @@ How to use lite interpreter + custom build
     with open('deeplabv3_scripted.yaml', 'w') as output:
         yaml.dump(ops, output)
 
-In the snippet above, you first need to load the ScriptModule. Then, use export_opnames to return a list of operator names of the ScriptModule and its submodules. Lastly, save the result in a yaml file.
+In the snippet above, you first need to load the ScriptModule. Then, use export_opnames to return a list of operator names of the ScriptModule and its submodules. Lastly, save the result in a yaml file. The yaml file can be generated for any PyTorch 1.4.0 or above version. You can do that by checking the value of `torch.__version__`.
 
-3. To run the build script locally with the prepared yaml list of operators, pass in the yaml file generate from the last step into the environment variable SELECTED_OP_LIST. Also in the arguments, specify BUILD_PYTORCH_MOBILE=1 as well as the platform/architechture type.
+2. To run the build script locally with the prepared yaml list of operators, pass in the yaml file generate from the last step into the environment variable SELECTED_OP_LIST. Also in the arguments, specify BUILD_PYTORCH_MOBILE=1 as well as the platform/architechture type.
 
 **iOS**: Take the simulator build for example, the command should be:
 
