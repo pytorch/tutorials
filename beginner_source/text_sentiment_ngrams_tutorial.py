@@ -127,7 +127,7 @@ dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=coll
 # Define the model
 # ----------------
 #
-# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, nn.EmbeddingBag module requires no padding here since the text lengths are saved in offsets.
+# The model is composed of the `nn.EmbeddingBag <https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag>`__ layer plus a linear layer for the classification purpose. ``nn.EmbeddingBag`` with the default mode of "mean" computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, nn.EmbeddingBag module requires no padding here since the text lengths are saved in offsets.
 #
 # Additionally, since ``nn.EmbeddingBag`` accumulates the average across
 # the embeddings on the fly, ``nn.EmbeddingBag`` can enhance the
@@ -188,7 +188,7 @@ model = TextClassificationModel(vocab_size, emsize, num_class).to(device)
 
 import time
 
-def train(model, dataloader):
+def train(dataloader):
     model.train()
     total_acc, total_count = 0, 0
     log_interval = 500
@@ -211,10 +211,9 @@ def train(model, dataloader):
             total_acc, total_count = 0, 0
             start_time = time.time()
 
-def evaluate(model, dataloader):
+def evaluate(dataloader):
     model.eval()
     total_acc, total_count = 0, 0
-    ans_pred_tokens_samples = []
 
     with torch.no_grad():
         for idx, (label, text, offsets) in enumerate(dataloader):
@@ -272,8 +271,8 @@ test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
 
 for epoch in range(1, EPOCHS + 1):
     epoch_start_time = time.time()
-    train(model, train_dataloader)
-    accu_val = evaluate(model, valid_dataloader)
+    train(train_dataloader)
+    accu_val = evaluate(valid_dataloader)
     if total_accu is not None and total_accu > accu_val:
       scheduler.step()
     else:
@@ -364,7 +363,7 @@ for epoch in range(1, EPOCHS + 1):
 # Checking the results of the test dataset…
 
 print('Checking the results of test dataset.')
-accu_test = evaluate(model, test_dataloader)
+accu_test = evaluate(test_dataloader)
 print('test accuracy {:8.3f}'.format(accu_test))
 
 ################################################
