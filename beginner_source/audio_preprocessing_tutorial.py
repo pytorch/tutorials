@@ -58,6 +58,9 @@ SAMPLE_WAV_SPEECH_PATH = "_sample_speech.wav"
 SAMPLE_MP3_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.mp3"
 SAMPLE_MP3_PATH = "_sample.mp3"
 
+SAMPLE_GSM_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.gsm"
+SAMPLE_GSM_PATH = "_sample.gsm"
+
 SAMPLE_TAR_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit.tar.gz"
 SAMPLE_TAR_PATH = "_sample.tar.gz"
 SAMPLE_TAR_ITEM = "VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
@@ -76,6 +79,7 @@ def _fetch_data():
     (SAMPLE_WAV_URL, SAMPLE_WAV_PATH),
     (SAMPLE_WAV_SPEECH_URL, SAMPLE_WAV_SPEECH_PATH),
     (SAMPLE_MP3_URL, SAMPLE_MP3_PATH),
+    (SAMPLE_GSM_URL, SAMPLE_GSM_PATH),
     (SAMPLE_TAR_URL, SAMPLE_TAR_PATH),
   ]
   for url, path in uri:
@@ -313,6 +317,14 @@ print_metadata(metadata, src=SAMPLE_WAV_PATH)
 
 
 ######################################################################
+# Where
+# 
+# -  ``sample_rate`` is the sampling rate of the audio
+# -  ``num_channels`` is the number of channels
+# -  ``num_frames`` is the number of frames per channel
+# -  ``bits_per_sample`` is bit depth
+# -  ``encoding`` is the sample coding format
+# 
 # The values ``encoding`` can take are one of the following
 # 
 # -  ``"PCM_S"``: Signed integer linear PCM
@@ -338,12 +350,18 @@ print_metadata(metadata, src=SAMPLE_WAV_PATH)
 
 
 ######################################################################
-# **Note** When the detected audio format compresses samples,
-# ``bits_per_sample`` is ``0``. (For example: ``"mp3"``)
+# **Note**
+# 
+# -  ``bits_per_sample`` can be ``0`` for formats with compression and/or
+#    variable bit rate. (such as mp3)
+# -  ``num_frames`` can be ``0`` for GSM-FR format.
 # 
 
 metadata = torchaudio.info(SAMPLE_MP3_PATH)
 print_metadata(metadata, src=SAMPLE_MP3_PATH)
+
+metadata = torchaudio.info(SAMPLE_GSM_PATH)
+print_metadata(metadata, src=SAMPLE_GSM_PATH)
 
 
 ######################################################################
