@@ -7,6 +7,14 @@ transforms, dataset and models
 
 """
 
+# ***************************************
+# RUN THIS CELL ONCE, COMMENT OUT THEM AND RESTART THE RUNTIME TO GET THE TORCHAUDIO RC
+# This is required until 0.8 is released.
+# warnings and errors are safe to ignore
+# ***************************************
+!pip install --pre --ignore-installed torch torchaudio -f https://download.pytorch.org/whl/test/cpu/torch_test.html
+!pip install boto3 requests
+
 import torch
 import torchaudio
 import torchaudio.functional as F
@@ -313,21 +321,27 @@ print_metadata(metadata, src=SAMPLE_WAV_PATH)
 
 
 ######################################################################
-# The values ``encoding`` can take are one of the following - ``"PCM_S"``:
-# Signed integer linear PCM - ``"PCM_U"``: Unsigned integer linear PCM -
-# ``"PCM_F"``: Floating point linear PCM - ``"FLAC"``: Flac, `Free
-# Lossless Audio Codec <https://xiph.org/flac/>`__ - ``"ULAW"``: Mu-law,
-# [`wikipedia <https://en.wikipedia.org/wiki/%CE%9C-law_algorithm>`__] -
-# ``"ALAW"``: A-law
-# [`wikipedia <https://en.wikipedia.org/wiki/A-law_algorithm>`__] -
-# ``"MP3"`` : MP3, MPEG-1 Audio Layer III - ``"VORBIS"``: OGG Vorbis
-# [`xiph.org <https://xiph.org/vorbis/>`__] - ``"AMR_WB"``: Adaptive
-# Multi-Rate
-# [`wikipedia <https://en.wikipedia.org/wiki/Adaptive_Multi-Rate_audio_codec>`__]
-# - ``"AMR_NB"``: Adaptive Multi-Rate Wideband
-# [`wikipedia <https://en.wikipedia.org/wiki/Adaptive_Multi-Rate_Wideband>`__]
-# - ``"OPUS"``: Opus [`opus-codec.org <https://opus-codec.org/>`__] -
-# ``"UNKNOWN"`` None of avobe
+# The values ``encoding`` can take are one of the following
+# 
+# -  ``"PCM_S"``: Signed integer linear PCM
+# -  ``"PCM_U"``: Unsigned integer linear PCM
+# -  ``"PCM_F"``: Floating point linear PCM
+# -  ``"FLAC"``: Flac, `Free Lossless Audio
+#    Codec <https://xiph.org/flac/>`__
+# -  ``"ULAW"``: Mu-law,
+#    [`wikipedia <https://en.wikipedia.org/wiki/%CE%9C-law_algorithm>`__]
+# -  ``"ALAW"``: A-law
+#    [`wikipedia <https://en.wikipedia.org/wiki/A-law_algorithm>`__]
+# -  ``"MP3"`` : MP3, MPEG-1 Audio Layer III
+# -  ``"VORBIS"``: OGG Vorbis [`xiph.org <https://xiph.org/vorbis/>`__]
+# -  ``"AMR_NB"``: Adaptive Multi-Rate
+#    [`wikipedia <https://en.wikipedia.org/wiki/Adaptive_Multi-Rate_audio_codec>`__]
+# -  ``"AMR_WB"``: Adaptive Multi-Rate Wideband
+#    [`wikipedia <https://en.wikipedia.org/wiki/Adaptive_Multi-Rate_Wideband>`__]
+# -  ``"OPUS"``: Opus [`opus-codec.org <https://opus-codec.org/>`__]
+# -  ``"GSM"``: GSM-FR
+#    [`wikipedia <https://en.wikipedia.org/wiki/Full_Rate>`__]
+# -  ``"UNKNOWN"`` None of avobe
 # 
 
 
@@ -356,9 +370,11 @@ print_metadata(metadata, src=SAMPLE_WAV_URL)
 # **Note** When passing file-like object, ``info`` function does not read
 # all the data, instead it only reads the beginning portion of data.
 # Therefore, depending on the audio format, it cannot get the correct
-# metadata. The following example illustrates this. - Use ``format``
-# argument to tell what audio format it is. - The returned metadata has
-# ``num_frames = 0``
+# metadata, including the format itself. The following example illustrates
+# this.
+# 
+# -  Use ``format`` argument to tell what audio format it is.
+# -  The returned metadata has ``num_frames = 0``
 # 
 
 with requests.get(SAMPLE_MP3_URL, stream=True) as response:
@@ -392,6 +408,34 @@ print_stats(waveform, sample_rate=sample_rate)
 plot_waveform(waveform, sample_rate)
 plot_specgram(waveform, sample_rate)
 play_audio(waveform, sample_rate)
+
+
+
+######################################################################
+# Loading from file-like object
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# 
+# ``torchaudio``\ ’s I/O functions now support file-like object. This
+# allows to fetch audio data and decode at the same time from the location
+# other than local file system. The following examples illustrates this.
+# 
+
+# Load audio data as HTTP request
+with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
+  waveform, sample_rate = torchaudio.load(response.raw)
+plot_specgram(waveform, sample_rate, title="HTTP datasource")
+
+# Load audio from tar file
+with tarfile.open(SAMPLE_TAR_PATH, mode='r') as tarfile_:
+  fileobj = tarfile_.extractfile(SAMPLE_TAR_ITEM)
+  waveform, sample_rate = torchaudio.load(fileobj)
+plot_specgram(waveform, sample_rate, title="TAR file")
+
+# Load audio from S3
+client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+response = client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
+waveform, sample_rate = torchaudio.load(response['Body'])
+plot_specgram(waveform, sample_rate, title="From S3")
 
 
 
@@ -437,34 +481,6 @@ with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
 print("Checking the resulting waveform ... ", end="")
 assert (waveform1 == waveform2).all()
 print("matched!")
-
-
-
-######################################################################
-# Loading from file-like object
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-# ``torchaudio``\ ’s I/O functions now support file-like object. This
-# allows to fetch audio data and decode at the same time from the location
-# other than local file system. The following examples illustrates this.
-# 
-
-# Load audio data as HTTP request
-with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
-  waveform, sample_rate = torchaudio.load(response.raw)
-plot_specgram(waveform, sample_rate, title="HTTP datasource")
-
-# Load audio from tar file
-with tarfile.open(SAMPLE_TAR_PATH, mode='r') as tarfile_:
-  fileobj = tarfile_.extractfile(SAMPLE_TAR_ITEM)
-  waveform, sample_rate = torchaudio.load(fileobj)
-plot_specgram(waveform, sample_rate, title="TAR file")
-
-# Load audio from S3
-client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-response = client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
-waveform, sample_rate = torchaudio.load(response['Body'])
-plot_specgram(waveform, sample_rate, title="From S3")
 
 
 
@@ -995,6 +1011,12 @@ pitch, nfcc = pitch_feature[..., 0], pitch_feature[..., 1]
 
 plot_kaldi_pitch(waveform, sample_rate, pitch, nfcc)
 play_audio(waveform, sample_rate)
+
+
+######################################################################
+# Feature Augmentation
+# ====================
+# 
 
 
 ######################################################################
