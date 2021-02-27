@@ -2,8 +2,11 @@
 Audio manipulation with torchaudio
 ==================================
 
-torchaudio provides powerful audio I/O mechanism, preprocessing
-transforms, dataset and models
+``torchaudio`` provides powerful audio I/O functions, preprocessing
+transforms and dataset.
+
+In this tutorial, we will look into how to prepare audio data and
+extract features that can be fed to NN models.
 
 """
 
@@ -17,8 +20,8 @@ print(torchaudio.__version__)
 
 
 ######################################################################
-# Preparation
-# ===========
+# Preparing data and utility functions (skip this section)
+# --------------------------------------------------------
 # 
 
 #@title Prepare data and utility functions. {display-mode: "form"}
