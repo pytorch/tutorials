@@ -7,14 +7,6 @@ transforms, dataset and models
 
 """
 
-# ***************************************
-# RUN THIS CELL ONCE, COMMENT OUT THEM AND RESTART THE RUNTIME TO GET THE TORCHAUDIO RC
-# This is required until 0.8 is released.
-# warnings and errors are safe to ignore
-# ***************************************
-!pip install --pre --ignore-installed torch torchaudio -f https://download.pytorch.org/whl/test/cpu/torch_test.html
-!pip install boto3 requests
-
 import torch
 import torchaudio
 import torchaudio.functional as F
