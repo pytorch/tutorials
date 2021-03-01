@@ -179,7 +179,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Train a Mario-playing RL Agent
-   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario.
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
@@ -199,14 +199,14 @@ Welcome to PyTorch Tutorials
    :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
    :image: _static/img/thumbnails/cropped/Introduction-to-TorchScript.png
    :link: beginner/Intro_to_TorchScript_tutorial.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: Loading a TorchScript Model in C++
    :card_description:  Learn how PyTorch provides to go from an existing Python model to a serialized representation that can be loaded and executed purely from C++, with no dependency on Python.
    :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
    :link: advanced/cpp_export.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
