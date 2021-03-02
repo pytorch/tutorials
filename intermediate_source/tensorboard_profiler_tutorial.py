@@ -1,8 +1,8 @@
 """
 PyTorch TensorBoard Profiler
 ====================================
-This recipe explains how to use PyTorch TensorBoard Profiler
-and measure the performance bottleneck of the model.
+This recipe demonstrates how to use PyTorch Profiler
+to detect performance bottlenecks of the model.
 
 .. note::
     PyTorch 1.8 introduces the new API that will replace the older profiler API
@@ -10,10 +10,10 @@ and measure the performance bottleneck of the model.
 
 Introduction
 ------------
-PyTorch 1.8 includes an updated profiler API that could help user
-record both the operators running on CPU side and the CUDA kernels running on GPU side.
-Given the profiling information,
-we can use this TensorBoard Plugin to visualize it and analyze the performance bottleneck.
+PyTorch 1.8 includes an updated profiler API capable of 
+recording the CPU side operations as well as the CUDA kernel launches on the GPU side.
+The profiler can visualize this information
+in TensorBoard Plugin and provide analysis of the performance bottlenecks.
 
 In this recipe, we will use a simple Resnet model to demonstrate how to
 use profiler to analyze model performance.
@@ -37,13 +37,13 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 1. Prepare the data and model
 # 2. Use profiler to record execution events
 # 3. Run the profiler
-# 4. Use TensorBoard to view and analyze performance
+# 4. Use TensorBoard to view results and analyze performance
 # 5. Improve performance with the help of profiler
 #
 # 1. Prepare the data and model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Firstly, let’s import all necessary libraries:
+# First, import all necessary libraries:
 #
 
 import torch
@@ -57,18 +57,18 @@ import torchvision.transforms as T
 
 ######################################################################
 # Then prepare the input data. For this tutorial, we use the CIFAR10 dataset.
-# We transform it to desired format and use DataLoader to load each batch.
+# Transform it to the desired format and use DataLoader to load each batch.
 
 transform = T.Compose(
     [T.Resize(224),
      T.ToTensor(),
      T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 train_set = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True) # num_workers=4
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True)
 
 ######################################################################
-# Let’s create an instance of a Resnet model, an instance of loss, and an instance of optimizer.
-# To run on GPU, we put model and loss to GPU device.
+# Next, create Resnet model, loss function, and optimizer objects.
+# To run on GPU, move model and loss to GPU device.
 
 device = torch.device("cuda:0")
 model = torchvision.models.resnet18(pretrained=True).cuda(device)
@@ -78,7 +78,7 @@ model.train()
 
 
 ######################################################################
-# We define the training step for each batch of input data.
+# Define the training step for each batch of input data.
 
 def train(data):
     inputs, labels = data[0].to(device=device), data[1].to(device=device)
@@ -93,7 +93,7 @@ def train(data):
 # 2. Use profiler to record execution events
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# The profiler is enabled through the context manager and accepts a number of parameters,
+# The profiler is enabled through the context manager and accepts several parameters,
 # some of the most useful are:
 #
 # - ``schedule`` - callable that takes step (int) as a single parameter
@@ -111,8 +111,8 @@ def train(data):
 #   During ``active`` steps, the profiler works and record events.
 # - ``on_trace_ready`` - callable that is called at the end of each cycle;
 #   In this example we use ``torch.profiler.tensorboard_trace_handler`` to generate result files for TensorBoard.
-#   After profiling, result files can be generated in the ``./log/resnet18`` directory,
-#   which could be specified to open and analyzed in TensorBoard.
+#   After profiling, result files will be saved into the ``./log/resnet18`` directory.
+#   Specify this directory as a ``logdir`` parameter to analyze profile in TensorBoard.
 # - ``record_shapes`` - whether to record shapes of the operator inputs.
 
 with torch.profiler.profile(
@@ -135,10 +135,10 @@ with torch.profiler.profile(
 
 
 ######################################################################
-# 4. Use TensorBoard to view and analyze performance
+# 4. Use TensorBoard to view results and analyze performance
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# This requires the latest versions of PyTorch TensorBoard Profiler.
+# Install PyTorch Profiler TensorBoard Plugin.
 #
 # ::
 #
@@ -146,7 +146,7 @@ with torch.profiler.profile(
 #
 
 ######################################################################
-# Launch the TensorBoard Profiler.
+# Launch the TensorBoard.
 #
 # ::
 #
@@ -158,21 +158,21 @@ with torch.profiler.profile(
 #
 # ::
 #
-#     http://localhost:6006/#torch_profiler
+#     http://localhost:6006/#pytorch_profiler
 #
 
 ######################################################################
-# The profiler’s front page is as below.
+# You should see Profiler plugin page as shown below.
 #
 # .. image:: ../../_static/img/profiler_overview1.png
 #    :scale: 25 %
 #
-# This overview shows a high-level summary of performance.
+# The overview shows a high-level summary of model performance.
 #
-# The "Step Time Breakdown" break the time spent on each step into multiple categories.
-# In this example, you can see the ``DataLoader`` costs a lot of time.
+# The "Step Time Breakdown" shows distribution of time spent in each step over different categories of execution.
+# In this example, you can see the ``DataLoader`` overhead is significant.
 #
-# The bottom "Performance Recommendation" leverages the profiling result
+# The bottom "Performance Recommendation" uses the profiling data
 # to automatically highlight likely bottlenecks,
 # and gives you actionable optimization suggestions.
 #
@@ -187,7 +187,7 @@ with torch.profiler.profile(
 # The GPU kernel view shows all kernels’ time spent on GPU.
 #
 # The trace view shows timeline of profiled operators and GPU kernels.
-# You can select it to see detail as below.
+# You can select it to see details as below.
 #
 # .. image:: ../../_static/img/profiler_trace_view1.png
 #    :scale: 25 %
