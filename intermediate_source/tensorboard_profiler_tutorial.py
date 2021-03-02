@@ -1,5 +1,5 @@
 """
-PyTorch TensorBoard Profiler
+PyTorch Profiler With TensorBoard
 ====================================
 This recipe demonstrates how to use PyTorch Profiler
 to detect performance bottlenecks of the model.
@@ -162,7 +162,7 @@ with torch.profiler.profile(
 #
 
 ######################################################################
-# You should see Profiler plugin page as shown below.
+# You could see Profiler plugin page as shown below.
 #
 # .. image:: ../../_static/img/profiler_overview1.png
 #    :scale: 25 %
