@@ -179,7 +179,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Train a Mario-playing RL Agent
-   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario.
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
@@ -199,14 +199,14 @@ Welcome to PyTorch Tutorials
    :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
    :image: _static/img/thumbnails/cropped/Introduction-to-TorchScript.png
    :link: beginner/Intro_to_TorchScript_tutorial.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: Loading a TorchScript Model in C++
    :card_description:  Learn how PyTorch provides to go from an existing Python model to a serialized representation that can be loaded and executed purely from C++, with no dependency on Python.
    :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
    :link: advanced/cpp_export.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
@@ -227,13 +227,6 @@ Welcome to PyTorch Tutorials
 .. Frontend APIs
 
 .. customcarditem::
-   :header: (prototype) Introduction to Named Tensors in PyTorch
-   :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
-   :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
-   :link: intermediate/named_tensor_tutorial.html
-   :tags: Frontend-APIs,Named-Tensor,Best-Practice
-
-.. customcarditem::
    :header: (beta) Channels Last Memory Format in PyTorch
    :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions.
    :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
@@ -252,21 +245,21 @@ Welcome to PyTorch Tutorials
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
-   :tags: Frontend-APIs,C++,CUDA
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
    :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
-   :tags: Frontend-APIs,TorchScript,C++
+   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Classes
    :card_description: This is a continuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Classes.png
    :link: advanced/torch_script_custom_classes.html
-   :tags: Frontend-APIs,TorchScript,C++
+   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
    :header: Dynamic Parallelism in TorchScript
@@ -536,14 +529,20 @@ Additional Resources
    :hidden:
    :caption: Frontend APIs
 
-   intermediate/named_tensor_tutorial
    intermediate/memory_format_tutorial
    advanced/cpp_frontend
+   advanced/torch-script-parallelism
+   advanced/cpp_autograd
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Extending PyTorch
+
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
-   advanced/torch-script-parallelism
-   advanced/cpp_autograd
    advanced/dispatcher
    advanced/extend_dispatcher
 

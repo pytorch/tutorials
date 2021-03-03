@@ -225,6 +225,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Distributed Training
+
+.. customcarditem::
+   :header: Shard Optimizer States with ZeroRedundancyOptimizer
+   :card_description: How to use ZeroRedundancyOptimizer to reduce memory consumption.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/zero_redundancy_optimizer.html
+   :tags: Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -261,4 +270,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
-   /recipes/distributed_rpc_profiling
+   /recipes/zero_redundancy_optimizer
