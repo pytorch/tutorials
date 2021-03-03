@@ -447,6 +447,7 @@ Additional Resources
    :caption: PyTorch Recipes
 
    See All Recipes <recipes/recipes_index>
+   See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
    :maxdepth: 2
@@ -572,6 +573,6 @@ Additional Resources
    :hidden:
    :caption: Mobile
 
-   beginner/deeplabv3_on_ios.html
-   beginner/deeplabv3_on_android.html
+   beginner/deeplabv3_on_ios
+   beginner/deeplabv3_on_android
    
