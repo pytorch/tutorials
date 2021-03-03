@@ -573,6 +573,6 @@ Additional Resources
    :hidden:
    :caption: Mobile
 
-   beginner/deeplabv3_on_ios.html
-   beginner/deeplabv3_on_android.html
+   beginner/deeplabv3_on_ios
+   beginner/deeplabv3_on_android
    
