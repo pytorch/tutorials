@@ -370,7 +370,7 @@ print(act_compare_dict.keys())
 
 
 for key in act_compare_dict:
-    print(key, compute_error(act_compare_dict[key]['float'][0], act_compare_dict[key]['quantized'][0]))
+    print(key, compute_error(act_compare_dict[key]['float'][0][0], act_compare_dict[key]['quantized'][0][0]))
 
 ##############################################################################
 #
@@ -405,7 +405,7 @@ print(ob_dict.keys())
 # This dict can be then used to compare and compute the module level quantization error.
 
 for key in ob_dict:
-    print(key, compute_error(ob_dict[key]['float'], ob_dict[key]['quantized']))
+    print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0]))
 
 ##############################################################################
 # SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.
