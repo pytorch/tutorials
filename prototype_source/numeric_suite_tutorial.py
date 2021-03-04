@@ -124,13 +124,13 @@ print(act_compare_dict.keys())
 
 print("\nkeys of act_compare_dict entry for conv1's output:")
 print(act_compare_dict['conv1.stats'].keys())
-print(act_compare_dict['conv1.stats']['float'].shape)
-print(act_compare_dict['conv1.stats']['quantized'].shape)
+print(act_compare_dict['conv1.stats']['float'][0].shape)
+print(act_compare_dict['conv1.stats']['quantized'][0].shape)
 
 ##############################################################################
 # This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following.
 for key in act_compare_dict:
-    print(key, compute_error(act_compare_dict[key]['float'], act_compare_dict[key]['quantized'].dequantize()))
+    print(key, compute_error(act_compare_dict[key]['float'][0], act_compare_dict[key]['quantized'][0].dequantize()))
 
 ##############################################################################
 # If we want to do the comparison for more than one input data, we can do the following.
