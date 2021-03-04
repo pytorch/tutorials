@@ -109,15 +109,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/profiler_recipe.html
    :tags: Basics
 
-.. Customization
-
-.. customcarditem::
-   :header: Custom Datasets, Transforms & Dataloaders
-   :card_description: Learn how to leverage the PyTorch dataset API to easily create a custom dataset and custom dataloader.
-   :image: ../_static/img/thumbnails/cropped/custom-datasets-transforms-and-dataloaders.png
-   :link: ../recipes/recipes/custom_dataset_transforms_loader.html
-   :tags: Data-Customization
-
 .. Interpretability
 
 .. customcarditem::
@@ -234,6 +225,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Distributed Training
+
+.. customcarditem::
+   :header: Shard Optimizer States with ZeroRedundancyOptimizer
+   :card_description: How to use ZeroRedundancyOptimizer to reduce memory consumption.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/zero_redundancy_optimizer.html
+   :tags: Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -262,7 +262,6 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/save_load_across_devices
    /recipes/recipes/zeroing_out_gradients
    /recipes/recipes/profiler_recipe
-   /recipes/recipes/custom_dataset_transforms_loader
    /recipes/recipes/Captum_Recipe
    /recipes/recipes/tensorboard_with_pytorch
    /recipes/recipes/dynamic_quantization
@@ -271,4 +270,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
-   /recipes/distributed_rpc_profiling
+   /recipes/zero_redundancy_optimizer

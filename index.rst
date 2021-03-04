@@ -165,7 +165,7 @@ Welcome to PyTorch Tutorials
    :header: Language Translation with Torchtext
    :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation_tutorial.html
+   :link: beginner/torchtext_translation.html
    :tags: Text
 
 .. Reinforcement Learning
@@ -179,7 +179,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Train a Mario-playing RL Agent
-   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario .
+   :card_description: Use PyTorch to train a Double Q-learning agent to play Mario.
    :image: _static/img/mario.gif
    :link: intermediate/mario_rl_tutorial.html
    :tags: Reinforcement-Learning
@@ -199,14 +199,14 @@ Welcome to PyTorch Tutorials
    :card_description: Introduction to TorchScript, an intermediate representation of a PyTorch model (subclass of nn.Module) that can then be run in a high-performance environment such as C++.
    :image: _static/img/thumbnails/cropped/Introduction-to-TorchScript.png
    :link: beginner/Intro_to_TorchScript_tutorial.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: Loading a TorchScript Model in C++
    :card_description:  Learn how PyTorch provides to go from an existing Python model to a serialized representation that can be loaded and executed purely from C++, with no dependency on Python.
    :image: _static/img/thumbnails/cropped/Loading-a-TorchScript-Model-in-Cpp.png
    :link: advanced/cpp_export.html
-   :tags: Production
+   :tags: Production,TorchScript
 
 .. customcarditem::
    :header: (optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime
@@ -227,18 +227,11 @@ Welcome to PyTorch Tutorials
 .. Frontend APIs
 
 .. customcarditem::
-   :header: (prototype) Introduction to Named Tensors in PyTorch
-   :card_description: Learn how to use PyTorch to train a Deep Q Learning (DQN) agent on the CartPole-v0 task from the OpenAI Gym.
-   :image: _static/img/thumbnails/cropped/experimental-Introduction-to-Named-Tensors-in-PyTorch.png
-   :link: intermediate/named_tensor_tutorial.html
-   :tags: Frontend-APIs,Named-Tensor,Best-Practice
-
-.. customcarditem::
    :header: (beta) Channels Last Memory Format in PyTorch
    :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions.
    :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
-   :tags: Memory-Format,Best-Practice
+   :tags: Memory-Format,Best-Practice,Frontend-APIs
 
 .. customcarditem::
    :header: Using the PyTorch C++ Frontend
@@ -252,21 +245,21 @@ Welcome to PyTorch Tutorials
    :card_description:  Create a neural network layer with no parameters using numpy. Then use scipy to create a neural network layer that has learnable weights.
    :image: _static/img/thumbnails/cropped/Custom-Cpp-and-CUDA-Extensions.png
    :link: advanced/cpp_extension.html
-   :tags: Frontend-APIs,C++,CUDA
+   :tags: Extending-PyTorch,Frontend-APIs,C++,CUDA
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Operators
    :card_description:  Implement a custom TorchScript operator in C++, how to build it into a shared library, how to use it in Python to define TorchScript models and lastly how to load it into a C++ application for inference workloads.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Operators.png
    :link: advanced/torch_script_custom_ops.html
-   :tags: Frontend-APIs,TorchScript,C++
+   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
    :header: Extending TorchScript with Custom C++ Classes
    :card_description: This is a continuation of the custom operator tutorial, and introduces the API we’ve built for binding C++ classes into TorchScript and Python simultaneously.
    :image: _static/img/thumbnails/cropped/Extending-TorchScript-with-Custom-Cpp-Classes.png
    :link: advanced/torch_script_custom_classes.html
-   :tags: Frontend-APIs,TorchScript,C++
+   :tags: Extending-PyTorch,Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
    :header: Dynamic Parallelism in TorchScript
@@ -281,6 +274,21 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++
+   
+.. customcarditem::
+   :header: Registering a Dispatched Operator in C++
+   :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: advanced/dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
+   :header: Extending Dispatcher For a New Backend in C++
+   :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: advanced/extend_dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
 
 .. Model Optimization
 
@@ -318,6 +326,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
+   
+.. customcarditem::
+   :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
+   :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/quantized_transfer_learning_tutorial.html
+   :tags: Image/Video,Quantization,Model-Optimization
 
 .. Parallel-and-Distributed-Training
 
@@ -384,6 +399,22 @@ Welcome to PyTorch Tutorials
    :link: advanced/rpc_ddp_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. Mobile
+
+.. customcarditem::
+   :header: Image Segmentation DeepLabV3 on iOS
+   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on iOS.
+   :image: _static/img/thumbnails/cropped/ios.png
+   :link: beginner/deeplabv3_on_ios.html
+   :tags: Mobile
+
+.. customcarditem::
+   :header: Image Segmentation DeepLabV3 on Android
+   :card_description: A comprehensive step-by-step tutorial on how to prepare and run the PyTorch DeepLabV3 image segmentation model on Android.
+   :image: _static/img/thumbnails/cropped/android.png
+   :link: beginner/deeplabv3_on_android.html
+   :tags: Mobile
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -447,6 +478,7 @@ Additional Resources
    :caption: PyTorch Recipes
 
    See All Recipes <recipes/recipes_index>
+   See All Prototype Recipes <prototype/prototype_index>
 
 .. toctree::
    :maxdepth: 2
@@ -491,7 +523,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation_tutorial
+   beginner/torchtext_translation
 
 
 .. toctree::
@@ -528,15 +560,22 @@ Additional Resources
    :hidden:
    :caption: Frontend APIs
 
-   intermediate/named_tensor_tutorial
    intermediate/memory_format_tutorial
    advanced/cpp_frontend
+   advanced/torch-script-parallelism
+   advanced/cpp_autograd
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Extending PyTorch
+
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
-   advanced/torch-script-parallelism
-   advanced/cpp_autograd
    advanced/dispatcher
+   advanced/extend_dispatcher
 
 .. toctree::
    :maxdepth: 2
@@ -566,3 +605,13 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Mobile
+
+   beginner/deeplabv3_on_ios
+   beginner/deeplabv3_on_android
+   
