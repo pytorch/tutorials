@@ -50,7 +50,7 @@ float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
 img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
-qmodel = quantize(float_model, default_eval_fn, (img_data,), inplace=False)
+qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
 
 ##############################################################################
 # 1. Compare the weights of float and quantized models
@@ -206,7 +206,7 @@ float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
 img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
-qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
+qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
 
 ##############################################################################
 # In the following example we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare ``QuantizableBasicBlock`` module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
