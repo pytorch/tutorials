@@ -222,7 +222,7 @@ Welcome to PyTorch Tutorials
    :card_description: Get an overview of Channels Last memory format and understand how it is used to order NCHW tensors in memory preserving dimensions.
    :image: _static/img/thumbnails/cropped/experimental-Channels-Last-Memory-Format-in-PyTorch.png
    :link: intermediate/memory_format_tutorial.html
-   :tags: Memory-Format,Best-Practice
+   :tags: Memory-Format,Best-Practice,Frontend-APIs
 
 .. customcarditem::
    :header: Using the PyTorch C++ Frontend
@@ -265,6 +265,21 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++
+   
+.. customcarditem::
+   :header: Registering a Dispatched Operator in C++
+   :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code shou$
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: advanced/dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
+   :header: Extending Dispatcher For a New Backend in C++
+   :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and m$
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: advanced/extend_dispatcher.html
+   :tags: Extending-PyTorch,Frontend-APIs,C++
+
 
 .. Model Optimization
 
@@ -302,6 +317,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
+   
+.. customcarditem::
+   :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
+   :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/quantized_transfer_learning_tutorial.html
+   :tags: Image/Video,Quantization,Model-Optimization
 
 .. Parallel-and-Distributed-Training
 
