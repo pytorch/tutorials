@@ -224,14 +224,14 @@ print(ob_dict.keys())
 
 print("\nkeys of ob_dict entry for layer1.0's output:")
 print(ob_dict['layer1.0.stats'].keys())
-print(ob_dict['layer1.0.stats']['float'].shape)
-print(ob_dict['layer1.0.stats']['quantized'].shape)
+print(ob_dict['layer1.0.stats']['float'][0].shape)
+print(ob_dict['layer1.0.stats']['quantized'][0].shape)
 
 ##############################################################################
 # This dict can be then used to compare and compute the module level quantization error.
 
 for key in ob_dict:
-    print(key, compute_error(ob_dict[key]['float'], ob_dict[key]['quantized'].dequantize()))
+    print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0].dequantize()))
 
 ##############################################################################
 # If we want to do the comparison for more than one input data, we can do the following.
