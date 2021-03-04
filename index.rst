@@ -268,14 +268,14 @@ Welcome to PyTorch Tutorials
    
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
-   :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code shou$
+   :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
    :link: advanced/dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Extending Dispatcher For a New Backend in C++
-   :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and m$
+   :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
@@ -320,7 +320,7 @@ Welcome to PyTorch Tutorials
    
 .. customcarditem::
    :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
-   :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model
+   :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
