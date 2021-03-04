@@ -50,7 +50,7 @@ float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
 img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
-qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
+qmodel = quantize(float_model, default_eval_fn, (img_data,), inplace=False)
 
 ##############################################################################
 # 1. Compare the weights of float and quantized models
