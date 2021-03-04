@@ -9,10 +9,10 @@ Welcome to PyTorch Tutorials
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: The 60 min blitz is the most common starting point and provides a broad view on how to use PyTorch. It covers the basics all the way to constructing deep neural networks.
-   :header: New to PyTorch?
-   :button_link: beginner/deep_learning_60min_blitz.html
-   :button_text: Start 60-min blitz
+   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
+   :header: Learn the Basics
+   :button_link:  beginner/basics/intro.html
+   :button_text: Get started with PyTorch
 
 .. customcalloutitem::
    :description: Bite-size, ready-to-deploy PyTorch code examples.
@@ -51,10 +51,10 @@ Welcome to PyTorch Tutorials
 .. Learning PyTorch
 
 .. customcarditem::
-   :header: Deep Learning with PyTorch: A 60 Minute Blitz
-   :card_description: Understand PyTorch’s Tensor library and neural networks at a high level.
+   :header: Learn the Basics
+   :card_description: A step-by-step guide to building a complete ML workflow with PyTorch.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: beginner/deep_learning_60min_blitz.html
+   :link: beginner/basics/intro.html
    :tags: Getting-Started
 
 .. customcarditem::
@@ -493,6 +493,7 @@ Additional Resources
    :includehidden:
    :caption: Learning PyTorch
 
+   beginner/basics/intro
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial

@@ -1,11 +1,11 @@
 """
 **Learn the Basics** ||
 `Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensor_tutorial.html>`_ || 
+`Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
-`Autograd <autograd_tutorial.html>`_ ||
+`Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
@@ -40,10 +40,10 @@ You can run this tutorial in a couple of ways:
 
 How to Use this Guide
 ----------------- 
-If you're new to deep learning frameworks, head right into the first step of our guide: `Tensors <tensor_tutorial.html>`_.
-
-If you're familiar with other deep learning frameworks, check out the `Quickstart <quickstart_tutorial.html>`_ first
+If you're familiar with other deep learning frameworks, check out the `0. Quickstart <quickstart_tutorial.html>`_ first
 to quickly familiarize yourself with PyTorch's API.
+
+If you're new to deep learning frameworks, head right into the first section of our step-by-step guide: `1. Tensors <tensor_tutorial.html>`_.
 
 
 .. include:: /beginner_source/basics/qs_toc.txt
