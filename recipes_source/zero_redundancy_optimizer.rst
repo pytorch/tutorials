@@ -22,7 +22,7 @@ What is ``ZeroRedundancyOptimizer``?
 ------------------------------------
 
 The idea of ``ZeroRedundancyOptimizer`` comes from
-`DeepSpeed/ZeRO project <https://github.com/microsoft/DeepSpeed>`_ and 
+`DeepSpeed/ZeRO project <https://github.com/microsoft/DeepSpeed>`_ and
 `Marian <https://github.com/marian-nmt/marian-dev>`_ that shard
 optimizer states across distributed data-parallel processes to
 reduce per-process memory footprint. In the
@@ -91,7 +91,7 @@ wraps optimizer constructions, toggling between ``ZeroRedundancyOptimizer`` and
         if use_zero:
             optimizer = ZeroRedundancyOptimizer(
                 ddp_model.parameters(),
-                optim=torch.optim.Adam,
+                optimizer_class=torch.optim.Adam,
                 lr=0.01
             )
         else:
