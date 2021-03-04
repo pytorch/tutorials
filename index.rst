@@ -510,7 +510,7 @@ Additional Resources
    :maxdepth: 2
    :includehidden:
    :hidden:
-   :caption: Image/Video
+   :caption: Image and Video
 
    intermediate/torchvision_tutorial
    beginner/transfer_learning_tutorial
