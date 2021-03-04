@@ -7,8 +7,9 @@ Shard Optimizer States with ZeroRedundancyOptimizer
 
 In this recipe, you will learn:
 
-- The high-level idea of ``ZeroRedundancyOptimizer``.
-- How to use ``ZeroRedundancyOptimizer`` in distributed training and its impact.
+- The high-level idea of `ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__.
+- How to use `ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__
+  in distributed training and its impact.
 
 
 Requirements
@@ -21,8 +22,8 @@ Requirements
 What is ``ZeroRedundancyOptimizer``?
 ------------------------------------
 
-The idea of ``ZeroRedundancyOptimizer`` comes from
-`DeepSpeed/ZeRO project <https://github.com/microsoft/DeepSpeed>`_ and 
+The idea of `ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__
+comes from `DeepSpeed/ZeRO project <https://github.com/microsoft/DeepSpeed>`_ and
 `Marian <https://github.com/marian-nmt/marian-dev>`_ that shard
 optimizer states across distributed data-parallel processes to
 reduce per-process memory footprint. In the
@@ -47,12 +48,14 @@ processes, so that all model replicas still land in the same state.
 How to use ``ZeroRedundancyOptimizer``?
 ---------------------------------------
 
-The code below demonstrates how to use ``ZeroRedundancyOptimizer``. The majority
-of the code is similar to the simple DDP example presented in
+The code below demonstrates how to use
+`ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__.
+The majority of the code is similar to the simple DDP example presented in
 `Distributed Data Parallel notes <https://pytorch.org/docs/stable/notes/ddp.html>`_.
 The main difference is the ``if-else`` clause in the ``example`` function which
-wraps optimizer constructions, toggling between ``ZeroRedundancyOptimizer`` and
-``Adam`` optimizer.
+wraps optimizer constructions, toggling between
+`ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__
+and ``Adam`` optimizer.
 
 
 ::
@@ -91,7 +94,7 @@ wraps optimizer constructions, toggling between ``ZeroRedundancyOptimizer`` and
         if use_zero:
             optimizer = ZeroRedundancyOptimizer(
                 ddp_model.parameters(),
-                optim=torch.optim.Adam,
+                optimizer_class=torch.optim.Adam,
                 lr=0.01
             )
         else:
