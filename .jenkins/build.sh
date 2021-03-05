@@ -47,6 +47,8 @@ export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
   python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  python $DIR/remove_runnable_code.py advanced_source/ddp_pipeline_tutorial.py advanced_source/ddp_pipeline_tutorial.py || true
+
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
