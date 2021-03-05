@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Build the Neural Network — PyTorch Tutorials 1.7.1 documentation</title>
+<title>Build the Neural Network — PyTorch Tutorials 1.8.0 documentation</title>
 <link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -137,7 +137,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.7.1
+                  1.8.0
                 </div>
 <div role="search">
 <form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -169,7 +169,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Audio</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html">Audio I/O and Pre-Processing with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_preprocessing_tutorial.html#datasets">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/speech_command_recognition_with_torchaudio.html">SyntaxError</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
@@ -178,7 +183,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../text_sentiment_ngrams_tutorial.html">Text Classification with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../torchtext_translation.html">Language Translation with TorchText</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
@@ -192,6 +197,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
 <ul>
@@ -228,6 +237,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/ddp_pipeline_tutorial.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -383,7 +393,7 @@ We get the prediction probabilities by passing it through an instance of the <co
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([8], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([2], device='cuda:0')
 </pre></div>
 </div>
 </div>
@@ -443,26 +453,26 @@ linear layers, but there’s other activations to introduce non-linearity in you
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[ 0.3559, -0.3316,  0.1236,  0.3323, -0.2207, -0.3089, -0.6600, -0.3644,
-          0.1895,  0.3334, -0.4133,  0.1371,  0.1840, -0.2820, -0.0427,  0.3044,
-         -0.0417,  0.0106, -0.7678, -0.3187],
-        [ 0.1208,  0.0420, -0.1420,  0.1944,  0.0871, -0.0762, -0.5550, -0.5773,
-          0.2758,  0.2740, -0.2233,  0.3903, -0.0452, -0.0297,  0.0561, -0.0076,
-         -0.1067,  0.1342, -0.3489, -0.4132],
-        [ 0.5012, -0.1423,  0.1855,  0.2778, -0.4568, -0.0567, -0.2751, -0.2318,
-          0.1581, -0.3544, -0.3250,  0.3470,  0.2938,  0.1464,  0.2234,  0.3723,
-         -0.2751,  0.2892, -0.2410, -0.4634]], grad_fn=&lt;AddmmBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[-0.0985, -0.2408, -0.2103,  0.0937, -0.4188, -0.1234, -0.7023, -0.1350,
+          0.1067,  0.4966, -0.4646, -0.3410,  0.0969, -0.5530,  0.4650,  0.4629,
+         -0.3459,  0.0915,  0.3403,  0.0718],
+        [-0.2161, -0.6790, -0.1229,  0.1875, -0.3054, -0.4908, -0.5615, -0.2454,
+          0.2132,  0.1644, -0.3684, -0.5310,  0.2546, -0.3044,  0.1795,  0.3318,
+         -0.2866,  0.0930,  0.0998, -0.0373],
+        [ 0.1165, -0.1907, -0.1261,  0.1001, -0.3549, -0.3977, -0.2834,  0.0061,
+         -0.0674,  0.4625, -0.4252, -0.1225, -0.0233, -0.3429,  0.0657, -0.0411,
+         -0.1080, -0.1821,  0.3883,  0.2601]], grad_fn=&lt;AddmmBackward&gt;)
 
 
-After ReLU: tensor([[0.3559, 0.0000, 0.1236, 0.3323, 0.0000, 0.0000, 0.0000, 0.0000, 0.1895,
-         0.3334, 0.0000, 0.1371, 0.1840, 0.0000, 0.0000, 0.3044, 0.0000, 0.0106,
-         0.0000, 0.0000],
-        [0.1208, 0.0420, 0.0000, 0.1944, 0.0871, 0.0000, 0.0000, 0.0000, 0.2758,
-         0.2740, 0.0000, 0.3903, 0.0000, 0.0000, 0.0561, 0.0000, 0.0000, 0.1342,
-         0.0000, 0.0000],
-        [0.5012, 0.0000, 0.1855, 0.2778, 0.0000, 0.0000, 0.0000, 0.0000, 0.1581,
-         0.0000, 0.0000, 0.3470, 0.2938, 0.1464, 0.2234, 0.3723, 0.0000, 0.2892,
-         0.0000, 0.0000]], grad_fn=&lt;ReluBackward0&gt;)
+After ReLU: tensor([[0.0000, 0.0000, 0.0000, 0.0937, 0.0000, 0.0000, 0.0000, 0.0000, 0.1067,
+         0.4966, 0.0000, 0.0000, 0.0969, 0.0000, 0.4650, 0.4629, 0.0000, 0.0915,
+         0.3403, 0.0718],
+        [0.0000, 0.0000, 0.0000, 0.1875, 0.0000, 0.0000, 0.0000, 0.0000, 0.2132,
+         0.1644, 0.0000, 0.0000, 0.2546, 0.0000, 0.1795, 0.3318, 0.0000, 0.0930,
+         0.0998, 0.0000],
+        [0.1165, 0.0000, 0.0000, 0.1001, 0.0000, 0.0000, 0.0000, 0.0061, 0.0000,
+         0.4625, 0.0000, 0.0000, 0.0000, 0.0000, 0.0657, 0.0000, 0.0000, 0.0000,
+         0.3883, 0.2601]], grad_fn=&lt;ReluBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -521,23 +531,23 @@ accessible using your model’s <code class="docutils literal notranslate"><span
 )
 
 
-Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0078,  0.0013,  0.0210,  ..., -0.0130, -0.0287, -0.0093],
-        [-0.0109, -0.0056, -0.0059,  ..., -0.0276,  0.0175,  0.0139]],
+Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[-0.0127,  0.0284, -0.0257,  ...,  0.0179, -0.0247, -0.0102],
+        [ 0.0150,  0.0275, -0.0136,  ...,  0.0130,  0.0272,  0.0321]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([0.0230, 0.0081], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([-0.0161, -0.0336], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0085,  0.0250, -0.0070,  ..., -0.0309, -0.0365,  0.0286],
-        [ 0.0174, -0.0133,  0.0187,  ...,  0.0134,  0.0048, -0.0273]],
+Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0113, -0.0089, -0.0049,  ...,  0.0198,  0.0196,  0.0196],
+        [-0.0305,  0.0149,  0.0139,  ...,  0.0190, -0.0015,  0.0009]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([-0.0325, -0.0049], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([0.0343, 0.0302], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[-0.0275,  0.0309, -0.0383,  ..., -0.0383,  0.0265, -0.0246],
-        [ 0.0309,  0.0090,  0.0429,  ...,  0.0395,  0.0019,  0.0402]],
+Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0334, -0.0422,  0.0157,  ...,  0.0413,  0.0249,  0.0043],
+        [ 0.0291,  0.0156, -0.0388,  ..., -0.0327, -0.0315, -0.0074]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 0.0284, -0.0411], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 0.0364, -0.0064], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -547,7 +557,7 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 0.0
 <ul class="simple">
 <li><a class="reference external" href="https://pytorch.org/docs/stable/nn.html">torch.nn API</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  5.993 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.141 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-buildmodel-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/d8c99fc5080440634229361450c7f70e/buildmodel_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">buildmodel_tutorial.py</span></code></a></div>

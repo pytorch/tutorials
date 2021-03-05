@@ -6,14 +6,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DCGAN Tutorial — PyTorch Tutorials 1.7.1 documentation</title>
+<title>DCGAN Tutorial — PyTorch Tutorials 1.8.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="audio_preprocessing_tutorial.html" rel="next" title="Audio I/O and Pre-Processing with torchaudio"/>
+<link href="audio_preprocessing_tutorial.html" rel="next" title="Audio manipulation with torchaudio"/>
 <link href="fgsm_tutorial.html" rel="prev" title="Adversarial Example Generation"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -139,7 +139,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.7.1
+                  1.8.0
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -171,7 +171,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Audio</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio I/O and Pre-Processing with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#datasets">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_command_recognition_with_torchaudio.html">SyntaxError</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
@@ -180,7 +185,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text Classification with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torchtext_translation.html">Language Translation with TorchText</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
@@ -194,6 +199,10 @@
 <li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
 <ul>
@@ -230,6 +239,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline_tutorial.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -934,165 +944,165 @@ run and if you removed some data from the dataset.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Starting Training Loop...
 [0/5][0/1583]   Loss_D: 1.9847  Loss_G: 5.5914  D(x): 0.6004    D(G(z)): 0.6680 / 0.0062
-[0/5][50/1583]  Loss_D: 0.7025  Loss_G: 35.9960 D(x): 0.7229    D(G(z)): 0.0000 / 0.0000
-[0/5][100/1583] Loss_D: 0.0004  Loss_G: 36.8812 D(x): 0.9996    D(G(z)): 0.0000 / 0.0000
-[0/5][150/1583] Loss_D: 0.0127  Loss_G: 9.2955  D(x): 0.9986    D(G(z)): 0.0111 / 0.0002
-[0/5][200/1583] Loss_D: 0.0329  Loss_G: 42.3629 D(x): 0.9905    D(G(z)): 0.0000 / 0.0000
-[0/5][250/1583] Loss_D: 0.0033  Loss_G: 42.0760 D(x): 0.9970    D(G(z)): 0.0000 / 0.0000
-[0/5][300/1583] Loss_D: 0.0000  Loss_G: 41.7987 D(x): 1.0000    D(G(z)): 0.0000 / 0.0000
-[0/5][350/1583] Loss_D: 0.0000  Loss_G: 41.3716 D(x): 1.0000    D(G(z)): 0.0000 / 0.0000
-[0/5][400/1583] Loss_D: 0.0000  Loss_G: 40.7487 D(x): 1.0000    D(G(z)): 0.0000 / 0.0000
-[0/5][450/1583] Loss_D: 0.1283  Loss_G: 19.5950 D(x): 0.9297    D(G(z)): 0.0000 / 0.0000
-[0/5][500/1583] Loss_D: 0.5939  Loss_G: 1.6873  D(x): 0.7863    D(G(z)): 0.2228 / 0.2373
-[0/5][550/1583] Loss_D: 0.6202  Loss_G: 2.7669  D(x): 0.8001    D(G(z)): 0.2874 / 0.0884
-[0/5][600/1583] Loss_D: 0.6053  Loss_G: 1.7747  D(x): 0.7385    D(G(z)): 0.1507 / 0.2781
-[0/5][650/1583] Loss_D: 0.7246  Loss_G: 2.8881  D(x): 0.6892    D(G(z)): 0.2136 / 0.0755
-[0/5][700/1583] Loss_D: 1.5755  Loss_G: 1.4609  D(x): 0.3164    D(G(z)): 0.0222 / 0.3055
-[0/5][750/1583] Loss_D: 1.5431  Loss_G: 7.8375  D(x): 0.8900    D(G(z)): 0.6702 / 0.0006
-[0/5][800/1583] Loss_D: 1.4616  Loss_G: 1.6810  D(x): 0.3682    D(G(z)): 0.0260 / 0.2399
-[0/5][850/1583] Loss_D: 0.9114  Loss_G: 2.8212  D(x): 0.5772    D(G(z)): 0.0734 / 0.0964
-[0/5][900/1583] Loss_D: 0.7743  Loss_G: 3.4150  D(x): 0.8072    D(G(z)): 0.3484 / 0.0553
-[0/5][950/1583] Loss_D: 0.9554  Loss_G: 2.9145  D(x): 0.5802    D(G(z)): 0.1625 / 0.0836
-[0/5][1000/1583]        Loss_D: 0.7036  Loss_G: 4.7760  D(x): 0.7977    D(G(z)): 0.2728 / 0.0193
-[0/5][1050/1583]        Loss_D: 0.5683  Loss_G: 4.3521  D(x): 0.8111    D(G(z)): 0.2560 / 0.0214
-[0/5][1100/1583]        Loss_D: 0.4917  Loss_G: 4.8605  D(x): 0.8865    D(G(z)): 0.2696 / 0.0129
-[0/5][1150/1583]        Loss_D: 0.7978  Loss_G: 6.1571  D(x): 0.9617    D(G(z)): 0.4438 / 0.0065
-[0/5][1200/1583]        Loss_D: 1.0373  Loss_G: 2.3413  D(x): 0.5271    D(G(z)): 0.1328 / 0.1426
-[0/5][1250/1583]        Loss_D: 0.5967  Loss_G: 3.0255  D(x): 0.7426    D(G(z)): 0.1535 / 0.0855
-[0/5][1300/1583]        Loss_D: 1.0900  Loss_G: 2.7899  D(x): 0.4550    D(G(z)): 0.0216 / 0.1016
-[0/5][1350/1583]        Loss_D: 0.6091  Loss_G: 2.7708  D(x): 0.7693    D(G(z)): 0.2174 / 0.0875
-[0/5][1400/1583]        Loss_D: 0.6266  Loss_G: 1.9525  D(x): 0.7757    D(G(z)): 0.2186 / 0.1929
-[0/5][1450/1583]        Loss_D: 0.3038  Loss_G: 3.3925  D(x): 0.8524    D(G(z)): 0.1015 / 0.0544
-[0/5][1500/1583]        Loss_D: 0.7483  Loss_G: 4.2358  D(x): 0.7914    D(G(z)): 0.3253 / 0.0265
-[0/5][1550/1583]        Loss_D: 0.6489  Loss_G: 3.9333  D(x): 0.8213    D(G(z)): 0.2602 / 0.0336
-[1/5][0/1583]   Loss_D: 0.9527  Loss_G: 5.8470  D(x): 0.9238    D(G(z)): 0.5177 / 0.0050
-[1/5][50/1583]  Loss_D: 0.5850  Loss_G: 3.4435  D(x): 0.8244    D(G(z)): 0.2650 / 0.0515
-[1/5][100/1583] Loss_D: 0.7961  Loss_G: 5.1468  D(x): 0.8258    D(G(z)): 0.3530 / 0.0131
-[1/5][150/1583] Loss_D: 0.4082  Loss_G: 3.3648  D(x): 0.8758    D(G(z)): 0.1930 / 0.0688
-[1/5][200/1583] Loss_D: 1.0127  Loss_G: 1.6120  D(x): 0.4747    D(G(z)): 0.0201 / 0.2945
-[1/5][250/1583] Loss_D: 0.5857  Loss_G: 5.1924  D(x): 0.9062    D(G(z)): 0.3438 / 0.0091
-[1/5][300/1583] Loss_D: 0.9809  Loss_G: 3.1794  D(x): 0.4860    D(G(z)): 0.0101 / 0.0801
-[1/5][350/1583] Loss_D: 0.4163  Loss_G: 4.1507  D(x): 0.8746    D(G(z)): 0.2146 / 0.0273
-[1/5][400/1583] Loss_D: 0.3872  Loss_G: 3.7833  D(x): 0.8331    D(G(z)): 0.1468 / 0.0363
-[1/5][450/1583] Loss_D: 0.6098  Loss_G: 2.9686  D(x): 0.6487    D(G(z)): 0.0837 / 0.0775
-[1/5][500/1583] Loss_D: 0.3552  Loss_G: 3.7273  D(x): 0.8241    D(G(z)): 0.1102 / 0.0397
-[1/5][550/1583] Loss_D: 0.7322  Loss_G: 4.8951  D(x): 0.8811    D(G(z)): 0.3790 / 0.0161
-[1/5][600/1583] Loss_D: 0.4047  Loss_G: 2.6265  D(x): 0.8213    D(G(z)): 0.1467 / 0.1099
-[1/5][650/1583] Loss_D: 0.5413  Loss_G: 4.3969  D(x): 0.9001    D(G(z)): 0.3166 / 0.0180
-[1/5][700/1583] Loss_D: 1.4801  Loss_G: 5.1908  D(x): 0.9460    D(G(z)): 0.6803 / 0.0101
-[1/5][750/1583] Loss_D: 0.4709  Loss_G: 3.0164  D(x): 0.7775    D(G(z)): 0.1550 / 0.0723
-[1/5][800/1583] Loss_D: 0.5950  Loss_G: 4.2794  D(x): 0.8649    D(G(z)): 0.3167 / 0.0210
-[1/5][850/1583] Loss_D: 0.5239  Loss_G: 2.6818  D(x): 0.7333    D(G(z)): 0.1206 / 0.1109
-[1/5][900/1583] Loss_D: 1.2009  Loss_G: 6.5400  D(x): 0.9583    D(G(z)): 0.6168 / 0.0038
-[1/5][950/1583] Loss_D: 0.4423  Loss_G: 3.5494  D(x): 0.9363    D(G(z)): 0.2732 / 0.0445
-[1/5][1000/1583]        Loss_D: 0.6326  Loss_G: 2.2876  D(x): 0.8281    D(G(z)): 0.2528 / 0.1821
-[1/5][1050/1583]        Loss_D: 0.4806  Loss_G: 2.3173  D(x): 0.7342    D(G(z)): 0.0975 / 0.1443
-[1/5][1100/1583]        Loss_D: 0.6730  Loss_G: 3.5141  D(x): 0.7930    D(G(z)): 0.3071 / 0.0495
-[1/5][1150/1583]        Loss_D: 0.7547  Loss_G: 1.9323  D(x): 0.5520    D(G(z)): 0.0522 / 0.1975
-[1/5][1200/1583]        Loss_D: 0.7784  Loss_G: 2.1333  D(x): 0.5642    D(G(z)): 0.0321 / 0.1688
-[1/5][1250/1583]        Loss_D: 0.3277  Loss_G: 2.8470  D(x): 0.8754    D(G(z)): 0.1494 / 0.0840
-[1/5][1300/1583]        Loss_D: 0.5584  Loss_G: 2.3196  D(x): 0.6866    D(G(z)): 0.0931 / 0.1399
-[1/5][1350/1583]        Loss_D: 0.5155  Loss_G: 3.5376  D(x): 0.8582    D(G(z)): 0.2717 / 0.0412
-[1/5][1400/1583]        Loss_D: 0.6930  Loss_G: 3.4264  D(x): 0.8526    D(G(z)): 0.3541 / 0.0488
-[1/5][1450/1583]        Loss_D: 0.6098  Loss_G: 4.0950  D(x): 0.8912    D(G(z)): 0.3515 / 0.0262
-[1/5][1500/1583]        Loss_D: 0.4929  Loss_G: 2.7162  D(x): 0.7014    D(G(z)): 0.0769 / 0.1045
-[1/5][1550/1583]        Loss_D: 0.6189  Loss_G: 2.7863  D(x): 0.7850    D(G(z)): 0.2580 / 0.0863
-[2/5][0/1583]   Loss_D: 1.5193  Loss_G: 0.7642  D(x): 0.3252    D(G(z)): 0.0318 / 0.5360
-[2/5][50/1583]  Loss_D: 0.8990  Loss_G: 1.5522  D(x): 0.4985    D(G(z)): 0.0606 / 0.2723
-[2/5][100/1583] Loss_D: 0.5150  Loss_G: 2.3713  D(x): 0.7022    D(G(z)): 0.0989 / 0.1371
-[2/5][150/1583] Loss_D: 1.1244  Loss_G: 1.6786  D(x): 0.4314    D(G(z)): 0.0891 / 0.2667
-[2/5][200/1583] Loss_D: 0.6412  Loss_G: 2.1631  D(x): 0.6315    D(G(z)): 0.0889 / 0.1527
-[2/5][250/1583] Loss_D: 0.5838  Loss_G: 2.0266  D(x): 0.6972    D(G(z)): 0.1337 / 0.1708
-[2/5][300/1583] Loss_D: 0.6033  Loss_G: 2.2224  D(x): 0.7042    D(G(z)): 0.1609 / 0.1395
-[2/5][350/1583] Loss_D: 0.6162  Loss_G: 2.2293  D(x): 0.7159    D(G(z)): 0.1930 / 0.1360
-[2/5][400/1583] Loss_D: 0.6124  Loss_G: 2.9765  D(x): 0.7855    D(G(z)): 0.2659 / 0.0667
-[2/5][450/1583] Loss_D: 0.4134  Loss_G: 3.1060  D(x): 0.8704    D(G(z)): 0.2149 / 0.0635
-[2/5][500/1583] Loss_D: 1.3617  Loss_G: 1.0442  D(x): 0.3350    D(G(z)): 0.0519 / 0.4046
-[2/5][550/1583] Loss_D: 0.6449  Loss_G: 2.0070  D(x): 0.6170    D(G(z)): 0.0639 / 0.1718
-[2/5][600/1583] Loss_D: 0.8830  Loss_G: 1.9980  D(x): 0.7383    D(G(z)): 0.3759 / 0.1792
-[2/5][650/1583] Loss_D: 0.7309  Loss_G: 4.2199  D(x): 0.8998    D(G(z)): 0.4184 / 0.0239
-[2/5][700/1583] Loss_D: 0.6402  Loss_G: 3.6674  D(x): 0.9056    D(G(z)): 0.3738 / 0.0429
-[2/5][750/1583] Loss_D: 0.5968  Loss_G: 3.0715  D(x): 0.9205    D(G(z)): 0.3532 / 0.0741
-[2/5][800/1583] Loss_D: 0.9278  Loss_G: 3.4097  D(x): 0.8871    D(G(z)): 0.4938 / 0.0466
-[2/5][850/1583] Loss_D: 0.9871  Loss_G: 3.2994  D(x): 0.9239    D(G(z)): 0.5469 / 0.0523
-[2/5][900/1583] Loss_D: 0.4589  Loss_G: 2.7922  D(x): 0.8070    D(G(z)): 0.1889 / 0.0831
-[2/5][950/1583] Loss_D: 0.6921  Loss_G: 1.6287  D(x): 0.6489    D(G(z)): 0.1676 / 0.2364
-[2/5][1000/1583]        Loss_D: 1.0897  Loss_G: 4.3620  D(x): 0.9265    D(G(z)): 0.5746 / 0.0194
-[2/5][1050/1583]        Loss_D: 0.7179  Loss_G: 2.7923  D(x): 0.7982    D(G(z)): 0.3474 / 0.0796
-[2/5][1100/1583]        Loss_D: 0.6686  Loss_G: 2.3252  D(x): 0.7621    D(G(z)): 0.2836 / 0.1254
-[2/5][1150/1583]        Loss_D: 0.8870  Loss_G: 3.3233  D(x): 0.9069    D(G(z)): 0.4874 / 0.0529
-[2/5][1200/1583]        Loss_D: 0.5216  Loss_G: 2.5297  D(x): 0.7834    D(G(z)): 0.2073 / 0.1054
-[2/5][1250/1583]        Loss_D: 1.0148  Loss_G: 1.2655  D(x): 0.4700    D(G(z)): 0.0923 / 0.3373
-[2/5][1300/1583]        Loss_D: 0.6939  Loss_G: 1.5728  D(x): 0.5997    D(G(z)): 0.1142 / 0.2578
-[2/5][1350/1583]        Loss_D: 0.9557  Loss_G: 4.4320  D(x): 0.9026    D(G(z)): 0.5255 / 0.0188
-[2/5][1400/1583]        Loss_D: 0.7346  Loss_G: 1.2904  D(x): 0.6066    D(G(z)): 0.1360 / 0.3304
-[2/5][1450/1583]        Loss_D: 0.9321  Loss_G: 1.6770  D(x): 0.5442    D(G(z)): 0.1919 / 0.2325
-[2/5][1500/1583]        Loss_D: 1.0541  Loss_G: 4.1335  D(x): 0.8680    D(G(z)): 0.5459 / 0.0280
-[2/5][1550/1583]        Loss_D: 0.5902  Loss_G: 2.1140  D(x): 0.7942    D(G(z)): 0.2610 / 0.1468
-[3/5][0/1583]   Loss_D: 0.4387  Loss_G: 2.1782  D(x): 0.7603    D(G(z)): 0.1237 / 0.1439
-[3/5][50/1583]  Loss_D: 0.8520  Loss_G: 1.7426  D(x): 0.5579    D(G(z)): 0.1211 / 0.2474
-[3/5][100/1583] Loss_D: 0.7236  Loss_G: 2.8554  D(x): 0.8137    D(G(z)): 0.3620 / 0.0733
-[3/5][150/1583] Loss_D: 1.0158  Loss_G: 4.6033  D(x): 0.9160    D(G(z)): 0.5530 / 0.0172
-[3/5][200/1583] Loss_D: 0.6405  Loss_G: 1.6489  D(x): 0.6569    D(G(z)): 0.1418 / 0.2297
-[3/5][250/1583] Loss_D: 0.3871  Loss_G: 2.7587  D(x): 0.8243    D(G(z)): 0.1542 / 0.0831
-[3/5][300/1583] Loss_D: 0.7597  Loss_G: 2.0396  D(x): 0.7244    D(G(z)): 0.3087 / 0.1695
-[3/5][350/1583] Loss_D: 1.3036  Loss_G: 2.5288  D(x): 0.8787    D(G(z)): 0.6148 / 0.1121
-[3/5][400/1583] Loss_D: 0.5601  Loss_G: 2.7465  D(x): 0.7866    D(G(z)): 0.2466 / 0.0826
-[3/5][450/1583] Loss_D: 0.6039  Loss_G: 1.7247  D(x): 0.6575    D(G(z)): 0.1157 / 0.2170
-[3/5][500/1583] Loss_D: 0.7809  Loss_G: 1.7365  D(x): 0.6727    D(G(z)): 0.2569 / 0.2147
-[3/5][550/1583] Loss_D: 0.5750  Loss_G: 1.9830  D(x): 0.7159    D(G(z)): 0.1671 / 0.1699
-[3/5][600/1583] Loss_D: 0.6394  Loss_G: 2.6619  D(x): 0.8131    D(G(z)): 0.3184 / 0.0875
-[3/5][650/1583] Loss_D: 1.2687  Loss_G: 1.8020  D(x): 0.5842    D(G(z)): 0.4009 / 0.2470
-[3/5][700/1583] Loss_D: 0.6423  Loss_G: 1.7589  D(x): 0.6880    D(G(z)): 0.1900 / 0.2156
-[3/5][750/1583] Loss_D: 0.6012  Loss_G: 2.6574  D(x): 0.8062    D(G(z)): 0.2829 / 0.0936
-[3/5][800/1583] Loss_D: 1.5674  Loss_G: 0.3998  D(x): 0.2799    D(G(z)): 0.0759 / 0.7008
-[3/5][850/1583] Loss_D: 0.9652  Loss_G: 3.4215  D(x): 0.8941    D(G(z)): 0.5235 / 0.0453
-[3/5][900/1583] Loss_D: 0.4788  Loss_G: 2.6699  D(x): 0.8556    D(G(z)): 0.2521 / 0.0858
-[3/5][950/1583] Loss_D: 1.1659  Loss_G: 0.0849  D(x): 0.3811    D(G(z)): 0.0423 / 0.9228
-[3/5][1000/1583]        Loss_D: 1.1669  Loss_G: 3.9321  D(x): 0.9154    D(G(z)): 0.6235 / 0.0276
-[3/5][1050/1583]        Loss_D: 0.6097  Loss_G: 2.1767  D(x): 0.7492    D(G(z)): 0.2364 / 0.1423
-[3/5][1100/1583]        Loss_D: 0.5776  Loss_G: 2.8204  D(x): 0.8029    D(G(z)): 0.2649 / 0.0748
-[3/5][1150/1583]        Loss_D: 0.9189  Loss_G: 0.6277  D(x): 0.4890    D(G(z)): 0.1016 / 0.5723
-[3/5][1200/1583]        Loss_D: 0.8860  Loss_G: 3.7393  D(x): 0.8516    D(G(z)): 0.4586 / 0.0349
-[3/5][1250/1583]        Loss_D: 0.8870  Loss_G: 3.2484  D(x): 0.8509    D(G(z)): 0.4757 / 0.0525
-[3/5][1300/1583]        Loss_D: 0.7579  Loss_G: 3.3450  D(x): 0.8125    D(G(z)): 0.3802 / 0.0487
-[3/5][1350/1583]        Loss_D: 0.6285  Loss_G: 1.7275  D(x): 0.6576    D(G(z)): 0.1425 / 0.2212
-[3/5][1400/1583]        Loss_D: 1.0169  Loss_G: 3.5172  D(x): 0.7622    D(G(z)): 0.4689 / 0.0464
-[3/5][1450/1583]        Loss_D: 0.6311  Loss_G: 1.9141  D(x): 0.7048    D(G(z)): 0.2073 / 0.1743
-[3/5][1500/1583]        Loss_D: 0.9658  Loss_G: 2.3738  D(x): 0.6655    D(G(z)): 0.3673 / 0.1190
-[3/5][1550/1583]        Loss_D: 1.0322  Loss_G: 3.7445  D(x): 0.8839    D(G(z)): 0.5483 / 0.0351
-[4/5][0/1583]   Loss_D: 0.6343  Loss_G: 1.7002  D(x): 0.7298    D(G(z)): 0.2396 / 0.2143
-[4/5][50/1583]  Loss_D: 0.6715  Loss_G: 1.4250  D(x): 0.6170    D(G(z)): 0.1134 / 0.2935
-[4/5][100/1583] Loss_D: 1.1570  Loss_G: 3.8002  D(x): 0.9418    D(G(z)): 0.6016 / 0.0336
-[4/5][150/1583] Loss_D: 0.9158  Loss_G: 1.2077  D(x): 0.5012    D(G(z)): 0.1088 / 0.3350
-[4/5][200/1583] Loss_D: 0.7126  Loss_G: 3.6103  D(x): 0.8805    D(G(z)): 0.4032 / 0.0346
-[4/5][250/1583] Loss_D: 1.0302  Loss_G: 0.9828  D(x): 0.4431    D(G(z)): 0.0295 / 0.4408
-[4/5][300/1583] Loss_D: 0.6020  Loss_G: 2.2096  D(x): 0.6702    D(G(z)): 0.1292 / 0.1429
-[4/5][350/1583] Loss_D: 1.4794  Loss_G: 0.6755  D(x): 0.2865    D(G(z)): 0.0349 / 0.5536
-[4/5][400/1583] Loss_D: 0.6532  Loss_G: 2.7969  D(x): 0.8185    D(G(z)): 0.3304 / 0.0764
-[4/5][450/1583] Loss_D: 1.0387  Loss_G: 4.7577  D(x): 0.8723    D(G(z)): 0.5461 / 0.0133
-[4/5][500/1583] Loss_D: 0.4239  Loss_G: 2.6498  D(x): 0.8656    D(G(z)): 0.2220 / 0.0911
-[4/5][550/1583] Loss_D: 0.8572  Loss_G: 3.5200  D(x): 0.9225    D(G(z)): 0.4810 / 0.0476
-[4/5][600/1583] Loss_D: 0.7418  Loss_G: 1.8280  D(x): 0.7345    D(G(z)): 0.3030 / 0.1942
-[4/5][650/1583] Loss_D: 0.6602  Loss_G: 1.7903  D(x): 0.6475    D(G(z)): 0.1564 / 0.1937
-[4/5][700/1583] Loss_D: 0.9063  Loss_G: 1.1867  D(x): 0.5036    D(G(z)): 0.1006 / 0.3609
-[4/5][750/1583] Loss_D: 0.8422  Loss_G: 2.8128  D(x): 0.7392    D(G(z)): 0.3522 / 0.0823
-[4/5][800/1583] Loss_D: 0.6873  Loss_G: 2.9437  D(x): 0.8750    D(G(z)): 0.3810 / 0.0731
-[4/5][850/1583] Loss_D: 0.8796  Loss_G: 3.9356  D(x): 0.8896    D(G(z)): 0.4760 / 0.0287
-[4/5][900/1583] Loss_D: 0.6431  Loss_G: 2.9052  D(x): 0.8210    D(G(z)): 0.3289 / 0.0703
-[4/5][950/1583] Loss_D: 0.5745  Loss_G: 2.0691  D(x): 0.6663    D(G(z)): 0.0888 / 0.1657
-[4/5][1000/1583]        Loss_D: 1.3241  Loss_G: 2.1826  D(x): 0.8284    D(G(z)): 0.6048 / 0.1586
-[4/5][1050/1583]        Loss_D: 0.5818  Loss_G: 2.0468  D(x): 0.7335    D(G(z)): 0.1921 / 0.1704
-[4/5][1100/1583]        Loss_D: 0.7400  Loss_G: 1.4863  D(x): 0.6223    D(G(z)): 0.1736 / 0.2614
-[4/5][1150/1583]        Loss_D: 1.0138  Loss_G: 1.5902  D(x): 0.4739    D(G(z)): 0.1377 / 0.2475
-[4/5][1200/1583]        Loss_D: 1.0717  Loss_G: 4.4114  D(x): 0.9178    D(G(z)): 0.5751 / 0.0180
-[4/5][1250/1583]        Loss_D: 0.8037  Loss_G: 3.3875  D(x): 0.8452    D(G(z)): 0.4165 / 0.0482
-[4/5][1300/1583]        Loss_D: 0.5744  Loss_G: 2.2340  D(x): 0.6839    D(G(z)): 0.1304 / 0.1403
-[4/5][1350/1583]        Loss_D: 0.5486  Loss_G: 2.6411  D(x): 0.8695    D(G(z)): 0.2979 / 0.0911
-[4/5][1400/1583]        Loss_D: 0.6123  Loss_G: 3.5425  D(x): 0.9049    D(G(z)): 0.3689 / 0.0392
-[4/5][1450/1583]        Loss_D: 0.6754  Loss_G: 1.8151  D(x): 0.6274    D(G(z)): 0.1347 / 0.2075
-[4/5][1500/1583]        Loss_D: 0.5105  Loss_G: 2.0318  D(x): 0.7383    D(G(z)): 0.1531 / 0.1618
-[4/5][1550/1583]        Loss_D: 1.8868  Loss_G: 0.8682  D(x): 0.2070    D(G(z)): 0.0422 / 0.4754
+[0/5][50/1583]  Loss_D: 0.2561  Loss_G: 10.2033 D(x): 0.8847    D(G(z)): 0.0005 / 0.0001
+[0/5][100/1583] Loss_D: 0.0028  Loss_G: 34.5567 D(x): 0.9974    D(G(z)): 0.0000 / 0.0000
+[0/5][150/1583] Loss_D: 0.2347  Loss_G: 7.6105  D(x): 0.8656    D(G(z)): 0.0068 / 0.0011
+[0/5][200/1583] Loss_D: 0.6071  Loss_G: 3.3339  D(x): 0.7642    D(G(z)): 0.1479 / 0.0589
+[0/5][250/1583] Loss_D: 0.4601  Loss_G: 5.0843  D(x): 0.8675    D(G(z)): 0.2362 / 0.0080
+[0/5][300/1583] Loss_D: 0.6473  Loss_G: 5.3736  D(x): 0.7961    D(G(z)): 0.2593 / 0.0096
+[0/5][350/1583] Loss_D: 0.5496  Loss_G: 3.9772  D(x): 0.7075    D(G(z)): 0.0604 / 0.0463
+[0/5][400/1583] Loss_D: 1.6529  Loss_G: 1.9205  D(x): 0.3441    D(G(z)): 0.0191 / 0.3107
+[0/5][450/1583] Loss_D: 0.4234  Loss_G: 3.5630  D(x): 0.7771    D(G(z)): 0.1008 / 0.0522
+[0/5][500/1583] Loss_D: 0.5930  Loss_G: 3.3267  D(x): 0.7102    D(G(z)): 0.0901 / 0.0695
+[0/5][550/1583] Loss_D: 0.3854  Loss_G: 3.9368  D(x): 0.9010    D(G(z)): 0.2110 / 0.0352
+[0/5][600/1583] Loss_D: 0.3158  Loss_G: 2.9337  D(x): 0.8061    D(G(z)): 0.0396 / 0.1087
+[0/5][650/1583] Loss_D: 0.6069  Loss_G: 5.9562  D(x): 0.9032    D(G(z)): 0.3436 / 0.0054
+[0/5][700/1583] Loss_D: 0.4350  Loss_G: 5.7525  D(x): 0.9526    D(G(z)): 0.2467 / 0.0103
+[0/5][750/1583] Loss_D: 0.3193  Loss_G: 4.3203  D(x): 0.8774    D(G(z)): 0.1412 / 0.0218
+[0/5][800/1583] Loss_D: 1.4330  Loss_G: 1.3227  D(x): 0.3555    D(G(z)): 0.0078 / 0.4362
+[0/5][850/1583] Loss_D: 0.2703  Loss_G: 4.7541  D(x): 0.8987    D(G(z)): 0.1216 / 0.0142
+[0/5][900/1583] Loss_D: 0.5127  Loss_G: 2.4086  D(x): 0.7483    D(G(z)): 0.1174 / 0.1362
+[0/5][950/1583] Loss_D: 0.5928  Loss_G: 3.1469  D(x): 0.7791    D(G(z)): 0.1949 / 0.0716
+[0/5][1000/1583]        Loss_D: 0.7300  Loss_G: 1.3062  D(x): 0.6139    D(G(z)): 0.0552 / 0.3816
+[0/5][1050/1583]        Loss_D: 0.5105  Loss_G: 3.1650  D(x): 0.7743    D(G(z)): 0.1483 / 0.0723
+[0/5][1100/1583]        Loss_D: 0.5075  Loss_G: 4.4834  D(x): 0.8460    D(G(z)): 0.2185 / 0.0218
+[0/5][1150/1583]        Loss_D: 0.7706  Loss_G: 7.1832  D(x): 0.9433    D(G(z)): 0.4388 / 0.0019
+[0/5][1200/1583]        Loss_D: 0.5872  Loss_G: 4.2825  D(x): 0.6638    D(G(z)): 0.0181 / 0.0337
+[0/5][1250/1583]        Loss_D: 0.4908  Loss_G: 4.2402  D(x): 0.8275    D(G(z)): 0.2029 / 0.0299
+[0/5][1300/1583]        Loss_D: 0.5386  Loss_G: 4.9082  D(x): 0.8989    D(G(z)): 0.2793 / 0.0149
+[0/5][1350/1583]        Loss_D: 0.4853  Loss_G: 3.5621  D(x): 0.7307    D(G(z)): 0.0878 / 0.0512
+[0/5][1400/1583]        Loss_D: 0.6120  Loss_G: 4.5221  D(x): 0.8879    D(G(z)): 0.3220 / 0.0207
+[0/5][1450/1583]        Loss_D: 0.4101  Loss_G: 2.5060  D(x): 0.8003    D(G(z)): 0.1044 / 0.1382
+[0/5][1500/1583]        Loss_D: 1.9756  Loss_G: 6.7179  D(x): 0.8934    D(G(z)): 0.7633 / 0.0031
+[0/5][1550/1583]        Loss_D: 0.4133  Loss_G: 3.2739  D(x): 0.8454    D(G(z)): 0.1583 / 0.0618
+[1/5][0/1583]   Loss_D: 0.6678  Loss_G: 5.5755  D(x): 0.8807    D(G(z)): 0.3579 / 0.0078
+[1/5][50/1583]  Loss_D: 0.7072  Loss_G: 2.6944  D(x): 0.7039    D(G(z)): 0.2176 / 0.0959
+[1/5][100/1583] Loss_D: 0.6734  Loss_G: 2.8936  D(x): 0.7211    D(G(z)): 0.2131 / 0.0856
+[1/5][150/1583] Loss_D: 1.9167  Loss_G: 5.2873  D(x): 0.9522    D(G(z)): 0.7675 / 0.0107
+[1/5][200/1583] Loss_D: 0.4340  Loss_G: 3.3211  D(x): 0.8000    D(G(z)): 0.1529 / 0.0560
+[1/5][250/1583] Loss_D: 0.3757  Loss_G: 4.0961  D(x): 0.9405    D(G(z)): 0.2127 / 0.0416
+[1/5][300/1583] Loss_D: 0.4451  Loss_G: 2.7843  D(x): 0.7417    D(G(z)): 0.0608 / 0.0907
+[1/5][350/1583] Loss_D: 0.5449  Loss_G: 3.6641  D(x): 0.7868    D(G(z)): 0.2000 / 0.0424
+[1/5][400/1583] Loss_D: 0.3272  Loss_G: 3.8790  D(x): 0.8948    D(G(z)): 0.1710 / 0.0319
+[1/5][450/1583] Loss_D: 0.7145  Loss_G: 2.6924  D(x): 0.6642    D(G(z)): 0.1672 / 0.0978
+[1/5][500/1583] Loss_D: 2.6324  Loss_G: 10.1412 D(x): 0.9692    D(G(z)): 0.8305 / 0.0001
+[1/5][550/1583] Loss_D: 0.3697  Loss_G: 3.3311  D(x): 0.8606    D(G(z)): 0.1687 / 0.0561
+[1/5][600/1583] Loss_D: 0.4339  Loss_G: 3.4765  D(x): 0.8441    D(G(z)): 0.1911 / 0.0492
+[1/5][650/1583] Loss_D: 0.6206  Loss_G: 2.2485  D(x): 0.6541    D(G(z)): 0.0901 / 0.1483
+[1/5][700/1583] Loss_D: 0.4463  Loss_G: 3.1061  D(x): 0.7698    D(G(z)): 0.1145 / 0.0716
+[1/5][750/1583] Loss_D: 0.9568  Loss_G: 1.0187  D(x): 0.5368    D(G(z)): 0.0447 / 0.4362
+[1/5][800/1583] Loss_D: 0.5032  Loss_G: 2.5770  D(x): 0.7465    D(G(z)): 0.1132 / 0.0999
+[1/5][850/1583] Loss_D: 0.4837  Loss_G: 3.1192  D(x): 0.7410    D(G(z)): 0.0993 / 0.0685
+[1/5][900/1583] Loss_D: 1.8594  Loss_G: 7.3108  D(x): 0.9749    D(G(z)): 0.7371 / 0.0017
+[1/5][950/1583] Loss_D: 0.9817  Loss_G: 6.0780  D(x): 0.9596    D(G(z)): 0.5545 / 0.0068
+[1/5][1000/1583]        Loss_D: 0.6811  Loss_G: 4.5906  D(x): 0.9066    D(G(z)): 0.3995 / 0.0164
+[1/5][1050/1583]        Loss_D: 0.6596  Loss_G: 2.4108  D(x): 0.6920    D(G(z)): 0.1584 / 0.1284
+[1/5][1100/1583]        Loss_D: 0.7656  Loss_G: 5.6457  D(x): 0.9505    D(G(z)): 0.4527 / 0.0061
+[1/5][1150/1583]        Loss_D: 0.4202  Loss_G: 2.3604  D(x): 0.7892    D(G(z)): 0.1230 / 0.1277
+[1/5][1200/1583]        Loss_D: 0.6335  Loss_G: 2.5619  D(x): 0.7165    D(G(z)): 0.1856 / 0.1040
+[1/5][1250/1583]        Loss_D: 0.4145  Loss_G: 2.0525  D(x): 0.7826    D(G(z)): 0.1120 / 0.1715
+[1/5][1300/1583]        Loss_D: 0.5663  Loss_G: 2.6590  D(x): 0.8130    D(G(z)): 0.2512 / 0.0994
+[1/5][1350/1583]        Loss_D: 1.8983  Loss_G: 6.3824  D(x): 0.9451    D(G(z)): 0.7557 / 0.0045
+[1/5][1400/1583]        Loss_D: 0.7033  Loss_G: 3.1079  D(x): 0.7878    D(G(z)): 0.3171 / 0.0641
+[1/5][1450/1583]        Loss_D: 2.5129  Loss_G: 6.6384  D(x): 0.9943    D(G(z)): 0.8543 / 0.0035
+[1/5][1500/1583]        Loss_D: 0.7591  Loss_G: 4.1378  D(x): 0.5325    D(G(z)): 0.0113 / 0.0301
+[1/5][1550/1583]        Loss_D: 0.6840  Loss_G: 2.4406  D(x): 0.7582    D(G(z)): 0.2723 / 0.1164
+[2/5][0/1583]   Loss_D: 0.8365  Loss_G: 4.5021  D(x): 0.9034    D(G(z)): 0.4607 / 0.0174
+[2/5][50/1583]  Loss_D: 0.7235  Loss_G: 1.3373  D(x): 0.6366    D(G(z)): 0.1557 / 0.3349
+[2/5][100/1583] Loss_D: 0.7344  Loss_G: 2.0889  D(x): 0.5593    D(G(z)): 0.0352 / 0.1841
+[2/5][150/1583] Loss_D: 0.5257  Loss_G: 2.3853  D(x): 0.7083    D(G(z)): 0.1089 / 0.1265
+[2/5][200/1583] Loss_D: 0.9909  Loss_G: 1.9111  D(x): 0.5996    D(G(z)): 0.2502 / 0.2104
+[2/5][250/1583] Loss_D: 0.8597  Loss_G: 5.1619  D(x): 0.8988    D(G(z)): 0.4785 / 0.0095
+[2/5][300/1583] Loss_D: 0.6696  Loss_G: 3.4498  D(x): 0.8673    D(G(z)): 0.3556 / 0.0447
+[2/5][350/1583] Loss_D: 1.7932  Loss_G: 5.1147  D(x): 0.9542    D(G(z)): 0.7572 / 0.0106
+[2/5][400/1583] Loss_D: 0.5115  Loss_G: 2.5221  D(x): 0.8099    D(G(z)): 0.2225 / 0.1085
+[2/5][450/1583] Loss_D: 0.5043  Loss_G: 3.2898  D(x): 0.8324    D(G(z)): 0.2380 / 0.0549
+[2/5][500/1583] Loss_D: 0.8256  Loss_G: 1.6453  D(x): 0.5531    D(G(z)): 0.0697 / 0.2561
+[2/5][550/1583] Loss_D: 0.6069  Loss_G: 2.9296  D(x): 0.8341    D(G(z)): 0.3033 / 0.0735
+[2/5][600/1583] Loss_D: 0.6499  Loss_G: 1.7417  D(x): 0.6632    D(G(z)): 0.1554 / 0.2197
+[2/5][650/1583] Loss_D: 0.6816  Loss_G: 2.5025  D(x): 0.7250    D(G(z)): 0.2305 / 0.1113
+[2/5][700/1583] Loss_D: 0.6270  Loss_G: 3.3394  D(x): 0.8190    D(G(z)): 0.3075 / 0.0491
+[2/5][750/1583] Loss_D: 0.6033  Loss_G: 2.6011  D(x): 0.8289    D(G(z)): 0.3006 / 0.0940
+[2/5][800/1583] Loss_D: 0.7926  Loss_G: 2.6686  D(x): 0.7320    D(G(z)): 0.3263 / 0.0916
+[2/5][850/1583] Loss_D: 0.6547  Loss_G: 2.9440  D(x): 0.7504    D(G(z)): 0.2506 / 0.0766
+[2/5][900/1583] Loss_D: 0.5220  Loss_G: 2.4026  D(x): 0.8006    D(G(z)): 0.2230 / 0.1115
+[2/5][950/1583] Loss_D: 2.2061  Loss_G: 7.0696  D(x): 0.9708    D(G(z)): 0.8426 / 0.0022
+[2/5][1000/1583]        Loss_D: 0.5334  Loss_G: 2.2596  D(x): 0.7736    D(G(z)): 0.2066 / 0.1345
+[2/5][1050/1583]        Loss_D: 0.5151  Loss_G: 2.2483  D(x): 0.7790    D(G(z)): 0.1965 / 0.1385
+[2/5][1100/1583]        Loss_D: 0.5023  Loss_G: 2.6247  D(x): 0.8526    D(G(z)): 0.2618 / 0.0921
+[2/5][1150/1583]        Loss_D: 0.7773  Loss_G: 4.5400  D(x): 0.9254    D(G(z)): 0.4618 / 0.0156
+[2/5][1200/1583]        Loss_D: 1.1006  Loss_G: 1.0591  D(x): 0.4162    D(G(z)): 0.0338 / 0.4068
+[2/5][1250/1583]        Loss_D: 1.1393  Loss_G: 1.0070  D(x): 0.4268    D(G(z)): 0.0890 / 0.4087
+[2/5][1300/1583]        Loss_D: 0.5889  Loss_G: 2.5670  D(x): 0.7617    D(G(z)): 0.2268 / 0.0988
+[2/5][1350/1583]        Loss_D: 0.4990  Loss_G: 2.6028  D(x): 0.8213    D(G(z)): 0.2252 / 0.0968
+[2/5][1400/1583]        Loss_D: 0.7038  Loss_G: 1.6396  D(x): 0.6355    D(G(z)): 0.1627 / 0.2345
+[2/5][1450/1583]        Loss_D: 0.5268  Loss_G: 2.4768  D(x): 0.7342    D(G(z)): 0.1562 / 0.1131
+[2/5][1500/1583]        Loss_D: 1.0453  Loss_G: 4.4715  D(x): 0.8720    D(G(z)): 0.5373 / 0.0200
+[2/5][1550/1583]        Loss_D: 0.6092  Loss_G: 1.7811  D(x): 0.7000    D(G(z)): 0.1818 / 0.2122
+[3/5][0/1583]   Loss_D: 0.5875  Loss_G: 2.6697  D(x): 0.7896    D(G(z)): 0.2591 / 0.0895
+[3/5][50/1583]  Loss_D: 0.6997  Loss_G: 1.4535  D(x): 0.5868    D(G(z)): 0.0766 / 0.2825
+[3/5][100/1583] Loss_D: 0.7571  Loss_G: 2.0019  D(x): 0.6953    D(G(z)): 0.2518 / 0.1755
+[3/5][150/1583] Loss_D: 0.5069  Loss_G: 2.4559  D(x): 0.7896    D(G(z)): 0.2054 / 0.1078
+[3/5][200/1583] Loss_D: 1.0666  Loss_G: 1.2297  D(x): 0.4402    D(G(z)): 0.0786 / 0.3560
+[3/5][250/1583] Loss_D: 0.5098  Loss_G: 3.1710  D(x): 0.8687    D(G(z)): 0.2801 / 0.0566
+[3/5][300/1583] Loss_D: 0.6869  Loss_G: 2.1443  D(x): 0.7608    D(G(z)): 0.2880 / 0.1434
+[3/5][350/1583] Loss_D: 0.9127  Loss_G: 4.0991  D(x): 0.8895    D(G(z)): 0.5010 / 0.0224
+[3/5][400/1583] Loss_D: 0.5273  Loss_G: 3.0735  D(x): 0.8781    D(G(z)): 0.3007 / 0.0598
+[3/5][450/1583] Loss_D: 0.8117  Loss_G: 3.1775  D(x): 0.9088    D(G(z)): 0.4579 / 0.0619
+[3/5][500/1583] Loss_D: 0.7737  Loss_G: 2.5929  D(x): 0.7804    D(G(z)): 0.3666 / 0.1040
+[3/5][550/1583] Loss_D: 0.6950  Loss_G: 2.5125  D(x): 0.7483    D(G(z)): 0.2767 / 0.1048
+[3/5][600/1583] Loss_D: 0.7737  Loss_G: 1.1622  D(x): 0.5816    D(G(z)): 0.1328 / 0.3556
+[3/5][650/1583] Loss_D: 1.0249  Loss_G: 3.7003  D(x): 0.8368    D(G(z)): 0.5160 / 0.0346
+[3/5][700/1583] Loss_D: 0.5972  Loss_G: 2.5917  D(x): 0.8427    D(G(z)): 0.3057 / 0.0980
+[3/5][750/1583] Loss_D: 0.6079  Loss_G: 2.1832  D(x): 0.7441    D(G(z)): 0.2343 / 0.1389
+[3/5][800/1583] Loss_D: 0.7948  Loss_G: 3.0917  D(x): 0.8472    D(G(z)): 0.4198 / 0.0602
+[3/5][850/1583] Loss_D: 1.3295  Loss_G: 4.9040  D(x): 0.9359    D(G(z)): 0.6585 / 0.0128
+[3/5][900/1583] Loss_D: 0.7740  Loss_G: 2.7128  D(x): 0.8522    D(G(z)): 0.4155 / 0.0836
+[3/5][950/1583] Loss_D: 0.6285  Loss_G: 1.2760  D(x): 0.6769    D(G(z)): 0.1480 / 0.3159
+[3/5][1000/1583]        Loss_D: 0.6207  Loss_G: 3.1117  D(x): 0.8830    D(G(z)): 0.3570 / 0.0570
+[3/5][1050/1583]        Loss_D: 0.5859  Loss_G: 2.0572  D(x): 0.7722    D(G(z)): 0.2352 / 0.1597
+[3/5][1100/1583]        Loss_D: 0.4450  Loss_G: 2.6783  D(x): 0.8122    D(G(z)): 0.1881 / 0.0877
+[3/5][1150/1583]        Loss_D: 0.6728  Loss_G: 2.5209  D(x): 0.7827    D(G(z)): 0.3129 / 0.0964
+[3/5][1200/1583]        Loss_D: 0.7682  Loss_G: 2.2869  D(x): 0.7394    D(G(z)): 0.3272 / 0.1290
+[3/5][1250/1583]        Loss_D: 0.6936  Loss_G: 0.9854  D(x): 0.6371    D(G(z)): 0.1673 / 0.4264
+[3/5][1300/1583]        Loss_D: 1.0458  Loss_G: 3.4673  D(x): 0.9156    D(G(z)): 0.5709 / 0.0420
+[3/5][1350/1583]        Loss_D: 0.5709  Loss_G: 2.7380  D(x): 0.7815    D(G(z)): 0.2278 / 0.0852
+[3/5][1400/1583]        Loss_D: 0.4395  Loss_G: 2.7192  D(x): 0.8696    D(G(z)): 0.2372 / 0.0832
+[3/5][1450/1583]        Loss_D: 0.5831  Loss_G: 1.8635  D(x): 0.6655    D(G(z)): 0.1039 / 0.1907
+[3/5][1500/1583]        Loss_D: 1.0133  Loss_G: 2.9668  D(x): 0.7177    D(G(z)): 0.4360 / 0.0743
+[3/5][1550/1583]        Loss_D: 0.6550  Loss_G: 1.6316  D(x): 0.6360    D(G(z)): 0.1377 / 0.2391
+[4/5][0/1583]   Loss_D: 0.8787  Loss_G: 3.2275  D(x): 0.8710    D(G(z)): 0.4766 / 0.0532
+[4/5][50/1583]  Loss_D: 0.7062  Loss_G: 2.0809  D(x): 0.6592    D(G(z)): 0.1917 / 0.1563
+[4/5][100/1583] Loss_D: 1.2022  Loss_G: 0.8841  D(x): 0.3807    D(G(z)): 0.0457 / 0.4623
+[4/5][150/1583] Loss_D: 1.0519  Loss_G: 0.6355  D(x): 0.4241    D(G(z)): 0.0566 / 0.5821
+[4/5][200/1583] Loss_D: 0.7434  Loss_G: 3.4715  D(x): 0.8990    D(G(z)): 0.4362 / 0.0393
+[4/5][250/1583] Loss_D: 0.5629  Loss_G: 2.1256  D(x): 0.6574    D(G(z)): 0.0829 / 0.1548
+[4/5][300/1583] Loss_D: 0.7977  Loss_G: 2.5017  D(x): 0.7160    D(G(z)): 0.3214 / 0.1117
+[4/5][350/1583] Loss_D: 0.8459  Loss_G: 1.3116  D(x): 0.5648    D(G(z)): 0.1521 / 0.3137
+[4/5][400/1583] Loss_D: 0.9940  Loss_G: 4.6404  D(x): 0.9138    D(G(z)): 0.5336 / 0.0131
+[4/5][450/1583] Loss_D: 0.7643  Loss_G: 1.0848  D(x): 0.5853    D(G(z)): 0.1303 / 0.3978
+[4/5][500/1583] Loss_D: 0.6058  Loss_G: 1.8944  D(x): 0.7650    D(G(z)): 0.2484 / 0.1857
+[4/5][550/1583] Loss_D: 1.1107  Loss_G: 4.7638  D(x): 0.9560    D(G(z)): 0.6024 / 0.0128
+[4/5][600/1583] Loss_D: 0.8491  Loss_G: 3.0882  D(x): 0.8892    D(G(z)): 0.4813 / 0.0568
+[4/5][650/1583] Loss_D: 1.8707  Loss_G: 1.1120  D(x): 0.2183    D(G(z)): 0.0283 / 0.3854
+[4/5][700/1583] Loss_D: 0.5405  Loss_G: 2.9212  D(x): 0.8406    D(G(z)): 0.2792 / 0.0699
+[4/5][750/1583] Loss_D: 0.6997  Loss_G: 2.4911  D(x): 0.7701    D(G(z)): 0.3156 / 0.1037
+[4/5][800/1583] Loss_D: 0.6024  Loss_G: 1.8084  D(x): 0.7027    D(G(z)): 0.1647 / 0.1972
+[4/5][850/1583] Loss_D: 0.4860  Loss_G: 2.0469  D(x): 0.7546    D(G(z)): 0.1439 / 0.1601
+[4/5][900/1583] Loss_D: 0.8072  Loss_G: 1.5789  D(x): 0.5494    D(G(z)): 0.1197 / 0.2594
+[4/5][950/1583] Loss_D: 0.9208  Loss_G: 1.1033  D(x): 0.4797    D(G(z)): 0.0542 / 0.3999
+[4/5][1000/1583]        Loss_D: 0.7419  Loss_G: 2.3552  D(x): 0.7419    D(G(z)): 0.3074 / 0.1176
+[4/5][1050/1583]        Loss_D: 0.5364  Loss_G: 2.1972  D(x): 0.7680    D(G(z)): 0.2069 / 0.1346
+[4/5][1100/1583]        Loss_D: 0.6503  Loss_G: 4.2289  D(x): 0.9165    D(G(z)): 0.3909 / 0.0218
+[4/5][1150/1583]        Loss_D: 1.0110  Loss_G: 1.0262  D(x): 0.4396    D(G(z)): 0.0464 / 0.4157
+[4/5][1200/1583]        Loss_D: 0.5227  Loss_G: 2.1293  D(x): 0.7158    D(G(z)): 0.1283 / 0.1570
+[4/5][1250/1583]        Loss_D: 0.7622  Loss_G: 2.0203  D(x): 0.6993    D(G(z)): 0.2663 / 0.1674
+[4/5][1300/1583]        Loss_D: 0.7704  Loss_G: 1.8209  D(x): 0.5706    D(G(z)): 0.1284 / 0.1991
+[4/5][1350/1583]        Loss_D: 0.9314  Loss_G: 3.9066  D(x): 0.9143    D(G(z)): 0.5132 / 0.0318
+[4/5][1400/1583]        Loss_D: 0.3704  Loss_G: 2.2143  D(x): 0.8092    D(G(z)): 0.1156 / 0.1391
+[4/5][1450/1583]        Loss_D: 0.6023  Loss_G: 2.4217  D(x): 0.7807    D(G(z)): 0.2643 / 0.1097
+[4/5][1500/1583]        Loss_D: 0.6423  Loss_G: 3.2140  D(x): 0.8501    D(G(z)): 0.3369 / 0.0545
+[4/5][1550/1583]        Loss_D: 0.6893  Loss_G: 1.6354  D(x): 0.5888    D(G(z)): 0.0974 / 0.2404
 </pre></div>
 </div>
 </div>
@@ -1168,7 +1178,7 @@ size of the images and the model architecture</li>
 <li>Create GANs that generate
 <a class="reference external" href="https://deepmind.com/blog/wavenet-generative-model-raw-audio/">music</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 28 minutes  58.643 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 28 minutes  51.850 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-dcgan-faces-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/dc0e6f475c6735eb8d233374f8f462eb/dcgan_faces_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dcgan_faces_tutorial.py</span></code></a></div>
@@ -1182,7 +1192,7 @@ size of the images and the model architecture</li>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="audio_preprocessing_tutorial.html" rel="next" title="Audio I/O and Pre-Processing with torchaudio">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="audio_preprocessing_tutorial.html" rel="next" title="Audio manipulation with torchaudio">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="fgsm_tutorial.html" rel="prev" title="Adversarial Example Generation"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>

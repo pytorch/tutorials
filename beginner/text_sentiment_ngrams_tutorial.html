@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Text Classification with TorchText — PyTorch Tutorials 1.7.1 documentation</title>
+<title>Text classification with the torchtext library — PyTorch Tutorials 1.8.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -139,7 +139,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.7.1
+                  1.8.0
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -171,7 +171,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Audio</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio I/O and Pre-Processing with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#datasets">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_command_recognition_with_torchaudio.html">SyntaxError</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
@@ -180,7 +185,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Text Classification with TorchText</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="torchtext_translation.html">Language Translation with TorchText</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
@@ -194,6 +199,10 @@
 <li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
 <ul>
@@ -230,6 +239,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline_tutorial.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -251,7 +261,7 @@
           
         </a> &gt;
       </li>
-<li>Text Classification with TorchText</li>
+<li>Text classification with the torchtext library</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/beginner/text_sentiment_ngrams_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -289,66 +299,117 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-text-sentiment-ngrams-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="text-classification-with-torchtext">
-<span id="sphx-glr-beginner-text-sentiment-ngrams-tutorial-py"></span><h1>Text Classification with TorchText<a class="headerlink" href="#text-classification-with-torchtext" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial shows how to use the text classification datasets
-in <code class="docutils literal notranslate"><span class="pre">torchtext</span></code>, including</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">AG_NEWS</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">SogouNews</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">DBpedia</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">YelpReviewPolarity</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">YelpReviewFull</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">YahooAnswers</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">AmazonReviewPolarity</span><span class="p">,</span>
-<span class="o">-</span> <span class="n">AmazonReviewFull</span>
-</pre></div>
-</div>
-<p>This example shows how to train a supervised learning algorithm for
-classification using one of these <code class="docutils literal notranslate"><span class="pre">TextClassification</span></code> datasets.</p>
-<div class="section" id="load-data-with-ngrams">
-<h2>Load data with ngrams<a class="headerlink" href="#load-data-with-ngrams" title="Permalink to this headline">¶</a></h2>
-<p>A bag of ngrams feature is applied to capture some partial information
-about the local word order. In practice, bi-gram or tri-gram are applied
-to provide more benefits as word groups than only one word. An example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">"load data with ngrams"</span>
-<span class="n">Bi</span><span class="o">-</span><span class="n">grams</span> <span class="n">results</span><span class="p">:</span> <span class="s2">"load data"</span><span class="p">,</span> <span class="s2">"data with"</span><span class="p">,</span> <span class="s2">"with ngrams"</span>
-<span class="n">Tri</span><span class="o">-</span><span class="n">grams</span> <span class="n">results</span><span class="p">:</span> <span class="s2">"load data with"</span><span class="p">,</span> <span class="s2">"data with ngrams"</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">TextClassification</span></code> Dataset supports the ngrams method. By setting
-ngrams to 2, the example text in the dataset will be a list of single
-words plus bi-grams string.</p>
+<div class="sphx-glr-example-title section" id="text-classification-with-the-torchtext-library">
+<span id="sphx-glr-beginner-text-sentiment-ngrams-tutorial-py"></span><h1>Text classification with the torchtext library<a class="headerlink" href="#text-classification-with-the-torchtext-library" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we will show how to use the torchtext library to build the dataset for the text classification analysis. Users will have the flexibility to</p>
+<blockquote>
+<div><ul class="simple">
+<li>Access to the raw data as an iterator</li>
+<li>Build data processing pipeline to convert the raw text strings into <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code> that can be used to train the model</li>
+<li>Shuffle and iterate the data with <a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a></li>
+</ul>
+</div></blockquote>
+<div class="section" id="access-to-the-raw-dataset-iterators">
+<h2>Access to the raw dataset iterators<a class="headerlink" href="#access-to-the-raw-dataset-iterators" title="Permalink to this headline">¶</a></h2>
+<p>The torchtext library provides a few raw dataset iterators, which yield the raw text strings. For example, the <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> dataset iterators yield the raw data as a tuple of label and text.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torchtext</span>
-<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">text_classification</span>
-<span class="n">NGRAMS</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="s1">'./.data'</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s1">'./.data'</span><span class="p">)</span>
-<span class="n">train_dataset</span><span class="p">,</span> <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">text_classification</span><span class="o">.</span><span class="n">DATASETS</span><span class="p">[</span><span class="s1">'AG_NEWS'</span><span class="p">](</span>
-    <span class="n">root</span><span class="o">=</span><span class="s1">'./.data'</span><span class="p">,</span> <span class="n">ngrams</span><span class="o">=</span><span class="n">NGRAMS</span><span class="p">,</span> <span class="n">vocab</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">AG_NEWS</span>
+<span class="n">train_iter</span> <span class="o">=</span> <span class="n">AG_NEWS</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">next</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">"Wall St. Bears Claw Back Into the Black (Reuters) Reuters -</span>
+<span class="n">Short</span><span class="o">-</span><span class="n">sellers</span><span class="p">,</span> <span class="n">Wall</span> <span class="n">Street</span><span class="s1">'s dwindling</span><span class="se">\\</span><span class="s1">band of ultra-cynics, are seeing green</span>
+<span class="n">again</span><span class="o">.</span><span class="s2">")</span>
+
+<span class="nb">next</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">'Carlyle Looks Toward Commercial Aerospace (Reuters) Reuters - Private</span>
+<span class="n">investment</span> <span class="n">firm</span> <span class="n">Carlyle</span> <span class="n">Group</span><span class="p">,</span>\\<span class="n">which</span> <span class="n">has</span> <span class="n">a</span> <span class="n">reputation</span> <span class="k">for</span> <span class="n">making</span> <span class="n">well</span><span class="o">-</span><span class="n">timed</span>
+<span class="ow">and</span> <span class="n">occasionally</span>\\<span class="n">controversial</span> <span class="n">plays</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">defense</span> <span class="n">industry</span><span class="p">,</span> <span class="n">has</span> <span class="n">quietly</span>
+<span class="n">placed</span>\\<span class="n">its</span> <span class="n">bets</span> <span class="n">on</span> <span class="n">another</span> <span class="n">part</span> <span class="n">of</span> <span class="n">the</span> <span class="n">market</span><span class="o">.</span><span class="s1">')</span>
+
+<span class="nb">next</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">"Oil and Economy Cloud Stocks' Outlook (Reuters) Reuters - Soaring</span>
+<span class="n">crude</span> <span class="n">prices</span> <span class="n">plus</span> <span class="n">worries</span>\\<span class="n">about</span> <span class="n">the</span> <span class="n">economy</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">outlook</span> <span class="k">for</span> <span class="n">earnings</span> <span class="n">are</span>
+<span class="n">expected</span> <span class="n">to</span>\\<span class="n">hang</span> <span class="n">over</span> <span class="n">the</span> <span class="n">stock</span> <span class="n">market</span> <span class="nb">next</span> <span class="n">week</span> <span class="n">during</span> <span class="n">the</span> <span class="n">depth</span> <span class="n">of</span>
+<span class="n">the</span>\\<span class="n">summer</span> <span class="n">doldrums</span><span class="o">.</span><span class="s2">")</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="prepare-data-processing-pipelines">
+<h2>Prepare data processing pipelines<a class="headerlink" href="#prepare-data-processing-pipelines" title="Permalink to this headline">¶</a></h2>
+<p>We have revisited the very basic components of the torchtext library, including vocab, word vectors, tokenizer. Those are the basic data processing building blocks for raw text string.</p>
+<p>Here is an example for typical NLP data processing with tokenizer and vocabulary. The first step is to build a vocabulary with the raw training dataset. Users can have a customized vocab by setting up arguments in the constructor of the Vocab class. For example, the minimum frequency <code class="docutils literal notranslate"><span class="pre">min_freq</span></code> for the tokens to be included.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">Vocab</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'basic_english'</span><span class="p">)</span>
+<span class="n">train_iter</span> <span class="o">=</span> <span class="n">AG_NEWS</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">in</span> <span class="n">train_iter</span><span class="p">:</span>
+    <span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="n">Vocab</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The vocabulary block converts a list of tokens into integers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'here'</span><span class="p">,</span> <span class="s1">'is'</span><span class="p">,</span> <span class="s1">'an'</span><span class="p">,</span> <span class="s1">'example'</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="mi">476</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">5298</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">text_pipeline</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+<span class="n">label_pipeline</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>The text pipeline converts a text string into a list of integers based on the lookup table defined in the vocabulary. The label pipeline converts the label into integers. For example,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">text_pipeline</span><span class="p">(</span><span class="s1">'here is the an example'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="mi">475</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">5286</span><span class="p">]</span>
+<span class="n">label_pipeline</span><span class="p">(</span><span class="s1">'10'</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mi">9</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generate-data-batch-and-iterator">
+<h2>Generate data batch and iterator<a class="headerlink" href="#generate-data-batch-and-iterator" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a>
+is recommended for PyTorch users (a tutorial is <a class="reference external" href="https://pytorch.org/tutorials/beginner/data_loading_tutorial.html">here</a>).
+It works with a map-style dataset that implements the <code class="docutils literal notranslate"><span class="pre">getitem()</span></code> and <code class="docutils literal notranslate"><span class="pre">len()</span></code> protocols, and represents a map from indices/keys to data samples. It also works with an iterable datasets with the shuffle argumnent of <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+<p>Before sending to the model, <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> function works on a batch of samples generated from <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>. The input to <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is a batch of data with the batch size in <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code>, and <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> processes them according to the data processing pipelines declared previouly. Pay attention here and make sure that <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is declared as a top level def. This ensures that the function is available in each worker.</p>
+<p>In this example, the text entries in the original data batch input are packed into a list and concatenated as a single tensor for the input of <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code>. The offset is a tensor of delimiters to represent the beginning index of the individual sequence in the text tensor. Label is a tensor saving the labels of indidividual text entries.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">collate_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+    <span class="n">label_list</span><span class="p">,</span> <span class="n">text_list</span><span class="p">,</span> <span class="n">offsets</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">_label</span><span class="p">,</span> <span class="n">_text</span><span class="p">)</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+         <span class="n">label_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label_pipeline</span><span class="p">(</span><span class="n">_label</span><span class="p">))</span>
+         <span class="n">processed_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">text_pipeline</span><span class="p">(</span><span class="n">_text</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+         <span class="n">text_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed_text</span><span class="p">)</span>
+         <span class="n">offsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">processed_text</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">label_list</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">label_list</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">offsets</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">text_list</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">text_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">label_list</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">text_list</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">offsets</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">train_iter</span> <span class="o">=</span> <span class="n">AG_NEWS</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="define-the-model">
 <h2>Define the model<a class="headerlink" href="#define-the-model" title="Permalink to this headline">¶</a></h2>
-<p>The model is composed of the
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag">EmbeddingBag</a>
-layer and the linear layer (see the figure below). <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code>
-computes the mean value of a “bag” of embeddings. The text entries here
-have different lengths. <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> requires no padding here
-since the text lengths are saved in offsets.</p>
+<p>The model is composed of the <a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=embeddingbag#torch.nn.EmbeddingBag">nn.EmbeddingBag</a> layer plus a linear layer for the classification purpose. <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> with the default mode of “mean” computes the mean value of a “bag” of embeddings. Although the text entries here have different lengths, nn.EmbeddingBag module requires no padding here since the text lengths are saved in offsets.</p>
 <p>Additionally, since <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> accumulates the average across
 the embeddings on the fly, <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code> can enhance the
 performance and memory efficiency to process a sequence of tensors.</p>
 <img alt="../_images/text_sentiment_ngrams_model.png" src="../_images/text_sentiment_ngrams_model.png"/>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="k">class</span> <span class="nc">TextSentiment</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="k">class</span> <span class="nc">TextClassificationModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TextClassificationModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_weights</span><span class="p">()</span>
@@ -367,225 +428,273 @@ performance and memory efficiency to process a sequence of tensors.</p>
 </div>
 <div class="section" id="initiate-an-instance">
 <h2>Initiate an instance<a class="headerlink" href="#initiate-an-instance" title="Permalink to this headline">¶</a></h2>
-<p>The AG_NEWS dataset has four labels and therefore the number of classes
-is four.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> dataset has four labels and therefore the number of classes is four.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="p">:</span> <span class="n">World</span>
 <span class="mi">2</span> <span class="p">:</span> <span class="n">Sports</span>
 <span class="mi">3</span> <span class="p">:</span> <span class="n">Business</span>
 <span class="mi">4</span> <span class="p">:</span> <span class="n">Sci</span><span class="o">/</span><span class="n">Tec</span>
 </pre></div>
 </div>
-<p>The vocab size is equal to the length of vocab (including single word
-and ngrams). The number of classes is equal to the number of labels,
-which is four in AG_NEWS case.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">get_vocab</span><span class="p">())</span>
-<span class="n">EMBED_DIM</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="n">NUN_CLASS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">TextSentiment</span><span class="p">(</span><span class="n">VOCAB_SIZE</span><span class="p">,</span> <span class="n">EMBED_DIM</span><span class="p">,</span> <span class="n">NUN_CLASS</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="functions-used-to-generate-batch">
-<h2>Functions used to generate batch<a class="headerlink" href="#functions-used-to-generate-batch" title="Permalink to this headline">¶</a></h2>
-<p>Since the text entries have different lengths, a custom function
-generate_batch() is used to generate data batches and offsets. The
-function is passed to <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> in <code class="docutils literal notranslate"><span class="pre">torch.utils.data.DataLoader</span></code>.
-The input to <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is a list of tensors with the size of
-batch_size, and the <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> function packs them into a
-mini-batch. Pay attention here and make sure that <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> is
-declared as a top level def. This ensures that the function is available
-in each worker.</p>
-<p>The text entries in the original data batch input are packed into a list
-and concatenated as a single tensor as the input of <code class="docutils literal notranslate"><span class="pre">nn.EmbeddingBag</span></code>.
-The offsets is a tensor of delimiters to represent the beginning index
-of the individual sequence in the text tensor. Label is a tensor saving
-the labels of individual text entries.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
-    <span class="n">label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">])</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">]</span>
-    <span class="n">offsets</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">text</span><span class="p">]</span>
-    <span class="c1"># torch.Tensor.cumsum returns the cumulative sum</span>
-    <span class="c1"># of elements in the dimension dim.</span>
-    <span class="c1"># torch.Tensor([1.0, 2.0, 3.0]).cumsum(dim=0)</span>
-
-    <span class="n">offsets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">offsets</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">label</span>
+<p>We build a model with the embedding dimension of 64. The vocab size is equal to the length of the vocabulary instance. The number of classes is equal to the number of labels,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train_iter</span> <span class="o">=</span> <span class="n">AG_NEWS</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
+<span class="n">num_class</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">label</span> <span class="k">for</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="ow">in</span> <span class="n">train_iter</span><span class="p">]))</span>
+<span class="n">vocab_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>
+<span class="n">emsize</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">TextClassificationModel</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">emsize</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="define-functions-to-train-the-model-and-evaluate-results">
 <h2>Define functions to train the model and evaluate results.<a class="headerlink" href="#define-functions-to-train-the-model-and-evaluate-results" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader">torch.utils.data.DataLoader</a>
-is recommended for PyTorch users, and it makes data loading in parallel
-easily (a tutorial is
-<a class="reference external" href="https://pytorch.org/tutorials/beginner/data_loading_tutorial.html">here</a>).
-We use <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> here to load AG_NEWS datasets and send it to the
-model for training/validation.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 
-<span class="k">def</span> <span class="nf">train_func</span><span class="p">(</span><span class="n">sub_train_</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">log_interval</span> <span class="o">=</span> <span class="mi">500</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-    <span class="c1"># Train the model</span>
-    <span class="n">train_loss</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">train_acc</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">sub_train_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                      <span class="n">collate_fn</span><span class="o">=</span><span class="n">generate_batch</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="bp">cls</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">offsets</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
-        <span class="n">train_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">predited_label</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">predited_label</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="mf">0.1</span><span class="p">)</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-        <span class="n">train_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">total_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">predited_label</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">total_count</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'| epoch </span><span class="si">{:3d}</span><span class="s1"> | </span><span class="si">{:5d}</span><span class="s1">/</span><span class="si">{:5d}</span><span class="s1"> batches '</span>
+                  <span class="s1">'| accuracy </span><span class="si">{:8.3f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">),</span>
+                                              <span class="n">total_acc</span><span class="o">/</span><span class="n">total_count</span><span class="p">))</span>
+            <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-    <span class="c1"># Adjust the learning rate</span>
-    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">total_acc</span><span class="p">,</span> <span class="n">total_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
-    <span class="k">return</span> <span class="n">train_loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_train_</span><span class="p">),</span> <span class="n">train_acc</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_train_</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">data_</span><span class="p">):</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">acc</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">generate_batch</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-        <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="bp">cls</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">offsets</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-            <span class="n">acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="n">loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_</span><span class="p">),</span> <span class="n">acc</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+            <span class="n">predited_label</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">predited_label</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+            <span class="n">total_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">predited_label</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">total_count</span> <span class="o">+=</span> <span class="n">label</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">total_acc</span><span class="o">/</span><span class="n">total_count</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="split-the-dataset-and-run-the-model">
 <h2>Split the dataset and run the model<a class="headerlink" href="#split-the-dataset-and-run-the-model" title="Permalink to this headline">¶</a></h2>
-<p>Since the original AG_NEWS has no valid dataset, we split the training
+<p>Since the original <code class="docutils literal notranslate"><span class="pre">AG_NEWS</span></code> has no valid dataset, we split the training
 dataset into train/valid sets with a split ratio of 0.95 (train) and
 0.05 (valid). Here we use
 <a class="reference external" href="https://pytorch.org/docs/stable/data.html?highlight=random_split#torch.utils.data.random_split">torch.utils.data.dataset.random_split</a>
 function in PyTorch core library.</p>
 <p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss">CrossEntropyLoss</a>
-criterion combines nn.LogSoftmax() and nn.NLLLoss() in a single class.
+criterion combines <code class="docutils literal notranslate"><span class="pre">nn.LogSoftmax()</span></code> and <code class="docutils literal notranslate"><span class="pre">nn.NLLLoss()</span></code> in a single class.
 It is useful when training a classification problem with C classes.
 <a class="reference external" href="https://pytorch.org/docs/stable/_modules/torch/optim/sgd.html">SGD</a>
-implements stochastic gradient descent method as optimizer. The initial
-learning rate is set to 4.0.
+implements stochastic gradient descent method as the optimizer. The initial
+learning rate is set to 5.0.
 <a class="reference external" href="https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR">StepLR</a>
 is used here to adjust the learning rate through epochs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data.dataset</span> <span class="kn">import</span> <span class="n">random_split</span>
-<span class="n">N_EPOCHS</span> <span class="o">=</span> <span class="mi">5</span>
-<span class="n">min_valid_loss</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'inf'</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data.dataset</span> <span class="kn">import</span> <span class="n">random_split</span>
+<span class="c1"># Hyperparameters</span>
+<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># epoch</span>
+<span class="n">LR</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># learning rate</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">64</span> <span class="c1"># batch size for training</span>
 
-<span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
-<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.9</span><span class="p">)</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">LR</span><span class="p">)</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">StepLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">total_accu</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">train_iter</span><span class="p">,</span> <span class="n">test_iter</span> <span class="o">=</span> <span class="n">AG_NEWS</span><span class="p">()</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">test_iter</span><span class="p">)</span>
+<span class="n">num_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">)</span>
+<span class="n">split_train_</span><span class="p">,</span> <span class="n">split_valid_</span> <span class="o">=</span> \
+    <span class="n">random_split</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">num_train</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">-</span> <span class="n">num_train</span><span class="p">])</span>
 
-<span class="n">train_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">)</span>
-<span class="n">sub_train_</span><span class="p">,</span> <span class="n">sub_valid_</span> <span class="o">=</span> \
-    <span class="n">random_split</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="p">[</span><span class="n">train_len</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span> <span class="o">-</span> <span class="n">train_len</span><span class="p">])</span>
+<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">split_train_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span><span class="p">)</span>
+<span class="n">valid_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">split_valid_</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
+                              <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span><span class="p">)</span>
+<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
+                             <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_batch</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_EPOCHS</span><span class="p">):</span>
-
-    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_acc</span> <span class="o">=</span> <span class="n">train_func</span><span class="p">(</span><span class="n">sub_train_</span><span class="p">)</span>
-    <span class="n">valid_loss</span><span class="p">,</span> <span class="n">valid_acc</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">sub_valid_</span><span class="p">)</span>
-
-    <span class="n">secs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
-    <span class="n">mins</span> <span class="o">=</span> <span class="n">secs</span> <span class="o">/</span> <span class="mi">60</span>
-    <span class="n">secs</span> <span class="o">=</span> <span class="n">secs</span> <span class="o">%</span> <span class="mi">60</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="s1">'Epoch: </span><span class="si">%d</span><span class="s1">'</span> <span class="o">%</span><span class="p">(</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">" | time in </span><span class="si">%d</span><span class="s2"> minutes, </span><span class="si">%d</span><span class="s2"> seconds"</span> <span class="o">%</span><span class="p">(</span><span class="n">mins</span><span class="p">,</span> <span class="n">secs</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">(train)</span><span class="se">\t</span><span class="s1">|</span><span class="se">\t</span><span class="s1">Acc: </span><span class="si">{</span><span class="n">train_acc</span> <span class="o">*</span> <span class="mi">100</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%(train)'</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{</span><span class="n">valid_loss</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">(valid)</span><span class="se">\t</span><span class="s1">|</span><span class="se">\t</span><span class="s1">Acc: </span><span class="si">{</span><span class="n">valid_acc</span> <span class="o">*</span> <span class="mi">100</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%(valid)'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">EPOCHS</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">epoch_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">train</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">)</span>
+    <span class="n">accu_val</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">valid_dataloader</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">total_accu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">total_accu</span> <span class="o">&gt;</span> <span class="n">accu_val</span><span class="p">:</span>
+      <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="n">total_accu</span> <span class="o">=</span> <span class="n">accu_val</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">59</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'| end of epoch </span><span class="si">{:3d}</span><span class="s1"> | time: </span><span class="si">{:5.2f}</span><span class="s1">s | '</span>
+          <span class="s1">'valid accuracy </span><span class="si">{:8.3f}</span><span class="s1"> '</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span>
+                                           <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">epoch_start_time</span><span class="p">,</span>
+                                           <span class="n">accu_val</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'-'</span> <span class="o">*</span> <span class="mi">59</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch: 1  | time in 0 minutes, 11 seconds
-        Loss: 0.0261(train)     |       Acc: 84.8%(train)
-        Loss: 0.0001(valid)     |       Acc: 90.7%(valid)
-Epoch: 2  | time in 0 minutes, 11 seconds
-        Loss: 0.0119(train)     |       Acc: 93.7%(train)
-        Loss: 0.0001(valid)     |       Acc: 90.4%(valid)
-Epoch: 3  | time in 0 minutes, 11 seconds
-        Loss: 0.0070(train)     |       Acc: 96.3%(train)
-        Loss: 0.0001(valid)     |       Acc: 91.0%(valid)
-Epoch: 4  | time in 0 minutes, 11 seconds
-        Loss: 0.0038(train)     |       Acc: 98.1%(train)
-        Loss: 0.0002(valid)     |       Acc: 91.0%(valid)
-Epoch: 5  | time in 0 minutes, 11 seconds
-        Loss: 0.0023(train)     |       Acc: 99.0%(train)
-        Loss: 0.0001(valid)     |       Acc: 91.3%(valid)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   500/ 1782 batches | accuracy    0.689
+| epoch   1 |  1000/ 1782 batches | accuracy    0.854
+| epoch   1 |  1500/ 1782 batches | accuracy    0.879
+-----------------------------------------------------------
+| end of epoch   1 | time: 11.24s | valid accuracy    0.887
+-----------------------------------------------------------
+| epoch   2 |   500/ 1782 batches | accuracy    0.897
+| epoch   2 |  1000/ 1782 batches | accuracy    0.899
+| epoch   2 |  1500/ 1782 batches | accuracy    0.903
+-----------------------------------------------------------
+| end of epoch   2 | time: 11.20s | valid accuracy    0.900
+-----------------------------------------------------------
+| epoch   3 |   500/ 1782 batches | accuracy    0.915
+| epoch   3 |  1000/ 1782 batches | accuracy    0.915
+| epoch   3 |  1500/ 1782 batches | accuracy    0.914
+-----------------------------------------------------------
+| end of epoch   3 | time: 11.17s | valid accuracy    0.905
+-----------------------------------------------------------
+| epoch   4 |   500/ 1782 batches | accuracy    0.925
+| epoch   4 |  1000/ 1782 batches | accuracy    0.922
+| epoch   4 |  1500/ 1782 batches | accuracy    0.924
+-----------------------------------------------------------
+| end of epoch   4 | time: 11.17s | valid accuracy    0.901
+-----------------------------------------------------------
+| epoch   5 |   500/ 1782 batches | accuracy    0.936
+| epoch   5 |  1000/ 1782 batches | accuracy    0.938
+| epoch   5 |  1500/ 1782 batches | accuracy    0.939
+-----------------------------------------------------------
+| end of epoch   5 | time: 11.22s | valid accuracy    0.907
+-----------------------------------------------------------
+| epoch   6 |   500/ 1782 batches | accuracy    0.938
+| epoch   6 |  1000/ 1782 batches | accuracy    0.940
+| epoch   6 |  1500/ 1782 batches | accuracy    0.939
+-----------------------------------------------------------
+| end of epoch   6 | time: 11.23s | valid accuracy    0.907
+-----------------------------------------------------------
+| epoch   7 |   500/ 1782 batches | accuracy    0.939
+| epoch   7 |  1000/ 1782 batches | accuracy    0.942
+| epoch   7 |  1500/ 1782 batches | accuracy    0.940
+-----------------------------------------------------------
+| end of epoch   7 | time: 11.26s | valid accuracy    0.906
+-----------------------------------------------------------
+| epoch   8 |   500/ 1782 batches | accuracy    0.941
+| epoch   8 |  1000/ 1782 batches | accuracy    0.943
+| epoch   8 |  1500/ 1782 batches | accuracy    0.938
+-----------------------------------------------------------
+| end of epoch   8 | time: 11.23s | valid accuracy    0.906
+-----------------------------------------------------------
+| epoch   9 |   500/ 1782 batches | accuracy    0.940
+| epoch   9 |  1000/ 1782 batches | accuracy    0.942
+| epoch   9 |  1500/ 1782 batches | accuracy    0.941
+-----------------------------------------------------------
+| end of epoch   9 | time: 11.24s | valid accuracy    0.906
+-----------------------------------------------------------
+| epoch  10 |   500/ 1782 batches | accuracy    0.941
+| epoch  10 |  1000/ 1782 batches | accuracy    0.940
+| epoch  10 |  1500/ 1782 batches | accuracy    0.942
+-----------------------------------------------------------
+| end of epoch  10 | time: 11.24s | valid accuracy    0.906
+-----------------------------------------------------------
 </pre></div>
 </div>
-<p>Running the model on GPU with the following information:</p>
-<p>Epoch: 1 | time in 0 minutes, 11 seconds</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0263</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">84.5</span><span class="o">%</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
-<span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">89.0</span><span class="o">%</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Epoch: 2 | time in 0 minutes, 10 seconds</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0119</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">93.6</span><span class="o">%</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
-<span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0000</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">89.6</span><span class="o">%</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Epoch: 3 | time in 0 minutes, 9 seconds</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0069</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">96.4</span><span class="o">%</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
-<span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0000</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">90.5</span><span class="o">%</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Epoch: 4 | time in 0 minutes, 11 seconds</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0038</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">98.2</span><span class="o">%</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
-<span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0000</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">90.4</span><span class="o">%</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Epoch: 5 | time in 0 minutes, 11 seconds</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0022</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">99.0</span><span class="o">%</span><span class="p">(</span><span class="n">train</span><span class="p">)</span>
-<span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0000</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>     <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">91.0</span><span class="o">%</span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
+<p>Running the model on GPU with the following printout:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.684</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.852</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.877</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.33</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.867</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.895</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.900</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.903</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.18</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.890</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.914</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.914</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.916</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.20</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.897</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">4</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.926</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">4</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.924</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">4</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.921</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">4</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.18</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.895</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">5</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.938</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">5</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.935</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">5</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.937</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">5</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.16</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.902</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">6</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.939</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">6</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.939</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">6</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.938</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">6</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.16</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.906</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">7</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.941</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">7</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.939</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">7</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.939</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">7</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.19</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.903</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">8</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">8</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.941</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">8</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">8</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.16</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.904</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">9</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">9</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.941</span>
+<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">9</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">-----------------------------------------------------------</span>
+  <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">9</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.16</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.904</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">epoch</span>  <span class="mi">10</span> <span class="o">|</span>   <span class="mi">500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.940</span>
+<span class="o">|</span> <span class="n">epoch</span>  <span class="mi">10</span> <span class="o">|</span>  <span class="mi">1000</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">|</span> <span class="n">epoch</span>  <span class="mi">10</span> <span class="o">|</span>  <span class="mi">1500</span><span class="o">/</span> <span class="mi">1782</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">accuracy</span>    <span class="mf">0.942</span>
+<span class="o">-----------------------------------------------------------</span>
+<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>  <span class="mi">10</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span>  <span class="mf">8.15</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">accuracy</span>    <span class="mf">0.904</span>
+<span class="o">-----------------------------------------------------------</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="evaluate-the-model-with-test-dataset">
 <h2>Evaluate the model with test dataset<a class="headerlink" href="#evaluate-the-model-with-test-dataset" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'Checking the results of test dataset...'</span><span class="p">)</span>
-<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">test</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{</span><span class="n">test_loss</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">(test)</span><span class="se">\t</span><span class="s1">|</span><span class="se">\t</span><span class="s1">Acc: </span><span class="si">{</span><span class="n">test_acc</span> <span class="o">*</span> <span class="mi">100</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%(test)'</span><span class="p">)</span>
+<p>Checking the results of the test dataset…</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'Checking the results of test dataset.'</span><span class="p">)</span>
+<span class="n">accu_test</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'test accuracy </span><span class="si">{:8.3f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accu_test</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Checking the results of test dataset...
-        Loss: 0.0002(test)      |       Acc: 90.3%(test)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Checking the results of test dataset.
+test accuracy    0.904
 </pre></div>
 </div>
-<p>Checking the results of test dataset…</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="mf">0.0237</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>      <span class="o">|</span>       <span class="n">Acc</span><span class="p">:</span> <span class="mf">90.5</span><span class="o">%</span><span class="p">(</span><span class="n">test</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">test</span> <span class="n">accuracy</span>    <span class="mf">0.906</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="test-on-a-random-news">
 <h2>Test on a random news<a class="headerlink" href="#test-on-a-random-news" title="Permalink to this headline">¶</a></h2>
-<p>Use the best model so far and test a golf news. The label information is
-available
-<a class="reference external" href="https://pytorch.org/text/datasets.html?highlight=ag_news#torchtext.datasets.AG_NEWS">here</a>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">ngrams_iterator</span>
-<span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
+<p>Use the best model so far and test a golf news.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ag_news_label</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">"World"</span><span class="p">,</span>
+                 <span class="mi">2</span><span class="p">:</span> <span class="s2">"Sports"</span><span class="p">,</span>
+                 <span class="mi">3</span><span class="p">:</span> <span class="s2">"Business"</span><span class="p">,</span>
+                 <span class="mi">4</span><span class="p">:</span> <span class="s2">"Sci/Tec"</span><span class="p">}</span>
 
-<span class="n">ag_news_label</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="s2">"World"</span><span class="p">,</span>
-                 <span class="mi">2</span> <span class="p">:</span> <span class="s2">"Sports"</span><span class="p">,</span>
-                 <span class="mi">3</span> <span class="p">:</span> <span class="s2">"Business"</span><span class="p">,</span>
-                 <span class="mi">4</span> <span class="p">:</span> <span class="s2">"Sci/Tec"</span><span class="p">}</span>
-
-<span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">ngrams</span><span class="p">):</span>
-    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s2">"basic_english"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">text_pipeline</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span>
-                            <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">ngrams_iterator</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">ngrams</span><span class="p">)])</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">text_pipeline</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
 
@@ -601,20 +710,19 @@ available
 <span class="s2">    was even more impressive considering he’d never played the </span><span class="se">\</span>
 <span class="s2">    front nine at TPC Southwind."</span>
 
-<span class="n">vocab</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">get_vocab</span><span class="p">()</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"This is a </span><span class="si">%s</span><span class="s2"> news"</span> <span class="o">%</span><span class="n">ag_news_label</span><span class="p">[</span><span class="n">predict</span><span class="p">(</span><span class="n">ex_text_str</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"This is a </span><span class="si">%s</span><span class="s2"> news"</span> <span class="o">%</span><span class="n">ag_news_label</span><span class="p">[</span><span class="n">predict</span><span class="p">(</span><span class="n">ex_text_str</span><span class="p">,</span> <span class="n">text_pipeline</span><span class="p">)])</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>This is a Sports news
 </pre></div>
 </div>
-<p>This is a Sports news</p>
-<p>You can find the code examples displayed in this note
-<a class="reference external" href="https://github.com/pytorch/text/tree/master/examples/text_classification">here</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  37.077 seconds)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">Sports</span> <span class="n">news</span>
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  6.009 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-text-sentiment-ngrams-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/1824f32965271d21829e1739cc434729/text_sentiment_ngrams_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">text_sentiment_ngrams_tutorial.py</span></code></a></div>
@@ -659,11 +767,12 @@ available
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Text Classification with TorchText</a><ul>
-<li><a class="reference internal" href="#load-data-with-ngrams">Load data with ngrams</a></li>
+<li><a class="reference internal" href="#">Text classification with the torchtext library</a><ul>
+<li><a class="reference internal" href="#access-to-the-raw-dataset-iterators">Access to the raw dataset iterators</a></li>
+<li><a class="reference internal" href="#prepare-data-processing-pipelines">Prepare data processing pipelines</a></li>
+<li><a class="reference internal" href="#generate-data-batch-and-iterator">Generate data batch and iterator</a></li>
 <li><a class="reference internal" href="#define-the-model">Define the model</a></li>
 <li><a class="reference internal" href="#initiate-an-instance">Initiate an instance</a></li>
-<li><a class="reference internal" href="#functions-used-to-generate-batch">Functions used to generate batch</a></li>
 <li><a class="reference internal" href="#define-functions-to-train-the-model-and-evaluate-results">Define functions to train the model and evaluate results.</a></li>
 <li><a class="reference internal" href="#split-the-dataset-and-run-the-model">Split the dataset and run the model</a></li>
 <li><a class="reference internal" href="#evaluate-the-model-with-test-dataset">Evaluate the model with test dataset</a></li>

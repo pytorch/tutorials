@@ -6,14 +6,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>NLP From Scratch: Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.7.1 documentation</title>
+<title>NLP From Scratch: Translation with a Sequence to Sequence Network and Attention — PyTorch Tutorials 1.8.0 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="../beginner/text_sentiment_ngrams_tutorial.html" rel="next" title="Text Classification with TorchText"/>
+<link href="../beginner/text_sentiment_ngrams_tutorial.html" rel="next" title="Text classification with the torchtext library"/>
 <link href="char_rnn_generation_tutorial.html" rel="prev" title="NLP From Scratch: Generating Names with a Character-Level RNN"/>
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -139,7 +139,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.7.1
+                  1.8.0
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -171,7 +171,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Audio</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html">Audio I/O and Pre-Processing with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#datasets">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="speech_command_recognition_with_torchaudio.html">SyntaxError</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
@@ -180,7 +185,7 @@
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text Classification with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_translation.html">Language Translation with TorchText</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
@@ -194,6 +199,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
 <ul>
@@ -230,6 +239,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline_tutorial.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -552,7 +562,7 @@ Counting words...
 Counted words:
 fra 4345
 eng 2803
-['ce sont tous des etudiants de la fac .', 'they are all college students .']
+['je suis etudiant a l universite .', 'i m a university student .']
 </pre></div>
 </div>
 </div>
@@ -997,66 +1007,66 @@ encoder and decoder are initialized and run <code class="docutils literal notran
 </li>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>2m 1s (- 28m 21s) (5000 6%) 2.8793
-3m 57s (- 25m 42s) (10000 13%) 2.2836
-5m 55s (- 23m 41s) (15000 20%) 1.9443
-7m 52s (- 21m 39s) (20000 26%) 1.6735
-9m 58s (- 19m 57s) (25000 33%) 1.5220
-11m 52s (- 17m 49s) (30000 40%) 1.3183
-13m 50s (- 15m 48s) (35000 46%) 1.2283
-15m 46s (- 13m 47s) (40000 53%) 1.0761
-17m 41s (- 11m 47s) (45000 60%) 0.9586
-19m 36s (- 9m 48s) (50000 66%) 0.8969
-21m 31s (- 7m 49s) (55000 73%) 0.7946
-23m 28s (- 5m 52s) (60000 80%) 0.7150
-25m 23s (- 3m 54s) (65000 86%) 0.6717
-27m 18s (- 1m 57s) (70000 93%) 0.6113
-29m 11s (- 0m 0s) (75000 100%) 0.5471
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1m 38s (- 22m 52s) (5000 6%) 2.8480
+3m 10s (- 20m 37s) (10000 13%) 2.2931
+4m 43s (- 18m 53s) (15000 20%) 1.9854
+6m 18s (- 17m 19s) (20000 26%) 1.7343
+7m 49s (- 15m 39s) (25000 33%) 1.5266
+9m 21s (- 14m 1s) (30000 40%) 1.3505
+10m 54s (- 12m 28s) (35000 46%) 1.2139
+12m 26s (- 10m 52s) (40000 53%) 1.0796
+13m 57s (- 9m 18s) (45000 60%) 0.9644
+15m 29s (- 7m 44s) (50000 66%) 0.8997
+17m 0s (- 6m 11s) (55000 73%) 0.8125
+18m 34s (- 4m 38s) (60000 80%) 0.7307
+20m 7s (- 3m 5s) (65000 86%) 0.6616
+21m 40s (- 1m 32s) (70000 93%) 0.5977
+23m 13s (- 0m 0s) (75000 100%) 0.5872
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">evaluateRandomly</span><span class="p">(</span><span class="n">encoder1</span><span class="p">,</span> <span class="n">attn_decoder1</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; je suis tellement fiere de vous .
-= i m so proud of you .
-&lt; i m so proud of you . &lt;EOS&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; c est vous qui m avez forme .
+= you re the one who trained me .
+&lt; you re the one who trained me . &lt;EOS&gt;
 
-&gt; ils sont tres massifs .
-= they are very big .
-&lt; they are very big . &lt;EOS&gt;
+&gt; elle est entierement devouee a ses trois enfants .
+= she is devoted to her three children .
+&lt; she is devoted to her three children . &lt;EOS&gt;
 
-&gt; il est la pour te proteger .
-= he s here to protect you .
-&lt; he s here to protect you . &lt;EOS&gt;
+&gt; tu es insensible .
+= you re callous .
+&lt; you re safe . &lt;EOS&gt;
 
-&gt; c est un bleu .
-= he s a freshman .
-&lt; he s a freshman . &lt;EOS&gt;
+&gt; elles sont toutes en securite .
+= they re all safe .
+&lt; they re all safe . &lt;EOS&gt;
 
-&gt; vous etes en avance .
-= you re early .
-&lt; you are early . &lt;EOS&gt;
+&gt; tu es tres gentil tom .
+= you re very kind tom .
+&lt; you re very kind tom . &lt;EOS&gt;
 
-&gt; nous sommes en affaires avec de nombreux pays .
-= we are doing business with many countries .
-&lt; we are doing business many on . &lt;EOS&gt;
+&gt; elle planifie un voyage .
+= she is contemplating a trip .
+&lt; she is going a a trip . &lt;EOS&gt;
 
-&gt; je vais appeler une ambulance .
-= i m going to call an ambulance .
-&lt; i m going to tell a secret . &lt;EOS&gt;
+&gt; vous avez probablement raison .
+= you re probably right .
+&lt; you re absolutely right . &lt;EOS&gt;
 
-&gt; vous etes vraiment embetants .
-= you re really annoying .
-&lt; you re really annoying . &lt;EOS&gt;
+&gt; c est un critique gastronomique .
+= he s a food critic .
+&lt; he s a strange man . &lt;EOS&gt;
 
-&gt; tu n es pas le seul .
-= you re not the only one .
-&lt; you re not the only one . &lt;EOS&gt;
+&gt; je suis satisfaite de leur representation .
+= i m pleased with their performance .
+&lt; i m pleased with their performance . &lt;EOS&gt;
 
-&gt; je suis desole d avoir blesse tom .
-= i m sorry i hurt tom .
-&lt; i m sorry i hurt tom . &lt;EOS&gt;
+&gt; je suis depourvue d idees .
+= i m all out of ideas .
+&lt; i m all out of ideas . &lt;EOS&gt;
 </pre></div>
 </div>
 <div class="section" id="visualizing-attention">
@@ -1124,13 +1134,13 @@ and labels:</p>
 </ul>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>input = elle a cinq ans de moins que moi .
-output = she s five years younger than me . &lt;EOS&gt;
+output = she s five years younger than i am . &lt;EOS&gt;
 input = elle est trop petit .
-output = she s too short . &lt;EOS&gt;
+output = she s rather too . &lt;EOS&gt;
 input = je ne crains pas de mourir .
-output = i m not afraid to die . &lt;EOS&gt;
+output = i m not scared of death . &lt;EOS&gt;
 input = c est un jeune directeur plein de talent .
-output = he s a very young of others . &lt;EOS&gt;
+output = he s a talented young director . &lt;EOS&gt;
 </pre></div>
 </div>
 </div>
@@ -1158,7 +1168,7 @@ this:<ul>
 </ul>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 29 minutes  25.043 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 23 minutes  26.536 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-seq2seq-translation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/a96a2daac1918ec72f68233dfe3f2c47/seq2seq_translation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">seq2seq_translation_tutorial.py</span></code></a></div>
@@ -1172,7 +1182,7 @@ this:<ul>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/text_sentiment_ngrams_tutorial.html" rel="next" title="Text Classification with TorchText">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="n" class="btn btn-neutral float-right" href="../beginner/text_sentiment_ngrams_tutorial.html" rel="next" title="Text classification with the torchtext library">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
 <a accesskey="p" class="btn btn-neutral" href="char_rnn_generation_tutorial.html" rel="prev" title="NLP From Scratch: Generating Names with a Character-Level RNN"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>

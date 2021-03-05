@@ -215,6 +215,22 @@ Welcome to PyTorch Tutorials
    :link: advanced/super_resolution_with_onnxruntime.html
    :tags: Production
 
+.. Code Transformations with FX
+
+.. customcarditem::
+   :header: Building a Convolution/Batch Norm fuser in FX
+   :card_description: Build a simple FX pass that fuses batch norm into convolution to improve performance during inference.
+   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
+   :link: intermediate/fx_conv_bn_fuser.html
+   :tags: FX
+
+.. customcarditem::
+   :header: Building a Simple Performance Profiler with FX
+   :card_description: Build a simple FX interpreter to record the runtime of op, module, and function calls and report statistics
+   :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
+   :link: intermediate/fx_profiling_tutorial.html
+   :tags: FX
+
 .. Frontend APIs
 
 .. customcarditem::
@@ -390,6 +406,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/rpc_ddp_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
+   :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
+   :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
+   :link: advanced/ddp_pipeline_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -542,6 +565,14 @@ Additional Resources
    :maxdepth: 2
    :includehidden:
    :hidden:
+   :caption: Code Transforms with FX
+
+   intermediate/fx_profiling_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
@@ -589,6 +620,7 @@ Additional Resources
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
+   advanced/ddp_pipeline_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -598,4 +630,3 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
-   
