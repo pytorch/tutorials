@@ -10,6 +10,10 @@ extract features that can be fed to NN models.
 
 """
 
+# When running this tutorial in Google Colab, install the required packages
+# with the following.
+# !pip install torchaudio librosa boto3
+
 import torch
 import torchaudio
 import torchaudio.functional as F
