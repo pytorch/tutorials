@@ -73,8 +73,10 @@ class PositionalEncoding(nn.Module):
 # The `nn.TransformerEncoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html>`__
 # itself consists of ``nlayers`` of `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
 # As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
-# such that half of the ``nn.TransformerEncoderLayer`` are in ``TransformerModelStage1``
-# and the other half are in ``TransformerModelStage2``.
+# such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
+# other half are on another. To do this, we pull out the ``Encoder`` and
+# ``Decoder`` sections into seperate modules and then build an nn.Sequential
+# representing the original Transformer module.
 
 if sys.platform == 'win32':
     print('Windows platform is not supported for pipeline parallelism')
@@ -83,27 +85,23 @@ if torch.cuda.device_count() < 4:
     print('Need at least four GPU devices for this tutorial')
     sys.exit(0)
 
-class TransformerModelStage1(nn.Module):
-
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-        super(TransformerModelStage1, self).__init__()
+class Encoder(nn.Module):
+    def __init__(self, ntoken, ninp, dropout=0.5):
+        super(Encoder, self).__init__()
         self.src_mask = None
         self.pos_encoder = PositionalEncoding(ninp, dropout)
-        encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
         self.encoder = nn.Embedding(ntoken, ninp)
         self.ninp = ninp
-
         self.init_weights()
+
+    def init_weights(self):
+        initrange = 0.1
+        self.encoder.weight.data.uniform_(-initrange, initrange)
 
     def _generate_square_subsequent_mask(self, sz):
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
         mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
         return mask
-
-    def init_weights(self):
-        initrange = 0.1
-        self.encoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, src):
         if self.src_mask is None or self.src_mask.size(0) != src.size(0):
@@ -112,40 +110,22 @@ class TransformerModelStage1(nn.Module):
             self.src_mask = mask
 
         src = self.encoder(src) * math.sqrt(self.ninp)
-        src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, self.src_mask)
-        return output
+        return self.pos_encoder(src)
 
-class TransformerModelStage2(nn.Module):
-
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-        super(TransformerModelStage2, self).__init__()
-        self.src_mask = None
-        encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
+class Decoder(nn.Module):
+    def __init__(self, ntoken, ninp):
+        super(Decoder, self).__init__()
         self.decoder = nn.Linear(ninp, ntoken)
-
         self.init_weights()
-
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
 
     def init_weights(self):
         initrange = 0.1
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src):
-        if self.src_mask is None or self.src_mask.size(0) != src.size(0):
-            device = src.device
-            mask = self._generate_square_subsequent_mask(src.size(0)).to(device)
-            self.src_mask = mask
+    def forward(self, inp):
+        return self.decoder(inp)
 
-        output = self.transformer_encoder(src, self.src_mask)
-        output = self.decoder(output)
-        return output
 
 ######################################################################
 # Start multiple processes for training
@@ -309,17 +289,32 @@ def run_worker(rank, world_size):
         )
     )
 
+    # Num gpus for model parallelism.
+    num_gpus = 2
+    partition_len = ((nlayers - 1) // num_gpus) + 1
+
+    # Add encoder in the beginning.
+    tmp_list = [Encoder(ntokens, emsize, dropout).cuda(2 * rank)]
+    module_list = []
+
+    # Add all the necessary transformer blocks.
+    for i in range(nlayers):
+        transformer_block = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
+        if i != 0 and i % (partition_len) == 0:
+            module_list.append(nn.Sequential(*tmp_list))
+            tmp_list = []
+        device = i // (partition_len)
+        tmp_list.append(transformer_block.to(2 * rank + device))
+
+    # Add decoder in the end.
+    tmp_list.append(Decoder(ntokens, emsize).cuda(2 * rank + num_gpus - 1))
+    module_list.append(nn.Sequential(*tmp_list))
+
     # Need to use 'checkpoint=never' since as of PyTorch 1.8, Pipe checkpointing
     # doesn't work with DDP.
     from torch.distributed.pipeline.sync import Pipe
-    model = Pipe(
-                torch.nn.Sequential(
-                    TransformerModelStage1(ntokens, emsize, nhead, nhid, int(nlayers/2), dropout).cuda(2 * rank),
-                    TransformerModelStage2(ntokens, emsize, nhead, nhid, int(nlayers/2), dropout).cuda(2 * rank + 1),
-                ),
-                chunks = 8,
-                checkpoint = "never"
-            )
+    model = Pipe(torch.nn.Sequential(
+        *module_list), chunks = 8, checkpoint="never")
 
     # Initialize process group and wrap model in DDP.
     from torch.nn.parallel import DistributedDataParallel
