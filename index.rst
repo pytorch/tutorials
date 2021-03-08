@@ -573,7 +573,8 @@ Additional Resources
    :includehidden:
    :hidden:
    :caption: Code Transforms with FX
-
+   
+   intermediate/fx_conv_bn_fuser
    intermediate/fx_profiling_tutorial
 
 .. toctree::
