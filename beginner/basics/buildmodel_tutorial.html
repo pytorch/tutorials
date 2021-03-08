@@ -200,6 +200,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
@@ -393,7 +394,7 @@ We get the prediction probabilities by passing it through an instance of the <co
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([3], device='cuda:0')
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Predicted class: tensor([9], device='cuda:0')
 </pre></div>
 </div>
 </div>
@@ -453,26 +454,26 @@ linear layers, but there’s other activations to introduce non-linearity in you
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[-0.5424, -0.2485, -0.5077, -0.2457,  0.2316,  0.0544,  0.1663,  0.0063,
-          0.0725, -0.1138, -0.1491, -0.6244, -0.3126, -0.1112, -0.0062, -0.0572,
-          0.4140,  0.6807, -0.6893,  0.3379],
-        [-0.1622, -0.2217, -0.4500, -0.4259,  0.1572, -0.1245,  0.1866,  0.2319,
-         -0.0072, -0.0655,  0.6525, -0.5042, -0.0587, -0.3573,  0.0175, -0.1640,
-          0.2937,  0.5471, -0.6289,  0.2325],
-        [-0.0346, -0.2693, -0.6434, -0.3499,  0.0755, -0.0868,  0.3678,  0.4727,
-         -0.1687, -0.1512,  0.3370, -0.5850, -0.4530, -0.0479, -0.1896,  0.1122,
-          0.6318,  0.2443, -0.7736,  0.0640]], grad_fn=&lt;AddmmBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Before ReLU: tensor([[ 0.3539,  0.7341,  0.0255,  0.0280, -0.2793, -0.0983, -0.2584,  0.2158,
+          0.2806, -0.0969,  0.1105, -0.1673, -0.4992,  0.0127,  0.1478, -0.4308,
+         -0.1452,  0.1112, -0.3198, -0.6706],
+        [ 0.0410,  0.1428,  0.0615, -0.0076,  0.4640,  0.0765,  0.0366,  0.1142,
+          0.2191, -0.2857,  0.0993, -0.3887, -0.1007,  0.1416,  0.2188, -0.1126,
+         -0.2079, -0.0009, -0.3853, -0.4928],
+        [-0.2725,  0.5910,  0.1755,  0.0468,  0.3277,  0.0152, -0.1861,  0.1317,
+         -0.0334, -0.4290,  0.1321, -0.2643, -0.0996,  0.1188,  0.1729, -0.2331,
+          0.4179, -0.2284, -0.3755, -0.1884]], grad_fn=&lt;AddmmBackward&gt;)
 
 
-After ReLU: tensor([[0.0000, 0.0000, 0.0000, 0.0000, 0.2316, 0.0544, 0.1663, 0.0063, 0.0725,
-         0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.4140, 0.6807,
-         0.0000, 0.3379],
-        [0.0000, 0.0000, 0.0000, 0.0000, 0.1572, 0.0000, 0.1866, 0.2319, 0.0000,
-         0.0000, 0.6525, 0.0000, 0.0000, 0.0000, 0.0175, 0.0000, 0.2937, 0.5471,
-         0.0000, 0.2325],
-        [0.0000, 0.0000, 0.0000, 0.0000, 0.0755, 0.0000, 0.3678, 0.4727, 0.0000,
-         0.0000, 0.3370, 0.0000, 0.0000, 0.0000, 0.0000, 0.1122, 0.6318, 0.2443,
-         0.0000, 0.0640]], grad_fn=&lt;ReluBackward0&gt;)
+After ReLU: tensor([[0.3539, 0.7341, 0.0255, 0.0280, 0.0000, 0.0000, 0.0000, 0.2158, 0.2806,
+         0.0000, 0.1105, 0.0000, 0.0000, 0.0127, 0.1478, 0.0000, 0.0000, 0.1112,
+         0.0000, 0.0000],
+        [0.0410, 0.1428, 0.0615, 0.0000, 0.4640, 0.0765, 0.0366, 0.1142, 0.2191,
+         0.0000, 0.0993, 0.0000, 0.0000, 0.1416, 0.2188, 0.0000, 0.0000, 0.0000,
+         0.0000, 0.0000],
+        [0.0000, 0.5910, 0.1755, 0.0468, 0.3277, 0.0152, 0.0000, 0.1317, 0.0000,
+         0.0000, 0.1321, 0.0000, 0.0000, 0.1188, 0.1729, 0.0000, 0.4179, 0.0000,
+         0.0000, 0.0000]], grad_fn=&lt;ReluBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -531,23 +532,23 @@ accessible using your model’s <code class="docutils literal notranslate"><span
 )
 
 
-Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[ 0.0174, -0.0112, -0.0057,  ..., -0.0025,  0.0087, -0.0089],
-        [ 0.0191, -0.0106,  0.0025,  ...,  0.0182,  0.0276,  0.0304]],
+Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[-0.0198,  0.0305, -0.0086,  ...,  0.0289,  0.0351,  0.0332],
+        [ 0.0020, -0.0204,  0.0275,  ...,  0.0083,  0.0195,  0.0068]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([ 0.0321, -0.0320], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([-0.0072,  0.0124], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0295, -0.0199,  0.0223,  ...,  0.0366,  0.0159, -0.0049],
-        [ 0.0041, -0.0316,  0.0062,  ..., -0.0420, -0.0211,  0.0338]],
+Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[-0.0272,  0.0425,  0.0255,  ..., -0.0388, -0.0336,  0.0402],
+        [-0.0384,  0.0152,  0.0069,  ..., -0.0221, -0.0193, -0.0081]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([-0.0147,  0.0275], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([ 0.0205, -0.0020], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0242, -0.0294,  0.0163,  ..., -0.0270, -0.0441,  0.0223],
-        [-0.0146,  0.0307,  0.0164,  ..., -0.0383,  0.0419,  0.0349]],
+Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0193, -0.0133, -0.0243,  ...,  0.0156,  0.0120,  0.0130],
+        [-0.0348,  0.0018,  0.0033,  ...,  0.0135,  0.0125, -0.0394]],
        device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 
-Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 0.0375, -0.0032], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
+Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0120,  0.0134], device='cuda:0', grad_fn=&lt;SliceBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -557,7 +558,7 @@ Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([ 0.0
 <ul class="simple">
 <li><a class="reference external" href="https://pytorch.org/docs/stable/nn.html">torch.nn API</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.181 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.137 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-basics-buildmodel-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/d8c99fc5080440634229361450c7f70e/buildmodel_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">buildmodel_tutorial.py</span></code></a></div>
