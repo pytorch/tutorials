@@ -266,6 +266,7 @@ rpc.init_rpc(
     world_size=1,
     rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
         init_method="file://{}".format(tmpfile.name),
+        _transports=["ibv", "uv"],
     )
 )
 
@@ -409,6 +410,9 @@ for epoch in range(1, epochs + 1):
 # Evaluate the model with the test dataset
 # -------------------------------------
 #
+
+
+######################################################################
 # Apply the best model to check the result with the test dataset.
 
 test_loss = evaluate(best_model, test_data)
@@ -416,3 +420,39 @@ print('=' * 89)
 print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
     test_loss, math.exp(test_loss)))
 print('=' * 89)
+
+
+######################################################################
+# Output
+# ------
+#
+
+
+######################################################################
+#.. code-block:: py
+#
+#   Total parameters in model: 1,847,087,215
+#   | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2387.45 | loss 42.16 | ppl 2036775646369743616.00
+#   | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2150.93 | loss 48.24 | ppl 891334049215401558016.00
+#   | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2155.23 | loss 34.66 | ppl 1125676483188404.62
+#   | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2158.42 | loss 38.87 | ppl 76287208340888368.00
+#   -----------------------------------------------------------------------------------------
+#   | end of epoch   1 | time: 119.65s | valid loss  2.95 | valid ppl    19.15
+#   -----------------------------------------------------------------------------------------
+#   | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2376.16 | loss 34.92 | ppl 1458001430957104.00
+#   | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2160.96 | loss 34.75 | ppl 1232463826541886.50
+#   | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2160.66 | loss 28.10 | ppl 1599598251136.51
+#   | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2160.07 | loss 20.25 | ppl 621174306.77
+#   -----------------------------------------------------------------------------------------
+#   | end of epoch   2 | time: 119.76s | valid loss  0.87 | valid ppl     2.38
+#   -----------------------------------------------------------------------------------------
+#   | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2376.49 | loss 13.20 | ppl 537727.23
+#   | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2160.12 | loss 10.98 | ppl 58548.58
+#   | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2160.05 | loss 12.01 | ppl 164152.79
+#   | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2160.03 | loss 10.63 | ppl 41348.00
+#   -----------------------------------------------------------------------------------------
+#   | end of epoch   3 | time: 119.76s | valid loss  0.78 | valid ppl     2.17
+#   -----------------------------------------------------------------------------------------
+#   =========================================================================================
+#   | End of training | test loss  0.69 | test ppl     1.99
+#   =========================================================================================
