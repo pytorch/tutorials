@@ -1,4 +1,12 @@
-**Learn the Basics**
+Learn the Basics
+****************
+Authors: 
+`Suraj Subramanian <https://github.com/suraj813>`_,
+`Seth Juarez <https://github.com/sethjuarez/>`_, 
+`Cassie Breviu <https://github.com/cassieview/>`_, 
+`Dmitry Soshnikov <https://soshnikov.com/>`_, 
+`Ari Bornstein <https://github.com/aribornstein/>`_ 
+
 `Quickstart <quickstart_tutorial.html>`_ || 
 `Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
@@ -7,16 +15,6 @@
 `Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
-
-Learn the Basics
-===================
-
-Authors: 
-`Suraj Subramanian <https://github.com/suraj813>`_,
-`Seth Juarez <https://github.com/sethjuarez/>`_, 
-`Cassie Breviu <https://github.com/cassieview/>`_, 
-`Dmitry Soshnikov <https://soshnikov.com/>`_, 
-`Ari Bornstein <https://github.com/aribornstein/>`_ 
 
 Most machine learning workflows involve working with data, creating models, optimizing model 
 parameters, and saving the trained models. This tutorial introduces you to a complete ML workflow 
