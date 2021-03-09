@@ -2,6 +2,10 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+
 In this short tutorial, we will be going over the distributed package
 of PyTorch. We'll see how to set up the distributed setting, use the
 different communication strategies, and go over some the internals of
@@ -568,7 +572,7 @@ finally handshake with them.
 The shared filesystem requires all processes to have access to a shared
 file system, and will coordinate them through a shared file. This means
 that each process will open the file, write its information, and wait
-until everybody did so. After what all required information will be
+until everybody did so. After that all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
 `fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__.
