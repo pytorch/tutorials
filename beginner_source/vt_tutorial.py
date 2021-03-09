@@ -49,14 +49,14 @@ to the model along the steps.
 #
 # Follow the README at the DeiT repo for detailed information on how to
 # classify images using DeiT, or for a quick test, first install the
-# required packages and download a `test image <https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png>`_:
+# required packages:
 #
 # ::
 #
 #    pip install torch torchvision
 #    pip install timm
 #    pip install pandas
-#    wget https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png
+#    pip install requests 
 #
 # then run the script below:
 #
@@ -65,6 +65,7 @@ to the model along the steps.
 from PIL import Image
 import torch
 import timm
+import requests
 import torchvision.transforms as transforms
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
@@ -82,7 +83,7 @@ transform = transforms.Compose([
     transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
 ])
 
-img = Image.open("image.png")
+img = Image.open(requests.get("https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png", stream=True).raw)
 img = transform(img)[None,]
 out = model(img)
 clsidx = torch.argmax(out)
