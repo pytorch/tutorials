@@ -1,5 +1,4 @@
-"""
-**Learn the Basics** ||
+**Learn the Basics**
 `Quickstart <quickstart_tutorial.html>`_ || 
 `Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
@@ -31,7 +30,8 @@ Bag, or Ankle boot.
 
 
 Running the Tutorial Code
-------------------
+-------------------------
+
 You can run this tutorial in a couple of ways:
 
 - **In the cloud**: This is the easiest way to get started! Each section has a Colab link at the top, which opens a notebook with the code in a fully-hosted environment. Pro tip: Use Colab with a GPU runtime to speed up operations *Runtime > Change runtime type > GPU*
@@ -39,7 +39,8 @@ You can run this tutorial in a couple of ways:
 
 
 How to Use this Guide
------------------ 
+---------------------
+
 If you're familiar with other deep learning frameworks, check out the `0. Quickstart <quickstart_tutorial.html>`_ first
 to quickly familiarize yourself with PyTorch's API.
 
@@ -50,5 +51,3 @@ If you're new to deep learning frameworks, head right into the first section of 
 
 .. toctree::
    :hidden:
-
-"""
