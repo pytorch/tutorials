@@ -78,6 +78,7 @@ class PositionalEncoding(nn.Module):
 # ``Decoder`` sections into seperate modules and then build an nn.Sequential
 # representing the original Transformer module.
 
+
 if sys.platform == 'win32':
     print('Windows platform is not supported for pipeline parallelism')
     sys.exit(0)
@@ -125,7 +126,6 @@ class Decoder(nn.Module):
 
     def forward(self, inp):
         return self.decoder(inp)
-
 
 ######################################################################
 # Start multiple processes for training
