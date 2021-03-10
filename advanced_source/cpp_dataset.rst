@@ -75,7 +75,7 @@ project.
 
   export Torch_DIR=/full/path/to/libtorch/share/cmake/Torch
   # or
-  export Torch_DIR=$(realpath rel/path/to/libtorch/share/cmake/Torch)
+  export Torch_DIR=$(realpath relative/path/to/libtorch/share/cmake/Torch)
 
 Now we are ready to create the files required for our project.  As seen in the
 ``CMakeLists.txt`` file above, the two source files that we are going to use
@@ -277,7 +277,7 @@ basically converts a list of basic python types, numpy arrays, or torch tensors
 stacks them into a minibatch.  One normally doesn't need to write a custom
 collation function except for special cases such as sequence data when you need
 to pad a sequence to the length of the longest sequence in the batch.  In the
-C++ frontent, the equivalent to the collation function are mapping transforms.
+C++ frontend, the equivalent to the collation function are mapping transforms.
 These transforms take a batch from the ``get_batch`` function and apply
 themselves to the batch.  By default, the ``get_batch`` function returns a
 vector of the type returned by the ``get`` function.  In the MNIST dataset,
@@ -395,7 +395,7 @@ Now let's build and run the code.
 
 .. code-block:: shell
 
-  export Torch_DIR=$(realpath rel/path/to/libtorch/share/cmake/Torch)
+  export Torch_DIR=$(realpath relative/path/to/libtorch/share/cmake/Torch)
   mkdir build && cd build
   cmake ..
   make
