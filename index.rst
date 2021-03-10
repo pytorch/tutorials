@@ -322,7 +322,7 @@ Welcome to PyTorch Tutorials
    :header: Performance Profiling in Tensorboard
    :card_description: Learn how to use tensorboard plugin to profile and analyze your model's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
-   :link: intermediate/tensorboard_profiler.html
+   :link: intermediate/tensorboard_profiler_tutorial.html
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
@@ -634,7 +634,7 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
-   intermediate/tensorboard_profiler
+   intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
