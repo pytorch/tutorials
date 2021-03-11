@@ -211,7 +211,6 @@ def run():
 # ``N`` is along dimension 1.
 #
 
-# In 'run'
     bptt = 35
     def get_batch(source, i):
         seq_len = min(bptt, len(source) - 1 - i)
@@ -247,7 +246,6 @@ def run():
 #    allows the Pipe to work with only two partitions and avoid any
 #    cross-partition overheads.
 
-# In 'run'
     ntokens = len(vocab.stoi) # the size of vocabulary
     emsize = 4096 # embedding dimension
     nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
@@ -319,7 +317,6 @@ def run():
 # function to scale all the gradient together to prevent exploding.
 #
 
-# In 'run'
     criterion = nn.CrossEntropyLoss()
     lr = 5.0 # learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
@@ -383,7 +380,6 @@ def run():
 # Loop over epochs. Save the model if the validation loss is the best
 # we've seen so far. Adjust the learning rate after each epoch.
 
-# In 'run'
     best_val_loss = float("inf")
     epochs = 3 # The number of epochs
     best_model = None
@@ -414,7 +410,6 @@ def run():
 ######################################################################
 # Apply the best model to check the result with the test dataset.
 
-# In 'run'
     test_loss = evaluate(best_model, test_data)
     print('=' * 89)
     print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
