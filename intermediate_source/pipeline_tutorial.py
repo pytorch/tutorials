@@ -46,6 +46,13 @@ import torch.nn.functional as F
 import tempfile
 from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
+if sys.platform == 'win32':
+    print('Windows platform is not supported for pipeline parallelism')
+    sys.exit(0)
+if torch.cuda.device_count() < 2:
+    print('Need at least two GPU devices for this tutorial')
+    sys.exit(0)
+
 class Encoder(nn.Module):
     def __init__(self, ntoken, ninp, dropout=0.5):
         super(Encoder, self).__init__()
@@ -155,40 +162,38 @@ from torchtext.utils import download_from_url, extract_archive
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 
-def run():
+url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
+test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+tokenizer = get_tokenizer('basic_english')
+vocab = build_vocab_from_iterator(map(tokenizer,
+                                      iter(io.open(train_filepath,
+                                                   encoding="utf8"))))
 
-    url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-    test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
-    tokenizer = get_tokenizer('basic_english')
-    vocab = build_vocab_from_iterator(map(tokenizer,
-                                          iter(io.open(train_filepath,
-                                                       encoding="utf8"))))
+def data_process(raw_text_iter):
+  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                       dtype=torch.long) for item in raw_text_iter]
+  return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-    def data_process(raw_text_iter):
-      data = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                           dtype=torch.long) for item in raw_text_iter]
-      return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
+val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
+test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
 
-    train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-    val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-    test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+device = torch.device("cuda")
 
-    device = torch.device("cuda")
+def batchify(data, bsz):
+    # Divide the dataset into bsz parts.
+    nbatch = data.size(0) // bsz
+    # Trim off any extra elements that wouldn't cleanly fit (remainders).
+    data = data.narrow(0, 0, nbatch * bsz)
+    # Evenly divide the data across the bsz batches.
+    data = data.view(bsz, -1).t().contiguous()
+    return data.to(device)
 
-    def batchify(data, bsz):
-        # Divide the dataset into bsz parts.
-        nbatch = data.size(0) // bsz
-        # Trim off any extra elements that wouldn't cleanly fit (remainders).
-        data = data.narrow(0, 0, nbatch * bsz)
-        # Evenly divide the data across the bsz batches.
-        data = data.view(bsz, -1).t().contiguous()
-        return data.to(device)
-
-    batch_size = 20
-    eval_batch_size = 10
-    train_data = batchify(train_data, batch_size)
-    val_data = batchify(val_data, eval_batch_size)
-    test_data = batchify(test_data, eval_batch_size)
+batch_size = 20
+eval_batch_size = 10
+train_data = batchify(train_data, batch_size)
+val_data = batchify(val_data, eval_batch_size)
+test_data = batchify(test_data, eval_batch_size)
 
 
 ######################################################################
@@ -211,12 +216,12 @@ def run():
 # ``N`` is along dimension 1.
 #
 
-    bptt = 35
-    def get_batch(source, i):
-        seq_len = min(bptt, len(source) - 1 - i)
-        data = source[i:i+seq_len]
-        target = source[i+1:i+1+seq_len].view(-1)
-        return data, target
+bptt = 35
+def get_batch(source, i):
+    seq_len = min(bptt, len(source) - 1 - i)
+    data = source[i:i+seq_len]
+    target = source[i+1:i+1+seq_len].view(-1)
+    return data, target
 
 ######################################################################
 # Model scale and Pipe initialization
@@ -246,58 +251,58 @@ def run():
 #    allows the Pipe to work with only two partitions and avoid any
 #    cross-partition overheads.
 
-    ntokens = len(vocab.stoi) # the size of vocabulary
-    emsize = 4096 # embedding dimension
-    nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
-    nlayers = 16 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-    nhead = 16 # the number of heads in the multiheadattention models
-    dropout = 0.2 # the dropout value
+ntokens = len(vocab.stoi) # the size of vocabulary
+emsize = 4096 # embedding dimension
+nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
+nlayers = 16 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+nhead = 16 # the number of heads in the multiheadattention models
+dropout = 0.2 # the dropout value
 
-    from torch.distributed import rpc
-    tmpfile = tempfile.NamedTemporaryFile()
-    rpc.init_rpc(
-        name="worker",
-        rank=0,
-        world_size=1,
-        rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
-            init_method="file://{}".format(tmpfile.name),
-            _transports=["ibv", "uv"],
-        )
+from torch.distributed import rpc
+tmpfile = tempfile.NamedTemporaryFile()
+rpc.init_rpc(
+    name="worker",
+    rank=0,
+    world_size=1,
+    rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
+        init_method="file://{}".format(tmpfile.name),
+        _transports=["ibv", "uv"],
     )
+)
 
-    num_gpus = 2
-    partition_len = ((nlayers - 1) // num_gpus) + 1
+num_gpus = 2
+partition_len = ((nlayers - 1) // num_gpus) + 1
 
-    # Add encoder in the beginning.
-    tmp_list = [Encoder(ntokens, emsize, dropout).cuda(0)]
-    module_list = []
+# Add encoder in the beginning.
+tmp_list = [Encoder(ntokens, emsize, dropout).cuda(0)]
+module_list = []
 
-    # Add all the necessary transformer blocks.
-    for i in range(nlayers):
-        transformer_block = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
-        if i != 0 and i % (partition_len) == 0:
-            module_list.append(nn.Sequential(*tmp_list))
-            tmp_list = []
-        device = i // (partition_len)
-        tmp_list.append(transformer_block.to(device))
+# Add all the necessary transformer blocks.
+for i in range(nlayers):
+    transformer_block = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
+    if i != 0 and i % (partition_len) == 0:
+        module_list.append(nn.Sequential(*tmp_list))
+        tmp_list = []
+    device = i // (partition_len)
+    tmp_list.append(transformer_block.to(device))
 
-    # Add decoder in the end.
-    tmp_list.append(Decoder(ntokens, emsize).cuda(num_gpus - 1))
-    module_list.append(nn.Sequential(*tmp_list))
+# Add decoder in the end.
+tmp_list.append(Decoder(ntokens, emsize).cuda(num_gpus - 1))
+module_list.append(nn.Sequential(*tmp_list))
 
-    from torch.distributed.pipeline.sync import Pipe
+from torch.distributed.pipeline.sync import Pipe
 
-    # Build the pipeline.
-    model = Pipe(torch.nn.Sequential(*module_list), chunks = 8)
+# Build the pipeline.
+model = Pipe(torch.nn.Sequential(*module_list), chunks = 8)
 
 
-    def get_total_params(module: torch.nn.Module):
-        total_params = 0
-        for param in module.parameters():
-            total_params += param.numel()
-        return total_params
+def get_total_params(module: torch.nn.Module):
+    total_params = 0
+    for param in module.parameters():
+        total_params += param.numel()
+    return total_params
 
-    print ('Total parameters in model: {:,}'.format(get_total_params(model)))
+print ('Total parameters in model: {:,}'.format(get_total_params(model)))
 
 ######################################################################
 # Run the model
@@ -317,88 +322,88 @@ def run():
 # function to scale all the gradient together to prevent exploding.
 #
 
-    criterion = nn.CrossEntropyLoss()
-    lr = 5.0 # learning rate
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
+criterion = nn.CrossEntropyLoss()
+lr = 5.0 # learning rate
+optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
-    import time
-    def train():
-        model.train() # Turn on the train mode
-        total_loss = 0.
-        start_time = time.time()
-        ntokens = len(vocab.stoi)
+import time
+def train():
+    model.train() # Turn on the train mode
+    total_loss = 0.
+    start_time = time.time()
+    ntokens = len(vocab.stoi)
 
-        # Train only for 50 batches to keep script execution time low.
-        nbatches = min(50 * bptt, train_data.size(0) - 1)
+    # Train only for 50 batches to keep script execution time low.
+    nbatches = min(50 * bptt, train_data.size(0) - 1)
 
-        for batch, i in enumerate(range(0, nbatches, bptt)):
-            data, targets = get_batch(train_data, i)
-            optimizer.zero_grad()
-            # Since the Pipe is only within a single host and process the ``RRef``
-            # returned by forward method is local to this node and can simply
-            # retrieved via ``RRef.local_value()``.
-            output = model(data).local_value()
+    for batch, i in enumerate(range(0, nbatches, bptt)):
+        data, targets = get_batch(train_data, i)
+        optimizer.zero_grad()
+        # Since the Pipe is only within a single host and process the ``RRef``
+        # returned by forward method is local to this node and can simply
+        # retrieved via ``RRef.local_value()``.
+        output = model(data).local_value()
+        # Need to move targets to the device where the output of the
+        # pipeline resides.
+        loss = criterion(output.view(-1, ntokens), targets.cuda(1))
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
+        optimizer.step()
+
+        total_loss += loss.item()
+        log_interval = 10
+        if batch % log_interval == 0 and batch > 0:
+            cur_loss = total_loss / log_interval
+            elapsed = time.time() - start_time
+            print('| epoch {:3d} | {:5d}/{:5d} batches | '
+                  'lr {:02.2f} | ms/batch {:5.2f} | '
+                  'loss {:5.2f} | ppl {:8.2f}'.format(
+                    epoch, batch, nbatches // bptt, scheduler.get_lr()[0],
+                    elapsed * 1000 / log_interval,
+                    cur_loss, math.exp(cur_loss)))
+            total_loss = 0
+            start_time = time.time()
+
+def evaluate(eval_model, data_source):
+    eval_model.eval() # Turn on the evaluation mode
+    total_loss = 0.
+    ntokens = len(vocab.stoi)
+    # Evaluate only for 50 batches to keep script execution time low.
+    nbatches = min(50 * bptt, data_source.size(0) - 1)
+    with torch.no_grad():
+        for i in range(0, nbatches, bptt):
+            data, targets = get_batch(data_source, i)
+            output = eval_model(data).local_value()
+            output_flat = output.view(-1, ntokens)
             # Need to move targets to the device where the output of the
             # pipeline resides.
-            loss = criterion(output.view(-1, ntokens), targets.cuda(1))
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
-            optimizer.step()
-
-            total_loss += loss.item()
-            log_interval = 10
-            if batch % log_interval == 0 and batch > 0:
-                cur_loss = total_loss / log_interval
-                elapsed = time.time() - start_time
-                print('| epoch {:3d} | {:5d}/{:5d} batches | '
-                      'lr {:02.2f} | ms/batch {:5.2f} | '
-                      'loss {:5.2f} | ppl {:8.2f}'.format(
-                        epoch, batch, nbatches // bptt, scheduler.get_lr()[0],
-                        elapsed * 1000 / log_interval,
-                        cur_loss, math.exp(cur_loss)))
-                total_loss = 0
-                start_time = time.time()
-
-    def evaluate(eval_model, data_source):
-        eval_model.eval() # Turn on the evaluation mode
-        total_loss = 0.
-        ntokens = len(vocab.stoi)
-        # Evaluate only for 50 batches to keep script execution time low.
-        nbatches = min(50 * bptt, data_source.size(0) - 1)
-        with torch.no_grad():
-            for i in range(0, nbatches, bptt):
-                data, targets = get_batch(data_source, i)
-                output = eval_model(data).local_value()
-                output_flat = output.view(-1, ntokens)
-                # Need to move targets to the device where the output of the
-                # pipeline resides.
-                total_loss += len(data) * criterion(output_flat, targets.cuda(1)).item()
-        return total_loss / (len(data_source) - 1)
+            total_loss += len(data) * criterion(output_flat, targets.cuda(1)).item()
+    return total_loss / (len(data_source) - 1)
 
 ######################################################################
 # Loop over epochs. Save the model if the validation loss is the best
 # we've seen so far. Adjust the learning rate after each epoch.
 
-    best_val_loss = float("inf")
-    epochs = 3 # The number of epochs
-    best_model = None
+best_val_loss = float("inf")
+epochs = 3 # The number of epochs
+best_model = None
 
-    for epoch in range(1, epochs + 1):
-        epoch_start_time = time.time()
-        train()
-        val_loss = evaluate(model, val_data)
-        print('-' * 89)
-        print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | '
-              'valid ppl {:8.2f}'.format(epoch, (time.time() - epoch_start_time),
-                                         val_loss, math.exp(val_loss)))
-        print('-' * 89)
+for epoch in range(1, epochs + 1):
+    epoch_start_time = time.time()
+    train()
+    val_loss = evaluate(model, val_data)
+    print('-' * 89)
+    print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | '
+          'valid ppl {:8.2f}'.format(epoch, (time.time() - epoch_start_time),
+                                     val_loss, math.exp(val_loss)))
+    print('-' * 89)
 
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            best_model = model
+    if val_loss < best_val_loss:
+        best_val_loss = val_loss
+        best_model = model
 
-        scheduler.step()
+    scheduler.step()
 
 
 ######################################################################
@@ -410,11 +415,11 @@ def run():
 ######################################################################
 # Apply the best model to check the result with the test dataset.
 
-    test_loss = evaluate(best_model, test_data)
-    print('=' * 89)
-    print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
-        test_loss, math.exp(test_loss)))
-    print('=' * 89)
+test_loss = evaluate(best_model, test_data)
+print('=' * 89)
+print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
+    test_loss, math.exp(test_loss)))
+print('=' * 89)
 
 
 ######################################################################
@@ -451,12 +456,3 @@ def run():
 #   =========================================================================================
 #   | End of training | test loss  0.69 | test ppl     1.99
 #   =========================================================================================
-
-if __name__ == "__main__":
-    if sys.platform == 'win32':
-        print('Windows platform is not supported for pipeline parallelism')
-        sys.exit(0)
-    if torch.cuda.device_count() < 2:
-        print('Need at least two GPU devices for this tutorial')
-        sys.exit(0)
-    run()
