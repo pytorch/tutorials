@@ -232,9 +232,9 @@ def get_batch(source, i):
 ######################################################################
 # To demonstrate training large Transformer models using pipeline parallelism,
 # we scale up the Transformer layers appropriately. We use an embedding
-# dimension of 4096, hidden size of 4096, 16 attention heads and 16 total
+# dimension of 4096, hidden size of 4096, 16 attention heads and 12 total
 # transformer layers (``nn.TransformerEncoderLayer``). This creates a model with
-# **~1.8 billion** parameters.
+# **~1.4 billion** parameters.
 #
 # We need to initialize the `RPC Framework <https://pytorch.org/docs/stable/rpc.html>`__
 # since Pipe depends on the RPC framework via `RRef <https://pytorch.org/docs/stable/rpc.html#rref>`__
@@ -254,7 +254,7 @@ def get_batch(source, i):
 ntokens = len(vocab.stoi) # the size of vocabulary
 emsize = 4096 # embedding dimension
 nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
-nlayers = 16 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+nlayers = 12 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
 nhead = 16 # the number of heads in the multiheadattention models
 dropout = 0.2 # the dropout value
 
@@ -266,7 +266,11 @@ rpc.init_rpc(
     world_size=1,
     rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
         init_method="file://{}".format(tmpfile.name),
+        # Specifying _transports and _channels is a workaround and we no longer
+        # will have to specify _transports and _channels for PyTorch
+        # versions >= 1.8.1
         _transports=["ibv", "uv"],
+        _channels=["cuda_ipc", "cuda_basic"],
     )
 )
 
