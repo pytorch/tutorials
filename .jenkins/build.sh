@@ -35,7 +35,7 @@ pip install tb-nightly
 python -m spacy download en
 python -m spacy download de
 
-PyTorch Theme
+# PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 
