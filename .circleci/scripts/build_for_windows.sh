@@ -46,7 +46,8 @@ export NUM_WORKERS=4
 if [[ "${CIRCLE_JOB}" == *worker_* ]]; then
   python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
   python $DIR/remove_runnable_code.py advanced_source/static_quantization_tutorial.py advanced_source/static_quantization_tutorial.py || true
-  python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py  beginner_source/audio_preprocessing_tutorial.py || true
 
   export WORKER_ID=$(echo "${CIRCLE_JOB}" | tr -dc '0-9')
   count=0
