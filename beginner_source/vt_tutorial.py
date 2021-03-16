@@ -1,5 +1,5 @@
 """
-Optimizing Vision Transformer model for Deployment
+Optimizing Vision Transformer Model for Deployment
 ===========================
 
 Vision Transformer models apply the cutting-edge attention-based
