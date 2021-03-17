@@ -35,6 +35,8 @@ REQUIREMENTS="$(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PR
 echo $REQUIREMENTS > requirements.txt
 pip install -r requirements.txt
 pip install pySoundFile
+# Force uninstall torch & related packages, we'll install them using conda later.
+pip uninstall -y torch torchvision torchtext
 conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
 conda install torchaudio -c pytorch-test
 python -m spacy download de
