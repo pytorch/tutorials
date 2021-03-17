@@ -286,6 +286,11 @@ def run_worker(rank, world_size):
         world_size=1,
         rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
             init_method="file://{}".format(tmpfile.name),
+            # Specifying _transports and _channels is a workaround and we no longer
+            # will have to specify _transports and _channels for PyTorch
+            # versions >= 1.8.1
+            _transports=["ibv", "uv"],
+            _channels=["cuda_ipc", "cuda_basic"],
         )
     )
 
