@@ -3,47 +3,79 @@ Timer quick start
 =================
 
 In this tutorial, we're going to cover the primary APIs of
-`torch.utils.benchmark.Timer`. The code below assumes that you are
-familiar with the fundamentals of performance work, but have not used `Timer`.
-(Or you may have used the builtin `timeit.Timer` class.)
+`torch.utils.benchmark.Timer`. The PyTorch Timer is based on the
+`timeit.Timer <https://docs.python.org/3/library/timeit.html#timeit.Timer>`__
+API, with several PyTorch specific modifications. Familiarity with the
+builtin `Timer` class is not required for this tutorial, however we assume
+that the reader is familiar with the fundamentals of performance work.
 
 A more comprehensive performace tuning tutorial is available at:
 
     https://pytorch.org/tutorials/recipes/recipes/benchmark.html
 
-Wall time: `Timer.blocked_autorange(...)`
------------------------------------------
 
-This method will handle details such as picking a suitable number if repeats,
-fixing the number of threads, and providing a convenient representation of
-the results.
+**Contents:**
+    1. `Defining a Timer <#defining-a-timer>`__
+    2. `Wall time: \`Timer.blocked_autorange(...)\` <#wall-time-timer-blocked-autorange>`__
+    3. `C++ snippets <#c-snippets>`__
+    4. `Instruction counts: \`Timer.collect_callgrind(...)\` <#instruction-counts-timer-collect-callgrind>`__
+    5. `Instruction counts: Delving deeper <#instruction-counts-delving-deeper>`__
+    6. `A/B testing with Callgrind <#a-b-testing-with-callgrind>`__
+    7. `Wrapping up <#wrapping-up>`__
+    8. `Footnotes <#footnotes>`__
 """
 
-import torch
-from torch.utils.benchmark import Measurement, Timer
+
+###############################################################################
+# 1. Defining a Timer
+# ~~~~~~~~~~~~~~~~~~~
+#
+# A `Timer` serves as a task definition.
+#
+
+from torch.utils.benchmark import Timer
 
 timer = Timer(
+    # The computation which will be run in a loop and timed.
     stmt="x * y",
+
+    # `setup` will be run before calling the measurement loop, and is used to
+    # populate any state which is needed by `stmt`
     setup="""
         x = torch.ones((128,))
         y = torch.ones((128,))
     """,
+
+    # Alternately, `globals` can be used to pass variables from the outer scope.
+    # -------------------------------------------------------------------------
+    # globals={
+    #     "x": torch.ones((128,)),
+    #     "y": torch.ones((128,)),
+    # },
+
+    # Control the number of threads that PyTorch uses. (Default: 1)
+    num_threads=1,
 )
+
+###############################################################################
+# 2. Wall time: `Timer.blocked_autorange(...)`
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# This method will handle details such as picking a suitable number if repeats,
+# fixing the number of threads, and providing a convenient representation of
+# the results.
+#
 
 # Measurement objects store the results of multiple repeats, and provide
 # various utility features.
+from torch.utils.benchmark import Measurement
+
 m: Measurement = timer.blocked_autorange(min_run_time=1)
-
-print(m, "\n")
-
-# Properties for accessing the actual results.
-print(f"Median:  {m.median}")
-print(f"Mean:    {m.mean}")
-print(f"Times:  [{m.times[0]}, {m.times[1]}, ...]")
+print(m)
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: Snippet wall time.
+#    :caption: **Snippet wall time.**
 #
 #         <torch.utils.benchmark.utils.common.Measurement object at 0x7f1929a38ed0>
 #         x * y
@@ -55,13 +87,10 @@ print(f"Times:  [{m.times[0]}, {m.times[1]}, ...]")
 #           IQR:    0.07 us (2.31 to 2.38)
 #           424 measurements, 1000 runs per measurement, 1 thread
 #
-#         Median:  2.340196049772203e-06
-#         Mean:    2.3602382669814e-06
-#         Times:  [2.3637930862605573e-06, 2.3956880904734135e-06, ...]
-#
 
 ###############################################################################
-# We can also use `Timer` for C++ snippets.
+# 3. C++ snippets
+# ~~~~~~~~~~~~~~~
 #
 
 from torch.utils.benchmark import Language
@@ -79,7 +108,7 @@ print(cpp_timer.blocked_autorange(min_run_time=1))
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: C++ snippet wall time.
+#    :caption: **C++ snippet wall time.**
 #
 #         <torch.utils.benchmark.utils.common.Measurement object at 0x7f192b019ed0>
 #         x * y;
@@ -97,20 +126,14 @@ print(cpp_timer.blocked_autorange(min_run_time=1))
 #
 
 ###############################################################################
-# Instruction counts: `Timer.collect_callgrind(...)`
-# --------------------------------------------------
+# 4. Instruction counts: `Timer.collect_callgrind(...)`
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # For deep dive investigations, `Timer.collect_callgrind` wraps
 # `Callgrind <https://valgrind.org/docs/manual/cl-manual.html>` in order to
 # collect instruction counts. These are useful as they offer fine grained and
 # deterministic (or very low noise in the case of Python) insights into how a
 # snippet is run.
-#
-# Note that in order to provide full information about the PyTorch internal
-# which are executed, Callgrind needs access to C++ debug symbols. This is
-# accomplished by setting REL_WITH_DEB_INFO=1 when building PyTorch. Otherwise
-# function calls will be opaque. (The resultant CallgrindStats will warn if
-# debug symbols are missing.)
 #
 
 from torch.utils.benchmark import CallgrindStats, FunctionCounts
@@ -120,7 +143,7 @@ print(stats)
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: C++ Callgrind stats (summary)
+#    :caption: **C++ Callgrind stats (summary)**
 #
 #         <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.CallgrindStats object at 0x7f1929a35850>
 #         x * y;
@@ -135,6 +158,9 @@ print(stats)
 #
 
 ###############################################################################
+# 5. Instruction counts: Delving deeper
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 # The string representation of CallgrindStats is similar to that of
 # Measurement. `Noisy symbols` are a Python concept (removing calls in the
 # CPython interpreter which are known to be noisy).
@@ -166,7 +192,7 @@ print(inclusive_stats[:10])
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: C++ Callgrind stats (detailed)
+#    :caption: **C++ Callgrind stats (detailed)**
 #
 #         torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f192a6dfd90>
 #           47264  ???:_int_free
@@ -207,7 +233,7 @@ print(inclusive_stats.transform(group_by_file)[:10])
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: Callgrind stats (condensed)
+#    :caption: **Callgrind stats (condensed)**
 #
 #         <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f192995d750>
 #           118200  aten/src/ATen   TensorIterator.cpp
@@ -225,8 +251,8 @@ print(inclusive_stats.transform(group_by_file)[:10])
 #
 
 ###############################################################################
-# A/B testing with Callgrind
-# --------------------------
+# 6. A/B testing with Callgrind
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # One of the most useful features of instruction counts is they allow fine
 # grained comparison of computation, which is critical when analyzing
@@ -274,7 +300,7 @@ print(delta.transform(extract_fn_name))
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: Instruction count delta
+#    :caption: **Instruction count delta**
 #
 #         <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f192995d750>
 #             17600  at::TensorIteratorBase::compute_strides(...)
@@ -311,7 +337,7 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 
 ###############################################################################
 # .. code-block:: none
-#    :caption: Instruction count delta (filter)
+#    :caption: **Instruction count delta (filter)**
 #
 #         <torch.utils.benchmark.utils.valgrind_wrapper.timer_interface.FunctionCounts object at 0x7f19299544d0>
 #             17600  at::TensorIteratorBase::compute_strides(...)
@@ -338,8 +364,8 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 #
 
 ###############################################################################
-# Wrapping up:
-# ------------
+# 7. Wrapping up
+# ~~~~~~~~~~~~~~
 #
 # In summary, use `Timer.blocked_autorange` to collect wall times. If timing
 # variation is too high, increase `min_run_time`, or move to C++ snippets if
@@ -349,3 +375,20 @@ print(delta.transform(extract_fn_name).filter(lambda fn: "TensorIterator" in fn)
 # instruction counts and `FunctionCounts.(__add__ / __sub__ / transform / filter)`
 # to slice-and-dice them.
 #
+
+###############################################################################
+# 8. Footnotes
+# ~~~~~~~~~~~~
+#
+#   - Implied `import torch`
+#       If `globals` does not contain "torch", Timer will automatically
+#       populate it. This means that `Timer("torch.empty(())")` will work.
+#       (Though other imports should be placed in `setup`,
+#       e.g. `Timer("np.zeros(())", "import numpy as np")`)
+#
+#   - REL_WITH_DEB_INFO
+#       In order to provide full information about the PyTorch internals which
+#       are executed, Callgrind needs access to C++ debug symbols. This is
+#       accomplished by setting REL_WITH_DEB_INFO=1 when building PyTorch.
+#       Otherwise function calls will be opaque. (The resultant CallgrindStats
+#       will warn if debug symbols are missing.)
