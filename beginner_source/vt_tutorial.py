@@ -1,5 +1,5 @@
 """
-Optimizing Vision Transformer model with PyTorch 1.8.0
+Optimizing Vision Transformer Model for Deployment
 ===========================
 
 Vision Transformer models apply the cutting-edge attention-based
