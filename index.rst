@@ -3,7 +3,12 @@ Welcome to PyTorch Tutorials
 .. raw:: html
 
    <div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
-   <div class="carousel-inner">
+   <ol class="carousel-indicators">
+    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+  </ol>
+   <div class="carousel-inner" data-interval="7000">
       <div class="carousel-item active">
          <a href="https://pytorch.org/mobile">
          <img class="d-block w-100" src="_static/img/slide01.png?auto=yes&bg=777&fg=555&text=First slide" alt="First slide">
