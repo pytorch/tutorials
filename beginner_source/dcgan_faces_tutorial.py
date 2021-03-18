@@ -274,7 +274,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # --------------
 # 
 # With our input parameters set and the dataset prepared, we can now get
-# into the implementation. We will start with the weigth initialization
+# into the implementation. We will start with the weight initialization
 # strategy, then talk about the generator, discriminator, loss functions,
 # and training loop in detail.
 # 
