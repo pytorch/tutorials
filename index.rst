@@ -6,17 +6,17 @@ Welcome to PyTorch Tutorials
    <div class="carousel-inner">
       <div class="carousel-item active">
          <a href="https://pytorch.org/mobile">
-         <img class="d-block w-100" src="_static/images/slide01.png?auto=yes&bg=777&fg=555&text=First slide" alt="First slide">
+         <img class="d-block w-100" src="_static/img/slide01.png?auto=yes&bg=777&fg=555&text=First slide" alt="First slide">
          </a>
       </div>
       <div class="carousel-item">
          <a href="https://pytorch.org/blog/pytorch-1.8-released/">
-         <img class="d-block w-100" src="_static/images/slide02.png?auto=yes&bg=666&fg=444&text=Second slide" alt="Second slide">
+         <img class="d-block w-100" src="_static/img/slide02.png?auto=yes&bg=666&fg=444&text=Second slide" alt="Second slide">
          </a>
       </div>
       <div class="carousel-item">
       <a href="https://pytorch.org/tutorials/beginner/vt_tutorial.html">
-         <img class="d-block w-100" src="_static/images/slide03.png?auto=yes&bg=555&fg=333&text=Third slide" alt="Third slide">
+         <img class="d-block w-100" src="_static/img/slide03.png?auto=yes&bg=555&fg=333&text=Third slide" alt="Third slide">
       </a>
       </div>
    </div>
