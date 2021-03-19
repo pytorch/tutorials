@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PyTorch Prototype Recipes &mdash; PyTorch Tutorials 1.8.0 documentation</title>
+  <title>Direct Device-to-Device Communication with TensorPipe CUDA RPC &mdash; PyTorch Tutorials 1.8.0 documentation</title>
   
 
   
@@ -31,8 +31,8 @@
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Learn the Basics" href="../beginner/basics/intro.html" />
-    <link rel="prev" title="Direct Device-to-Device Communication with TensorPipe CUDA RPC" href="../recipes/cuda_rpc.html" /> 
+    <link rel="next" title="PyTorch Prototype Recipes" href="../prototype/prototype_index.html" />
+    <link rel="prev" title="Shard Optimizer States with ZeroRedundancyOptimizer" href="zero_redundancy_optimizer.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
@@ -215,8 +215,8 @@
             
               <p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">See All Prototype Recipes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Learning PyTorch</span></p>
 <ul>
@@ -352,13 +352,15 @@
       </li>
 
         
-      <li>PyTorch Prototype Recipes</li>
+          <li><a href="recipes_index.html">PyTorch Recipes</a> &gt;</li>
+        
+      <li>Direct Device-to-Device Communication with TensorPipe CUDA RPC</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
         
             
-            <a href="../_sources/prototype/prototype_index.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+            <a href="../_sources/recipes/cuda_rpc.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
           
         
       </li>
@@ -380,7 +382,7 @@
         
 
           <div class="pytorch-call-to-action-links">
-            <div id="tutorial-type">prototype/prototype_index</div>
+            <div id="tutorial-type">recipes/cuda_rpc</div>
 
             <div id="google-colab-link">
               <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
@@ -406,268 +408,146 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="section" id="pytorch-prototype-recipes">
-<h1>PyTorch Prototype Recipes<a class="headerlink" href="#pytorch-prototype-recipes" title="Permalink to this headline">¶</a></h1>
-<p>Prototype features are not available as part of binary distributions like PyPI or Conda (except maybe behind run-time flags). To test these features we would, depending on the feature, recommend building from master or using the nightly wheels that are made available on <a class="reference external" href="https://pytorch.org">pytorch.org</a>.</p>
-<p><em>Level of commitment</em>: We are committing to gathering high bandwidth feedback only on these features. Based on this feedback and potential further engagement between community members, we as a community will decide if we want to upgrade the level of commitment or to fail fast.</p>
-    </div>
+  <div class="section" id="direct-device-to-device-communication-with-tensorpipe-cuda-rpc">
+<h1>Direct Device-to-Device Communication with TensorPipe CUDA RPC<a class="headerlink" href="#direct-device-to-device-communication-with-tensorpipe-cuda-rpc" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Direct device-to-device RPC (CUDA RPC) is introduced in PyTorch 1.8
+as a prototype feature. This API is subject to change.</p>
 </div>
-
-<div id="tutorial-cards-container">
-
-<nav class="navbar navbar-expand-lg navbar-light tutorials-nav col-12">
-    <div class="tutorial-tags-container">
-        <div id="dropdown-filter-tags">
-            <div class="tutorial-filter-menu">
-                <div class="tutorial-filter filter-btn all-tag-selected" data-tag="all">All</div>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<hr class="tutorials-hr">
-
-<div class="row">
-
-<div id="tutorial-cards">
-<div class="list"><p><div class="col-md-12 tutorials-card-container" data-tags=FX,Quantization>
-
-<div class="card tutorials-card" link=../prototype/fx_graph_mode_quant_guide.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>FX Graph Mode Quantization User Guide</h4>
+<p>In this recipe, you will learn:</p>
+<ul class="simple">
+<li>The high-level idea of CUDA RPC.</li>
+<li>How to use CUDA RPC.</li>
+</ul>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>PyTorch 1.8+</li>
+<li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/rpc_tutorial.html">Getting Started With Distributed RPC Framework</a></li>
+</ul>
 </div>
-
-<p class="card-summary">Learn about FX Graph Mode Quantization.</p>
-
-<p class="tags">FX,Quantization</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
+<div class="section" id="what-is-cuda-rpc">
+<h2>What is CUDA RPC?<a class="headerlink" href="#what-is-cuda-rpc" title="Permalink to this headline">¶</a></h2>
+<p>CUDA RPC supports directly sending Tensors from local CUDA memory to remote
+CUDA memory. Prior to v1.8 release, PyTorch RPC only accepts CPU Tensors. As a
+result, when an application needs to send a CUDA Tensor through RPC, it has
+to first move the Tensor to CPU on the caller, send it via RPC, and then move
+it to the destination device on the callee, which incurs both unnecessary
+synchronizations and D2H and H2D copies. Since v1.8, RPC allows users to
+configure a per-process global device map using the
+<a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.TensorPipeRpcBackendOptions.set_device_map">set_device_map</a>
+API, specifying how to map local devices to remote devices. More specifically,
+if <code class="docutils literal notranslate"><span class="pre">worker0</span></code>’s device map has an entry <code class="docutils literal notranslate"><span class="pre">&quot;worker1&quot;</span> <span class="pre">:</span> <span class="pre">{&quot;cuda:0&quot;</span> <span class="pre">:</span> <span class="pre">&quot;cuda:1&quot;}</span></code>,
+all RPC arguments on <code class="docutils literal notranslate"><span class="pre">&quot;cuda:0&quot;</span></code> from <code class="docutils literal notranslate"><span class="pre">worker0</span></code> will be directly sent to
+<code class="docutils literal notranslate"><span class="pre">&quot;cuda:1&quot;</span></code> on <code class="docutils literal notranslate"><span class="pre">worker1</span></code>. The response of an RPC will use the inverse of
+the caller device map, i.e., if <code class="docutils literal notranslate"><span class="pre">worker1</span></code> returns a Tensor on <code class="docutils literal notranslate"><span class="pre">&quot;cuda:1&quot;</span></code>,
+it will be directly sent to <code class="docutils literal notranslate"><span class="pre">&quot;cuda:0&quot;</span></code> on <code class="docutils literal notranslate"><span class="pre">worker0</span></code>. All intended
+device-to-device direct communication must be specified in the per-process
+device map. Otherwise, only CPU tensors are allowed.</p>
+<p>Under the hood, PyTorch RPC relies on <a class="reference external" href="https://github.com/pytorch/tensorpipe">TensorPipe</a>
+as the communication backend. PyTorch RPC extracts all Tensors from each
+request or response into a list and packs everything else into a binary
+payload. Then, TensorPipe will automatically choose a communication channel
+for each Tensor based on Tensor device type and channel availability on both
+the caller and the callee. Existing TensorPipe channels cover NVLink, InfiniBand,
+SHM, CMA, TCP, etc.</p>
 </div>
+<div class="section" id="how-to-use-cuda-rpc">
+<h2>How to use CUDA RPC?<a class="headerlink" href="#how-to-use-cuda-rpc" title="Permalink to this headline">¶</a></h2>
+<p>The code below shows how to use CUDA RPC. The model contains two linear layers
+and is split into two shards. The two shards are placed on <code class="docutils literal notranslate"><span class="pre">worker0</span></code> and
+<code class="docutils literal notranslate"><span class="pre">worker1</span></code> respectively, and <code class="docutils literal notranslate"><span class="pre">worker0</span></code> serves as the master that drives the
+forward and backward passes. Note that we intentionally skipped
+<a class="reference external" href="https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim">DistributedOptimizer</a>
+to highlight the performance improvements when using CUDA RPC. The experiment
+repeats the forward and backward passes 10 times and measures the total
+execution time. It compares using CUDA RPC against manually staging to CPU
+memory and using CPU RPC.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributed.autograd</span> <span class="k">as</span> <span class="nn">autograd</span>
+<span class="kn">import</span> <span class="nn">torch.distributed.rpc</span> <span class="k">as</span> <span class="nn">rpc</span>
+<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+
+<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">comm_mode</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm_mode</span> <span class="o">=</span> <span class="n">comm_mode</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># x.to() is a no-op if x is already on self.device</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_mode</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">else</span> <span class="n">y</span>
+
+    <span class="k">def</span> <span class="nf">parameter_rrefs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">rpc</span><span class="o">.</span><span class="n">RRef</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">()]</span>
+
+
+<span class="k">def</span> <span class="nf">measure</span><span class="p">(</span><span class="n">comm_mode</span><span class="p">):</span>
+    <span class="c1"># local module on &quot;worker0/cuda:0&quot;</span>
+    <span class="n">lm</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">,</span> <span class="n">comm_mode</span><span class="p">)</span>
+    <span class="c1"># remote module on &quot;worker1/cuda:1&quot;</span>
+    <span class="n">rm</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="s2">&quot;worker1&quot;</span><span class="p">,</span> <span class="n">MyModule</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;cuda:1&quot;</span><span class="p">,</span> <span class="n">comm_mode</span><span class="p">))</span>
+    <span class="c1"># prepare random inputs</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">tik</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">autograd</span><span class="o">.</span><span class="n">context</span><span class="p">()</span> <span class="k">as</span> <span class="n">ctx</span><span class="p">:</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">rm</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">lm</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="n">autograd</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()])</span>
+    <span class="c1"># synchronize on &quot;cuda:0&quot; to make sure that all pending CUDA ops are</span>
+    <span class="c1"># included in the measurements</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_stream</span><span class="p">(</span><span class="s2">&quot;cuda:0&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="n">tok</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">comm_mode</span><span class="si">}</span><span class="s2"> RPC total execution time: </span><span class="si">{</span><span class="n">tok</span> <span class="o">-</span> <span class="n">tik</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">run_worker</span><span class="p">(</span><span class="n">rank</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_ADDR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;29500&#39;</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">TensorPipeRpcBackendOptions</span><span class="p">(</span><span class="n">num_worker_threads</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">set_device_map</span><span class="p">(</span><span class="s2">&quot;worker1&quot;</span><span class="p">,</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">options</span>
+        <span class="p">)</span>
+        <span class="n">measure</span><span class="p">(</span><span class="n">comm_mode</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+        <span class="n">measure</span><span class="p">(</span><span class="n">comm_mode</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;worker</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">options</span>
+        <span class="p">)</span>
+
+    <span class="c1"># block until all rpcs finish</span>
+    <span class="n">rpc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">run_worker</span><span class="p">,</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
 </div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=FX,Quantization>
-
-<div class="card tutorials-card" link=../prototype/fx_graph_mode_ptq_dynamic.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>FX Graph Mode Post Training Dynamic Quantization</h4>
+<p>Outputs are displayed below, which shows that CUDA RPC can help to achieve
+34X speed up compared to CPU RPC in this experiment.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cpu</span> <span class="n">RPC</span> <span class="n">total</span> <span class="n">execution</span> <span class="n">time</span><span class="p">:</span> <span class="mf">2.3145179748535156</span> <span class="n">Seconds</span>
+<span class="n">cuda</span> <span class="n">RPC</span> <span class="n">total</span> <span class="n">execution</span> <span class="n">time</span><span class="p">:</span> <span class="mf">0.06867480278015137</span> <span class="n">Seconds</span>
+</pre></div>
 </div>
-
-<p class="card-summary">Learn how to do post training dynamic quantization in graph mode based on torch.fx.</p>
-
-<p class="tags">FX,Quantization</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=FX,Quantization>
-
-<div class="card tutorials-card" link=../prototype/fx_graph_mode_ptq_static.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>FX Graph Mode Post Training Static Quantization</h4>
-</div>
-
-<p class="card-summary">Learn how to do post training static quantization in graph mode based on torch.fx.</p>
-
-<p class="tags">FX,Quantization</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Text,Quantization>
-
-<div class="card tutorials-card" link=../prototype/graph_mode_dynamic_bert_tutorial.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Graph Mode Dynamic Quantization on BERT</h4>
-</div>
-
-<p class="card-summary">Learn how to do post training dynamic quantization with graph mode quantization on BERT models.</p>
-
-<p class="tags">Text,Quantization</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/graph-mode-dynamic-bert.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Debugging,Quantization>
-
-<div class="card tutorials-card" link=../prototype/numeric_suite_tutorial.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>PyTorch Numeric Suite Tutorial</h4>
-</div>
-
-<p class="card-summary">Learn how to use the PyTorch Numeric Suite to support quantization debugging efforts.</p>
-
-<p class="tags">Debugging,Quantization</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Mobile>
-
-<div class="card tutorials-card" link=../prototype/ios_gpu_workflow.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Use iOS GPU in PyTorch</h4>
-</div>
-
-<p class="card-summary">Learn how to run your models on iOS GPU.</p>
-
-<p class="tags">Mobile</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/ios.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Mobile>
-
-<div class="card tutorials-card" link=../prototype/nnapi_mobilenetv2.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Convert MobileNetV2 to NNAPI</h4>
-</div>
-
-<p class="card-summary">Learn how to prepare a computer vision model to use Android’s Neural Networks API (NNAPI).</p>
-
-<p class="tags">Mobile</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/android.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Mobile>
-
-<div class="card tutorials-card" link=../prototype/vulkan_workflow.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>PyTorch Vulkan Backend User Workflow</h4>
-</div>
-
-<p class="card-summary">Learn how to use the Vulkan backend on mobile GPUs.</p>
-
-<p class="tags">Mobile</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/android.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=Mobile>
-
-<div class="card tutorials-card" link=../prototype/lite_interpreter.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Lite Interpreter Workflow in Android and iOS</h4>
-</div>
-
-<p class="card-summary">Learn how to use the lite interpreter on iOS and Andriod devices.</p>
-
-<p class="tags">Mobile</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/mobile.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=TorchScript>
-
-<div class="card tutorials-card" link=../prototype/torchscript_freezing.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Model Freezing in TorchScript</h4>
-</div>
-
-<p class="card-summary">Freezing is the process of inlining Pytorch module parameters and attributes values into the TorchScript internal representation.</p>
-
-<p class="tags">TorchScript</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-<p><div class="col-md-12 tutorials-card-container" data-tags=vmap>
-
-<div class="card tutorials-card" link=../prototype/vmap_recipe.html>
-
-<div class="card-body">
-
-<div class="card-title-container">
-    <h4>Using torch.vmap</h4>
-</div>
-
-<p class="card-summary">Learn about torch.vmap, an autovectorizer for PyTorch operations.</p>
-
-<p class="tags">vmap</p>
-
-<div class="tutorials-image"><img src='../_static/img/thumbnails/cropped/generic-pytorch-logo.png'></div>
-
-</div>
-
-</div>
-
-</div></p>
-</div>
-
-<div class="pagination d-flex justify-content-center"></div>
-
-</div>
-
-</div><div class="toctree-wrapper compound">
 </div>
 </div>
 
@@ -679,10 +559,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../beginner/basics/intro.html" class="btn btn-neutral float-right" title="Learn the Basics" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
+        <a href="../prototype/prototype_index.html" class="btn btn-neutral float-right" title="PyTorch Prototype Recipes" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
-        <a href="../recipes/cuda_rpc.html" class="btn btn-neutral" title="Direct Device-to-Device Communication with TensorPipe CUDA RPC" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+        <a href="zero_redundancy_optimizer.html" class="btn btn-neutral" title="Shard Optimizer States with ZeroRedundancyOptimizer" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
       
     </div>
   
@@ -725,7 +605,12 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">PyTorch Prototype Recipes</a></li>
+<li><a class="reference internal" href="#">Direct Device-to-Device Communication with TensorPipe CUDA RPC</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#what-is-cuda-rpc">What is CUDA RPC?</a></li>
+<li><a class="reference internal" href="#how-to-use-cuda-rpc">How to use CUDA RPC?</a></li>
+</ul>
+</li>
 </ul>
 
             </div>
