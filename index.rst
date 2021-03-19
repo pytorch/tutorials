@@ -424,7 +424,7 @@ Welcome to PyTorch Tutorials
    :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
    :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
    :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
-   :link: advanced/ddp_pipeline_tutorial.html
+   :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
 .. Mobile
@@ -637,7 +637,7 @@ Additional Resources
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
    intermediate/pipeline_tutorial
-   advanced/ddp_pipeline_tutorial
+   advanced/ddp_pipeline
 
 .. toctree::
    :maxdepth: 2
