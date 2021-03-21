@@ -348,25 +348,3 @@ where the ``shutdown`` by default will block until all RPC participants finish.
             print(f"number of splits = {num_split}, execution time = {tok - tik}")
 
 
-The output below shows the speedup attained by increasing the number of splits
-in each batch.
-
-::
-
-    $ python main.py
-    Processing batch 0
-    Processing batch 1
-    Processing batch 2
-    number of splits = 1, execution time = 16.45062756538391
-    Processing batch 0
-    Processing batch 1
-    Processing batch 2
-    number of splits = 2, execution time = 12.329529762268066
-    Processing batch 0
-    Processing batch 1
-    Processing batch 2
-    number of splits = 4, execution time = 10.164430618286133
-    Processing batch 0
-    Processing batch 1
-    Processing batch 2
-    number of splits = 8, execution time = 9.076049566268921
