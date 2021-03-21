@@ -364,8 +364,8 @@ and <a class="reference external" href="https://pytorch.org/docs/stable/optim.ht
 </div>
 <div class="section" id="distributed-training">
 <h3>Distributed Training<a class="headerlink" href="#distributed-training" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>          <span class="c1"># distributed communication</span>
-<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>       <span class="c1"># memory sharing processes</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>             <span class="c1"># distributed communication</span>
+<span class="kn">from</span> <span class="nn">torch.multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>    <span class="c1"># memory sharing processes</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">distributed</a>
@@ -377,36 +377,38 @@ and
 <h2>Tensors<a class="headerlink" href="#tensors" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="creation">
 <h3>Creation<a class="headerlink" href="#creation" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>              <span class="c1"># tensor with independent N(0,1) entries</span>
-<span class="n">torch</span><span class="o">.</span><span class="p">[</span><span class="n">ones</span><span class="o">|</span><span class="n">zeros</span><span class="p">](</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>       <span class="c1"># tensor with all 1's [or 0's]</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>                 <span class="c1"># create tensor from [nested] list or ndarray L</span>
-<span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>                       <span class="c1"># clone of x</span>
-<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>           <span class="c1"># code wrap that stops autograd from tracking tensor history</span>
-<span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span>              <span class="c1"># arg, when set to True, tracks computation</span>
-                                <span class="c1"># history for future derivative calculations</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>              <span class="c1"># tensor with independent N(0,1) entries</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="p">[</span><span class="n">ones</span><span class="o">|</span><span class="n">zeros</span><span class="p">](</span><span class="o">*</span><span class="n">size</span><span class="p">)</span>       <span class="c1"># tensor with all 1's [or 0's]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>                 <span class="c1"># create tensor from [nested] list or ndarray L</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>                       <span class="c1"># clone of x</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>               <span class="c1"># code wrap that stops autograd from tracking tensor history</span>
+<span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span>                  <span class="c1"># arg, when set to True, tracks computation</span>
+                                    <span class="c1"># history for future derivative calculations</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html">tensor</a></p>
 </div>
 <div class="section" id="dimensionality">
 <h3>Dimensionality<a class="headerlink" href="#dimensionality" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>                              <span class="c1"># return tuple-like object of dimensions</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensor_seq</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>          <span class="c1"># concatenates tensors along dim</span>
-<span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>                       <span class="c1"># reshapes x into size (a,b,...)</span>
-<span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>                          <span class="c1"># reshapes x into size (b,a) for some b</span>
-<span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>                      <span class="c1"># swaps dimensions a and b</span>
-<span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="o">*</span><span class="n">dims</span><span class="p">)</span>                      <span class="c1"># permutes dimensions</span>
-<span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>                      <span class="c1"># tensor with added axis</span>
-<span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                    <span class="c1"># (a,b,c) tensor -&gt; (a,b,1,c) tensor</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>                                  <span class="c1"># return tuple-like object of dimensions</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensor_seq</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>          <span class="c1"># concatenates tensors along dim</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>                       <span class="c1"># reshapes x into size (a,b,...)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">a</span><span class="p">)</span>                          <span class="c1"># reshapes x into size (b,a) for some b</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span>                      <span class="c1"># swaps dimensions a and b</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="o">*</span><span class="n">dims</span><span class="p">)</span>                      <span class="c1"># permutes dimensions</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>                      <span class="c1"># tensor with added axis</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>                    <span class="c1"># (a,b,c) tensor -&gt; (a,b,1,c) tensor</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>                           <span class="c1"># removes all dimensions of size 1 (a,1,b,1) -&gt; (a,b)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>                      <span class="c1"># removes specified dimension of size 1 (a,1,b,1) -&gt; (a,b,1)</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html">tensor</a></p>
 </div>
 <div class="section" id="algebra">
 <h3>Algebra<a class="headerlink" href="#algebra" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>       <span class="c1"># matrix multiplication</span>
-<span class="n">A</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>       <span class="c1"># matrix-vector multiplication</span>
-<span class="n">x</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>         <span class="c1"># matrix transpose</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ret</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>       <span class="c1"># matrix multiplication</span>
+<span class="n">ret</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">mv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>       <span class="c1"># matrix-vector multiplication</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>           <span class="c1"># matrix transpose</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/torch.html?highlight=mm#math-operations">math
@@ -414,24 +416,24 @@ operations</a></p>
 </div>
 <div class="section" id="gpu-usage">
 <h3>GPU Usage<a class="headerlink" href="#gpu-usage" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span>                                 <span class="c1"># check for cuda</span>
-<span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>                                                <span class="c1"># move x's data from</span>
-                                                        <span class="c1"># CPU to GPU and return new object</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span>                                     <span class="c1"># check for cuda</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>                                                <span class="c1"># move x's data from</span>
+                                                            <span class="c1"># CPU to GPU and return new object</span>
 
-<span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>                                                 <span class="c1"># move x's data from GPU to CPU</span>
-                                                        <span class="c1"># and return new object</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>                                                 <span class="c1"># move x's data from GPU to CPU</span>
+                                                            <span class="c1"># and return new object</span>
 
-<span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">disable_cuda</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span> <span class="c1"># device agnostic code</span>
-    <span class="n">args</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span><span class="p">)</span>                  <span class="c1"># and modularity</span>
-<span class="k">else</span><span class="p">:</span>                                                   <span class="c1">#</span>
-    <span class="n">args</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>                   <span class="c1">#</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">disable_cuda</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>     <span class="c1"># device agnostic code</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span><span class="p">)</span>                      <span class="c1"># and modularity</span>
+<span class="k">else</span><span class="p">:</span>                                                       <span class="c1">#</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cpu'</span><span class="p">)</span>                       <span class="c1">#</span>
 
-<span class="n">net</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>                                          <span class="c1"># recursively convert their</span>
-                                                        <span class="c1"># parameters and buffers to</span>
-                                                        <span class="c1"># device specific tensors</span>
+<span class="n">net</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>                                              <span class="c1"># recursively convert their</span>
+                                                            <span class="c1"># parameters and buffers to</span>
+                                                            <span class="c1"># device specific tensors</span>
 
-<span class="n">mytensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>                                     <span class="c1"># copy your tensors to a device</span>
-                                                        <span class="c1"># (gpu, cpu)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>                                            <span class="c1"># copy your tensors to a device</span>
+                                                            <span class="c1"># (gpu, cpu)</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/cuda.html">cuda</a></p>
@@ -449,7 +451,7 @@ operations</a></p>
 <span class="n">nn</span><span class="o">.</span><span class="n">MaxPoolXd</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>                               <span class="c1"># X dimension pooling layer</span>
                                               <span class="c1"># (notation as above)</span>
 
-<span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm</span>                                  <span class="c1"># batch norm layer</span>
+<span class="n">nn</span><span class="o">.</span><span class="n">BatchNormXd</span>                                <span class="c1"># batch norm layer</span>
 <span class="n">nn</span><span class="o">.</span><span class="n">RNN</span><span class="o">/</span><span class="n">LSTM</span><span class="o">/</span><span class="n">GRU</span>                               <span class="c1"># recurrent layers</span>
 <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>              <span class="c1"># dropout layer for any dimensional input</span>
 <span class="n">nn</span><span class="o">.</span><span class="n">Dropout2d</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>            <span class="c1"># 2-dimensional channel-wise dropout</span>
@@ -460,11 +462,14 @@ operations</a></p>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/nn.html">nn</a></p>
 <div class="section" id="loss-functions">
 <h3>Loss Functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">.</span><span class="n">X</span>                                  <span class="c1"># where X is BCELoss, CrossEntropyLoss,</span>
-                                      <span class="c1"># L1Loss, MSELoss, NLLLoss, SoftMarginLoss,</span>
-                                      <span class="c1"># MultiLabelSoftMarginLoss, CosineEmbeddingLoss,</span>
-                                      <span class="c1"># KLDivLoss, MarginRankingLoss, HingeEmbeddingLoss</span>
-                                      <span class="c1"># or CosineEmbeddingLoss</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">.</span><span class="n">X</span>                                  <span class="c1"># where X is L1Loss, MSELoss, CrossEntropyLoss</span>
+                                      <span class="c1"># CTCLoss, NLLLoss, PoissonNLLLoss,</span>
+                                      <span class="c1"># KLDivLoss, BCELoss, BCEWithLogitsLoss,</span>
+                                      <span class="c1"># MarginRankingLoss, HingeEmbeddingLoss,</span>
+                                      <span class="c1"># MultiLabelMarginLoss, SmoothL1Loss,</span>
+                                      <span class="c1"># SoftMarginLoss, MultiLabelSoftMarginLoss,</span>
+                                      <span class="c1"># CosineEmbeddingLoss, MultiMarginLoss,</span>
+                                      <span class="c1"># or TripletMarginLoss</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#loss-functions">loss
@@ -473,10 +478,10 @@ functions</a></p>
 <div class="section" id="activation-functions">
 <h3>Activation Functions<a class="headerlink" href="#activation-functions" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">.</span><span class="n">X</span>                                  <span class="c1"># where X is ReLU, ReLU6, ELU, SELU, PReLU, LeakyReLU,</span>
-                                      <span class="c1"># Threshold, HardTanh, Sigmoid, Tanh,</span>
-                                      <span class="c1"># LogSigmoid, Softplus, SoftShrink,</span>
-                                      <span class="c1"># Softsign, TanhShrink, Softmin, Softmax,</span>
-                                      <span class="c1"># Softmax2d or LogSoftmax</span>
+                                      <span class="c1"># RReLu, CELU, GELU, Threshold, Hardshrink, HardTanh,</span>
+                                      <span class="c1"># Sigmoid, LogSigmoid, Softplus, SoftShrink,</span>
+                                      <span class="c1"># Softsign, Tanh, TanhShrink, Softmin, Softmax,</span>
+                                      <span class="c1"># Softmax2d, LogSoftmax or AdaptiveSoftmaxWithLoss</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#non-linear-activations-weighted-sum-nonlinearity">activation
@@ -487,8 +492,8 @@ functions</a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="o">...</span><span class="p">)</span>      <span class="c1"># create optimizer</span>
 <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>                                  <span class="c1"># update weights</span>
 <span class="n">optim</span><span class="o">.</span><span class="n">X</span>                                     <span class="c1"># where X is SGD, Adadelta, Adagrad, Adam,</span>
-                                            <span class="c1"># SparseAdam, Adamax, ASGD,</span>
-                                            <span class="c1"># LBFGS, RMSProp or Rprop</span>
+                                            <span class="c1"># AdamW, SparseAdam, Adamax, ASGD,</span>
+                                            <span class="c1"># LBFGS, RMSprop or Rprop</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/optim.html">optimizers</a></p>
@@ -497,8 +502,10 @@ functions</a></p>
 <h3>Learning rate scheduling<a class="headerlink" href="#learning-rate-scheduling" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">X</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>      <span class="c1"># create lr scheduler</span>
 <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>                        <span class="c1"># update lr at start of epoch</span>
-<span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">X</span>                    <span class="c1"># where X is LambdaLR, StepLR, MultiStepLR,</span>
-              <span class="c1"># ExponentialLR or ReduceLROnPLateau</span>
+<span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">X</span>                    <span class="c1"># where X is LambdaLR, MultiplicativeLR,</span>
+                                        <span class="c1"># StepLR, MultiStepLR, ExponentialLR,</span>
+                                        <span class="c1"># CosineAnnealingLR, ReduceLROnPlateau, CyclicLR,</span>
+                                        <span class="c1"># OneCycleLR, CosineAnnealingWarmRestarts,</span>
 </pre></div>
 </div>
 <p>See <a class="reference external" href="https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate">learning rate
@@ -525,8 +532,8 @@ scheduler</a></p>
 <span class="n">sampler</span><span class="o">.</span><span class="n">Sampler</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>                <span class="c1"># abstract class dealing with</span>
                                             <span class="c1"># ways to sample from dataset</span>
 
-<span class="n">sampler</span><span class="o">.</span><span class="n">XSampler</span> <span class="n">where</span> <span class="o">...</span>                  <span class="c1"># Sequential, Random, Subset,</span>
-                                            <span class="c1"># WeightedRandom or Distributed</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">XSampler</span> <span class="n">where</span> <span class="o">...</span>                  <span class="c1"># Sequential, Random, SubsetRandom,</span>
+                                            <span class="c1"># WeightedRandom, Batch, Distributed</span>
 </pre></div>
 </div>
 <p>See
