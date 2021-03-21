@@ -93,6 +93,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
    :tags: Image/Video
+   
+.. customcarditem::
+   :header: Optimizing Vision Transformer Model
+   :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: beginner/vt_tutorial.html
+   :tags: Image/Video
 
 .. customcarditem::
    :header: Adversarial Example Generation
@@ -337,7 +344,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
 
@@ -407,10 +414,17 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: Training Transformer models using Pipeline Parallelism
+   :card_description: Walk through a through a simple example of how to train a transformer model using pipeline parallelism.
+   :image: _static/img/thumbnails/cropped/Training-Transformer-models-using-Pipeline-Parallelism.png
+   :link: intermediate/pipeline_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Training Transformer models using Distributed Data Parallel and Pipeline Parallelism
    :card_description: Walk through a through a simple example of how to train a transformer model using Distributed Data Parallel and Pipeline Parallelism
    :image: _static/img/thumbnails/cropped/Training-Transformer-Models-using-Distributed-Data-Parallel-and-Pipeline-Parallelism.png
-   :link: advanced/ddp_pipeline_tutorial.html
+   :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
 .. Mobile
@@ -608,6 +622,7 @@ PyTorch Fundamentals In-Depth
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+   beginner/vt_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -714,7 +729,8 @@ PyTorch Fundamentals In-Depth
    intermediate/dist_pipeline_parallel_tutorial
    intermediate/rpc_async_execution
    advanced/rpc_ddp_tutorial
-   advanced/ddp_pipeline_tutorial
+   intermediate/pipeline_tutorial
+   advanced/ddp_pipeline
 
 .. toctree::
    :maxdepth: 2
