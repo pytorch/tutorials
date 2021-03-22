@@ -105,7 +105,7 @@ yesno_data_trainset = torchaudio.datasets.YESNO('./', download=True)
 
 # Pick data point number 3 to see an example of the the yesno_data:
 n = 3
-waveform, sample_rate, labels = yesno_data[n]
+waveform, sample_rate, labels = yesno_data_trainset[n]
 print("Waveform: {}\nSample rate: {}\nLabels: {}".format(waveform, sample_rate, labels))
 
 
@@ -122,7 +122,7 @@ print("Waveform: {}\nSample rate: {}\nLabels: {}".format(waveform, sample_rate, 
 # and a sampler, returning an iterable over the dataset.
 # 
 
-data_loader = torch.utils.data.DataLoader(yesno_data,
+data_loader = torch.utils.data.DataLoader(yesno_data_trainset,
                                           batch_size=1,
                                           shuffle=True)
 
