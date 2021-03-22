@@ -8,7 +8,7 @@ not overwritten) whenever ``.backward()`` is called.
 Introduction
 ------------
 When training your neural network, models are able to increase their
-accuracy through gradient decent. In short, gradient descent is the
+accuracy through gradient descent. In short, gradient descent is the
 process of minimizing our loss (or error) by tweaking the weights and
 biases in our model.
 
