@@ -179,6 +179,14 @@ Welcome to PyTorch Tutorials
    :link: beginner/torchtext_translation.html
    :tags: Text
 
+.. customcarditem::
+   :header: Language Translation with Transformer
+   :card_description: Train a language translation model from scratch using Transformer.
+   :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
+   :link: beginner/translation_transformer.html
+   :tags: Text
+
+
 .. Reinforcement Learning
 
 .. customcarditem::
@@ -558,6 +566,7 @@ Additional Resources
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/torchtext_translation
+   beginner/translation_transformer
 
 
 .. toctree::
