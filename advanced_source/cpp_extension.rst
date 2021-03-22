@@ -313,7 +313,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<https://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/stable/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
