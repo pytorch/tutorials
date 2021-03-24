@@ -173,13 +173,6 @@ Welcome to PyTorch Tutorials
    :tags: Text
 
 .. customcarditem::
-   :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
-   :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation.html
-   :tags: Text
-
-.. customcarditem::
    :header: Language Translation with Transformer
    :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
@@ -565,7 +558,6 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation
    beginner/translation_transformer
 
 

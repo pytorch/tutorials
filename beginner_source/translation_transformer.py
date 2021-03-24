@@ -8,8 +8,9 @@ Transformer. We will be using `Multi30k
 dataset <https://github.com/multi30k/dataset>`__ to train a German to
 English translation model.
 
-The data processing and data loading code is taken from `torchtext
-tutorial <https://pytorch.org/tutorials/beginner/torchtext_translation.html>`__.
+The data processing and data loading code is taken from an `earlier version
+<https://github.com/pytorch/tutorials/blob/25ece55aac2b3423f8ed06439d0c320bbf40f019/beginner_source/torchtext_translation.py>`__ 
+of tutorial
 
 """
 
@@ -47,6 +48,7 @@ from torchtext.vocab import Vocab
 from torchtext.utils import download_from_url, extract_archive
 from torch import Tensor
 import io
+import time
 
 torch.manual_seed(0)
 torch.use_deterministic_algorithms(True)
@@ -332,9 +334,12 @@ def evaluate(model, val_iter):
 #
 
 for epoch in range(NUM_EPOCHS):
+  start_time = time.time()
   train_loss = train_epoch(transformer, train_iter, optimizer)
+  end_time = time.time()
   val_loss = evaluate(transformer, valid_iter)
-  print(f"Epoch: {epoch}, Train loss: {train_loss}, Val loss: {val_loss}")
+  print((f"Epoch: {epoch+1}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "
+          f"Epoch time = {(end_time - start_time):.3f}s"))
 
 ######################################################################
 #
@@ -393,6 +398,4 @@ translate(transformer, "Eine Gruppe von Menschen steht vor einem Iglu .", de_voc
 #    https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf
 # 2. The annotated transformer.
 #    https://nlp.seas.harvard.edu/2018/04/03/attention.html#positional-encoding
-# 3. Pytorch torchtext translation tutorial.
-#    https://pytorch.org/tutorials/beginner/torchtext_translation.html
-# 
+# 3. Pytorch torchtext translation tutorial. https://pytorch.org/tutorials/beginner/torchtext_translation.html 
