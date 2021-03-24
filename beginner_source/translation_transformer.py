@@ -411,6 +411,4 @@ translate(transformer, "Eine Gruppe von Menschen steht vor einem Iglu .", de_voc
 # 
 # 1. Attention is all you need paper.
 #    https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf
-# 2. The annotated transformer.
-#    https://nlp.seas.harvard.edu/2018/04/03/attention.html#positional-encoding
-# 3. Pytorch torchtext translation tutorial. https://pytorch.org/tutorials/beginner/torchtext_translation.html 
+# 2. The annotated transformer. https://nlp.seas.harvard.edu/2018/04/03/attention.html#positional-encoding 
