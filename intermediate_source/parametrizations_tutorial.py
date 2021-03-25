@@ -72,7 +72,7 @@ class LinearSymmetric(nn.Module):
         return x @ A
 
 ###############################################################################
-# The layer can be then used as a regular linear layer.
+# The layer can be then used as a regular linear layer
 layer = LinearSymmetric(3)
 out = layer(torch.rand(8, 3))
 
@@ -84,7 +84,7 @@ out = layer(torch.rand(8, 3))
 #    Transformer...
 # 2) It does not separate the layer and the parametrization.  If the parametrization were
 #    more difficult, we would have to rewrite its code for each layer that we want to use it
-#    in
+#    in.
 # 3) It recomputes the parametrization everytime forward is called. If we used the layer
 #    several times during the forward pass, (imagine the recurrent kernel of an RNN) we would
 #    be recomputing the same ``A`` every time the layer is called.
@@ -115,7 +115,7 @@ assert torch.allclose(A, A.T)
 ###############################################################################
 # We can do the same thing with any other layer. For example, we can create a CNN with
 # skew-symmetric kernels (:math:`X = -X^{\intercal}`). We use a similar parametrization,
-# copying minus the upper triangular part into the lower-triangular part.
+# copying minus the upper triangular part into the lower-triangular part
 class Skew(nn.Module):
     def forward(self, X):
         A = X.triu(1)
@@ -197,7 +197,7 @@ with P.cached():
 # `Cayley map <https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map>`_
 # maps the skew-symmetric matrices to the orthogonal matrices of positive determinant. We can
 # concatenate ``Skew`` and a parametrization that implements the Cayley map to get a layer with
-# orthogonal weight.
+# orthogonal weight
 class CayleyMap(nn.Module):
     def __init__(self, n):
         self.register_buffer("Id", torch.eye(n))
@@ -216,7 +216,7 @@ assert torch.allclose(X.T @ X, torch.eye(3))  # X is orthogonal
 # This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
 # we may use the fact that the exponential of matrices maps the symmetric matrices to the
 # Symmetric Positive Definite (SPD) matrices, and the skew-symmetric matrices to the orthogonal
-# matrices. Using these two facts, we may reuse the parametrizations.
+# matrices. Using these two facts, we may reuse the parametrizations
 class MatrixExponential(nn.Module):
     def forward(X):
         return torch.matrix_exp(X)
@@ -306,7 +306,7 @@ layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
 # the forward afer the initalization with value ``X`` should return the value ``X``.
 # This constraint is not enforced in the code. In fact, at times, it might be of
 # interest to relax this relation. For example, consider the following implementation
-# of a randomized pruning method.
+# of a randomized pruning method:
 class PruningParametrization(nn.Module):
     def __init__(self, X, p_drop=0.2):
         # sample zeros with probability p_drop
@@ -323,4 +323,31 @@ class PruningParametrization(nn.Module):
 # In this case, it is not true that ``forward(right_inverse(X)) == X``. This is
 # only true when the matrix ``A`` passed to ``right_inverse`` has zeros in the
 # same positions as the mask. Even then, if we assign a tensor to a pruned parameter,
-# it will comes as no surprise that tensor will be, in fact, pruned.
+# it will comes as no surprise that tensor will be, in fact, pruned.:
+#
+# Removing a Parametrization
+# --------------------------
+# We may remove a parametrization from a module by using ``P.remove_parametrization()``
+layer = nn.Linear(3, 3)
+print(layer)
+print(layer.weight)
+P.register_parametrization(layer, "weight", Skew())
+print(layer)
+print(layer.weight)
+P.remove_parametrization(layer, "weight")
+print(layer)
+print(layer.weight)
+
+###############################################################################
+# While doing so, we may choose to leave the original parameter (i.e. that in
+# ``layer.parametriations.weight.original``) rather than its parametrized version
+# by setting the flag ``leave_parametrized=False``
+layer = nn.Linear(3, 3)
+print(layer)
+print(layer.weight)
+P.register_parametrization(layer, "weight", Skew())
+print(layer)
+print(layer.weight)
+P.remove_parametrization(layer, "weight", leave_parametrized=False)
+print(layer)
+print(layer.weight)
