@@ -50,7 +50,7 @@ to copy the upper triangular part of the matrix into its lower triangular part
 
 import torch
 import torch.nn as nn
-import torch.nn.utils.parametrizations as P
+import torch.nn.utils.parametrize as P
 
 def symmetric(X):
     return X.triu() + X.triu(1).transpose(-1, -2)
@@ -94,7 +94,7 @@ out = layer(torch.rand(8, 3))
 # Introduction to Parametrizations
 # --------------------------------
 #
-# Let's start by reimplementing the code above using ``torch.nn.utils.parametrizations``.
+# Let's start by reimplementing the code above using ``torch.nn.utils.parametrize``.
 # The only thing that we have to do is to write the parametrization as a regular ``nn.Module``
 class Symmetric(nn.Module):
     def forward(self, X):
