@@ -182,12 +182,12 @@ class NoisyParametrization(nn.Module):
 layer = nn.Linear(2, 3)
 P.register_parametrization(layer, "weight", NoisyParametrization())
 print("Here, layer.weight is recomputed every time we call it")
-Y = layer.weight + layer.weight.T
-l = layer.weight.sum()
+foo = layer.weight + layer.weight.T
+bar = layer.weight.sum()
 with P.cached():
     print("Here, it is computed just the first time layer.weight is called")
-    Y = layer.weight + layer.weight.T
-    l = layer.weight.sum()
+    foo = layer.weight + layer.weight.T
+    bar = layer.weight.sum()
 
 ###############################################################################
 # Composing Parametrizations
