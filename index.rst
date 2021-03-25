@@ -2,7 +2,7 @@ Welcome to PyTorch Tutorials
 ============================
 .. raw:: html
 
-    <p class="text-center">Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849>PyTorch Tutorials reader survey</a>. </p>
+    <p>Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849>PyTorch Tutorials reader survey</a>. </p>
 
 
 .. raw:: html
