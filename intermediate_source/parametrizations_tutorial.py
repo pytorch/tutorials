@@ -38,7 +38,7 @@ put constraints on your model. Doing so is as easy as writing your own ``nn.Modu
 
 Requirements
 ------------
-``"torch>=1.9.0a0+git7aeee28"``
+``"torch>=1.9.0a0+7aeee28"``
 
 Implementing Parametrizations by Hand
 -------------------------------------
