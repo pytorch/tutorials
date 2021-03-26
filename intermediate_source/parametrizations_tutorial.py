@@ -30,10 +30,10 @@ in an appropriate way before using it. In the first case, they make it orthogona
 using a function that maps matrices to orthogonal matrices. In the case of weight
 and spectral normalization, they divide the original parameter by its norm.
 
-More genreally, all these examples use a function to put extra structure on the parameters.
+More generally, all these examples use a function to put extra structure on the parameters.
 In other words, they use a function to constrain the parameters.
 
-In this tutorial, you will learn how to implement and use this patern to write and
+In this tutorial, you will learn how to implement and use this pattern to write and
 put constraints on your model. Doing so is as easy as writing your own ``nn.Module``.
 
 Requirements
@@ -173,7 +173,7 @@ assert torch.allclose(layer.weight, symmetric(layer.parametrizations.weight.orig
 #
 # Caching the value of a parametrization
 # --------------------------------------
-# Parametrizations come with an in-built caching system via the context manager ``P.cached()``
+# Parametrizations come with an inbuilt caching system via the context manager ``P.cached()``
 class NoisyParametrization(nn.Module):
     def forward(self, X):
         print("Computing the Parametrization")
@@ -302,7 +302,7 @@ layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
 
 ###############################################################################
 # The name of this method comes from the fact that we would often expect
-# that ``forward(right_inverse(X)) == X``. This is a direct way of rewritting that
+# that ``forward(right_inverse(X)) == X``. This is a direct way of rewriting that
 # the forward afer the initalization with value ``X`` should return the value ``X``.
 # This constraint is not enforced in the code. In fact, at times, it might be of
 # interest to relax this relation. For example, consider the following implementation
