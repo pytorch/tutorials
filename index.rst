@@ -65,6 +65,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Introduction to PyTorch YouTube Series
+   :card_description: Use these notebooks to follow along with the youtube series.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: beginner/introyt/introyt.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: What is torch.nn really?
    :card_description: Use torch.nn to create and train a neural network.
    :image: _static/img/thumbnails/cropped/torch-nn.png
@@ -516,6 +523,7 @@ Additional Resources
 
    beginner/basics/intro
    beginner/deep_learning_60min_blitz
+   beginner/introyt/introyt
    beginner/pytorch_with_examples
    beginner/nn_tutorial
    intermediate/tensorboard_tutorial
