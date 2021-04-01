@@ -241,6 +241,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/zero_redundancy_optimizer.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Direct Device-to-Device Communication with TensorPipe RPC
+   :card_description: How to use RPC with direct GPU-to-GPU communication.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/cuda_rpc.html
+   :tags: Distributed-Training
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -278,3 +285,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
+   /recipes/cuda_rpc
