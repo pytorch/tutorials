@@ -54,7 +54,7 @@ should return:
 
 If your model returns the above methods, they will make it work for both
 training and evaluation, and will use the evaluation scripts from
-``pycocotools``.
+``pycocotools`` which can be installed with ``pip install pycocotools``.
 
 .. note ::
   For Windows, please install ``pycocotools`` from `gautamchitnis <https://github.com/gautamchitnis/cocoapi>`__ with command 
@@ -122,7 +122,7 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
            self.masks = list(sorted(os.listdir(os.path.join(root, "PedMasks"))))
 
        def __getitem__(self, idx):
-           # load images ad masks
+           # load images and masks
            img_path = os.path.join(self.root, "PNGImages", self.imgs[idx])
            mask_path = os.path.join(self.root, "PedMasks", self.masks[idx])
            img = Image.open(img_path).convert("RGB")
@@ -317,8 +317,8 @@ Putting everything together
 In ``references/detection/``, we have a number of helper functions to
 simplify training and evaluating detection models. Here, we will use
 ``references/detection/engine.py``, ``references/detection/utils.py``
-and ``references/detection/transforms.py``. Just copy them to your
-folder and use them here.
+and ``references/detection/transforms.py``. Just copy everything under 
+``references/detection`` to your folder and use them here.
 
 Let’s write some helper functions for data augmentation /
 transformation:

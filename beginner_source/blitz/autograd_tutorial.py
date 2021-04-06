@@ -297,7 +297,7 @@ model.fc = nn.Linear(512, 10)
 # The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
 # Optimize only the classifier
-optimizer = optim.SGD(model.fc.parameters(), lr=1e-2, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 
 ##########################################################################
 # Notice although we register all the parameters in the optimizer,
