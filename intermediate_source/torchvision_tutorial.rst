@@ -317,8 +317,8 @@ Putting everything together
 In ``references/detection/``, we have a number of helper functions to
 simplify training and evaluating detection models. Here, we will use
 ``references/detection/engine.py``, ``references/detection/utils.py``
-and ``references/detection/transforms.py``. Just copy them to your
-folder and use them here.
+and ``references/detection/transforms.py``. Just copy everything under 
+``references/detection`` to your folder and use them here.
 
 Let’s write some helper functions for data augmentation /
 transformation:
