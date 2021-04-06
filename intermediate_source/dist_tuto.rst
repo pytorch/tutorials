@@ -2,6 +2,10 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+
 In this short tutorial, we will be going over the distributed package
 of PyTorch. We'll see how to set up the distributed setting, use the
 different communication strategies, and go over some the internals of
@@ -394,29 +398,28 @@ using point-to-point collectives.
 
     """ Implementation of a ring-reduce with addition. """
     def allreduce(send, recv):
-        rank = dist.get_rank()
-        size = dist.get_world_size()
-        send_buff = th.zeros(send.size())
-        recv_buff = th.zeros(send.size())
-        accum = th.zeros(send.size())
-        accum[:] = send[:]
+       rank = dist.get_rank()
+       size = dist.get_world_size()
+       send_buff = send.clone()
+       recv_buff = send.clone()
+       accum = send.clone()
 
-        left = ((rank - 1) + size) % size
-        right = (rank + 1) % size
+       left = ((rank - 1) + size) % size
+       right = (rank + 1) % size
 
-        for i in range(size - 1):
-            if i % 2 == 0:
-                # Send send_buff
-                send_req = dist.isend(send_buff, right)
-                dist.recv(recv_buff, left)
-                accum[:] += recv[:]
-            else:
-                # Send recv_buff
-                send_req = dist.isend(recv_buff, right)
-                dist.recv(send_buff, left)
-                accum[:] += send[:]
-            send_req.wait()
-        recv[:] = accum[:]
+       for i in range(size - 1):
+           if i % 2 == 0:
+               # Send send_buff
+               send_req = dist.isend(send_buff, right)
+               dist.recv(recv_buff, left)
+               accum[:] += recv_buff[:]
+           else:
+               # Send recv_buff
+               send_req = dist.isend(recv_buff, right)
+               dist.recv(send_buff, left)
+               accum[:] += send_buff[:]
+           send_req.wait()
+       recv[:] = accum[:]
 
 In the above script, the ``allreduce(send, recv)`` function has a
 slightly different signature than the ones in PyTorch. It takes a
@@ -569,7 +572,7 @@ finally handshake with them.
 The shared filesystem requires all processes to have access to a shared
 file system, and will coordinate them through a shared file. This means
 that each process will open the file, write its information, and wait
-until everybody did so. After what all required information will be
+until everybody did so. After that all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
 `fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__.
