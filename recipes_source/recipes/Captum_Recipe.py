@@ -136,7 +136,7 @@ from captum.attr import visualization as viz
 attribution_dog = np.transpose(attribution_dog.squeeze().cpu().detach().numpy(), (1,2,0))
 
 vis_types = ["heat_map", "original_image"]
-vis_signs = ["all", "all"], # "positive", "negative", or "all" to show both
+vis_signs = ["all", "all"] # "positive", "negative", or "all" to show both
 # positive attribution indicates that the presence of the area increases the prediction score
 # negative attribution indicates distractor areas whose absence increases the score
 
