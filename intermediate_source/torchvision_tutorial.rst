@@ -54,7 +54,7 @@ should return:
 
 If your model returns the above methods, they will make it work for both
 training and evaluation, and will use the evaluation scripts from
-``pycocotools``.
+``pycocotools`` which can be installed with ``pip install pycocotools``.
 
 .. note ::
   For Windows, please install ``pycocotools`` from `gautamchitnis <https://github.com/gautamchitnis/cocoapi>`__ with command 
