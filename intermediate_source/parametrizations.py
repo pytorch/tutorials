@@ -364,7 +364,7 @@ print("Parametrized:")
 print(layer)
 print(layer.weight)
 parametrize.remove_parametrizations(layer, "weight")
-print("After. Left with the skew-symmetric values but unconstrained:")
+print("After. Weight has skew-symmetric values but it is unconstrained:")
 print(layer)
 print(layer.weight)
 
