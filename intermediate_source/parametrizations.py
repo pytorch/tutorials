@@ -344,8 +344,10 @@ class PruningParametrization(nn.Module):
 layer = nn.Linear(3, 4)
 parametrize.register_parametrization(layer, "weight", PruningParametrization(layer.weight))
 X = torch.rand(4, 3)
+print("Initialization matrix:")
 print(X)
 layer.weight = X
+print("Layer after initialized:")
 print(layer.weight)
 
 # Removing a Parametrization
