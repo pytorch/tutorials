@@ -347,7 +347,7 @@ X = torch.rand(4, 3)
 print("Initialization matrix:")
 print(X)
 layer.weight = X
-print("Layer after initialized:")
+print("Initialized weight:")
 print(layer.weight)
 
 # Removing a Parametrization
