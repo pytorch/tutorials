@@ -368,9 +368,9 @@ print(traced.code)
 # process. Let’s save and load our wrapped RNN module:
 #
 
-traced.save('wrapped_rnn.zip')
+traced.save('wrapped_rnn.pt')
 
-loaded = torch.jit.load('wrapped_rnn.zip')
+loaded = torch.jit.load('wrapped_rnn.pt')
 
 print(loaded)
 print(loaded.code)
