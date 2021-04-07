@@ -326,9 +326,9 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Parametrizations Tutorial
-   :card_description: Learn how to use torch.nn.utils.parametrizations to put constriants in your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :card_description: Learn how to use torch.nn.utils.parametrizations to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
    :image: _static/img/thumbnails/cropped/parametrizations.png
-   :link: intermediate/parametrizations_tutorial.html
+   :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
@@ -627,7 +627,7 @@ Additional Resources
 
    beginner/profiler
    beginner/hyperparameter_tuning_tutorial
-   intermediate/parametrizations_tutorial
+   intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
