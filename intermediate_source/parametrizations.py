@@ -43,7 +43,7 @@ Implementing Parametrizations by Hand
 -------------------------------------
 
 Assume that we want to have a square linear layer with symmetric weights, that is,
-with weights :math:`X` such that :math:`X = X^{\intercal}`. One way to do so is
+with weights ``X`` such that ``X = Xᵀ``. One way to do so is
 to copy the upper triangular part of the matrix into its lower triangular part
 """
 
