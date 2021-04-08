@@ -86,7 +86,7 @@ out = layer(torch.rand(8, 3))
 #    in.
 # 3) It recomputes the parametrization everytime forward is called. If we used the layer
 #    several times during the forward pass, (imagine the recurrent kernel of an RNN) we would
-#    be recomputing the same ``A`` every time the layer is called.
+#    be recomputing the same ``A`` every time that the layer is called.
 #
 # Introduction to Parametrizations
 # --------------------------------
@@ -212,7 +212,7 @@ with parametrize.cached():
 # `Cayley map <https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map>`_
 # maps the skew-symmetric matrices to the orthogonal matrices of positive determinant. We can
 # concatenate ``Skew`` and a parametrization that implements the Cayley map to get a layer with
-# orthogonal weight
+# orthogonal weights
 class CayleyMap(nn.Module):
     def __init__(self, n):
         super().__init__()
