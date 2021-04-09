@@ -1,5 +1,5 @@
-Dispatcher in C++
-=================
+Registering a Dispatched Operator in C++
+========================================
 
 The dispatcher is an internal component of PyTorch which is responsible for
 figuring out what code should actually get run when you call a function like
@@ -32,12 +32,12 @@ Defining schema and backend implementations
 
 The general principle behind the dispatcher is that it divides the
 implementation of an operator into multiple kernels, each of which implements
-functionality for a specific *dispatch key*; for example, CPU, CUDA or Autograd.
-The dispatcher determines what the highest priority dispatch key is at the time
+functionality for a specific *dispatch key*, e.g. CPU, CUDA.  The dispatcher
+determines what the highest priority dispatch key is at the time
 you call an operator (this is done by looking at both the tensor arguments as
 well as some thread local state), and transfers control to the kernel for that
 dispatch key.  The end effect is that when you call an operator, we first
-execute the Autograd kernel, and then we redispatch to the CPU or CUDA kernel
+execute the Autograd kernel, and then we redispatch to the backend kernel
 depending on the device types of the passed in tensors.
 
 Let's take a look at the various parts involved in making this
@@ -105,6 +105,8 @@ speaking, the structure of your registrations will look like this:
     that provides implementations for all basic operators on the XLA dispatch
     key.
 
+.. _autograd-support:
+
 Adding autograd support
 -----------------------
 
@@ -113,7 +115,7 @@ can we add autograd support to it?  As you might guess, we will register an
 autograd kernel (similar to what's described in the `custom autograd function <cpp_autograd>`_ tutorial)!
 However, there is a twist: unlike the CPU and CUDA kernels, the autograd kernel
 needs to *redispatch*: it needs to call back into the dispatcher to get to
-the final CPU and CUDA implementations.
+the inference kernels, e.g. CPU or CUDA implementations.
 
 Thus, before we write the autograd kernel, let's write a *dispatching function*
 which calls into the dispatcher to find the right kernel for your operator.
@@ -177,6 +179,17 @@ functions:
   :start-after: BEGIN TORCH_LIBRARY_IMPL Autograd
   :end-before: END TORCH_LIBRARY_IMPL Autograd
 
+
+.. note::
+
+    In this example we register the kernel to ``Autograd``, which installs it as the
+    autograd kernel for all backends. You can also register optimized kernels for specific
+    backends by using the corresponding backend-specific dispatch key - for example,
+    ``AutogradCPU`` or ``AutogradCUDA``. To explore these and other dispatch key
+    options in more detail, check out the ``PythonDispatcher`` tool provided in
+    `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py>`_.
+
+
 Going beyond autograd
 ---------------------
 
@@ -207,7 +220,8 @@ So why use the dispatcher?  There are a few reasons:
    (CPU, CUDA, Autograd) without having to write a single, centralized
    if statement that refers to all of them.  Importantly, third parties can
    register extra implementations for other aspects without having to patch the
-   original definition of an operator.
+   original definition of an operator.  We'll talk more about extending the
+   dispatcher in `extending dispatcher for a new backend <extend_dispatcher>`_.
 
 2. It supports more dispatch keys than CPU, CUDA and Autograd.  You can
    see a full list of dispatch keys that are currently implemented
@@ -229,38 +243,97 @@ Autocast
 ^^^^^^^^
 
 The Autocast dispatch key implements support for
-`automatic mixed precision <https://developer.nvidia.com/automatic-mixed-precision>`_
-(AMP).  An autocast kernel typically modifies the operation of an operator by casting the
-input arguments to some precision before carrying out the operation.  For some
-operations, it is numerically safe to cast to lower precision, which is how AMP
-can achieve speed ups and reduced memory usage without sacrificing much
-accuracy.  A nontrivial autocast kernel looks something like this:
+`automatic mixed precision (AMP) <https://pytorch.org/docs/stable/amp.html>`_.
+An autocast wrapper kernel typically casts incoming ``float16`` or ``float32`` CUDA tensors
+to some preferred precision before running the op.
+For example, matmuls and convolutions on floating-point CUDA tensors usually run faster
+and use less memory in ``float16`` without impairing convergence.
+Autocast wrappers only have an effect in
+`autocast-enabled contexts <https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.autocast>`_.
+
+Here's an autocast wrapper for a hypothetical custom matmul, along with its registration:
 
 .. code-block:: cpp
 
+    // Autocast-specific helper functions
+    #include <ATen/autocast_mode.h>
+
     Tensor mymatmul_autocast(const Tensor& self, const Tensor& other) {
       c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
-      return mymatmul(autocast::_cast(at::kHalf, self), autocast::_cast(at::kHalf, other));
+      return mymatmul(at::autocast::cached_cast(at::kHalf, self),
+                      at::autocast::cached_cast(at::kHalf, other));
     }
 
+    TORCH_LIBRARY_IMPL(myops, Autocast, m) {
+      m.impl("mymatmul", mymatmul_autocast);
+    }
+
+``cached_cast(kHalf, tensor)`` casts ``tensor`` to ``float16`` if ``tensor`` is CUDA and ``float32``,
+otherwise, it leaves ``tensor`` unchanged (c.f. the
+`eligibility policy <https://pytorch.org/docs/stable/amp.html#op-eligibility>`_ for natively autocasted ops).
+This ensures if the network calls ``mymatmul`` on any mixture of ``float16`` and ``float32`` CUDA tensors,
+``mymatmul`` runs in ``float16``.  Meanwhile, calls to ``mymatmul`` with non-CUDA, integer-type, or ``float64``
+inputs are unaffected.  Using ``cached_cast`` to follow the native eligibility policy in your own autocast wrapper
+is recommended, but not required.  For example, if you wanted to force ``float16`` execution for all input types,
+you could ``return mymatmul(self.half(), other.half());`` instead of using ``cached_cast``.
+
 Notice that, like our autograd kernels, we exclude the ``Autocast`` key from
-dispatch before redispatching.  By default, if no autocast kernel is provided,
-we simply fallthrough directly to the regular operator implementation (no
-autocasting occurs.) (We didn't use ``myadd`` for this example, since pointwise
-addition doesn't do autocasting and should just fall through).
+dispatch before redispatching.
 
-When should an autocast kernel be registered? Unfortunately, there aren't
-cut-and-dry rules for when you should cast to a lower precision.  You can
-get a sense for what operators have autocasting behavior by looking at
-the `AMP documentation
-<https://pytorch.org/docs/master/amp.html#op-specific-behavior>`_.  Some other
-general rules:
+By default, if no autocast wrapper is provided,
+we fallthrough directly to the regular operator implementation (no
+autocasting occurs).  (We didn't use ``myadd`` for this example, since pointwise
+addition doesn't need autocasting and should just fall through.)
 
-* Operations that do reductions should be carried out in float32,
-* Any operation with multiple float tensor inputs has to standardize them
-  to a common precision, and
-* Any operation that does a convolution or gemm under the hood should
-  probably be float16
+When should an autocast wrapper be registered? Unfortunately, there aren't
+cut-and-dried rules for an op's preferred precision.  You can
+get a sense for some native ops' preferred precisions by looking at the
+`cast lists <https://pytorch.org/docs/master/amp.html#op-specific-behavior>`_.
+General guidance:
+
+* Ops that do reductions should probably execute in ``float32``,
+* Any op that does a convolution or gemm under the hood should
+  probably execute in ``float16``, and
+* Other ops with multiple floating-point tensor inputs should standardize
+  them to a common precision (unless the implementation supports inputs with different precisions).
+
+If your custom op falls into the third category, the ``promote_type`` template
+helps figure out the widest floating-point type present among input tensors, which is
+the safest choice for the execution type:
+
+.. code-block:: cpp
+
+    #include <ATen/autocast_mode.h>
+
+    Tensor my_multiple_input_op_autocast(const Tensor& t0, const Tensor& t1) {
+      c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
+      // The required at::kHalf argument is an optimistic initial guess.
+      auto exec_type = at::autocast::promote_type(at::kHalf, t0, t1);
+      return my_multiple_input_op(at::autocast::cached_cast(exec_type, t0),
+                                  at::autocast::cached_cast(exec_type, t1));
+    }
+
+If your custom op is :ref:`autograd-enabled<autograd-support>`, you only need to write and register
+an autocast wrapper for the same name onto which the autograd wrapper is registered.
+For example, if you wanted an autocast wrapper for the ``myadd`` function shown
+in the autograd section, all you'd need is
+
+.. code-block:: cpp
+
+    Tensor myadd_autocast(const Tensor& self, const Tensor& other) {
+      c10::impl::ExcludeDispatchKeyGuard no_autocast(c10::DispatchKey::Autocast);
+      return myadd(at::autocast::cached_cast(<desired dtype>, self),
+                   at::autocast::cached_cast(<desired dtype>, other));
+    }
+
+    TORCH_LIBRARY_IMPL(myops, Autocast, m) {
+      m.impl("myadd", myadd_autocast);
+    }
+
+There are no separate gymnastics to make the backward method autocast compatible.
+However, the backward method defined in your custom autograd function will run in the same
+dtype as autocast sets for the forward method, so you should choose a ``<desired dtype>``
+suitable for both your forward and backward methods.
 
 Batched
 ^^^^^^^
