@@ -1,11 +1,11 @@
 """
 `Learn the Basics <intro.html>`_ ||
 **Quickstart** || 
-`Tensors <tensor_tutorial.html>`_ || 
+`Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
-`Autograd <autograd_tutorial.html>`_ ||
+`Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
@@ -83,7 +83,7 @@ for X, y in test_dataloader:
 # Creating Models
 # ------------------
 # To define a neural network in PyTorch, we create a class that inherits 
-# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_. We define the layers of the network
+# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. We define the layers of the network
 # in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate 
 # operations in the neural network, we move it to the GPU if available.
 
