@@ -186,7 +186,7 @@ for i in range(len(face_dataset)):
 #
 # One issue we can see from the above is that the samples are not of the
 # same size. Most neural networks expect the images of a fixed size.
-# Therefore, we will need to write some prepocessing code.
+# Therefore, we will need to write some preprocessing code.
 # Let's create three transforms:
 #
 # -  ``Rescale``: to scale the image
@@ -374,7 +374,7 @@ for i in range(len(transformed_dataset)):
 #
 
 dataloader = DataLoader(transformed_dataset, batch_size=4,
-                        shuffle=True, num_workers=4)
+                        shuffle=True, num_workers=0)
 
 
 # Helper function to show a batch
