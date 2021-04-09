@@ -1,4 +1,4 @@
-# Prototype Tutorials
+# Prototype Tutorials and Recipes
 
 This directory contains tutorials and recipes demonstrating prototype features in PyTorch. 
 
