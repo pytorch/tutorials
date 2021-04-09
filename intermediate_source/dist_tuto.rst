@@ -46,7 +46,7 @@ the following template.
     import os
     import torch
     import torch.distributed as dist
-    from torch.multiprocessing import Process
+    import torch.multiprocessing as mp
 
     def run(rank, size):
         """ Distributed function to be implemented later. """
@@ -63,8 +63,9 @@ the following template.
     if __name__ == "__main__":
         size = 2
         processes = []
+        mp.set_start_method("spawn")
         for rank in range(size):
-            p = Process(target=init_process, args=(rank, size, run))
+            p = mp.Process(target=init_process, args=(rank, size, run))
             p.start()
             processes.append(p)
 
@@ -572,7 +573,7 @@ finally handshake with them.
 The shared filesystem requires all processes to have access to a shared
 file system, and will coordinate them through a shared file. This means
 that each process will open the file, write its information, and wait
-until everybody did so. After what all required information will be
+until everybody did so. After that all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
 `fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__.
