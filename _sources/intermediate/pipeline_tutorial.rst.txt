@@ -63,7 +63,6 @@ representing the original Transformer module.
     class Encoder(nn.Module):
         def __init__(self, ntoken, ninp, dropout=0.5):
             super(Encoder, self).__init__()
-            self.src_mask = None
             self.pos_encoder = PositionalEncoding(ninp, dropout)
             self.encoder = nn.Embedding(ntoken, ninp)
             self.ninp = ninp
@@ -73,17 +72,9 @@ representing the original Transformer module.
             initrange = 0.1
             self.encoder.weight.data.uniform_(-initrange, initrange)
 
-        def _generate_square_subsequent_mask(self, sz):
-            mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-            mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-            return mask
-
         def forward(self, src):
-            if self.src_mask is None or self.src_mask.size(0) != src.size(0):
-                device = src.device
-                mask = self._generate_square_subsequent_mask(src.size(0)).to(device)
-                self.src_mask = mask
-
+            # Need (S, N) format for encoder.
+            src = src.t()
             src = self.encoder(src) * math.sqrt(self.ninp)
             return self.pos_encoder(src)
 
@@ -99,7 +90,8 @@ representing the original Transformer module.
             self.decoder.weight.data.uniform_(-initrange, initrange)
 
         def forward(self, inp):
-            return self.decoder(inp)
+            # Need batch dimension first for output of pipeline.
+            return self.decoder(inp).permute(1, 0, 2)
 
 
 
@@ -251,7 +243,8 @@ with the ``S`` dimension in the Transformer model. The batch dimension
         seq_len = min(bptt, len(source) - 1 - i)
         data = source[i:i+seq_len]
         target = source[i+1:i+1+seq_len].view(-1)
-        return data, target
+        # Need batch dimension first for pipeline parallelism.
+        return data.t(), target
 
 
 
@@ -334,7 +327,8 @@ transformer layers on the other GPU.
     from torch.distributed.pipeline.sync import Pipe
 
     # Build the pipeline.
-    model = Pipe(torch.nn.Sequential(*module_list), chunks = 8)
+    chunks = 8
+    model = Pipe(torch.nn.Sequential(*module_list), chunks = chunks)
 
 
     def get_total_params(module: torch.nn.Module):
@@ -480,26 +474,26 @@ we've seen so far. Adjust the learning rate after each epoch.
 
  .. code-block:: none
 
-    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3146.45 | loss 41.42 | ppl 972702722969226624.00
-    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2844.90 | loss 40.68 | ppl 462852598114708032.00
-    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2850.51 | loss 35.70 | ppl 3184243568246032.50
-    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2852.55 | loss 36.33 | ppl 6024676147918725.00
+    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3173.72 | loss 43.57 | ppl 8360105717822579712.00
+    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2879.05 | loss 45.97 | ppl 91904469968316022784.00
+    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2880.21 | loss 43.93 | ppl 11986731374163030016.00
+    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2880.98 | loss 41.18 | ppl 768223230462502144.00
     -----------------------------------------------------------------------------------------
-    | end of epoch   1 | time: 158.15s | valid loss  2.94 | valid ppl    18.83
+    | end of epoch   1 | time: 164.73s | valid loss  0.96 | valid ppl     2.62
     -----------------------------------------------------------------------------------------
-    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3140.47 | loss 39.39 | ppl 127484721212509776.00
-    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2855.63 | loss 31.70 | ppl 58348058723634.73
-    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2855.23 | loss 31.95 | ppl 74766360619545.81
-    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2855.34 | loss 21.32 | ppl 1819211854.17
+    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3175.86 | loss 41.88 | ppl 1548810806498714880.00
+    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2891.05 | loss 26.22 | ppl 244423393565.23
+    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2891.03 | loss 31.56 | ppl 50625155030140.01
+    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2891.56 | loss 21.89 | ppl 3208801382.85
     -----------------------------------------------------------------------------------------
-    | end of epoch   2 | time: 158.34s | valid loss  3.51 | valid ppl    33.30
+    | end of epoch   2 | time: 165.18s | valid loss  0.41 | valid ppl     1.51
     -----------------------------------------------------------------------------------------
-    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3142.78 | loss 17.42 | ppl 36665197.35
-    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2855.98 | loss 12.03 | ppl 166937.76
-    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2857.27 | loss 12.94 | ppl 417864.22
-    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2854.68 | loss 10.18 | ppl 26435.01
+    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3177.13 | loss 12.64 | ppl 310094.79
+    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2888.31 | loss 10.18 | ppl 26489.76
+    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2889.55 | loss 10.40 | ppl 32882.95
+    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2891.82 | loss 10.34 | ppl 31083.11
     -----------------------------------------------------------------------------------------
-    | end of epoch   3 | time: 158.40s | valid loss  0.79 | valid ppl     2.21
+    | end of epoch   3 | time: 165.15s | valid loss  0.25 | valid ppl     1.28
     -----------------------------------------------------------------------------------------
 
 
@@ -531,7 +525,7 @@ Apply the best model to check the result with the test dataset.
  .. code-block:: none
 
     =========================================================================================
-    | End of training | test loss  0.70 | test ppl     2.02
+    | End of training | test loss  0.22 | test ppl     1.24
     =========================================================================================
 
 
@@ -570,7 +564,7 @@ Output
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 8 minutes  38.801 seconds)
+   **Total running time of the script:** ( 9 minutes  3.671 seconds)
 
 
 .. _sphx_glr_download_intermediate_pipeline_tutorial.py:

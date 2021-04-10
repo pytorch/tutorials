@@ -349,7 +349,6 @@ representing the original Transformer module.</p>
 <span class="k">class</span> <span class="nc">Encoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Encoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ninp</span> <span class="o">=</span> <span class="n">ninp</span>
@@ -359,17 +358,9 @@ representing the original Transformer module.</p>
         <span class="n">initrange</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_generate_square_subsequent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sz</span><span class="p">):</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">mask</span>
-
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">device</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_square_subsequent_mask</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="n">mask</span>
-
+        <span class="c1"># Need (S, N) format for encoder.</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
         <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ninp</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 
@@ -385,7 +376,8 @@ representing the original Transformer module.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+        <span class="c1"># Need batch dimension first for output of pipeline.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">PositionalEncoding</span></code> module injects some information about the
@@ -493,7 +485,8 @@ with the <code class="docutils literal notranslate"><span class="pre">S</span></
     <span class="n">seq_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">bptt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span>
+    <span class="c1"># Need batch dimension first for pipeline parallelism.</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">target</span>
 </pre></div>
 </div>
 </div>
@@ -565,7 +558,8 @@ cross-partition overheads.</p>
 <span class="kn">from</span> <span class="nn">torch.distributed.pipeline.sync</span> <span class="kn">import</span> <span class="n">Pipe</span>
 
 <span class="c1"># Build the pipeline.</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">module_list</span><span class="p">),</span> <span class="n">chunks</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
+<span class="n">chunks</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">module_list</span><span class="p">),</span> <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">get_total_params</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -677,26 +671,26 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3146.45 | loss 41.42 | ppl 972702722969226624.00
-| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2844.90 | loss 40.68 | ppl 462852598114708032.00
-| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2850.51 | loss 35.70 | ppl 3184243568246032.50
-| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2852.55 | loss 36.33 | ppl 6024676147918725.00
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3173.72 | loss 43.57 | ppl 8360105717822579712.00
+| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2879.05 | loss 45.97 | ppl 91904469968316022784.00
+| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2880.21 | loss 43.93 | ppl 11986731374163030016.00
+| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2880.98 | loss 41.18 | ppl 768223230462502144.00
 -----------------------------------------------------------------------------------------
-| end of epoch   1 | time: 158.15s | valid loss  2.94 | valid ppl    18.83
+| end of epoch   1 | time: 164.73s | valid loss  0.96 | valid ppl     2.62
 -----------------------------------------------------------------------------------------
-| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3140.47 | loss 39.39 | ppl 127484721212509776.00
-| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2855.63 | loss 31.70 | ppl 58348058723634.73
-| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2855.23 | loss 31.95 | ppl 74766360619545.81
-| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2855.34 | loss 21.32 | ppl 1819211854.17
+| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3175.86 | loss 41.88 | ppl 1548810806498714880.00
+| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2891.05 | loss 26.22 | ppl 244423393565.23
+| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2891.03 | loss 31.56 | ppl 50625155030140.01
+| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2891.56 | loss 21.89 | ppl 3208801382.85
 -----------------------------------------------------------------------------------------
-| end of epoch   2 | time: 158.34s | valid loss  3.51 | valid ppl    33.30
+| end of epoch   2 | time: 165.18s | valid loss  0.41 | valid ppl     1.51
 -----------------------------------------------------------------------------------------
-| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3142.78 | loss 17.42 | ppl 36665197.35
-| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2855.98 | loss 12.03 | ppl 166937.76
-| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2857.27 | loss 12.94 | ppl 417864.22
-| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2854.68 | loss 10.18 | ppl 26435.01
+| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3177.13 | loss 12.64 | ppl 310094.79
+| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2888.31 | loss 10.18 | ppl 26489.76
+| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2889.55 | loss 10.40 | ppl 32882.95
+| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2891.82 | loss 10.34 | ppl 31083.11
 -----------------------------------------------------------------------------------------
-| end of epoch   3 | time: 158.40s | valid loss  0.79 | valid ppl     2.21
+| end of epoch   3 | time: 165.15s | valid loss  0.25 | valid ppl     1.28
 -----------------------------------------------------------------------------------------
 </pre></div>
 </div>
@@ -713,7 +707,7 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
-| End of training | test loss  0.70 | test ppl     2.02
+| End of training | test loss  0.22 | test ppl     1.24
 =========================================================================================
 </pre></div>
 </div>
@@ -747,7 +741,7 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 <span class="o">=========================================================================================</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 8 minutes  38.801 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  3.671 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pipeline-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/804e13839064f17e9c73e4d08b8ca491/pipeline_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pipeline_tutorial.py</span></code></a></div>
