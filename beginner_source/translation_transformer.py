@@ -1,17 +1,9 @@
 """
 Language Translation with Transformer
 =====================================
-**Author**: `Jayasimha T <https://github.com/iamsimha>`_
 
 This tutorial shows, how to train a translation model from scratch using
-Transformer. We will be using `Multi30k
-dataset <https://github.com/multi30k/dataset>`__ to train a German to
-English translation model.
-
-The data processing and data loading code is taken from an `earlier version
-<https://github.com/pytorch/tutorials/blob/25ece55aac2b3423f8ed06439d0c320bbf40f019/beginner_source/torchtext_translation.py>`__ 
-of tutorial
-
+Transformer. We will be using Multi30k dataset to train a German to English translation model.
 """
 
 
@@ -24,19 +16,10 @@ of tutorial
 # model. In this example, we show how to tokenize a raw text sentence,
 # build vocabulary, and numericalize tokens into tensor.
 # 
-# Note: the tokenization in this tutorial requires Spacy We use Spacy
-# because it provides strong support for tokenization in languages other
-# than English. torchtext provides a basic_english tokenizer and supports
-# other tokenizers for English (e.g. Moses) but for language translation -
-# where multiple languages are required - Spacy is your best bet.
-# 
 # To run this tutorial, first install spacy using pip or conda. Next,
-# download the raw data for the English and German Spacy tokenizers:
-# 
-# !python -m spacy download en
-# 
-# !python -m spacy download de
-# 
+# download the raw data for the English and German Spacy tokenizers from
+# https://spacy.io/usage/models
+
 
 import math
 import torchtext
@@ -63,8 +46,8 @@ train_filepaths = [extract_archive(download_from_url(url_base + url))[0] for url
 val_filepaths = [extract_archive(download_from_url(url_base + url))[0] for url in val_urls]
 test_filepaths = [extract_archive(download_from_url(url_base + url))[0] for url in test_urls]
 
-de_tokenizer = get_tokenizer('spacy', language='de')
-en_tokenizer = get_tokenizer('spacy', language='en')
+de_tokenizer = get_tokenizer('spacy', language='de_core_news_sm')
+en_tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
 def build_vocab(filepath, tokenizer):
   counter = Counter()
@@ -333,16 +316,48 @@ def evaluate(model, val_iter):
 # Train model 
 #
 
-for epoch in range(NUM_EPOCHS):
+for epoch in range(1, NUM_EPOCHS+1):
   start_time = time.time()
   train_loss = train_epoch(transformer, train_iter, optimizer)
   end_time = time.time()
   val_loss = evaluate(transformer, valid_iter)
-  print((f"Epoch: {epoch+1}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "
+  print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "
           f"Epoch time = {(end_time - start_time):.3f}s"))
+
+
+######################################################################
+# We get the following results during model training.
+#
+# ::
+#
+#        Epoch: 1, Train loss: 5.316, Val loss: 4.065, Epoch time = 35.322s
+#        Epoch: 2, Train loss: 3.727, Val loss: 3.285, Epoch time = 36.283s
+#        Epoch: 3, Train loss: 3.131, Val loss: 2.881, Epoch time = 37.096s
+#        Epoch: 4, Train loss: 2.741, Val loss: 2.625, Epoch time = 37.714s
+#        Epoch: 5, Train loss: 2.454, Val loss: 2.428, Epoch time = 38.263s
+#        Epoch: 6, Train loss: 2.223, Val loss: 2.291, Epoch time = 38.415s
+#        Epoch: 7, Train loss: 2.030, Val loss: 2.191, Epoch time = 38.412s
+#        Epoch: 8, Train loss: 1.866, Val loss: 2.104, Epoch time = 38.511s
+#        Epoch: 9, Train loss: 1.724, Val loss: 2.044, Epoch time = 38.367s
+#        Epoch: 10, Train loss: 1.600, Val loss: 1.994, Epoch time = 38.491s
+#        Epoch: 11, Train loss: 1.488, Val loss: 1.969, Epoch time = 38.490s
+#        Epoch: 12, Train loss: 1.390, Val loss: 1.929, Epoch time = 38.194s
+#        Epoch: 13, Train loss: 1.299, Val loss: 1.898, Epoch time = 38.430s
+#        Epoch: 14, Train loss: 1.219, Val loss: 1.885, Epoch time = 38.406s
+#        Epoch: 15, Train loss: 1.141, Val loss: 1.890, Epoch time = 38.365s
+#        Epoch: 16, Train loss: 1.070, Val loss: 1.873, Epoch time = 38.439s
+#        Epoch: 17, Train loss: 1.005, Val loss: 1.880, Epoch time = 38.333s
+#        Epoch: 18, Train loss: 0.945, Val loss: 1.885, Epoch time = 38.397s
+#        Epoch: 19, Train loss: 0.889, Val loss: 1.905, Epoch time = 38.177s
+#        Epoch: 20, Train loss: 0.835, Val loss: 1.920, Epoch time = 38.527s
+#
+# The models trained using transformer architecture — train faster
+# and converge to a lower validation loss compared to RNN models.
 
 ######################################################################
 #
+#
+
 
 def greedy_decode(model, src, src_mask, max_len, start_symbol):
     src = src.to(device)
