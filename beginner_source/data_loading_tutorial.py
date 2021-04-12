@@ -104,7 +104,7 @@ plt.show()
 #
 # -  ``__len__`` so that ``len(dataset)`` returns the size of the dataset.
 # -  ``__getitem__`` to support the indexing such that ``dataset[i]`` can
-#    be used to get :math:`i`\ th sample
+#    be used to get :math:`i`\ th sample.
 #
 # Let's create a dataset class for our face landmarks dataset. We will
 # read the csv in ``__init__`` but leave the reading of images to
