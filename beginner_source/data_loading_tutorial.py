@@ -186,7 +186,7 @@ for i in range(len(face_dataset)):
 #
 # One issue we can see from the above is that the samples are not of the
 # same size. Most neural networks expect the images of a fixed size.
-# Therefore, we will need to write some prepocessing code.
+# Therefore, we will need to write some preprocessing code.
 # Let's create three transforms:
 #
 # -  ``Rescale``: to scale the image
@@ -290,7 +290,13 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-
+    
+######################################################################
+# .. note::
+#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
+#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
 # Compose transforms

@@ -274,7 +274,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # --------------
 # 
 # With our input parameters set and the dataset prepared, we can now get
-# into the implementation. We will start with the weigth initialization
+# into the implementation. We will start with the weight initialization
 # strategy, then talk about the generator, discriminator, loss functions,
 # and training loop in detail.
 # 
@@ -554,7 +554,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # reported are:
 # 
 # -  **Loss_D** - discriminator loss calculated as the sum of losses for
-#    the all real and all fake batches (:math:`log(D(x)) + log(D(G(z)))`).
+#    the all real and all fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
 # -  **Loss_G** - generator loss calculated as :math:`log(D(G(z)))`
 # -  **D(x)** - the average output (across the batch) of the discriminator
 #    for the all real batch. This should start close to 1 then
