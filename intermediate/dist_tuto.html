@@ -500,20 +500,20 @@ to obtain the sum of all tensors at all processes, we can use the
     <span class="sd">""" Simple point-to-point communication. """</span>
     <span class="n">group</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">new_group</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">reduce_op</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Rank '</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="s1">' has data '</span><span class="p">,</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 <p>Since we want the sum of all tensors in the group, we use
-<code class="docutils literal notranslate"><span class="pre">dist.reduce_op.SUM</span></code> as the reduce operator. Generally speaking, any
+<code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.SUM</span></code> as the reduce operator. Generally speaking, any
 commutative mathematical operation can be used as an operator.
 Out-of-the-box, PyTorch comes with 4 such operators, all working at the
 element-wise level:</p>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.SUM</span></code>,</li>
-<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.PRODUCT</span></code>,</li>
-<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.MAX</span></code>,</li>
-<li><code class="docutils literal notranslate"><span class="pre">dist.reduce_op.MIN</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.SUM</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.PRODUCT</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.MAX</span></code>,</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.ReduceOp.MIN</span></code>.</li>
 </ul>
 <p>In addition to <code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>, there are a total
 of 6 collectives currently implemented in PyTorch.</p>
@@ -651,7 +651,7 @@ world.</p>
 <span class="k">def</span> <span class="nf">average_gradients</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
     <span class="n">size</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-        <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">reduce_op</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
         <span class="n">param</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span> <span class="o">/=</span> <span class="n">size</span>
 </pre></div>
 </div>
