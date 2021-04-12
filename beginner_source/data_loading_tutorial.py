@@ -290,7 +290,13 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-
+    
+######################################################################
+# .. note::
+#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
+#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
 # Compose transforms

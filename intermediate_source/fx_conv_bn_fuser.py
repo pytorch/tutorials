@@ -51,7 +51,7 @@ class M(nn.Module):
             nn.BatchNorm2d(1),
             nn.Conv2d(1, 1, 1),
         )
-        self.wrapped = WrappedBatchnorm()
+        self.wrapped = WrappedBatchNorm()
 
     def forward(self, x):
         x = self.conv1(x)

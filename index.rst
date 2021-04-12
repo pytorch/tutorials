@@ -1,5 +1,9 @@
 Welcome to PyTorch Tutorials
 ============================
+.. raw:: html
+
+    <p>Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849 target="_blank">PyTorch Tutorials reader survey</a>. </p>
+
 
 .. raw:: html
 
