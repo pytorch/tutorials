@@ -9,7 +9,7 @@ Classical techniques such as penalty methods often fall short when applied
 on deep models due to the complexity of the function being optimized.
 This is particularly problematic when working with ill-conditioned models.
 Examples of these are RNNs trained on long sequences and GANs. A number
-of techniques have been proposed in the recent years to regularize these
+of techniques have been proposed in recent years to regularize these
 models and improve their convergence. On recurrent models, it has been
 proposed to control the singular values of the recurrent kernel for the
 RNN to be well-conditioned. This can be achieved, for example, by making
@@ -17,16 +17,16 @@ the recurrent kernel `orthogonal <https://en.wikipedia.org/wiki/Orthogonal_matri
 Another way to regularize recurrent models is via
 "`weight normalization <https://pytorch.org/docs/stable/generated/torch.nn.utils.weight_norm.html>`_".
 This approach proposes to decouple the learning of the parameters from the
-learning of their norm.  To do so, the parameter is divided by its
+learning of their norms.  To do so, the parameter is divided by its
 `Frobenius norm <https://en.wikipedia.org/wiki/Matrix_norm#Frobenius_norm>`_
-and a separate parameter encoding their norm is learnt.
+and a separate parameter encoding its norm is learnt.
 A similar regularization was proposed for GANs under the name of
 "`spectral normalization <https://pytorch.org/docs/stable/generated/torch.nn.utils.spectral_norm.html>`_". This method
 controls the Lipschitz constant of the network by dividing its parameters by
 their `spectral norm <https://en.wikipedia.org/wiki/Matrix_norm#Special_cases>`_,
 rather than their Frobenius norm.
 
-All these methods have a pattern in common. They all transform a parameter
+All these methods have a common pattern. They all transform a parameter
 in an appropriate way before using it. In the first case, they make it orthogonal by
 using a function that maps matrices to orthogonal matrices. In the case of weight
 and spectral normalization, they divide the original parameter by its norm.
@@ -34,8 +34,8 @@ and spectral normalization, they divide the original parameter by its norm.
 More generally, all these examples use a function to put extra structure on the parameters.
 In other words, they use a function to constrain the parameters.
 
-In this tutorial, you will learn how to implement and use this pattern to write and
-put constraints on your model. Doing so is as easy as writing your own ``nn.Module``.
+In this tutorial, you will learn how to implement and use this pattern to put
+constraints on your model. Doing so is as easy as writing your own ``nn.Module``.
 
 Requirements: ``torch>=1.9.0``
 
@@ -44,7 +44,7 @@ Implementing Parametrizations by Hand
 
 Assume that we want to have a square linear layer with symmetric weights, that is,
 with weights ``X`` such that ``X = Xᵀ``. One way to do so is
-to copy the upper triangular part of the matrix into its lower triangular part
+to copy the upper-triangular part of the matrix into its lower-triangular part
 """
 
 import torch
@@ -60,7 +60,7 @@ assert torch.allclose(A, A.T)  # A is symmetric
 print(A)                       # Quick visual check
 
 ###############################################################################
-# We can then use this idea to implement a linear layer with symmetric weights:
+# We can then use this idea to implement a linear layer with symmetric weights
 class LinearSymmetric(nn.Module):
     def __init__(self, n_features):
         super().__init__()
@@ -84,14 +84,14 @@ out = layer(torch.rand(8, 3))
 # 2) It does not separate the layer and the parametrization.  If the parametrization were
 #    more difficult, we would have to rewrite its code for each layer that we want to use it
 #    in.
-# 3) It recomputes the parametrization everytime forward is called. If we used the layer
-#    several times during the forward pass, (imagine the recurrent kernel of an RNN) we would
-#    be recomputing the same ``A`` every time that the layer is called.
+# 3) It recomputes the parametrization everytime we use the layer. If we use the layer
+#    several times during the forward pass, (imagine the recurrent kernel of an RNN), it
+#    would compute the same ``A`` every time that the layer is called.
 #
 # Introduction to Parametrizations
 # --------------------------------
 #
-# Parametrizations come to solve all these and other problems.
+# Parametrizations can solve all these problems as well as others.
 #
 # Let's start by reimplementing the code above using ``torch.nn.utils.parametrize``.
 # The only thing that we have to do is to write the parametrization as a regular ``nn.Module``
@@ -114,8 +114,8 @@ assert torch.allclose(A, A.T)
 ###############################################################################
 # We can do the same thing with any other layer. For example, we can create a CNN with
 # `skew-symmetric <https://en.wikipedia.org/wiki/Skew-symmetric_matrix>`_ kernels.
-# We use a similar parametrization, copying minus the upper triangular part into the
-# lower-triangular part
+# We use a similar parametrization, copying the upper-triangular part with signs
+# reversed into the lower-triangular part
 class Skew(nn.Module):
     def forward(self, X):
         A = X.triu(1)
@@ -123,7 +123,7 @@ class Skew(nn.Module):
 
 
 cnn = nn.Conv2d(in_channels=5, out_channels=8, kernel_size=3)
-parametrize.register_parametrization(layer, "weight", Skew())
+parametrize.register_parametrization(cnn, "weight", Skew())
 # Print a few kernels
 print(cnn.weight[0, 1])
 print(cnn.weight[2, 2])
@@ -153,11 +153,12 @@ print(layer)
 print(layer.parametrizations.weight)
 
 ###############################################################################
-# Note that each element in the ``ModuleDict`` is of type ``ParametrizationList``.
-# This ``ParametrizationList`` behaves like an ``nn.Sequential`` that also holds the weight.
-# element of this list. It will be clear later the reason for this, when we see how to concatenate
-# parametrizations.
-#
+# Each element of this ``ParametrizationList`` behaves like an ``nn.Sequential`` module
+# that also holds the weight. This list will allow us to concatenate parametrizations on
+# one weight. Since this is a list, we can access the parametrizations indexing it
+print(layer.parametrizations.weight[0])
+
+###############################################################################
 # The other thing that we notice is that, if we print the parameters, we see that the
 # parameter ``weight`` has been moved
 print(dict(layer.named_parameters()))
@@ -208,7 +209,7 @@ with parametrize.cached():
 # ------------------------------
 #
 # Concatenating two parametrizations is as easy as registering them on the same tensor.
-# We may use this to create complex parametrizations from simpler ones. For example, the
+# We may use this to create more complex parametrizations from simpler ones. For example, the
 # `Cayley map <https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map>`_
 # maps the skew-symmetric matrices to the orthogonal matrices of positive determinant. We can
 # concatenate ``Skew`` and a parametrization that implements the Cayley map to get a layer with
@@ -232,7 +233,7 @@ assert torch.allclose(X.T @ X, torch.eye(3), atol=1e-6)  # X is orthogonal
 # This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
 # the matrix exponential maps the symmetric matrices to the Symmetric Positive Definite (SPD) matrices
 # But the matrix exponential also maps the skew-symmetric matrices to the orthogonal matrices.
-# Using these two facts, we may reuse the parametrizations before to our advantage:
+# Using these two facts, we may reuse the parametrizations before to our advantage
 class MatrixExponential(nn.Module):
     def forward(self, X):
         return torch.matrix_exp(X)
@@ -340,7 +341,7 @@ class PruningParametrization(nn.Module):
 # In this case, it is not true that for every matrix A ``forward(right_inverse(A)) == A``.
 # This is only true when the matrix ``A`` has zeros in the same positions as the mask.
 # Even then, if we assign a tensor to a pruned parameter, it will comes as no surprise
-# that tensor will be, in fact, pruned:
+# that tensor will be, in fact, pruned
 layer = nn.Linear(3, 4)
 parametrize.register_parametrization(layer, "weight", PruningParametrization(layer.weight))
 X = torch.rand(4, 3)
