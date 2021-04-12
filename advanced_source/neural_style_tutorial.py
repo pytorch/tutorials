@@ -83,7 +83,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # An important detail to note is that neural networks from the
 # torch library are trained with tensor values ranging from 0 to 1. If you
 # try to feed the networks with 0 to 255 tensor images, then the activated
-# feature maps will be unable sense the intended content and style.
+# feature maps will be unable to sense the intended content and style.
 # However, pre-trained networks from the Caffe library are trained with 0
 # to 255 tensor images. 
 #

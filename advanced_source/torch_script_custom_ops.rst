@@ -23,7 +23,7 @@ Python and in their serialized form directly in C++.
 The following paragraphs give an example of writing a TorchScript custom op to
 call into `OpenCV <https://www.opencv.org>`_, a computer vision library written
 in C++. We will discuss how to work with tensors in C++, how to efficiently
-convert them to third party tensor formats (in this case, OpenCV ``Mat``s), how
+convert them to third party tensor formats (in this case, OpenCV ``Mat``), how
 to register your operator with the TorchScript runtime and finally how to
 compile the operator and use it in Python and C++.
 
@@ -37,27 +37,10 @@ TorchScript as a custom operator. The first step is to write the implementation
 of our custom operator in C++. Let's call the file for this implementation
 ``op.cpp`` and make it look like this:
 
-.. code-block:: cpp
-
-  #include <opencv2/opencv.hpp>
-  #include <torch/script.h>
-
-  torch::Tensor warp_perspective(torch::Tensor image, torch::Tensor warp) {
-    cv::Mat image_mat(/*rows=*/image.size(0),
-                      /*cols=*/image.size(1),
-                      /*type=*/CV_32FC1,
-                      /*data=*/image.data<float>());
-    cv::Mat warp_mat(/*rows=*/warp.size(0),
-                     /*cols=*/warp.size(1),
-                     /*type=*/CV_32FC1,
-                     /*data=*/warp.data<float>());
-
-    cv::Mat output_mat;
-    cv::warpPerspective(image_mat, output_mat, warp_mat, /*dsize=*/{8, 8});
-
-    torch::Tensor output = torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8});
-    return output.clone();
-  }
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN warp_perspective
+  :end-before: END warp_perspective
 
 The code for this operator is quite short. At the top of the file, we include
 the OpenCV header file, ``opencv2/opencv.hpp``, alongside the ``torch/script.h``
@@ -92,12 +75,10 @@ tensors to OpenCV matrices, as OpenCV's ``warpPerspective`` expects ``cv::Mat``
 objects as inputs. Fortunately, there is a way to do this **without copying
 any** data. In the first few lines,
 
-.. code-block:: cpp
-
-  cv::Mat image_mat(/*rows=*/image.size(0),
-                    /*cols=*/image.size(1),
-                    /*type=*/CV_32FC1,
-                    /*data=*/image.data<float>());
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN image_mat
+  :end-before: END image_mat
 
 we are calling `this constructor
 <https://docs.opencv.org/trunk/d3/d63/classcv_1_1Mat.html#a922de793eabcec705b3579c5f95a643e>`_
@@ -113,12 +94,10 @@ subsequent OpenCV routines with the library's native matrix type, even though
 we're actually storing the data in a PyTorch tensor. We repeat this procedure to
 convert the ``warp`` PyTorch tensor to the ``warp_mat`` OpenCV matrix:
 
-.. code-block:: cpp
-
-  cv::Mat warp_mat(/*rows=*/warp.size(0),
-                   /*cols=*/warp.size(1),
-                   /*type=*/CV_32FC1,
-                   /*data=*/warp.data<float>());
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN warp_mat
+  :end-before: END warp_mat
 
 Next, we are ready to call the OpenCV function we were so eager to use in
 TorchScript: ``warpPerspective``. For this, we pass the OpenCV function the
@@ -126,10 +105,10 @@ TorchScript: ``warpPerspective``. For this, we pass the OpenCV function the
 called ``output_mat``. We also specify the size ``dsize`` we want the output
 matrix (image) to be. It is hardcoded to ``8 x 8`` for this example:
 
-.. code-block:: cpp
-
-  cv::Mat output_mat;
-  cv::warpPerspective(image_mat, output_mat, warp_mat, /*dsize=*/{8, 8});
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN output_mat
+  :end-before: END output_mat
 
 The final step in our custom operator implementation is to convert the
 ``output_mat`` back into a PyTorch tensor, so that we can further use it in
@@ -139,12 +118,13 @@ other direction. In this case, PyTorch provides a ``torch::from_blob`` method. A
 we want to interpret as a PyTorch tensor. The call to ``torch::from_blob`` looks
 like this:
 
-.. code-block:: cpp
-
-  torch::from_blob(output_mat.ptr<float>(), /*sizes=*/{8, 8})
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN output_tensor
+  :end-before: END output_tensor
 
 We use the ``.ptr<float>()`` method on the OpenCV ``Mat`` class to get a raw
-pointer to the underlying data (just like ``.data<float>()`` for the PyTorch
+pointer to the underlying data (just like ``.data_ptr<float>()`` for the PyTorch
 tensor earlier). We also specify the output shape of the tensor, which we
 hardcoded as ``8 x 8``. The output of ``torch::from_blob`` is then a
 ``torch::Tensor``, pointing to the memory owned by the OpenCV matrix.
@@ -165,40 +145,28 @@ Registering the Custom Operator with TorchScript
 Now that have implemented our custom operator in C++, we need to *register* it
 with the TorchScript runtime and compiler. This will allow the TorchScript
 compiler to resolve references to our custom operator in TorchScript code.
-Registration is very simple. For our case, we need to write:
+If you have ever used the pybind11 library, our syntax for registration
+resembles the pybind11 syntax very closely.  To register a single function,
+we write:
 
-.. code-block:: cpp
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/op.cpp
+  :language: cpp
+  :start-after: BEGIN registry
+  :end-before: END registry
 
-  static auto registry =
-    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+somewhere at the top level of our ``op.cpp`` file.  The ``TORCH_LIBRARY`` macro
+creates a function that will be called when your program starts.  The name
+of your library (``my_ops``) is given as the first argument (it should not
+be in quotes).  The second argument (``m``) defines a variable of type
+``torch::Library`` which is the main interface to register your operators.
+The method ``Library::def`` actually creates an operator named ``warp_perspective``,
+exposing it to both Python and TorchScript.  You can define as many operators
+as you like by making multiple calls to ``def``.
 
-somewhere in the global scope of our ``op.cpp`` file. This creates a global
-variable ``registry``, which will register our operator with TorchScript in its
-constructor (i.e. exactly once per program). We specify the name of the
-operator, and a pointer to its implementation (the function we wrote earlier).
-The name consists of two parts: a *namespace* (``my_ops``) and a name for the
-particular operator we are registering (``warp_perspective``). The namespace and
-operator name are separated by two colons (``::``).
-
-.. tip::
-
-  If you want to register more than one operator, you can chain calls to
-  ``.op()`` after the constructor:
-
-  .. code-block:: cpp
-
-    static auto registry =
-      torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective)
-      .op("my_ops::another_op", &another_op)
-      .op("my_ops::and_another_op", &and_another_op);
-
-Behind the scenes, ``RegisterOperators`` will perform a number of fairly
-complicated C++ template metaprogramming magic tricks to infer the argument and
-return value types of the function pointer we pass it (``&warp_perspective``).
-This information is used to form a *function schema* for our operator. A
-function schema is a structured representation of an operator -- a kind of
-"signature" or "prototype" -- used by the TorchScript compiler to verify
-correctness in TorchScript programs.
+Behinds the scenes, the ``def`` function is actually doing quite a bit of work:
+it is using template metaprogramming to inspect the type signature of your
+function and translate it into an operator schema which specifies the operators
+type within TorchScript's type system.
 
 Building the Custom Operator
 ----------------------------
@@ -209,7 +177,16 @@ we can load into Python for research and experimentation, or into C++ for
 inference in a no-Python environment. There exist multiple ways to build our
 operator, using either pure CMake, or Python alternatives like ``setuptools``.
 For brevity, the paragraphs below only discuss the CMake approach. The appendix
-of this tutorial dives into the Python based alternatives.
+of this tutorial dives into other alternatives.
+
+Environment setup
+*****************
+
+We need an installation of PyTorch and OpenCV.  The easiest and most platform
+independent way to get both is to via Conda::
+
+  conda install -c pytorch pytorch
+  conda install opencv
 
 Building with CMake
 *******************
@@ -223,42 +200,10 @@ a directory structure that looks like this::
     op.cpp
     CMakeLists.txt
 
-Also, make sure to grab the latest version of the LibTorch distribution, which
-packages PyTorch's C++ libraries and CMake build files, from `pytorch.org
-<https://pytorch.org/get-started/locally>`_. Place the unzipped distribution
-somewhere accessible in your file system. The following paragraphs will refer to
-that location as ``/path/to/libtorch``. The contents of our ``CMakeLists.txt``
-file should then be the following:
+The contents of our ``CMakeLists.txt`` file should then be the following:
 
-.. code-block:: cmake
-
-  cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-  project(warp_perspective)
-
-  find_package(Torch REQUIRED)
-  find_package(OpenCV REQUIRED)
-
-  # Define our library target
-  add_library(warp_perspective SHARED op.cpp)
-  # Enable C++11
-  target_compile_features(warp_perspective PRIVATE cxx_range_for)
-  # Link against LibTorch
-  target_link_libraries(warp_perspective "${TORCH_LIBRARIES}")
-  # Link against OpenCV
-  target_link_libraries(warp_perspective opencv_core opencv_imgproc)
-
-.. warning::
-
-  This setup makes some assumptions about the build environment, particularly
-  what pertains to the installation of OpenCV. The above ``CMakeLists.txt`` file
-  was tested inside a Docker container running Ubuntu Xenial with
-  ``libopencv-dev`` installed via ``apt``. If it does not work for you and you
-  feel stuck, please use the ``Dockerfile`` in the `accompanying tutorial
-  repository <https://github.com/pytorch/extension-script>`_ to
-  build an isolated, reproducible environment in which to play around with the
-  code from this tutorial. If you run into further troubles, please file an
-  issue in the tutorial repository or post a question in `our forum
-  <https://discuss.pytorch.org/>`_.
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/CMakeLists.txt
+  :language: cpp
 
 To now build our operator, we can run the following commands from our
 ``warp_perspective`` folder:
@@ -267,7 +212,7 @@ To now build our operator, we can run the following commands from our
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -302,24 +247,18 @@ To now build our operator, we can run the following commands from our
   [100%] Built target warp_perspective
 
 which will place a ``libwarp_perspective.so`` shared library file in the
-``build`` folder. In the ``cmake`` command above, you should replace
-``/path/to/libtorch`` with the path to your unzipped LibTorch distribution.
+``build`` folder. In the ``cmake`` command above, we use the helper
+variable ``torch.utils.cmake_prefix_path`` to conveniently tell us where
+the cmake files for our PyTorch install are.
 
 We will explore how to use and call our operator in detail further below, but to
 get an early sensation of success, we can try running the following code in
 Python:
 
-.. code-block:: python
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/smoke_test.py
+  :language: python
 
-  >>> import torch
-  >>> torch.ops.load_library("/path/to/libwarp_perspective.so")
-  >>> print(torch.ops.my_ops.warp_perspective)
-
-Here, ``/path/to/libwarp_perspective.so`` should be a relative or absolute path
-to the ``libwarp_perspective.so`` shared library we just built. If all goes
-well, this should print something like
-
-.. code-block:: python
+If all goes well, this should print something like::
 
   <built-in method my_ops::warp_perspective of PyCapsule object at 0x7f618fc6fa50>
 
@@ -336,10 +275,9 @@ TorchScript code.
 You already saw how to import your operator into Python:
 ``torch.ops.load_library()``. This function takes the path to a shared library
 containing custom operators, and loads it into the current process. Loading the
-shared library will also execute the constructor of the global
-``RegisterOperators`` object we placed into our custom operator implementation
-file. This will register our custom operator with the TorchScript compiler and
-allow us to use that operator in TorchScript code.
+shared library will also execute the ``TORCH_LIBRARY`` block. This will register
+our custom operator with the TorchScript compiler and allow us to use that
+operator in TorchScript code.
 
 You can refer to your loaded operator as ``torch.ops.<namespace>.<function>``,
 where ``<namespace>`` is the namespace part of your operator name, and
@@ -350,11 +288,16 @@ While this function can be used in scripted or traced TorchScript modules, we
 can also just use it in vanilla eager PyTorch and pass it regular PyTorch
 tensors:
 
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/test.py
+  :language: python
+  :prepend: import torch
+  :start-after: BEGIN preamble
+  :end-before: END preamble
+
+producing:
+
 .. code-block:: python
 
-  >>> import torch
-  >>> torch.ops.load_library("libwarp_perspective.so")
-  >>> torch.ops.my_ops.warp_perspective(torch.randn(32, 32), torch.rand(3, 3))
   tensor([[0.0000, 0.3218, 0.4611,  ..., 0.4636, 0.4636, 0.4636],
         [0.3746, 0.0978, 0.5005,  ..., 0.4636, 0.4636, 0.4636],
         [0.3245, 0.0169, 0.0000,  ..., 0.4458, 0.4458, 0.4458],
@@ -366,24 +309,26 @@ tensors:
 
 .. note::
 
-	What happens behind the scenes is that the first time you access
-	``torch.ops.namespace.function`` in Python, the TorchScript compiler (in C++
-	land) will see if a function ``namespace::function`` has been registered, and
-	if so, return a Python handle to this function that we can subsequently use to
-	call into our C++ operator implementation from Python. This is one noteworthy
-	difference between TorchScript custom operators and C++ extensions: C++
-	extensions are bound manually using pybind11, while TorchScript custom ops are
-	bound on the fly by PyTorch itself. Pybind11 gives you more flexibility with
-	regards to what types and classes you can bind into Python and is thus
-	recommended for purely eager code, but it is not supported for TorchScript
-	ops.
+    What happens behind the scenes is that the first time you access
+    ``torch.ops.namespace.function`` in Python, the TorchScript compiler (in C++
+    land) will see if a function ``namespace::function`` has been registered, and
+    if so, return a Python handle to this function that we can subsequently use to
+    call into our C++ operator implementation from Python. This is one noteworthy
+    difference between TorchScript custom operators and C++ extensions: C++
+    extensions are bound manually using pybind11, while TorchScript custom ops are
+    bound on the fly by PyTorch itself. Pybind11 gives you more flexibility with
+    regards to what types and classes you can bind into Python and is thus
+    recommended for purely eager code, but it is not supported for TorchScript
+    ops.
 
 From here on, you can use your custom operator in scripted or traced code just
 as you would other functions from the ``torch`` package. In fact, "standard
 library" functions like ``torch.matmul`` go through largely the same
 registration path as custom operators, which makes custom operators really
 first-class citizens when it comes to how and where they can be used in
-TorchScript.
+TorchScript.  (One difference, however, is that standard library functions
+have custom written Python argument parsing logic that differs from
+``torch.ops`` argument parsing.)
 
 Using the Custom Operator with Tracing
 **************************************
@@ -391,10 +336,10 @@ Using the Custom Operator with Tracing
 Let's start by embedding our operator in a traced function. Recall that for
 tracing, we start with some vanilla Pytorch code:
 
-.. code-block:: python
-
-  def compute(x, y, z):
-      return x.matmul(y) + torch.relu(z)
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/test.py
+  :language: python
+  :start-after: BEGIN compute
+  :end-before: END compute
 
 and then call ``torch.jit.trace`` on it. We further pass ``torch.jit.trace``
 some example inputs, which it will forward to our implementation to record the
@@ -402,54 +347,54 @@ sequence of operations that occur as the inputs flow through it. The result of
 this is effectively a "frozen" version of the eager PyTorch program, which the
 TorchScript compiler can further analyze, optimize and serialize:
 
-.. code-block:: python
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/test.py
+  :language: python
+  :start-after: BEGIN trace
+  :end-before: END trace
 
-  >>> inputs = [torch.randn(4, 8), torch.randn(8, 5), torch.randn(4, 5)]
-  >>> trace = torch.jit.trace(compute, inputs)
-  >>> print(trace.graph)
-  graph(%x : Float(4, 8)
-      %y : Float(8, 5)
-      %z : Float(4, 5)) {
-    %3 : Float(4, 5) = aten::matmul(%x, %y)
-    %4 : Float(4, 5) = aten::relu(%z)
-    %5 : int = prim::Constant[value=1]()
-    %6 : Float(4, 5) = aten::add(%3, %4, %5)
-    return (%6);
-  }
+Producing::
+
+    graph(%x : Float(4:8, 8:1),
+          %y : Float(8:5, 5:1),
+          %z : Float(4:5, 5:1)):
+      %3 : Float(4:5, 5:1) = aten::matmul(%x, %y) # test.py:10:0
+      %4 : Float(4:5, 5:1) = aten::relu(%z) # test.py:10:0
+      %5 : int = prim::Constant[value=1]() # test.py:10:0
+      %6 : Float(4:5, 5:1) = aten::add(%3, %4, %5) # test.py:10:0
+      return (%6)
 
 Now, the exciting revelation is that we can simply drop our custom operator into
 our PyTorch trace as if it were ``torch.relu`` or any other ``torch`` function:
 
-.. code-block:: python
-
-  torch.ops.load_library("libwarp_perspective.so")
-
-  def compute(x, y, z):
-      x = torch.ops.my_ops.warp_perspective(x, torch.eye(3))
-      return x.matmul(y) + torch.relu(z)
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/test.py
+  :language: python
+  :start-after: BEGIN compute2
+  :end-before: END compute2
 
 and then trace it as before:
 
-.. code-block:: python
+.. literalinclude:: ../advanced_source/torch_script_custom_ops/test.py
+  :language: python
+  :start-after: BEGIN trace2
+  :end-before: END trace2
 
-  >>> inputs = [torch.randn(4, 8), torch.randn(8, 5), torch.randn(8, 5)]
-  >>> trace = torch.jit.trace(compute, inputs)
-  >>> print(trace.graph)
-  graph(%x.1 : Float(4, 8)
-      %y : Float(8, 5)
-      %z : Float(8, 5)) {
-      %3 : int = prim::Constant[value=3]()
-      %4 : int = prim::Constant[value=6]()
-      %5 : int = prim::Constant[value=0]()
-      %6 : int[] = prim::Constant[value=[0, -1]]()
-      %7 : Float(3, 3) = aten::eye(%3, %4, %5, %6)
-      %x : Float(8, 8) = my_ops::warp_perspective(%x.1, %7)
-      %11 : Float(8, 5) = aten::matmul(%x, %y)
-      %12 : Float(8, 5) = aten::relu(%z)
-      %13 : int = prim::Constant[value=1]()
-      %14 : Float(8, 5) = aten::add(%11, %12, %13)
-      return (%14);
-    }
+Producing::
+
+    graph(%x.1 : Float(4:8, 8:1),
+          %y : Float(8:5, 5:1),
+          %z : Float(8:5, 5:1)):
+      %3 : int = prim::Constant[value=3]() # test.py:25:0
+      %4 : int = prim::Constant[value=6]() # test.py:25:0
+      %5 : int = prim::Constant[value=0]() # test.py:25:0
+      %6 : Device = prim::Constant[value="cpu"]() # test.py:25:0
+      %7 : bool = prim::Constant[value=0]() # test.py:25:0
+      %8 : Float(3:3, 3:1) = aten::eye(%3, %4, %5, %6, %7) # test.py:25:0
+      %x : Float(8:8, 8:1) = my_ops::warp_perspective(%x.1, %8) # test.py:25:0
+      %10 : Float(8:5, 5:1) = aten::matmul(%x, %y) # test.py:26:0
+      %11 : Float(8:5, 5:1) = aten::relu(%z) # test.py:26:0
+      %12 : int = prim::Constant[value=1]() # test.py:26:0
+      %13 : Float(8:5, 5:1) = aten::add(%10, %11, %12) # test.py:26:0
+      return (%13)
 
 Integrating TorchScript custom ops into traced PyTorch code is as easy as this!
 
@@ -539,7 +484,7 @@ function inside of our script code:
 
 When the TorchScript compiler sees the reference to
 ``torch.ops.my_ops.warp_perspective``, it will find the implementation we
-registered via the ``RegisterOperators`` object in C++, and compile it into its
+registered via the ``TORCH_LIBRARY`` function in C++, and compile it into its
 graph representation:
 
 .. code-block:: python
@@ -660,11 +605,11 @@ Along with a small ``CMakeLists.txt`` file:
 
 At this point, we should be able to build the application:
 
-.. code-block:: cpp
+.. code-block::
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -700,7 +645,7 @@ At this point, we should be able to build the application:
 
 And run it without passing a model just yet:
 
-.. code-block:: cpp
+.. code-block::
 
   $ ./example_app
   usage: example_app <path-to-exported-script-module>
@@ -727,7 +672,7 @@ The last line will serialize the script function into a file called
 "example.pt". If we then pass this serialized model to our C++ application, we
 can run it straight away:
 
-.. code-block:: cpp
+.. code-block::
 
   $ ./example_app example.pt
   terminate called after throwing an instance of 'torch::jit::script::ErrorReport'
@@ -775,7 +720,7 @@ library.
   ``-Wl,--no-as-needed`` prefix to the ``warp_perspective`` link line. This is
   required because we will not actually be calling any function from the
   ``warp_perspective`` shared library in our application code. We only need the
-  global ``RegisterOperators`` object's constructor to run. Inconveniently, this
+  ``TORCH_LIBRARY`` function to run. Inconveniently, this
   confuses the linker and makes it think it can just skip linking against the
   library altogether. On Linux, the ``-Wl,--no-as-needed`` flag forces the link
   to happen (NB: this flag is specific to Linux!). There are other workarounds
@@ -807,7 +752,7 @@ library. In the top level ``example_app`` directory:
 
   $ mkdir build
   $ cd build
-  $ cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
+  $ cmake -DCMAKE_PREFIX_PATH="$(python -c 'import torch.utils; print(torch.utils.cmake_prefix_path)')" ..
   -- The C compiler identification is GNU 5.4.0
   -- The CXX compiler identification is GNU 5.4.0
   -- Check for working C compiler: /usr/bin/cc
@@ -981,8 +926,9 @@ custom TorchScript operator as a string. For this, use
     return output.clone();
   }
 
-  static auto registry =
-    torch::RegisterOperators("my_ops::warp_perspective", &warp_perspective);
+  TORCH_LIBRARY(my_ops, m) {
+    m.def("warp_perspective", &warp_perspective);
+  }
   """
 
   torch.utils.cpp_extension.load_inline(

@@ -14,10 +14,6 @@ lets look what we can do with tensors.
 # Author: Robert Guthrie
 
 import torch
-import torch.autograd as autograd
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 torch.manual_seed(1)
 
@@ -274,7 +270,7 @@ print(new_z.grad_fn)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad``=True by wrapping the code block in
+# with ``.requires_grad=True`` by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
