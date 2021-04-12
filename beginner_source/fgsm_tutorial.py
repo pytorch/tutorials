@@ -99,6 +99,13 @@ from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
 
+# NOTE: This is a hack to get around "User-agent" limitations when downloading MNIST datasets
+#       see, https://github.com/pytorch/vision/issues/3497 for more information
+from six.moves import urllib
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib.request.install_opener(opener)
+
 
 ######################################################################
 # Implementation
@@ -413,4 +420,3 @@ plt.show()
 # it differs from FGSM. Then, try to defend the model from your own
 # attacks.
 # 
-
