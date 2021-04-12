@@ -8,7 +8,7 @@ not overwritten) whenever ``.backward()`` is called.
 Introduction
 ------------
 When training your neural network, models are able to increase their
-accuracy through gradient decent. In short, gradient descent is the
+accuracy through gradient descent. In short, gradient descent is the
 process of minimizing our loss (or error) by tweaking the weights and
 biases in our model.
 
@@ -189,5 +189,5 @@ print('Finished Training')
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
+# - `Loading data in PyTorch <https://pytorch.org/tutorials/recipes/recipes/loading_data_recipe.html>`__
+# - `Saving and loading models across devices in PyTorch <https://pytorch.org/tutorials/recipes/recipes/save_load_across_devices.html>`__

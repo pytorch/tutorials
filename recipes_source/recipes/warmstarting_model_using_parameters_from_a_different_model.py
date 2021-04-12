@@ -138,5 +138,5 @@ netB.load_state_dict(torch.load(PATH), strict=False)
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
+# - `Saving and loading multiple models in one file using PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html>`__
+# - `Saving and loading models across devices in PyTorch <https://pytorch.org/tutorials/recipes/recipes/save_load_across_devices.html>`__

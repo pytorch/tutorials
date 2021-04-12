@@ -2,14 +2,13 @@
 Dynamic Quantization
 ====================
 
---------------
-
 In this recipe you will see how to take advantage of Dynamic
 Quantization to accelerate inference on an LSTM-style recurrent neural
 network. This reduces the size of the model weights and speeds up model
 execution.
 
-**Introduction**
+Introduction
+-------------
 
 There are a number of trade-offs that can be made when designing neural
 networks. During model developmenet and training you can alter the
@@ -24,7 +23,8 @@ You can give it a try in a single session and you will certainly reduce
 your model size significantly and may get a significant latency
 reduction without losing a lot of accuracy.
 
-**What is dynamic quantization?**
+What is dynamic quantization?
+-------------
 
 Quantizing a network means converting it to use a reduced precision
 integer representation for the weights and/or activations. This saves on
@@ -55,15 +55,18 @@ Dynamic quantization is relatively free of tuning parameters which makes
 it well suited to be added into production pipelines as a standard part
 of converting LSTM models to deployment.
 
---------------
 
-**Note: Limitations on the approach taken here**
 
-This recipe provides a quick introduction to the dynamic quantization
-features in PyTorch and the workflow for using it. Our focus is on
-explaining the specific functions used to convert the model. We will
-make a number of significant simplifications in the interest of brevity
-and clarity
+.. note::
+   Limitations on the approach taken here
+
+
+   This recipe provides a quick introduction to the dynamic quantization
+   features in PyTorch and the workflow for using it. Our focus is on
+   explaining the specific functions used to convert the model. We will
+   make a number of significant simplifications in the interest of brevity
+   and clarity
+
 
 1. You will start with a minimal LSTM network
 2. You are simply going to initialize the network with a random hidden
@@ -85,36 +88,26 @@ want to move right away to that more rigorous treatment please proceed
 to the `advanced dynamic quantization
 tutorial <https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html>`__.
 
---------------
-
-**Recipe Structure**
+Steps
+-------------
 
 This recipe has 5 steps.
 
-1. Set up
-
-   Here you define a very simple LSTM, import modules, and establish
+1. Set Up - Here you define a very simple LSTM, import modules, and establish
    some random input tensors.
 
-2. Do the quantization
-
-   Here you instantiate a floating point model and then create quantized
+2. Do the Quantization - Here you instantiate a floating point model and then create quantized
    version of it.
 
-3. Look at model size
+3. Look at Model Size - Here you show that the model size gets smaller.
 
-   Here you show that the model size gets smaller.
+4. Look at Latency - Here you run the two models and compare model runtime (latency).
 
-4. Look at latency
+5. Look at Accuracy - Here you run the two models and compare outputs.
 
-   Here you run the two models and compare model runtime (latency).
 
-5. Look at accuracy
-
-   Here you run the two models and compare outputs.
-
-**Step 1: set up**
-
+1: Set Up
+~~~~~~~~~~~~~~~
 This is a straightfoward bit of code to set up for the rest of the
 recipe.
 
@@ -134,13 +127,13 @@ import time
 
 # define a very, very simple LSTM for demonstration purposes
 # in this case, we are wrapping nn.LSTM, one layer, no pre or post processing
-# inspired by 
+# inspired by
 # https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html, by Robert Guthrie
 # and https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html
 class lstm_for_demonstration(nn.Module):
   """Elementary Long Short Term Memory style model which simply wraps nn.LSTM
-     Not to be used for anything other than demonstration. 
-  """ 
+     Not to be used for anything other than demonstration.
+  """
   def __init__(self,in_dim,out_dim,depth):
      super(lstm_for_demonstration,self).__init__()
      self.lstm = nn.LSTM(in_dim,out_dim,depth)
@@ -149,7 +142,7 @@ class lstm_for_demonstration(nn.Module):
      out,hidden = self.lstm(inputs,hidden)
      return out, hidden
 
- 
+
 torch.manual_seed(29592)  # set the seed for reproducibility
 
 #shape parameters
@@ -161,31 +154,32 @@ lstm_depth=1
 # random data for input
 inputs = torch.randn(sequence_length,batch_size,model_dimension)
 # hidden is actually is a tuple of the initial hidden state and the initial cell state
-hidden = (torch.randn(lstm_depth,batch_size,model_dimension), torch.randn(lstm_depth,batch_size,model_dimension)) 
+hidden = (torch.randn(lstm_depth,batch_size,model_dimension), torch.randn(lstm_depth,batch_size,model_dimension))
 
 
 ######################################################################
-# **Step 2: Do the quantization**
-# 
+# 2: Do the Quantization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 # Now we get to the fun part. First we create an instance of the model
 # called float\_lstm then we are going to quantize it. We're going to use
 # the
-# 
+#
 # ::
-# 
+#
 #     torch.quantization.quantize_dynamic()
-# 
+#
 # function here (`see
 # documentation <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`__)
 # which takes the model, then a list of the submodules which we want to
 # have quantized if they appear, then the datatype we are targeting. This
 # function returns a quantized version of the original model as a new
 # module.
-# 
+#
 # That's all it takes.
-# 
+#
 
- # here is our floating point instance 
+ # here is our floating point instance
 float_lstm = lstm_for_demonstration(model_dimension, model_dimension,lstm_depth)
 
 # this is the call that does the work
@@ -202,8 +196,8 @@ print(quantized_lstm)
 
 
 ######################################################################
-# **Step 4. Look at the model size**
-# 
+# 3. Look at Model Size
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Ok, so we've quantized the model. What does that get us? Well the first
 # benefit is that we've replaced the FP32 model parameters with INT8
 # values (and some recorded scale factors). This means about 75% less data
@@ -212,7 +206,7 @@ print(quantized_lstm)
 # (for example you can set model dimension to something like 80) this will
 # converge towards 4x smaller as the stored model size dominated more and
 # more by the parameter values.
-# 
+#
 
 def print_size_of_model(model, label=""):
     torch.save(model.state_dict(), "temp.p")
@@ -227,23 +221,23 @@ q=print_size_of_model(quantized_lstm,"int8")
 print("{0:.2f} times smaller".format(f/q))
 
 # note that this value is wrong in PyTorch 1.4 due to https://github.com/pytorch/pytorch/issues/31468
-# this will be fixed in 1.5 with https://github.com/pytorch/pytorch/pull/31540    
+# this will be fixed in 1.5 with https://github.com/pytorch/pytorch/pull/31540
 
 
 ######################################################################
-# **Step 4: Look at latency**
-# 
+# 4. Look at Latency
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # The second benefit is that the quantized model will typically run
 # faster. This is due to a combinations of effects including at least:
-# 
+#
 # 1. Less time spent moving parameter data in
 # 2. Faster INT8 operations
-# 
+#
 # As you will see the quantized version of this super-simple network runs
 # faster. This will generally be true of more complex networks but as they
 # say "your milage may vary" depending on a number of factors including
 # the structure of the model and the hardware you are running on.
-# 
+#
 
 # compare the performance
 print("Floating point FP32")
@@ -254,17 +248,17 @@ print("Quantized INT8")
 
 
 ######################################################################
-# **Step 5: Look at accuracy**
-# 
+# 5: Look at Accuracy
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # We are not going to do a careful look at accuracy here because we are
 # working with a randomly initialized network rather than a properly
 # trained one. However, I think it is worth quickly showing that the
 # quantized network does produce output tensors that are "in the same
 # ballpark" as the original one.
-# 
+#
 # For a more detailed analysis please see the more advanced tutorials
 # referenced at the end of this recipe.
-# 
+#
 
 # run the float model
 out1, hidden1 = float_lstm(inputs, hidden)
@@ -276,38 +270,37 @@ out2, hidden2 = quantized_lstm(inputs, hidden)
 mag2 = torch.mean(abs(out2)).item()
 print('mean absolute value of output tensor values in the INT8 model is {0:.5f}'.format(mag2))
 
-# compare them 
+# compare them
 mag3 = torch.mean(abs(out1-out2)).item()
 print('mean absolute value of the difference between the output tensors is {0:.5f} or {1:.2f} percent'.format(mag3,mag3/mag1*100))
 
 
 ######################################################################
-# **Summary**
-# 
-# We've explained what dynamic quantization is, what beenefits it brings,
+#  Learn More
+# ------------
+# We've explained what dynamic quantization is, what benefits it brings,
 # and you have used the ``torch.quantization.quantize_dynamic()`` function
 # to quickly quantize a simple LSTM model.
-# 
-# **To continue learning about dynamic quantization**
-# 
+#
 # This was a fast and high level treatment of this material; for more
-# detail please continue learning with:
-# 
-# https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html
-# 
-# **Other resources:**
-# 
-# Docs
-# 
-# https://pytorch.org/docs/stable/quantization.html
-# 
+# detail please continue learning with `(beta) Dynamic Quantization on an LSTM Word Language Model Tutorial <https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html>`_.
+#
+#
+# Additional Resources
+# =========
+# Documentation
+# ~~~~~~~~~~~~~~
+#
+# `Quantization API Documentaion <https://pytorch.org/docs/stable/quantization.html>`_
+#
 # Tutorials
-# 
-# https://pytorch.org/tutorials/intermediate/dynamic\_quantization\_bert\_tutorial.html
-# 
-# https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html
-# 
+# ~~~~~~~~~~~~~~
+#
+# `(beta) Dynamic Quantization on BERT <https://pytorch.org/tutorials/intermediate/dynamic\_quantization\_bert\_tutorial.html>`_
+#
+# `(beta) Dynamic Quantization on an LSTM Word Language Model <https://pytorch.org/tutorials/advanced/dynamic\_quantization\_tutorial.html>`_
+#
 # Blogs
-# 
-# https://pytorch.org/blog/introduction-to-quantization-on-pytorch/
-# 
+# ~~~~~~~~~~~~~~
+# ` Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
+#
