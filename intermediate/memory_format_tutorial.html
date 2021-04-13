@@ -307,29 +307,27 @@
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/VitalyFedyunin">Vitaly Fedyunin</a></p>
 <div class="section" id="what-is-channels-last">
 <h2>What is Channels Last<a class="headerlink" href="#what-is-channels-last" title="Permalink to this headline">¶</a></h2>
-<p>Channels Last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels Last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).</p>
+<p>Channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).</p>
 <p>For example, classic (contiguous) storage of NCHW tensor (in our case it is two 2x2 images with 3 color channels) look like this:</p>
 <div class="figure">
 <img alt="classic_memory_format" src="../_images/classic_memory_format.png"/>
 </div>
-<p>Channels Last memory format orders data differently:</p>
+<p>Channels last memory format orders data differently:</p>
 <div class="figure">
 <img alt="channels_last_memory_format" src="../_images/channels_last_memory_format.png"/>
 </div>
 <p>Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
-For example, 10x3x16x16 batch in Channels Last format will have strides equal to (768, 1, 48, 3).</p>
-<p>Channels Last memory format is implemented for 4D NCWH Tensors only.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span>
-</pre></div>
-</div>
+For example, 10x3x16x16 batch in Channels last format will have strides equal to (768, 1, 48, 3).</p>
+<p>Channels last memory format is implemented for 4D NCWH Tensors only.</p>
 </div>
 <div class="section" id="memory-format-api">
 <h2>Memory Format API<a class="headerlink" href="#memory-format-api" title="Permalink to this headline">¶</a></h2>
 <p>Here is how to convert tensors between contiguous and channels
 last memory formats.</p>
 <p>Classic PyTorch contiguous tensor</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1024, 32, 1)</span>
 </pre></div>
 </div>
@@ -338,7 +336,7 @@ last memory formats.</p>
 </pre></div>
 </div>
 <p>Conversion operator</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># Outputs: (10, 3, 32, 32) as dimensions order preserved</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Outputs: (3072, 1, 96, 3)</span>
 </pre></div>
@@ -349,7 +347,7 @@ last memory formats.</p>
 </pre></div>
 </div>
 <p>Back to contiguous</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Outputs: (3072, 1024, 32, 1)</span>
 </pre></div>
 </div>
@@ -358,7 +356,7 @@ last memory formats.</p>
 </pre></div>
 </div>
 <p>Alternative option</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
@@ -374,7 +372,42 @@ last memory formats.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
-<p>Create as Channels Last</p>
+<p>There are minor difference between the two APIs <code class="docutils literal notranslate"><span class="pre">to</span></code> and
+<code class="docutils literal notranslate"><span class="pre">contiguous</span></code>. We suggest to stick with <code class="docutils literal notranslate"><span class="pre">to</span></code> when explicitly
+converting memory format of tensor.</p>
+<p>For general cases the two APIs behave the same. However in special
+cases for a 4D tensor with size <code class="docutils literal notranslate"><span class="pre">NCHW</span></code> when either: <code class="docutils literal notranslate"><span class="pre">C==1</span></code> or
+<code class="docutils literal notranslate"><span class="pre">H==1</span> <span class="pre">&amp;&amp;</span> <span class="pre">W==1</span></code>, only <code class="docutils literal notranslate"><span class="pre">to</span></code> would generate a proper stride to
+represent channels last memory format.</p>
+<p>This is because in either of the two cases above, the memory format
+of a tensor is ambiguous, i.e. a contiguous tensor with size
+<code class="docutils literal notranslate"><span class="pre">N1HW</span></code> is both <code class="docutils literal notranslate"><span class="pre">contiguous</span></code> and channels last in memory storage.
+Therefore, they are already considered as <code class="docutils literal notranslate"><span class="pre">is_contiguous</span></code>
+for the given memory format and hence <code class="docutils literal notranslate"><span class="pre">contiguous</span></code> call becomes a
+no-op and would not update the stride. On the contrary, <code class="docutils literal notranslate"><span class="pre">to</span></code>
+would restride tensor with a meaningful stride on dimensions whose
+sizes are 1 in order to properly represent the intended memory
+format</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">special_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
+True
+</pre></div>
+</div>
+<p>Same thing applies to explicit permutation API <code class="docutils literal notranslate"><span class="pre">permute</span></code>. In
+special case where ambiguity could occur, <code class="docutils literal notranslate"><span class="pre">permute</span></code> does not
+guarantee to produce a stride that properly carry the intended
+memory format. We suggest to use <code class="docutils literal notranslate"><span class="pre">to</span></code> with explicit memory format
+to avoid unintended behavior.</p>
+<p>And a side note that in the extreme case, where three non-batch
+dimensions are all equal to <code class="docutils literal notranslate"><span class="pre">1</span></code> (<code class="docutils literal notranslate"><span class="pre">C==1</span> <span class="pre">&amp;&amp;</span> <span class="pre">H==1</span> <span class="pre">&amp;&amp;</span> <span class="pre">W==1</span></code>),
+current implementation cannot mark a tensor as channels last memory
+format.</p>
+<p>Create as channels last</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
@@ -420,14 +453,18 @@ last memory formats.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(3072, 1, 96, 3)
 </pre></div>
 </div>
-<p>Conv, Batchnorm modules support Channels Last
-(only works for CudNN &gt;= 7.6)</p>
+<p>Conv, Batchnorm modules using cudnn backends support channels last
+(only works for CudNN &gt;= 7.6). Convolution modules, unlike binary
+p-wise operator, have channels last as the dominating memory format.
+IFF all inputs are in contiguous memory format, the operator
+produces output in contiguous memory format. Otherwise, output wil
+be in channels last memroy format.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">version</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">7603</span><span class="p">:</span>
-    <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">half</span><span class="p">()</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Module parameters need to be channels last</span>
 
-    <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Module parameters need to be Channels Last</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
 
     <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
@@ -437,12 +474,22 @@ last memory formats.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
 </pre></div>
 </div>
+<p>When input tensor reaches a operator without channels last support,
+a permutation should automatically apply in the kernel to restore
+contiguous on input tensor. This introduces overhead and stops the
+channels last memory format propagation. Nevertheless, it guarantees
+correct output.</p>
 </div>
 <div class="section" id="performance-gains">
 <h2>Performance Gains<a class="headerlink" href="#performance-gains" title="Permalink to this headline">¶</a></h2>
-<p>The most significant performance gains are observed on Nvidia’s hardware with
-Tensor Cores support. We were able to archive over 22%  perf gains while running ‘
-AMP (Automated Mixed Precision) training scripts supplied by Nvidia <a class="reference external" href="https://github.com/NVIDIA/apex">https://github.com/NVIDIA/apex</a>.</p>
+<p>The most significant performance gains are observed on NVidia’s
+hardware with Tensor Cores support running on reduced precision
+(<code class="docutils literal notranslate"><span class="pre">torch.float16</span></code>).
+We were able to archive over 22% perf gains with channels last
+comparing to contiguous format, both while utilizing
+‘AMP (Automated Mixed Precision)’ training scripts.
+Our scripts uses AMP supplied by NVidia
+<a class="reference external" href="https://github.com/NVIDIA/apex">https://github.com/NVIDIA/apex</a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main_amp.py</span> <span class="pre">-a</span> <span class="pre">resnet50</span> <span class="pre">--b</span> <span class="pre">200</span> <span class="pre">--workers</span> <span class="pre">16</span> <span class="pre">--opt-level</span> <span class="pre">O2</span>  <span class="pre">./data</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># opt_level = O2</span>
 <span class="c1"># keep_batchnorm_fp32 = None &lt;class 'NoneType'&gt;</span>
@@ -477,7 +524,7 @@ AMP (Automated Mixed Precision) training scripts supplied by Nvidia <a class="re
 <span class="c1"># Epoch: [0][80/125] Time 0.260 (0.335) Speed 770.324 (597.659) Loss 2.2505953312 (1.0879) Prec@1 50.500 (52.938) Prec@5 100.000 (100.000)</span>
 </pre></div>
 </div>
-<p>Passing <code class="docutils literal notranslate"><span class="pre">--channels-last</span> <span class="pre">true</span></code> allows running a model in Channels Last format with observed 22% perf gain.</p>
+<p>Passing <code class="docutils literal notranslate"><span class="pre">--channels-last</span> <span class="pre">true</span></code> allows running a model in Channels last format with observed 22% perf gain.</p>
 <p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">main_amp.py</span> <span class="pre">-a</span> <span class="pre">resnet50</span> <span class="pre">--b</span> <span class="pre">200</span> <span class="pre">--workers</span> <span class="pre">16</span> <span class="pre">--opt-level</span> <span class="pre">O2</span> <span class="pre">--channels-last</span> <span class="pre">true</span> <span class="pre">./data</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># opt_level = O2</span>
 <span class="c1"># keep_batchnorm_fp32 = None &lt;class 'NoneType'&gt;</span>
@@ -516,12 +563,15 @@ AMP (Automated Mixed Precision) training scripts supplied by Nvidia <a class="re
 <span class="c1"># Epoch: [0][80/125] Time 0.198 (0.269) Speed 1011.827 (743.883) Loss 2.8196096420 (2.4011) Prec@1 47.500 (50.938) Prec@5 100.000 (100.000)</span>
 </pre></div>
 </div>
-<p>The following list of models has the full support of Channels Last and showing 8%-35% perf gains on Volta devices:
+<p>The following list of models has the full support of Channels last and showing 8%-35% perf gains on Volta devices:
 <code class="docutils literal notranslate"><span class="pre">alexnet</span></code>, <code class="docutils literal notranslate"><span class="pre">mnasnet0_5</span></code>, <code class="docutils literal notranslate"><span class="pre">mnasnet0_75</span></code>, <code class="docutils literal notranslate"><span class="pre">mnasnet1_0</span></code>, <code class="docutils literal notranslate"><span class="pre">mnasnet1_3</span></code>, <code class="docutils literal notranslate"><span class="pre">mobilenet_v2</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet101</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet152</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet18</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet34</span></code>, <code class="docutils literal notranslate"><span class="pre">resnet50</span></code>, <code class="docutils literal notranslate"><span class="pre">resnext50_32x4d</span></code>, <code class="docutils literal notranslate"><span class="pre">shufflenet_v2_x0_5</span></code>, <code class="docutils literal notranslate"><span class="pre">shufflenet_v2_x1_0</span></code>, <code class="docutils literal notranslate"><span class="pre">shufflenet_v2_x1_5</span></code>, <code class="docutils literal notranslate"><span class="pre">shufflenet_v2_x2_0</span></code>, <code class="docutils literal notranslate"><span class="pre">squeezenet1_0</span></code>, <code class="docutils literal notranslate"><span class="pre">squeezenet1_1</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg11</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg11_bn</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg13</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg13_bn</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg16</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg16_bn</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg19</span></code>, <code class="docutils literal notranslate"><span class="pre">vgg19_bn</span></code>, <code class="docutils literal notranslate"><span class="pre">wide_resnet101_2</span></code>, <code class="docutils literal notranslate"><span class="pre">wide_resnet50_2</span></code></p>
 </div>
 <div class="section" id="converting-existing-models">
 <h2>Converting existing models<a class="headerlink" href="#converting-existing-models" title="Permalink to this headline">¶</a></h2>
-<p>Channels Last support not limited by existing models, as any model can be converted to Channels Last and propagate format through the graph as soon as input formatted correctly.</p>
+<p>Channels last support is not limited by existing models, as any
+model can be converted to channels last and propagate format through
+the graph as soon as input (or certain weight) is formatted
+correctly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Need to be done once, after model initialization (or load)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Replace with your model</span>
 
@@ -530,8 +580,19 @@ AMP (Automated Mixed Precision) training scripts supplied by Nvidia <a class="re
 <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>However, not all operators fully converted to support Channels Last (usually returning
-contiguous output instead). That means you need to verify the list of used operators
+<p>However, not all operators fully converted to support channels last
+(usually returning contiguous output instead). In the example posted
+above, layers that does not support channels last will stop the
+memory format propagation. In spite of that, as we have converted the
+model to channels last format, that means each convolution layer,
+which has its 4 dimensional weight in channels last memory format,
+will restore channels last memory format and benefit from faster
+kernels.</p>
+<p>But operatos that does not support channels last does introduce
+overhead by permutation. Optionally, you can investigate and identify
+operatos in your model that does not support channels last, if you
+want to improve the performance of converted model.</p>
+<p>That means you need to verify the list of used operators
 against supported operators list <a class="reference external" href="https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support">https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support</a>,
 or introduce memory format checks into eager execution mode and run your model.</p>
 <p>After running the code below, operators will raise an exception if the output of the
@@ -612,7 +673,7 @@ operator doesn’t match the memory format of the input.</p>
 '_Optional' object has no attribute '__name__'
 </pre></div>
 </div>
-<p>If you found an operator that doesn’t support Channels Last tensors
+<p>If you found an operator that doesn’t support channels last tensors
 and you want to contribute, feel free to use following developers
 guide <a class="reference external" href="https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators">https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators</a>.</p>
 <p>Code below is to recover the attributes of torch.</p>
@@ -632,7 +693,7 @@ guide <a class="reference external" href="https://github.com/pytorch/pytorch/wik
 </ul>
 <p>If you have feedback and/or suggestions for improvement, please let us
 know by creating <a class="reference external" href="https://github.com/pytorch/pytorch/issues">an issue</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.311 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  2.397 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-memory-format-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6c290a5fc635f734b10bbca97b52d2f1/memory_format_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">memory_format_tutorial.py</span></code></a></div>
