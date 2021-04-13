@@ -62,6 +62,8 @@ import torchvision.transforms as transforms
 ########################################################################
 # The output of torchvision datasets are PILImage images of range [0, 1].
 # We transform them to Tensors of normalized range [-1, 1].
+
+########################################################################
 # .. note::
 #     If running on Windows and you get a BrokenPipeError, try setting
 #     the num_worker of torch.utils.data.DataLoader() to 0.
@@ -123,7 +125,7 @@ import torch.nn.functional as F
 
 class Net(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
