@@ -4,7 +4,7 @@ Writing Custom Datasets, DataLoaders and Transforms
 ===================================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
-A lot of effort in solving any machine learning problem goes in to
+A lot of effort in solving any machine learning problem goes into
 preparing the data. PyTorch provides many tools to make data loading
 easy and hopefully, to make your code more readable. In this tutorial,
 we will see how to load and preprocess/augment data from a non trivial
@@ -104,7 +104,7 @@ plt.show()
 #
 # -  ``__len__`` so that ``len(dataset)`` returns the size of the dataset.
 # -  ``__getitem__`` to support the indexing such that ``dataset[i]`` can
-#    be used to get :math:`i`\ th sample
+#    be used to get :math:`i`\ th sample.
 #
 # Let's create a dataset class for our face landmarks dataset. We will
 # read the csv in ``__init__`` but leave the reading of images to
