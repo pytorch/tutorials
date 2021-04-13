@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-(experimental) Channels Last Memory Format in PyTorch
+(beta) Channels Last Memory Format in PyTorch
 *******************************************************
 **Author**: `Vitaly Fedyunin <https://github.com/VitalyFedyunin>`_
 
@@ -11,12 +11,12 @@ Channels last memory format is an alternative way of ordering NCHW tensors in me
 
 For example, classic (contiguous) storage of NCHW tensor (in our case it is two 2x2 images with 3 color channels) look like this:
 
-.. figure:: /_static/img/classic_memory_format.png   
+.. figure:: /_static/img/classic_memory_format.png
    :alt: classic_memory_format
 
 Channels last memory format orders data differently:
 
-.. figure:: /_static/img/channels_last_memory_format.png   
+.. figure:: /_static/img/channels_last_memory_format.png
    :alt: channels_last_memory_format
 
 Pytorch supports memory formats (and provides back compatibility with existing models including eager, JIT, and TorchScript) by utilizing  existing strides structure.
@@ -31,7 +31,7 @@ For example, 10x3x16x16 batch in Channels last format will have strides equal to
 # Memory Format API
 # -----------------------
 #
-# Here is how to convert tensors between contiguous and channels 
+# Here is how to convert tensors between contiguous and channels
 # last memory formats.
 
 ######################################################################
@@ -265,7 +265,7 @@ output = model(input)
 # which has its 4 dimensional weight in channels last memory format,
 # will restore channels last memory format and benefit from faster
 # kernels.
-
+#
 # But operatos that does not support channels last does introduce
 # overhead by permutation. Optionally, you can investigate and identify
 # operatos in your model that does not support channels last, if you
@@ -274,8 +274,8 @@ output = model(input)
 # That means you need to verify the list of used operators 
 # against supported operators list https://github.com/pytorch/pytorch/wiki/Operators-with-Channels-Last-support, 
 # or introduce memory format checks into eager execution mode and run your model.
-# 
-# After running the code below, operators will raise an exception if the output of the 
+#
+# After running the code below, operators will raise an exception if the output of the
 # operator doesn't match the memory format of the input.
 #
 #
@@ -328,14 +328,17 @@ def check_wrapper(fn):
         return result
     return check_cl
 
+old_attrs = dict()
 
 def attribute(m):
+    old_attrs[m] = dict()
     for i in dir(m):
         e = getattr(m, i)
         exclude_functions = ['is_cuda', 'has_names', 'numel',
                              'stride', 'Tensor', 'is_contiguous', '__class__']
         if i not in exclude_functions and not i.startswith('_') and '__call__' in dir(e):
             try:
+                old_attrs[m][i] = e
                 setattr(m, i, check_wrapper(e))
             except Exception as e:
                 print(i)
@@ -352,6 +355,13 @@ attribute(torch)
 # and you want to contribute, feel free to use following developers 
 # guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
 #
+
+######################################################################
+# Code below is to recover the attributes of torch.
+
+for (m, attrs) in old_attrs.items():
+  for (k,v) in attrs.items():
+    setattr(m, k, v)
 
 ######################################################################
 # Work to do

@@ -86,7 +86,7 @@ optimizer.step()
 #
 # It is also possible to run an existing single-GPU module on multiple GPUs
 # with just a few lines of changes. The code below shows how to decompose
-# ``torchvision.models.reset50()`` to two GPUs. The idea is to inherit from
+# ``torchvision.models.resnet50()`` to two GPUs. The idea is to inherit from
 # the existing ``ResNet`` module, and split the layers to two GPUs during
 # construction. Then, override the ``forward`` method to stitch two
 # sub-networks by moving the intermediate outputs accordingly.
@@ -136,7 +136,7 @@ class ModelParallelResNet50(ResNet):
 #
 # Let us run an experiment to get a more quantitative view of the execution
 # time. In this experiment, we train ``ModelParallelResNet50`` and the existing
-# ``torchvision.models.reset50()`` by running random inputs and labels through
+# ``torchvision.models.resnet50()`` by running random inputs and labels through
 # them. After the training, the models will not produce any useful predictions,
 # but we can get a reasonable understanding of the execution times.
 
@@ -245,7 +245,7 @@ plot([mp_mean, rn_mean],
 # -----------------------------
 #
 # In the following experiments, we further divide each 120-image batch into
-# 20-image splits. As PyTorch launches CUDA operations asynchronizely, the
+# 20-image splits. As PyTorch launches CUDA operations asynchronously, the
 # implementation does not need to spawn multiple threads to achieve
 # concurrency.
 
