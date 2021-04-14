@@ -183,6 +183,14 @@ functions to be familiar with:
 #    ``load_state_dict()`` function. For example, you CANNOT load using
 #    ``model.load_state_dict(PATH)``.
 #
+# .. Note ::
+#    
+#    If you only plan to keep the best performing model (according to the 
+#    acquired validation loss), don't forget that ``best_model_state = model.state_dict()``
+#    returns a reference to the state and not its copy! You must serialize 
+#    ``best_model_state`` or use ``best_model_state = deepcopy(model.state_dict())`` otherwise
+#    your best ``best_model_state`` will keep getting updated by the subsequent training 
+#    iterations. As a result, the final model state will be the state of the overfitted model. 
 #
 # Save/Load Entire Model
 # ^^^^^^^^^^^^^^^^^^^^^^
@@ -262,7 +270,8 @@ functions to be familiar with:
 # as this contains buffers and parameters that are updated as the model
 # trains. Other items that you may want to save are the epoch you left off
 # on, the latest recorded training loss, external ``torch.nn.Embedding``
-# layers, etc.
+# layers, etc. As a result, such a checkpoint is often 2~3 times larger 
+# than the model alone.
 #
 # To save multiple components, organize them in a dictionary and use
 # ``torch.save()`` to serialize the dictionary. A common PyTorch
