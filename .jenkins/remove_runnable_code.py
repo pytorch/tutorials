@@ -16,9 +16,17 @@ with open(python_file_path, 'r', encoding='utf-8') as file:
             if line.startswith('#'):
                 ret_lines.append(line)
                 state = STATE_NORMAL
+            elif ((line.startswith('"""') or line.startswith('r"""')) and
+                    line.endswith('"""')):
+                ret_lines.append(line)
+                state = STATE_NORMAL
             elif line.startswith('"""') or line.startswith('r"""'):
                 ret_lines.append(line)
                 state = STATE_IN_MULTILINE_COMMENT_BLOCK_DOUBLE_QUOTE
+            elif ((line.startswith("'''") or line.startswith("r'''")) and
+                    line.endswith("'''")):
+                ret_lines.append(line)
+                state = STATE_NORMAL
             elif line.startswith("'''") or line.startswith("r'''"):
                 ret_lines.append(line)
                 state = STATE_IN_MULTILINE_COMMENT_BLOCK_SINGLE_QUOTE
