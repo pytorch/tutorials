@@ -125,7 +125,7 @@ import torch.nn.functional as F
 
 class Net(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super().__init__()
         self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, 5)
@@ -320,7 +320,7 @@ print(device)
 #
 #         inputs, labels = data[0].to(device), data[1].to(device)
 #
-# Why dont I notice MASSIVE speedup compared to CPU? Because your network
+# Why don't I notice MASSIVE speedup compared to CPU? Because your network
 # is really small.
 #
 # **Exercise:** Try increasing the width of your network (argument 2 of
