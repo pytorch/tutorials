@@ -221,7 +221,7 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 #
 
 input = letterToTensor('A')
-hidden =torch.zeros(1, n_hidden)
+hidden = torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(input, hidden)
 
@@ -332,7 +332,7 @@ def train(category_tensor, line_tensor):
 
     # Add parameters' gradients to their values, multiplied by learning rate
     for p in rnn.parameters():
-        p.data.add_(-learning_rate, p.grad.data)
+        p.data.add_(p.grad.data, alpha=-learning_rate)
 
     return output, loss.item()
 
