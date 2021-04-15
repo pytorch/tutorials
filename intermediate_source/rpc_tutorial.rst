@@ -3,14 +3,14 @@ Getting Started with Distributed RPC Framework
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
 
-.. warning::
-  The `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__ package
-  is experimental and subject to change. It also requires PyTorch 1.4.0+ to run as this is the first version to support RPC.
+Prerequisites:
 
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `RPC API documents <https://pytorch.org/docs/master/rpc.html>`__
 
 This tutorial uses two simple examples to demonstrate how to build distributed
 training with the `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
-package which is first introduced as an experimental feature in PyTorch v1.4.
+package which is first introduced as a prototype feature in PyTorch v1.4.
 Source code of the two examples can be found in
 `PyTorch examples <https://github.com/pytorch/examples>`__.
 
@@ -598,19 +598,20 @@ accumulate to the same set of ``Tensors``.
 
         # train for 10 iterations
         for epoch in range(10):
-            # create distributed autograd context
             for data, target in get_next_batch():
-                with dist_autograd.context():
+                # create distributed autograd context
+                with dist_autograd.context() as context_id:
                     hidden[0].detach_()
                     hidden[1].detach_()
                     output, hidden = model(data, hidden)
                     loss = criterion(output, target)
                     # run distributed backward pass
-                    dist_autograd.backward([loss])
+                    dist_autograd.backward(context_id, [loss])
                     # run distributed optimizer
-                    opt.step()
-                    # not necessary to zero grads as each iteration creates a different
-                    # distributed autograd context which hosts different grads
+                    opt.step(context_id)
+                    # not necessary to zero grads since they are
+                    # accumulated into the distributed autograd context
+                    # which is reset every iteration.
             print("Training epoch {}".format(epoch))
 
 
