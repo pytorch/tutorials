@@ -14,10 +14,6 @@ lets look what we can do with tensors.
 # Author: Robert Guthrie
 
 import torch
-import torch.autograd as autograd
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 torch.manual_seed(1)
 
@@ -26,7 +22,7 @@ torch.manual_seed(1)
 # Creating Tensors
 # ~~~~~~~~~~~~~~~~
 #
-# Tensors can be created from Python lists with the torch.Tensor()
+# Tensors can be created from Python lists with the torch.tensor()
 # function.
 #
 
@@ -73,9 +69,10 @@ print(T[0])
 
 
 ######################################################################
-# You can also create tensors of other datatypes. The default, as you can
-# see, is Float. To create a tensor of integer types, try
-# torch.LongTensor(). Check the documentation for more data types, but
+# You can also create tensors of other data types. To create a tensor of integer types, try
+# torch.tensor([[1, 2], [3, 4]]) (where all elements in the list are integers).
+# You can also specify a data type by passing in ``dtype=torch.data_type``.
+# Check the documentation for more data types, but
 # Float and Long will be the most common.
 #
 
@@ -273,7 +270,7 @@ print(new_z.grad_fn)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad``=True by wrapping the code block in
+# with ``.requires_grad=True`` by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
