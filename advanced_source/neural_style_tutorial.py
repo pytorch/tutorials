@@ -83,7 +83,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # An important detail to note is that neural networks from the
 # torch library are trained with tensor values ranging from 0 to 1. If you
 # try to feed the networks with 0 to 255 tensor images, then the activated
-# feature maps will be unable sense the intended content and style.
+# feature maps will be unable to sense the intended content and style.
 # However, pre-trained networks from the Caffe library are trained with 0
 # to 255 tensor images. 
 #
@@ -403,7 +403,7 @@ def get_input_optimizer(input_img):
 # each iteration of the networks, it is fed an updated input and computes
 # new losses. We will run the ``backward`` methods of each loss module to
 # dynamicaly compute their gradients. The optimizer requires a “closure”
-# function, which reevaluates the modul and returns the loss.
+# function, which reevaluates the module and returns the loss.
 # 
 # We still have one final constraint to address. The network may try to
 # optimize the input with values that exceed the 0 to 1 tensor range for
