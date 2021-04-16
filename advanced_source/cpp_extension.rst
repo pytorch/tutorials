@@ -313,7 +313,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<https://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/stable/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
@@ -326,7 +326,7 @@ For our extensions, the necessary binding code spans only four lines:
 
 One bit to note here is the macro ``TORCH_EXTENSION_NAME``. The torch extension
 build will define it as the name you give your extension in the ``setup.py``
-script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm".
+script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm_cpp".
 This is to avoid having to maintain the name of the extension in two places
 (the build script and your C++ code), as a mismatch between the two can lead to
 nasty and hard to track issues.
@@ -1101,7 +1101,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
           d_gates.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>(),
