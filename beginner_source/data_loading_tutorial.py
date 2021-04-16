@@ -4,7 +4,7 @@ Writing Custom Datasets, DataLoaders and Transforms
 ===================================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
-A lot of effort in solving any machine learning problem goes in to
+A lot of effort in solving any machine learning problem goes into
 preparing the data. PyTorch provides many tools to make data loading
 easy and hopefully, to make your code more readable. In this tutorial,
 we will see how to load and preprocess/augment data from a non trivial
@@ -68,7 +68,8 @@ landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
 
 n = 65
 img_name = landmarks_frame.iloc[n, 0]
-landmarks = landmarks_frame.iloc[n, 1:].as_matrix()
+landmarks = landmarks_frame.iloc[n, 1:]
+landmarks = np.asarray(landmarks)
 landmarks = landmarks.astype('float').reshape(-1, 2)
 
 print('Image name: {}'.format(img_name))
@@ -104,7 +105,7 @@ plt.show()
 #
 # -  ``__len__`` so that ``len(dataset)`` returns the size of the dataset.
 # -  ``__getitem__`` to support the indexing such that ``dataset[i]`` can
-#    be used to get :math:`i`\ th sample
+#    be used to get :math:`i`\ th sample.
 #
 # Let's create a dataset class for our face landmarks dataset. We will
 # read the csv in ``__init__`` but leave the reading of images to
@@ -186,7 +187,7 @@ for i in range(len(face_dataset)):
 #
 # One issue we can see from the above is that the samples are not of the
 # same size. Most neural networks expect the images of a fixed size.
-# Therefore, we will need to write some prepocessing code.
+# Therefore, we will need to write some preprocessing code.
 # Let's create three transforms:
 #
 # -  ``Rescale``: to scale the image
@@ -290,7 +291,13 @@ class ToTensor(object):
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-
+    
+######################################################################
+# .. note::
+#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
+#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
 # Compose transforms
@@ -374,7 +381,7 @@ for i in range(len(transformed_dataset)):
 #
 
 dataloader = DataLoader(transformed_dataset, batch_size=4,
-                        shuffle=True, num_workers=4)
+                        shuffle=True, num_workers=0)
 
 
 # Helper function to show a batch
