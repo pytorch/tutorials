@@ -1,5 +1,5 @@
 """
-(experimental) Dynamic Quantization on an LSTM Word Language Model
+(beta) Dynamic Quantization on an LSTM Word Language Model
 ==================================================================
 
 **Author**: `James Reed <https://github.com/jamesr66a>`_
@@ -13,7 +13,7 @@ Quantization involves converting the weights and activations of your model from 
 to int, which can result in smaller model size and faster inference with only a small
 hit to accuracy.
 
-In this tutorial, we'll apply the easiest form of quantization - 
+In this tutorial, we'll apply the easiest form of quantization -
 `dynamic quantization <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_ -
 to an LSTM-based next word-prediction model, closely following the
 `word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
@@ -178,7 +178,7 @@ with open(model_data_filepath + 'out.txt', 'w') as outf:
 
             word = corpus.dictionary.idx2word[word_idx]
 
-            outf.write(str(word) + ('\n' if i % 20 == 19 else ' '))
+            outf.write(str(word.encode('utf-8')) + ('\n' if i % 20 == 19 else ' '))
 
             if i % 100 == 0:
                 print('| Generated {}/{} words'.format(i, 1000))
@@ -213,7 +213,7 @@ test_data = batchify(corpus.test, eval_batch_size)
 def get_batch(source, i):
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]
-    target = source[i+1:i+1+seq_len].view(-1)
+    target = source[i+1:i+1+seq_len].reshape(-1)
     return data, target
 
 def repackage_hidden(h):
@@ -271,7 +271,7 @@ print_size_of_model(quantized_model)
 ######################################################################
 # Second, we see faster inference time, with no difference in evaluation loss:
 #
-# Note: we number of threads to one for single threaded comparison, since quantized
+# Note: we set the number of threads to one for single threaded comparison, since quantized
 # models run single threaded.
 
 torch.set_num_threads(1)
