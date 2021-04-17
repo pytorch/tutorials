@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Creating extensions using numpy and scipy
+Creating Extensions Using numpy and scipy
 =========================================
 **Author**: `Adam Paszke <https://github.com/apaszke>`_
 
-**Updated by**: `Adam Dziedzic` [https://github.com/adam-dziedzic](https://github.com/adam-dziedzic)
+**Updated by**: `Adam Dziedzic <https://github.com/adam-dziedzic>`_
 
 In this tutorial, we shall go through two tasks:
 
@@ -35,13 +35,14 @@ from numpy.fft import rfft2, irfft2
 
 
 class BadFFTFunction(Function):
-
-    def forward(self, input):
+    @staticmethod
+    def forward(ctx, input):
         numpy_input = input.detach().numpy()
         result = abs(rfft2(numpy_input))
         return input.new(result)
 
-    def backward(self, grad_output):
+    @staticmethod
+    def backward(ctx, grad_output):
         numpy_go = grad_output.numpy()
         result = irfft2(numpy_go)
         return grad_output.new(result)
@@ -51,7 +52,7 @@ class BadFFTFunction(Function):
 
 
 def incorrect_fft(input):
-    return BadFFTFunction()(input)
+    return BadFFTFunction.apply(input)
 
 ###############################################################
 # **Example usage of the created layer:**
@@ -103,7 +104,7 @@ class ScipyConv2dFunction(Function):
         # the previous line can be expressed equivalently as:
         # grad_input = correlate2d(grad_output, flip(flip(filter.numpy(), axis=0), axis=1), mode='full')
         grad_filter = correlate2d(input.numpy(), grad_output, mode='valid')
-        return torch.as_tensor(grad_input, dtype=input.dtype), torch.as_tensor(grad_filter, dtype=filter.dtype), torch.as_tensor(grad_bias, dtype=bias.dtype)
+        return torch.from_numpy(grad_input), torch.from_numpy(grad_filter).to(torch.float), torch.from_numpy(grad_bias).to(torch.float)
 
 
 class ScipyConv2d(Module):

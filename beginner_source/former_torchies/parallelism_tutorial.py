@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Multi-GPU examples
+Multi-GPU Examples
 ==================
 
 Data Parallelism is when we split the mini-batch of samples into
@@ -10,6 +10,7 @@ smaller mini-batches in parallel.
 Data Parallelism is implemented using ``torch.nn.DataParallel``.
 One can wrap a Module in ``DataParallel`` and it will be parallelized
 over multiple GPUs in the batch dimension.
+
 
 DataParallel
 -------------
@@ -40,8 +41,21 @@ class DataParallelModel(nn.Module):
 # The code does not need to be changed in CPU-mode.
 #
 # The documentation for DataParallel can be found
-# `here <http://pytorch.org/docs/nn.html#dataparallel>`_.
-#
+# `here <https://pytorch.org/docs/nn.html#dataparallel>`_.
+# 
+# **Attributes of the wrapped module**
+# 
+# After wrapping a Module with ``DataParallel``, the attributes of the module
+# (e.g. custom methods) became inaccessible. This is because ``DataParallel``
+# defines a few new members, and allowing other attributes might lead to 
+# clashes in their names. For those who still want to access the attributes, 
+# a workaround is to use a subclass of ``DataParallel`` as below.
+
+class MyDataParallel(nn.DataParallel):
+    def __getattr__(self, name):
+        return getattr(self.module, name)
+    
+########################################################################
 # **Primitives on which DataParallel is implemented upon:**
 #
 #
@@ -125,4 +139,4 @@ class DistributedModel(nn.Module):
 # .. _More examples: https://github.com/pytorch/examples
 # .. _More tutorials: https://github.com/pytorch/tutorials
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/
-# .. _Chat with other users on Slack: http://pytorch.slack.com/messages/beginner/
+# .. _Chat with other users on Slack: https://pytorch.slack.com/messages/beginner/

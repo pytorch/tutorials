@@ -47,6 +47,11 @@ plt.ion()   # interactive mode
 # standard convolutional network augmented with a spatial transformer
 # network.
 
+from six.moves import urllib
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib.request.install_opener(opener)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Training dataset
@@ -241,7 +246,6 @@ def visualize_stn():
 
         axarr[1].imshow(out_grid)
         axarr[1].set_title('Transformed Images')
-
 
 for epoch in range(1, 20 + 1):
     train(epoch)

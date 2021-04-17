@@ -12,6 +12,16 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+#
+
+# Because the sphinx gallery might take a long time, you can control specific
+# files that generate the results using `GALLERY_PATTERN` environment variable,
+# For example to run only `neural_style_transfer_tutorial.py`:
+#   GALLERY_PATTERN="neural_style_transfer_tutorial.py" make html
+# or
+#   GALLERY_PATTERN="neural_style_transfer_tutorial.py" sphinx-build . _build
+#
+# GALLERY_PATTERN variable respects regular expressions.
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -20,11 +30,13 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('.'))
-
+import pytorch_sphinx_theme
 import torch
 import glob
 import shutil
-from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective
+from custom_directives import IncludeDirective, GalleryItemDirective, CustomGalleryItemDirective, CustomCalloutItemDirective, CustomCardItemDirective
+import distutils.file_util
+import re
 
 
 try:
@@ -32,7 +44,7 @@ try:
 except ImportError:
     import warnings
     warnings.warn('unable to load "torchvision" package')
-import sphinx_rtd_theme
+import pytorch_sphinx_theme
 
 # -- General configuration ------------------------------------------------
 
@@ -43,20 +55,29 @@ import sphinx_rtd_theme
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax',
+extensions = ['sphinx.ext.mathjax', 'sphinx_copybutton',
               'sphinx_gallery.gen_gallery']
 
 
 # -- Sphinx-gallery configuration --------------------------------------------
 
-
 sphinx_gallery_conf = {
     'examples_dirs': ['beginner_source', 'intermediate_source',
-                      'advanced_source'],
-    'gallery_dirs': ['beginner', 'intermediate', 'advanced'],
+                      'advanced_source', 'recipes_source', 'prototype_source'],
+    'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': 'tutorial.py',
     'backreferences_dir': False
 }
+
+if os.getenv('GALLERY_PATTERN'):
+    # GALLERY_PATTERN is to be used when you want to work on a single
+    # tutorial.  Previously this was fed into filename_pattern, but
+    # if you do that, you still end up parsing all of the other Python
+    # files which takes a few seconds.  This strategy is better, as
+    # ignore_pattern also skips parsing.
+    # See https://github.com/sphinx-gallery/sphinx-gallery/issues/721
+    # for a more detailed description of the issue.
+    sphinx_gallery_conf['ignore_pattern'] = r'/(?!' + re.escape(os.getenv('GALLERY_PATTERN')) + r')[^/]+$'
 
 for i in range(len(sphinx_gallery_conf['examples_dirs'])):
     gallery_dir = sphinx_gallery_conf['gallery_dirs'][i]
@@ -69,7 +90,7 @@ for i in range(len(sphinx_gallery_conf['examples_dirs'])):
 
     # Copy rst files from source dir to gallery dir
     for f in glob.glob(os.path.join(source_dir, '*.rst')):
-        shutil.copy(f, gallery_dir)
+        distutils.file_util.copy_file(f, gallery_dir, update=True)
 
 
 # Add any paths that contain templates here, relative to this directory.
@@ -152,10 +173,11 @@ html_static_path = ['_static']
 # }
 
 
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'pytorch_sphinx_theme'
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_logo = '_static/img/pytorch-logo-dark.svg'
 html_theme_options = {
+    'pytorch_project': 'tutorials',
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
@@ -221,9 +243,11 @@ texinfo_documents = [
 
 def setup(app):
     # Custom CSS
-    app.add_stylesheet('css/pytorch_theme.css')
-    app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
+    # app.add_stylesheet('css/pytorch_theme.css')
+    # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
     # Custom directives
     app.add_directive('includenodoc', IncludeDirective)
     app.add_directive('galleryitem', GalleryItemDirective)
     app.add_directive('customgalleryitem', CustomGalleryItemDirective)
+    app.add_directive('customcarditem', CustomCardItemDirective)
+    app.add_directive('customcalloutitem', CustomCalloutItemDirective)
