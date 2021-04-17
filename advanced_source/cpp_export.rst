@@ -1,8 +1,6 @@
 Loading a TorchScript Model in C++
 =====================================
 
-**This tutorial was updated to work with PyTorch 1.2**
-
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
@@ -205,7 +203,7 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
 
   add_executable(example-app example-app.cpp)
   target_link_libraries(example-app "${TORCH_LIBRARIES}")
-  set_property(TARGET example-app PROPERTY CXX_STANDARD 11)
+  set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 
 The last thing we need to build the example application is the LibTorch
 distribution. You can always grab the latest stable release from the `download
@@ -228,6 +226,8 @@ structure:
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The last step is building the application. For this, assume our example
 directory is laid out like this:
@@ -246,7 +246,7 @@ We can now run the following commands to build the application from within the
   mkdir build
   cd build
   cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
-  make
+  cmake --build . --config Release
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
 distribution. If all goes well, it will look something like this:
