@@ -251,5 +251,5 @@ for data in rand_loader:
 # collects and merges the results before returning it to you.
 #
 # For more information, please check out
-# http://pytorch.org/tutorials/beginner/former\_torchies/parallelism\_tutorial.html.
+# https://pytorch.org/tutorials/beginner/former\_torchies/parallelism\_tutorial.html.
 #

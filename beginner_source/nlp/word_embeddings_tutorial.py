@@ -93,7 +93,7 @@ Although it is more common to normalize by the lengths:
 .. math::
 
     \text{Similarity}(\text{physicist}, \text{mathematician}) = \frac{q_\text{physicist} \cdot q_\text{mathematician}}
-   {\| q_\text{\physicist} \| \| q_\text{mathematician} \|} = \cos (\phi)
+   {\| q_\text{physicist} \| \| q_\text{mathematician} \|} = \cos (\phi)
 
 Where :math:`\phi` is the angle between the two vectors. That way,
 extremely similar words (words whose embeddings point in the same
@@ -279,7 +279,7 @@ print(model.embeddings.weight[word_to_ix["beauty"]])
 # learning. It is a model that tries to predict words given the context of
 # a few words before and a few words after the target word. This is
 # distinct from language modeling, since CBOW is not sequential and does
-# not have to be probabilistic. Typcially, CBOW is used to quickly train
+# not have to be probabilistic. Typically, CBOW is used to quickly train
 # word embeddings, and these embeddings are used to initialize the
 # embeddings of some more complicated model. Usually, this is referred to
 # as *pretraining embeddings*. It almost always helps performance a couple

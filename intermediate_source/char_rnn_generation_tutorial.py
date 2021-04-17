@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Generating Names with a Character-Level RNN
-*******************************************
+NLP From Scratch: Generating Names with a Character-Level RNN
+*************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
 
-In the :doc:`last tutorial </intermediate/char_rnn_classification_tutorial>`
+This is our second of three tutorials on "NLP From Scratch".
+In the `first tutorial </intermediate/char_rnn_classification_tutorial>`
 we used a RNN to classify names into their language of origin. This time
 we'll turn around and generate names from languages.
 
@@ -42,7 +43,7 @@ as a "language model".
 I assume you have at least installed PyTorch, know Python, and
 understand Tensors:
 
--  http://pytorch.org/ For installation instructions
+-  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
@@ -50,10 +51,10 @@ understand Tensors:
 It would also be useful to know about RNNs and how they work:
 
 -  `The Unreasonable Effectiveness of Recurrent Neural
-   Networks <http://karpathy.github.io/2015/05/21/rnn-effectiveness/>`__
+   Networks <https://karpathy.github.io/2015/05/21/rnn-effectiveness/>`__
    shows a bunch of real life examples
 -  `Understanding LSTM
-   Networks <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__
+   Networks <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__
    is about LSTMs specifically but also informative about RNNs in
    general
 
@@ -86,7 +87,7 @@ n_letters = len(all_letters) + 1 # Plus EOS marker
 
 def findFiles(path): return glob.glob(path)
 
-# Turn a Unicode string to plain ASCII, thanks to http://stackoverflow.com/a/518232/2809427
+# Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -287,7 +288,7 @@ def train(category_tensor, input_line_tensor, target_line_tensor):
     loss.backward()
 
     for p in rnn.parameters():
-        p.data.add_(-learning_rate, p.grad.data)
+        p.data.add_(p.grad.data, alpha=-learning_rate)
 
     return output, loss.item() / input_line_tensor.size(0)
 

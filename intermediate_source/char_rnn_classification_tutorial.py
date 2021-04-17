@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Classifying Names with a Character-Level RNN
-*********************************************
+NLP From Scratch: Classifying Names with a Character-Level RNN
+**************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
 
 We will be building and training a basic character-level RNN to classify
-words. A character-level RNN reads words as a series of characters -
+words. This tutorial, along with the following two, show how to do
+preprocess data for NLP modeling "from scratch", in particular not using
+many of the convenience functions of `torchtext`, so you can see how
+preprocessing for NLP modeling works at a low level.
+
+A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
 previous hidden state into each next step. We take the final prediction
 to be the output, i.e. which class the word belongs to.
@@ -32,7 +37,7 @@ spelling:
 I assume you have at least installed PyTorch, know Python, and
 understand Tensors:
 
--  http://pytorch.org/ For installation instructions
+-  https://pytorch.org/ For installation instructions
 -  :doc:`/beginner/deep_learning_60min_blitz` to get started with PyTorch in general
 -  :doc:`/beginner/pytorch_with_examples` for a wide and deep overview
 -  :doc:`/beginner/former_torchies_tutorial` if you are former Lua Torch user
@@ -40,10 +45,10 @@ understand Tensors:
 It would also be useful to know about RNNs and how they work:
 
 -  `The Unreasonable Effectiveness of Recurrent Neural
-   Networks <http://karpathy.github.io/2015/05/21/rnn-effectiveness/>`__
+   Networks <https://karpathy.github.io/2015/05/21/rnn-effectiveness/>`__
    shows a bunch of real life examples
 -  `Understanding LSTM
-   Networks <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__
+   Networks <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__
    is about LSTMs specifically but also informative about RNNs in
    general
 
@@ -79,7 +84,7 @@ import string
 all_letters = string.ascii_letters + " .,;'"
 n_letters = len(all_letters)
 
-# Turn a Unicode string to plain ASCII, thanks to http://stackoverflow.com/a/518232/2809427
+# Turn a Unicode string to plain ASCII, thanks to https://stackoverflow.com/a/518232/2809427
 def unicodeToAscii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
@@ -171,7 +176,7 @@ print(lineToTensor('Jones').size())
 # as regular feed-forward layers.
 #
 # This RNN module (mostly copied from `the PyTorch for Torch users
-# tutorial <http://pytorch.org/tutorials/beginner/former_torchies/
+# tutorial <https://pytorch.org/tutorials/beginner/former_torchies/
 # nn_tutorial.html#example-2-recurrent-net>`__)
 # is just 2 linear layers which operate on an input and hidden state, with
 # a LogSoftmax layer after the output.
@@ -216,7 +221,7 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 #
 
 input = letterToTensor('A')
-hidden =torch.zeros(1, n_hidden)
+hidden = torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(input, hidden)
 
@@ -327,7 +332,7 @@ def train(category_tensor, line_tensor):
 
     # Add parameters' gradients to their values, multiplied by learning rate
     for p in rnn.parameters():
-        p.data.add_(-learning_rate, p.grad.data)
+        p.data.add_(p.grad.data, alpha=-learning_rate)
 
     return output, loss.item()
 
