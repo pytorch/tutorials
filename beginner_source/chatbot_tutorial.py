@@ -537,7 +537,7 @@ def outputVar(l, voc):
     max_target_len = max([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     mask = binaryMatrix(padList)
-    mask = torch.ByteTensor(mask)
+    mask = torch.BoolTensor(mask)
     padVar = torch.LongTensor(padList)
     return padVar, mask, max_target_len
 
@@ -968,9 +968,10 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 
     # Set device options
     input_variable = input_variable.to(device)
-    lengths = lengths.to(device)
     target_variable = target_variable.to(device)
     mask = mask.to(device)
+    # Lengths for rnn packing should always be on the cpu
+    lengths = lengths.to("cpu")
 
     # Initialize variables
     loss = 0

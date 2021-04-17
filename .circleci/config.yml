@@ -1,3 +1,12 @@
+version: 2.1
+
+executors:
+  windows-with-nvidia-gpu:
+    machine:
+      resource_class: windows.gpu.nvidia.medium
+      image: windows-server-2019-nvidia:stable
+      shell: bash.exe
+
 install_official_git_client: &install_official_git_client
   name: Install Official Git Client
   no_output_timeout: "1h"
@@ -97,7 +106,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         sudo pip -q install awscli==1.16.35
 
         if [ -n "${CUDA_VERSION}" ]; then
-          DRIVER_FN="NVIDIA-Linux-x86_64-410.104.run"
+          DRIVER_FN="NVIDIA-Linux-x86_64-460.39.run"
           wget "https://s3.amazonaws.com/ossci-linux/nvidia_driver/$DRIVER_FN"
           sudo /bin/bash "$DRIVER_FN" -s --no-drm || (sudo cat /var/log/nvidia-installer.log && false)
           nvidia-smi
@@ -113,10 +122,10 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
       command: |
         set -e
 
-        export pyTorchDockerImageTag=291
+        export pyTorchDockerImageTag=9de29bef4a5dc0dd1dd19428d83e5a66a44a1ed2
         echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
 
-        cat >/home/circleci/project/ci_build_script.sh <<EOL
+        cat >/home/circleci/project/ci_build_script.sh \<<EOL
         # =================== The following code will be executed inside Docker container ===================
         set -ex
 
@@ -162,125 +171,475 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_worker_defaults: &pytorch_tutorial_build_worker_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda10.2-cudnn7-py3-gcc7"
     CUDA_VERSION: "9"
   resource_class: gpu.medium
   <<: *pytorch_tutorial_build_defaults
 
 pytorch_tutorial_build_manager_defaults: &pytorch_tutorial_build_manager_defaults
   environment:
-    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda9-cudnn7-py3"
+    DOCKER_IMAGE: "308535385114.dkr.ecr.us-east-1.amazonaws.com/pytorch/pytorch-linux-xenial-cuda10.2-cudnn7-py3-gcc7"
   resource_class: medium
   <<: *pytorch_tutorial_build_defaults
 
-version: 2
+pytorch_windows_build_worker: &pytorch_windows_build_worker
+  executor: windows-with-nvidia-gpu
+  steps:
+    - checkout
+    - run:
+        name: Install Cuda
+        no_output_timeout: 30m
+        command: |
+          .circleci/scripts/windows_cuda_install.sh
+    - run:
+        name: Generate cache key
+        # This will refresh cache on Sundays, build should generate new cache.
+        command: echo "$(date +"%Y-%U")" > .circleci-weekly
+    - restore_cache:
+        keys:
+          - data-{{ checksum "Makefile" }}-{{ checksum ".circleci-weekly" }}
+    - run:
+        name: test
+        no_output_timeout: "1h"
+        command: |
+          .circleci/scripts/build_for_windows.sh
+    - save_cache:
+        key: data-{{ checksum "Makefile" }}-{{ checksum ".circleci-weekly" }}
+        paths:
+          - advanced_source/data
+          - beginner_source/data
+          - intermediate_source/data
+          - prototype_source/data
+
 jobs:
-  pytorch_tutorial_build_worker_0:
+  pytorch_tutorial_pr_build_worker_0:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_1:
+  pytorch_tutorial_pr_build_worker_1:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_2:
+  pytorch_tutorial_pr_build_worker_2:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_3:
+  pytorch_tutorial_pr_build_worker_3:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_4:
+  pytorch_tutorial_pr_build_worker_4:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_5:
+  pytorch_tutorial_pr_build_worker_5:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_6:
+  pytorch_tutorial_pr_build_worker_6:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_7:
+  pytorch_tutorial_pr_build_worker_7:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_8:
+  pytorch_tutorial_pr_build_worker_8:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_9:
+  pytorch_tutorial_pr_build_worker_9:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_10:
+  pytorch_tutorial_pr_build_worker_10:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_11:
+  pytorch_tutorial_pr_build_worker_11:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_12:
+  pytorch_tutorial_pr_build_worker_12:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_13:
+  pytorch_tutorial_pr_build_worker_13:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_14:
+  pytorch_tutorial_pr_build_worker_14:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_15:
+  pytorch_tutorial_pr_build_worker_15:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_16:
+  pytorch_tutorial_pr_build_worker_16:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_17:
+  pytorch_tutorial_pr_build_worker_17:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_18:
+  pytorch_tutorial_pr_build_worker_18:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_worker_19:
+  pytorch_tutorial_pr_build_worker_19:
     <<: *pytorch_tutorial_build_worker_defaults
 
-  pytorch_tutorial_build_manager:
+  pytorch_tutorial_pr_build_manager:
     <<: *pytorch_tutorial_build_manager_defaults
 
+  pytorch_tutorial_master_build_worker_0:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_1:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_2:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_3:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_4:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_5:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_6:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_7:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_8:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_9:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_10:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_11:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_12:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_13:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_14:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_15:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_16:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_17:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_18:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_worker_19:
+    <<: *pytorch_tutorial_build_worker_defaults
+
+  pytorch_tutorial_master_build_manager:
+    <<: *pytorch_tutorial_build_manager_defaults
+
+  pytorch_tutorial_windows_pr_build_worker_0:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_1:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_2:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_pr_build_worker_3:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_0:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_1:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_2:
+    <<: *pytorch_windows_build_worker
+
+  pytorch_tutorial_windows_master_build_worker_3:
+    <<: *pytorch_windows_build_worker
+
 workflows:
-  version: 2
   build:
     jobs:
-      - pytorch_tutorial_build_worker_0:
+      # Build jobs that only run on PR
+      - pytorch_tutorial_pr_build_worker_0:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_1:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_2:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_3:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_4:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_5:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_6:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_7:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_8:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_9:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_10:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_11:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_12:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_13:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_14:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_15:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_16:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_17:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_18:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_worker_19:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_pr_build_manager:
+          filters:
+            branches:
+              ignore:
+                - master
+      # Build jobs that only run on master
+      - pytorch_tutorial_master_build_worker_0:
           context: org-member
-      - pytorch_tutorial_build_worker_1:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_1:
           context: org-member
-      - pytorch_tutorial_build_worker_2:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_2:
           context: org-member
-      - pytorch_tutorial_build_worker_3:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_3:
           context: org-member
-      - pytorch_tutorial_build_worker_4:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_4:
           context: org-member
-      - pytorch_tutorial_build_worker_5:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_5:
           context: org-member
-      - pytorch_tutorial_build_worker_6:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_6:
           context: org-member
-      - pytorch_tutorial_build_worker_7:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_7:
           context: org-member
-      - pytorch_tutorial_build_worker_8:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_8:
           context: org-member
-      - pytorch_tutorial_build_worker_9:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_9:
           context: org-member
-      - pytorch_tutorial_build_worker_10:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_10:
           context: org-member
-      - pytorch_tutorial_build_worker_11:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_11:
           context: org-member
-      - pytorch_tutorial_build_worker_12:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_12:
           context: org-member
-      - pytorch_tutorial_build_worker_13:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_13:
           context: org-member
-      - pytorch_tutorial_build_worker_14:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_14:
           context: org-member
-      - pytorch_tutorial_build_worker_15:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_15:
           context: org-member
-      - pytorch_tutorial_build_worker_16:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_16:
           context: org-member
-      - pytorch_tutorial_build_worker_17:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_17:
           context: org-member
-      - pytorch_tutorial_build_worker_18:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_18:
           context: org-member
-      - pytorch_tutorial_build_worker_19:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_worker_19:
           context: org-member
-      - pytorch_tutorial_build_manager:
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_master_build_manager:
           context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_0:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_1:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_2:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_pr_build_worker_3:
+          filters:
+            branches:
+              ignore:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_0:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_1:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_2:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+      - pytorch_tutorial_windows_master_build_worker_3:
+          context: org-member
+          filters:
+            branches:
+              only:
+                - master
+

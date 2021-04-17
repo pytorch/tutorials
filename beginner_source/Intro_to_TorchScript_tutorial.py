@@ -1,5 +1,5 @@
 """
-2. Introduction to TorchScript
+Introduction to TorchScript
 ===========================
 
 *James Reed (jamesreed@fb.com), Michael Suo (suo@fb.com)*, rev2
@@ -24,14 +24,14 @@ In this tutorial we will cover:
 -  How to compose both approaches
 -  Saving and loading TorchScript modules
 
-We hope that after you complete this tutorial, you proceed to go through
+We hope that after you complete this tutorial, you will proceed to go through
 `the follow-on tutorial <https://pytorch.org/tutorials/advanced/cpp_export.html>`_
 which will walk you through an example of actually calling a TorchScript
 model from C++.
 
 """
 
-import torch # This is all you need to use both PyTorch and TorchScript!
+import torch  # This is all you need to use both PyTorch and TorchScript!
 print(torch.__version__)
 
 
@@ -77,7 +77,7 @@ print(my_cell(x, h))
 #    cell <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__–that
 #    is–it’s a function that is applied on a loop.
 #
-# We instantiated the module, and made ``x`` and ``y``, which are just 3x4
+# We instantiated the module, and made ``x`` and ``h``, which are just 3x4
 # matrices of random values. Then we invoked the cell with
 # ``my_cell(x, h)``. This in turn calls our ``forward`` function.
 #
@@ -125,11 +125,11 @@ print(my_cell(x, h))
 #
 
 class MyDecisionGate(torch.nn.Module):
-  def forward(self, x):
-    if x.sum() > 0:
-      return x
-    else:
-      return -x
+    def forward(self, x):
+        if x.sum() > 0:
+            return x
+        else:
+            return -x
 
 class MyCell(torch.nn.Module):
     def __init__(self):
@@ -256,11 +256,11 @@ print(traced_cell(x, h))
 #
 
 class MyDecisionGate(torch.nn.Module):
-  def forward(self, x):
-    if x.sum() > 0:
-      return x
-    else:
-      return -x
+    def forward(self, x):
+        if x.sum() > 0:
+            return x
+        else:
+            return -x
 
 class MyCell(torch.nn.Module):
     def __init__(self, dg):
@@ -274,6 +274,8 @@ class MyCell(torch.nn.Module):
 
 my_cell = MyCell(MyDecisionGate())
 traced_cell = torch.jit.trace(my_cell, (x, h))
+
+print(traced_cell.dg.code)
 print(traced_cell.code)
 
 
@@ -293,8 +295,10 @@ print(traced_cell.code)
 scripted_gate = torch.jit.script(MyDecisionGate())
 
 my_cell = MyCell(scripted_gate)
-traced_cell = torch.jit.script(my_cell)
-print(traced_cell.code)
+scripted_cell = torch.jit.script(my_cell)
+
+print(scripted_gate.code)
+print(scripted_cell.code)
 
 
 ######################################################################
@@ -342,13 +346,13 @@ print(rnn_loop.code)
 #
 
 class WrapRNN(torch.nn.Module):
-  def __init__(self):
-    super(WrapRNN, self).__init__()
-    self.loop = torch.jit.script(MyRNNLoop())
+    def __init__(self):
+        super(WrapRNN, self).__init__()
+        self.loop = torch.jit.script(MyRNNLoop())
 
-  def forward(self, xs):
-    y, h = self.loop(xs)
-    return torch.relu(y)
+    def forward(self, xs):
+        y, h = self.loop(xs)
+        return torch.relu(y)
 
 traced = torch.jit.trace(WrapRNN(), (torch.rand(10, 3, 4)))
 print(traced.code)
@@ -368,9 +372,9 @@ print(traced.code)
 # process. Let’s save and load our wrapped RNN module:
 #
 
-traced.save('wrapped_rnn.zip')
+traced.save('wrapped_rnn.pt')
 
-loaded = torch.jit.load('wrapped_rnn.zip')
+loaded = torch.jit.load('wrapped_rnn.pt')
 
 print(loaded)
 print(loaded.code)
