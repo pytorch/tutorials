@@ -195,7 +195,8 @@ def loadConversations(fileName, lines, fields):
             for i, field in enumerate(fields):
                 convObj[field] = values[i]
             # Convert string to list (convObj["utteranceIDs"] == "['L598485', 'L598486', ...]")
-            lineIds = eval(convObj["utteranceIDs"])
+            utterance_id_pattern = re.compile('L[0-9]+')
+            lineIds = utterance_id_pattern.findall(convObj["utteranceIDs"])
             # Reassemble lines
             convObj["lines"] = []
             for lineId in lineIds:
@@ -536,7 +537,7 @@ def outputVar(l, voc):
     max_target_len = max([len(indexes) for indexes in indexes_batch])
     padList = zeroPadding(indexes_batch)
     mask = binaryMatrix(padList)
-    mask = torch.ByteTensor(mask)
+    mask = torch.BoolTensor(mask)
     padVar = torch.LongTensor(padList)
     return padVar, mask, max_target_len
 
@@ -967,9 +968,10 @@ def train(input_variable, lengths, target_variable, mask, max_target_len, encode
 
     # Set device options
     input_variable = input_variable.to(device)
-    lengths = lengths.to(device)
     target_variable = target_variable.to(device)
     mask = mask.to(device)
+    # Lengths for rnn packing should always be on the cpu
+    lengths = lengths.to("cpu")
 
     # Initialize variables
     loss = 0
@@ -1329,6 +1331,17 @@ if loadFilename:
     encoder_optimizer.load_state_dict(encoder_optimizer_sd)
     decoder_optimizer.load_state_dict(decoder_optimizer_sd)
 
+# If you have cuda, configure cuda to call
+for state in encoder_optimizer.state.values():
+    for k, v in state.items():
+        if isinstance(v, torch.Tensor):
+            state[k] = v.cuda()
+
+for state in decoder_optimizer.state.values():
+    for k, v in state.items():
+        if isinstance(v, torch.Tensor):
+            state[k] = v.cuda()
+    
 # Run training iterations
 print("Starting Training!")
 trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer,

@@ -105,6 +105,8 @@ environment, however you are free to follow along on MacOS or Windows too.
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The first step is to download the LibTorch distribution locally, via the link
 retrieved from the PyTorch website. For a vanilla Ubuntu Linux environment, this
@@ -142,7 +144,7 @@ on we'll use this ``CMakeLists.txt`` file:
 
   add_executable(dcgan dcgan.cpp)
   target_link_libraries(dcgan "${TORCH_LIBRARIES}")
-  set_property(TARGET dcgan PROPERTY CXX_STANDARD 11)
+  set_property(TARGET dcgan PROPERTY CXX_STANDARD 14)
 
 .. note::
 
@@ -201,7 +203,7 @@ corresponding absolute path. Now, we are ready to build our application:
   -- Configuring done
   -- Generating done
   -- Build files have been written to: /home/build
-  root@fa350df05ecf:/home/build# make -j
+  root@fa350df05ecf:/home/build# cmake --build . --config Release
   Scanning dependencies of target dcgan
   [ 50%] Building CXX object CMakeFiles/dcgan.dir/dcgan.cpp.o
   [100%] Linking CXX executable dcgan
@@ -209,9 +211,9 @@ corresponding absolute path. Now, we are ready to build our application:
 
 Above, we first created a ``build`` folder inside of our ``dcgan`` directory,
 entered this folder, ran the ``cmake`` command to generate the necessary build
-(Make) files and finally compiled the project successfully by running ``make
--j``. We are now all set to execute our minimal binary and complete this section
-on basic project configuration:
+(Make) files and finally compiled the project successfully by running ``cmake
+--build . --config Release``. We are now all set to execute our minimal binary
+and complete this section on basic project configuration:
 
 .. code-block:: shell
 
@@ -696,136 +698,78 @@ The Generator Module
 ********************
 
 We begin by defining the generator module, which consists of a series of
-transposed 2D convolutions, batch normalizations and ReLU activation units. Like
-in Python, PyTorch here provides two APIs for model definition: a functional one
-where inputs are passed through successive functions, and a more object-oriented
-one where we build a ``Sequential`` module containing the entire model as
-submodules. Let's see how our generator looks with either API, and you can
-decide for yourself which one you prefer. First, using ``Sequential``:
+transposed 2D convolutions, batch normalizations and ReLU activation units.
+We explicitly pass inputs (in a functional way) between modules in the
+``forward()`` method of a module we define ourselves:
 
 .. code-block:: cpp
 
-  using namespace torch;
+  struct DCGANGeneratorImpl : nn::Module {
+    DCGANGeneratorImpl(int kNoiseSize)
+        : conv1(nn::ConvTranspose2dOptions(kNoiseSize, 256, 4)
+                    .bias(false)),
+          batch_norm1(256),
+          conv2(nn::ConvTranspose2dOptions(256, 128, 3)
+                    .stride(2)
+                    .padding(1)
+                    .bias(false)),
+          batch_norm2(128),
+          conv3(nn::ConvTranspose2dOptions(128, 64, 4)
+                    .stride(2)
+                    .padding(1)
+                    .bias(false)),
+          batch_norm3(64),
+          conv4(nn::ConvTranspose2dOptions(64, 1, 4)
+                    .stride(2)
+                    .padding(1)
+                    .bias(false))
+   {
+     // register_module() is needed if we want to use the parameters() method later on
+     register_module("conv1", conv1);
+     register_module("conv2", conv2);
+     register_module("conv3", conv3);
+     register_module("conv4", conv4);
+     register_module("batch_norm1", batch_norm1);
+     register_module("batch_norm2", batch_norm2);
+     register_module("batch_norm3", batch_norm3);
+   }
 
-  nn::Sequential generator(
-      // Layer 1
-      nn::Conv2d(nn::Conv2dOptions(kNoiseSize, 256, 4)
-                     .with_bias(false)
-                     .transposed(true)),
-      nn::BatchNorm(256),
-      nn::Functional(torch::relu),
-      // Layer 2
-      nn::Conv2d(nn::Conv2dOptions(256, 128, 3)
-                     .stride(2)
-                     .padding(1)
-                     .with_bias(false)
-                     .transposed(true)),
-      nn::BatchNorm(128),
-      nn::Functional(torch::relu),
-      // Layer 3
-      nn::Conv2d(nn::Conv2dOptions(128, 64, 4)
-                     .stride(2)
-                     .padding(1)
-                     .with_bias(false)
-                     .transposed(true)),
-      nn::BatchNorm(64),
-      nn::Functional(torch::relu),
-      // Layer 4
-      nn::Conv2d(nn::Conv2dOptions(64, 1, 4)
-                     .stride(2)
-                     .padding(1)
-                     .with_bias(false)
-                     .transposed(true)),
-      nn::Functional(torch::tanh));
+   torch::Tensor forward(torch::Tensor x) {
+     x = torch::relu(batch_norm1(conv1(x)));
+     x = torch::relu(batch_norm2(conv2(x)));
+     x = torch::relu(batch_norm3(conv3(x)));
+     x = torch::tanh(conv4(x));
+     return x;
+   }
 
-.. tip::
+   nn::ConvTranspose2d conv1, conv2, conv3, conv4;
+   nn::BatchNorm2d batch_norm1, batch_norm2, batch_norm3;
+  };
+  TORCH_MODULE(DCGANGenerator);
 
-	A ``Sequential`` module simply performs function composition. The output of
-	the first submodule becomes the input of the second, the output of the third
-	becomes the input of the fourth and so on.
+  DCGANGenerator generator(kNoiseSize);
 
-The particular modules chosen, like ``nn::Conv2d`` and ``nn::BatchNorm``,
+We can now invoke ``forward()`` on the ``DCGANGenerator`` to map a noise sample to an image.
+
+The particular modules chosen, like ``nn::ConvTranspose2d`` and ``nn::BatchNorm2d``,
 follows the structure outlined earlier. The ``kNoiseSize`` constant determines
-the size of the input noise vector and is set to ``100``. Notice also that we
-use the ``torch::nn::Functional`` module for our activation functions, passing
-it ``torch::relu`` for inner layers and ``torch::tanh`` as the final activation.
-Hyperparameters were, of course, found via grad student descent.
-
-.. note::
-
-	The Python frontend has one module for each activation function, like
-	``torch.nn.ReLU`` or ``torch.nn.Tanh``. In C++, we instead only provide the
-	``Functional`` module, to which you can pass any C++ function that will be
-	called inside the ``Functional``'s ``forward()`` method.
+the size of the input noise vector and is set to ``100``. Hyperparameters were,
+of course, found via grad student descent.
 
 .. attention::
 
 	No grad students were harmed in the discovery of hyperparameters. They were
 	fed Soylent regularly.
 
-For the second approach, we explicitly pass inputs (in a functional way) between
-modules in the ``forward()`` method of a module we define ourselves:
-
-.. code-block:: cpp
-
-  struct GeneratorImpl : nn::Module {
-    GeneratorImpl()
-        : conv1(nn::Conv2dOptions(kNoiseSize, 512, 4)
-                    .with_bias(false)
-                    .transposed(true)),
-          batch_norm1(512),
-          conv2(nn::Conv2dOptions(512, 256, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
-                    .transposed(true)),
-          batch_norm2(256),
-          conv3(nn::Conv2dOptions(256, 128, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
-                    .transposed(true)),
-          batch_norm3(128),
-          conv4(nn::Conv2dOptions(128, 64, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
-                    .transposed(true)),
-          batch_norm4(64),
-          conv5(nn::Conv2dOptions(64, 1, 4)
-                    .stride(2)
-                    .padding(1)
-                    .with_bias(false)
-                    .transposed(true)) {}
-
-    torch::Tensor forward(torch::Tensor x) {
-      x = torch::relu(batch_norm1(conv1(x)));
-      x = torch::relu(batch_norm2(conv2(x)));
-      x = torch::relu(batch_norm3(conv3(x)));
-      x = torch::relu(batch_norm4(conv4(x)));
-      x = torch::tanh(conv5(x));
-      return x;
-    }
-
-    nn::Conv2d conv1, conv2, conv3, conv4, conv5;
-    nn::BatchNorm batch_norm1, batch_norm2, batch_norm3, batch_norm4;
-  };
-  TORCH_MODULE(Generator);
-
-  Generator generator;
-
-Whichever approach we use, we can now invoke ``forward()`` on the ``Generator`` to
-map a noise sample to an image.
-
 .. note::
 
 	A brief word on the way options are passed to built-in modules like ``Conv2d``
 	in the C++ frontend: Every module has some required options, like the number
-	of features for ``BatchNorm``. If you only need to configure the required
+	of features for ``BatchNorm2d``. If you only need to configure the required
 	options, you can pass them directly to the module's constructor, like
-	``BatchNorm(128)`` or ``Dropout(0.5)`` or ``Conv2d(8, 4, 2)`` (for input
+	``BatchNorm2d(128)`` or ``Dropout(0.5)`` or ``Conv2d(8, 4, 2)`` (for input
 	channel count, output channel count, and kernel size). If, however, you need
-	to modify other options, which are normally defaulted, such as ``with_bias``
+	to modify other options, which are normally defaulted, such as ``bias``
 	for ``Conv2d``, you need to construct and pass an *options* object. Every
 	module in the C++ frontend has an associated options struct, called
 	``ModuleOptions`` where ``Module`` is the name of the module, like
@@ -840,36 +784,42 @@ and activations. However, the convolutions are now regular ones instead of
 transposed, and we use a leaky ReLU with an alpha value of 0.2 instead of a
 vanilla ReLU. Also, the final activation becomes a Sigmoid, which squashes
 values into a range between 0 and 1. We can then interpret these squashed values
-as the probabilities the discriminator assigns to images being real:
+as the probabilities the discriminator assigns to images being real.
+
+To build the discriminator, we will try something different: a `Sequential` module.
+Like in Python, PyTorch here provides two APIs for model definition: a functional one
+where inputs are passed through successive functions (e.g. the generator module example),
+and a more object-oriented one where we build a `Sequential` module containing the
+entire model as submodules. Using `Sequential`, the discriminator would look like:
 
 .. code-block:: cpp
 
   nn::Sequential discriminator(
     // Layer 1
     nn::Conv2d(
-        nn::Conv2dOptions(1, 64, 4).stride(2).padding(1).with_bias(false)),
-    nn::Functional(torch::leaky_relu, 0.2),
+        nn::Conv2dOptions(1, 64, 4).stride(2).padding(1).bias(false)),
+    nn::LeakyReLU(nn::LeakyReLUOptions().negative_slope(0.2)),
     // Layer 2
     nn::Conv2d(
-        nn::Conv2dOptions(64, 128, 4).stride(2).padding(1).with_bias(false)),
-    nn::BatchNorm(128),
-    nn::Functional(torch::leaky_relu, 0.2),
+        nn::Conv2dOptions(64, 128, 4).stride(2).padding(1).bias(false)),
+    nn::BatchNorm2d(128),
+    nn::LeakyReLU(nn::LeakyReLUOptions().negative_slope(0.2)),
     // Layer 3
     nn::Conv2d(
-        nn::Conv2dOptions(128, 256, 4).stride(2).padding(1).with_bias(false)),
-    nn::BatchNorm(256),
-    nn::Functional(torch::leaky_relu, 0.2),
+        nn::Conv2dOptions(128, 256, 4).stride(2).padding(1).bias(false)),
+    nn::BatchNorm2d(256),
+    nn::LeakyReLU(nn::LeakyReLUOptions().negative_slope(0.2)),
     // Layer 4
     nn::Conv2d(
-        nn::Conv2dOptions(256, 1, 3).stride(1).padding(0).with_bias(false)),
-    nn::Functional(torch::sigmoid));
+        nn::Conv2dOptions(256, 1, 3).stride(1).padding(0).bias(false)),
+    nn::Sigmoid());
 
-.. note::
+.. tip::
 
-	When the function we pass to ``Functional`` takes more arguments than a single
-	tensor, we can pass them to the ``Functional`` constructor, which will forward
-	them to each function call. For the leaky ReLU above, this means
-	``torch::leaky_relu(previous_output_tensor, 0.2)`` is called.
+  A ``Sequential`` module simply performs function composition. The output of
+  the first submodule becomes the input of the second, the output of the third
+  becomes the input of the fourth and so on.
+
 
 Loading Data
 ------------

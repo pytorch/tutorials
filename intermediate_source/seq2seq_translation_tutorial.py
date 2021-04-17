@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Translation with a Sequence to Sequence Network and Attention
-*************************************************************
+NLP From Scratch: Translation with a Sequence to Sequence Network and Attention
+*******************************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
+
+This is the third and final tutorial on doing "NLP From Scratch", where we
+write our own classes and functions to preprocess the data to do our NLP
+modeling tasks. We hope after you complete this tutorial that you'll proceed to
+learn how `torchtext` can handle much of this preprocessing for you in the
+three tutorials immediately following this one.
 
 In this project we will be teaching a neural network to translate from
 French to English.
@@ -69,17 +75,6 @@ You will also find the previous tutorials on
 and :doc:`/intermediate/char_rnn_generation_tutorial`
 helpful as those concepts are very similar to the Encoder and Decoder
 models, respectively.
-
-And for more, read the papers that introduced these topics:
-
--  `Learning Phrase Representations using RNN Encoder-Decoder for
-   Statistical Machine Translation <https://arxiv.org/abs/1406.1078>`__
--  `Sequence to Sequence Learning with Neural
-   Networks <https://arxiv.org/abs/1409.3215>`__
--  `Neural Machine Translation by Jointly Learning to Align and
-   Translate <https://arxiv.org/abs/1409.0473>`__
--  `A Neural Conversational Model <https://arxiv.org/abs/1506.05869>`__
-
 
 **Requirements**
 """
@@ -521,7 +516,7 @@ def tensorsFromPair(pair):
 # each next input, instead of using the decoder's guess as the next input.
 # Using teacher forcing causes it to converge faster but `when the trained
 # network is exploited, it may exhibit
-# instability <http://minds.jacobs-university.de/sites/default/files/uploads/papers/ESNTutorialRev.pdf>`__.
+# instability <http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.378.4095&rep=rep1&type=pdf>`__.
 #
 # You can observe outputs of teacher-forced networks that read with
 # coherent grammar but wander far from the correct translation -

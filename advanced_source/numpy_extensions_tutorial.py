@@ -35,13 +35,14 @@ from numpy.fft import rfft2, irfft2
 
 
 class BadFFTFunction(Function):
-
-    def forward(self, input):
+    @staticmethod
+    def forward(ctx, input):
         numpy_input = input.detach().numpy()
         result = abs(rfft2(numpy_input))
         return input.new(result)
 
-    def backward(self, grad_output):
+    @staticmethod
+    def backward(ctx, grad_output):
         numpy_go = grad_output.numpy()
         result = irfft2(numpy_go)
         return grad_output.new(result)
@@ -51,7 +52,7 @@ class BadFFTFunction(Function):
 
 
 def incorrect_fft(input):
-    return BadFFTFunction()(input)
+    return BadFFTFunction.apply(input)
 
 ###############################################################
 # **Example usage of the created layer:**

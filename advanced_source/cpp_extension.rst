@@ -115,13 +115,13 @@ PyTorch has no knowledge of the *algorithm* you are implementing. It knows only
 of the individual operations you use to compose your algorithm. As such, PyTorch
 must execute your operations individually, one after the other. Since each
 individual call to the implementation (or *kernel*) of an operation, which may
-involve launch of a CUDA kernel, has a certain amount of overhead, this overhead
-may become significant across many function calls. Furthermore, the Python
-interpreter that is running our code can itself slow down our program.
+involve the launch of a CUDA kernel, has a certain amount of overhead, this
+overhead may become significant across many function calls. Furthermore, the
+Python interpreter that is running our code can itself slow down our program.
 
 A definite method of speeding things up is therefore to rewrite parts in C++ (or
 CUDA) and *fuse* particular groups of operations. Fusing means combining the
-implementations of many functions into a single functions, which profits from
+implementations of many functions into a single function, which profits from
 fewer kernel launches as well as other optimizations we can perform with
 increased visibility of the global flow of data.
 
@@ -147,23 +147,22 @@ For the "ahead of time" flavor, we build our C++ extension by writing a
 ``setup.py`` script that uses setuptools to compile our C++ code. For the LLTM, it
 looks as simple as this::
 
-  from setuptools import setup
-  from torch.utils.cpp_extension import CppExtension, BuildExtension
+  from setuptools import setup, Extension
+  from torch.utils import cpp_extension
 
   setup(name='lltm_cpp',
-        ext_modules=[CppExtension('lltm', ['lltm.cpp'])],
-        cmdclass={'build_ext': BuildExtension})
-
+        ext_modules=[cpp_extension.CppExtension('lltm_cpp', ['lltm.cpp'])],
+        cmdclass={'build_ext': cpp_extension.BuildExtension})
 
 In this code, :class:`CppExtension` is a convenience wrapper around
 :class:`setuptools.Extension` that passes the correct include paths and sets
 the language of the extension to C++. The equivalent vanilla :mod:`setuptools`
 code would simply be::
 
-  setuptools.Extension(
+  Extension(
      name='lltm_cpp',
      sources=['lltm.cpp'],
-     include_dirs=torch.utils.cpp_extension.include_paths(),
+     include_dirs=cpp_extension.include_paths(),
      language='c++')
 
 :class:`BuildExtension` performs a number of required configuration steps and
@@ -314,7 +313,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<https://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/stable/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
@@ -327,7 +326,7 @@ For our extensions, the necessary binding code spans only four lines:
 
 One bit to note here is the macro ``TORCH_EXTENSION_NAME``. The torch extension
 build will define it as the name you give your extension in the ``setup.py``
-script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm".
+script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm_cpp".
 This is to avoid having to maintain the name of the extension in two places
 (the build script and your C++ code), as a mismatch between the two can lead to
 nasty and hard to track issues.
@@ -413,7 +412,7 @@ see::
 If we call ``help()`` on the function or module, we can see that its signature
 matches our C++ code::
 
-  In[4] help(lltm.forward)
+  In[4] help(lltm_cpp.forward)
   forward(...) method of builtins.PyCapsule instance
       forward(arg0: torch::Tensor, arg1: torch::Tensor, arg2: torch::Tensor, arg3: torch::Tensor, arg4: torch::Tensor) -> List[torch::Tensor]
 
@@ -473,6 +472,8 @@ small benchmark to see how much performance we gained from rewriting our op in
 C++. We'll run the LLTM forwards and backwards a few times and measure the
 duration::
 
+  import time
+
   import torch
 
   batch_size = 16
@@ -508,12 +509,12 @@ and with our new C++ version::
   Forward: 349.335 us | Backward 443.523 us
 
 We can already see a significant speedup for the forward function (more than
-30%). For the backward function a speedup is visible, albeit not major one. The
-backward pass I wrote above was not particularly optimized and could definitely
-be improved. Also, PyTorch's automatic differentiation engine can automatically
-parallelize computation graphs, may use a more efficient flow of operations
-overall, and is also implemented in C++, so it's expected to be fast.
-Nevertheless, this is a good start.
+30%). For the backward function, a speedup is visible, albeit not a major one.
+The backward pass I wrote above was not particularly optimized and could
+definitely be improved. Also, PyTorch's automatic differentiation engine can
+automatically parallelize computation graphs, may use a more efficient flow of
+operations overall, and is also implemented in C++, so it's expected to be
+fast. Nevertheless, this is a good start.
 
 Performance on GPU Devices
 **************************
@@ -570,7 +571,7 @@ And C++/ATen::
 
 That's a great overall speedup compared to non-CUDA code. However, we can pull
 even more performance out of our C++ code by writing custom CUDA kernels, which
-we'll dive into soon. Before that, let's dicuss another way of building your C++
+we'll dive into soon. Before that, let's discuss another way of building your C++
 extensions.
 
 JIT Compiling Extensions
@@ -666,8 +667,8 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
 
   // C++ interface
 
-  #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
-  #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
+  #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
+  #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
   #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
   std::vector<torch::Tensor> lltm_forward(
@@ -850,7 +851,7 @@ and ``Double``), you can use ``AT_DISPATCH_ALL_TYPES``.
 
 Note that we perform some operations with plain ATen. These operations will
 still run on the GPU, but using ATen's default implementations. This makes
-sense, because ATen will use highly optimized routines for things like matrix
+sense because ATen will use highly optimized routines for things like matrix
 multiplies (e.g. ``addmm``) or convolutions which would be much harder to
 implement and improve ourselves.
 
@@ -902,7 +903,7 @@ You can see in the CUDA kernel that we work directly on pointers with the right
 type. Indeed, working directly with high level type agnostic tensors inside cuda
 kernels would be very inefficient.
 
-However, this comes at a cost of ease of use and readibility, especially for
+However, this comes at a cost of ease of use and readability, especially for
 highly dimensional data. In our example, we know for example that the contiguous
 ``gates`` tensor has 3 dimensions:
 
@@ -919,7 +920,7 @@ arithmetic.
   gates.data<scalar_t>()[n*3*state_size + row*state_size + column]
 
 
-In addition to being verbose, this expression needs stride to be explicitely
+In addition to being verbose, this expression needs stride to be explicitly
 known, and thus passed to the kernel function within its arguments. You can see
 that in the case of kernel functions accepting multiple tensors with different
 sizes you will end up with a very long list of arguments.
@@ -945,7 +946,8 @@ without having to convert to a single pointer:
 Accessor objects have a relatively high level interface, with ``.size()`` and
 ``.stride()`` methods and multi-dimensional indexing. The ``.accessor<>``
 interface is designed to access data efficiently on cpu tensor. The equivalent
-for cuda tensors is the ``packed_accessor<>``, which produces a Packed Accessor.
+for cuda tensors are ``packed_accessor64<>`` and ``packed_accessor32<>``, which
+produce Packed Accessors with either 64-bit or 32-bit integer indexing.
 
 The fundamental difference with Accessor is that a Packed Accessor copies size
 and stride data inside of its structure instead of pointing to it. It allows us
@@ -956,20 +958,20 @@ We can design a function that takes Packed Accessors instead of pointers.
 .. code-block:: cpp
 
   __global__ void lltm_cuda_forward_kernel(
-      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gates,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> old_cell,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_h,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell)
+      const torch::PackedTensorAccessor32<scalar_t,3,torch::RestrictPtrTraits> gates,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> old_cell,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> new_h,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> new_cell,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> input_gate,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> output_gate,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> candidate_cell)
 
 Let's decompose the template used here. the first two arguments ``scalar_t`` and
 ``2`` are the same as regular Accessor. The argument
 ``torch::RestrictPtrTraits`` indicates that the ``__restrict__`` keyword must be
-used. Finally, the argument ``size_t`` indicates that sizes and strides must be
-stored in a ``size_t`` integer. This is important as by default ``int64_t`` is
-used and can make the kernel slower.
+used. Note also that we've used the ``PackedAccessor32`` variant which store the
+sizes and strides in an ``int32_t``. This is important as using the 64-bit
+variant (``PackedAccessor64``) can make the kernel slower.
 
 The function declaration becomes
 
@@ -977,13 +979,13 @@ The function declaration becomes
 
   template <typename scalar_t>
   __global__ void lltm_cuda_forward_kernel(
-      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gates,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> old_cell,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_h,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell) {
+      const torch::PackedTensorAccessor32<scalar_t,3,torch::RestrictPtrTraits> gates,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> old_cell,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> new_h,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> new_cell,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> input_gate,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> output_gate,
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> candidate_cell) {
     //batch index
     const int n = blockIdx.y;
     // column index
@@ -999,7 +1001,7 @@ The function declaration becomes
   }
 
 The implementation is much more readable! This function is then called by
-creating Packed Accessors with the ``.packed_accessor<>`` method within the
+creating Packed Accessors with the ``.packed_accessor32<>`` method within the
 host function.
 
 .. code-block:: cpp
@@ -1028,13 +1030,13 @@ host function.
 
     AT_DISPATCH_FLOATING_TYPES(gates.type(), "lltm_forward_cuda", ([&] {
       lltm_cuda_forward_kernel<scalar_t><<<blocks, threads>>>(
-          gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
-          old_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          new_h.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          new_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          input_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          output_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          candidate_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>());
+          gates.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>(),
+          old_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          new_h.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          new_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          input_gate.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          output_gate.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          candidate_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>());
     }));
 
     return {new_h, new_cell, input_gate, output_gate, candidate_cell, X, gates};
@@ -1047,15 +1049,15 @@ on it:
 
   template <typename scalar_t>
   __global__ void lltm_cuda_backward_kernel(
-      torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> d_old_cell,
-      torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> d_gates,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> grad_h,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> grad_cell,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> new_cell,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> input_gate,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> output_gate,
-      const torch::PackedTensorAccessor<scalar_t,2,torch::RestrictPtrTraits,size_t> candidate_cell,
-      const torch::PackedTensorAccessor<scalar_t,3,torch::RestrictPtrTraits,size_t> gate_weights) {
+      torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> d_old_cell,
+      torch::PackedTensorAccessor32<scalar_t,3,torch::RestrictPtrTraits> d_gates,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> grad_h,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> grad_cell,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> new_cell,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> input_gate,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> output_gate,
+      const torch::PackedTensorAccessor32<scalar_t,2,torch::RestrictPtrTraits> candidate_cell,
+      const torch::PackedTensorAccessor32<scalar_t,3,torch::RestrictPtrTraits> gate_weights) {
     //batch index
     const int n = blockIdx.y;
     // column index
@@ -1099,17 +1101,17 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
-          d_old_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          d_gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>(),
-          grad_h.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          grad_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          new_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          input_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          output_gate.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          candidate_cell.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
-          gates.packed_accessor<scalar_t,3,torch::RestrictPtrTraits,size_t>());
+          d_old_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          d_gates.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>(),
+          grad_h.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          grad_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          new_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          input_gate.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          output_gate.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          candidate_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
+          gates.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>());
     }));
 
     auto d_gate_weights = d_gates.reshape({batch_size, 3*state_size});
