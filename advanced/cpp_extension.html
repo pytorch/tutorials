@@ -403,12 +403,12 @@ PyTorch has no knowledge of the <em>algorithm</em> you are implementing. It know
 of the individual operations you use to compose your algorithm. As such, PyTorch
 must execute your operations individually, one after the other. Since each
 individual call to the implementation (or <em>kernel</em>) of an operation, which may
-involve launch of a CUDA kernel, has a certain amount of overhead, this overhead
-may become significant across many function calls. Furthermore, the Python
-interpreter that is running our code can itself slow down our program.</p>
+involve the launch of a CUDA kernel, has a certain amount of overhead, this
+overhead may become significant across many function calls. Furthermore, the
+Python interpreter that is running our code can itself slow down our program.</p>
 <p>A definite method of speeding things up is therefore to rewrite parts in C++ (or
 CUDA) and <em>fuse</em> particular groups of operations. Fusing means combining the
-implementations of many functions into a single functions, which profits from
+implementations of many functions into a single function, which profits from
 fewer kernel launches as well as other optimizations we can perform with
 increased visibility of the global flow of data.</p>
 <p>Let’s see how we can use C++ extensions to implement a <em>fused</em> version of the
@@ -773,12 +773,12 @@ of this post, we get the following numbers (on my machine):</p>
 </pre></div>
 </div>
 <p>We can already see a significant speedup for the forward function (more than
-30%). For the backward function a speedup is visible, albeit not major one. The
-backward pass I wrote above was not particularly optimized and could definitely
-be improved. Also, PyTorch’s automatic differentiation engine can automatically
-parallelize computation graphs, may use a more efficient flow of operations
-overall, and is also implemented in C++, so it’s expected to be fast.
-Nevertheless, this is a good start.</p>
+30%). For the backward function, a speedup is visible, albeit not a major one.
+The backward pass I wrote above was not particularly optimized and could
+definitely be improved. Also, PyTorch’s automatic differentiation engine can
+automatically parallelize computation graphs, may use a more efficient flow of
+operations overall, and is also implemented in C++, so it’s expected to be
+fast. Nevertheless, this is a good start.</p>
 </div>
 <div class="section" id="performance-on-gpu-devices">
 <h4>Performance on GPU Devices<a class="headerlink" href="#performance-on-gpu-devices" title="Permalink to this headline">¶</a></h4>
@@ -834,7 +834,7 @@ running on CUDA devices, we again see performance gains. For Python/PyTorch:</p>
 </div>
 <p>That’s a great overall speedup compared to non-CUDA code. However, we can pull
 even more performance out of our C++ code by writing custom CUDA kernels, which
-we’ll dive into soon. Before that, let’s dicuss another way of building your C++
+we’ll dive into soon. Before that, let’s discuss another way of building your C++
 extensions.</p>
 </div>
 </div>
@@ -1101,7 +1101,7 @@ wanted to dispatch over all types and not just floating point types (<code class
 and <code class="docutils literal notranslate"><span class="pre">Double</span></code>), you can use <code class="docutils literal notranslate"><span class="pre">AT_DISPATCH_ALL_TYPES</span></code>.</p>
 <p>Note that we perform some operations with plain ATen. These operations will
 still run on the GPU, but using ATen’s default implementations. This makes
-sense, because ATen will use highly optimized routines for things like matrix
+sense because ATen will use highly optimized routines for things like matrix
 multiplies (e.g. <code class="docutils literal notranslate"><span class="pre">addmm</span></code>) or convolutions which would be much harder to
 implement and improve ourselves.</p>
 <p>As for the kernel launch itself, we are here specifying that each CUDA block
@@ -1146,7 +1146,7 @@ a million elements in serial, you can see why this would be much faster.</p>
 <p>You can see in the CUDA kernel that we work directly on pointers with the right
 type. Indeed, working directly with high level type agnostic tensors inside cuda
 kernels would be very inefficient.</p>
-<p>However, this comes at a cost of ease of use and readibility, especially for
+<p>However, this comes at a cost of ease of use and readability, especially for
 highly dimensional data. In our example, we know for example that the contiguous
 <code class="docutils literal notranslate"><span class="pre">gates</span></code> tensor has 3 dimensions:</p>
 <ol class="arabic simple">
@@ -1160,7 +1160,7 @@ arithmetic.</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">gates</span><span class="p">.</span><span class="n">data</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;</span><span class="p">()[</span><span class="n">n</span><span class="o">*</span><span class="mi">3</span><span class="o">*</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">row</span><span class="o">*</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">column</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>In addition to being verbose, this expression needs stride to be explicitely
+<p>In addition to being verbose, this expression needs stride to be explicitly
 known, and thus passed to the kernel function within its arguments. You can see
 that in the case of kernel functions accepting multiple tensors with different
 sizes you will end up with a very long list of arguments.</p>
