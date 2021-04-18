@@ -58,7 +58,7 @@ class Net(nn.Module):
     def forward(self, x):
         # Max pooling over a (2, 2) window
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        # If the size is a square you can only specify a single number
+        # If the size is a square, you can specify with a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
         x = x.view(-1, self.num_flat_features(x))
         x = F.relu(self.fc1(x))
@@ -176,7 +176,7 @@ print(loss)
 #           -> loss
 #
 # So, when we call ``loss.backward()``, the whole graph is differentiated
-# w.r.t. the loss, and all Tensors in the graph that has ``requires_grad=True``
+# w.r.t. the loss, and all Tensors in the graph that have ``requires_grad=True``
 # will have their ``.grad`` Tensor accumulated with the gradient.
 #
 # For illustration, let us follow a few steps backward:
