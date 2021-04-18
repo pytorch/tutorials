@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Sequence Models and Long-Short Term Memory Networks
+Sequence Models and Long Short-Term Memory Networks
 ===================================================
 
 At this point, we have seen various feed-forward networks. That is,
