@@ -49,8 +49,8 @@ if [[ "${CIRCLE_JOB}" == *worker_* ]]; then
   python $DIR/remove_runnable_code.py advanced_source/static_quantization_tutorial.py advanced_source/static_quantization_tutorial.py || true
   python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
   python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py  beginner_source/audio_preprocessing_tutorial.py || true
-  # Temp remove for mnist download issue.
-  python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py  beginner_source/fgsm_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py  beginner_source/fgsm_tutorial.py || true
 
   export WORKER_ID=$(echo "${CIRCLE_JOB}" | tr -dc '0-9')
   count=0
