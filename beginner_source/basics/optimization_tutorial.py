@@ -12,7 +12,7 @@
 Optimizing Model Parameters
 ===========================
 
-Now that we have a model and data it's time to train, validate and test our model by optimizing it's parameters on 
+Now that we have a model and data it's time to train, validate and test our model by optimizing its parameters on 
 our data. Training a model is an iterative process; in each iteration (called an *epoch*) the model makes a guess about the output, calculates 
 the error in its guess (*loss*), collects the derivatives of the error with respect to its parameters (as we saw in 
 the `previous section  <autograd_tutorial.html>`_), and **optimizes** these parameters using gradient descent. For a more 
