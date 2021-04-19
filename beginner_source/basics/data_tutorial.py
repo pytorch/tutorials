@@ -25,7 +25,7 @@ Datasets & Dataloaders
 # PyTorch domain libraries provide a number of pre-loaded datasets (such as FashionMNIST) that 
 # subclass ``torch.utils.data.Dataset`` and implement functions specific to the particular data.
 # They can be used to prototype and benchmark your model. You can find them
-# here: `Image Datasets <https://pytorch.org/docs/stable/torchvision/datasets.html>`_,
+# here: `Image Datasets <https://pytorch.org/vision/stable/datasets.html>`_,
 # `Text Datasets  <https://pytorch.org/text/stable/datasets.html>`_, and
 # `Audio Datasets <https://pytorch.org/audio/stable/datasets.html>`_
 #
@@ -38,7 +38,7 @@ Datasets & Dataloaders
 # Fashion-MNIST is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples.
 # Each example comprises a 28×28 grayscale image and an associated label from one of 10 classes.
 #
-# We load the `FashionMNIST Dataset <https://pytorch.org/docs/stable/torchvision/datasets.html#fashion-mnist>`_ with the following parameters:
+# We load the `FashionMNIST Dataset <https://pytorch.org/vision/stable/datasets.html#fashion-mnist>`_ with the following parameters:
 #  - ``root`` is the path where the train/test data is stored,
 #  - ``train`` specifies training or test dataset,
 #  - ``download=True`` downloads the data from the internet if it's not available at ``root``.
