@@ -610,10 +610,10 @@ for epoch in range(num_epochs):
         output = netD(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
-        # Calculate the gradients for this batch
+        # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         errD_fake.backward()
         D_G_z1 = output.mean().item()
-        # Add the gradients from the all-real and all-fake batches
+        # Compute error of D as sum over the fake and the real batches
         errD = errD_real + errD_fake
         # Update D
         optimizerD.step()
