@@ -326,6 +326,13 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
+   :header: Parametrizations Tutorial
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :image: _static/img/thumbnails/cropped/parametrizations.png
+   :link: intermediate/parametrizations.html
+   :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
    :header: Pruning Tutorial
    :card_description: Learn how to use torch.nn.utils.prune to sparsify your neural networks, and how to extend it to implement your own custom pruning technique.
    :image: _static/img/thumbnails/cropped/Pruning-Tutorial.png
@@ -621,6 +628,7 @@ Additional Resources
 
    beginner/profiler
    beginner/hyperparameter_tuning_tutorial
+   intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
