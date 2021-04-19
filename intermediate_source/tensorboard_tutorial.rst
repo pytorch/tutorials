@@ -1,5 +1,5 @@
 Visualizing Models, Data, and Training with TensorBoard
-====================================================
+=======================================================
 
 In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_, 
 we show you how to load in data,
