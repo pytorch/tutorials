@@ -246,7 +246,7 @@ FFN_HID_DIM = 512
 BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
-NUM_EPOCHS = 20
+NUM_EPOCHS = 16
 
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -346,10 +346,6 @@ for epoch in range(1, NUM_EPOCHS+1):
 #        Epoch: 14, Train loss: 1.219, Val loss: 1.885, Epoch time = 38.406s
 #        Epoch: 15, Train loss: 1.141, Val loss: 1.890, Epoch time = 38.365s
 #        Epoch: 16, Train loss: 1.070, Val loss: 1.873, Epoch time = 38.439s
-#        Epoch: 17, Train loss: 1.005, Val loss: 1.880, Epoch time = 38.333s
-#        Epoch: 18, Train loss: 0.945, Val loss: 1.885, Epoch time = 38.397s
-#        Epoch: 19, Train loss: 0.889, Val loss: 1.905, Epoch time = 38.177s
-#        Epoch: 20, Train loss: 0.835, Val loss: 1.920, Epoch time = 38.527s
 #
 # The models trained using transformer architecture — train faster
 # and converge to a lower validation loss compared to RNN models.
