@@ -187,7 +187,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/torchtext_translation.html">Language Translation with TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with Transformer</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -381,7 +381,6 @@ representing the original Transformer module.</p>
 <span class="k">class</span> <span class="nc">Encoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">Encoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span><span class="n">ninp</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">ntoken</span><span class="p">,</span> <span class="n">ninp</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ninp</span> <span class="o">=</span> <span class="n">ninp</span>
@@ -391,17 +390,9 @@ representing the original Transformer module.</p>
         <span class="n">initrange</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_generate_square_subsequent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sz</span><span class="p">):</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">mask</span>
-
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
-            <span class="n">device</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">device</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_square_subsequent_mask</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">src_mask</span> <span class="o">=</span> <span class="n">mask</span>
-
+        <span class="c1"># Need (S, N) format for encoder.</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
         <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ninp</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_encoder</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
 
@@ -417,7 +408,8 @@ representing the original Transformer module.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">initrange</span><span class="p">,</span> <span class="n">initrange</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+        <span class="c1"># Need batch dimension first for output of pipeline.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -516,7 +508,8 @@ with the <code class="docutils literal notranslate"><span class="pre">S</span></
         <span class="n">seq_len</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">bptt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span>
         <span class="n">target</span> <span class="o">=</span> <span class="n">source</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">+</span><span class="n">seq_len</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span>
+        <span class="c1"># Need batch dimension first for pipeline parallelism.</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">target</span>
 </pre></div>
 </div>
 </div>
@@ -584,8 +577,9 @@ another across GPUs 2 and 3. Both pipes are then replicated using DistributedDat
     <span class="c1"># Need to use 'checkpoint=never' since as of PyTorch 1.8, Pipe checkpointing</span>
     <span class="c1"># doesn't work with DDP.</span>
     <span class="kn">from</span> <span class="nn">torch.distributed.pipeline.sync</span> <span class="kn">import</span> <span class="n">Pipe</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="mi">8</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-        <span class="o">*</span><span class="n">module_list</span><span class="p">),</span> <span class="n">chunks</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="s2">"never"</span><span class="p">)</span>
+        <span class="o">*</span><span class="n">module_list</span><span class="p">),</span> <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="s2">"never"</span><span class="p">)</span>
 
     <span class="c1"># Initialize process group and wrap model in DDP.</span>
     <span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span>
