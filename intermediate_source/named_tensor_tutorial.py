@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-(experimental) Introduction to Named Tensors in PyTorch
+(prototype) Introduction to Named Tensors in PyTorch
 *******************************************************
 **Author**: `Richard Zou <https://github.com/zou3519>`_
 
