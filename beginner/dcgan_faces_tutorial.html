@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="vt_tutorial.html" rel="next" title="Optimizing Vision Transformer Model for Deployment"/>
@@ -343,32 +346,34 @@ fakes that look as if they came directly from the training data, and the
 discriminator is left to always guess at 50% confidence that the
 generator output is real or fake.</p>
 <p>Now, lets define some notation to be used throughout tutorial starting
-with the discriminator. Let <span class="math notranslate nohighlight">\(x\)</span> be data representing an image.
-<span class="math notranslate nohighlight">\(D(x)\)</span> is the discriminator network which outputs the (scalar)
-probability that <span class="math notranslate nohighlight">\(x\)</span> came from training data rather than the
+with the discriminator. Let <span class="math">\(x\)</span> be data representing an image.
+<span class="math">\(D(x)\)</span> is the discriminator network which outputs the (scalar)
+probability that <span class="math">\(x\)</span> came from training data rather than the
 generator. Here, since we are dealing with images the input to
-<span class="math notranslate nohighlight">\(D(x)\)</span> is an image of CHW size 3x64x64. Intuitively, <span class="math notranslate nohighlight">\(D(x)\)</span>
-should be HIGH when <span class="math notranslate nohighlight">\(x\)</span> comes from training data and LOW when
-<span class="math notranslate nohighlight">\(x\)</span> comes from the generator. <span class="math notranslate nohighlight">\(D(x)\)</span> can also be thought of
+<span class="math">\(D(x)\)</span> is an image of CHW size 3x64x64. Intuitively, <span class="math">\(D(x)\)</span>
+should be HIGH when <span class="math">\(x\)</span> comes from training data and LOW when
+<span class="math">\(x\)</span> comes from the generator. <span class="math">\(D(x)\)</span> can also be thought of
 as a traditional binary classifier.</p>
-<p>For the generator’s notation, let <span class="math notranslate nohighlight">\(z\)</span> be a latent space vector
-sampled from a standard normal distribution. <span class="math notranslate nohighlight">\(G(z)\)</span> represents the
-generator function which maps the latent vector <span class="math notranslate nohighlight">\(z\)</span> to data-space.
-The goal of <span class="math notranslate nohighlight">\(G\)</span> is to estimate the distribution that the training
-data comes from (<span class="math notranslate nohighlight">\(p_{data}\)</span>) so it can generate fake samples from
-that estimated distribution (<span class="math notranslate nohighlight">\(p_g\)</span>).</p>
-<p>So, <span class="math notranslate nohighlight">\(D(G(z))\)</span> is the probability (scalar) that the output of the
-generator <span class="math notranslate nohighlight">\(G\)</span> is a real image. As described in <a class="reference external" href="https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf">Goodfellow’s
+<p>For the generator’s notation, let <span class="math">\(z\)</span> be a latent space vector
+sampled from a standard normal distribution. <span class="math">\(G(z)\)</span> represents the
+generator function which maps the latent vector <span class="math">\(z\)</span> to data-space.
+The goal of <span class="math">\(G\)</span> is to estimate the distribution that the training
+data comes from (<span class="math">\(p_{data}\)</span>) so it can generate fake samples from
+that estimated distribution (<span class="math">\(p_g\)</span>).</p>
+<p>So, <span class="math">\(D(G(z))\)</span> is the probability (scalar) that the output of the
+generator <span class="math">\(G\)</span> is a real image. As described in <a class="reference external" href="https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf">Goodfellow’s
 paper</a>,
-<span class="math notranslate nohighlight">\(D\)</span> and <span class="math notranslate nohighlight">\(G\)</span> play a minimax game in which <span class="math notranslate nohighlight">\(D\)</span> tries to
+<span class="math">\(D\)</span> and <span class="math">\(G\)</span> play a minimax game in which <span class="math">\(D\)</span> tries to
 maximize the probability it correctly classifies reals and fakes
-(<span class="math notranslate nohighlight">\(logD(x)\)</span>), and <span class="math notranslate nohighlight">\(G\)</span> tries to minimize the probability that
-<span class="math notranslate nohighlight">\(D\)</span> will predict its outputs are fake (<span class="math notranslate nohighlight">\(log(1-D(G(x)))\)</span>).
+(<span class="math">\(logD(x)\)</span>), and <span class="math">\(G\)</span> tries to minimize the probability that
+<span class="math">\(D\)</span> will predict its outputs are fake (<span class="math">\(log(1-D(G(x)))\)</span>).
 From the paper, the GAN loss function is</p>
-<div class="math notranslate nohighlight">
-\[\underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]\]</div>
+<div class="math">
+\[\underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
+
+\]</div>
 <p>In theory, the solution to this minimax game is where
-<span class="math notranslate nohighlight">\(p_g = p_{data}\)</span>, and the discriminator guesses randomly if the
+<span class="math">\(p_g = p_{data}\)</span>, and the discriminator guesses randomly if the
 inputs are real or fake. However, the convergence theory of GANs is
 still being actively researched and in reality models do not always
 train to this point.</p>
@@ -393,7 +398,7 @@ The generator is comprised of
 <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.ConvTranspose2d">convolutional-transpose</a>
 layers, batch norm layers, and
 <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#relu">ReLU</a> activations. The
-input is a latent vector, <span class="math notranslate nohighlight">\(z\)</span>, that is drawn from a standard
+input is a latent vector, <span class="math">\(z\)</span>, that is drawn from a standard
 normal distribution and the output is a 3x64x64 RGB image. The strided
 conv-transpose layers allow the latent vector to be transformed into a
 volume with the same shape as an image. In the paper, the authors also
@@ -583,14 +588,14 @@ applied to the models immediately after initialization.</p>
 </div>
 <div class="section" id="generator">
 <h3>Generator<a class="headerlink" href="#generator" title="Permalink to this headline">¶</a></h3>
-<p>The generator, <span class="math notranslate nohighlight">\(G\)</span>, is designed to map the latent space vector
-(<span class="math notranslate nohighlight">\(z\)</span>) to data-space. Since our data are images, converting
-<span class="math notranslate nohighlight">\(z\)</span> to data-space means ultimately creating a RGB image with the
+<p>The generator, <span class="math">\(G\)</span>, is designed to map the latent space vector
+(<span class="math">\(z\)</span>) to data-space. Since our data are images, converting
+<span class="math">\(z\)</span> to data-space means ultimately creating a RGB image with the
 same size as the training images (i.e. 3x64x64). In practice, this is
 accomplished through a series of strided two dimensional convolutional
 transpose layers, each paired with a 2d batch norm layer and a relu
 activation. The output of the generator is fed through a tanh function
-to return it to the input data range of <span class="math notranslate nohighlight">\([-1,1]\)</span>. It is worth
+to return it to the input data range of <span class="math">\([-1,1]\)</span>. It is worth
 noting the existence of the batch norm functions after the
 conv-transpose layers, as this is a critical contribution of the DCGAN
 paper. These layers help with the flow of gradients during training. An
@@ -679,9 +684,9 @@ structured.</p>
 </div>
 <div class="section" id="discriminator">
 <h3>Discriminator<a class="headerlink" href="#discriminator" title="Permalink to this headline">¶</a></h3>
-<p>As mentioned, the discriminator, <span class="math notranslate nohighlight">\(D\)</span>, is a binary classification
+<p>As mentioned, the discriminator, <span class="math">\(D\)</span>, is a binary classification
 network that takes an image as input and outputs a scalar probability
-that the input image is real (as opposed to fake). Here, <span class="math notranslate nohighlight">\(D\)</span> takes
+that the input image is real (as opposed to fake). Here, <span class="math">\(D\)</span> takes
 a 3x64x64 input image, processes it through a series of Conv2d,
 BatchNorm2d, and LeakyReLU layers, and outputs the final probability
 through a Sigmoid activation function. This architecture can be extended
@@ -691,7 +696,7 @@ DCGAN paper mentions it is a good practice to use strided convolution
 rather than pooling to downsample because it lets the network learn its
 own pooling function. Also batch norm and leaky relu functions promote
 healthy gradient flow which is critical for the learning process of both
-<span class="math notranslate nohighlight">\(G\)</span> and <span class="math notranslate nohighlight">\(D\)</span>.</p>
+<span class="math">\(G\)</span> and <span class="math">\(D\)</span>.</p>
 <p>Discriminator Code</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngpu</span><span class="p">):</span>
@@ -762,30 +767,32 @@ healthy gradient flow which is critical for the learning process of both
 </div>
 <div class="section" id="loss-functions-and-optimizers">
 <h3>Loss Functions and Optimizers<a class="headerlink" href="#loss-functions-and-optimizers" title="Permalink to this headline">¶</a></h3>
-<p>With <span class="math notranslate nohighlight">\(D\)</span> and <span class="math notranslate nohighlight">\(G\)</span> setup, we can specify how they learn
+<p>With <span class="math">\(D\)</span> and <span class="math">\(G\)</span> setup, we can specify how they learn
 through the loss functions and optimizers. We will use the Binary Cross
 Entropy loss
 (<a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.BCELoss">BCELoss</a>)
 function which is defined in PyTorch as:</p>
-<div class="math notranslate nohighlight">
-\[\ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad l_n = - \left[ y_n \cdot \log x_n + (1 - y_n) \cdot \log (1 - x_n) \right]\]</div>
+<div class="math">
+\[\ell(x, y) = L = \{l_1,\dots,l_N\}^\top, \quad l_n = - \left[ y_n \cdot \log x_n + (1 - y_n) \cdot \log (1 - x_n) \right]
+
+\]</div>
 <p>Notice how this function provides the calculation of both log components
-in the objective function (i.e. <span class="math notranslate nohighlight">\(log(D(x))\)</span> and
-<span class="math notranslate nohighlight">\(log(1-D(G(z)))\)</span>). We can specify what part of the BCE equation to
-use with the <span class="math notranslate nohighlight">\(y\)</span> input. This is accomplished in the training loop
+in the objective function (i.e. <span class="math">\(log(D(x))\)</span> and
+<span class="math">\(log(1-D(G(z)))\)</span>). We can specify what part of the BCE equation to
+use with the <span class="math">\(y\)</span> input. This is accomplished in the training loop
 which is coming up soon, but it is important to understand how we can
-choose which component we wish to calculate just by changing <span class="math notranslate nohighlight">\(y\)</span>
+choose which component we wish to calculate just by changing <span class="math">\(y\)</span>
 (i.e. GT labels).</p>
 <p>Next, we define our real label as 1 and the fake label as 0. These
-labels will be used when calculating the losses of <span class="math notranslate nohighlight">\(D\)</span> and
-<span class="math notranslate nohighlight">\(G\)</span>, and this is also the convention used in the original GAN
-paper. Finally, we set up two separate optimizers, one for <span class="math notranslate nohighlight">\(D\)</span> and
-one for <span class="math notranslate nohighlight">\(G\)</span>. As specified in the DCGAN paper, both are Adam
+labels will be used when calculating the losses of <span class="math">\(D\)</span> and
+<span class="math">\(G\)</span>, and this is also the convention used in the original GAN
+paper. Finally, we set up two separate optimizers, one for <span class="math">\(D\)</span> and
+one for <span class="math">\(G\)</span>. As specified in the DCGAN paper, both are Adam
 optimizers with learning rate 0.0002 and Beta1 = 0.5. For keeping track
 of the generator’s learning progression, we will generate a fixed batch
 of latent vectors that are drawn from a Gaussian distribution
 (i.e. fixed_noise) . In the training loop, we will periodically input
-this fixed_noise into <span class="math notranslate nohighlight">\(G\)</span>, and over the iterations we will see
+this fixed_noise into <span class="math">\(G\)</span>, and over the iterations we will see
 images form out of the noise.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize BCELoss function</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCELoss</span><span class="p">()</span>
@@ -814,35 +821,35 @@ Algorithm 1 from Goodfellow’s paper, while abiding by some of the best
 practices shown in <a class="reference external" href="https://github.com/soumith/ganhacks">ganhacks</a>.
 Namely, we will “construct different mini-batches for real and fake”
 images, and also adjust G’s objective function to maximize
-<span class="math notranslate nohighlight">\(logD(G(z))\)</span>. Training is split up into two main parts. Part 1
+<span class="math">\(logD(G(z))\)</span>. Training is split up into two main parts. Part 1
 updates the Discriminator and Part 2 updates the Generator.</p>
 <p><strong>Part 1 - Train the Discriminator</strong></p>
 <p>Recall, the goal of training the discriminator is to maximize the
 probability of correctly classifying a given input as real or fake. In
 terms of Goodfellow, we wish to “update the discriminator by ascending
 its stochastic gradient”. Practically, we want to maximize
-<span class="math notranslate nohighlight">\(log(D(x)) + log(1-D(G(z)))\)</span>. Due to the separate mini-batch
+<span class="math">\(log(D(x)) + log(1-D(G(z)))\)</span>. Due to the separate mini-batch
 suggestion from ganhacks, we will calculate this in two steps. First, we
 will construct a batch of real samples from the training set, forward
-pass through <span class="math notranslate nohighlight">\(D\)</span>, calculate the loss (<span class="math notranslate nohighlight">\(log(D(x))\)</span>), then
+pass through <span class="math">\(D\)</span>, calculate the loss (<span class="math">\(log(D(x))\)</span>), then
 calculate the gradients in a backward pass. Secondly, we will construct
 a batch of fake samples with the current generator, forward pass this
-batch through <span class="math notranslate nohighlight">\(D\)</span>, calculate the loss (<span class="math notranslate nohighlight">\(log(1-D(G(z)))\)</span>),
+batch through <span class="math">\(D\)</span>, calculate the loss (<span class="math">\(log(1-D(G(z)))\)</span>),
 and <em>accumulate</em> the gradients with a backward pass. Now, with the
 gradients accumulated from both the all-real and all-fake batches, we
 call a step of the Discriminator’s optimizer.</p>
 <p><strong>Part 2 - Train the Generator</strong></p>
 <p>As stated in the original paper, we want to train the Generator by
-minimizing <span class="math notranslate nohighlight">\(log(1-D(G(z)))\)</span> in an effort to generate better fakes.
+minimizing <span class="math">\(log(1-D(G(z)))\)</span> in an effort to generate better fakes.
 As mentioned, this was shown by Goodfellow to not provide sufficient
 gradients, especially early in the learning process. As a fix, we
-instead wish to maximize <span class="math notranslate nohighlight">\(log(D(G(z)))\)</span>. In the code we accomplish
+instead wish to maximize <span class="math">\(log(D(G(z)))\)</span>. In the code we accomplish
 this by: classifying the Generator output from Part 1 with the
 Discriminator, computing G’s loss <em>using real labels as GT</em>, computing
 G’s gradients in a backward pass, and finally updating G’s parameters
 with an optimizer step. It may seem counter-intuitive to use the real
 labels as GT labels for the loss function, but this allows us to use the
-<span class="math notranslate nohighlight">\(log(x)\)</span> part of the BCELoss (rather than the <span class="math notranslate nohighlight">\(log(1-x)\)</span>
+<span class="math">\(log(x)\)</span> part of the BCELoss (rather than the <span class="math">\(log(1-x)\)</span>
 part) which is exactly what we want.</p>
 <p>Finally, we will do some statistic reporting and at the end of each
 epoch we will push our fixed_noise batch through the generator to
@@ -850,8 +857,8 @@ visually track the progress of G’s training. The training statistics
 reported are:</p>
 <ul class="simple">
 <li><strong>Loss_D</strong> - discriminator loss calculated as the sum of losses for
-the all real and all fake batches (<span class="math notranslate nohighlight">\(log(D(x)) + log(1 - D(G(z)))\)</span>).</li>
-<li><strong>Loss_G</strong> - generator loss calculated as <span class="math notranslate nohighlight">\(log(D(G(z)))\)</span></li>
+the all real and all fake batches (<span class="math">\(log(D(x)) + log(1 - D(G(z)))\)</span>).</li>
+<li><strong>Loss_G</strong> - generator loss calculated as <span class="math">\(log(D(G(z)))\)</span></li>
 <li><strong>D(x)</strong> - the average output (across the batch) of the discriminator
 for the all real batch. This should start close to 1 then
 theoretically converge to 0.5 when G gets better. Think about why
@@ -949,165 +956,165 @@ run and if you removed some data from the dataset.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Starting Training Loop...
 [0/5][0/1583]   Loss_D: 1.9847  Loss_G: 5.5914  D(x): 0.6004    D(G(z)): 0.6680 / 0.0062
-[0/5][50/1583]  Loss_D: 0.0977  Loss_G: 17.5421 D(x): 0.9485    D(G(z)): 0.0000 / 0.0000
-[0/5][100/1583] Loss_D: 0.7440  Loss_G: 25.9988 D(x): 0.7766    D(G(z)): 0.0000 / 0.0000
-[0/5][150/1583] Loss_D: 0.3509  Loss_G: 5.3574  D(x): 0.9506    D(G(z)): 0.2196 / 0.0118
-[0/5][200/1583] Loss_D: 0.5778  Loss_G: 3.4323  D(x): 0.8469    D(G(z)): 0.2633 / 0.0532
-[0/5][250/1583] Loss_D: 0.1754  Loss_G: 3.3421  D(x): 0.9249    D(G(z)): 0.0745 / 0.0558
-[0/5][300/1583] Loss_D: 0.6314  Loss_G: 3.6850  D(x): 0.7451    D(G(z)): 0.1334 / 0.0560
-[0/5][350/1583] Loss_D: 0.5057  Loss_G: 3.1769  D(x): 0.8031    D(G(z)): 0.2033 / 0.0651
-[0/5][400/1583] Loss_D: 0.9052  Loss_G: 4.5172  D(x): 0.8975    D(G(z)): 0.4831 / 0.0284
-[0/5][450/1583] Loss_D: 1.8555  Loss_G: 6.2328  D(x): 0.3313    D(G(z)): 0.0007 / 0.0108
-[0/5][500/1583] Loss_D: 0.5885  Loss_G: 4.9082  D(x): 0.8046    D(G(z)): 0.2293 / 0.0128
-[0/5][550/1583] Loss_D: 0.6107  Loss_G: 2.8188  D(x): 0.6704    D(G(z)): 0.0717 / 0.0935
-[0/5][600/1583] Loss_D: 0.5697  Loss_G: 3.3181  D(x): 0.7104    D(G(z)): 0.0760 / 0.0664
-[0/5][650/1583] Loss_D: 0.4651  Loss_G: 4.4875  D(x): 0.9180    D(G(z)): 0.2675 / 0.0246
-[0/5][700/1583] Loss_D: 0.3410  Loss_G: 5.1300  D(x): 0.8872    D(G(z)): 0.1485 / 0.0119
-[0/5][750/1583] Loss_D: 0.4111  Loss_G: 3.7526  D(x): 0.7646    D(G(z)): 0.0514 / 0.0354
-[0/5][800/1583] Loss_D: 0.5234  Loss_G: 2.8747  D(x): 0.8731    D(G(z)): 0.2515 / 0.0919
-[0/5][850/1583] Loss_D: 0.4774  Loss_G: 4.6952  D(x): 0.7783    D(G(z)): 0.1332 / 0.0159
-[0/5][900/1583] Loss_D: 0.4741  Loss_G: 3.6261  D(x): 0.7992    D(G(z)): 0.1475 / 0.0538
-[0/5][950/1583] Loss_D: 0.7236  Loss_G: 4.7930  D(x): 0.6527    D(G(z)): 0.0233 / 0.0336
-[0/5][1000/1583]        Loss_D: 0.6752  Loss_G: 4.0876  D(x): 0.9219    D(G(z)): 0.3165 / 0.0475
-[0/5][1050/1583]        Loss_D: 0.9527  Loss_G: 3.6144  D(x): 0.5086    D(G(z)): 0.0395 / 0.0732
-[0/5][1100/1583]        Loss_D: 0.8156  Loss_G: 7.3087  D(x): 0.9180    D(G(z)): 0.4396 / 0.0021
-[0/5][1150/1583]        Loss_D: 0.3597  Loss_G: 3.8158  D(x): 0.8396    D(G(z)): 0.1243 / 0.0393
-[0/5][1200/1583]        Loss_D: 0.4082  Loss_G: 4.1756  D(x): 0.8422    D(G(z)): 0.1598 / 0.0243
-[0/5][1250/1583]        Loss_D: 0.4073  Loss_G: 4.0489  D(x): 0.9110    D(G(z)): 0.2182 / 0.0320
-[0/5][1300/1583]        Loss_D: 0.4172  Loss_G: 3.1085  D(x): 0.7734    D(G(z)): 0.0843 / 0.0806
-[0/5][1350/1583]        Loss_D: 0.5184  Loss_G: 3.4876  D(x): 0.7399    D(G(z)): 0.0980 / 0.0620
-[0/5][1400/1583]        Loss_D: 0.4502  Loss_G: 3.4678  D(x): 0.7185    D(G(z)): 0.0228 / 0.0587
-[0/5][1450/1583]        Loss_D: 0.5585  Loss_G: 2.5484  D(x): 0.7567    D(G(z)): 0.1797 / 0.1184
-[0/5][1500/1583]        Loss_D: 0.8077  Loss_G: 2.0072  D(x): 0.5752    D(G(z)): 0.0327 / 0.2116
-[0/5][1550/1583]        Loss_D: 0.6155  Loss_G: 4.7581  D(x): 0.9035    D(G(z)): 0.3331 / 0.0153
-[1/5][0/1583]   Loss_D: 0.4276  Loss_G: 3.9268  D(x): 0.9263    D(G(z)): 0.2521 / 0.0408
-[1/5][50/1583]  Loss_D: 0.5426  Loss_G: 1.9664  D(x): 0.7110    D(G(z)): 0.0901 / 0.2059
-[1/5][100/1583] Loss_D: 0.9001  Loss_G: 6.0009  D(x): 0.9304    D(G(z)): 0.4973 / 0.0046
-[1/5][150/1583] Loss_D: 0.5865  Loss_G: 4.0901  D(x): 0.8796    D(G(z)): 0.3161 / 0.0298
-[1/5][200/1583] Loss_D: 0.4030  Loss_G: 3.3957  D(x): 0.8901    D(G(z)): 0.2164 / 0.0550
-[1/5][250/1583] Loss_D: 0.8864  Loss_G: 5.6767  D(x): 0.9632    D(G(z)): 0.5024 / 0.0061
-[1/5][300/1583] Loss_D: 0.3174  Loss_G: 3.7495  D(x): 0.9426    D(G(z)): 0.2074 / 0.0385
-[1/5][350/1583] Loss_D: 0.5507  Loss_G: 3.7216  D(x): 0.8319    D(G(z)): 0.2608 / 0.0384
-[1/5][400/1583] Loss_D: 0.3285  Loss_G: 3.4104  D(x): 0.8580    D(G(z)): 0.1355 / 0.0452
-[1/5][450/1583] Loss_D: 0.5770  Loss_G: 3.8116  D(x): 0.8420    D(G(z)): 0.2751 / 0.0382
-[1/5][500/1583] Loss_D: 0.5124  Loss_G: 2.4994  D(x): 0.7052    D(G(z)): 0.0574 / 0.1378
-[1/5][550/1583] Loss_D: 0.6809  Loss_G: 2.3946  D(x): 0.6184    D(G(z)): 0.0602 / 0.1322
-[1/5][600/1583] Loss_D: 0.4171  Loss_G: 3.5087  D(x): 0.7989    D(G(z)): 0.1302 / 0.0512
-[1/5][650/1583] Loss_D: 1.8766  Loss_G: 1.2509  D(x): 0.2706    D(G(z)): 0.0066 / 0.3838
-[1/5][700/1583] Loss_D: 0.5705  Loss_G: 2.2331  D(x): 0.6654    D(G(z)): 0.0760 / 0.1432
-[1/5][750/1583] Loss_D: 1.3639  Loss_G: 0.5846  D(x): 0.3681    D(G(z)): 0.0150 / 0.6080
-[1/5][800/1583] Loss_D: 0.3638  Loss_G: 3.5727  D(x): 0.8108    D(G(z)): 0.0981 / 0.0425
-[1/5][850/1583] Loss_D: 0.4932  Loss_G: 2.9155  D(x): 0.7606    D(G(z)): 0.1506 / 0.0789
-[1/5][900/1583] Loss_D: 0.6086  Loss_G: 2.9521  D(x): 0.7361    D(G(z)): 0.2008 / 0.0797
-[1/5][950/1583] Loss_D: 0.4649  Loss_G: 2.2191  D(x): 0.7431    D(G(z)): 0.1001 / 0.1538
-[1/5][1000/1583]        Loss_D: 0.4716  Loss_G: 3.1013  D(x): 0.8056    D(G(z)): 0.1729 / 0.0724
-[1/5][1050/1583]        Loss_D: 0.3808  Loss_G: 2.9664  D(x): 0.8228    D(G(z)): 0.1437 / 0.0691
-[1/5][1100/1583]        Loss_D: 0.9575  Loss_G: 4.5317  D(x): 0.8868    D(G(z)): 0.4991 / 0.0200
-[1/5][1150/1583]        Loss_D: 0.3088  Loss_G: 3.3307  D(x): 0.8228    D(G(z)): 0.0814 / 0.0539
-[1/5][1200/1583]        Loss_D: 0.4921  Loss_G: 2.6277  D(x): 0.7249    D(G(z)): 0.1123 / 0.1022
-[1/5][1250/1583]        Loss_D: 0.4876  Loss_G: 2.1448  D(x): 0.7460    D(G(z)): 0.1169 / 0.1635
-[1/5][1300/1583]        Loss_D: 0.5970  Loss_G: 2.5894  D(x): 0.6678    D(G(z)): 0.0862 / 0.1149
-[1/5][1350/1583]        Loss_D: 0.5978  Loss_G: 3.4238  D(x): 0.8215    D(G(z)): 0.2889 / 0.0479
-[1/5][1400/1583]        Loss_D: 0.5036  Loss_G: 2.7836  D(x): 0.8124    D(G(z)): 0.2221 / 0.0869
-[1/5][1450/1583]        Loss_D: 0.6932  Loss_G: 1.5104  D(x): 0.5761    D(G(z)): 0.0572 / 0.2824
-[1/5][1500/1583]        Loss_D: 0.7597  Loss_G: 3.8510  D(x): 0.9354    D(G(z)): 0.4225 / 0.0409
-[1/5][1550/1583]        Loss_D: 0.6075  Loss_G: 2.5773  D(x): 0.7607    D(G(z)): 0.2251 / 0.1018
-[2/5][0/1583]   Loss_D: 1.0841  Loss_G: 0.8217  D(x): 0.4217    D(G(z)): 0.0291 / 0.4965
-[2/5][50/1583]  Loss_D: 0.9174  Loss_G: 1.5217  D(x): 0.4921    D(G(z)): 0.0674 / 0.2831
-[2/5][100/1583] Loss_D: 0.8799  Loss_G: 4.6542  D(x): 0.9490    D(G(z)): 0.4908 / 0.0165
-[2/5][150/1583] Loss_D: 0.6184  Loss_G: 2.1436  D(x): 0.6382    D(G(z)): 0.0710 / 0.1634
-[2/5][200/1583] Loss_D: 1.4639  Loss_G: 1.1082  D(x): 0.3278    D(G(z)): 0.0851 / 0.3950
-[2/5][250/1583] Loss_D: 0.5804  Loss_G: 2.3771  D(x): 0.7754    D(G(z)): 0.2269 / 0.1240
-[2/5][300/1583] Loss_D: 0.8199  Loss_G: 3.2469  D(x): 0.8297    D(G(z)): 0.3929 / 0.0619
-[2/5][350/1583] Loss_D: 0.5093  Loss_G: 2.3918  D(x): 0.7254    D(G(z)): 0.1165 / 0.1215
-[2/5][400/1583] Loss_D: 0.7545  Loss_G: 3.5528  D(x): 0.8395    D(G(z)): 0.3688 / 0.0417
-[2/5][450/1583] Loss_D: 0.5755  Loss_G: 3.6490  D(x): 0.8879    D(G(z)): 0.3366 / 0.0357
-[2/5][500/1583] Loss_D: 1.0182  Loss_G: 0.5065  D(x): 0.4533    D(G(z)): 0.0369 / 0.6434
-[2/5][550/1583] Loss_D: 1.0267  Loss_G: 3.6995  D(x): 0.9133    D(G(z)): 0.5505 / 0.0364
-[2/5][600/1583] Loss_D: 1.2721  Loss_G: 4.6053  D(x): 0.9399    D(G(z)): 0.6426 / 0.0171
-[2/5][650/1583] Loss_D: 0.9451  Loss_G: 3.8595  D(x): 0.9186    D(G(z)): 0.5230 / 0.0292
-[2/5][700/1583] Loss_D: 1.6504  Loss_G: 3.7381  D(x): 0.8965    D(G(z)): 0.6755 / 0.0515
-[2/5][750/1583] Loss_D: 1.1208  Loss_G: 4.6402  D(x): 0.9059    D(G(z)): 0.5822 / 0.0152
-[2/5][800/1583] Loss_D: 0.5426  Loss_G: 2.5279  D(x): 0.8125    D(G(z)): 0.2488 / 0.1044
-[2/5][850/1583] Loss_D: 1.2465  Loss_G: 1.5363  D(x): 0.3688    D(G(z)): 0.0282 / 0.2777
-[2/5][900/1583] Loss_D: 1.2450  Loss_G: 1.1902  D(x): 0.3646    D(G(z)): 0.0180 / 0.3836
-[2/5][950/1583] Loss_D: 1.0895  Loss_G: 1.5362  D(x): 0.5710    D(G(z)): 0.3018 / 0.2673
-[2/5][1000/1583]        Loss_D: 0.4654  Loss_G: 2.6360  D(x): 0.8129    D(G(z)): 0.2006 / 0.0954
-[2/5][1050/1583]        Loss_D: 0.6750  Loss_G: 2.8513  D(x): 0.7981    D(G(z)): 0.3141 / 0.0808
-[2/5][1100/1583]        Loss_D: 0.5200  Loss_G: 2.6068  D(x): 0.8447    D(G(z)): 0.2649 / 0.0989
-[2/5][1150/1583]        Loss_D: 0.4201  Loss_G: 2.6079  D(x): 0.7582    D(G(z)): 0.0990 / 0.1011
-[2/5][1200/1583]        Loss_D: 0.7019  Loss_G: 2.6485  D(x): 0.6679    D(G(z)): 0.1978 / 0.0952
-[2/5][1250/1583]        Loss_D: 0.8201  Loss_G: 1.8144  D(x): 0.6027    D(G(z)): 0.1911 / 0.2034
-[2/5][1300/1583]        Loss_D: 0.6502  Loss_G: 1.8095  D(x): 0.6172    D(G(z)): 0.0890 / 0.2060
-[2/5][1350/1583]        Loss_D: 0.5889  Loss_G: 2.8688  D(x): 0.8714    D(G(z)): 0.3231 / 0.0802
-[2/5][1400/1583]        Loss_D: 0.8538  Loss_G: 1.1076  D(x): 0.4944    D(G(z)): 0.0608 / 0.3954
-[2/5][1450/1583]        Loss_D: 0.8101  Loss_G: 1.8769  D(x): 0.5325    D(G(z)): 0.0822 / 0.1996
-[2/5][1500/1583]        Loss_D: 1.1496  Loss_G: 4.2559  D(x): 0.9167    D(G(z)): 0.5959 / 0.0222
-[2/5][1550/1583]        Loss_D: 0.6200  Loss_G: 2.6929  D(x): 0.8209    D(G(z)): 0.3038 / 0.0868
-[3/5][0/1583]   Loss_D: 1.3234  Loss_G: 1.5023  D(x): 0.3513    D(G(z)): 0.0450 / 0.2956
-[3/5][50/1583]  Loss_D: 0.5655  Loss_G: 2.6017  D(x): 0.6589    D(G(z)): 0.0814 / 0.1075
-[3/5][100/1583] Loss_D: 0.5631  Loss_G: 1.8112  D(x): 0.7046    D(G(z)): 0.1531 / 0.1897
-[3/5][150/1583] Loss_D: 0.4816  Loss_G: 3.0040  D(x): 0.8879    D(G(z)): 0.2778 / 0.0673
-[3/5][200/1583] Loss_D: 2.8921  Loss_G: 1.0831  D(x): 0.0885    D(G(z)): 0.0067 / 0.4402
-[3/5][250/1583] Loss_D: 0.4616  Loss_G: 2.4934  D(x): 0.8142    D(G(z)): 0.1993 / 0.1107
-[3/5][300/1583] Loss_D: 0.5388  Loss_G: 2.2960  D(x): 0.7710    D(G(z)): 0.2027 / 0.1226
-[3/5][350/1583] Loss_D: 1.1475  Loss_G: 3.9293  D(x): 0.9179    D(G(z)): 0.6000 / 0.0291
-[3/5][400/1583] Loss_D: 0.4834  Loss_G: 3.0946  D(x): 0.8337    D(G(z)): 0.2332 / 0.0625
-[3/5][450/1583] Loss_D: 0.5719  Loss_G: 1.7375  D(x): 0.6808    D(G(z)): 0.1239 / 0.2211
-[3/5][500/1583] Loss_D: 0.5720  Loss_G: 1.5992  D(x): 0.6849    D(G(z)): 0.1347 / 0.2402
-[3/5][550/1583] Loss_D: 0.4516  Loss_G: 2.3931  D(x): 0.7533    D(G(z)): 0.1233 / 0.1224
-[3/5][600/1583] Loss_D: 0.5881  Loss_G: 2.2572  D(x): 0.6394    D(G(z)): 0.0920 / 0.1408
-[3/5][650/1583] Loss_D: 0.6457  Loss_G: 1.6313  D(x): 0.7076    D(G(z)): 0.2054 / 0.2344
-[3/5][700/1583] Loss_D: 0.5635  Loss_G: 1.5428  D(x): 0.7401    D(G(z)): 0.1848 / 0.2501
-[3/5][750/1583] Loss_D: 0.7535  Loss_G: 2.3478  D(x): 0.6751    D(G(z)): 0.2321 / 0.1309
-[3/5][800/1583] Loss_D: 0.5842  Loss_G: 1.8578  D(x): 0.7458    D(G(z)): 0.2154 / 0.1887
-[3/5][850/1583] Loss_D: 0.5170  Loss_G: 2.7559  D(x): 0.8131    D(G(z)): 0.2331 / 0.0813
-[3/5][900/1583] Loss_D: 0.4550  Loss_G: 3.1464  D(x): 0.8647    D(G(z)): 0.2458 / 0.0556
-[3/5][950/1583] Loss_D: 1.1841  Loss_G: 0.4653  D(x): 0.3820    D(G(z)): 0.0511 / 0.6595
-[3/5][1000/1583]        Loss_D: 0.5430  Loss_G: 1.8840  D(x): 0.7231    D(G(z)): 0.1659 / 0.1825
-[3/5][1050/1583]        Loss_D: 1.0100  Loss_G: 3.2340  D(x): 0.8450    D(G(z)): 0.4983 / 0.0640
-[3/5][1100/1583]        Loss_D: 0.6998  Loss_G: 3.8503  D(x): 0.9010    D(G(z)): 0.4143 / 0.0300
-[3/5][1150/1583]        Loss_D: 0.6747  Loss_G: 1.8487  D(x): 0.6795    D(G(z)): 0.2074 / 0.1926
-[3/5][1200/1583]        Loss_D: 0.7982  Loss_G: 2.9770  D(x): 0.8175    D(G(z)): 0.3962 / 0.0730
-[3/5][1250/1583]        Loss_D: 0.9234  Loss_G: 1.0285  D(x): 0.5168    D(G(z)): 0.1511 / 0.4013
-[3/5][1300/1583]        Loss_D: 0.6137  Loss_G: 1.8085  D(x): 0.6821    D(G(z)): 0.1582 / 0.1999
-[3/5][1350/1583]        Loss_D: 0.6588  Loss_G: 2.5123  D(x): 0.8081    D(G(z)): 0.3189 / 0.1047
-[3/5][1400/1583]        Loss_D: 0.4490  Loss_G: 2.2756  D(x): 0.8094    D(G(z)): 0.1811 / 0.1412
-[3/5][1450/1583]        Loss_D: 0.5857  Loss_G: 1.8952  D(x): 0.6987    D(G(z)): 0.1640 / 0.1824
-[3/5][1500/1583]        Loss_D: 1.0612  Loss_G: 0.7129  D(x): 0.4386    D(G(z)): 0.0550 / 0.5444
-[3/5][1550/1583]        Loss_D: 0.5833  Loss_G: 3.2073  D(x): 0.8845    D(G(z)): 0.3378 / 0.0546
-[4/5][0/1583]   Loss_D: 0.8820  Loss_G: 2.2062  D(x): 0.7042    D(G(z)): 0.3643 / 0.1336
-[4/5][50/1583]  Loss_D: 0.8634  Loss_G: 1.3939  D(x): 0.5259    D(G(z)): 0.1138 / 0.3080
-[4/5][100/1583] Loss_D: 0.7199  Loss_G: 1.3636  D(x): 0.6051    D(G(z)): 0.1298 / 0.3018
-[4/5][150/1583] Loss_D: 0.6865  Loss_G: 2.4159  D(x): 0.6980    D(G(z)): 0.2264 / 0.1134
-[4/5][200/1583] Loss_D: 0.6137  Loss_G: 2.2965  D(x): 0.7402    D(G(z)): 0.2293 / 0.1264
-[4/5][250/1583] Loss_D: 0.5042  Loss_G: 2.5474  D(x): 0.8126    D(G(z)): 0.2256 / 0.0974
-[4/5][300/1583] Loss_D: 0.9736  Loss_G: 1.0082  D(x): 0.4566    D(G(z)): 0.0479 / 0.4200
-[4/5][350/1583] Loss_D: 0.5080  Loss_G: 1.8694  D(x): 0.7753    D(G(z)): 0.1964 / 0.1787
-[4/5][400/1583] Loss_D: 0.5392  Loss_G: 3.0117  D(x): 0.8437    D(G(z)): 0.2807 / 0.0634
-[4/5][450/1583] Loss_D: 0.7906  Loss_G: 1.7583  D(x): 0.6218    D(G(z)): 0.1962 / 0.2203
-[4/5][500/1583] Loss_D: 0.6145  Loss_G: 1.8396  D(x): 0.7363    D(G(z)): 0.2255 / 0.1982
-[4/5][550/1583] Loss_D: 0.4878  Loss_G: 2.9230  D(x): 0.8275    D(G(z)): 0.2279 / 0.0727
-[4/5][600/1583] Loss_D: 0.8356  Loss_G: 2.8460  D(x): 0.8651    D(G(z)): 0.4600 / 0.0737
-[4/5][650/1583] Loss_D: 0.7354  Loss_G: 1.2367  D(x): 0.6181    D(G(z)): 0.1485 / 0.3328
-[4/5][700/1583] Loss_D: 0.5356  Loss_G: 2.6502  D(x): 0.8199    D(G(z)): 0.2467 / 0.0966
-[4/5][750/1583] Loss_D: 1.2117  Loss_G: 1.1836  D(x): 0.4163    D(G(z)): 0.1383 / 0.3905
-[4/5][800/1583] Loss_D: 0.5902  Loss_G: 2.6243  D(x): 0.8187    D(G(z)): 0.2936 / 0.0903
-[4/5][850/1583] Loss_D: 0.6129  Loss_G: 3.2971  D(x): 0.9399    D(G(z)): 0.3818 / 0.0537
-[4/5][900/1583] Loss_D: 1.5075  Loss_G: 0.4425  D(x): 0.2872    D(G(z)): 0.0403 / 0.6799
-[4/5][950/1583] Loss_D: 0.8401  Loss_G: 3.4689  D(x): 0.9370    D(G(z)): 0.4837 / 0.0467
-[4/5][1000/1583]        Loss_D: 0.6916  Loss_G: 3.1294  D(x): 0.8634    D(G(z)): 0.3869 / 0.0568
-[4/5][1050/1583]        Loss_D: 0.6651  Loss_G: 2.9065  D(x): 0.8466    D(G(z)): 0.3507 / 0.0748
-[4/5][1100/1583]        Loss_D: 1.0260  Loss_G: 4.7724  D(x): 0.9135    D(G(z)): 0.5545 / 0.0128
-[4/5][1150/1583]        Loss_D: 0.6320  Loss_G: 2.3118  D(x): 0.7327    D(G(z)): 0.2343 / 0.1252
-[4/5][1200/1583]        Loss_D: 1.5632  Loss_G: 4.9736  D(x): 0.9741    D(G(z)): 0.7174 / 0.0161
-[4/5][1250/1583]        Loss_D: 0.5453  Loss_G: 1.9811  D(x): 0.7573    D(G(z)): 0.1984 / 0.1651
-[4/5][1300/1583]        Loss_D: 0.8658  Loss_G: 1.4007  D(x): 0.4913    D(G(z)): 0.0520 / 0.3098
-[4/5][1350/1583]        Loss_D: 0.5141  Loss_G: 2.5039  D(x): 0.7983    D(G(z)): 0.2219 / 0.1059
-[4/5][1400/1583]        Loss_D: 0.6739  Loss_G: 2.0988  D(x): 0.6011    D(G(z)): 0.0955 / 0.1819
-[4/5][1450/1583]        Loss_D: 0.5337  Loss_G: 2.1579  D(x): 0.7932    D(G(z)): 0.2294 / 0.1442
-[4/5][1500/1583]        Loss_D: 0.6440  Loss_G: 1.6456  D(x): 0.6529    D(G(z)): 0.1391 / 0.2384
-[4/5][1550/1583]        Loss_D: 0.6946  Loss_G: 2.6279  D(x): 0.7243    D(G(z)): 0.2532 / 0.0946
+[0/5][50/1583]  Loss_D: 0.0972  Loss_G: 6.0949  D(x): 0.9630    D(G(z)): 0.0076 / 0.0075
+[0/5][100/1583] Loss_D: 1.3690  Loss_G: 11.4282 D(x): 0.9311    D(G(z)): 0.6068 / 0.0001
+[0/5][150/1583] Loss_D: 0.8765  Loss_G: 8.3960  D(x): 0.9039    D(G(z)): 0.4325 / 0.0014
+[0/5][200/1583] Loss_D: 0.6120  Loss_G: 3.3583  D(x): 0.8133    D(G(z)): 0.2731 / 0.0512
+[0/5][250/1583] Loss_D: 0.6489  Loss_G: 3.7280  D(x): 0.7025    D(G(z)): 0.0953 / 0.0492
+[0/5][300/1583] Loss_D: 0.7887  Loss_G: 1.8873  D(x): 0.6070    D(G(z)): 0.0783 / 0.2092
+[0/5][350/1583] Loss_D: 0.7808  Loss_G: 4.7670  D(x): 0.5835    D(G(z)): 0.0240 / 0.0349
+[0/5][400/1583] Loss_D: 0.4157  Loss_G: 4.3695  D(x): 0.8634    D(G(z)): 0.1875 / 0.0221
+[0/5][450/1583] Loss_D: 0.2782  Loss_G: 5.4975  D(x): 0.8175    D(G(z)): 0.0135 / 0.0096
+[0/5][500/1583] Loss_D: 0.4042  Loss_G: 5.3500  D(x): 0.8661    D(G(z)): 0.1475 / 0.0123
+[0/5][550/1583] Loss_D: 0.6456  Loss_G: 5.4231  D(x): 0.7932    D(G(z)): 0.2531 / 0.0090
+[0/5][600/1583] Loss_D: 0.6038  Loss_G: 3.1085  D(x): 0.7384    D(G(z)): 0.1548 / 0.0728
+[0/5][650/1583] Loss_D: 0.3573  Loss_G: 5.0071  D(x): 0.8656    D(G(z)): 0.1352 / 0.0120
+[0/5][700/1583] Loss_D: 0.5437  Loss_G: 5.9051  D(x): 0.8520    D(G(z)): 0.2393 / 0.0067
+[0/5][750/1583] Loss_D: 0.6777  Loss_G: 5.1702  D(x): 0.7658    D(G(z)): 0.2182 / 0.0146
+[0/5][800/1583] Loss_D: 0.4243  Loss_G: 3.0627  D(x): 0.7410    D(G(z)): 0.0145 / 0.1024
+[0/5][850/1583] Loss_D: 1.0569  Loss_G: 8.6522  D(x): 0.4851    D(G(z)): 0.0009 / 0.0011
+[0/5][900/1583] Loss_D: 0.9776  Loss_G: 2.8300  D(x): 0.4975    D(G(z)): 0.0428 / 0.1369
+[0/5][950/1583] Loss_D: 0.5594  Loss_G: 5.2731  D(x): 0.6983    D(G(z)): 0.0412 / 0.0135
+[0/5][1000/1583]        Loss_D: 0.9891  Loss_G: 4.5057  D(x): 0.8286    D(G(z)): 0.4449 / 0.0214
+[0/5][1050/1583]        Loss_D: 0.3984  Loss_G: 5.0188  D(x): 0.8948    D(G(z)): 0.2051 / 0.0117
+[0/5][1100/1583]        Loss_D: 0.2399  Loss_G: 4.0018  D(x): 0.9070    D(G(z)): 0.1096 / 0.0377
+[0/5][1150/1583]        Loss_D: 0.3608  Loss_G: 3.7364  D(x): 0.7880    D(G(z)): 0.0657 / 0.0391
+[0/5][1200/1583]        Loss_D: 0.5688  Loss_G: 4.6728  D(x): 0.6819    D(G(z)): 0.0238 / 0.0260
+[0/5][1250/1583]        Loss_D: 0.4191  Loss_G: 3.6800  D(x): 0.8797    D(G(z)): 0.1869 / 0.0508
+[0/5][1300/1583]        Loss_D: 0.4471  Loss_G: 4.7601  D(x): 0.9108    D(G(z)): 0.2485 / 0.0154
+[0/5][1350/1583]        Loss_D: 0.5411  Loss_G: 4.0769  D(x): 0.7740    D(G(z)): 0.1686 / 0.0322
+[0/5][1400/1583]        Loss_D: 0.5660  Loss_G: 2.6081  D(x): 0.7568    D(G(z)): 0.1631 / 0.1148
+[0/5][1450/1583]        Loss_D: 0.6767  Loss_G: 4.7481  D(x): 0.9182    D(G(z)): 0.3864 / 0.0184
+[0/5][1500/1583]        Loss_D: 0.7776  Loss_G: 1.9352  D(x): 0.5722    D(G(z)): 0.0677 / 0.2106
+[0/5][1550/1583]        Loss_D: 0.4915  Loss_G: 2.6491  D(x): 0.7177    D(G(z)): 0.0561 / 0.1173
+[1/5][0/1583]   Loss_D: 0.8789  Loss_G: 7.1423  D(x): 0.9587    D(G(z)): 0.5091 / 0.0025
+[1/5][50/1583]  Loss_D: 0.7276  Loss_G: 4.5980  D(x): 0.8551    D(G(z)): 0.3655 / 0.0213
+[1/5][100/1583] Loss_D: 0.9704  Loss_G: 5.9295  D(x): 0.9297    D(G(z)): 0.5286 / 0.0047
+[1/5][150/1583] Loss_D: 0.4679  Loss_G: 4.6192  D(x): 0.8798    D(G(z)): 0.2557 / 0.0165
+[1/5][200/1583] Loss_D: 0.4575  Loss_G: 3.9336  D(x): 0.9540    D(G(z)): 0.2769 / 0.0426
+[1/5][250/1583] Loss_D: 2.2167  Loss_G: 5.8926  D(x): 0.9792    D(G(z)): 0.8096 / 0.0101
+[1/5][300/1583] Loss_D: 0.6049  Loss_G: 4.6788  D(x): 0.9083    D(G(z)): 0.3480 / 0.0161
+[1/5][350/1583] Loss_D: 0.7328  Loss_G: 5.2865  D(x): 0.9195    D(G(z)): 0.4174 / 0.0109
+[1/5][400/1583] Loss_D: 0.2852  Loss_G: 3.6188  D(x): 0.8599    D(G(z)): 0.0941 / 0.0435
+[1/5][450/1583] Loss_D: 0.5920  Loss_G: 3.9064  D(x): 0.8057    D(G(z)): 0.2603 / 0.0324
+[1/5][500/1583] Loss_D: 0.5616  Loss_G: 5.0006  D(x): 0.9217    D(G(z)): 0.3273 / 0.0131
+[1/5][550/1583] Loss_D: 0.7029  Loss_G: 2.1362  D(x): 0.5893    D(G(z)): 0.0397 / 0.1807
+[1/5][600/1583] Loss_D: 0.5192  Loss_G: 2.5620  D(x): 0.6901    D(G(z)): 0.0552 / 0.1062
+[1/5][650/1583] Loss_D: 1.2223  Loss_G: 1.0932  D(x): 0.4152    D(G(z)): 0.0358 / 0.3970
+[1/5][700/1583] Loss_D: 0.3688  Loss_G: 3.2248  D(x): 0.8383    D(G(z)): 0.1451 / 0.0567
+[1/5][750/1583] Loss_D: 0.5184  Loss_G: 2.1206  D(x): 0.7037    D(G(z)): 0.0806 / 0.1590
+[1/5][800/1583] Loss_D: 0.9621  Loss_G: 2.1632  D(x): 0.4907    D(G(z)): 0.0061 / 0.1779
+[1/5][850/1583] Loss_D: 0.5360  Loss_G: 4.5212  D(x): 0.8986    D(G(z)): 0.3039 / 0.0201
+[1/5][900/1583] Loss_D: 0.5084  Loss_G: 4.3713  D(x): 0.9358    D(G(z)): 0.3209 / 0.0195
+[1/5][950/1583] Loss_D: 0.4270  Loss_G: 2.4021  D(x): 0.7834    D(G(z)): 0.1364 / 0.1175
+[1/5][1000/1583]        Loss_D: 0.7736  Loss_G: 2.5417  D(x): 0.6546    D(G(z)): 0.1940 / 0.1193
+[1/5][1050/1583]        Loss_D: 2.2700  Loss_G: 7.1827  D(x): 0.9759    D(G(z)): 0.8143 / 0.0016
+[1/5][1100/1583]        Loss_D: 0.9959  Loss_G: 1.1404  D(x): 0.4966    D(G(z)): 0.0478 / 0.3895
+[1/5][1150/1583]        Loss_D: 0.7016  Loss_G: 2.4522  D(x): 0.7263    D(G(z)): 0.2426 / 0.1229
+[1/5][1200/1583]        Loss_D: 0.6519  Loss_G: 1.8677  D(x): 0.6164    D(G(z)): 0.0592 / 0.2049
+[1/5][1250/1583]        Loss_D: 0.3962  Loss_G: 3.2084  D(x): 0.8665    D(G(z)): 0.1912 / 0.0619
+[1/5][1300/1583]        Loss_D: 1.0494  Loss_G: 4.5332  D(x): 0.9073    D(G(z)): 0.5316 / 0.0200
+[1/5][1350/1583]        Loss_D: 0.5547  Loss_G: 4.2895  D(x): 0.8608    D(G(z)): 0.2938 / 0.0201
+[1/5][1400/1583]        Loss_D: 1.2909  Loss_G: 0.7258  D(x): 0.3587    D(G(z)): 0.0206 / 0.5447
+[1/5][1450/1583]        Loss_D: 0.5416  Loss_G: 1.9812  D(x): 0.7077    D(G(z)): 0.1163 / 0.1769
+[1/5][1500/1583]        Loss_D: 0.8912  Loss_G: 1.3282  D(x): 0.5197    D(G(z)): 0.0524 / 0.3371
+[1/5][1550/1583]        Loss_D: 0.7631  Loss_G: 1.9337  D(x): 0.6495    D(G(z)): 0.1973 / 0.2047
+[2/5][0/1583]   Loss_D: 0.4938  Loss_G: 2.2568  D(x): 0.7801    D(G(z)): 0.1851 / 0.1401
+[2/5][50/1583]  Loss_D: 1.3508  Loss_G: 0.1773  D(x): 0.3473    D(G(z)): 0.0235 / 0.8516
+[2/5][100/1583] Loss_D: 0.6970  Loss_G: 1.6176  D(x): 0.5925    D(G(z)): 0.0667 / 0.2444
+[2/5][150/1583] Loss_D: 0.6165  Loss_G: 2.1726  D(x): 0.6599    D(G(z)): 0.1190 / 0.1451
+[2/5][200/1583] Loss_D: 0.5127  Loss_G: 2.2688  D(x): 0.7533    D(G(z)): 0.1581 / 0.1307
+[2/5][250/1583] Loss_D: 0.7887  Loss_G: 2.0865  D(x): 0.5835    D(G(z)): 0.1160 / 0.1752
+[2/5][300/1583] Loss_D: 0.6578  Loss_G: 2.0419  D(x): 0.6117    D(G(z)): 0.0724 / 0.1701
+[2/5][350/1583] Loss_D: 2.2497  Loss_G: 0.7461  D(x): 0.1857    D(G(z)): 0.0133 / 0.5337
+[2/5][400/1583] Loss_D: 0.5906  Loss_G: 3.7408  D(x): 0.8874    D(G(z)): 0.3328 / 0.0361
+[2/5][450/1583] Loss_D: 0.5753  Loss_G: 2.9936  D(x): 0.7973    D(G(z)): 0.2624 / 0.0656
+[2/5][500/1583] Loss_D: 0.6128  Loss_G: 1.8199  D(x): 0.6360    D(G(z)): 0.0890 / 0.2042
+[2/5][550/1583] Loss_D: 0.3765  Loss_G: 2.9329  D(x): 0.7991    D(G(z)): 0.1104 / 0.0704
+[2/5][600/1583] Loss_D: 0.6550  Loss_G: 3.2778  D(x): 0.8494    D(G(z)): 0.3524 / 0.0529
+[2/5][650/1583] Loss_D: 0.5688  Loss_G: 3.0673  D(x): 0.8295    D(G(z)): 0.2725 / 0.0692
+[2/5][700/1583] Loss_D: 0.9378  Loss_G: 3.2845  D(x): 0.8849    D(G(z)): 0.4792 / 0.0589
+[2/5][750/1583] Loss_D: 0.6388  Loss_G: 3.7134  D(x): 0.8842    D(G(z)): 0.3609 / 0.0347
+[2/5][800/1583] Loss_D: 1.0428  Loss_G: 4.9604  D(x): 0.9018    D(G(z)): 0.5648 / 0.0112
+[2/5][850/1583] Loss_D: 0.7970  Loss_G: 3.3341  D(x): 0.9147    D(G(z)): 0.4657 / 0.0498
+[2/5][900/1583] Loss_D: 0.5967  Loss_G: 1.3373  D(x): 0.6484    D(G(z)): 0.0880 / 0.3090
+[2/5][950/1583] Loss_D: 0.5803  Loss_G: 3.5595  D(x): 0.8581    D(G(z)): 0.3150 / 0.0387
+[2/5][1000/1583]        Loss_D: 0.5755  Loss_G: 2.2360  D(x): 0.8248    D(G(z)): 0.2760 / 0.1405
+[2/5][1050/1583]        Loss_D: 0.4823  Loss_G: 2.9170  D(x): 0.8293    D(G(z)): 0.2231 / 0.0717
+[2/5][1100/1583]        Loss_D: 0.6049  Loss_G: 2.5465  D(x): 0.7759    D(G(z)): 0.2528 / 0.1006
+[2/5][1150/1583]        Loss_D: 0.8475  Loss_G: 3.2569  D(x): 0.8054    D(G(z)): 0.4060 / 0.0599
+[2/5][1200/1583]        Loss_D: 1.3215  Loss_G: 1.1371  D(x): 0.3392    D(G(z)): 0.0376 / 0.3783
+[2/5][1250/1583]        Loss_D: 1.8744  Loss_G: 1.4634  D(x): 0.2363    D(G(z)): 0.0347 / 0.2921
+[2/5][1300/1583]        Loss_D: 0.5269  Loss_G: 1.8963  D(x): 0.7106    D(G(z)): 0.1359 / 0.1786
+[2/5][1350/1583]        Loss_D: 0.4181  Loss_G: 3.2104  D(x): 0.8176    D(G(z)): 0.1674 / 0.0602
+[2/5][1400/1583]        Loss_D: 0.4843  Loss_G: 2.4342  D(x): 0.7399    D(G(z)): 0.1366 / 0.1169
+[2/5][1450/1583]        Loss_D: 0.5610  Loss_G: 2.0294  D(x): 0.6743    D(G(z)): 0.1125 / 0.1690
+[2/5][1500/1583]        Loss_D: 0.7201  Loss_G: 2.7487  D(x): 0.7652    D(G(z)): 0.3173 / 0.0837
+[2/5][1550/1583]        Loss_D: 0.8814  Loss_G: 1.1287  D(x): 0.4955    D(G(z)): 0.0604 / 0.3848
+[3/5][0/1583]   Loss_D: 0.8757  Loss_G: 3.6902  D(x): 0.9046    D(G(z)): 0.4861 / 0.0382
+[3/5][50/1583]  Loss_D: 0.5770  Loss_G: 2.3514  D(x): 0.7468    D(G(z)): 0.2036 / 0.1265
+[3/5][100/1583] Loss_D: 0.7538  Loss_G: 1.2442  D(x): 0.5856    D(G(z)): 0.1084 / 0.3403
+[3/5][150/1583] Loss_D: 0.6787  Loss_G: 1.5806  D(x): 0.6375    D(G(z)): 0.1447 / 0.2598
+[3/5][200/1583] Loss_D: 0.9173  Loss_G: 3.3003  D(x): 0.7604    D(G(z)): 0.4120 / 0.0551
+[3/5][250/1583] Loss_D: 0.8463  Loss_G: 4.3690  D(x): 0.8926    D(G(z)): 0.4749 / 0.0200
+[3/5][300/1583] Loss_D: 1.0323  Loss_G: 3.8614  D(x): 0.8886    D(G(z)): 0.5492 / 0.0301
+[3/5][350/1583] Loss_D: 1.6755  Loss_G: 4.5735  D(x): 0.9257    D(G(z)): 0.7223 / 0.0161
+[3/5][400/1583] Loss_D: 0.5869  Loss_G: 2.1846  D(x): 0.6570    D(G(z)): 0.1052 / 0.1431
+[3/5][450/1583] Loss_D: 0.9273  Loss_G: 3.8416  D(x): 0.8002    D(G(z)): 0.4472 / 0.0321
+[3/5][500/1583] Loss_D: 0.7659  Loss_G: 1.7259  D(x): 0.6259    D(G(z)): 0.1884 / 0.2107
+[3/5][550/1583] Loss_D: 3.0689  Loss_G: 0.2814  D(x): 0.0838    D(G(z)): 0.0146 / 0.7917
+[3/5][600/1583] Loss_D: 0.8168  Loss_G: 1.2377  D(x): 0.5363    D(G(z)): 0.0956 / 0.3347
+[3/5][650/1583] Loss_D: 1.4131  Loss_G: 0.6393  D(x): 0.3298    D(G(z)): 0.0374 / 0.5762
+[3/5][700/1583] Loss_D: 0.7418  Loss_G: 2.6006  D(x): 0.7666    D(G(z)): 0.3313 / 0.0899
+[3/5][750/1583] Loss_D: 0.5940  Loss_G: 4.0213  D(x): 0.9191    D(G(z)): 0.3662 / 0.0282
+[3/5][800/1583] Loss_D: 0.8122  Loss_G: 3.6470  D(x): 0.9415    D(G(z)): 0.4837 / 0.0358
+[3/5][850/1583] Loss_D: 0.5748  Loss_G: 2.2361  D(x): 0.7412    D(G(z)): 0.1841 / 0.1378
+[3/5][900/1583] Loss_D: 0.4816  Loss_G: 2.8523  D(x): 0.7331    D(G(z)): 0.1247 / 0.0832
+[3/5][950/1583] Loss_D: 1.3709  Loss_G: 1.2191  D(x): 0.3354    D(G(z)): 0.0419 / 0.3570
+[3/5][1000/1583]        Loss_D: 0.8699  Loss_G: 4.1891  D(x): 0.8869    D(G(z)): 0.4805 / 0.0223
+[3/5][1050/1583]        Loss_D: 0.6008  Loss_G: 2.1530  D(x): 0.8412    D(G(z)): 0.3097 / 0.1428
+[3/5][1100/1583]        Loss_D: 0.8634  Loss_G: 4.3907  D(x): 0.9590    D(G(z)): 0.5210 / 0.0174
+[3/5][1150/1583]        Loss_D: 0.6881  Loss_G: 1.2465  D(x): 0.5899    D(G(z)): 0.0854 / 0.3331
+[3/5][1200/1583]        Loss_D: 1.2124  Loss_G: 0.9818  D(x): 0.4099    D(G(z)): 0.0815 / 0.4333
+[3/5][1250/1583]        Loss_D: 0.7305  Loss_G: 1.0074  D(x): 0.6438    D(G(z)): 0.1918 / 0.4233
+[3/5][1300/1583]        Loss_D: 0.6710  Loss_G: 3.5132  D(x): 0.9091    D(G(z)): 0.3991 / 0.0389
+[3/5][1350/1583]        Loss_D: 0.5279  Loss_G: 2.1959  D(x): 0.8038    D(G(z)): 0.2367 / 0.1359
+[3/5][1400/1583]        Loss_D: 0.7539  Loss_G: 2.8004  D(x): 0.8245    D(G(z)): 0.3679 / 0.0854
+[3/5][1450/1583]        Loss_D: 1.0095  Loss_G: 1.5756  D(x): 0.4918    D(G(z)): 0.1226 / 0.2571
+[3/5][1500/1583]        Loss_D: 0.7127  Loss_G: 2.9393  D(x): 0.8504    D(G(z)): 0.3780 / 0.0721
+[3/5][1550/1583]        Loss_D: 0.5179  Loss_G: 1.9086  D(x): 0.7473    D(G(z)): 0.1701 / 0.1753
+[4/5][0/1583]   Loss_D: 1.4656  Loss_G: 3.4643  D(x): 0.8721    D(G(z)): 0.6611 / 0.0530
+[4/5][50/1583]  Loss_D: 1.0540  Loss_G: 4.2364  D(x): 0.8960    D(G(z)): 0.5520 / 0.0216
+[4/5][100/1583] Loss_D: 0.8125  Loss_G: 0.8758  D(x): 0.5260    D(G(z)): 0.0691 / 0.4623
+[4/5][150/1583] Loss_D: 0.7744  Loss_G: 3.4677  D(x): 0.8865    D(G(z)): 0.4383 / 0.0422
+[4/5][200/1583] Loss_D: 0.7095  Loss_G: 3.4036  D(x): 0.9172    D(G(z)): 0.4282 / 0.0423
+[4/5][250/1583] Loss_D: 0.6747  Loss_G: 4.0389  D(x): 0.9030    D(G(z)): 0.4016 / 0.0241
+[4/5][300/1583] Loss_D: 0.8438  Loss_G: 1.5065  D(x): 0.5449    D(G(z)): 0.1168 / 0.2692
+[4/5][350/1583] Loss_D: 1.3890  Loss_G: 0.7333  D(x): 0.3260    D(G(z)): 0.0678 / 0.5532
+[4/5][400/1583] Loss_D: 0.5697  Loss_G: 3.3021  D(x): 0.8604    D(G(z)): 0.3033 / 0.0503
+[4/5][450/1583] Loss_D: 0.6159  Loss_G: 2.0190  D(x): 0.7501    D(G(z)): 0.2335 / 0.1581
+[4/5][500/1583] Loss_D: 0.8872  Loss_G: 3.4774  D(x): 0.8575    D(G(z)): 0.4705 / 0.0428
+[4/5][550/1583] Loss_D: 1.2401  Loss_G: 5.1367  D(x): 0.9568    D(G(z)): 0.6290 / 0.0091
+[4/5][600/1583] Loss_D: 0.6856  Loss_G: 2.3178  D(x): 0.8209    D(G(z)): 0.3382 / 0.1256
+[4/5][650/1583] Loss_D: 1.2046  Loss_G: 0.4986  D(x): 0.3698    D(G(z)): 0.0316 / 0.6395
+[4/5][700/1583] Loss_D: 0.6002  Loss_G: 2.8948  D(x): 0.8161    D(G(z)): 0.2999 / 0.0720
+[4/5][750/1583] Loss_D: 0.9402  Loss_G: 3.9848  D(x): 0.8763    D(G(z)): 0.5015 / 0.0260
+[4/5][800/1583] Loss_D: 0.5781  Loss_G: 3.5973  D(x): 0.8880    D(G(z)): 0.3318 / 0.0387
+[4/5][850/1583] Loss_D: 0.5612  Loss_G: 2.4844  D(x): 0.7716    D(G(z)): 0.2238 / 0.1043
+[4/5][900/1583] Loss_D: 0.8336  Loss_G: 1.4218  D(x): 0.6131    D(G(z)): 0.2122 / 0.2818
+[4/5][950/1583] Loss_D: 0.5297  Loss_G: 1.9538  D(x): 0.7653    D(G(z)): 0.1977 / 0.1789
+[4/5][1000/1583]        Loss_D: 0.6619  Loss_G: 3.1560  D(x): 0.8305    D(G(z)): 0.3436 / 0.0555
+[4/5][1050/1583]        Loss_D: 0.6027  Loss_G: 2.1423  D(x): 0.7676    D(G(z)): 0.2515 / 0.1450
+[4/5][1100/1583]        Loss_D: 0.5747  Loss_G: 3.4747  D(x): 0.8896    D(G(z)): 0.3370 / 0.0417
+[4/5][1150/1583]        Loss_D: 0.6894  Loss_G: 1.5201  D(x): 0.6433    D(G(z)): 0.1663 / 0.2584
+[4/5][1200/1583]        Loss_D: 0.6961  Loss_G: 3.7095  D(x): 0.8921    D(G(z)): 0.4059 / 0.0331
+[4/5][1250/1583]        Loss_D: 0.5640  Loss_G: 2.0112  D(x): 0.7607    D(G(z)): 0.2137 / 0.1647
+[4/5][1300/1583]        Loss_D: 0.5264  Loss_G: 2.4856  D(x): 0.6937    D(G(z)): 0.1111 / 0.1208
+[4/5][1350/1583]        Loss_D: 0.4004  Loss_G: 2.6812  D(x): 0.8512    D(G(z)): 0.1932 / 0.0894
+[4/5][1400/1583]        Loss_D: 0.5568  Loss_G: 1.8106  D(x): 0.6907    D(G(z)): 0.1229 / 0.2093
+[4/5][1450/1583]        Loss_D: 0.4584  Loss_G: 2.1177  D(x): 0.7869    D(G(z)): 0.1751 / 0.1491
+[4/5][1500/1583]        Loss_D: 0.4647  Loss_G: 3.3704  D(x): 0.8841    D(G(z)): 0.2654 / 0.0429
+[4/5][1550/1583]        Loss_D: 0.4137  Loss_G: 2.9709  D(x): 0.8092    D(G(z)): 0.1525 / 0.0698
 </pre></div>
 </div>
 </div>
@@ -1183,7 +1190,7 @@ size of the images and the model architecture</li>
 <li>Create GANs that generate
 <a class="reference external" href="https://deepmind.com/blog/wavenet-generative-model-raw-audio/">music</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 28 minutes  51.686 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 28 minutes  22.416 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-dcgan-faces-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/dc0e6f475c6735eb8d233374f8f462eb/dcgan_faces_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">dcgan_faces_tutorial.py</span></code></a></div>
@@ -1261,7 +1268,9 @@ size of the images and the model architecture</li>
 <script src="../_static/doctools.js" type="text/javascript"></script>
 <script src="../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

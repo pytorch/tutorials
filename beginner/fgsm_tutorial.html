@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="dcgan_faces_tutorial.html" rel="next" title="DCGAN Tutorial"/>
@@ -363,17 +366,17 @@ some notation.</p>
 <div class="figure">
 <img alt="fgsm_panda_image" src="../_images/fgsm_panda_image.png"/>
 </div>
-<p>From the figure, <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is the original input image
-correctly classified as a “panda”, <span class="math notranslate nohighlight">\(y\)</span> is the ground truth label
-for <span class="math notranslate nohighlight">\(\mathbf{x}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{\theta}\)</span> represents the model
-parameters, and <span class="math notranslate nohighlight">\(J(\mathbf{\theta}, \mathbf{x}, y)\)</span> is the loss
+<p>From the figure, <span class="math">\(\mathbf{x}\)</span> is the original input image
+correctly classified as a “panda”, <span class="math">\(y\)</span> is the ground truth label
+for <span class="math">\(\mathbf{x}\)</span>, <span class="math">\(\mathbf{\theta}\)</span> represents the model
+parameters, and <span class="math">\(J(\mathbf{\theta}, \mathbf{x}, y)\)</span> is the loss
 that is used to train the network. The attack backpropagates the
 gradient back to the input data to calculate
-<span class="math notranslate nohighlight">\(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y)\)</span>. Then, it adjusts
-the input data by a small step (<span class="math notranslate nohighlight">\(\epsilon\)</span> or <span class="math notranslate nohighlight">\(0.007\)</span> in the
+<span class="math">\(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y)\)</span>. Then, it adjusts
+the input data by a small step (<span class="math">\(\epsilon\)</span> or <span class="math">\(0.007\)</span> in the
 picture) in the direction (i.e.
-<span class="math notranslate nohighlight">\(sign(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y))\)</span>) that will
-maximize the loss. The resulting perturbed image, <span class="math notranslate nohighlight">\(x'\)</span>, is then
+<span class="math">\(sign(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y))\)</span>) that will
+maximize the loss. The resulting perturbed image, <span class="math">\(x'\)</span>, is then
 <em>misclassified</em> by the target network as a “gibbon” when it is still
 clearly a “panda”.</p>
 <p>Hopefully now the motivation for this tutorial is clear, so lets jump
@@ -410,7 +413,7 @@ important to keep 0 in the list because it represents the model
 performance on the original test set. Also, intuitively we would
 expect the larger the epsilon, the more noticeable the perturbations
 but the more effective the attack in terms of degrading model
-accuracy. Since the data range here is <span class="math notranslate nohighlight">\([0,1]\)</span>, no epsilon
+accuracy. Since the data range here is <span class="math">\([0,1]\)</span>, no epsilon
 value should exceed 1.</li>
 <li><strong>pretrained_model</strong> - path to the pretrained MNIST model which was
 trained with
@@ -477,7 +480,11 @@ pretrained weights.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
+Failed to download (trying next):
+HTTP Error 503: Service Unavailable
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz to ../data/MNIST/raw/train-images-idx3-ubyte.gz
 Extracting ../data/MNIST/raw/train-images-idx3-ubyte.gz to ../data/MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
@@ -514,15 +521,17 @@ CUDA Available:  True
 <h3>FGSM Attack<a class="headerlink" href="#fgsm-attack" title="Permalink to this headline">¶</a></h3>
 <p>Now, we can define the function that creates the adversarial examples by
 perturbing the original inputs. The <code class="docutils literal notranslate"><span class="pre">fgsm_attack</span></code> function takes three
-inputs, <em>image</em> is the original clean image (<span class="math notranslate nohighlight">\(x\)</span>), <em>epsilon</em> is
-the pixel-wise perturbation amount (<span class="math notranslate nohighlight">\(\epsilon\)</span>), and <em>data_grad</em>
+inputs, <em>image</em> is the original clean image (<span class="math">\(x\)</span>), <em>epsilon</em> is
+the pixel-wise perturbation amount (<span class="math">\(\epsilon\)</span>), and <em>data_grad</em>
 is gradient of the loss w.r.t the input image
-(<span class="math notranslate nohighlight">\(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y)\)</span>). The function
+(<span class="math">\(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y)\)</span>). The function
 then creates perturbed image as</p>
-<div class="math notranslate nohighlight">
-\[perturbed\_image = image + epsilon*sign(data\_grad) = x + \epsilon * sign(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y))\]</div>
+<div class="math">
+\[perturbed\_image = image + epsilon*sign(data\_grad) = x + \epsilon * sign(\nabla_{x} J(\mathbf{\theta}, \mathbf{x}, y))
+
+\]</div>
 <p>Finally, in order to maintain the original range of the data, the
-perturbed image is clipped to range <span class="math notranslate nohighlight">\([0,1]\)</span>.</p>
+perturbed image is clipped to range <span class="math">\([0,1]\)</span>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># FGSM attack code</span>
 <span class="k">def</span> <span class="nf">fgsm_attack</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">data_grad</span><span class="p">):</span>
     <span class="c1"># Collect the element-wise sign of the data gradient</span>
@@ -543,10 +552,10 @@ function. Each call to this test function performs a full test step on
 the MNIST test set and reports a final accuracy. However, notice that
 this function also takes an <em>epsilon</em> input. This is because the
 <code class="docutils literal notranslate"><span class="pre">test</span></code> function reports the accuracy of a model that is under attack
-from an adversary with strength <span class="math notranslate nohighlight">\(\epsilon\)</span>. More specifically, for
+from an adversary with strength <span class="math">\(\epsilon\)</span>. More specifically, for
 each sample in the test set, the function computes the gradient of the
-loss w.r.t the input data (<span class="math notranslate nohighlight">\(data\_grad\)</span>), creates a perturbed
-image with <code class="docutils literal notranslate"><span class="pre">fgsm_attack</span></code> (<span class="math notranslate nohighlight">\(perturbed\_data\)</span>), then checks to see
+loss w.r.t the input data (<span class="math">\(data\_grad\)</span>), creates a perturbed
+image with <code class="docutils literal notranslate"><span class="pre">fgsm_attack</span></code> (<span class="math">\(perturbed\_data\)</span>), then checks to see
 if the perturbed example is adversarial. In addition to testing the
 accuracy of the model, the function also saves and returns some
 successful adversarial examples to be visualized later.</p>
@@ -621,7 +630,7 @@ we run a full test step for each epsilon value in the <em>epsilons</em> input.
 For each epsilon we also save the final accuracy and some successful
 adversarial examples to be plotted in the coming sections. Notice how
 the printed accuracies decrease as the epsilon value increases. Also,
-note the <span class="math notranslate nohighlight">\(\epsilon=0\)</span> case represents the original test accuracy,
+note the <span class="math">\(\epsilon=0\)</span> case represents the original test accuracy,
 with no attack.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">accuracies</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">examples</span> <span class="o">=</span> <span class="p">[]</span>
@@ -654,11 +663,11 @@ earlier, as epsilon increases we expect the test accuracy to decrease.
 This is because larger epsilons mean we take a larger step in the
 direction that will maximize the loss. Notice the trend in the curve is
 not linear even though the epsilon values are linearly spaced. For
-example, the accuracy at <span class="math notranslate nohighlight">\(\epsilon=0.05\)</span> is only about 4% lower
-than <span class="math notranslate nohighlight">\(\epsilon=0\)</span>, but the accuracy at <span class="math notranslate nohighlight">\(\epsilon=0.2\)</span> is 25%
-lower than <span class="math notranslate nohighlight">\(\epsilon=0.15\)</span>. Also, notice the accuracy of the model
+example, the accuracy at <span class="math">\(\epsilon=0.05\)</span> is only about 4% lower
+than <span class="math">\(\epsilon=0\)</span>, but the accuracy at <span class="math">\(\epsilon=0.2\)</span> is 25%
+lower than <span class="math">\(\epsilon=0.15\)</span>. Also, notice the accuracy of the model
 hits random accuracy for a 10-class classifier between
-<span class="math notranslate nohighlight">\(\epsilon=0.25\)</span> and <span class="math notranslate nohighlight">\(\epsilon=0.3\)</span>.</p>
+<span class="math">\(\epsilon=0.25\)</span> and <span class="math">\(\epsilon=0.3\)</span>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epsilons</span><span class="p">,</span> <span class="n">accuracies</span><span class="p">,</span> <span class="s2">"*-"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
@@ -679,11 +688,11 @@ perceptible. In reality, there is a tradeoff between accuracy
 degredation and perceptibility that an attacker must consider. Here, we
 show some examples of successful adversarial examples at each epsilon
 value. Each row of the plot shows a different epsilon value. The first
-row is the <span class="math notranslate nohighlight">\(\epsilon=0\)</span> examples which represent the original
+row is the <span class="math">\(\epsilon=0\)</span> examples which represent the original
 “clean” images with no perturbation. The title of each image shows the
 “original classification -&gt; adversarial classification.” Notice, the
-perturbations start to become evident at <span class="math notranslate nohighlight">\(\epsilon=0.15\)</span> and are
-quite evident at <span class="math notranslate nohighlight">\(\epsilon=0.3\)</span>. However, in all cases humans are
+perturbations start to become evident at <span class="math">\(\epsilon=0.15\)</span> and are
+quite evident at <span class="math">\(\epsilon=0.3\)</span>. However, in all cases humans are
 still capable of identifying the correct class despite the added noise.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot several examples of adversarial samples at each epsilon</span>
 <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
@@ -727,7 +736,7 @@ adversarial machine learning is to get your hands dirty. Try to
 implement a different attack from the NIPS 2017 competition, and see how
 it differs from FGSM. Then, try to defend the model from your own
 attacks.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 8 minutes  24.125 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 3 minutes  26.896 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-fgsm-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/c9aee5c8955d797c051f02c07927b0c0/fgsm_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fgsm_tutorial.py</span></code></a></div>
@@ -803,7 +812,9 @@ attacks.</p>
 <script src="../_static/doctools.js" type="text/javascript"></script>
 <script src="../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

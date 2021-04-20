@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="mario_rl_tutorial.html" rel="next" title="Train a Mario-playing RL Agent"/>
@@ -430,51 +433,57 @@ reinforcement learning literature, they would also contain expectations
 over stochastic transitions in the environment.</p>
 <p>Our aim will be to train a policy that tries to maximize the discounted,
 cumulative reward
-<span class="math notranslate nohighlight">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
-<span class="math notranslate nohighlight">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
-<span class="math notranslate nohighlight">\(\gamma\)</span>, should be a constant between <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(1\)</span>
+<span class="math">\(R_{t_0} = \sum_{t=t_0}^{\infty} \gamma^{t - t_0} r_t\)</span>, where
+<span class="math">\(R_{t_0}\)</span> is also known as the <em>return</em>. The discount,
+<span class="math">\(\gamma\)</span>, should be a constant between <span class="math">\(0\)</span> and <span class="math">\(1\)</span>
 that ensures the sum converges. It makes rewards from the uncertain far
 future less important for our agent than the ones in the near future
 that it can be fairly confident about.</p>
 <p>The main idea behind Q-learning is that if we had a function
-<span class="math notranslate nohighlight">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
+<span class="math">\(Q^*: State \times Action \rightarrow \mathbb{R}\)</span>, that could tell
 us what our return would be, if we were to take an action in a given
 state, then we could easily construct a policy that maximizes our
 rewards:</p>
-<div class="math notranslate nohighlight">
-\[\pi^*(s) = \arg\!\max_a \ Q^*(s, a)\]</div>
+<div class="math">
+\[\pi^*(s) = \arg\!\max_a \ Q^*(s, a)
+
+\]</div>
 <p>However, we don’t know everything about the world, so we don’t have
-access to <span class="math notranslate nohighlight">\(Q^*\)</span>. But, since neural networks are universal function
+access to <span class="math">\(Q^*\)</span>. But, since neural networks are universal function
 approximators, we can simply create one and train it to resemble
-<span class="math notranslate nohighlight">\(Q^*\)</span>.</p>
-<p>For our training update rule, we’ll use a fact that every <span class="math notranslate nohighlight">\(Q\)</span>
+<span class="math">\(Q^*\)</span>.</p>
+<p>For our training update rule, we’ll use a fact that every <span class="math">\(Q\)</span>
 function for some policy obeys the Bellman equation:</p>
-<div class="math notranslate nohighlight">
-\[Q^{\pi}(s, a) = r + \gamma Q^{\pi}(s', \pi(s'))\]</div>
+<div class="math">
+\[Q^{\pi}(s, a) = r + \gamma Q^{\pi}(s', \pi(s'))
+
+\]</div>
 <p>The difference between the two sides of the equality is known as the
-temporal difference error, <span class="math notranslate nohighlight">\(\delta\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[\delta = Q(s, a) - (r + \gamma \max_a Q(s', a))\]</div>
+temporal difference error, <span class="math">\(\delta\)</span>:</p>
+<div class="math">
+\[\delta = Q(s, a) - (r + \gamma \max_a Q(s', a))
+
+\]</div>
 <p>To minimise this error, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/Huber_loss">Huber
 loss</a>. The Huber loss acts
 like the mean squared error when the error is small, but like the mean
 absolute error when the error is large - this makes it more robust to
-outliers when the estimates of <span class="math notranslate nohighlight">\(Q\)</span> are very noisy. We calculate
-this over a batch of transitions, <span class="math notranslate nohighlight">\(B\)</span>, sampled from the replay
+outliers when the estimates of <span class="math">\(Q\)</span> are very noisy. We calculate
+this over a batch of transitions, <span class="math">\(B\)</span>, sampled from the replay
 memory:</p>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[\mathcal{L} = \frac{1}{|B|}\sum_{(s, a, s', r) \ \in \ B} \mathcal{L}(\delta)\]</div>
-<div class="math notranslate nohighlight">
-\[\begin{split}\text{where} \quad \mathcal{L}(\delta) = \begin{cases}
+<div class="math">
+\[\text{where} \quad \mathcal{L}(\delta) = \begin{cases}
   \frac{1}{2}{\delta^2}  &amp; \text{for } |\delta| \le 1, \\
   |\delta| - \frac{1}{2} &amp; \text{otherwise.}
-\end{cases}\end{split}\]</div>
+\end{cases}\]</div>
 <div class="section" id="q-network">
 <h3>Q-network<a class="headerlink" href="#q-network" title="Permalink to this headline">¶</a></h3>
 <p>Our model will be a convolutional neural network that takes in the
 difference between the current and previous screen patches. It has two
-outputs, representing <span class="math notranslate nohighlight">\(Q(s, \mathrm{left})\)</span> and
-<span class="math notranslate nohighlight">\(Q(s, \mathrm{right})\)</span> (where <span class="math notranslate nohighlight">\(s\)</span> is the input to the
+outputs, representing <span class="math">\(Q(s, \mathrm{left})\)</span> and
+<span class="math">\(Q(s, \mathrm{right})\)</span> (where <span class="math">\(s\)</span> is the input to the
 network). In effect, the network is trying to predict the <em>expected return</em> of
 taking each action given the current input.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DQN</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -651,10 +660,10 @@ episode.</li>
 <p>Finally, the code for training our model.</p>
 <p>Here, you can find an <code class="docutils literal notranslate"><span class="pre">optimize_model</span></code> function that performs a
 single step of the optimization. It first samples a batch, concatenates
-all the tensors into a single one, computes <span class="math notranslate nohighlight">\(Q(s_t, a_t)\)</span> and
-<span class="math notranslate nohighlight">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
-loss. By definition we set <span class="math notranslate nohighlight">\(V(s) = 0\)</span> if <span class="math notranslate nohighlight">\(s\)</span> is a terminal
-state. We also use a target network to compute <span class="math notranslate nohighlight">\(V(s_{t+1})\)</span> for
+all the tensors into a single one, computes <span class="math">\(Q(s_t, a_t)\)</span> and
+<span class="math">\(V(s_{t+1}) = \max_a Q(s_{t+1}, a)\)</span>, and combines them into our
+loss. By definition we set <span class="math">\(V(s) = 0\)</span> if <span class="math">\(s\)</span> is a terminal
+state. We also use a target network to compute <span class="math">\(V(s_{t+1})\)</span> for
 added stability. The target network has its weights kept frozen most of
 the time, but is updated with the policy network’s weights every so often.
 This is usually a set number of steps but we shall use episodes for
@@ -838,7 +847,9 @@ expected Q values; it is updated occasionally to keep it current.</p>
 <script src="../_static/doctools.js" type="text/javascript"></script>
 <script src="../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

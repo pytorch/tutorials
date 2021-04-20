@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="flask_rest_api_tutorial.html" rel="next" title="Deploying PyTorch in Python via a REST API with Flask"/>
@@ -350,19 +353,19 @@ as your companion. The full code is available
 <div class="section" id="rl-definitions">
 <h2>RL Definitions<a class="headerlink" href="#rl-definitions" title="Permalink to this headline">¶</a></h2>
 <p><strong>Environment</strong> The world that an agent interacts with and learns from.</p>
-<p><strong>Action</strong> <span class="math notranslate nohighlight">\(a\)</span> : How the Agent responds to the Environment. The
+<p><strong>Action</strong> <span class="math">\(a\)</span> : How the Agent responds to the Environment. The
 set of all possible Actions is called <em>action-space</em>.</p>
-<p><strong>State</strong> <span class="math notranslate nohighlight">\(s\)</span> : The current characteristic of the Environment. The
+<p><strong>State</strong> <span class="math">\(s\)</span> : The current characteristic of the Environment. The
 set of all possible States the Environment can be in is called
 <em>state-space</em>.</p>
-<p><strong>Reward</strong> <span class="math notranslate nohighlight">\(r\)</span> : Reward is the key feedback from Environment to
+<p><strong>Reward</strong> <span class="math">\(r\)</span> : Reward is the key feedback from Environment to
 Agent. It is what drives the Agent to learn and to change its future
 action. An aggregation of rewards over multiple time steps is called
 <strong>Return</strong>.</p>
-<p><strong>Optimal Action-Value function</strong> <span class="math notranslate nohighlight">\(Q^*(s,a)\)</span> : Gives the expected
-return if you start in state <span class="math notranslate nohighlight">\(s\)</span>, take an arbitrary action
-<span class="math notranslate nohighlight">\(a\)</span>, and then for each future time step take the action that
-maximizes returns. <span class="math notranslate nohighlight">\(Q\)</span> can be said to stand for the “quality” of
+<p><strong>Optimal Action-Value function</strong> <span class="math">\(Q^*(s,a)\)</span> : Gives the expected
+return if you start in state <span class="math">\(s\)</span>, take an arbitrary action
+<span class="math">\(a\)</span>, and then for each future time step take the action that
+maximizes returns. <span class="math">\(Q\)</span> can be said to stand for the “quality” of
 the action in a state. We try to approximate this function.</p>
 </div>
 <div class="section" id="environment">
@@ -645,14 +648,14 @@ memory, and uses that to learn the game.</p>
 <div class="section" id="learn">
 <h3>Learn<a class="headerlink" href="#learn" title="Permalink to this headline">¶</a></h3>
 <p>Mario uses the <a class="reference external" href="https://arxiv.org/pdf/1509.06461">DDQN algorithm</a>
-under the hood. DDQN uses two ConvNets - <span class="math notranslate nohighlight">\(Q_{online}\)</span> and
-<span class="math notranslate nohighlight">\(Q_{target}\)</span> - that independently approximate the optimal
+under the hood. DDQN uses two ConvNets - <span class="math">\(Q_{online}\)</span> and
+<span class="math">\(Q_{target}\)</span> - that independently approximate the optimal
 action-value function.</p>
 <p>In our implementation, we share feature generator <code class="docutils literal notranslate"><span class="pre">features</span></code> across
-<span class="math notranslate nohighlight">\(Q_{online}\)</span> and <span class="math notranslate nohighlight">\(Q_{target}\)</span>, but maintain separate FC
-classifiers for each. <span class="math notranslate nohighlight">\(\theta_{target}\)</span> (the parameters of
-<span class="math notranslate nohighlight">\(Q_{target}\)</span>) is frozen to prevent updation by backprop. Instead,
-it is periodically synced with <span class="math notranslate nohighlight">\(\theta_{online}\)</span> (more on this
+<span class="math">\(Q_{online}\)</span> and <span class="math">\(Q_{target}\)</span>, but maintain separate FC
+classifiers for each. <span class="math">\(\theta_{target}\)</span> (the parameters of
+<span class="math">\(Q_{target}\)</span>) is frozen to prevent updation by backprop. Instead,
+it is periodically synced with <span class="math">\(\theta_{online}\)</span> (more on this
 later).</p>
 <div class="section" id="neural-network">
 <h4>Neural Network<a class="headerlink" href="#neural-network" title="Permalink to this headline">¶</a></h4>
@@ -700,23 +703,23 @@ later).</p>
 <div class="section" id="td-estimate-td-target">
 <h4>TD Estimate &amp; TD Target<a class="headerlink" href="#td-estimate-td-target" title="Permalink to this headline">¶</a></h4>
 <p>Two values are involved in learning:</p>
-<p><strong>TD Estimate</strong> - the predicted optimal <span class="math notranslate nohighlight">\(Q^*\)</span> for a given state
-<span class="math notranslate nohighlight">\(s\)</span></p>
-<div class="math notranslate nohighlight">
+<p><strong>TD Estimate</strong> - the predicted optimal <span class="math">\(Q^*\)</span> for a given state
+<span class="math">\(s\)</span></p>
+<div class="math">
 \[{TD}_e = Q_{online}^*(s,a)\]</div>
 <p><strong>TD Target</strong> - aggregation of current reward and the estimated
-<span class="math notranslate nohighlight">\(Q^*\)</span> in the next state <span class="math notranslate nohighlight">\(s'\)</span></p>
-<div class="math notranslate nohighlight">
+<span class="math">\(Q^*\)</span> in the next state <span class="math">\(s'\)</span></p>
+<div class="math">
 \[a' = argmax_{a} Q_{online}(s', a)\]</div>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[{TD}_t = r + \gamma Q_{target}^*(s',a')\]</div>
-<p>Because we don’t know what next action <span class="math notranslate nohighlight">\(a'\)</span> will be, we use the
-action <span class="math notranslate nohighlight">\(a'\)</span> maximizes <span class="math notranslate nohighlight">\(Q_{online}\)</span> in the next state
-<span class="math notranslate nohighlight">\(s'\)</span>.</p>
+<p>Because we don’t know what next action <span class="math">\(a'\)</span> will be, we use the
+action <span class="math">\(a'\)</span> maximizes <span class="math">\(Q_{online}\)</span> in the next state
+<span class="math">\(s'\)</span>.</p>
 <p>Notice we use the
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.no_grad.html#no-grad">@torch.no_grad()</a>
 decorator on <code class="docutils literal notranslate"><span class="pre">td_target()</span></code> to disable gradient calculations here
-(because we don’t need to backpropagate on <span class="math notranslate nohighlight">\(\theta_{target}\)</span>).</p>
+(because we don’t need to backpropagate on <span class="math">\(\theta_{target}\)</span>).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
@@ -741,16 +744,16 @@ decorator on <code class="docutils literal notranslate"><span class="pre">td_tar
 </div>
 <div class="section" id="updating-the-model">
 <h4>Updating the model<a class="headerlink" href="#updating-the-model" title="Permalink to this headline">¶</a></h4>
-<p>As Mario samples inputs from his replay buffer, we compute <span class="math notranslate nohighlight">\(TD_t\)</span>
-and <span class="math notranslate nohighlight">\(TD_e\)</span> and backpropagate this loss down <span class="math notranslate nohighlight">\(Q_{online}\)</span> to
-update its parameters <span class="math notranslate nohighlight">\(\theta_{online}\)</span> (<span class="math notranslate nohighlight">\(\alpha\)</span> is the
+<p>As Mario samples inputs from his replay buffer, we compute <span class="math">\(TD_t\)</span>
+and <span class="math">\(TD_e\)</span> and backpropagate this loss down <span class="math">\(Q_{online}\)</span> to
+update its parameters <span class="math">\(\theta_{online}\)</span> (<span class="math">\(\alpha\)</span> is the
 learning rate <code class="docutils literal notranslate"><span class="pre">lr</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">optimizer</span></code>)</p>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[\theta_{online} \leftarrow \theta_{online} + \alpha \nabla(TD_e - TD_t)\]</div>
-<p><span class="math notranslate nohighlight">\(\theta_{target}\)</span> does not update through backpropagation.
-Instead, we periodically copy <span class="math notranslate nohighlight">\(\theta_{online}\)</span> to
-<span class="math notranslate nohighlight">\(\theta_{target}\)</span></p>
-<div class="math notranslate nohighlight">
+<p><span class="math">\(\theta_{target}\)</span> does not update through backpropagation.
+Instead, we periodically copy <span class="math">\(\theta_{online}\)</span> to
+<span class="math">\(\theta_{target}\)</span></p>
+<div class="math">
 \[\theta_{target} \leftarrow \theta_{online}\]</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
@@ -990,7 +993,7 @@ his world, we suggest running the loop for at least 40,000 episodes!</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Using CUDA: True
 
-Episode 0 - Step 121 - Epsilon 0.9999697504537411 - Mean Reward 608.0 - Mean Length 121.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.353 - Time 2021-04-20T14:35:48
+Episode 0 - Step 114 - Epsilon 0.9999715004025548 - Mean Reward 610.0 - Mean Length 114.0 - Mean Loss 0.0 - Mean Q Value 0.0 - Time Delta 1.288 - Time 2021-04-20T16:50:48
 </pre></div>
 </div>
 </div>
@@ -999,7 +1002,7 @@ Episode 0 - Step 121 - Epsilon 0.9999697504537411 - Mean Reward 608.0 - Mean Len
 <p>In this tutorial, we saw how we can use PyTorch to train a game-playing AI. You can use the same methods
 to train an AI to play any of the games at the <a class="reference external" href="https://gym.openai.com/">OpenAI gym</a>. Hope you enjoyed this tutorial, feel free to reach us at
 <a class="reference external" href="https://github.com/yuansongFeng/MadMario/">our github</a>!</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  16.544 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  28.316 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-mario-rl-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/5f9fbaa1fe608e9c6ceeeae4c9bea7ed/mario_rl_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">mario_rl_tutorial.py</span></code></a></div>
@@ -1081,7 +1084,9 @@ to train an AI to play any of the games at the <a class="reference external" hre
 <script src="../_static/doctools.js" type="text/javascript"></script>
 <script src="../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
 <script src="../_static/js/modernizr.min.js"></script>
@@ -321,8 +324,8 @@ to resemble the content of the content-image and the artistic style of the style
 <div class="section" id="underlying-principle">
 <h2>Underlying Principle<a class="headerlink" href="#underlying-principle" title="Permalink to this headline">¶</a></h2>
 <p>The principle is simple: we define two distances, one for the content
-(<span class="math notranslate nohighlight">\(D_C\)</span>) and one for the style (<span class="math notranslate nohighlight">\(D_S\)</span>). <span class="math notranslate nohighlight">\(D_C\)</span> measures how different the content
-is between two images while <span class="math notranslate nohighlight">\(D_S\)</span> measures how different the style is
+(<span class="math">\(D_C\)</span>) and one for the style (<span class="math">\(D_S\)</span>). <span class="math">\(D_C\)</span> measures how different the content
+is between two images while <span class="math">\(D_S\)</span> measures how different the style is
 between two images. Then, we take a third image, the input, and
 transform it to minimize both its content-distance with the
 content-image and its style-distance with the style-image. Now we can
@@ -446,12 +449,12 @@ to ensure they were imported correctly.</p>
 <h3>Content Loss<a class="headerlink" href="#content-loss" title="Permalink to this headline">¶</a></h3>
 <p>The content loss is a function that represents a weighted version of the
 content distance for an individual layer. The function takes the feature
-maps <span class="math notranslate nohighlight">\(F_{XL}\)</span> of a layer <span class="math notranslate nohighlight">\(L\)</span> in a network processing input <span class="math notranslate nohighlight">\(X\)</span> and returns the
-weighted content distance <span class="math notranslate nohighlight">\(w_{CL}.D_C^L(X,C)\)</span> between the image <span class="math notranslate nohighlight">\(X\)</span> and the
-content image <span class="math notranslate nohighlight">\(C\)</span>. The feature maps of the content image(<span class="math notranslate nohighlight">\(F_{CL}\)</span>) must be
+maps <span class="math">\(F_{XL}\)</span> of a layer <span class="math">\(L\)</span> in a network processing input <span class="math">\(X\)</span> and returns the
+weighted content distance <span class="math">\(w_{CL}.D_C^L(X,C)\)</span> between the image <span class="math">\(X\)</span> and the
+content image <span class="math">\(C\)</span>. The feature maps of the content image(<span class="math">\(F_{CL}\)</span>) must be
 known by the function in order to calculate the content distance. We
 implement this function as a torch module with a constructor that takes
-<span class="math notranslate nohighlight">\(F_{CL}\)</span> as an input. The distance <span class="math notranslate nohighlight">\(\|F_{XL} - F_{CL}\|^2\)</span> is the mean square error
+<span class="math">\(F_{CL}\)</span> as an input. The distance <span class="math">\(\|F_{XL} - F_{CL}\|^2\)</span> is the mean square error
 between the two sets of feature maps, and can be computed using <code class="docutils literal notranslate"><span class="pre">nn.MSELoss</span></code>.</p>
 <p>We will add this content loss module directly after the convolution
 layer(s) that are being used to compute the content distance. This way
@@ -490,16 +493,16 @@ method.</p>
 <p>The style loss module is implemented similarly to the content loss
 module. It will act as a transparent layer in a
 network that computes the style loss of that layer. In order to
-calculate the style loss, we need to compute the gram matrix <span class="math notranslate nohighlight">\(G_{XL}\)</span>. A gram
+calculate the style loss, we need to compute the gram matrix <span class="math">\(G_{XL}\)</span>. A gram
 matrix is the result of multiplying a given matrix by its transposed
 matrix. In this application the given matrix is a reshaped version of
-the feature maps <span class="math notranslate nohighlight">\(F_{XL}\)</span> of a layer <span class="math notranslate nohighlight">\(L\)</span>. <span class="math notranslate nohighlight">\(F_{XL}\)</span> is reshaped to form <span class="math notranslate nohighlight">\(\hat{F}_{XL}\)</span>, a <span class="math notranslate nohighlight">\(K\)</span>x<span class="math notranslate nohighlight">\(N\)</span>
-matrix, where <span class="math notranslate nohighlight">\(K\)</span> is the number of feature maps at layer <span class="math notranslate nohighlight">\(L\)</span> and <span class="math notranslate nohighlight">\(N\)</span> is the
-length of any vectorized feature map <span class="math notranslate nohighlight">\(F_{XL}^k\)</span>. For example, the first line
-of <span class="math notranslate nohighlight">\(\hat{F}_{XL}\)</span> corresponds to the first vectorized feature map <span class="math notranslate nohighlight">\(F_{XL}^1\)</span>.</p>
+the feature maps <span class="math">\(F_{XL}\)</span> of a layer <span class="math">\(L\)</span>. <span class="math">\(F_{XL}\)</span> is reshaped to form <span class="math">\(\hat{F}_{XL}\)</span>, a <span class="math">\(K\)</span>x<span class="math">\(N\)</span>
+matrix, where <span class="math">\(K\)</span> is the number of feature maps at layer <span class="math">\(L\)</span> and <span class="math">\(N\)</span> is the
+length of any vectorized feature map <span class="math">\(F_{XL}^k\)</span>. For example, the first line
+of <span class="math">\(\hat{F}_{XL}\)</span> corresponds to the first vectorized feature map <span class="math">\(F_{XL}^1\)</span>.</p>
 <p>Finally, the gram matrix must be normalized by dividing each element by
 the total number of elements in the matrix. This normalization is to
-counteract the fact that <span class="math notranslate nohighlight">\(\hat{F}_{XL}\)</span> matrices with a large <span class="math notranslate nohighlight">\(N\)</span> dimension yield
+counteract the fact that <span class="math">\(\hat{F}_{XL}\)</span> matrices with a large <span class="math">\(N\)</span> dimension yield
 larger values in the Gram matrix. These larger values will cause the
 first layers (before pooling layers) to have a larger impact during the
 gradient descent. Style features tend to be in the deeper layers of the
@@ -520,7 +523,7 @@ network so this normalization step is crucial.</p>
 </div>
 <p>Now the style loss module looks almost exactly like the content loss
 module. The style distance is also computed using the mean square
-error between <span class="math notranslate nohighlight">\(G_{XL}\)</span> and <span class="math notranslate nohighlight">\(G_{SL}\)</span>.</p>
+error between <span class="math">\(G_{XL}\)</span> and <span class="math">\(G_{SL}\)</span>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StyleLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_feature</span><span class="p">):</span>
@@ -763,7 +766,7 @@ run [300]:
 Style Loss : 0.263698 Content Loss: 2.358449
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  43.901 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  58.333 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/7d103bc16c40d35006cd24e65cf978d0/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></div>
@@ -830,7 +833,9 @@ Style Loss : 0.263698 Content Loss: 2.358449
 <script src="../_static/doctools.js" type="text/javascript"></script>
 <script src="../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

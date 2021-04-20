@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../../genindex.html" rel="index" title="Index"/>
 <link href="../../search.html" rel="search" title="Search"/>
 <script src="../../_static/js/modernizr.min.js"></script>
@@ -313,17 +316,19 @@ up an objective function, and see how the model is trained.</p>
 <div class="section" id="affine-maps">
 <h3>Affine Maps<a class="headerlink" href="#affine-maps" title="Permalink to this headline">¶</a></h3>
 <p>One of the core workhorses of deep learning is the affine map, which is
-a function <span class="math notranslate nohighlight">\(f(x)\)</span> where</p>
-<div class="math notranslate nohighlight">
-\[f(x) = Ax + b\]</div>
-<p>for a matrix <span class="math notranslate nohighlight">\(A\)</span> and vectors <span class="math notranslate nohighlight">\(x, b\)</span>. The parameters to be
-learned here are <span class="math notranslate nohighlight">\(A\)</span> and <span class="math notranslate nohighlight">\(b\)</span>. Often, <span class="math notranslate nohighlight">\(b\)</span> is refered to
+a function <span class="math">\(f(x)\)</span> where</p>
+<div class="math">
+\[f(x) = Ax + b
+
+\]</div>
+<p>for a matrix <span class="math">\(A\)</span> and vectors <span class="math">\(x, b\)</span>. The parameters to be
+learned here are <span class="math">\(A\)</span> and <span class="math">\(b\)</span>. Often, <span class="math">\(b\)</span> is refered to
 as the <em>bias</em> term.</p>
 <p>PyTorch and most other deep learning frameworks do things a little
 differently than traditional linear algebra. It maps the rows of the
-input instead of the columns. That is, the <span class="math notranslate nohighlight">\(i\)</span>’th row of the
-output below is the mapping of the <span class="math notranslate nohighlight">\(i\)</span>’th row of the input under
-<span class="math notranslate nohighlight">\(A\)</span>, plus the bias term. Look at the example below.</p>
+input instead of the columns. That is, the <span class="math">\(i\)</span>’th row of the
+output below is the mapping of the <span class="math">\(i\)</span>’th row of the input under
+<span class="math">\(A\)</span>, plus the bias term. Look at the example below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Author: Robert Guthrie</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -350,11 +355,13 @@ output below is the mapping of the <span class="math notranslate nohighlight">\(
 <h3>Non-Linearities<a class="headerlink" href="#non-linearities" title="Permalink to this headline">¶</a></h3>
 <p>First, note the following fact, which will explain why we need
 non-linearities in the first place. Suppose we have two affine maps
-<span class="math notranslate nohighlight">\(f(x) = Ax + b\)</span> and <span class="math notranslate nohighlight">\(g(x) = Cx + d\)</span>. What is
-<span class="math notranslate nohighlight">\(f(g(x))\)</span>?</p>
-<div class="math notranslate nohighlight">
-\[f(g(x)) = A(Cx + d) + b = ACx + (Ad + b)\]</div>
-<p><span class="math notranslate nohighlight">\(AC\)</span> is a matrix and <span class="math notranslate nohighlight">\(Ad + b\)</span> is a vector, so we see that
+<span class="math">\(f(x) = Ax + b\)</span> and <span class="math">\(g(x) = Cx + d\)</span>. What is
+<span class="math">\(f(g(x))\)</span>?</p>
+<div class="math">
+\[f(g(x)) = A(Cx + d) + b = ACx + (Ad + b)
+
+\]</div>
+<p><span class="math">\(AC\)</span> is a matrix and <span class="math">\(Ad + b\)</span> is a vector, so we see that
 composing affine maps gives you an affine map.</p>
 <p>From this, you can see that if you wanted your neural network to be long
 chains of affine compositions, that this adds no new power to your model
@@ -362,15 +369,17 @@ than just doing a single affine map.</p>
 <p>If we introduce non-linearities in between the affine layers, this is no
 longer the case, and we can build much more powerful models.</p>
 <p>There are a few core non-linearities.
-<span class="math notranslate nohighlight">\(\tanh(x), \sigma(x), \text{ReLU}(x)\)</span> are the most common. You are
+<span class="math">\(\tanh(x), \sigma(x), \text{ReLU}(x)\)</span> are the most common. You are
 probably wondering: “why these functions? I can think of plenty of other
 non-linearities.” The reason for this is that they have gradients that
 are easy to compute, and computing gradients is essential for learning.
 For example</p>
-<div class="math notranslate nohighlight">
-\[\frac{d\sigma}{dx} = \sigma(x)(1 - \sigma(x))\]</div>
+<div class="math">
+\[\frac{d\sigma}{dx} = \sigma(x)(1 - \sigma(x))
+
+\]</div>
 <p>A quick note: although you may have learned some neural networks in your
-intro to AI class where <span class="math notranslate nohighlight">\(\sigma(x)\)</span> was the default non-linearity,
+intro to AI class where <span class="math">\(\sigma(x)\)</span> was the default non-linearity,
 typically people shy away from it in practice. This is because the
 gradient <em>vanishes</em> very quickly as the absolute value of the argument
 grows. Small gradients means it is hard to learn. Most people default to
@@ -393,15 +402,17 @@ tensor([[0.0000, 0.0000],
 </div>
 <div class="section" id="softmax-and-probabilities">
 <h3>Softmax and Probabilities<a class="headerlink" href="#softmax-and-probabilities" title="Permalink to this headline">¶</a></h3>
-<p>The function <span class="math notranslate nohighlight">\(\text{Softmax}(x)\)</span> is also just a non-linearity, but
+<p>The function <span class="math">\(\text{Softmax}(x)\)</span> is also just a non-linearity, but
 it is special in that it usually is the last operation done in a
 network. This is because it takes in a vector of real numbers and
 returns a probability distribution. Its definition is as follows. Let
-<span class="math notranslate nohighlight">\(x\)</span> be a vector of real numbers (positive, negative, whatever,
+<span class="math">\(x\)</span> be a vector of real numbers (positive, negative, whatever,
 there are no constraints). Then the i’th component of
-<span class="math notranslate nohighlight">\(\text{Softmax}(x)\)</span> is</p>
-<div class="math notranslate nohighlight">
-\[\frac{\exp(x_i)}{\sum_j \exp(x_j)}\]</div>
+<span class="math">\(\text{Softmax}(x)\)</span> is</p>
+<div class="math">
+\[\frac{\exp(x_i)}{\sum_j \exp(x_j)}
+
+\]</div>
 <p>It should be clear that the output is a probability distribution: each
 element is non-negative and the sum over all components is 1.</p>
 <p>You could also think of it as just applying an element-wise
@@ -451,11 +462,13 @@ with that? We saw earlier that Tensors know how to compute gradients
 with respect to the things that were used to compute it. Well,
 since our loss is an Tensor, we can compute gradients with
 respect to all of the parameters used to compute it! Then we can perform
-standard gradient updates. Let <span class="math notranslate nohighlight">\(\theta\)</span> be our parameters,
-<span class="math notranslate nohighlight">\(L(\theta)\)</span> the loss function, and <span class="math notranslate nohighlight">\(\eta\)</span> a positive
+standard gradient updates. Let <span class="math">\(\theta\)</span> be our parameters,
+<span class="math">\(L(\theta)\)</span> the loss function, and <span class="math">\(\eta\)</span> a positive
 learning rate. Then:</p>
-<div class="math notranslate nohighlight">
-\[\theta^{(t+1)} = \theta^{(t)} - \eta \nabla_\theta L(\theta)\]</div>
+<div class="math">
+\[\theta^{(t+1)} = \theta^{(t)} - \eta \nabla_\theta L(\theta)
+
+\]</div>
 <p>There are a huge collection of algorithms and active research in
 attempting to do something more than just this vanilla gradient update.
 Many attempt to vary the learning rate based on what is happening at
@@ -494,17 +507,25 @@ labels. We assign each word in the vocab an index. For example, say our
 entire vocab is two words “hello” and “world”, with indices 0 and 1
 respectively. The BoW vector for the sentence “hello hello hello hello”
 is</p>
-<div class="math notranslate nohighlight">
-\[\left[ 4, 0 \right]\]</div>
+<div class="math">
+\[\left[ 4, 0 \right]
+
+\]</div>
 <p>For “hello world world hello”, it is</p>
-<div class="math notranslate nohighlight">
-\[\left[ 2, 2 \right]\]</div>
+<div class="math">
+\[\left[ 2, 2 \right]
+
+\]</div>
 <p>etc. In general, it is</p>
-<div class="math notranslate nohighlight">
-\[\left[ \text{Count}(\text{hello}), \text{Count}(\text{world}) \right]\]</div>
-<p>Denote this BOW vector as <span class="math notranslate nohighlight">\(x\)</span>. The output of our network is:</p>
-<div class="math notranslate nohighlight">
-\[\log \text{Softmax}(Ax + b)\]</div>
+<div class="math">
+\[\left[ \text{Count}(\text{hello}), \text{Count}(\text{world}) \right]
+
+\]</div>
+<p>Denote this BOW vector as <span class="math">\(x\)</span>. The output of our network is:</p>
+<div class="math">
+\[\log \text{Softmax}(Ax + b)
+
+\]</div>
 <p>That is, we pass the input through an affine map and then do log
 softmax.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">"me gusta comer en la cafeteria"</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="s2">"SPANISH"</span><span class="p">),</span>
@@ -680,7 +701,7 @@ English is much higher in the second for the test data, as it should be.</p>
 <p>Now you see how to make a PyTorch component, pass some data through it
 and do gradient updates. We are ready to dig deeper into what deep NLP
 has to offer.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.049 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.012 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-deep-learning-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/da3e7a6653a5652ca1dd43be72d0ac2d/deep_learning_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deep_learning_tutorial.py</span></code></a></div>
@@ -749,7 +770,9 @@ has to offer.</p>
 <script src="../../_static/doctools.js" type="text/javascript"></script>
 <script src="../../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

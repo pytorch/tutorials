@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../../genindex.html" rel="index" title="Index"/>
 <link href="../../search.html" rel="search" title="Search"/>
 <script src="../../_static/js/modernizr.min.js"></script>
@@ -312,16 +315,18 @@ the word <em>is</em>, it doesn’t say much about what it <em>means</em> (you mi
 able to derive its part of speech from its affixes, or properties from
 its capitalization, but not much). Even more, in what sense could you
 combine these representations? We often want dense outputs from our
-neural networks, where the inputs are <span class="math notranslate nohighlight">\(|V|\)</span> dimensional, where
-<span class="math notranslate nohighlight">\(V\)</span> is our vocabulary, but often the outputs are only a few
+neural networks, where the inputs are <span class="math">\(|V|\)</span> dimensional, where
+<span class="math">\(V\)</span> is our vocabulary, but often the outputs are only a few
 dimensional (if we are only predicting a handful of labels, for
 instance). How do we get from a massive dimensional space to a smaller
 dimensional space?</p>
 <p>How about instead of ascii representations, we use a one-hot encoding?
-That is, we represent the word <span class="math notranslate nohighlight">\(w\)</span> by</p>
-<div class="math notranslate nohighlight">
-\[\overbrace{\left[ 0, 0, \dots, 1, \dots, 0, 0 \right]}^\text{|V| elements}\]</div>
-<p>where the 1 is in a location unique to <span class="math notranslate nohighlight">\(w\)</span>. Any other word will
+That is, we represent the word <span class="math">\(w\)</span> by</p>
+<div class="math">
+\[\overbrace{\left[ 0, 0, \dots, 1, \dots, 0, 0 \right]}^\text{|V| elements}
+
+\]</div>
+<p>where the 1 is in a location unique to <span class="math">\(w\)</span>. Any other word will
 have a 1 in some other location, and a 0 everywhere else.</p>
 <p>There is an enormous drawback to this representation, besides just how
 huge it is. It basically treats all words as independent entities with
@@ -366,20 +371,22 @@ run” semantic attribute. Think of some other attributes, and imagine
 what you might score some common words on those attributes.</p>
 <p>If each attribute is a dimension, then we might give each word a vector,
 like this:</p>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[ q_\text{mathematician} = \left[ \overbrace{2.3}^\text{can run},
 \overbrace{9.4}^\text{likes coffee}, \overbrace{-5.5}^\text{majored in Physics}, \dots \right]\]</div>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[ q_\text{physicist} = \left[ \overbrace{2.5}^\text{can run},
 \overbrace{9.1}^\text{likes coffee}, \overbrace{6.4}^\text{majored in Physics}, \dots \right]\]</div>
 <p>Then we can get a measure of similarity between these words by doing:</p>
-<div class="math notranslate nohighlight">
-\[\text{Similarity}(\text{physicist}, \text{mathematician}) = q_\text{physicist} \cdot q_\text{mathematician}\]</div>
+<div class="math">
+\[\text{Similarity}(\text{physicist}, \text{mathematician}) = q_\text{physicist} \cdot q_\text{mathematician}
+
+\]</div>
 <p>Although it is more common to normalize by the lengths:</p>
-<div class="math notranslate nohighlight">
+<div class="math">
 \[ \text{Similarity}(\text{physicist}, \text{mathematician}) = \frac{q_\text{physicist} \cdot q_\text{mathematician}}
 {\| q_\text{physicist} \| \| q_\text{mathematician} \|} = \cos (\phi)\]</div>
-<p>Where <span class="math notranslate nohighlight">\(\phi\)</span> is the angle between the two vectors. That way,
+<p>Where <span class="math">\(\phi\)</span> is the angle between the two vectors. That way,
 extremely similar words (words whose embeddings point in the same
 direction) will have similarity 1. Extremely dissimilar words should
 have similarity -1.</p>
@@ -418,9 +425,9 @@ about how to use embeddings in Pytorch and in deep learning programming
 in general. Similar to how we defined a unique index for each word when
 making one-hot vectors, we also need to define an index for each word
 when using embeddings. These will be keys into a lookup table. That is,
-embeddings are stored as a <span class="math notranslate nohighlight">\(|V| \times D\)</span> matrix, where <span class="math notranslate nohighlight">\(D\)</span>
+embeddings are stored as a <span class="math">\(|V| \times D\)</span> matrix, where <span class="math">\(D\)</span>
 is the dimensionality of the embeddings, such that the word assigned
-index <span class="math notranslate nohighlight">\(i\)</span> has its embedding stored in the <span class="math notranslate nohighlight">\(i\)</span>’th row of the
+index <span class="math">\(i\)</span> has its embedding stored in the <span class="math">\(i\)</span>’th row of the
 matrix. In all of my code, the mapping from words to indices is a
 dictionary named word_to_ix.</p>
 <p>The module that allows you to use embeddings is torch.nn.Embedding,
@@ -454,10 +461,12 @@ indices are integers, not floats).</p>
 <div class="section" id="an-example-n-gram-language-modeling">
 <h2>An Example: N-Gram Language Modeling<a class="headerlink" href="#an-example-n-gram-language-modeling" title="Permalink to this headline">¶</a></h2>
 <p>Recall that in an n-gram language model, given a sequence of words
-<span class="math notranslate nohighlight">\(w\)</span>, we want to compute</p>
-<div class="math notranslate nohighlight">
-\[P(w_i | w_{i-1}, w_{i-2}, \dots, w_{i-n+1} )\]</div>
-<p>Where <span class="math notranslate nohighlight">\(w_i\)</span> is the ith word of the sequence.</p>
+<span class="math">\(w\)</span>, we want to compute</p>
+<div class="math">
+\[P(w_i | w_{i-1}, w_{i-2}, \dots, w_{i-n+1} )
+
+\]</div>
+<p>Where <span class="math">\(w_i\)</span> is the ith word of the sequence.</p>
 <p>In this example, we will compute the loss function on some training
 examples and update the parameters with backpropagation.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CONTEXT_SIZE</span> <span class="o">=</span> <span class="mi">2</span>
@@ -545,9 +554,9 @@ examples and update the parameters with backpropagation.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['When', 'forty'], 'winters'), (['forty', 'winters'], 'shall'), (['winters', 'shall'], 'besiege')]
-[516.8883261680603, 514.293258190155, 511.7173089981079, 509.1589455604553, 506.61570858955383, 504.0866961479187, 501.5734419822693, 499.0745005607605, 496.5879101753235, 494.1124243736267]
-tensor([-1.1995, -0.0480, -2.0033, -0.4919, -1.5454, -0.1737,  0.7284,  0.0557,
-        -0.7094, -0.5285], grad_fn=&lt;SelectBackward&gt;)
+[522.2366681098938, 519.5552062988281, 516.8915214538574, 514.2459156513214, 511.6171464920044, 509.00516986846924, 506.4099781513214, 503.8299193382263, 501.2655408382416, 498.71616315841675]
+tensor([-1.8828, -0.7761,  2.0249, -0.0873,  2.3580, -1.0371,  1.5767, -0.6303,
+         2.4077,  0.2767], grad_fn=&lt;SelectBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -562,13 +571,15 @@ word embeddings, and these embeddings are used to initialize the
 embeddings of some more complicated model. Usually, this is referred to
 as <em>pretraining embeddings</em>. It almost always helps performance a couple
 of percent.</p>
-<p>The CBOW model is as follows. Given a target word <span class="math notranslate nohighlight">\(w_i\)</span> and an
-<span class="math notranslate nohighlight">\(N\)</span> context window on each side, <span class="math notranslate nohighlight">\(w_{i-1}, \dots, w_{i-N}\)</span>
-and <span class="math notranslate nohighlight">\(w_{i+1}, \dots, w_{i+N}\)</span>, referring to all context words
-collectively as <span class="math notranslate nohighlight">\(C\)</span>, CBOW tries to minimize</p>
-<div class="math notranslate nohighlight">
-\[-\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)\]</div>
-<p>where <span class="math notranslate nohighlight">\(q_w\)</span> is the embedding for word <span class="math notranslate nohighlight">\(w\)</span>.</p>
+<p>The CBOW model is as follows. Given a target word <span class="math">\(w_i\)</span> and an
+<span class="math">\(N\)</span> context window on each side, <span class="math">\(w_{i-1}, \dots, w_{i-N}\)</span>
+and <span class="math">\(w_{i+1}, \dots, w_{i+N}\)</span>, referring to all context words
+collectively as <span class="math">\(C\)</span>, CBOW tries to minimize</p>
+<div class="math">
+\[-\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+
+\]</div>
+<p>where <span class="math">\(q_w\)</span> is the embedding for word <span class="math">\(w\)</span>.</p>
 <p>Implement this model in Pytorch by filling in the class below. Some
 tips:</p>
 <ul class="simple">
@@ -622,7 +633,7 @@ reshape.</li>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['We', 'are', 'to', 'study'], 'about'), (['are', 'about', 'study', 'the'], 'to'), (['about', 'to', 'the', 'idea'], 'study'), (['to', 'study', 'idea', 'of'], 'the'), (['study', 'the', 'of', 'a'], 'idea')]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.483 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.521 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-word-embeddings-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/8807094f6210189fde9923211274dc82/word_embeddings_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">word_embeddings_tutorial.py</span></code></a></div>
@@ -682,7 +693,9 @@ reshape.</li>
 <script src="../../_static/doctools.js" type="text/javascript"></script>
 <script src="../../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>

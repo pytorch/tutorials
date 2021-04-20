@@ -11,6 +11,9 @@
 <!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
 <link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
 <link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../../genindex.html" rel="index" title="Index"/>
 <link href="../../search.html" rel="search" title="Search"/>
 <script src="../../_static/js/modernizr.min.js"></script>
@@ -315,7 +318,7 @@ random field.</p>
 state. For example, its output could be used as part of the next input,
 so that information can propogate along as the network passes over the
 sequence. In the case of an LSTM, for each element in the sequence,
-there is a corresponding <em>hidden state</em> <span class="math notranslate nohighlight">\(h_t\)</span>, which in principle
+there is a corresponding <em>hidden state</em> <span class="math">\(h_t\)</span>, which in principle
 can contain information from arbitrary points earlier in the sequence.
 We can use the hidden state to predict words in a language model,
 part-of-speech tags, and a myriad of other things.</p>
@@ -329,12 +332,12 @@ the input. We haven’t discussed mini-batching, so let’s just ignore that
 and assume we will always have just 1 dimension on the second axis. If
 we want to run the sequence model over the sentence “The cow jumped”,
 our input should look like</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{bmatrix}
+<div class="math">
+\[\begin{bmatrix}
 \overbrace{q_\text{The}}^\text{row vector} \\
 q_\text{cow} \\
 q_\text{jumped}
-\end{bmatrix}\end{split}\]</div>
+\end{bmatrix}\]</div>
 <p>Except remember there is an additional 2nd dimension with size 1.</p>
 <p>In addition, you could go through the sequence one at a time, in which
 case the 1st axis will have size 1 also.</p>
@@ -399,22 +402,24 @@ used after you have seen what is going on. In this example, we also refer
 to embeddings. If you are unfamiliar with embeddings, you can read up
 about them <a class="reference external" href="https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html">here</a>.</p>
 <p>The model is as follows: let our input sentence be
-<span class="math notranslate nohighlight">\(w_1, \dots, w_M\)</span>, where <span class="math notranslate nohighlight">\(w_i \in V\)</span>, our vocab. Also, let
-<span class="math notranslate nohighlight">\(T\)</span> be our tag set, and <span class="math notranslate nohighlight">\(y_i\)</span> the tag of word <span class="math notranslate nohighlight">\(w_i\)</span>.
-Denote our prediction of the tag of word <span class="math notranslate nohighlight">\(w_i\)</span> by
-<span class="math notranslate nohighlight">\(\hat{y}_i\)</span>.</p>
+<span class="math">\(w_1, \dots, w_M\)</span>, where <span class="math">\(w_i \in V\)</span>, our vocab. Also, let
+<span class="math">\(T\)</span> be our tag set, and <span class="math">\(y_i\)</span> the tag of word <span class="math">\(w_i\)</span>.
+Denote our prediction of the tag of word <span class="math">\(w_i\)</span> by
+<span class="math">\(\hat{y}_i\)</span>.</p>
 <p>This is a structure prediction, model, where our output is a sequence
-<span class="math notranslate nohighlight">\(\hat{y}_1, \dots, \hat{y}_M\)</span>, where <span class="math notranslate nohighlight">\(\hat{y}_i \in T\)</span>.</p>
+<span class="math">\(\hat{y}_1, \dots, \hat{y}_M\)</span>, where <span class="math">\(\hat{y}_i \in T\)</span>.</p>
 <p>To do the prediction, pass an LSTM over the sentence. Denote the hidden
-state at timestep <span class="math notranslate nohighlight">\(i\)</span> as <span class="math notranslate nohighlight">\(h_i\)</span>. Also, assign each tag a
+state at timestep <span class="math">\(i\)</span> as <span class="math">\(h_i\)</span>. Also, assign each tag a
 unique index (like how we had word_to_ix in the word embeddings
-section). Then our prediction rule for <span class="math notranslate nohighlight">\(\hat{y}_i\)</span> is</p>
-<div class="math notranslate nohighlight">
-\[\hat{y}_i = \text{argmax}_j \  (\log \text{Softmax}(Ah_i + b))_j\]</div>
+section). Then our prediction rule for <span class="math">\(\hat{y}_i\)</span> is</p>
+<div class="math">
+\[\hat{y}_i = \text{argmax}_j \  (\log \text{Softmax}(Ah_i + b))_j
+
+\]</div>
 <p>That is, take the log softmax of the affine map of the hidden state,
 and the predicted tag is the tag that has the maximum value in this
 vector. Note this implies immediately that the dimensionality of the
-target space of <span class="math notranslate nohighlight">\(A\)</span> is <span class="math notranslate nohighlight">\(|T|\)</span>.</p>
+target space of <span class="math">\(A\)</span> is <span class="math">\(|T|\)</span>.</p>
 <p>Prepare data:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">prepare_sequence</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">to_ix</span><span class="p">):</span>
     <span class="n">idxs</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_ix</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">seq</span><span class="p">]</span>
@@ -539,13 +544,13 @@ representation derived from the characters of the word. We expect that
 this should help significantly, since character-level information like
 affixes have a large bearing on part-of-speech. For example, words with
 the affix <em>-ly</em> are almost always tagged as adverbs in English.</p>
-<p>To do this, let <span class="math notranslate nohighlight">\(c_w\)</span> be the character-level representation of
-word <span class="math notranslate nohighlight">\(w\)</span>. Let <span class="math notranslate nohighlight">\(x_w\)</span> be the word embedding as before. Then
-the input to our sequence model is the concatenation of <span class="math notranslate nohighlight">\(x_w\)</span> and
-<span class="math notranslate nohighlight">\(c_w\)</span>. So if <span class="math notranslate nohighlight">\(x_w\)</span> has dimension 5, and <span class="math notranslate nohighlight">\(c_w\)</span>
+<p>To do this, let <span class="math">\(c_w\)</span> be the character-level representation of
+word <span class="math">\(w\)</span>. Let <span class="math">\(x_w\)</span> be the word embedding as before. Then
+the input to our sequence model is the concatenation of <span class="math">\(x_w\)</span> and
+<span class="math">\(c_w\)</span>. So if <span class="math">\(x_w\)</span> has dimension 5, and <span class="math">\(c_w\)</span>
 dimension 3, then our LSTM should accept an input of dimension 8.</p>
 <p>To get the character level representation, do an LSTM over the
-characters of a word, and let <span class="math notranslate nohighlight">\(c_w\)</span> be the final hidden state of
+characters of a word, and let <span class="math">\(c_w\)</span> be the final hidden state of
 this LSTM. Hints:</p>
 <ul class="simple">
 <li>There are going to be two LSTM’s in your new model.
@@ -554,7 +559,7 @@ outputs a character-level representation of each word.</li>
 <li>To do a sequence model over characters, you will have to embed characters.
 The character embeddings will be the input to the character LSTM.</li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.021 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.012 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-sequence-models-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/2541b9734d50383920a32879ba460d3d/sequence_models_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">sequence_models_tutorial.py</span></code></a></div>
@@ -613,7 +618,9 @@ The character embeddings will be the input to the character LSTM.</li>
 <script src="../../_static/doctools.js" type="text/javascript"></script>
 <script src="../../_static/clipboard.min.js" type="text/javascript"></script>
 <script src="../../_static/copybutton.js" type="text/javascript"></script>
-<script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../../_static/katex_autorenderer.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/popper.min.js" type="text/javascript"></script>
 <script src="../../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
