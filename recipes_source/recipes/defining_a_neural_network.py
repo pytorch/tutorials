@@ -26,7 +26,7 @@ available.
 
 ::
 
-   pip install torchaudio
+   pip install torch
 
 
 """
@@ -59,7 +59,7 @@ import torch.nn.functional as F
 # 
 # Our network will recognize images. We will use a process built into
 # PyTorch called convolution. Convolution adds each element of an image to
-# its local neighbors, weighted by a kernel, or a small martrix, that
+# its local neighbors, weighted by a kernel, or a small matrix, that
 # helps us extract certain features (like edge detection, sharpness,
 # blurriness, etc.) from the input image.
 # 
@@ -179,5 +179,5 @@ print (result)
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
+# - `What is a state_dict in PyTorch <https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html>`__
+# - `Saving and loading models for inference in PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_models_for_inference.html>`__

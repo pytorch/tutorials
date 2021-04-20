@@ -1,5 +1,5 @@
 """
-Loading Data in PyTorch
+Loading data in PyTorch
 =======================
 PyTorch features extensive neural network building blocks with a simple,
 intuitive, and stable API. PyTorch includes packages to prepare and load
@@ -51,7 +51,6 @@ dataset.
 # 4. Iterate over the data
 # 5. [Optional] Visualize the data
 # 
-# TIPS: \* alksdjalksdjaslkdj
 # 
 # 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +101,7 @@ import torchaudio
 
 # A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels 
 # is a list of integers with 1 for yes and 0 for no.
-yesno_data_trainset = torchaudio.datasets.YESNO('./', download=True)
+yesno_data = torchaudio.datasets.YESNO('./', download=True)
 
 # Pick data point number 3 to see an example of the the yesno_data:
 n = 3
@@ -168,5 +167,5 @@ plt.plot(waveform.t().numpy())
 # 
 # Take a look at these other recipes to continue your learning:
 # 
-# -  TBD
-# -  TBD
+# - `Defining a Neural Network <https://pytorch.org/tutorials/recipes/recipes/defining_a_neural_network.html>`__
+# - `What is a state_dict in PyTorch <https://pytorch.org/tutorials/recipes/recipes/what_is_state_dict.html>`__

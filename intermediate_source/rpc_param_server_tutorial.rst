@@ -4,6 +4,11 @@ Implementing a Parameter Server Using Distributed RPC Framework
 
 **Author**\ : `Rohan Varma <https://github.com/rohan-varma>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `RPC API documents <https://pytorch.org/docs/master/rpc.html>`__
+
 This tutorial walks through a simple example of implementing a parameter server using PyTorch's `Distributed RPC framework <https://pytorch.org/docs/stable/rpc.html>`_. The parameter server framework is a paradigm in which a set of servers store parameters, such as large embedding tables, and several trainers query the parameter servers in order to retrieve the most up to date parameters. These trainers can run a training loop locally and occasionally synchronize with the parameter server to get the latest parameters. For more reading on the parameter server approach, check out `this paper <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`_.
 
 Using the Distributed RPC Framework, we'll build an example where multiple trainers use RPC to communicate with the same parameter server and use `RRef <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef>`_ to access states on the remote parameter server instance. Each trainer will launch its dedicated backward pass in a distributed fashion through stitching of the autograd graph across multiple nodes using distributed autograd.
@@ -78,7 +83,7 @@ Next, let's define some helper functions that will be useful for the rest of our
 
    # On the local node, call a method with first arg as the value held by the
    # RRef. Other args are passed in as arguments to the function called.
-   # Useful for calling instance methods. method could be any matching function, including 
+   # Useful for calling instance methods. method could be any matching function, including
    # class methods.
    def call_method(method, rref, *args, **kwargs):
        return method(rref.local_value(), *args, **kwargs)
@@ -119,7 +124,7 @@ Next, we'll define our forward pass. Note that regardless of the device of the m
            # Tensors must be moved in and out of GPU memory due to this.
            out = out.to("cpu")
            return out
-Next, we'll define a few miscellaneous functions useful for training and verification purposes. The first, ``get_dist_gradients``\ , will take in a Distributed Autograd context ID and call into the ``dist_autograd.get_gradients`` API in order to retrieve gradients computed by distributed autograd. More information can be found in the `distributed autograd documentation <https://pytorch.org/docs/stable/rpc.html#distributed-autograd-framework>`_. Note that we also iterate through the resulting dictionary and convert each tensor to a CPU tensor, as the framework currently only supports sending tensors over RPC. Next, ``get_param_rrefs`` will iterate through our model parameters and wrap them as a (local) `RRef <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef>`_. This method will be invoked over RPC by trainer nodes and will return a list of the parameters to be optimized. This is required as input to the `Distributed Optimizer <https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim>`_\ , which requires all parameters it must optimize as a list of ``RRef``\ s. 
+Next, we'll define a few miscellaneous functions useful for training and verification purposes. The first, ``get_dist_gradients``\ , will take in a Distributed Autograd context ID and call into the ``dist_autograd.get_gradients`` API in order to retrieve gradients computed by distributed autograd. More information can be found in the `distributed autograd documentation <https://pytorch.org/docs/stable/rpc.html#distributed-autograd-framework>`_. Note that we also iterate through the resulting dictionary and convert each tensor to a CPU tensor, as the framework currently only supports sending tensors over RPC. Next, ``get_param_rrefs`` will iterate through our model parameters and wrap them as a (local) `RRef <https://pytorch.org/docs/stable/rpc.html#torch.distributed.rpc.RRef>`_. This method will be invoked over RPC by trainer nodes and will return a list of the parameters to be optimized. This is required as input to the `Distributed Optimizer <https://pytorch.org/docs/stable/rpc.html#module-torch.distributed.optim>`_\ , which requires all parameters it must optimize as a list of ``RRef``\ s.
 
 .. code-block:: python
 
@@ -224,7 +229,7 @@ Below, we initialize our ``TrainerNet`` and build a ``DistributedOptimizer``. No
        # Build DistributedOptimizer.
        param_rrefs = net.get_global_param_rrefs()
        opt = DistributedOptimizer(optim.SGD, param_rrefs, lr=0.03)
-Next, we define our main training loop. We loop through iterables given by PyTorch's `DataLoader <https://pytorch.org/docs/stable/data.html>`_. Before writing our typical forward/backward/optimizer loop, we first wrap the logic within a `Distributed Autograd context <https://pytorch.org/docs/stable/rpc.html#torch.distributed.autograd.context>`_. Note that this is needed to record RPCs invoked in the model's forward pass, so that an appropriate graph can be constructed which includes all participating distributed workers in the backward pass. The distributed autograd context returns a ``context_id`` which serves as an identifier for accumulating and optimizing gradients corresponding to a particular iteration. 
+Next, we define our main training loop. We loop through iterables given by PyTorch's `DataLoader <https://pytorch.org/docs/stable/data.html>`_. Before writing our typical forward/backward/optimizer loop, we first wrap the logic within a `Distributed Autograd context <https://pytorch.org/docs/stable/rpc.html#torch.distributed.autograd.context>`_. Note that this is needed to record RPCs invoked in the model's forward pass, so that an appropriate graph can be constructed which includes all participating distributed workers in the backward pass. The distributed autograd context returns a ``context_id`` which serves as an identifier for accumulating and optimizing gradients corresponding to a particular iteration.
 
 As opposed to calling the typical ``loss.backward()`` which would kick off the backward pass on this local worker, we call ``dist_autograd.backward()`` and pass in our context_id as well as ``loss``\ , which is the root at which we want the backward pass to begin. In addition, we pass this ``context_id`` into our optimizer call, which is required to be able to look up the corresponding gradients computed by this particular backwards pass across all nodes.
 
@@ -259,7 +264,7 @@ The following simply computes the accuracy of our model after we're done trainin
        model.eval()
        correct_sum = 0
        # Use GPU to evaluate if possible
-       device = torch.device("cuda:0" if model.num_gpus > 0 
+       device = torch.device("cuda:0" if model.num_gpus > 0
            and torch.cuda.is_available() else "cpu")
        with torch.no_grad():
            for i, (data, target) in enumerate(test_loader):
@@ -330,7 +335,7 @@ We've now completed our trainer and parameter server specific code, and all that
        assert args.num_gpus <= 3, f"Only 0-2 GPUs currently supported (got {args.num_gpus})."
        os.environ['MASTER_ADDR'] = args.master_addr
        os.environ["MASTER_PORT"] = args.master_port
-Now, we'll create a process corresponding to either a parameter server or trainer depending on our command line arguments. We'll create a ``ParameterServer`` if our passed in rank is 0, and a ``TrainerNet`` otherwise. Note that we're using ``torch.multiprocessing`` to launch a subprocess corresponding to the function that we want to execute, and waiting on this process's completion from the main thread with ``p.join()``. In the case of initializing our trainers, we also use PyTorch's `dataloaders <https://pytorch.org/docs/stable/data.html>`_ in order to specify train and test data loaders on the MNIST dataset. 
+Now, we'll create a process corresponding to either a parameter server or trainer depending on our command line arguments. We'll create a ``ParameterServer`` if our passed in rank is 0, and a ``TrainerNet`` otherwise. Note that we're using ``torch.multiprocessing`` to launch a subprocess corresponding to the function that we want to execute, and waiting on this process's completion from the main thread with ``p.join()``. In the case of initializing our trainers, we also use PyTorch's `dataloaders <https://pytorch.org/docs/stable/data.html>`_ in order to specify train and test data loaders on the MNIST dataset.
 
 .. code-block:: python
 
