@@ -173,11 +173,12 @@ Welcome to PyTorch Tutorials
    :tags: Text
 
 .. customcarditem::
-   :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
+   :header: Language Translation with Transformer
+   :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation.html
+   :link: beginner/translation_transformer.html
    :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -315,6 +316,13 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use the PyTorch Profiler to benchmark your module's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
    :link: beginner/profiler.html
+   :tags: Model-Optimization,Best-Practice,Profiling
+
+.. customcarditem::
+   :header: Performance Profiling in Tensorboard
+   :card_description: Learn how to use tensorboard plugin to profile and analyze your model's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: intermediate/tensorboard_profiler_tutorial.html
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
@@ -523,9 +531,24 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Learning PyTorch
+   :caption: Introduction to PyTorch
 
    beginner/basics/intro
+   beginner/basics/quickstart_tutorial
+   beginner/basics/tensorqs_tutorial
+   beginner/basics/data_tutorial
+   beginner/basics/transforms_tutorial
+   beginner/basics/buildmodel_tutorial
+   beginner/basics/autogradqs_tutorial
+   beginner/basics/optimization_tutorial
+   beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Learning PyTorch
+
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
@@ -564,7 +587,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation
+   beginner/translation_transformer
 
 
 .. toctree::
@@ -626,6 +649,7 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
+   intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial

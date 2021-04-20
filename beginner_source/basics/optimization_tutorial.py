@@ -18,7 +18,7 @@ the error in its guess (*loss*), collects the derivatives of the error with resp
 the `previous section  <autograd_tutorial.html>`_), and **optimizes** these parameters using gradient descent. For a more 
 detailed walkthrough of this process, check out this video on `backpropagation from 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
 
-Pre-requisite Code 
+Prerequisite Code 
 -----------------
 We load the code from the previous sections on `Datasets & DataLoaders <data_tutorial.html>`_ 
 and `Build Model  <buildmodel_tutorial.html>`_.
