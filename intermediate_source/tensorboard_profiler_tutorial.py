@@ -1,12 +1,8 @@
 """
 PyTorch Profiler With TensorBoard
 ====================================
-This recipe demonstrates how to use PyTorch Profiler
+This tutorial demonstrates how to use TensorBoard plugin with PyTorch Profiler
 to detect performance bottlenecks of the model.
-
-.. note::
-    PyTorch 1.8 introduces the new API that will replace the older profiler API
-    in the future releases. Check the new API at `this page <https://pytorch.org/docs/master/profiler.html>`__.
 
 Introduction
 ------------
@@ -15,8 +11,8 @@ recording the CPU side operations as well as the CUDA kernel launches on the GPU
 The profiler can visualize this information
 in TensorBoard Plugin and provide analysis of the performance bottlenecks.
 
-In this recipe, we will use a simple Resnet model to demonstrate how to
-use profiler to analyze model performance.
+In this tutorial, we will use a simple Resnet model to demonstrate how to
+use TensorBoard plugin to analyze model performance.
 
 Setup
 -----
@@ -98,7 +94,7 @@ def train(data):
 #
 # - ``schedule`` - callable that takes step (int) as a single parameter
 #   and returns the profiler action to perform at each step;
-#   In this example with wait=1, warmup=1, active=5,
+#   In this example with ``wait=1, warmup=1, active=5``,
 #   profiler will skip the first step/iteration,
 #   start warming up on the second,
 #   record the following five iterations,
@@ -108,7 +104,7 @@ def train(data):
 #   During ``warmup`` steps, the profiler starts profiling as warmup but does not record any events.
 #   This is for reducing the profiling overhead.
 #   The overhead at the beginning of profiling is high and easy to bring skew to the profiling result.
-#   During ``active`` steps, the profiler works and record events.
+#   During ``active`` steps, the profiler works and records events.
 # - ``on_trace_ready`` - callable that is called at the end of each cycle;
 #   In this example we use ``torch.profiler.tensorboard_trace_handler`` to generate result files for TensorBoard.
 #   After profiling, result files will be saved into the ``./log/resnet18`` directory.
@@ -124,7 +120,7 @@ with torch.profiler.profile(
         if step >= 7:
             break
         train(batch_data)
-        prof.step()
+        prof.step()  # Need call this at the end of each step to notify profiler of steps' boundary.
 
 
 ######################################################################
@@ -228,15 +224,14 @@ with torch.profiler.profile(
 # .. image:: ../../_static/img/profiler_trace_view2.png
 #    :scale: 25 %
 #
-# From the above view, we can find the event of ``enumerate(DataLoader)`` is shortened,
+# From the above view, we can see that the runtime of ``enumerate(DataLoader)`` is reduced,
 # and the GPU utilization is increased.
 
 ######################################################################
 # Learn More
 # ----------
 #
-# Take a look at the following recipes/tutorials to continue your learning:
+# Take a look at the following documents to continue your learning:
 #
 # -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
-# -  `Pytorch Profiler <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`_
-# -  `Profiling Your Pytorch Module <https://pytorch.org/tutorials/beginner/profiler.html>`_ tutorial
+# -  `torch.profiler API <https://pytorch.org/docs/master/profiler.html>`_
