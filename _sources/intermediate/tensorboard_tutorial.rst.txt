@@ -138,7 +138,7 @@ folder.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now let's write an image to our TensorBoard - specifically, a grid -
-using `make_grid <https://pytorch.org/docs/stable/torchvision/utils.html#torchvision.utils.make_grid>`__.
+using `make_grid <https://pytorch.org/vision/stable/utils.html#torchvision.utils.make_grid>`__.
 
 .. code:: python
 
