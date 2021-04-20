@@ -173,11 +173,12 @@ Welcome to PyTorch Tutorials
    :tags: Text
 
 .. customcarditem::
-   :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
+   :header: Language Translation with Transformer
+   :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation.html
+   :link: beginner/translation_transformer.html
    :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -322,6 +323,13 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
+   :header: Parametrizations Tutorial
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :image: _static/img/thumbnails/cropped/parametrizations.png
+   :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
@@ -557,7 +565,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation
+   beginner/translation_transformer
 
 
 .. toctree::
@@ -620,6 +628,7 @@ Additional Resources
 
    beginner/profiler
    beginner/hyperparameter_tuning_tutorial
+   intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
