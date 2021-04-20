@@ -176,7 +176,7 @@ def train(epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 #
-# A simple test procedure to measure STN the performances on MNIST.
+# A simple test procedure to measure the STN performances on MNIST.
 #
 
 
