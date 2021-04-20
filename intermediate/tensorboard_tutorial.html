@@ -622,38 +622,37 @@ for each class.</p>
 <span class="c1"># 2. gets the preds in a test_size Tensor</span>
 <span class="c1"># takes ~10 seconds to run</span>
 <span class="n">class_probs</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">class_preds</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">class_label</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">testloader</span><span class="p">:</span>
         <span class="n">images</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">data</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">images</span><span class="p">)</span>
         <span class="n">class_probs_batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">output</span><span class="p">]</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">class_preds_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="n">class_probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_probs_batch</span><span class="p">)</span>
-        <span class="n">class_preds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_preds_batch</span><span class="p">)</span>
+        <span class="n">class_label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
 
 <span class="n">test_probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">class_probs</span><span class="p">])</span>
-<span class="n">test_preds</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">class_preds</span><span class="p">)</span>
+<span class="n">test_label</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">class_label</span><span class="p">)</span>
 
 <span class="c1"># helper function</span>
-<span class="k">def</span> <span class="nf">add_pr_curve_tensorboard</span><span class="p">(</span><span class="n">class_index</span><span class="p">,</span> <span class="n">test_probs</span><span class="p">,</span> <span class="n">test_preds</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">add_pr_curve_tensorboard</span><span class="p">(</span><span class="n">class_index</span><span class="p">,</span> <span class="n">test_probs</span><span class="p">,</span> <span class="n">test_label</span><span class="p">,</span> <span class="n">global_step</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="sd">'''</span>
 <span class="sd">    Takes in a "class_index" from 0 to 9 and plots the corresponding</span>
 <span class="sd">    precision-recall curve</span>
 <span class="sd">    '''</span>
-    <span class="n">tensorboard_preds</span> <span class="o">=</span> <span class="n">test_preds</span> <span class="o">==</span> <span class="n">class_index</span>
+    <span class="n">tensorboard_truth</span> <span class="o">=</span> <span class="n">test_label</span> <span class="o">==</span> <span class="n">class_index</span>
     <span class="n">tensorboard_probs</span> <span class="o">=</span> <span class="n">test_probs</span><span class="p">[:,</span> <span class="n">class_index</span><span class="p">]</span>
 
     <span class="n">writer</span><span class="o">.</span><span class="n">add_pr_curve</span><span class="p">(</span><span class="n">classes</span><span class="p">[</span><span class="n">class_index</span><span class="p">],</span>
-                        <span class="n">tensorboard_preds</span><span class="p">,</span>
+                        <span class="n">tensorboard_truth</span><span class="p">,</span>
                         <span class="n">tensorboard_probs</span><span class="p">,</span>
                         <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
     <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="c1"># plot all the pr curves</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)):</span>
-    <span class="n">add_pr_curve_tensorboard</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">test_probs</span><span class="p">,</span> <span class="n">test_preds</span><span class="p">)</span>
+    <span class="n">add_pr_curve_tensorboard</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">test_probs</span><span class="p">,</span> <span class="n">test_label</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>You will now see a “PR Curves” tab that contains the precision-recall
