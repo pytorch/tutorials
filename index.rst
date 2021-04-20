@@ -505,6 +505,11 @@ Additional Resources
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
+.. customcalloutitem::
+   :header: Run Tutorials on Google Colab
+   :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
+   :button_link: beginner/colab.html
+   :button_text: Download
 
 .. End of callout section
 
