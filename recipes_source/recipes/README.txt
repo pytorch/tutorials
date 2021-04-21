@@ -52,3 +52,11 @@ PyTorch Recipes
 13. zeroing_out_gradients.py
          Zeroing out gradients
          https://pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html
+
+14. mobile_perf.py
+         PyTorch Mobile Performance Recipes
+         https://pytorch.org/tutorials/recipes/mobile_perf.html
+
+15. amp_recipe.py
+         Automatic Mixed Precision
+         https://pytorch.org/tutorials/recipes/amp_recipe.html
