@@ -383,36 +383,12 @@ usages.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">affine2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">saved_log_probs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rewards</span> <span class="o">=</span> <span class="p">[]</span>
-
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">affine1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">action_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">affine2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">action_scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Let’s first prepare a helper to run functions remotely on the owner worker of an
-<code class="docutils literal notranslate"><span class="pre">RRef</span></code>. You will find this function being used in several places this
-tutorial’s examples. Ideally, the <cite>torch.distributed.rpc</cite> package should provide
-these helper functions out of box. For example, it will be easier if
-applications can directly call <code class="docutils literal notranslate"><span class="pre">RRef.some_func(*arg)</span></code> which will then
-translate to RPC to the <code class="docutils literal notranslate"><span class="pre">RRef</span></code> owner. The progress on this API is tracked in
-<a class="reference external" href="https://github.com/pytorch/pytorch/issues/31743">pytorch/pytorch#31743</a>.</p>
-<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.distributed.rpc</span> <span class="kn">import</span> <span class="n">rpc_sync</span>
-
-<span class="k">def</span> <span class="nf">_call_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">method</span><span class="p">(</span><span class="n">rref</span><span class="o">.</span><span class="n">local_value</span><span class="p">(),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_remote_method</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">method</span><span class="p">,</span> <span class="n">rref</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">rpc_sync</span><span class="p">(</span><span class="n">rref</span><span class="o">.</span><span class="n">owner</span><span class="p">(),</span> <span class="n">_call_method</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
-
-<span class="c1"># to call a function on an rref, we could do the following</span>
-<span class="c1"># _remote_method(some_func, rref, *args)</span>
 </pre></div>
 </div>
 <p>We are ready to present the observer. In this example, each observer creates its
@@ -436,10 +412,14 @@ simple and the two steps explicit in this example.</p>
     <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentDefaultsHelpFormatter</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--world_size'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Number of workers'</span><span class="p">)</span>
-<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--log_interval'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'Log every log_interval episodes'</span><span class="p">)</span>
-<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--gamma'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'how much to value future rewards'</span><span class="p">)</span>
-<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--seed'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">'random seed for reproducibility'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--world_size'</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'W'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">'number of workers'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--log_interval'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'N'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">'interval between training status logs'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--gamma'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'G'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">'how much to value future rewards'</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--seed'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">'S'</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s1">'random seed  for reproducibility'</span><span class="p">)</span>
 <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
 <span class="k">class</span> <span class="nc">Observer</span><span class="p">:</span>
@@ -449,18 +429,19 @@ simple and the two steps explicit in this example.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">'CartPole-v1'</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">run_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_rref</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">agent_rref</span><span class="p">):</span>
         <span class="n">state</span><span class="p">,</span> <span class="n">ep_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(),</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
             <span class="c1"># send the state to the agent to get an action</span>
-            <span class="n">action</span> <span class="o">=</span> <span class="n">_remote_method</span><span class="p">(</span><span class="n">Agent</span><span class="o">.</span><span class="n">select_action</span><span class="p">,</span> <span class="n">agent_rref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="n">agent_rref</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">()</span><span class="o">.</span><span class="n">select_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
 
             <span class="c1"># apply the action to the environment, and get the reward</span>
             <span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
 
             <span class="c1"># report the reward to the agent for training purpose</span>
-            <span class="n">_remote_method</span><span class="p">(</span><span class="n">Agent</span><span class="o">.</span><span class="n">report_reward</span><span class="p">,</span> <span class="n">agent_rref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
+            <span class="n">agent_rref</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">()</span><span class="o">.</span><span class="n">report_reward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
 
+            <span class="c1"># finishes after the number of self.env._max_episode_steps</span>
             <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
                 <span class="k">break</span>
 </pre></div>
@@ -532,15 +513,15 @@ nested RPCs. After each episode, the <code class="docutils literal notranslate">
 contain the recorded action probs and rewards.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
     <span class="o">...</span>
-    <span class="k">def</span> <span class="nf">run_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">run_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">futs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">ob_rref</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ob_rrefs</span><span class="p">:</span>
             <span class="c1"># make async RPC to kick off an episode on all observers</span>
             <span class="n">futs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">rpc_async</span><span class="p">(</span>
                     <span class="n">ob_rref</span><span class="o">.</span><span class="n">owner</span><span class="p">(),</span>
-                    <span class="n">_call_method</span><span class="p">,</span>
-                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">Observer</span><span class="o">.</span><span class="n">run_episode</span><span class="p">,</span> <span class="n">ob_rref</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_rref</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">)</span>
+                    <span class="n">ob_rref</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">()</span><span class="o">.</span><span class="n">run_episode</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_rref</span><span class="p">,)</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
@@ -605,8 +586,7 @@ available in the <a class="reference external" href="https://pytorch.org/docs/ma
 <span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
 
 <span class="n">AGENT_NAME</span> <span class="o">=</span> <span class="s2">"agent"</span>
-<span class="n">OBSERVER_NAME</span><span class="o">=</span><span class="s2">"obs"</span>
-<span class="n">TOTAL_EPISODE_STEP</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">OBSERVER_NAME</span><span class="o">=</span><span class="s2">"obs</span><span class="si">{}</span><span class="s2">"</span>
 
 <span class="k">def</span> <span class="nf">run_worker</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">'MASTER_ADDR'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'localhost'</span>
@@ -616,17 +596,17 @@ available in the <a class="reference external" href="https://pytorch.org/docs/ma
         <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span><span class="n">AGENT_NAME</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
 
         <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">world_size</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"This will run until reward threshold of </span><span class="si">{</span><span class="n">agent</span><span class="o">.</span><span class="n">reward_threshold</span><span class="si">}</span><span class="s2">"</span>
+                <span class="s2">" is reached. Ctrl+C to exit."</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i_episode</span> <span class="ow">in</span> <span class="n">count</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
-            <span class="n">n_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">TOTAL_EPISODE_STEP</span> <span class="o">/</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">world_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-            <span class="n">agent</span><span class="o">.</span><span class="n">run_episode</span><span class="p">(</span><span class="n">n_steps</span><span class="o">=</span><span class="n">n_steps</span><span class="p">)</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">run_episode</span><span class="p">()</span>
             <span class="n">last_reward</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">finish_episode</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">i_episode</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">'Episode </span><span class="si">{}</span><span class="se">\t</span><span class="s1">Last reward: </span><span class="si">{:.2f}</span><span class="se">\t</span><span class="s1">Average reward: </span><span class="si">{:.2f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                      <span class="n">i_episode</span><span class="p">,</span> <span class="n">last_reward</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">running_reward</span><span class="p">))</span>
-
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Episode </span><span class="si">{</span><span class="n">i_episode</span><span class="si">}</span><span class="se">\t</span><span class="s2">Last reward: </span><span class="si">{</span><span class="n">last_reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\t</span><span class="s2">Average reward: "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">agent</span><span class="o">.</span><span class="n">running_reward</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">agent</span><span class="o">.</span><span class="n">running_reward</span> <span class="o">&gt;</span> <span class="n">agent</span><span class="o">.</span><span class="n">reward_threshold</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">"Solved! Running reward is now </span><span class="si">{}</span><span class="s2">!"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">agent</span><span class="o">.</span><span class="n">running_reward</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Solved! Running reward is now </span><span class="si">{</span><span class="n">agent</span><span class="o">.</span><span class="n">running_reward</span><span class="si">}</span><span class="s2">!"</span><span class="p">)</span>
                 <span class="k">break</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># other ranks are the observer</span>
@@ -646,7 +626,8 @@ available in the <a class="reference external" href="https://pytorch.org/docs/ma
 </pre></div>
 </div>
 <p>Below are some sample outputs when training with <cite>world_size=2</cite>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Episode 10      Last reward: 26.00      Average reward: 10.01
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>This will run until reward threshold of 475.0 is reached. Ctrl+C to exit.
+Episode 10      Last reward: 26.00      Average reward: 10.01
 Episode 20      Last reward: 16.00      Average reward: 11.27
 Episode 30      Last reward: 49.00      Average reward: 18.62
 Episode 40      Last reward: 45.00      Average reward: 26.09
