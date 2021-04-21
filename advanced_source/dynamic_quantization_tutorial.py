@@ -213,7 +213,7 @@ test_data = batchify(corpus.test, eval_batch_size)
 def get_batch(source, i):
     seq_len = min(bptt, len(source) - 1 - i)
     data = source[i:i+seq_len]
-    target = source[i+1:i+1+seq_len].view(-1)
+    target = source[i+1:i+1+seq_len].reshape(-1)
     return data, target
 
 def repackage_hidden(h):
@@ -271,7 +271,7 @@ print_size_of_model(quantized_model)
 ######################################################################
 # Second, we see faster inference time, with no difference in evaluation loss:
 #
-# Note: we number of threads to one for single threaded comparison, since quantized
+# Note: we set the number of threads to one for single threaded comparison, since quantized
 # models run single threaded.
 
 torch.set_num_threads(1)

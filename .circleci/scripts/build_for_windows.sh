@@ -16,7 +16,7 @@ mingw32/bin/mingw-get.exe install mingw32-make
 mingw32/bin/mingw-get.exe install msys-findutils
 mv mingw32/bin/mingw32-make.exe mingw32/bin/make.exe
 curl -k https://eternallybored.org/misc/wget/1.20.3/64/wget.exe -o mingw32/bin/wget.exe
-export PATH="${SOURCE_DIR}/mingw32/bin:$PATH"
+export PATH="${SOURCE_DIR}/mingw32/bin:${SOURCE_DIR}/mingw32/msys/1.0/bin:$PATH"
 
 #install anaconda3
 export CONDA_HOME="${SOURCE_DIR}/conda"
@@ -31,19 +31,48 @@ eval "$(conda shell.bash hook)"
 conda create -qyn testenv python=3.7
 conda activate testenv
 
-conda install sphinx
-pip install sphinx_gallery==0.3.1 flask pandas spacy ipython scipy pySoundFile scikit-image
-pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
-conda install torchaudio -c pytorch-test
+REQUIREMENTS="$(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PROJECT_DIR/requirements.txt  | grep .)"
+echo $REQUIREMENTS > requirements.txt
+pip install -r requirements.txt
+pip install pySoundFile
+# Force uninstall torch & related packages, we'll install them using conda later.
+pip uninstall -y torch torchvision torchtext
+conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext torchaudio
 python -m spacy download de
 python -m spacy download en
 pushd ${PROJECT_DIR}
 DIR=.jenkins
-python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
-python $DIR/remove_runnable_code.py beginner_source/data_loading_tutorial.py beginner_source/data_loading_tutorial.py || true
-python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py beginner_source/dcgan_faces_tutorial.py || true
-python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
-python $DIR/remove_runnable_code.py intermediate_source/memory_format_tutorial.py intermediate_source/memory_format_tutorial.py || true
+export NUM_WORKERS=4
 
-make docs
+if [[ "${CIRCLE_JOB}" == *worker_* ]]; then
+  python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
+  python $DIR/remove_runnable_code.py advanced_source/static_quantization_tutorial.py advanced_source/static_quantization_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py  beginner_source/audio_preprocessing_tutorial.py || true
+  python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py  beginner_source/fgsm_tutorial.py || true
+
+  export WORKER_ID=$(echo "${CIRCLE_JOB}" | tr -dc '0-9')
+  count=0
+  FILES_TO_RUN=()
+  for work_directory  in beginner_source intermediate_source advanced_source recipes_source prototype_source; do
+    for filename in $(find $work_directory -name '\*.py' -not -path '\*/data/\*'); do
+      if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+        echo "Removing runnable code from "$filename
+        python $DIR/remove_runnable_code.py $filename $filename
+      else
+        echo "Keeping "$filename
+        FILES_TO_RUN+=($(basename $filename .py))
+      fi
+      count=$((count+1))
+    done
+  done
+  echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
+fi
+
+if [[ ! -d advanced_source/data || ! -d beginner_source/data || ! -d intermediate_source/data || ! -d prototype_source/data ]];then
+    make download
+fi
+
+make html
