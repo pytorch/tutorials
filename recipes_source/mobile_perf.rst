@@ -72,7 +72,7 @@ Code your model:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Do not be confused that fuse_modules is in the quantization package.
-It works for all ``torcn.nn.Module``.
+It works for all ``torch.nn.Module``.
 
 ``torch.quantization.fuse_modules`` fuses a list of modules into a single module.
 It fuses only the following sequence of modules:
@@ -237,7 +237,7 @@ Now we are ready to benchmark your model:
 
 ::
 
-  adb shell "/data/local/tmp/speed_benchmark_torch --model="/data/local/tmp/model.pt" --input_dims="1,3,224,224" --input_type="float"
+  adb shell "/data/local/tmp/speed_benchmark_torch --model=/data/local/tmp/model.pt" --input_dims="1,3,224,224" --input_type="float"
   ----- output -----
   Starting benchmark.
   Running warmup runs.
@@ -250,7 +250,7 @@ iOS - Benchmarking Setup
 
 For iOS, we'll be using our `TestApp <https://github.com/pytorch/pytorch/tree/master/ios/TestApp>`_ as the benchmarking tool. 
 
-To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_mode.py <https://github.com/pytorch/pytorch/blob/master/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
+To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_model.py <https://github.com/pytorch/pytorch/blob/master/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
 
 ::
 
