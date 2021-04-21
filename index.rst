@@ -505,6 +505,11 @@ Additional Resources
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
+.. customcalloutitem::
+   :header: Run Tutorials on Google Colab
+   :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
+   :button_link: beginner/colab.html
+   :button_text: Download
 
 .. End of callout section
 
@@ -531,9 +536,24 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Learning PyTorch
+   :caption: Introduction to PyTorch
 
    beginner/basics/intro
+   beginner/basics/quickstart_tutorial
+   beginner/basics/tensorqs_tutorial
+   beginner/basics/data_tutorial
+   beginner/basics/transforms_tutorial
+   beginner/basics/buildmodel_tutorial
+   beginner/basics/autogradqs_tutorial
+   beginner/basics/optimization_tutorial
+   beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Learning PyTorch
+
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
