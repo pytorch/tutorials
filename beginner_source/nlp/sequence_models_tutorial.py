@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Sequence Models and Long-Short Term Memory Networks
+Sequence Models and Long Short-Term Memory Networks
 ===================================================
 
 At this point, we have seen various feed-forward networks. That is,
@@ -21,14 +21,14 @@ We can use the hidden state to predict words in a language model,
 part-of-speech tags, and a myriad of other things.
 
 
-LSTM's in Pytorch
+LSTMs in Pytorch
 ~~~~~~~~~~~~~~~~~
 
 Before getting to the example, note a few things. Pytorch's LSTM expects
 all of its inputs to be 3D tensors. The semantics of the axes of these
 tensors is important. The first axis is the sequence itself, the second
 indexes instances in the mini-batch, and the third indexes elements of
-the input. We haven't discussed mini-batching, so lets just ignore that
+the input. We haven't discussed mini-batching, so let's just ignore that
 and assume we will always have just 1 dimension on the second axis. If
 we want to run the sequence model over the sentence "The cow jumped",
 our input should look like
@@ -95,7 +95,9 @@ print(hidden)
 # In this section, we will use an LSTM to get part of speech tags. We will
 # not use Viterbi or Forward-Backward or anything like that, but as a
 # (challenging) exercise to the reader, think about how Viterbi could be
-# used after you have seen what is going on.
+# used after you have seen what is going on. In this example, we also refer
+# to embeddings. If you are unfamiliar with embeddings, you can read up 
+# about them `here <https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html>`__.
 #
 # The model is as follows: let our input sentence be
 # :math:`w_1, \dots, w_M`, where :math:`w_i \in V`, our vocab. Also, let
@@ -127,16 +129,19 @@ def prepare_sequence(seq, to_ix):
 
 
 training_data = [
+    # Tags are: DET - determiner; NN - noun; V - verb
+    # For example, the word "The" is a determiner 
     ("The dog ate the apple".split(), ["DET", "NN", "V", "DET", "NN"]),
     ("Everybody read that book".split(), ["NN", "V", "DET", "NN"])
 ]
 word_to_ix = {}
+# For each words-list (sentence) and tags-list in each tuple of training_data
 for sent, tags in training_data:
     for word in sent:
-        if word not in word_to_ix:
-            word_to_ix[word] = len(word_to_ix)
+        if word not in word_to_ix:  # word has not been assigned an index yet
+            word_to_ix[word] = len(word_to_ix)  # Assign each word with a unique index
 print(word_to_ix)
-tag_to_ix = {"DET": 0, "NN": 1, "V": 2}
+tag_to_ix = {"DET": 0, "NN": 1, "V": 2}  # Assign each tag with a unique index
 
 # These will usually be more like 32 or 64 dimensional.
 # We will keep them small, so we can see how the weights change as we train.

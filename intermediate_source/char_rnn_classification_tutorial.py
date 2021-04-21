@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Classifying Names with a Character-Level RNN
-*********************************************
+NLP From Scratch: Classifying Names with a Character-Level RNN
+**************************************************************
 **Author**: `Sean Robertson <https://github.com/spro/practical-pytorch>`_
 
 We will be building and training a basic character-level RNN to classify
-words. A character-level RNN reads words as a series of characters -
+words. This tutorial, along with the following two, show how to do
+preprocess data for NLP modeling "from scratch", in particular not using
+many of the convenience functions of `torchtext`, so you can see how
+preprocessing for NLP modeling works at a low level.
+
+A character-level RNN reads words as a series of characters -
 outputting a prediction and "hidden state" at each step, feeding its
 previous hidden state into each next step. We take the final prediction
 to be the output, i.e. which class the word belongs to.
@@ -216,7 +221,7 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 #
 
 _input = letterToTensor('A')
-hidden =torch.zeros(1, n_hidden)
+hidden = torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(_input, hidden)
 
@@ -327,7 +332,7 @@ def train(category_tensor, line_tensor):
 
     # Add parameters' gradients to their values, multiplied by learning rate
     for p in rnn.parameters():
-        p.data.add_(-learning_rate, p.grad.data)
+        p.data.add_(p.grad.data, alpha=-learning_rate)
 
     return output, loss.item()
 

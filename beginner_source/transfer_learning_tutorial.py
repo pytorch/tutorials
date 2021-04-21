@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Transfer Learning Tutorial
-==========================
+Transfer Learning for Computer Vision Tutorial
+==============================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
-In this tutorial, you will learn how to train your network using
-transfer learning. You can read more about the transfer learning at `cs231n
-notes <https://cs231n.github.io/transfer-learning/>`__
+In this tutorial, you will learn how to train a convolutional neural network for
+image classification using transfer learning. You can read more about the transfer
+learning at `cs231n notes <https://cs231n.github.io/transfer-learning/>`__
 
 Quoting these notes,
 
@@ -154,7 +154,6 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
-                scheduler.step()
                 model.train()  # Set model to training mode
             else:
                 model.eval()   # Set model to evaluate mode
@@ -185,6 +184,8 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 # statistics
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
+            if phase == 'train':
+                scheduler.step()
 
             epoch_loss = running_loss / dataset_sizes[phase]
             epoch_acc = running_corrects.double() / dataset_sizes[phase]
@@ -251,6 +252,8 @@ def visualize_model(model, num_images=6):
 
 model_ft = models.resnet18(pretrained=True)
 num_ftrs = model_ft.fc.in_features
+# Here the size of each output sample is set to 2.
+# Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
 model_ft.fc = nn.Linear(num_ftrs, 2)
 
 model_ft = model_ft.to(device)
@@ -331,3 +334,13 @@ visualize_model(model_conv)
 
 plt.ioff()
 plt.show()
+
+######################################################################
+# Further Learning
+# -----------------
+#
+# If you would like to learn more about the applications of transfer learning,
+# checkout our `Quantized Transfer Learning for Computer Vision Tutorial <https://pytorch.org/tutorials/intermediate/quantized_transfer_learning_tutorial.html>`_.
+#
+#
+

@@ -100,7 +100,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # For this, we're going to need two classses:
 #
 # -  ``Transition`` - a named tuple representing a single transition in
-#    our environment. It maps essentially maps (state, action) pairs
+#    our environment. It essentially maps (state, action) pairs
 #    to their (next_state, reward) result, with the state being the
 #    screen difference image as described later on.
 # -  ``ReplayMemory`` - a cyclic buffer of bounded size that holds the
@@ -134,7 +134,7 @@ class ReplayMemory(object):
 
 
 ######################################################################
-# Now, let's define our model. But first, let quickly recap what a DQN is.
+# Now, let's define our model. But first, let's quickly recap what a DQN is.
 #
 # DQN algorithm
 # -------------
@@ -388,7 +388,7 @@ def plot_durations():
 # single step of the optimization. It first samples a batch, concatenates
 # all the tensors into a single one, computes :math:`Q(s_t, a_t)` and
 # :math:`V(s_{t+1}) = \max_a Q(s_{t+1}, a)`, and combines them into our
-# loss. By defition we set :math:`V(s) = 0` if :math:`s` is a terminal
+# loss. By definition we set :math:`V(s) = 0` if :math:`s` is a terminal
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
 # added stability. The target network has its weights kept frozen most of
 # the time, but is updated with the policy network's weights every so often.
@@ -408,7 +408,7 @@ def optimize_model():
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.uint8)
+                                          batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
     state_batch = torch.cat(batch.state)
@@ -481,7 +481,7 @@ for i_episode in range(num_episodes):
         # Move to the next state
         state = next_state
 
-        # Perform one step of the optimization (on the target network)
+        # Perform one step of the optimization (on the policy network)
         optimize_model()
         if done:
             episode_durations.append(t + 1)

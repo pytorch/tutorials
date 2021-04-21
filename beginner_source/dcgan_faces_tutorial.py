@@ -53,7 +53,7 @@ DCGAN Tutorial
 # :math:`D(x)` is the discriminator network which outputs the (scalar)
 # probability that :math:`x` came from training data rather than the
 # generator. Here, since we are dealing with images the input to
-# :math:`D(x)` is an image of HWC size 3x64x64. Intuitively, :math:`D(x)`
+# :math:`D(x)` is an image of CHW size 3x64x64. Intuitively, :math:`D(x)`
 # should be HIGH when :math:`x` comes from training data and LOW when
 # :math:`x` comes from the generator. :math:`D(x)` can also be thought of
 # as a traditional binary classifier.
@@ -131,7 +131,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 
-# Set random seem for reproducibility
+# Set random seed for reproducibility
 manualSeed = 999
 #manualSeed = random.randint(1, 10000) # use if you want new results
 print("Random Seed: ", manualSeed)
@@ -218,7 +218,7 @@ ngpu = 1
 # ----
 # 
 # In this tutorial we will use the `Celeb-A Faces
-# dataset <https://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
+# dataset <http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html>`__ which can
 # be downloaded at the linked site, or in `Google
 # Drive <https://drive.google.com/drive/folders/0B7EVK8r0v71pTUZsaXdaSnZBZzg>`__.
 # The dataset will download as a file named *img_align_celeba.zip*. Once
@@ -274,7 +274,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # --------------
 # 
 # With our input parameters set and the dataset prepared, we can now get
-# into the implementation. We will start with the weigth initialization
+# into the implementation. We will start with the weight initialization
 # strategy, then talk about the generator, discriminator, loss functions,
 # and training loop in detail.
 # 
@@ -283,7 +283,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # 
 # From the DCGAN paper, the authors specify that all model weights shall
 # be randomly initialized from a Normal distribution with mean=0,
-# stdev=0.2. The ``weights_init`` function takes an initialized model as
+# stdev=0.02. The ``weights_init`` function takes an initialized model as
 # input and reinitializes all convolutional, convolutional-transpose, and
 # batch normalization layers to meet this criteria. This function is
 # applied to the models immediately after initialization.
@@ -493,8 +493,8 @@ criterion = nn.BCELoss()
 fixed_noise = torch.randn(64, nz, 1, 1, device=device)
 
 # Establish convention for real and fake labels during training
-real_label = 1
-fake_label = 0
+real_label = 1.
+fake_label = 0.
 
 # Setup Adam optimizers for both G and D
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
@@ -554,7 +554,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # reported are:
 # 
 # -  **Loss_D** - discriminator loss calculated as the sum of losses for
-#    the all real and all fake batches (:math:`log(D(x)) + log(D(G(z)))`).
+#    the all real and all fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
 # -  **Loss_G** - generator loss calculated as :math:`log(D(G(z)))`
 # -  **D(x)** - the average output (across the batch) of the discriminator
 #    for the all real batch. This should start close to 1 then
@@ -591,7 +591,7 @@ for epoch in range(num_epochs):
         # Format batch
         real_cpu = data[0].to(device)
         b_size = real_cpu.size(0)
-        label = torch.full((b_size,), real_label, device=device)
+        label = torch.full((b_size,), real_label, dtype=torch.float, device=device)
         # Forward pass real batch through D
         output = netD(real_cpu).view(-1)
         # Calculate loss on all-real batch
@@ -610,10 +610,10 @@ for epoch in range(num_epochs):
         output = netD(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
-        # Calculate the gradients for this batch
+        # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         errD_fake.backward()
         D_G_z1 = output.mean().item()
-        # Add the gradients from the all-real and all-fake batches
+        # Compute error of D as sum over the fake and the real batches
         errD = errD_real + errD_fake
         # Update D
         optimizerD.step()
