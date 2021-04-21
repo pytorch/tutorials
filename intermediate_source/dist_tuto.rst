@@ -2,6 +2,10 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+
 In this short tutorial, we will be going over the distributed package
 of PyTorch. We'll see how to set up the distributed setting, use the
 different communication strategies, and go over some the internals of
@@ -20,7 +24,7 @@ Setup
 The distributed package included in PyTorch (i.e.,
 ``torch.distributed``) enables researchers and practitioners to easily
 parallelize their computations across processes and clusters of
-machines. To do so, it leverages messaging passing semantics
+machines. To do so, it leverages message passing semantics
 allowing each process to communicate data to any of the other processes.
 As opposed to the multiprocessing (``torch.multiprocessing``) package,
 processes can use different communication backends and are not
@@ -28,10 +32,10 @@ restricted to being executed on the same machine.
 
 In order to get started we need the ability to run multiple processes
 simultaneously. If you have access to compute cluster you should check
-with your local sysadmin or use your favorite coordination tool. (e.g.,
+with your local sysadmin or use your favorite coordination tool (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
 `clustershell <https://cea-hpc.github.io/clustershell/>`__, or
-`others <https://slurm.schedmd.com/>`__) For the purpose of this
+`others <https://slurm.schedmd.com/>`__). For the purpose of this
 tutorial, we will use a single machine and fork multiple processes using
 the following template.
 
@@ -42,7 +46,7 @@ the following template.
     import os
     import torch
     import torch.distributed as dist
-    from torch.multiprocessing import Process
+    import torch.multiprocessing as mp
 
     def run(rank, size):
         """ Distributed function to be implemented later. """
@@ -59,8 +63,9 @@ the following template.
     if __name__ == "__main__":
         size = 2
         processes = []
+        mp.set_start_method("spawn")
         for rank in range(size):
-            p = Process(target=init_process, args=(rank, size, run))
+            p = mp.Process(target=init_process, args=(rank, size, run))
             p.start()
             processes.append(p)
 
@@ -205,19 +210,19 @@ to obtain the sum of all tensors at all processes, we can use the
         """ Simple point-to-point communication. """
         group = dist.new_group([0, 1])
         tensor = torch.ones(1)
-        dist.all_reduce(tensor, op=dist.reduce_op.SUM, group=group)
+        dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
         print('Rank ', rank, ' has data ', tensor[0])
 
 Since we want the sum of all tensors in the group, we use
-``dist.reduce_op.SUM`` as the reduce operator. Generally speaking, any
+``dist.ReduceOp.SUM`` as the reduce operator. Generally speaking, any
 commutative mathematical operation can be used as an operator.
 Out-of-the-box, PyTorch comes with 4 such operators, all working at the
 element-wise level:
 
--  ``dist.reduce_op.SUM``,
--  ``dist.reduce_op.PRODUCT``,
--  ``dist.reduce_op.MAX``,
--  ``dist.reduce_op.MIN``.
+-  ``dist.ReduceOp.SUM``,
+-  ``dist.ReduceOp.PRODUCT``,
+-  ``dist.ReduceOp.MAX``,
+-  ``dist.ReduceOp.MIN``.
 
 In addition to ``dist.all_reduce(tensor, op, group)``, there are a total
 of 6 collectives currently implemented in PyTorch.
@@ -371,7 +376,7 @@ world.
     def average_gradients(model):
         size = float(dist.get_world_size())
         for param in model.parameters():
-            dist.all_reduce(param.grad.data, op=dist.reduce_op.SUM)
+            dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
             param.grad.data /= size
 
 *Et voilà*! We successfully implemented distributed synchronous SGD and
@@ -394,29 +399,28 @@ using point-to-point collectives.
 
     """ Implementation of a ring-reduce with addition. """
     def allreduce(send, recv):
-        rank = dist.get_rank()
-        size = dist.get_world_size()
-        send_buff = th.zeros(send.size())
-        recv_buff = th.zeros(send.size())
-        accum = th.zeros(send.size())
-        accum[:] = send[:]
+       rank = dist.get_rank()
+       size = dist.get_world_size()
+       send_buff = send.clone()
+       recv_buff = send.clone()
+       accum = send.clone()
 
-        left = ((rank - 1) + size) % size
-        right = (rank + 1) % size
+       left = ((rank - 1) + size) % size
+       right = (rank + 1) % size
 
-        for i in range(size - 1):
-            if i % 2 == 0:
-                # Send send_buff
-                send_req = dist.isend(send_buff, right)
-                dist.recv(recv_buff, left)
-                accum[:] += recv[:]
-            else:
-                # Send recv_buff
-                send_req = dist.isend(recv_buff, right)
-                dist.recv(send_buff, left)
-                accum[:] += send[:]
-            send_req.wait()
-        recv[:] = accum[:]
+       for i in range(size - 1):
+           if i % 2 == 0:
+               # Send send_buff
+               send_req = dist.isend(send_buff, right)
+               dist.recv(recv_buff, left)
+               accum[:] += recv_buff[:]
+           else:
+               # Send recv_buff
+               send_req = dist.isend(recv_buff, right)
+               dist.recv(send_buff, left)
+               accum[:] += send_buff[:]
+           send_req.wait()
+       recv[:] = accum[:]
 
 In the above script, the ``allreduce(send, recv)`` function has a
 slightly different signature than the ones in PyTorch. It takes a
@@ -569,7 +573,7 @@ finally handshake with them.
 The shared filesystem requires all processes to have access to a shared
 file system, and will coordinate them through a shared file. This means
 that each process will open the file, write its information, and wait
-until everybody did so. After what all required information will be
+until everybody did so. After that all required information will be
 readily available to all processes. In order to avoid race conditions,
 the file system must support locking through
 `fcntl <http://man7.org/linux/man-pages/man2/fcntl.2.html>`__.
