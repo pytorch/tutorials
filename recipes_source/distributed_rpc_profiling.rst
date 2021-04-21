@@ -3,14 +3,15 @@ Profiling PyTorch RPC-Based Workloads
 
 In this recipe, you will learn:
 
--  An overview of the `Distributed RPC Framework`_
--  An overview of the `PyTorch Profiler`_
--  How to use the profiler to profile RPC-based workloads
+-  An overview of the `Distributed RPC Framework`_.
+-  An overview of the `PyTorch Profiler`_.
+-  How to use the profiler to profile RPC-based workloads.
+-  A short example showcasing how to use the profiler to tune RPC parameters.
 
 Requirements
 ------------
 
--  PyTorch 1.6
+-  PyTorch 1.6+
 
 The instructions for installing PyTorch are
 available at `pytorch.org`_.
@@ -119,7 +120,7 @@ happening under the hood. Let's add to the above ``worker`` function:
 
             print(prof.key_averages().table())
 
-The aformentioned code creates 2 RPCs, specifying ``torch.add`` and ``torch.mul``, respectively, 
+The aforementioned code creates 2 RPCs, specifying ``torch.add`` and ``torch.mul``, respectively, 
 to be run with two random input tensors on worker 1. Since we use the ``rpc_async`` API, 
 we are returned a ``torch.futures.Future`` object, which must be awaited for the result
 of the computation. Note that this wait must take place within the scope created by
@@ -148,7 +149,7 @@ from ``worker0``. In particular, the first 2 entries in the table show details (
 the operator name, originating worker, and destination worker) about each RPC call made
 and the ``CPU total`` column indicates the end-to-end latency of the RPC call. 
 
-We also have visibility into the actual operators invoked remotely on worker 1 due RPC.
+We also have visibility into the actual operators invoked remotely on worker 1 due to RPC.
 We can see operations that took place on ``worker1`` by checking the ``Node ID`` column. For 
 example, we can interpret the row with name ``rpc_async#aten::mul(worker0 -> worker1)#remote_op: mul``
 as a ``mul`` operation taking place on the remote node, as a result of the RPC sent to ``worker1``
@@ -203,7 +204,7 @@ Here we can see that the user-defined function has successfully been profiled wi
 (slightly greater than 1s given the ``sleep``). Similar to the above profiling output, we can see the
 remote operators that have been executed on worker 1 as part of executing this RPC request.
 
-Lastly, we can visualize remote execution using the tracing functionality provided by the profiler.
+In addition, we can visualize remote execution using the tracing functionality provided by the profiler.
 Let's add the following code to the above ``worker`` function:
 
 ::
@@ -223,6 +224,108 @@ the following:
 
 As we can see, we have traced our RPC requests and can also visualize traces of the remote operations,
 in this case, given in the trace row for ``node_id: 1``.
+
+
+Example: Using profiler to tune RPC initialization parameters
+--------------------------------------------------------------
+
+The following exercise is intended to be a simple example into how one can use statistics and traces
+from the profiler to guide tuning RPC initialization parameters. In particular, we will focus on tuning
+the ``num_worker_threads`` parameter used during RPC initialization. First, we modify our ``rpc.init_rpc``
+call to the following:
+
+::
+
+    # Initialize RPC framework.
+    num_worker_threads = 1
+    rpc.init_rpc(
+      name=worker_name,
+      rank=rank,
+      world_size=world_size,
+      rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads)
+    )
+
+This will initialize the [TensorPipe RPC backend](https://pytorch.org/docs/stable/rpc.html#tensorpipe-backend) with only one thread for processing RPC requests. Next, add
+the following function somewhere outside of the ``worker`` main function:
+
+::
+
+    def num_workers_udf_with_ops():
+      t = torch.randn((100, 100))
+      for i in range(10):
+        t.mul(t)
+        t.add(t)
+        t = t.relu()
+        t = t.sigmoid()
+    return t
+
+This function is mainly intended to be a dummy CPU-intensive function for demonstration purposes. Next, we add the
+following RPC and profiling code to our main ``worker`` function:
+
+::
+
+    with profiler.profile() as p:
+      futs = []
+      for i in range(4):
+        fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
+        futs.append(fut)
+      for f in futs:
+        f.wait()
+
+    print(p.key_averages().table())
+
+    trace_file = "/tmp/trace.json"
+    # Export the trace.
+    p.export_chrome_trace(trace_file)
+    logger.debug(f"Wrote trace to {trace_file}")
+
+Running the code should return the following profiling statistics (exact output subject to randomness):
+
+::
+
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls       Node ID
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+                                                aten::zeros         0.33%     143.557us         0.47%     203.125us      50.781us             4             0
+                                                aten::empty         0.24%     101.487us         0.24%     101.487us      12.686us             8             0
+                                                aten::zero_         0.04%      17.758us         0.04%      17.758us       4.439us             4             0
+    rpc_async#num_workers_udf_with_ops(worker0 -> worker...         0.00%       0.000us             0     189.757ms      47.439ms             4             0
+    # additional columns omitted for brevity
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+
+We can see that there were 4 RPC calls as expected taking a total of 190ms. Let's now tune the ``num_worker_threads`` 
+parameter we set earlier, by changing it to ``num_worker_threads = 8``. Running the code with that change should return
+the following profiling statistics (exact output subject to randomness):
+
+::
+
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg    # of Calls       Node ID
+    -------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+                                                aten::zeros         0.31%     127.320us         0.53%     217.203us      54.301us             4             0
+                                                aten::empty         0.27%     113.529us         0.27%     113.529us      14.191us             8             0
+                                                aten::zero_         0.04%      18.032us         0.04%      18.032us       4.508us             4             0
+    rpc_async#num_workers_udf_with_ops(worker0 -> worker...         0.00%       0.000us             0      94.776ms      23.694ms             4             0
+
+
+We see a clear ~2x speedup, and hypothesize that this speedup is due to exploiting parallelism on the server due
+to the additional cores available. However, how can we ensure that this speedup is due to the increase in cores?
+Taking a look at the trace visualization helps with this. Below is the trace when we set ``num_worker_threads=1``:
+
+.. image:: ../_static/img/oneworker.png
+   :scale: 25 %
+
+Focusing on the trace for ``node 1``, we can see that the RPCs are ran serially on the server.
+
+Next, the following is the trace where we set ``num_worker_threads=8``:
+
+.. image:: ../_static/img/8_workers.png
+   :scale: 25 %
+
+Based on the latter trace, we can see ``node 1`` was able to execute the RPCs in parallel on the server, due to having additional
+worker threads. To summarize, we were able to leverage both the profiler's output report and trace to pick an appropriate
+``num_worker_threads`` parameter for RPC initialization in this simple exercise.
+
 
 Putting it all together, we have the following code for this recipe:
 
@@ -249,16 +352,27 @@ Putting it all together, we have the following code for this recipe:
       torch.add(t1, t2)
       torch.mul(t1, t2)
 
+    def num_workers_udf_with_ops():  
+      t = torch.randn((100, 100))
+      for i in range(10):
+          t.mul(t)
+          t.add(t)
+          t = t.relu()
+          t = t.sigmoid()
+      return t
+
     def worker(rank, world_size):
       os.environ["MASTER_ADDR"] = "localhost"
       os.environ["MASTER_PORT"] = "29500"
       worker_name = f"worker{rank}"
 
       # Initialize RPC framework.
+      num_worker_threads =8
       rpc.init_rpc(
-          name=worker_name,
-          rank=rank,
-          world_size=world_size
+        name=worker_name,
+        rank=rank,
+        world_size=world_size,
+        rpc_backend_options = rpc.TensorPipeRpcBackendOptions(num_worker_threads=num_worker_threads),
       )
       logger.debug(f"{worker_name} successfully initialized RPC.")
 
@@ -267,22 +381,27 @@ Putting it all together, we have the following code for this recipe:
         dst_worker_name = f"worker{dst_worker_rank}"
         t1, t2 = random_tensor(), random_tensor()
         # Send and wait RPC completion under profiling scope.
-        with profiler.profile() as prof:
-            fut1 = rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))
-            fut2 = rpc.rpc_async(dst_worker_name, torch.mul, args=(t1, t2))
-            # RPCs must be awaited within profiling scope.
-            fut1.wait()
-            fut2.wait()
+        with profiler.profile() as prof:  
+          fut1 = rpc.rpc_async(dst_worker_name, torch.add, args=(t1, t2))
+          fut2 = rpc.rpc_async(dst_worker_name, torch.mul, args=(t1, t2))
+          # RPCs must be awaited within profiling scope.
+          fut1.wait()
+          fut2.wait()
         print(prof.key_averages().table())
 
         with profiler.profile() as p:
-            fut = rpc.rpc_async(dst_worker_name, udf_with_ops)
-            fut.wait()
+          futs = []
+          for i in range(4):
+            fut = rpc.rpc_async(dst_worker_name, num_workers_udf_with_ops)
+            futs.append(fut)
+            for f in futs:
+              f.wait()
 
         print(p.key_averages().table())
 
         trace_file = "/tmp/trace.json"
-        prof.export_chrome_trace(trace_file)
+        # Export the trace.
+        p.export_chrome_trace(trace_file)
         logger.debug(f"Wrote trace to {trace_file}")
 
 

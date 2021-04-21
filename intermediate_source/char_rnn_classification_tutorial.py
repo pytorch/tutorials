@@ -221,7 +221,7 @@ rnn = RNN(n_letters, n_hidden, n_categories)
 #
 
 input = letterToTensor('A')
-hidden =torch.zeros(1, n_hidden)
+hidden = torch.zeros(1, n_hidden)
 
 output, next_hidden = rnn(input, hidden)
 
