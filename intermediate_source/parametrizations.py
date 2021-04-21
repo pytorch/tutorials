@@ -351,6 +351,7 @@ layer.weight = X
 print("Initialized weight:")
 print(layer.weight)
 
+###############################################################################
 # Removing a Parametrization
 # --------------------------
 #
