@@ -20,7 +20,7 @@ At the top of the page click **Run in Google Colab**.
 
 The file will open in Colab.
 
-If you choose, **Runtime** then **Run All**, you'll get an error as the
+If you select **Runtime**, and then **Run All**, you'll get an error as the
 file can't be found.
 
 To fix this, we'll copy the required file into our Google Drive account.
@@ -30,7 +30,7 @@ To fix this, we'll copy the required file into our Google Drive account.
    **cornell**.
 3. Visit the Cornell Movie Dialogs Corpus and download the ZIP file.
 4. Unzip the file on your local machine.
-5. Copy the file **movie\_lines.txt** to **data/cornell** folder you
+5. Copy the files **movie\_lines.txt** and **movie\_conversations.txt** to the **data/cornell** folder that you
    created in Google Drive.
 
 Now we'll need to edit the file in\_ \_Colab to point to the file on
@@ -55,12 +55,12 @@ Change the two lines that follow:
 
 We're now pointing to the file we uploaded to Drive.
 
-Now when you click on the **Run cell** button for the code section,
+Now when you click the **Run cell** button for the code section,
 you'll be prompted to authorize Google Drive and you'll get an
 authorization code. Paste the code into the prompt in Colab and you
 should be set.
 
-Rerun the notebook from **Runtime** / **Run All** menu command and
+Rerun the notebook from the **Runtime** / **Run All** menu command and
 you'll see it process. (Note that this tutorial takes a long time to
 run.)
 
