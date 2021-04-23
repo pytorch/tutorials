@@ -1,8 +1,6 @@
 Loading a TorchScript Model in C++
 =====================================
 
-**This tutorial was updated to work with PyTorch 1.2**
-
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
 many scenarios requiring dynamism and ease of iteration, there are equally many
@@ -117,7 +115,7 @@ If you need to exclude some methods in your ``nn.Module``
 because they use Python features that TorchScript doesn't support yet,
 you could annotate those with ``@torch.jit.ignore``
 
-``my_module`` is an instance of
+``sm`` is an instance of
 ``ScriptModule`` that is ready for serialization.
 
 Step 2: Serializing Your Script Module to a File
@@ -134,7 +132,7 @@ on the module and pass it a filename::
   traced_script_module.save("traced_resnet_model.pt")
 
 This will produce a ``traced_resnet_model.pt`` file in your working directory.
-If you also would like to serialize ``my_module``, call ``my_module.save("my_module_model.pt")``
+If you also would like to serialize ``sm``, call ``sm.save("my_module_model.pt")``
 We have now officially left the realm of Python and are ready to cross over to the sphere
 of C++.
 
@@ -205,7 +203,7 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
 
   add_executable(example-app example-app.cpp)
   target_link_libraries(example-app "${TORCH_LIBRARIES}")
-  set_property(TARGET example-app PROPERTY CXX_STANDARD 11)
+  set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 
 The last thing we need to build the example application is the LibTorch
 distribution. You can always grab the latest stable release from the `download
@@ -228,6 +226,8 @@ structure:
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The last step is building the application. For this, assume our example
 directory is laid out like this:
@@ -246,7 +246,7 @@ We can now run the following commands to build the application from within the
   mkdir build
   cd build
   cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
-  make
+  cmake --build . --config Release
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
 distribution. If all goes well, it will look something like this:

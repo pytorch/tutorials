@@ -6,6 +6,10 @@ else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
 fi
 
+# set locale for click dependency in spacy
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
@@ -15,8 +19,14 @@ export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
-export PATH=/opt/conda/bin:$PATH
-pip install sphinx==1.8.2 pandas
+# export PATH=/opt/conda/bin:$PATH
+# pip install sphinx==1.8.2 pandas
+
+#Install PyTorch Nightly for test. 
+# Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
+# RC Link
+# pip uninstall -y torch torchvision torchaudio torchtext
+# pip install -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
@@ -28,9 +38,7 @@ python -m spacy download de
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-# pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
-# this is a workaround to the issue.
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==4.1.1
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==8.1.0
 
 aws configure set default.s3.multipart_threshold 5120MB
 
@@ -39,8 +47,13 @@ export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
   python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  # python $DIR/remove_runnable_code.py advanced_source/ddp_pipeline_tutorial.py advanced_source/ddp_pipeline_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
+  # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
+
   # TODO: Fix bugs in these tutorials to make them runnable again
-  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
+  # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -76,6 +89,26 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       FILES_TO_RUN+=($(basename $filename .py))
     fi
     count=$((count+1))
+   done
+   for filename in $(find recipes_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename $filename
+    else
+      echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
+    fi
+    count=$((count+1))
+   done
+   for filename in $(find prototype_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename $filename
+    else
+      echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
+    fi
+    count=$((count+1))
   done
   echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
@@ -84,13 +117,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.html'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.rst'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.rst'); do
     file_basename=$(basename $filename .rst)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
@@ -108,13 +141,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced -name '*.rst.txt'); do
+  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced -name '*.doctree'); do
+  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes docs/.doctrees/prototype -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
