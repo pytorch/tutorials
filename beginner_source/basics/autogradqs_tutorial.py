@@ -47,7 +47,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 #
 # In this network, ``w`` and ``b`` are **parameters**, which we need to
 # optimize. Thus, we need to be able to compute the gradients of loss
-# function with respect to those variables. In orded to do that, we set
+# function with respect to those variables. In order to do that, we set
 # the ``requires_grad`` property of those tensors.
 
 #######################################################################
