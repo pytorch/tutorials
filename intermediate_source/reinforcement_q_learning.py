@@ -129,7 +129,7 @@ class ReplayMemory(object):
 
 
 ######################################################################
-# Now, let's define our model. But first, let quickly recap what a DQN is.
+# Now, let's define our model. But first, let's quickly recap what a DQN is.
 #
 # DQN algorithm
 # -------------
@@ -383,7 +383,7 @@ def plot_durations():
 # single step of the optimization. It first samples a batch, concatenates
 # all the tensors into a single one, computes :math:`Q(s_t, a_t)` and
 # :math:`V(s_{t+1}) = \max_a Q(s_{t+1}, a)`, and combines them into our
-# loss. By defition we set :math:`V(s) = 0` if :math:`s` is a terminal
+# loss. By definition we set :math:`V(s) = 0` if :math:`s` is a terminal
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
 # added stability. The target network has its weights kept frozen most of
 # the time, but is updated with the policy network's weights every so often.
@@ -476,7 +476,7 @@ for i_episode in range(num_episodes):
         # Move to the next state
         state = next_state
 
-        # Perform one step of the optimization (on the target network)
+        # Perform one step of the optimization (on the policy network)
         optimize_model()
         if done:
             episode_durations.append(t + 1)
