@@ -97,7 +97,7 @@ where in this second expression, we think of the tags as being assigned
 unique non-negative indices.
 
 If the above discussion was too brief, you can check out
-`this <https://www.cs.columbia.edu/%7Emcollins/crf.pdf>`__ write up from
+`this <http://www.cs.columbia.edu/%7Emcollins/crf.pdf>`__ write up from
 Michael Collins on CRFs.
 
 Implementation Notes
