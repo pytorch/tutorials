@@ -63,7 +63,7 @@ import random
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from collections import namedtuple
+from collections import namedtuple, deque
 from itertools import count
 from PIL import Image
 
@@ -115,16 +115,11 @@ Transition = namedtuple('Transition',
 class ReplayMemory(object):
 
     def __init__(self, capacity):
-        self.capacity = capacity
-        self.memory = []
-        self.position = 0
+        self.memory = deque([],maxlen=capacity)
 
     def push(self, *args):
-        """Saves a transition."""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
+        """Save a transition"""
+        self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
         return random.sample(self.memory, batch_size)
@@ -134,7 +129,7 @@ class ReplayMemory(object):
 
 
 ######################################################################
-# Now, let's define our model. But first, let quickly recap what a DQN is.
+# Now, let's define our model. But first, let's quickly recap what a DQN is.
 #
 # DQN algorithm
 # -------------
