@@ -192,9 +192,6 @@ num_repeat = 10
 stmt = "train(model)"
 
 setup = "model = ModelParallelResNet50()"
-# globals arg is only available in Python 3. In Python 2, use the following
-# import __builtin__
-# __builtin__.__dict__.update(locals())
 mp_run_times = timeit.repeat(
     stmt, setup, number=1, repeat=num_repeat, globals=globals())
 mp_mean, mp_std = np.mean(mp_run_times), np.std(mp_run_times)

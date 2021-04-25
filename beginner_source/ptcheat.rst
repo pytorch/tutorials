@@ -73,7 +73,7 @@ Vision
     import torchvision.transforms as transforms              # composable transforms
 
 See
-`torchvision <https://pytorch.org/docs/stable/torchvision/index.html>`__
+`torchvision <https://pytorch.org/vision/stable/index.html>`__
 
 Distributed Training
 --------------------

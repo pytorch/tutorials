@@ -173,11 +173,12 @@ Welcome to PyTorch Tutorials
    :tags: Text
 
 .. customcarditem::
-   :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
+   :header: Language Translation with Transformer
+   :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation.html
+   :link: beginner/translation_transformer.html
    :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -318,10 +319,24 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
+   :header: Performance Profiling in Tensorboard
+   :card_description: Learn how to use tensorboard plugin to profile and analyze your model's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: intermediate/tensorboard_profiler_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
+
+.. customcarditem::
+   :header: Parametrizations Tutorial
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :image: _static/img/thumbnails/cropped/parametrizations.png
+   :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
@@ -482,7 +497,7 @@ Additional Resources
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
-   :button_text: Download
+   :button_text: Open
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
@@ -490,6 +505,11 @@ Additional Resources
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
+.. customcalloutitem::
+   :header: Run Tutorials on Google Colab
+   :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
+   :button_link: beginner/colab.html
+   :button_text: Open
 
 .. End of callout section
 
@@ -516,9 +536,24 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Learning PyTorch
+   :caption: Introduction to PyTorch
 
    beginner/basics/intro
+   beginner/basics/quickstart_tutorial
+   beginner/basics/tensorqs_tutorial
+   beginner/basics/data_tutorial
+   beginner/basics/transforms_tutorial
+   beginner/basics/buildmodel_tutorial
+   beginner/basics/autogradqs_tutorial
+   beginner/basics/optimization_tutorial
+   beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Learning PyTorch
+
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
@@ -557,7 +592,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation
+   beginner/translation_transformer
 
 
 .. toctree::
@@ -619,7 +654,9 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
+   intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
+   intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
