@@ -28,11 +28,10 @@ In case you prefer to write your tutorial in jupyter, you can use [this script](
 - Then you can build using `make docs`. This will download the data, execute the tutorials and build the documentation to `docs/` directory. This will take about 60-120 min for systems with GPUs. If you do not have a GPU installed on your system, then see next step.
 - You can skip the computationally intensive graph generation by running `make html-noplot` to build basic html documentation to `_build/html`. This way, you can quickly preview your tutorial.
 
-> If you get **ModuleNotFoundError: No module named 'pytorch_sphinx_theme' make: *** [html-noplot] Error 2**, from /tutorials/src/pytorch-sphinx-theme run `python setup.py install`. 
+> If you get **ModuleNotFoundError: No module named 'pytorch_sphinx_theme' make: *** [html-noplot] Error 2** from /tutorials/src/pytorch-sphinx-theme or /venv/src/pytorch-sphinx-theme (while using virtualenv), run `python setup.py install`. 
 
 
 ## About contributing to PyTorch Documentation and Tutorials
 * You can find information about contributing to PyTorch documentation in the 
 PyTorch Repo [README.md](https://github.com/pytorch/pytorch/blob/master/README.md) file. 
 * Additional information can be found in [PyTorch CONTRIBUTING.md](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md).
-

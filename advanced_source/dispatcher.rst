@@ -32,12 +32,12 @@ Defining schema and backend implementations
 
 The general principle behind the dispatcher is that it divides the
 implementation of an operator into multiple kernels, each of which implements
-functionality for a specific *dispatch key*; for example, CPU, CUDA or Autograd.
-The dispatcher determines what the highest priority dispatch key is at the time
+functionality for a specific *dispatch key*, e.g. CPU, CUDA.  The dispatcher
+determines what the highest priority dispatch key is at the time
 you call an operator (this is done by looking at both the tensor arguments as
 well as some thread local state), and transfers control to the kernel for that
 dispatch key.  The end effect is that when you call an operator, we first
-execute the Autograd kernel, and then we redispatch to the CPU or CUDA kernel
+execute the Autograd kernel, and then we redispatch to the backend kernel
 depending on the device types of the passed in tensors.
 
 Let's take a look at the various parts involved in making this
@@ -115,7 +115,7 @@ can we add autograd support to it?  As you might guess, we will register an
 autograd kernel (similar to what's described in the `custom autograd function <cpp_autograd>`_ tutorial)!
 However, there is a twist: unlike the CPU and CUDA kernels, the autograd kernel
 needs to *redispatch*: it needs to call back into the dispatcher to get to
-the final CPU and CUDA implementations.
+the inference kernels, e.g. CPU or CUDA implementations.
 
 Thus, before we write the autograd kernel, let's write a *dispatching function*
 which calls into the dispatcher to find the right kernel for your operator.
@@ -179,6 +179,17 @@ functions:
   :start-after: BEGIN TORCH_LIBRARY_IMPL Autograd
   :end-before: END TORCH_LIBRARY_IMPL Autograd
 
+
+.. note::
+
+    In this example we register the kernel to ``Autograd``, which installs it as the
+    autograd kernel for all backends. You can also register optimized kernels for specific
+    backends by using the corresponding backend-specific dispatch key - for example,
+    ``AutogradCPU`` or ``AutogradCUDA``. To explore these and other dispatch key
+    options in more detail, check out the ``PythonDispatcher`` tool provided in
+    `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py>`_.
+
+
 Going beyond autograd
 ---------------------
 
@@ -209,7 +220,8 @@ So why use the dispatcher?  There are a few reasons:
    (CPU, CUDA, Autograd) without having to write a single, centralized
    if statement that refers to all of them.  Importantly, third parties can
    register extra implementations for other aspects without having to patch the
-   original definition of an operator.
+   original definition of an operator.  We'll talk more about extending the
+   dispatcher in `extending dispatcher for a new backend <extend_dispatcher>`_.
 
 2. It supports more dispatch keys than CPU, CUDA and Autograd.  You can
    see a full list of dispatch keys that are currently implemented
