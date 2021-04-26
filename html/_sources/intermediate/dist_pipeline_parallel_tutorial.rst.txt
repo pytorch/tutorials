@@ -225,7 +225,7 @@ simplify distributed optimizer construction, which will be used later.
 
         def forward(self, xs):
             out_futures = []
-            for x in iter(xs.split(self.split_size, dim=0)):
+            for x in iter(xs.split(self.num_split, dim=0)):
                 x_rref = RRef(x)
                 y_rref = self.p1_rref.remote().forward(x_rref)
                 z_fut = self.p2_rref.rpc_async().forward(y_rref)
