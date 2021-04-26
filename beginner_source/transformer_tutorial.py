@@ -45,15 +45,16 @@ in this tutorial) can be easily adapted/composed.
 #
 
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 class TransformerModel(nn.Module):
 
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
-        from torch.nn import TransformerEncoder, TransformerEncoderLayer
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(ninp, dropout)
         encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
@@ -117,7 +118,7 @@ class PositionalEncoding(nn.Module):
 
 
 ######################################################################
-# The training process uses Wikitext-2 dataset from ``torchtext``. The
+# This tutorial uses ``torchtext`` to generate Wikitext-2 dataset. The
 # vocab object is built based on the train dataset and is used to numericalize
 # tokens into tensors. Starting from sequential data, the ``batchify()``
 # function arranges the dataset into columns, trimming off any tokens remaining
@@ -143,18 +144,33 @@ class PositionalEncoding(nn.Module):
 # efficient batch processing.
 #
 
-import torchtext
+import io
+import torch
+from torchtext.datasets import WikiText2
 from torchtext.data.utils import get_tokenizer
-TEXT = torchtext.data.Field(tokenize=get_tokenizer("basic_english"),
-                            init_token='<sos>',
-                            eos_token='<eos>',
-                            lower=True)
-train_txt, val_txt, test_txt = torchtext.datasets.WikiText2.splits(TEXT)
-TEXT.build_vocab(train_txt)
+from collections import Counter
+from torchtext.vocab import Vocab
+
+train_iter = WikiText2(split='train')
+tokenizer = get_tokenizer('basic_english')
+counter = Counter()
+for line in train_iter:
+    counter.update(tokenizer(line))
+vocab = Vocab(counter)
+
+def data_process(raw_text_iter):
+  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
+                       dtype=torch.long) for item in raw_text_iter]
+  return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+
+train_iter, val_iter, test_iter = WikiText2()
+train_data = data_process(train_iter)
+val_data = data_process(val_iter)
+test_data = data_process(test_iter)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def batchify(data, bsz):
-    data = TEXT.numericalize([data.examples[0].text])
     # Divide the dataset into bsz parts.
     nbatch = data.size(0) // bsz
     # Trim off any extra elements that wouldn't cleanly fit (remainders).
@@ -165,9 +181,9 @@ def batchify(data, bsz):
 
 batch_size = 20
 eval_batch_size = 10
-train_data = batchify(train_txt, batch_size)
-val_data = batchify(val_txt, eval_batch_size)
-test_data = batchify(test_txt, eval_batch_size)
+train_data = batchify(train_data, batch_size)
+val_data = batchify(val_data, eval_batch_size)
+test_data = batchify(test_data, eval_batch_size)
 
 
 ######################################################################
@@ -209,7 +225,7 @@ def get_batch(source, i):
 # equal to the length of the vocab object.
 #
 
-ntokens = len(TEXT.vocab.stoi) # the size of vocabulary
+ntokens = len(vocab.stoi) # the size of vocabulary
 emsize = 200 # embedding dimension
 nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -236,17 +252,17 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 # function to scale all the gradient together to prevent exploding.
 #
 
+import time
+
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
-import time
 def train():
     model.train() # Turn on the train mode
     total_loss = 0.
     start_time = time.time()
-    ntokens = len(TEXT.vocab.stoi)
     src_mask = model.generate_square_subsequent_mask(bptt).to(device)
     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
         data, targets = get_batch(train_data, i)
@@ -267,7 +283,7 @@ def train():
             print('| epoch {:3d} | {:5d}/{:5d} batches | '
                   'lr {:02.2f} | ms/batch {:5.2f} | '
                   'loss {:5.2f} | ppl {:8.2f}'.format(
-                    epoch, batch, len(train_data) // bptt, scheduler.get_lr()[0],
+                    epoch, batch, len(train_data) // bptt, scheduler.get_last_lr()[0],
                     elapsed * 1000 / log_interval,
                     cur_loss, math.exp(cur_loss)))
             total_loss = 0
@@ -276,7 +292,6 @@ def train():
 def evaluate(eval_model, data_source):
     eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
-    ntokens = len(TEXT.vocab.stoi)
     src_mask = model.generate_square_subsequent_mask(bptt).to(device)
     with torch.no_grad():
         for i in range(0, data_source.size(0) - 1, bptt):
