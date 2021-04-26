@@ -45,15 +45,16 @@ in this tutorial) can be easily adapted/composed.
 #
 
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 class TransformerModel(nn.Module):
 
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
-        from torch.nn import TransformerEncoder, TransformerEncoderLayer
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(ninp, dropout)
         encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
@@ -145,25 +146,27 @@ class PositionalEncoding(nn.Module):
 
 import io
 import torch
-from torchtext.utils import download_from_url, extract_archive
+from torchtext.datasets import WikiText2
 from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
+from collections import Counter
+from torchtext.vocab import Vocab
 
-url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
-vocab = build_vocab_from_iterator(map(tokenizer,
-                                      iter(io.open(train_filepath,
-                                                   encoding="utf8"))))
+counter = Counter()
+for line in train_iter:
+    counter.update(tokenizer(line))
+vocab = Vocab(counter)
 
 def data_process(raw_text_iter):
   data = [torch.tensor([vocab[token] for token in tokenizer(item)],
                        dtype=torch.long) for item in raw_text_iter]
   return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+train_iter, val_iter, test_iter = WikiText2()
+train_data = data_process(train_iter)
+val_data = data_process(val_iter)
+test_data = data_process(test_iter)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -249,12 +252,13 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 # function to scale all the gradient together to prevent exploding.
 #
 
+import time
+
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
-import time
 def train():
     model.train() # Turn on the train mode
     total_loss = 0.
@@ -279,7 +283,7 @@ def train():
             print('| epoch {:3d} | {:5d}/{:5d} batches | '
                   'lr {:02.2f} | ms/batch {:5.2f} | '
                   'loss {:5.2f} | ppl {:8.2f}'.format(
-                    epoch, batch, len(train_data) // bptt, scheduler.get_lr()[0],
+                    epoch, batch, len(train_data) // bptt, scheduler.get_last_lr()[0],
                     elapsed * 1000 / log_interval,
                     cur_loss, math.exp(cur_loss)))
             total_loss = 0

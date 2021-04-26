@@ -49,8 +49,8 @@ y = torch.sin(x)
 model = Polynomial3()
 
 # Construct our loss function and an Optimizer. The call to model.parameters()
-# in the SGD constructor will contain the learnable parameters of the nn.Linear
-# module which is members of the model.
+# in the SGD constructor will contain the learnable parameters (defined 
+# with torch.nn.Parameter) which are members of the model.
 criterion = torch.nn.MSELoss(reduction='sum')
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-6)
 for t in range(2000):
