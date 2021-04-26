@@ -2,6 +2,15 @@ Getting Started with Distributed Data Parallel
 =================================================
 **Author**: `Shen Li <https://mrshenli.github.io/>`_
 
+**Edited by**: `Joe Zhu <https://github.com/gunandrose4u>`_
+
+Prerequisites:
+
+-  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
+-  `DistributedDataParallel API documents <https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html>`__
+-  `DistributedDataParallel notes <https://pytorch.org/docs/master/notes/ddp.html>`__
+
+
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__
 (DDP) implements data parallelism at the module level which can run across
 multiple machines. Applications using DDP should spawn multiple processes and
@@ -61,6 +70,7 @@ be found in
 .. code:: python
 
     import os
+    import sys
     import tempfile
     import torch
     import torch.distributed as dist
@@ -70,6 +80,17 @@ be found in
 
     from torch.nn.parallel import DistributedDataParallel as DDP
 
+    # On Windows platform, the torch.distributed package only
+    # supports Gloo backend, FileStore and TcpStore.
+    # For FileStore, set init_method parameter in init_process_group
+    # to a local file. Example as follow:
+    # init_method="file:///f:/libtmp/some_file"
+    # dist.init_process_group(
+    #    "gloo",
+    #    rank=rank,
+    #    init_method=init_method,
+    #    world_size=world_size)
+    # For TcpStore, same way as on Linux.
 
     def setup(rank, world_size):
         os.environ['MASTER_ADDR'] = 'localhost'
@@ -77,7 +98,6 @@ be found in
 
         # initialize the process group
         dist.init_process_group("gloo", rank=rank, world_size=world_size)
-
 
     def cleanup():
         dist.destroy_process_group()
@@ -202,9 +222,9 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         loss_fn(outputs, labels).backward()
         optimizer.step()
 
-        # Use a barrier() to make sure that all processes have finished reading the
-        # checkpoint
-        dist.barrier()
+        # Not necessary to use a dist.barrier() to guard the file deletion below
+        # as the AllReduce ops in the backward pass of DDP already served as
+        # a synchronization.
 
         if rank == 0:
             os.remove(CHECKPOINT_PATH)
