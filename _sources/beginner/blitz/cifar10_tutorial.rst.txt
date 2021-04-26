@@ -409,10 +409,13 @@ Let us look at how the network performs on the whole dataset.
 
     correct = 0
     total = 0
+    # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
         for data in testloader:
             images, labels = data
+            # calculate outputs by running images through the network 
             outputs = net(images)
+            # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -444,23 +447,28 @@ not perform well:
 .. code-block:: default
 
 
-    class_correct = list(0. for i in range(10))
-    class_total = list(0. for i in range(10))
+    # prepare to count predictions for each class
+    correct_pred = {classname: 0 for classname in classes}
+    total_pred = {classname: 0 for classname in classes}
+
+    # again no gradients needed
     with torch.no_grad():
         for data in testloader:
-            images, labels = data
-            outputs = net(images)
-            _, predicted = torch.max(outputs, 1)
-            c = (predicted == labels).squeeze()
-            for i in range(4):
-                label = labels[i]
-                class_correct[label] += c[i].item()
-                class_total[label] += 1
+            images, labels = data    
+            outputs = net(images)    
+            _, predictions = torch.max(outputs, 1)
+            # collect the correct predictions for each class
+            for label, prediction in zip(labels, predictions):
+                if label == prediction:
+                    correct_pred[classes[label]] += 1
+                total_pred[classes[label]] += 1
 
-
-    for i in range(10):
-        print('Accuracy of %5s : %2d %%' % (
-            classes[i], 100 * class_correct[i] / class_total[i]))
+  
+    # print accuracy for each class
+    for classname, correct_count in correct_pred.items():
+        accuracy = 100 * float(correct_count) / total_pred[classname]
+        print("Accuracy for class {:5s} is: {:.1f} %".format(classname, 
+                                                       accuracy))
 
 
 
@@ -472,16 +480,16 @@ not perform well:
 
  .. code-block:: none
 
-    Accuracy of plane : 41 %
-    Accuracy of   car : 54 %
-    Accuracy of  bird : 38 %
-    Accuracy of   cat : 47 %
-    Accuracy of  deer : 52 %
-    Accuracy of   dog : 47 %
-    Accuracy of  frog : 72 %
-    Accuracy of horse : 48 %
-    Accuracy of  ship : 83 %
-    Accuracy of truck : 57 %
+    Accuracy for class plane is: 41.0 %
+    Accuracy for class car   is: 54.7 %
+    Accuracy for class bird  is: 38.9 %
+    Accuracy for class cat   is: 47.1 %
+    Accuracy for class deer  is: 52.1 %
+    Accuracy for class dog   is: 47.3 %
+    Accuracy for class frog  is: 72.4 %
+    Accuracy for class horse is: 48.2 %
+    Accuracy for class ship  is: 83.2 %
+    Accuracy for class truck is: 57.9 %
 
 
 Okay, so what next?
@@ -583,7 +591,7 @@ Where do I go next?
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  7.554 seconds)
+   **Total running time of the script:** ( 2 minutes  5.538 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_cifar10_tutorial.py:
