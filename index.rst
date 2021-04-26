@@ -132,7 +132,7 @@ Welcome to PyTorch Tutorials
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -497,7 +497,7 @@ Additional Resources
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
-   :button_text: Download
+   :button_text: Open
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
@@ -505,6 +505,11 @@ Additional Resources
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
+.. customcalloutitem::
+   :header: Run Tutorials on Google Colab
+   :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
+   :button_link: beginner/colab.html
+   :button_text: Open
 
 .. End of callout section
 
@@ -531,9 +536,24 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Learning PyTorch
+   :caption: Introduction to PyTorch
 
    beginner/basics/intro
+   beginner/basics/quickstart_tutorial
+   beginner/basics/tensorqs_tutorial
+   beginner/basics/data_tutorial
+   beginner/basics/transforms_tutorial
+   beginner/basics/buildmodel_tutorial
+   beginner/basics/autogradqs_tutorial
+   beginner/basics/optimization_tutorial
+   beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Learning PyTorch
+
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
@@ -558,8 +578,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
-
+   intermediate/speech_command_recognition_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
