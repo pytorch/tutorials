@@ -1,5 +1,5 @@
-Loading a PyTorch Model in C++
-==============================
+Loading a TorchScript Model in C++
+=====================================
 
 As its name suggests, the primary interface to PyTorch is the Python
 programming language. While Python is a suitable and preferred language for
@@ -92,28 +92,30 @@ vanilla Pytorch model::
 
 Because the ``forward`` method of this module uses control flow that is
 dependent on the input, it is not suitable for tracing. Instead, we can convert
-it to a ``ScriptModule`` by subclassing it from ``torch.jit.ScriptModule`` and
-adding a ``@torch.jit.script_method`` annotation to the model's ``forward``
-method::
+it to a ``ScriptModule``.
+In order to convert the module to the ``ScriptModule``, one needs to
+compile the module with ``torch.jit.script`` as follows::
 
-  import torch
+    class MyModule(torch.nn.Module):
+        def __init__(self, N, M):
+            super(MyModule, self).__init__()
+            self.weight = torch.nn.Parameter(torch.rand(N, M))
 
-  class MyModule(torch.jit.ScriptModule):
-      def __init__(self, N, M):
-          super(MyModule, self).__init__()
-          self.weight = torch.nn.Parameter(torch.rand(N, M))
+        def forward(self, input):
+            if input.sum() > 0:
+              output = self.weight.mv(input)
+            else:
+              output = self.weight + input
+            return output
 
-      @torch.jit.script_method
-      def forward(self, input):
-          if bool(input.sum() > 0):
-            output = self.weight.mv(input)
-          else:
-            output = self.weight + input
-          return output
+    my_module = MyModule(10,20)
+    sm = torch.jit.script(my_module)
 
-  my_script_module = MyModule(2, 3)
+If you need to exclude some methods in your ``nn.Module``
+because they use Python features that TorchScript doesn't support yet,
+you could annotate those with ``@torch.jit.ignore``
 
-Creating a new ``MyModule`` object now directly produces an instance of
+``sm`` is an instance of
 ``ScriptModule`` that is ready for serialization.
 
 Step 2: Serializing Your Script Module to a File
@@ -127,10 +129,11 @@ earlier in the tracing example. To perform this serialization, simply call
 `save <https://pytorch.org/docs/master/jit.html#torch.jit.ScriptModule.save>`_
 on the module and pass it a filename::
 
-  traced_script_module.save("model.pt")
+  traced_script_module.save("traced_resnet_model.pt")
 
-This will produce a ``model.pt`` file in your working directory. We have now
-officially left the realm of Python and are ready to cross over to the sphere
+This will produce a ``traced_resnet_model.pt`` file in your working directory.
+If you also would like to serialize ``sm``, call ``sm.save("my_module_model.pt")``
+We have now officially left the realm of Python and are ready to cross over to the sphere
 of C++.
 
 Step 3: Loading Your Script Module in C++
@@ -152,32 +155,38 @@ do:
 
 .. code-block:: cpp
 
-  #include <torch/script.h> // One-stop header.
+    #include <torch/script.h> // One-stop header.
 
-  #include <iostream>
-  #include <memory>
+    #include <iostream>
+    #include <memory>
 
-  int main(int argc, const char* argv[]) {
-    if (argc != 2) {
-      std::cerr << "usage: example-app <path-to-exported-script-module>\n";
-      return -1;
+    int main(int argc, const char* argv[]) {
+      if (argc != 2) {
+        std::cerr << "usage: example-app <path-to-exported-script-module>\n";
+        return -1;
+      }
+
+
+      torch::jit::script::Module module;
+      try {
+        // Deserialize the ScriptModule from a file using torch::jit::load().
+        module = torch::jit::load(argv[1]);
+      }
+      catch (const c10::Error& e) {
+        std::cerr << "error loading the model\n";
+        return -1;
+      }
+
+      std::cout << "ok\n";
     }
 
-    // Deserialize the ScriptModule from a file using torch::jit::load().
-    std::shared_ptr<torch::jit::script::Module> module = torch::jit::load(argv[1]);
-
-    assert(module != nullptr);
-    std::cout << "ok\n";
-  }
 
 The ``<torch/script.h>`` header encompasses all relevant includes from the
 LibTorch library necessary to run the example. Our application accepts the file
 path to a serialized PyTorch ``ScriptModule`` as its only command line argument
 and then proceeds to deserialize the module using the ``torch::jit::load()``
-function, which takes this file path as input. In return we receive a shared
-pointer to a ``torch::jit::script::Module``, the equivalent to a
-``torch.jit.ScriptModule`` in C++. For now, we only verify that this pointer is
-not null. We will examine how to execute it in a moment.
+function, which takes this file path as input. In return we receive a ``torch::jit::script::Module``
+object. We will examine how to execute it in a moment.
 
 Depending on LibTorch and Building the Application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -194,7 +203,7 @@ minimal ``CMakeLists.txt`` to build it could look as simple as:
 
   add_executable(example-app example-app.cpp)
   target_link_libraries(example-app "${TORCH_LIBRARIES}")
-  set_property(TARGET example-app PROPERTY CXX_STANDARD 11)
+  set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 
 The last thing we need to build the example application is the LibTorch
 distribution. You can always grab the latest stable release from the `download
@@ -217,6 +226,8 @@ structure:
 .. tip::
   On Windows, debug and release builds are not ABI-compatible. If you plan to
   build your project in debug mode, please try the debug version of LibTorch.
+  Also, make sure you specify the correct configuration in the ``cmake --build .``
+  line below.
 
 The last step is building the application. For this, assume our example
 directory is laid out like this:
@@ -235,7 +246,7 @@ We can now run the following commands to build the application from within the
   mkdir build
   cd build
   cmake -DCMAKE_PREFIX_PATH=/path/to/libtorch ..
-  make
+  cmake --build . --config Release
 
 where ``/path/to/libtorch`` should be the full path to the unzipped LibTorch
 distribution. If all goes well, it will look something like this:
@@ -277,13 +288,14 @@ distribution. If all goes well, it will look something like this:
   [100%] Linking CXX executable example-app
   [100%] Built target example-app
 
-If we supply the path to the serialized ``ResNet18`` model we created earlier
+If we supply the path to the traced ``ResNet18`` model ``traced_resnet_model.pt``  we created earlier
 to the resulting ``example-app`` binary, we should be rewarded with a friendly
-"ok":
+"ok". Please note, if try to run this example with ``my_module_model.pt`` you will get an error saying that
+your input is of an incompatible shape. ``my_module_model.pt`` expects 1D instead of 4D.
 
 .. code-block:: sh
 
-  root@4b5a67132e81:/example-app/build# ./example-app model.pt
+  root@4b5a67132e81:/example-app/build# ./example-app <path_to_model>/traced_resnet_model.pt
   ok
 
 Step 4: Executing the Script Module in C++
@@ -300,8 +312,7 @@ application's ``main()`` function:
     inputs.push_back(torch::ones({1, 3, 224, 224}));
 
     // Execute the model and turn its output into a tensor.
-    at::Tensor output = module->forward(inputs).toTensor();
-
+    at::Tensor output = module.forward(inputs).toTensor();
     std::cout << output.slice(/*dim=*/1, /*start=*/0, /*end=*/5) << '\n';
 
 The first two lines set up the inputs to our model. We create a vector of
@@ -331,7 +342,7 @@ application and running it with the same serialized model:
   [ 50%] Building CXX object CMakeFiles/example-app.dir/example-app.cpp.o
   [100%] Linking CXX executable example-app
   [100%] Built target example-app
-  root@4b5a67132e81:/example-app/build# ./example-app model.pt
+  root@4b5a67132e81:/example-app/build# ./example-app traced_resnet_model.pt
   -0.2698 -0.0381  0.4023 -0.3010 -0.0448
   [ Variable[CPUFloatType]{1,5} ]
 
@@ -344,8 +355,8 @@ Looks like a good match!
 
 .. tip::
 
-  To move your model to GPU memory, you can write ``model->to(at::kCUDA);``.
-  Make sure the inputs to a model living in CUDA memory are also in CUDA memory
+  To move your model to GPU memory, you can write ``model.to(at::kCUDA);``.
+  Make sure the inputs to a model are also living in CUDA memory
   by calling ``tensor.to(at::kCUDA)``, which will return a new tensor in CUDA
   memory.
 

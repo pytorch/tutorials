@@ -7,7 +7,7 @@ Neural networks can be constructed using the ``torch.nn`` package.
 
 Now that you had a glimpse of ``autograd``, ``nn`` depends on
 ``autograd`` to define models and differentiate them.
-An ``nn.Module`` contains layers, and a method ``forward(input)``\ that
+An ``nn.Module`` contains layers, and a method ``forward(input)`` that
 returns the ``output``.
 
 For example, look at this network that classifies digit images:
@@ -51,14 +51,14 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.conv2 = nn.Conv2d(6, 16, 5)
         # an affine operation: y = Wx + b
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)  # 5*5 from image dimension 
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
         # Max pooling over a (2, 2) window
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
-        # If the size is a square you can only specify a single number
+        # If the size is a square, you can specify with a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
         x = x.view(-1, self.num_flat_features(x))
         x = F.relu(self.fc1(x))
@@ -90,9 +90,9 @@ print(len(params))
 print(params[0].size())  # conv1's .weight
 
 ########################################################################
-# Let try a random 32x32 input.
+# Let's try a random 32x32 input.
 # Note: expected input size of this net (LeNet) is 32x32. To use this net on
-# MNIST dataset, please resize the images from the dataset to 32x32.
+# the MNIST dataset, please resize the images from the dataset to 32x32.
 
 input = torch.randn(1, 1, 32, 32)
 out = net(input)
@@ -176,8 +176,9 @@ print(loss)
 #           -> loss
 #
 # So, when we call ``loss.backward()``, the whole graph is differentiated
-# w.r.t. the loss, and all Tensors in the graph that has ``requires_grad=True``
-# will have their ``.grad`` Tensor accumulated with the gradient.
+# w.r.t. the neural net parameters, and all Tensors in the graph that have
+# ``requires_grad=True`` will have their ``.grad`` Tensor accumulated with the
+# gradient.
 #
 # For illustration, let us follow a few steps backward:
 
@@ -227,7 +228,7 @@ print(net.conv1.bias.grad)
 #
 #      ``weight = weight - learning_rate * gradient``
 #
-# We can implement this using simple python code:
+# We can implement this using simple Python code:
 #
 # .. code:: python
 #
@@ -258,4 +259,4 @@ optimizer.step()    # Does the update
 #
 #       Observe how gradient buffers had to be manually set to zero using
 #       ``optimizer.zero_grad()``. This is because gradients are accumulated
-#       as explained in `Backprop`_ section.
+#       as explained in the `Backprop`_ section.

@@ -6,6 +6,10 @@ else
   export BUCKET_NAME=pytorch-tutorial-build-pull-request
 fi
 
+# set locale for click dependency in spacy
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 sudo apt-get update
@@ -14,49 +18,42 @@ sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev 
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
-pip uninstall -y torchvision || true
 
-export PATH=/opt/conda/bin:$PATH
-conda install -y sphinx==1.8.2 pandas
+# export PATH=/opt/conda/bin:$PATH
+# pip install sphinx==1.8.2 pandas
+
+#Install PyTorch Nightly for test. 
+# Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
+# RC Link
+# pip uninstall -y torch torchvision torchaudio torchtext
+# pip install -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
+
+# For Tensorboard. Until 1.14 moves to the release channel.
+pip install tb-nightly
+
+# Install two language tokenizers for Translation with TorchText tutorial
+python -m spacy download en
+python -m spacy download de
+
 # PyTorch Theme
 rm -rf src
 pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-# pillow >= 4.2 will throw error when trying to write mode RGBA as JPEG,
-# this is a workaround to the issue.
-pip install sphinx-gallery tqdm matplotlib ipython pillow==4.1.1
-
-# Install torchvision from source
-git clone https://github.com/pytorch/vision --quiet
-pushd vision
-pip install . --no-deps  # We don't want it to install the stock PyTorch version from pip
-popd
-
-# Install torchaudio from source
-git clone https://github.com/pytorch/audio --quiet
-pushd audio
-python setup.py install
-popd
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==8.1.0
 
 aws configure set default.s3.multipart_threshold 5120MB
-
-if [[ $(pip show torch) ]]; then
-  # Clean up previous PyTorch installations
-  pip uninstall -y torch || true
-  pip uninstall -y torch || true
-fi
-
-# Install a nightly build of pytorch
-
-# GPU, requires CUDA version 9.0
-pip install cython torch_nightly -f https://download.pytorch.org/whl/nightly/cu90/torch_nightly.html
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
 if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
-  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py
+  python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
+  # python $DIR/remove_runnable_code.py advanced_source/ddp_pipeline_tutorial.py advanced_source/ddp_pipeline_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
+  # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
+
   # TODO: Fix bugs in these tutorials to make them runnable again
-  python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py
+  # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -92,6 +89,26 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       FILES_TO_RUN+=($(basename $filename .py))
     fi
     count=$((count+1))
+   done
+   for filename in $(find recipes_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename $filename
+    else
+      echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
+    fi
+    count=$((count+1))
+   done
+   for filename in $(find prototype_source/ -name '*.py' -not -path '*/data/*'); do
+    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
+      echo "Removing runnable code from "$filename
+      python $DIR/remove_runnable_code.py $filename $filename
+    else
+      echo "Keeping "$filename
+      FILES_TO_RUN+=($(basename $filename .py))
+    fi
+    count=$((count+1))
   done
   echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
@@ -100,13 +117,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 4: If any of the generated files are not related the tutorial files we want to run,
   # then we remove them
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.html'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/beginner docs/intermediate docs/advanced -name '*.rst'); do
+  for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.rst'); do
     file_basename=$(basename $filename .rst)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
@@ -124,13 +141,13 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced -name '*.rst.txt'); do
+  for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
-  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced -name '*.doctree'); do
+  for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes docs/.doctrees/prototype -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
     if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
       rm $filename
@@ -196,6 +213,3 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 else
   make docs
 fi
-
-rm -rf vision
-rm -rf audio

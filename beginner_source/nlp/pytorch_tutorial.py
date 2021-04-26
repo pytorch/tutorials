@@ -9,15 +9,11 @@ Introduction to Torch's tensor library
 All of deep learning is computations on tensors, which are
 generalizations of a matrix that can be indexed in more than 2
 dimensions. We will see exactly what this means in-depth later. First,
-lets look what we can do with tensors.
+let's look what we can do with tensors.
 """
 # Author: Robert Guthrie
 
 import torch
-import torch.autograd as autograd
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 
 torch.manual_seed(1)
 
@@ -26,7 +22,7 @@ torch.manual_seed(1)
 # Creating Tensors
 # ~~~~~~~~~~~~~~~~
 #
-# Tensors can be created from Python lists with the torch.Tensor()
+# Tensors can be created from Python lists with the torch.tensor()
 # function.
 #
 
@@ -73,9 +69,10 @@ print(T[0])
 
 
 ######################################################################
-# You can also create tensors of other datatypes. The default, as you can
-# see, is Float. To create a tensor of integer types, try
-# torch.LongTensor(). Check the documentation for more data types, but
+# You can also create tensors of other data types. To create a tensor of integer types, try
+# torch.tensor([[1, 2], [3, 4]]) (where all elements in the list are integers).
+# You can also specify a data type by passing in ``dtype=torch.data_type``.
+# Check the documentation for more data types, but
 # Float and Long will be the most common.
 #
 
@@ -165,7 +162,7 @@ print(x.view(2, -1))
 # other operation, etc.)
 #
 # If ``requires_grad=True``, the Tensor object keeps track of how it was
-# created. Lets see it in action.
+# created. Let's see it in action.
 #
 
 # Tensor factory methods have a ``requires_grad`` flag
@@ -190,7 +187,7 @@ print(z.grad_fn)
 # But how does that help us compute a gradient?
 #
 
-# Lets sum up all the entries in z
+# Let's sum up all the entries in z
 s = z.sum()
 print(s)
 print(s.grad_fn)
@@ -225,7 +222,7 @@ print(s.grad_fn)
 
 
 ######################################################################
-# Lets have Pytorch compute the gradient, and see that we were right:
+# Let's have Pytorch compute the gradient, and see that we were right:
 # (note if you run this block multiple times, the gradient will increment.
 # That is because Pytorch *accumulates* the gradient into the .grad
 # property, since for many models this is very convenient.)
@@ -273,7 +270,7 @@ print(new_z.grad_fn)
 
 ###############################################################
 # You can also stop autograd from tracking history on Tensors
-# with ``.requires_grad``=True by wrapping the code block in
+# with ``.requires_grad=True`` by wrapping the code block in
 # ``with torch.no_grad():``
 print(x.requires_grad)
 print((x ** 2).requires_grad)
