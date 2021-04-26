@@ -31,4 +31,4 @@ Intermediate tutorials
 
 8. flask_rest_api_tutorial.py
 	Deploying PyTorch and Building a REST API using Flask
-	https://pytorch.org/tutorials/beginner/flask_rest_api_tutorial.html
+	https://pytorch.org/tutorials/intermediate/flask_rest_api_tutorial.html
