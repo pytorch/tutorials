@@ -63,7 +63,7 @@ import random
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from collections import namedtuple
+from collections import namedtuple, deque
 from itertools import count
 from PIL import Image
 
@@ -115,16 +115,11 @@ Transition = namedtuple('Transition',
 class ReplayMemory(object):
 
     def __init__(self, capacity):
-        self.capacity = capacity
-        self.memory = []
-        self.position = 0
+        self.memory = deque([],maxlen=capacity)
 
     def push(self, *args):
-        """Saves a transition."""
-        if len(self.memory) < self.capacity:
-            self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
-        self.position = (self.position + 1) % self.capacity
+        """Save a transition"""
+        self.memory.append(Transition(*args))
 
     def sample(self, batch_size):
         return random.sample(self.memory, batch_size)
@@ -134,7 +129,7 @@ class ReplayMemory(object):
 
 
 ######################################################################
-# Now, let's define our model. But first, let quickly recap what a DQN is.
+# Now, let's define our model. But first, let's quickly recap what a DQN is.
 #
 # DQN algorithm
 # -------------
@@ -229,6 +224,7 @@ class DQN(nn.Module):
     # Called with either one element to determine next action, or a batch
     # during optimization. Returns tensor([[left0exp,right0exp]...]).
     def forward(self, x):
+        x = x.to(device)
         x = F.relu(self.bn1(self.conv1(x)))
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
@@ -278,7 +274,7 @@ def get_screen():
     screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
     screen = torch.from_numpy(screen)
     # Resize, and add a batch dimension (BCHW)
-    return resize(screen).unsqueeze(0).to(device)
+    return resize(screen).unsqueeze(0)
 
 
 env.reset()
@@ -388,7 +384,7 @@ def plot_durations():
 # single step of the optimization. It first samples a batch, concatenates
 # all the tensors into a single one, computes :math:`Q(s_t, a_t)` and
 # :math:`V(s_{t+1}) = \max_a Q(s_{t+1}, a)`, and combines them into our
-# loss. By defition we set :math:`V(s) = 0` if :math:`s` is a terminal
+# loss. By definition we set :math:`V(s) = 0` if :math:`s` is a terminal
 # state. We also use a target network to compute :math:`V(s_{t+1})` for
 # added stability. The target network has its weights kept frozen most of
 # the time, but is updated with the policy network's weights every so often.
@@ -408,7 +404,7 @@ def optimize_model():
     # Compute a mask of non-final states and concatenate the batch elements
     # (a final state would've been the one after which simulation ended)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None,
-                                          batch.next_state)), device=device, dtype=torch.uint8)
+                                          batch.next_state)), device=device, dtype=torch.bool)
     non_final_next_states = torch.cat([s for s in batch.next_state
                                                 if s is not None])
     state_batch = torch.cat(batch.state)
@@ -431,7 +427,8 @@ def optimize_model():
     expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
     # Compute Huber loss
-    loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+    criterion = nn.SmoothL1Loss()
+    loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
     # Optimize the model
     optimizer.zero_grad()
@@ -481,7 +478,7 @@ for i_episode in range(num_episodes):
         # Move to the next state
         state = next_state
 
-        # Perform one step of the optimization (on the target network)
+        # Perform one step of the optimization (on the policy network)
         optimize_model()
         if done:
             episode_durations.append(t + 1)
