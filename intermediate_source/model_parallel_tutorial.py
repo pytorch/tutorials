@@ -192,9 +192,6 @@ num_repeat = 10
 stmt = "train(model)"
 
 setup = "model = ModelParallelResNet50()"
-# globals arg is only available in Python 3. In Python 2, use the following
-# import __builtin__
-# __builtin__.__dict__.update(locals())
 mp_run_times = timeit.repeat(
     stmt, setup, number=1, repeat=num_repeat, globals=globals())
 mp_mean, mp_std = np.mean(mp_run_times), np.std(mp_run_times)
@@ -245,7 +242,7 @@ plot([mp_mean, rn_mean],
 # -----------------------------
 #
 # In the following experiments, we further divide each 120-image batch into
-# 20-image splits. As PyTorch launches CUDA operations asynchronizely, the
+# 20-image splits. As PyTorch launches CUDA operations asynchronously, the
 # implementation does not need to spawn multiple threads to achieve
 # concurrency.
 

@@ -13,12 +13,11 @@ Deep Learning with PyTorch: A 60 Minute Blitz
 	Neural Networks
 	https://pytorch.org/tutorials/beginner/blitz/neural_networks_tutorial.html#
 
-4. autograd_tutorial.py
-	Automatic Differentiation 
-	https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html
-
-5. cifar10_tutorial.py
+4. cifar10_tutorial.py
 	Training a Classifier
 	https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 
+5. data_parallel_tutorial.py 
+	Optional: Data Parallelism
+	https://pytorch.org/tutorials/beginner/blitz/data_parallel_tutorial.html
 
