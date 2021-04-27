@@ -19,8 +19,8 @@ Authors:
 `Dmitry Soshnikov <https://soshnikov.com/>`_, 
 `Ari Bornstein <https://github.com/aribornstein/>`_ 
 
-Most machine learning workflows involve working with data, creating models, optimizing model 
-parameters, and saving the trained models. This tutorial introduces you to a complete ML workflow 
+Most of the machine learning workflows involve working with data,  model creation, model 
+parameter optimization and saving the trained models. This tutorial aims to introduce a complete ML workflow 
 implemented in PyTorch, with links to learn more about each of these concepts.
 
 We'll use the FashionMNIST dataset to train a neural network that predicts if an input image belongs 
