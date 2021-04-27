@@ -366,6 +366,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
+   
+.. customcarditem::
+   :header: (beta) Static Quantization with Eager Mode in PyTorch
+   :card_description: This tutorial shows how to do post-training static quantization.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: intermediate/static_quantization_tutorial.html
+   :tags: Quantization
 
 .. Parallel-and-Distributed-Training
 
@@ -660,6 +667,7 @@ Additional Resources
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
