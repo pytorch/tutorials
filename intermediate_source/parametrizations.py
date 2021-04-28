@@ -141,16 +141,11 @@ print(cnn.weight[2, 2])
 # 3) The unparametrized weight has been moved to ``module.parametrizations.weight.original``
 #
 # |
-# After parametrizing ``weight``, we see that, even though calling ``layer.weight`` returns
-# a tensor, ``layer.weight`` is not a tensor itself, but a property:
-layer = nn.Linear(3, 3)
-parametrization = Symmetric()
-parametrize.register_parametrization(layer, "weight", parametrization)
-print(layer.__class__.weight)
-
-###############################################################################
+# After parametrizing ``weight``, ``layer.weight`` is turned into a
+# `Python property <https://docs.python.org/3/library/functions.html#property>`_.
 # This property computes ``parametrization(weight)`` every time we request ``layer.weight``
 # just as we did in our implementation of ``LinearSymmetric`` above.
+#
 # Registered parametrizations are stored under a ``parametrizations`` attribute within the module.
 layer = nn.Linear(3, 3)
 print(f"Unparametrized:\n{layer}")
