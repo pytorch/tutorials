@@ -248,6 +248,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/cuda_rpc.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Distributed Optimizer with TorchScript support
+   :card_description: How to enable TorchScript support for Distributed Optimizer.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_optim_torchscript.html
+   :tags: Distributed-Training,TorchScript
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -286,3 +293,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
+   /recipes/distributed_optim_torchscript

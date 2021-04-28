@@ -132,7 +132,7 @@ Welcome to PyTorch Tutorials
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -366,6 +366,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
+   
+.. customcarditem::
+   :header: (beta) Static Quantization with Eager Mode in PyTorch
+   :card_description: This tutorial shows how to do post-training static quantization.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Quantization
 
 .. Parallel-and-Distributed-Training
 
@@ -578,8 +585,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
-
+   intermediate/speech_command_recognition_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -661,6 +667,7 @@ Additional Resources
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
