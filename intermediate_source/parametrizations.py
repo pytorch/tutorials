@@ -39,7 +39,7 @@ constraints on your model. Doing so is as easy as writing your own ``nn.Module``
 
 Requirements: ``torch>=1.9.0``
 
-Implementing Parametrizations by Hand
+Implementing parametrizations by hand
 -------------------------------------
 
 Assume that we want to have a square linear layer with symmetric weights, that is,
@@ -88,7 +88,7 @@ out = layer(torch.rand(8, 3))
 #    several times during the forward pass, (imagine the recurrent kernel of an RNN), it
 #    would compute the same ``A`` every time that the layer is called.
 #
-# Introduction to Parametrizations
+# Introduction to parametrizations
 # --------------------------------
 #
 # Parametrizations can solve all these problems as well as others.
@@ -211,7 +211,7 @@ with parametrize.cached():
     bar = layer.weight.sum()
 
 ###############################################################################
-# Concatenating Parametrizations
+# Concatenating parametrizations
 # ------------------------------
 #
 # Concatenating two parametrizations is as easy as registering them on the same tensor.
@@ -258,7 +258,7 @@ print(torch.dist(X, X.T))                        # X is symmetric
 print((torch.symeig(X).eigenvalues > 0.).all())  # X is positive definite
 
 ###############################################################################
-# Intializing Parametrizations
+# Intializing parametrizations
 # ----------------------------
 #
 # Parametrizations come with a mechanism to initialize them. If we implement a method
@@ -357,8 +357,8 @@ layer.weight = X
 print(f"\nInitialized weight:\n{layer.weight}")
 
 ###############################################################################
-# Removing a Parametrization
-# --------------------------
+# Removing parametrizations
+# -------------------------
 #
 # We may remove all the parametrizations from a parameter or a buffer in a module
 # by using ``parametrize.remove_parametrizations()``
