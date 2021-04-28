@@ -371,7 +371,7 @@ Welcome to PyTorch Tutorials
    :header: (beta) Static Quantization with Eager Mode in PyTorch
    :card_description: This tutorial shows how to do post-training static quantization.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: intermediate/static_quantization_tutorial.html
+   :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
 
 .. Parallel-and-Distributed-Training
