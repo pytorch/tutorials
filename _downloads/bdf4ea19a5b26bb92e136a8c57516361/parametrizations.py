@@ -26,7 +26,7 @@ controls the Lipschitz constant of the network by dividing its parameters by
 their `spectral norm <https://en.wikipedia.org/wiki/Matrix_norm#Special_cases>`_,
 rather than their Frobenius norm.
 
-All these methods have a common pattern. They all transform a parameter
+All these methods have a common pattern: they all transform a parameter
 in an appropriate way before using it. In the first case, they make it orthogonal by
 using a function that maps matrices to orthogonal matrices. In the case of weight
 and spectral normalization, they divide the original parameter by its norm.
@@ -39,7 +39,7 @@ constraints on your model. Doing so is as easy as writing your own ``nn.Module``
 
 Requirements: ``torch>=1.9.0``
 
-Implementing Parametrizations by Hand
+Implementing parametrizations by hand
 -------------------------------------
 
 Assume that we want to have a square linear layer with symmetric weights, that is,
@@ -88,7 +88,7 @@ out = layer(torch.rand(8, 3))
 #    several times during the forward pass, (imagine the recurrent kernel of an RNN), it
 #    would compute the same ``A`` every time that the layer is called.
 #
-# Introduction to Parametrizations
+# Introduction to parametrizations
 # --------------------------------
 #
 # Parametrizations can solve all these problems as well as others.
@@ -108,8 +108,8 @@ parametrize.register_parametrization(layer, "weight", Symmetric())
 ###############################################################################
 # Now, the matrix of the linear layer is symmetric
 A = layer.weight
-print(A)
-assert torch.allclose(A, A.T)
+assert torch.allclose(A, A.T)  # A is symmetric
+print(A)                       # Quick visual check
 
 ###############################################################################
 # We can do the same thing with any other layer. For example, we can create a CNN with
@@ -132,30 +132,36 @@ print(cnn.weight[2, 2])
 # Inspecting a parametrized module
 # --------------------------------
 #
-# When a module is parametrized, we find that the module has changed in two ways:
+# When a module is parametrized, we find that the module has changed in three ways:
 #
-# 1) It has a new ``module.parametrizations`` attribute
+# 1) ``model.weight`` is now a property
 #
-# 2) The weight has been moved to ``module.parametrizations.weight.original``
+# 2) It has a new ``module.parametrizations`` attribute
+#
+# 3) The unparametrized weight has been moved to ``module.parametrizations.weight.original``
 #
 # |
-# We may observe this first change by printing the module
+# After parametrizing ``weight``, ``layer.weight`` is turned into a
+# `Python property <https://docs.python.org/3/library/functions.html#property>`_.
+# This property computes ``parametrization(weight)`` every time we request ``layer.weight``
+# just as we did in our implementation of ``LinearSymmetric`` above.
+#
+# Registered parametrizations are stored under a ``parametrizations`` attribute within the module.
 layer = nn.Linear(3, 3)
-print("Unparametrized:")
-print(layer)
+print(f"Unparametrized:\n{layer}")
 parametrize.register_parametrization(layer, "weight", Symmetric())
-print("Parametrized:")
-print(layer)
+print(f"\nParametrized:\n{layer}")
 
 ###############################################################################
-# We see that the ``Symmetric`` class has been registered under a ``parametrizations`` attribute.
 # This ``parametrizations`` attribute is an ``nn.ModuleDict``, and it can be accessed as such
+print(layer.parametrizations)
 print(layer.parametrizations.weight)
 
 ###############################################################################
-# Each element of this ``ParametrizationList`` behaves like an ``nn.Sequential`` module
-# that also holds the weight. This list will allow us to concatenate parametrizations on
-# one weight. Since this is a list, we can access the parametrizations indexing it
+# Each element of this ``nn.ModuleDict`` is a ``ParametrizationList``, which behaves like an
+# ``nn.Sequential``. This list will allow us to concatenate parametrizations on one weight.
+# Since this is a list, we can access the parametrizations indexing it. Here's
+# where our ``Symmetric`` parametrization sits
 print(layer.parametrizations.weight[0])
 
 ###############################################################################
@@ -168,11 +174,11 @@ print(dict(layer.named_parameters()))
 print(layer.parametrizations.weight.original)
 
 ###############################################################################
-# Besides these two small differences, the parametrization is doing exactly the same
+# Besides these three small differences, the parametrization is doing exactly the same
 # as our manual implementation
 symmetric = Symmetric()
 weight_orig = layer.parametrizations.weight.original
-assert torch.allclose(layer.weight, symmetric(weight_orig))
+print(torch.dist(layer.weight, symmetric(weight_orig)))
 
 ###############################################################################
 # Parametrizations are first-class citizens
@@ -205,7 +211,7 @@ with parametrize.cached():
     bar = layer.weight.sum()
 
 ###############################################################################
-# Concatenating Parametrizations
+# Concatenating parametrizations
 # ------------------------------
 #
 # Concatenating two parametrizations is as easy as registering them on the same tensor.
@@ -227,7 +233,7 @@ layer = nn.Linear(3, 3)
 parametrize.register_parametrization(layer, "weight", Skew())
 parametrize.register_parametrization(layer, "weight", CayleyMap(3))
 X = layer.weight
-assert torch.allclose(X.T @ X, torch.eye(3), atol=1e-6)  # X is orthogonal
+print(torch.dist(X.T @ X, torch.eye(3)))  # X is orthogonal
 
 ###############################################################################
 # This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
@@ -242,17 +248,17 @@ layer_orthogonal = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_orthogonal, "weight", Skew())
 parametrize.register_parametrization(layer_orthogonal, "weight", MatrixExponential())
 X = layer_orthogonal.weight
-assert torch.allclose(X.T @ X, torch.eye(3), atol=1e-6)  # X is orthogonal
+print(torch.dist(X.T @ X, torch.eye(3)))         # X is orthogonal
 
 layer_spd = nn.Linear(3, 3)
 parametrize.register_parametrization(layer_spd, "weight", Symmetric())
 parametrize.register_parametrization(layer_spd, "weight", MatrixExponential())
 X = layer_spd.weight
-assert torch.allclose(X, X.T)                    # X is symmetric
-assert (torch.symeig(X).eigenvalues > 0.).all()  # X is positive definite
+print(torch.dist(X, X.T))                        # X is symmetric
+print((torch.symeig(X).eigenvalues > 0.).all())  # X is positive definite
 
 ###############################################################################
-# Intializing Parametrizations
+# Intializing parametrizations
 # ----------------------------
 #
 # Parametrizations come with a mechanism to initialize them. If we implement a method
@@ -282,7 +288,7 @@ parametrize.register_parametrization(layer, "weight", Skew())
 X = torch.rand(3, 3)
 X = X - X.T                             # X is now skew-symmetric
 layer.weight = X                        # Initialize layer.weight to be X
-assert torch.allclose(layer.weight, X)  # layer.weight == X
+print(torch.dist(layer.weight, X))      # layer.weight == X
 
 ###############################################################################
 # This ``right_inverse`` works as expected when we concatenate parametrizations.
@@ -312,7 +318,7 @@ nn.init.orthogonal_(X)
 if X.det() < 0.:
     X[0].neg_()
 layer_orthogonal.weight = X
-assert torch.allclose(layer_orthogonal.weight, X)  # layer_orthogonal.weight == X
+print(torch.dist(layer_orthogonal.weight, X))  # layer_orthogonal.weight == X
 
 ###############################################################################
 # This initialization step can be written more succinctly as
@@ -327,6 +333,7 @@ layer_orthogonal.weight = nn.init.orthogonal_(layer_orthogonal.weight)
 # of a randomized pruning method:
 class PruningParametrization(nn.Module):
     def __init__(self, X, p_drop=0.2):
+        super().__init__()
         # sample zeros with probability p_drop
         mask = torch.full_like(X, 1.0 - p_drop)
         self.mask = torch.bernoulli(mask)
@@ -343,16 +350,15 @@ class PruningParametrization(nn.Module):
 # Even then, if we assign a tensor to a pruned parameter, it will comes as no surprise
 # that tensor will be, in fact, pruned
 layer = nn.Linear(3, 4)
+X = torch.rand_like(layer.weight)
+print(f"Initialization matrix:\n{X}")
 parametrize.register_parametrization(layer, "weight", PruningParametrization(layer.weight))
-X = torch.rand(4, 3)
-print("Initialization matrix:")
-print(X)
 layer.weight = X
-print("Initialized weight:")
-print(layer.weight)
+print(f"\nInitialized weight:\n{layer.weight}")
 
-# Removing a Parametrization
-# --------------------------
+###############################################################################
+# Removing parametrizations
+# -------------------------
 #
 # We may remove all the parametrizations from a parameter or a buffer in a module
 # by using ``parametrize.remove_parametrizations()``
@@ -361,11 +367,11 @@ print("Before:")
 print(layer)
 print(layer.weight)
 parametrize.register_parametrization(layer, "weight", Skew())
-print("Parametrized:")
+print("\nParametrized:")
 print(layer)
 print(layer.weight)
 parametrize.remove_parametrizations(layer, "weight")
-print("After. Weight has skew-symmetric values but it is unconstrained:")
+print("\nAfter. Weight has skew-symmetric values but it is unconstrained:")
 print(layer)
 print(layer.weight)
 
@@ -378,10 +384,10 @@ print("Before:")
 print(layer)
 print(layer.weight)
 parametrize.register_parametrization(layer, "weight", Skew())
-print("Parametrized:")
+print("\nParametrized:")
 print(layer)
 print(layer.weight)
 parametrize.remove_parametrizations(layer, "weight", leave_parametrized=False)
-print("After. Same as Before:")
+print("\nAfter. Same as Before:")
 print(layer)
 print(layer.weight)

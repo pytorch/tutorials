@@ -455,7 +455,7 @@ A similar regularization was proposed for GANs under the name of
 controls the Lipschitz constant of the network by dividing its parameters by
 their <a class="reference external" href="https://en.wikipedia.org/wiki/Matrix_norm#Special_cases">spectral norm</a>,
 rather than their Frobenius norm.</p>
-<p>All these methods have a common pattern. They all transform a parameter
+<p>All these methods have a common pattern: they all transform a parameter
 in an appropriate way before using it. In the first case, they make it orthogonal by
 using a function that maps matrices to orthogonal matrices. In the case of weight
 and spectral normalization, they divide the original parameter by its norm.</p>
@@ -465,7 +465,7 @@ In other words, they use a function to constrain the parameters.</p>
 constraints on your model. Doing so is as easy as writing your own <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>.</p>
 <p>Requirements: <code class="docutils literal notranslate"><span class="pre">torch&gt;=1.9.0</span></code></p>
 <div class="section" id="implementing-parametrizations-by-hand">
-<h2>Implementing Parametrizations by Hand<a class="headerlink" href="#implementing-parametrizations-by-hand" title="Permalink to this headline">¶</a></h2>
+<h2>Implementing parametrizations by hand<a class="headerlink" href="#implementing-parametrizations-by-hand" title="Permalink to this headline">¶</a></h2>
 <p>Assume that we want to have a square linear layer with symmetric weights, that is,
 with weights <code class="docutils literal notranslate"><span class="pre">X</span></code> such that <code class="docutils literal notranslate"><span class="pre">X</span> <span class="pre">=</span> <span class="pre">Xᵀ</span></code>. One way to do so is
 to copy the upper-triangular part of the matrix into its lower-triangular part</p>
@@ -512,7 +512,7 @@ would compute the same <code class="docutils literal notranslate"><span class="p
 </ol>
 </div>
 <div class="section" id="introduction-to-parametrizations">
-<h2>Introduction to Parametrizations<a class="headerlink" href="#introduction-to-parametrizations" title="Permalink to this headline">¶</a></h2>
+<h2>Introduction to parametrizations<a class="headerlink" href="#introduction-to-parametrizations" title="Permalink to this headline">¶</a></h2>
 <p>Parametrizations can solve all these problems as well as others.</p>
 <p>Let’s start by reimplementing the code above using <code class="docutils literal notranslate"><span class="pre">torch.nn.utils.parametrize</span></code>.
 The only thing that we have to do is to write the parametrization as a regular <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code></p>
@@ -529,8 +529,8 @@ symmetric layer by doing</p>
 </div>
 <p>Now, the matrix of the linear layer is symmetric</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">weight</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># A is symmetric</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>                       <span class="c1"># Quick visual check</span>
 </pre></div>
 </div>
 <p>We can do the same thing with any other layer. For example, we can create a CNN with
@@ -553,31 +553,35 @@ reversed into the lower-triangular part</p>
 </div>
 <div class="section" id="inspecting-a-parametrized-module">
 <h2>Inspecting a parametrized module<a class="headerlink" href="#inspecting-a-parametrized-module" title="Permalink to this headline">¶</a></h2>
-<p>When a module is parametrized, we find that the module has changed in two ways:</p>
+<p>When a module is parametrized, we find that the module has changed in three ways:</p>
 <ol class="arabic simple">
+<li><code class="docutils literal notranslate"><span class="pre">model.weight</span></code> is now a property</li>
 <li>It has a new <code class="docutils literal notranslate"><span class="pre">module.parametrizations</span></code> attribute</li>
-<li>The weight has been moved to <code class="docutils literal notranslate"><span class="pre">module.parametrizations.weight.original</span></code></li>
+<li>The unparametrized weight has been moved to <code class="docutils literal notranslate"><span class="pre">module.parametrizations.weight.original</span></code></li>
 </ol>
 <div class="line-block">
 <div class="line"><br /></div>
 </div>
-<p>We may observe this first change by printing the module</p>
+<p>After parametrizing <code class="docutils literal notranslate"><span class="pre">weight</span></code>, <code class="docutils literal notranslate"><span class="pre">layer.weight</span></code> is turned into a
+<a class="reference external" href="https://docs.python.org/3/library/functions.html#property">Python property</a>.
+This property computes <code class="docutils literal notranslate"><span class="pre">parametrization(weight)</span></code> every time we request <code class="docutils literal notranslate"><span class="pre">layer.weight</span></code>
+just as we did in our implementation of <code class="docutils literal notranslate"><span class="pre">LinearSymmetric</span></code> above.</p>
+<p>Registered parametrizations are stored under a <code class="docutils literal notranslate"><span class="pre">parametrizations</span></code> attribute within the module.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unparametrized:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unparametrized:</span><span class="se">\n</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Symmetric</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parametrized:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Parametrized:</span><span class="se">\n</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We see that the <code class="docutils literal notranslate"><span class="pre">Symmetric</span></code> class has been registered under a <code class="docutils literal notranslate"><span class="pre">parametrizations</span></code> attribute.
-This <code class="docutils literal notranslate"><span class="pre">parametrizations</span></code> attribute is an <code class="docutils literal notranslate"><span class="pre">nn.ModuleDict</span></code>, and it can be accessed as such</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+<p>This <code class="docutils literal notranslate"><span class="pre">parametrizations</span></code> attribute is an <code class="docutils literal notranslate"><span class="pre">nn.ModuleDict</span></code>, and it can be accessed as such</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Each element of this <code class="docutils literal notranslate"><span class="pre">ParametrizationList</span></code> behaves like an <code class="docutils literal notranslate"><span class="pre">nn.Sequential</span></code> module
-that also holds the weight. This list will allow us to concatenate parametrizations on
-one weight. Since this is a list, we can access the parametrizations indexing it</p>
+<p>Each element of this <code class="docutils literal notranslate"><span class="pre">nn.ModuleDict</span></code> is a <code class="docutils literal notranslate"><span class="pre">ParametrizationList</span></code>, which behaves like an
+<code class="docutils literal notranslate"><span class="pre">nn.Sequential</span></code>. This list will allow us to concatenate parametrizations on one weight.
+Since this is a list, we can access the parametrizations indexing it. Here’s
+where our <code class="docutils literal notranslate"><span class="pre">Symmetric</span></code> parametrization sits</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="o">.</span><span class="n">weight</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -590,11 +594,11 @@ parameter <code class="docutils literal notranslate"><span class="pre">weight</s
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">original</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Besides these two small differences, the parametrization is doing exactly the same
+<p>Besides these three small differences, the parametrization is doing exactly the same
 as our manual implementation</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">symmetric</span> <span class="o">=</span> <span class="n">Symmetric</span><span class="p">()</span>
 <span class="n">weight_orig</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">parametrizations</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">original</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">symmetric</span><span class="p">(</span><span class="n">weight_orig</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">symmetric</span><span class="p">(</span><span class="n">weight_orig</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
@@ -628,7 +632,7 @@ to CUDA when calling <code class="docutils literal notranslate"><span class="pre
 </div>
 </div>
 <div class="section" id="concatenating-parametrizations">
-<h2>Concatenating Parametrizations<a class="headerlink" href="#concatenating-parametrizations" title="Permalink to this headline">¶</a></h2>
+<h2>Concatenating parametrizations<a class="headerlink" href="#concatenating-parametrizations" title="Permalink to this headline">¶</a></h2>
 <p>Concatenating two parametrizations is as easy as registering them on the same tensor.
 We may use this to create more complex parametrizations from simpler ones. For example, the
 <a class="reference external" href="https://en.wikipedia.org/wiki/Cayley_transform#Matrix_map">Cayley map</a>
@@ -648,7 +652,7 @@ orthogonal weights</p>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Skew</span><span class="p">())</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">CayleyMap</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">weight</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>  <span class="c1"># X is orthogonal</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>  <span class="c1"># X is orthogonal</span>
 </pre></div>
 </div>
 <p>This may also be used to prune a parametrized module, or to reuse parametrizations. For example,
@@ -663,19 +667,19 @@ Using these two facts, we may reuse the parametrizations before to our advantage
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer_orthogonal</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Skew</span><span class="p">())</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer_orthogonal</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">MatrixExponential</span><span class="p">())</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">layer_orthogonal</span><span class="o">.</span><span class="n">weight</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>  <span class="c1"># X is orthogonal</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">X</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>         <span class="c1"># X is orthogonal</span>
 
 <span class="n">layer_spd</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer_spd</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Symmetric</span><span class="p">())</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer_spd</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">MatrixExponential</span><span class="p">())</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">layer_spd</span><span class="o">.</span><span class="n">weight</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>                    <span class="c1"># X is symmetric</span>
-<span class="k">assert</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">symeig</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvalues</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>  <span class="c1"># X is positive definite</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>                        <span class="c1"># X is symmetric</span>
+<span class="nb">print</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">symeig</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">eigenvalues</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>  <span class="c1"># X is positive definite</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="intializing-parametrizations">
-<h2>Intializing Parametrizations<a class="headerlink" href="#intializing-parametrizations" title="Permalink to this headline">¶</a></h2>
+<h2>Intializing parametrizations<a class="headerlink" href="#intializing-parametrizations" title="Permalink to this headline">¶</a></h2>
 <p>Parametrizations come with a mechanism to initialize them. If we implement a method
 <code class="docutils literal notranslate"><span class="pre">right_inverse</span></code> with signature</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">right_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span>
@@ -700,7 +704,7 @@ Using these two facts, we may reuse the parametrizations before to our advantage
 <span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">-</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span>                             <span class="c1"># X is now skew-symmetric</span>
 <span class="n">layer</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">X</span>                        <span class="c1"># Initialize layer.weight to be X</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>  <span class="c1"># layer.weight == X</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">X</span><span class="p">))</span>      <span class="c1"># layer.weight == X</span>
 </pre></div>
 </div>
 <p>This <code class="docutils literal notranslate"><span class="pre">right_inverse</span></code> works as expected when we concatenate parametrizations.
@@ -730,7 +734,7 @@ To see this, let’s upgrade the Cayley parametrization to also support being in
 <span class="k">if</span> <span class="n">X</span><span class="o">.</span><span class="n">det</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
     <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">neg_</span><span class="p">()</span>
 <span class="n">layer_orthogonal</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">X</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">layer_orthogonal</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">X</span><span class="p">)</span>  <span class="c1"># layer_orthogonal.weight == X</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">layer_orthogonal</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">X</span><span class="p">))</span>  <span class="c1"># layer_orthogonal.weight == X</span>
 </pre></div>
 </div>
 <p>This initialization step can be written more succinctly as</p>
@@ -745,6 +749,7 @@ interest to relax this relation. For example, consider the following implementat
 of a randomized pruning method:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PruningParametrization</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">p_drop</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="c1"># sample zeros with probability p_drop</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">p_drop</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bernoulli</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
@@ -761,29 +766,28 @@ This is only true when the matrix <code class="docutils literal notranslate"><sp
 Even then, if we assign a tensor to a pruned parameter, it will comes as no surprise
 that tensor will be, in fact, pruned</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initialization matrix:</span><span class="se">\n</span><span class="si">{</span><span class="n">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">PruningParametrization</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initialization matrix:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
 <span class="n">layer</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">X</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initialized weight:&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
-
-<span class="c1"># Removing a Parametrization</span>
-<span class="c1"># --------------------------</span>
-<span class="c1">#</span>
-<span class="c1"># We may remove all the parametrizations from a parameter or a buffer in a module</span>
-<span class="c1"># by using ``parametrize.remove_parametrizations()``</span>
-<span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Initialized weight:</span><span class="se">\n</span><span class="si">{</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="removing-parametrizations">
+<h2>Removing parametrizations<a class="headerlink" href="#removing-parametrizations" title="Permalink to this headline">¶</a></h2>
+<p>We may remove all the parametrizations from a parameter or a buffer in a module
+by using <code class="docutils literal notranslate"><span class="pre">parametrize.remove_parametrizations()</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Before:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Skew</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parametrized:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Parametrized:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">remove_parametrizations</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;After. Weight has skew-symmetric values but it is unconstrained:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">After. Weight has skew-symmetric values but it is unconstrained:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 </pre></div>
@@ -796,11 +800,11 @@ the flag <code class="docutils literal notranslate"><span class="pre">leave_para
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">Skew</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Parametrized:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Parametrized:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 <span class="n">parametrize</span><span class="o">.</span><span class="n">remove_parametrizations</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">leave_parametrized</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;After. Same as Before:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">After. Same as Before:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 </pre></div>
@@ -871,13 +875,14 @@ the flag <code class="docutils literal notranslate"><span class="pre">leave_para
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">Parametrizations Tutorial</a><ul>
-<li><a class="reference internal" href="#implementing-parametrizations-by-hand">Implementing Parametrizations by Hand</a></li>
-<li><a class="reference internal" href="#introduction-to-parametrizations">Introduction to Parametrizations</a></li>
+<li><a class="reference internal" href="#implementing-parametrizations-by-hand">Implementing parametrizations by hand</a></li>
+<li><a class="reference internal" href="#introduction-to-parametrizations">Introduction to parametrizations</a></li>
 <li><a class="reference internal" href="#inspecting-a-parametrized-module">Inspecting a parametrized module</a></li>
 <li><a class="reference internal" href="#parametrizations-are-first-class-citizens">Parametrizations are first-class citizens</a></li>
 <li><a class="reference internal" href="#caching-the-value-of-a-parametrization">Caching the value of a parametrization</a></li>
-<li><a class="reference internal" href="#concatenating-parametrizations">Concatenating Parametrizations</a></li>
-<li><a class="reference internal" href="#intializing-parametrizations">Intializing Parametrizations</a></li>
+<li><a class="reference internal" href="#concatenating-parametrizations">Concatenating parametrizations</a></li>
+<li><a class="reference internal" href="#intializing-parametrizations">Intializing parametrizations</a></li>
+<li><a class="reference internal" href="#removing-parametrizations">Removing parametrizations</a></li>
 </ul>
 </li>
 </ul>
