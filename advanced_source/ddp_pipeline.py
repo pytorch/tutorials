@@ -89,7 +89,6 @@ if torch.cuda.device_count() < 4:
 class Encoder(nn.Module):
     def __init__(self, ntoken, ninp, dropout=0.5):
         super(Encoder, self).__init__()
-        self.src_mask = None
         self.pos_encoder = PositionalEncoding(ninp, dropout)
         self.encoder = nn.Embedding(ntoken, ninp)
         self.ninp = ninp
@@ -99,17 +98,9 @@ class Encoder(nn.Module):
         initrange = 0.1
         self.encoder.weight.data.uniform_(-initrange, initrange)
 
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
-
     def forward(self, src):
-        if self.src_mask is None or self.src_mask.size(0) != src.size(0):
-            device = src.device
-            mask = self._generate_square_subsequent_mask(src.size(0)).to(device)
-            self.src_mask = mask
-
+        # Need (S, N) format for encoder.
+        src = src.t()
         src = self.encoder(src) * math.sqrt(self.ninp)
         return self.pos_encoder(src)
 
@@ -125,7 +116,8 @@ class Decoder(nn.Module):
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, inp):
-        return self.decoder(inp)
+        # Need batch dimension first for output of pipeline.
+        return self.decoder(inp).permute(1, 0, 2)
 
 ######################################################################
 # Start multiple processes for training
@@ -245,7 +237,8 @@ def run_worker(rank, world_size):
         seq_len = min(bptt, len(source) - 1 - i)
         data = source[i:i+seq_len]
         target = source[i+1:i+1+seq_len].view(-1)
-        return data, target
+        # Need batch dimension first for pipeline parallelism.
+        return data.t(), target
 
 ######################################################################
 # Model scale and Pipe initialization
@@ -318,8 +311,9 @@ def run_worker(rank, world_size):
     # Need to use 'checkpoint=never' since as of PyTorch 1.8, Pipe checkpointing
     # doesn't work with DDP.
     from torch.distributed.pipeline.sync import Pipe
+    chunks = 8
     model = Pipe(torch.nn.Sequential(
-        *module_list), chunks = 8, checkpoint="never")
+        *module_list), chunks = chunks, checkpoint="never")
 
     # Initialize process group and wrap model in DDP.
     from torch.nn.parallel import DistributedDataParallel
