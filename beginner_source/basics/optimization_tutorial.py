@@ -78,7 +78,7 @@ model = NeuralNetwork()
 #
 # We define the following hyperparameters for training:
 #  - **Number of Epochs** - the number times to iterate over the dataset
-#  - **Batch Size** - the number of data samples seen by the model in each epoch
+#  - **Batch Size** - the number of data samples seen by the model before updating the its parameters
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
