@@ -139,9 +139,12 @@ After the model loads in the previous step, let's verify that it works with expe
         const int HEIGHT = 400;
         const int CLASSNUM = 21;
 
+        // c10::InferenceMode is available since release 1.9, otherwise please use the commented lines.
+        // torch::autograd::AutoGradMode guard(false);
+        // at::AutoNonVariableTypeMode non_var_type_mode(true);
+        c10::InferenceMode guard;
+
         at::Tensor tensor = torch::from_blob(imageBuffer, {1, 3, WIDTH, HEIGHT}, at::kFloat);
-        torch::autograd::AutoGradMode guard(false);
-        at::AutoNonVariableTypeMode non_var_type_mode(true);
 
         // 2. convert the input tensor to an NSMutableArray for debugging
         float* floatInput = tensor.data_ptr<float>();
