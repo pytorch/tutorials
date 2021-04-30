@@ -317,7 +317,7 @@ information on this):
 
     Implementing a custom view op is highly discouraged. We suggest making a clone instead of returning
     a tensor on the same storage of input tensor.  A view op produces output tensor which is an alias
-    of input tensor. You can find `supported view ops in PyTorch here<https://pytorch.org/docs/stable/tensor_view.html#tensor-views>`_.
+    of input tensor. You can find `supported view ops in PyTorch here <https://pytorch.org/docs/stable/tensor_view.html#tensor-views>`_.
     If you really want to implement a custom view op, see ``torch::autograd::as_view`` usage in the
     generated ``ADInplaceOrViewTypeEverything.cpp`` for how to set it up correctly to work with our autograd system.
 
