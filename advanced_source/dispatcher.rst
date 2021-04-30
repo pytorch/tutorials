@@ -161,7 +161,7 @@ The autograd function is written as normal using ``torch::autograd::Function``,
 except that instead of directly writing the implementation in ``forward()``,
 we:
 
-1. Turn off autograd handling with the ``at::AutoNonVariableTypeMode`` RAII
+1. Turn off autograd handling with the ``at::AutoDispatchBelowADInplaceOrView`` RAII
    guard, and then
 2. Call the dispatch function ``myadd`` to call back into the dispatcher.
 
@@ -189,6 +189,34 @@ functions:
     options in more detail, check out the ``PythonDispatcher`` tool provided in
     `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py>`_.
 
+Special handling for inplace & view ops
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As mentioned in `Custom C++ and CUDA Extensions <cpp_extension.rst>`_,
+custom inplace and view ops need a bit special handling if you want to add
+autograd support for them.
+
+For example, an inplace version of ``myadd_`` need to use ``at::AutoDispatchBelowAutograd``
+instead of ``at::AutoDispatchBelowADInplaceOrView`` inside ``MyAddFunction::forward``.
+And it requires an additional kernel to be registered to ``ADInplaceOrView`` dispatch key.
+
+.. code-block:: cpp
+
+    at::Tensor & myadd_(at::Tensor & self, const at::Tensor & other) {
+      {
+        at::AutoDispatchBelowADInplaceOrView guard;
+        at::myadd_(self, other);
+      }
+      increment_version(self);
+      return self;
+    }
+	// Registration code
+    TORCH_LIBRARY_IMPL(myops, ADInplaceOrView, m) {
+      m.impl("myadd_", myadd_);
+    }
+
+Custom view op are highly discouraged, see note in `Custom C++ and CUDA Extensions <cpp_extension.rst>`_
+for an code pointer if you really want to implement one.
 
 Going beyond autograd
 ---------------------

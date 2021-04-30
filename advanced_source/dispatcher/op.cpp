@@ -63,7 +63,7 @@ class MyAddFunction : public torch::autograd::Function<MyAddFunction> {
  public:
   static Tensor forward(
       AutogradContext *ctx, torch::Tensor self, torch::Tensor other) {
-    at::AutoNonVariableTypeMode g;
+    at::AutoDispatchBelowADInplaceOrView g;
     return myadd(self, other);
   }
 

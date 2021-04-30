@@ -306,6 +306,21 @@ information on this):
     return {d_old_h, d_input, d_weights, d_bias, d_old_cell};
   }
 
+.. note::
+
+    If you are implementing a custom inplace op, make sure ``torch::autograd::increment_version(tensor)``
+    is called on every input tensor that was mutated. Otherwise if a tensor has been saved
+    for backward in other autograd computations but then mutated by this op, it might produce silent
+    wrong result for users (instead of throwing an error complaining saved tensor has been mutated).
+
+.. note::
+
+    Implementing a custom view op is highly discouraged. We suggest making a clone instead of returning
+    a tensor on the same storage of input tensor.  A view op produces output tensor which is an alias
+    of input tensor. You can find `supported view ops in PyTorch here<https://pytorch.org/docs/stable/tensor_view.html#tensor-views>`_.
+    If you really want to implement a custom view op, see ``torch::autograd::as_view`` usage in the
+    generated ``ADInplaceOrViewTypeEverything.cpp`` for how to set it up correctly to work with our autograd system.
+
 Binding to Python
 ^^^^^^^^^^^^^^^^^
 
