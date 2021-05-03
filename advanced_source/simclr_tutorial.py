@@ -6,7 +6,7 @@ Self-Supervised Learning with SimCLR
 **Author**: `Aritra Roy Gosthipaty <https://twitter.com/ariG23498>`__
 
 Introduction
-============
+------------
 
 This tutorial will give an introduction to self supervised learning
 through the minimal implementation of
@@ -104,7 +104,7 @@ print(f'DEVICE: {DEVICE}')
 
 ######################################################################
 # Stochastic Data Augmentation Module
-# ===================================
+# -----------------------------------
 # 
 # The authors suggest that a **strong** data augmentation is useful for
 # self supervised learning.
@@ -199,7 +199,7 @@ custom_transform = ContrastiveLearningViewGenerator(
 
 ######################################################################
 # Dataset
-# -------
+# ~~~~~~~
 # 
 # We will be using 1,000 of the 100,000 data points from the
 # ``unlabeled`` split of the STL10 dataset to train our
@@ -223,7 +223,7 @@ unlabeled_ds = STL10(
 
 ######################################################################
 # View the data
-# -------------
+# ~~~~~~~~~~~~~
 # 
 # Visulaization of the data is an important part of training. We need to see
 # whether the data pipeline works as expected. The ``view_data()`` method
@@ -277,7 +277,7 @@ train_dl = torch.utils.data.DataLoader(
 
 ######################################################################
 # SimCLR model
-# ============
+# ------------
 # 
 # In this section, I take you through the architecture of the SimCLR
 # model. The model consists of three individual parts:
@@ -287,7 +287,7 @@ train_dl = torch.utils.data.DataLoader(
 # - A contrastive loss function :math:`J(\theta)`
 # 
 # Encoder :math:`f(.)`
-# --------------------
+# ~~~~~~~~~~~~~~~~~~~~
 # 
 # The authors do not stress on the choice of the encoder. They let the reader
 # choose the encoder's architecture. The main motive of the encoder is to
@@ -303,7 +303,7 @@ train_dl = torch.utils.data.DataLoader(
 # - :math:`h` is the encoded representation, :math:`h \in \mathcal{R}^{d_{e}}`
 # 
 # Projection head :math:`g(.)`
-# ----------------------------
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # 
 # The sole purpose of the projection head is to project the encoded
 # representation into a better latent space. The authors have noted that
@@ -361,7 +361,7 @@ class SimCLR(nn.Module):
 
 ######################################################################
 # Contrastive loss
-# ----------------
+# ~~~~~~~~~~~~~~~~
 # 
 # The contrastive loss function is the heart of the pretext task presented
 # in SimCLR. The loss function needs to be broken down into three
@@ -371,8 +371,7 @@ class SimCLR(nn.Module):
 # - **Softmax function**: A function that transforms a distribution into a normalised probability distribution. 
 # - **NT-Xent loss**: The contrastive loss function.
 # 
-# Similarity
-# ~~~~~~~~~~
+# **Similarity**
 # 
 # The authors used the ``cosine`` similarity function to
 # measure how similar two views are.
@@ -385,8 +384,7 @@ class SimCLR(nn.Module):
 # `Source: Amitness' take on
 # SimCLR <https://amitness.com/2020/03/illustrated-simclr/>`__
 # 
-# Softmax
-# ~~~~~~~
+# ** Softmax **
 # 
 # .. math:: softmax(x_{i})=\frac{\exp{x_{i}}}{\sum_{k=1}^{N}\exp{x_{k}}}
 # 
@@ -397,8 +395,7 @@ class SimCLR(nn.Module):
 # distribution of the similarity scores. This tells us how
 # probable would one view be similar to another.
 # 
-# NT-Xent Loss
-# ~~~~~~~~~~~~
+# ** NT-Xent Loss **
 # 
 # This is the normalized temperature scaled cross entropy loss. The use 
 # of the temperature term is described really well in this
@@ -497,7 +494,7 @@ plt.show()
 
 ######################################################################
 # Downstream Task
-# ================
+# ---------------
 # 
 # The self-supervised learning algorithm has helped us achieve a rich
 # representation of images. We will be using the representations learned
@@ -554,7 +551,7 @@ test_dl = DataLoader(
 
 ######################################################################
 # Classification
-# --------------
+# ~~~~~~~~~~~~~~
 # 
 # All that is important to us is the base encoder of the trained SimCLR
 # model. We will need the representation of the images from the trained
@@ -630,7 +627,7 @@ plt.show()
 
 ######################################################################
 # Testing
-# =======
+# ~~~~~~~
 # 
 # Let's us try to get the accuracy of the linear layer that
 # learned from SimCLR representation of the images.
