@@ -119,6 +119,12 @@ Welcome to PyTorch Tutorials
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Self-Supervised Learning with SimCLR
+   :card_description: Train SimCLR on STL10 dataset.
+   :link: advanced/simclr_tutorial.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
@@ -577,6 +583,7 @@ Additional Resources
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
    beginner/vt_tutorial
+   advanced/simclr_tutorial
 
 .. toctree::
    :maxdepth: 2
