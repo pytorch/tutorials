@@ -189,11 +189,11 @@ print(z_det.requires_grad)
 # .. math::
 #
 #
-#    \begin{align}J=\left(\begin{array}{ccc}
+#    J=\left(\begin{array}{ccc}
 #       \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
 #       \vdots & \ddots & \vdots\\
 #       \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#       \end{array}\right)\end{align}
+#       \end{array}\right)
 #
 # Instead of computing the Jacobian matrix itself, PyTorch allows you to
 # compute **Jacobian Product** :math:`v^T\cdot J` for a given input vector
