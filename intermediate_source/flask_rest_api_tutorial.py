@@ -46,7 +46,7 @@ with high performance requirements. For that:
 #
 # ::
 #
-#     $ pip install Flask==1.0.3 torchvision-0.3.0
+#     $ pip install Flask==1.0.3 torchvision==0.3.0
 
 
 ######################################################################
