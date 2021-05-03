@@ -592,7 +592,7 @@ extensions:</p>
 
 <span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
 
-<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_sigmoid</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="nf">d_sigmoid</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">auto</span> <span class="n">s</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">z</span><span class="p">);</span>
   <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">s</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span><span class="p">;</span>
 <span class="p">}</span>
@@ -657,12 +657,12 @@ a nice Python binding. The backward function is slightly more involved, so
 we’ll not dig deeper into the code (if you are interested, <a class="reference external" href="https://www.cs.toronto.edu/~graves/phd.pdf">Alex Graves’ thesis</a> is a good read for more
 information on this):</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// tanh&#39;(z) = 1 - tanh^2(z)</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_tanh</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="nf">d_tanh</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">z</span><span class="p">.</span><span class="n">tanh</span><span class="p">().</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="c1">// elu&#39;(z) = relu&#39;(z) + { alpha * exp(z) if (alpha * (exp(z) - 1)) &lt; 0, else 0}</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">d_elu</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Scalar</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="nf">d_elu</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">z</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Scalar</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">{</span>
   <span class="k">auto</span> <span class="n">e</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">exp</span><span class="p">();</span>
   <span class="k">auto</span> <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">e</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
   <span class="k">return</span> <span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">mask</span><span class="p">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">e</span><span class="p">);</span>
@@ -1070,7 +1070,7 @@ code.</p>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">old_h</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
 
-  <span class="k">return</span> <span class="nf">lltm_cuda_forward</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">lltm_cuda_forward</span><span class="p">(</span><span class="n">input</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">old_h</span><span class="p">,</span> <span class="n">old_cell</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">lltm_backward</span><span class="p">(</span>
@@ -1092,7 +1092,7 @@ code.</p>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">);</span>
   <span class="n">CHECK_INPUT</span><span class="p">(</span><span class="n">weights</span><span class="p">);</span>
 
-  <span class="k">return</span> <span class="nf">lltm_cuda_backward</span><span class="p">(</span>
+  <span class="k">return</span> <span class="n">lltm_cuda_backward</span><span class="p">(</span>
       <span class="n">grad_h</span><span class="p">,</span>
       <span class="n">grad_cell</span><span class="p">,</span>
       <span class="n">new_cell</span><span class="p">,</span>
@@ -1150,7 +1150,7 @@ we’ll need:</p>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">scalar_t</span><span class="o">&gt;</span>
 <span class="n">__device__</span> <span class="n">__forceinline__</span> <span class="n">scalar_t</span> <span class="n">elu</span><span class="p">(</span><span class="n">scalar_t</span> <span class="n">z</span><span class="p">,</span> <span class="n">scalar_t</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nf">fmax</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">fmin</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">));</span>
+  <span class="k">return</span> <span class="n">fmax</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">fmin</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">));</span>
 <span class="p">}</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">scalar_t</span><span class="o">&gt;</span>
@@ -1184,7 +1184,7 @@ speed up. For the forward pass, the first function should look like this:</p>
   <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
 
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
-  <span class="k">const</span> <span class="n">dim3</span> <span class="n">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
+  <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
 
   <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">gates</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">&quot;lltm_forward_cuda&quot;</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
     <span class="n">lltm_cuda_forward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
@@ -1382,7 +1382,7 @@ host function.</p>
   <span class="k">auto</span> <span class="n">candidate_cell</span> <span class="o">=</span> <span class="n">torch</span><span class="o">::</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">old_cell</span><span class="p">);</span>
 
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
-  <span class="k">const</span> <span class="n">dim3</span> <span class="n">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
+  <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
 
   <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">gates</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">&quot;lltm_forward_cuda&quot;</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
     <span class="n">lltm_cuda_forward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
@@ -1453,7 +1453,7 @@ on it:</p>
   <span class="k">const</span> <span class="k">auto</span> <span class="n">state_size</span> <span class="o">=</span> <span class="n">new_cell</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
 
   <span class="k">const</span> <span class="kt">int</span> <span class="n">threads</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">;</span>
-  <span class="k">const</span> <span class="n">dim3</span> <span class="n">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
+  <span class="k">const</span> <span class="n">dim3</span> <span class="nf">blocks</span><span class="p">((</span><span class="n">state_size</span> <span class="o">+</span> <span class="n">threads</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">threads</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">);</span>
 
   <span class="n">AT_DISPATCH_FLOATING_TYPES</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">type</span><span class="p">(),</span> <span class="s">&quot;lltm_backward_cuda&quot;</span><span class="p">,</span> <span class="p">([</span><span class="o">&amp;</span><span class="p">]</span> <span class="p">{</span>
     <span class="n">lltm_cuda_backward_kernel</span><span class="o">&lt;</span><span class="n">scalar_t</span><span class="o">&gt;&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span> <span class="n">threads</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span>
