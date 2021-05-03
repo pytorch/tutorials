@@ -384,7 +384,7 @@ class SimCLR(nn.Module):
 # `Source: Amitness' take on
 # SimCLR <https://amitness.com/2020/03/illustrated-simclr/>`__
 # 
-# ** Softmax **
+# **Softmax**
 # 
 # .. math:: softmax(x_{i})=\frac{\exp{x_{i}}}{\sum_{k=1}^{N}\exp{x_{k}}}
 # 
@@ -395,7 +395,7 @@ class SimCLR(nn.Module):
 # distribution of the similarity scores. This tells us how
 # probable would one view be similar to another.
 # 
-# ** NT-Xent Loss **
+# **NT-Xent Loss**
 # 
 # This is the normalized temperature scaled cross entropy loss. The use 
 # of the temperature term is described really well in this
