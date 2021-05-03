@@ -308,10 +308,9 @@ information on this):
 
 .. note::
 
-    If you are implementing a custom inplace op, make sure ``torch::autograd::increment_version(tensor)``
-    is called on every input tensor that was mutated. Otherwise if a tensor has been saved
-    for backward in other autograd computations but then mutated by this op, it might produce silent
-    wrong result for users (instead of throwing an error complaining saved tensor has been mutated).
+    If you are implementing a custom inplace op, please follow the guidance in section
+    `Special handling for inplace & view ops in dispatcher tutorial <dispatcher.rst>`_
+    to register a dispatched inplace op.
 
 .. note::
 

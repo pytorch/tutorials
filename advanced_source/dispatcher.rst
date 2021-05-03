@@ -191,14 +191,21 @@ functions:
 
 Special handling for inplace & view ops
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 As mentioned in `Custom C++ and CUDA Extensions <cpp_extension.rst>`_,
 custom inplace and view ops need a bit special handling if you want to add
 autograd support for them.
 
-For example, an inplace version of ``myadd_`` need to use ``at::AutoDispatchBelowAutograd``
-instead of ``at::AutoDispatchBelowADInplaceOrView`` inside ``MyAddFunction::forward``.
-And it requires an additional kernel to be registered to ``ADInplaceOrView`` dispatch key.
+1. ``torch::autograd::increment_version(tensor)`` must be called on every mutated input tensor.
+   Otherwise if a tensor has been saved for backward in other autograd computations but then mutated by
+   this op, it might produce silent wrong result for users (instead of throwing an error complaining saved
+   tensor has been mutated).
+
+
+2. To work with ``InferenceMode``, an inplace custom op (e.g. ``myadd_``) need to use ``at::AutoDispatchBelowAutograd``
+   instead of ``at::AutoDispatchBelowADInplaceOrView`` inside ``MyAddFunction::forward``.  And it requires an additional
+   kernel to be registered to ``ADInplaceOrView`` dispatch key.
+
+Here's an example ``myadd_`` kernel:
 
 .. code-block:: cpp
 
@@ -207,6 +214,7 @@ And it requires an additional kernel to be registered to ``ADInplaceOrView`` dis
         at::AutoDispatchBelowADInplaceOrView guard;
         at::myadd_(self, other);
       }
+      // `self` has been mutated
       increment_version(self);
       return self;
     }
