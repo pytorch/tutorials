@@ -184,6 +184,7 @@ html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
+    'analytics_id': 'UA-117752657-2',
 }
 
 
