@@ -704,7 +704,7 @@ If you check the android logcat:
 
 You should see logs with tag 'PyTorchNativeApp' that prints x, y, and the result of the model forward, which we print with ``log`` function in ``NativeApp/app/src/main/cpp/pytorch_nativeapp.cpp``.
 
-.. code-block::
+::
 
   I/PyTorchNativeApp(26968): x: -0.9484 -1.1757 -0.5832  0.9144  0.8867  1.0933 -0.4004 -0.3389
   I/PyTorchNativeApp(26968): -1.0343  1.5200 -0.7625 -1.5724 -1.2073  0.4613  0.2730 -0.6789
