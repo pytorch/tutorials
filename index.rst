@@ -122,6 +122,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Self-Supervised Learning with SimCLR
    :card_description: Train SimCLR on STL10 dataset.
+   :image: _static/img/thumbnails/cropped/simclr.gif
    :link: advanced/simclr_tutorial.html
    :tags: Image/Video
 
