@@ -266,7 +266,9 @@ CARD_TEMPLATE = """
 
     <div class="col-md-12 tutorials-card-container" data-tags={tags}>
 
-    <div class="card tutorials-card" link={link}>
+    <div class="card tutorials-card">
+
+    <a href="{link}">
 
     <div class="card-body">
 
@@ -281,6 +283,8 @@ CARD_TEMPLATE = """
     <div class="tutorials-image">{image}</div>
 
     </div>
+
+    </a>
 
     </div>
 
