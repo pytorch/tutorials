@@ -1009,7 +1009,48 @@ custom operator, that loads and executes a serialized TorchScript model:</p>
 </pre></div>
 </div>
 <p>At this point, we should be able to build the application:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ mkdir build
+$ <span class="nb">cd</span> build
+$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>python -c <span class="s1">&#39;import torch.utils; print(torch.utils.cmake_prefix_path)&#39;</span><span class="k">)</span><span class="s2">&quot;</span> ..
+-- The C compiler identification is GNU <span class="m">5</span>.4.0
+-- The CXX compiler identification is GNU <span class="m">5</span>.4.0
+-- Check <span class="k">for</span> working C compiler: /usr/bin/cc
+-- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - <span class="k">done</span>
+-- Detecting C compile features
+-- Detecting C compile features - <span class="k">done</span>
+-- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
+-- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - <span class="k">done</span>
+-- Detecting CXX compile features
+-- Detecting CXX compile features - <span class="k">done</span>
+-- Looking <span class="k">for</span> pthread.h
+-- Looking <span class="k">for</span> pthread.h - found
+-- Looking <span class="k">for</span> pthread_create
+-- Looking <span class="k">for</span> pthread_create - not found
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
+-- Found Threads: TRUE
+-- Found torch: /libtorch/lib/libtorch.so
+-- Configuring <span class="k">done</span>
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /example_app/build
+$ make -j
+Scanning dependencies of target example_app
+<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example_app.dir/main.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example_app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example_app
+</pre></div>
+</div>
 <p>And run it without passing a model just yet:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app
+usage: example_app &lt;path-to-exported-script-module&gt;
+</pre></div>
+</div>
 <p>Next, let’s serialize the script function we wrote earlier that uses our custom
 operator:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">&quot;libwarp_perspective.so&quot;</span><span class="p">)</span>
@@ -1029,6 +1070,13 @@ operator:</p>
 <p>The last line will serialize the script function into a file called
 “example.pt”. If we then pass this serialized model to our C++ application, we
 can run it straight away:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app example.pt
+terminate called after throwing an instance of <span class="s1">&#39;torch::jit::script::ErrorReport&#39;</span>
+what<span class="o">()</span>:
+Schema not found <span class="k">for</span> node. File a bug report.
+Node: %16 : <span class="nv">Dynamic</span> <span class="o">=</span> my_ops::warp_perspective<span class="o">(</span>%0, %19<span class="o">)</span>
+</pre></div>
+</div>
 <p>Or maybe not. Maybe not just yet. Of course! We haven’t linked the custom
 operator library with our application yet. Let’s do this right now, and to do it
 properly let’s update our file organization slightly, to look like this:</p>

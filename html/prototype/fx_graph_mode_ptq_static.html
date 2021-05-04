@@ -435,6 +435,23 @@ although there might some effort required to make the model compatible with FX G
 we’ll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.
 We also have a tutorial for <a class="reference external" href="https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html">FX Graph Mode Post Training Dynamic Quantization</a>.
 tldr; The FX Graph Mode API looks like the following:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span>
+<span class="c1"># Note that this is temporary, we&#39;ll expose these functions to torch.quantization after official releasee</span>
+<span class="kn">from</span> <span class="nn">torch.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span>
+<span class="n">float_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">qconfig</span> <span class="o">=</span> <span class="n">get_default_qconfig</span><span class="p">(</span><span class="s2">&quot;fbgemm&quot;</span><span class="p">)</span>
+<span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+            <span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>  <span class="c1"># fuse modules and insert observers</span>
+<span class="n">calibrate</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>  <span class="c1"># run calibration on sample data</span>
+<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>  <span class="c1"># convert the calibrated model to a quantized model</span>
+</pre></div>
+</div>
 <div class="section" id="motivation-of-fx-graph-mode-quantization">
 <h2>1. Motivation of FX Graph Mode Quantization<a class="headerlink" href="#motivation-of-fx-graph-mode-quantization" title="Permalink to this headline">¶</a></h2>
 <p>Currently PyTorch only has eager mode quantization: <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">Static Quantization with Eager Mode in PyTorch</a>.</p>
