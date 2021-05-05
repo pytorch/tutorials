@@ -170,7 +170,7 @@ match.
         def forward(self, x_rref):
             x = x_rref.to_here().to(self.device)
             with self._lock:
-                out = self.fc(torch.flatten(self.seq(x), 1))
+                out = self.fc(self.seq(x).flatten(start_dim=1))
             return out.cpu()
 
 

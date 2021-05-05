@@ -139,7 +139,7 @@ class Net(nn.Module):
       # Pass data through dropout1
       x = self.dropout1(x)
       # Flatten x with start_dim=1
-      x = torch.flatten(x, 1)
+      x = x.flatten(start_dim=1)
       # Pass data through fc1
       x = self.fc1(x)
       x = F.relu(x)

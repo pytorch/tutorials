@@ -60,7 +60,7 @@ class Net(nn.Module):
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         # If the size is a square, you can specify with a single number
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
+        x = x.flatten(start_dim=1) # flatten all dimensions except the batch dimension
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)

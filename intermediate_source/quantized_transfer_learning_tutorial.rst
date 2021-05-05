@@ -364,7 +364,7 @@ The function below creates a model with a custom head.
       # Step 3. Combine, and don't forget the quant stubs.
       new_model = nn.Sequential(
         model_fe_features,
-        nn.Flatten(1),
+        nn.Flatten(start_dim=1),
         new_head,
       )
       return new_model

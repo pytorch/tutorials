@@ -64,7 +64,7 @@ Let's start with the familiar: importing our required modules and defining a sim
            x = F.max_pool2d(x, 2)
 
            x = self.dropout1(x)
-           x = torch.flatten(x, 1)
+           x = x.flatten(start_dim=1)
            # Move tensor to next device if necessary
            next_device = next(self.fc1.parameters()).device
            x = x.to(next_device)

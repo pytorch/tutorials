@@ -54,7 +54,7 @@ class LeNet(nn.Module):
     def forward(self, x):
         x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
         x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-        x = x.view(-1, int(x.nelement() / x.shape[0]))
+        x = x.flatten(start_dim=1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
@@ -361,7 +361,7 @@ class FooBarPruningMethod(prune.BasePruningMethod):
 
     def compute_mask(self, t, default_mask):
         mask = default_mask.clone()
-        mask.view(-1)[::2] = 0 
+        mask.flatten()[::2] = 0
         return mask
 
 ######################################################################

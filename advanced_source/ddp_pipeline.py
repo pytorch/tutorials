@@ -236,7 +236,7 @@ def run_worker(rank, world_size):
     def get_batch(source, i):
         seq_len = min(bptt, len(source) - 1 - i)
         data = source[i:i+seq_len]
-        target = source[i+1:i+1+seq_len].view(-1)
+        target = source[i+1:i+1+seq_len].flatten()
         # Need batch dimension first for pipeline parallelism.
         return data.t(), target
 

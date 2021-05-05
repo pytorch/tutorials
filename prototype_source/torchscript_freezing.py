@@ -38,7 +38,7 @@ class Net(torch.nn.Module):
         x = self.conv2(x)
         x = torch.nn.functional.max_pool2d(x, 2)
         x = self.dropout1(x)
-        x = torch.flatten(x, 1)
+        x = x.flatten(start_dim=1)
         x = self.fc1(x)
         x = torch.nn.functional.relu(x)
         x = self.dropout2(x)
