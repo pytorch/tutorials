@@ -70,18 +70,11 @@ Let’s define this network:
             x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
             # If the size is a square, you can specify with a single number
             x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-            x = x.view(-1, self.num_flat_features(x))
+            x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
             x = F.relu(self.fc1(x))
             x = F.relu(self.fc2(x))
             x = self.fc3(x)
             return x
-
-        def num_flat_features(self, x):
-            size = x.size()[1:]  # all dimensions except the batch dimension
-            num_features = 1
-            for s in size:
-                num_features *= s
-            return num_features
 
 
     net = Net()
@@ -157,8 +150,8 @@ the MNIST dataset, please resize the images from the dataset to 32x32.
 
  .. code-block:: none
 
-    tensor([[ 0.0002, -0.0385,  0.0386,  0.1061, -0.0786, -0.1066, -0.0180,  0.1101,
-             -0.1447,  0.0301]], grad_fn=<AddmmBackward>)
+    tensor([[-0.1778, -0.0554,  0.0698,  0.1192, -0.0010,  0.0626, -0.0462,  0.1060,
+             -0.0366, -0.0988]], grad_fn=<AddmmBackward>)
 
 
 Zero the gradient buffers of all parameters and backprops with random
@@ -248,7 +241,7 @@ For example:
 
  .. code-block:: none
 
-    tensor(0.7414, grad_fn=<MseLossBackward>)
+    tensor(0.6090, grad_fn=<MseLossBackward>)
 
 
 Now, if you follow ``loss`` in the backward direction, using its
@@ -258,7 +251,7 @@ like this:
 ::
 
     input -> conv2d -> relu -> maxpool2d -> conv2d -> relu -> maxpool2d
-          -> view -> linear -> relu -> linear -> relu -> linear
+          -> flatten -> linear -> relu -> linear -> relu -> linear
           -> MSELoss
           -> loss
 
@@ -287,9 +280,9 @@ For illustration, let us follow a few steps backward:
 
  .. code-block:: none
 
-    <MseLossBackward object at 0x7f59dd270278>
-    <AddmmBackward object at 0x7f59dd270cf8>
-    <AccumulateGrad object at 0x7f59dd270cf8>
+    <MseLossBackward object at 0x7fd9e06c2320>
+    <AddmmBackward object at 0x7fd9e06c26d8>
+    <AccumulateGrad object at 0x7fd9e06c26d8>
 
 
 Backprop
@@ -330,7 +323,7 @@ gradients before and after the backward.
     conv1.bias.grad before backward
     tensor([0., 0., 0., 0., 0., 0.])
     conv1.bias.grad after backward
-    tensor([-0.0038, -0.0044, -0.0042,  0.0044,  0.0033, -0.0118])
+    tensor([ 0.0096, -0.0020,  0.0007,  0.0061,  0.0016,  0.0002])
 
 
 Now, we have seen how to use loss functions.
@@ -397,7 +390,7 @@ implements all these methods. Using it is very simple:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  3.839 seconds)
+   **Total running time of the script:** ( 0 minutes  3.823 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_neural_networks_tutorial.py:

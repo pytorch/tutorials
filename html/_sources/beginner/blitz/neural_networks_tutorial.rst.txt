@@ -70,18 +70,11 @@ Let’s define this network:
             x = F.max_pool2d(F.relu(self.conv1(x)), (2, 2))
             # If the size is a square, you can specify with a single number
             x = F.max_pool2d(F.relu(self.conv2(x)), 2)
-            x = x.view(-1, self.num_flat_features(x))
+            x = torch.flatten(x, 1) # flatten all dimensions except the batch dimension
             x = F.relu(self.fc1(x))
             x = F.relu(self.fc2(x))
             x = self.fc3(x)
             return x
-
-        def num_flat_features(self, x):
-            size = x.size()[1:]  # all dimensions except the batch dimension
-            num_features = 1
-            for s in size:
-                num_features *= s
-            return num_features
 
 
     net = Net()
@@ -197,7 +190,7 @@ like this:
 ::
 
     input -> conv2d -> relu -> maxpool2d -> conv2d -> relu -> maxpool2d
-          -> view -> linear -> relu -> linear -> relu -> linear
+          -> flatten -> linear -> relu -> linear -> relu -> linear
           -> MSELoss
           -> loss
 

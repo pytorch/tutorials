@@ -382,18 +382,11 @@ weights)</li>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="c1"># If the size is a square, you can specify with a single number</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_flat_features</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># flatten all dimensions except the batch dimension</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
-
-    <span class="k">def</span> <span class="nf">num_flat_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># all dimensions except the batch dimension</span>
-        <span class="n">num_features</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
-            <span class="n">num_features</span> <span class="o">*=</span> <span class="n">s</span>
-        <span class="k">return</span> <span class="n">num_features</span>
 
 
 <span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
@@ -434,8 +427,8 @@ the MNIST dataset, please resize the images from the dataset to 32x32.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 0.0002, -0.0385,  0.0386,  0.1061, -0.0786, -0.1066, -0.0180,  0.1101,
-         -0.1447,  0.0301]], grad_fn=&lt;AddmmBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[-0.1778, -0.0554,  0.0698,  0.1192, -0.0010,  0.0626, -0.0462,  0.1060,
+         -0.0366, -0.0988]], grad_fn=&lt;AddmmBackward&gt;)
 </pre></div>
 </div>
 <p>Zero the gradient buffers of all parameters and backprops with random
@@ -507,14 +500,14 @@ between the input and the target.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.7414, grad_fn=&lt;MseLossBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor(0.6090, grad_fn=&lt;MseLossBackward&gt;)
 </pre></div>
 </div>
 <p>Now, if you follow <code class="docutils literal notranslate"><span class="pre">loss</span></code> in the backward direction, using its
 <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code> attribute, you will see a graph of computations that looks
 like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span>
-      <span class="o">-&gt;</span> <span class="n">view</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span>
+      <span class="o">-&gt;</span> <span class="n">flatten</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span>
       <span class="o">-&gt;</span> <span class="n">MSELoss</span>
       <span class="o">-&gt;</span> <span class="n">loss</span>
 </pre></div>
@@ -530,9 +523,9 @@ gradient.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;MseLossBackward object at 0x7f59dd270278&gt;
-&lt;AddmmBackward object at 0x7f59dd270cf8&gt;
-&lt;AccumulateGrad object at 0x7f59dd270cf8&gt;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;MseLossBackward object at 0x7fd9e06c2320&gt;
+&lt;AddmmBackward object at 0x7fd9e06c26d8&gt;
+&lt;AccumulateGrad object at 0x7fd9e06c26d8&gt;
 </pre></div>
 </div>
 </div>
@@ -558,7 +551,7 @@ gradients before and after the backward.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.bias.grad before backward
 tensor([0., 0., 0., 0., 0., 0.])
 conv1.bias.grad after backward
-tensor([-0.0038, -0.0044, -0.0042,  0.0044,  0.0033, -0.0118])
+tensor([ 0.0096, -0.0020,  0.0007,  0.0061,  0.0016,  0.0002])
 </pre></div>
 </div>
 <p>Now, we have seen how to use loss functions.</p>
@@ -609,7 +602,7 @@ implements all these methods. Using it is very simple:</p>
 <code class="docutils literal notranslate"><span class="pre">optimizer.zero_grad()</span></code>. This is because gradients are accumulated
 as explained in the <a class="reference internal" href="#backprop">Backprop</a> section.</p>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.839 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.823 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-blitz-neural-networks-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/3665741da15f111de82da3227a615699/neural_networks_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_networks_tutorial.py</span></code></a></div>

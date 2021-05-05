@@ -494,18 +494,11 @@ weights)</li>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
         <span class="c1"># If the size is a square, you can specify with a single number</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_flat_features</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># flatten all dimensions except the batch dimension</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span>
-
-    <span class="k">def</span> <span class="nf">num_flat_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">size</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># all dimensions except the batch dimension</span>
-        <span class="n">num_features</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
-            <span class="n">num_features</span> <span class="o">*=</span> <span class="n">s</span>
-        <span class="k">return</span> <span class="n">num_features</span>
 
 
 <span class="n">net</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
@@ -602,7 +595,7 @@ between the input and the target.</p>
 <code class="docutils literal notranslate"><span class="pre">.grad_fn</span></code> attribute, you will see a graph of computations that looks
 like this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">input</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span> <span class="o">-&gt;</span> <span class="n">conv2d</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">maxpool2d</span>
-      <span class="o">-&gt;</span> <span class="n">view</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span>
+      <span class="o">-&gt;</span> <span class="n">flatten</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span> <span class="o">-&gt;</span> <span class="n">relu</span> <span class="o">-&gt;</span> <span class="n">linear</span>
       <span class="o">-&gt;</span> <span class="n">MSELoss</span>
       <span class="o">-&gt;</span> <span class="n">loss</span>
 </pre></div>
