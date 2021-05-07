@@ -15,7 +15,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 NUM_EMBEDDINGS = 100
 EMBEDDING_DIM = 16
 
-
+# BEGIN hybrid_model
 class HybridModel(torch.nn.Module):
     r"""
     The model consists of a sparse part and a dense part.
@@ -33,8 +33,9 @@ class HybridModel(torch.nn.Module):
     def forward(self, indices, offsets):
         emb_lookup = self.remote_emb_module.forward(indices, offsets)
         return self.fc(emb_lookup.cuda(self.device))
+# END hybrid_model
 
-
+# BEGIN setup_trainer
 def _run_trainer(remote_emb_module, rank):
     r"""
     Each trainer runs a forward pass which involves an embedding lookup on the
@@ -67,7 +68,9 @@ def _run_trainer(remote_emb_module, rank):
     )
 
     criterion = torch.nn.CrossEntropyLoss()
+    # END setup_trainer
 
+    # BEGIN run_trainer
     def get_next_batch(rank):
         for _ in range(10):
             num_indices = random.randint(20, 50)
@@ -103,8 +106,9 @@ def _run_trainer(remote_emb_module, rank):
                 # Not necessary to zero grads as each iteration creates a different
                 # distributed autograd context which hosts different grads
         print("Training done for epoch {}".format(epoch))
+        # END run_trainer
 
-
+# BEGIN run_worker
 def run_worker(rank, world_size):
     r"""
     A wrapper function that initializes RPC, calls the function, and shuts down
@@ -178,3 +182,4 @@ if __name__ == "__main__":
     # 2 trainers, 1 parameter server, 1 master.
     world_size = 4
     mp.spawn(run_worker, args=(world_size,), nprocs=world_size, join=True)
+# END run_worker
