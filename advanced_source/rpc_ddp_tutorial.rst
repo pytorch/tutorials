@@ -128,7 +128,7 @@ be optimized, we need to create RRefs even for the local parameters for our
 FC layers. This is done by walking ``model.fc.parameters()``, creating an RRef for
 each parameter and appending it to the list returned from ``remote_parameters()``.
 Note that we cannnot use ``model.parameters()``,
-becuase it will recursively call ``model.remote_emb_module.parameters()``,
+because it will recursively call ``model.remote_emb_module.parameters()``,
 which is not supported by ``RemoteModule``.
 
 Finally, we create our DistributedOptimizer using all the RRefs and define a
