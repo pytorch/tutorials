@@ -605,7 +605,7 @@ Along with a small ``CMakeLists.txt`` file:
 
 At this point, we should be able to build the application:
 
-.. code-block::
+.. code-block:: shell
 
   $ mkdir build
   $ cd build
@@ -645,7 +645,7 @@ At this point, we should be able to build the application:
 
 And run it without passing a model just yet:
 
-.. code-block::
+.. code-block:: shell
 
   $ ./example_app
   usage: example_app <path-to-exported-script-module>
@@ -672,7 +672,7 @@ The last line will serialize the script function into a file called
 "example.pt". If we then pass this serialized model to our C++ application, we
 can run it straight away:
 
-.. code-block::
+.. code-block:: shell
 
   $ ./example_app example.pt
   terminate called after throwing an instance of 'torch::jit::script::ErrorReport'

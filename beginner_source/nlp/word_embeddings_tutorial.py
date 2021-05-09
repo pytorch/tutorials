@@ -268,6 +268,8 @@ for epoch in range(10):
     losses.append(total_loss)
 print(losses)  # The loss decreased every iteration over the training data!
 
+# To get the embedding of a particular word, e.g. "beauty"
+print(model.embeddings.weight[word_to_ix["beauty"]])
 
 ######################################################################
 # Exercise: Computing Word Embeddings: Continuous Bag-of-Words
@@ -277,7 +279,7 @@ print(losses)  # The loss decreased every iteration over the training data!
 # learning. It is a model that tries to predict words given the context of
 # a few words before and a few words after the target word. This is
 # distinct from language modeling, since CBOW is not sequential and does
-# not have to be probabilistic. Typcially, CBOW is used to quickly train
+# not have to be probabilistic. Typically, CBOW is used to quickly train
 # word embeddings, and these embeddings are used to initialize the
 # embeddings of some more complicated model. Usually, this is referred to
 # as *pretraining embeddings*. It almost always helps performance a couple
