@@ -90,7 +90,7 @@ The parameter server just initializes the RPC framework and waits for RPCs from
 the trainers and master.
 
 
-.. literalinclude:: ../advanced_source/rpc_ddp_tutorial/main.py
+.. literalinclude:: ../advanced_source/rpc_ddp/main.py
   :language: py
   :start-after: BEGIN run_worker
   :end-before: END run_worker
@@ -107,7 +107,7 @@ embedding lookup on the parameter server using RemoteModule's ``forward``
 and passes its output onto the FC layer.
 
 
-.. literalinclude:: ../advanced_source/rpc_ddp_tutorial/main.py
+.. literalinclude:: ../advanced_source/rpc_ddp/main.py
   :language: py
   :start-after: BEGIN hybrid_model
   :end-before: END hybrid_model
@@ -134,7 +134,7 @@ which is not supported by ``RemoteModule``.
 Finally, we create our DistributedOptimizer using all the RRefs and define a
 CrossEntropyLoss function.
 
-.. literalinclude:: ../advanced_source/rpc_ddp_tutorial/main.py
+.. literalinclude:: ../advanced_source/rpc_ddp/main.py
   :language: py
   :start-after: BEGIN setup_trainer
   :end-before: END setup_trainer
@@ -151,10 +151,11 @@ batch:
 4) Use Distributed Autograd to execute a distributed backward pass using the loss.
 5) Finally, run a Distributed Optimizer step to optimize all the parameters.
 
-.. literalinclude:: ../advanced_source/rpc_ddp_tutorial/main.py
+.. literalinclude:: ../advanced_source/rpc_ddp/main.py
   :language: py
   :start-after: BEGIN run_trainer
   :end-before: END run_trainer
 .. code:: python
 
 Source code for the entire example can be found `here <https://github.com/pytorch/examples/tree/master/distributed/rpc/ddp_rpc>`__.
+
