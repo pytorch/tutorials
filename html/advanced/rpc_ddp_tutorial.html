@@ -526,34 +526,35 @@ the trainers and master.</p>
 <span class="sd">    A wrapper function that initializes RPC, calls the function, and shuts down</span>
 <span class="sd">    RPC.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_ADDR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;29500&#39;</span>
 
-
+    <span class="c1"># We need to use different port numbers in TCP init_method for init_rpc and</span>
+    <span class="c1"># init_process_group to avoid port conflicts.</span>
     <span class="n">rpc_backend_options</span> <span class="o">=</span> <span class="n">TensorPipeRpcBackendOptions</span><span class="p">()</span>
-    <span class="n">rpc_backend_options</span><span class="o">.</span><span class="n">init_method</span><span class="o">=</span><span class="s1">&#39;tcp://localhost:29501&#39;</span>
+    <span class="n">rpc_backend_options</span><span class="o">.</span><span class="n">init_method</span> <span class="o">=</span> <span class="s2">&quot;tcp://localhost:29501&quot;</span>
 
     <span class="c1"># Rank 2 is master, 3 is ps and 0 and 1 are trainers.</span>
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
-                <span class="s2">&quot;master&quot;</span><span class="p">,</span>
-                <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-                <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
-                <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">)</span>
+            <span class="s2">&quot;master&quot;</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
+            <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">,</span>
+        <span class="p">)</span>
 
-        <span class="c1"># Build the embedding table on the ps.</span>
-        <span class="n">emb_rref</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span>
-                <span class="s2">&quot;ps&quot;</span><span class="p">,</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span><span class="p">,</span>
-                <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">NUM_EMBEDDINGS</span><span class="p">,</span> <span class="n">EMBEDDING_DIM</span><span class="p">),</span>
-                <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;sum&quot;</span><span class="p">})</span>
+        <span class="n">remote_emb_module</span> <span class="o">=</span> <span class="n">RemoteModule</span><span class="p">(</span>
+            <span class="s2">&quot;ps&quot;</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">EmbeddingBag</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">NUM_EMBEDDINGS</span><span class="p">,</span> <span class="n">EMBEDDING_DIM</span><span class="p">),</span>
+            <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mode&quot;</span><span class="p">:</span> <span class="s2">&quot;sum&quot;</span><span class="p">},</span>
+        <span class="p">)</span>
 
         <span class="c1"># Run the training loop on trainers.</span>
         <span class="n">futs</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">trainer_rank</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
             <span class="n">trainer_name</span> <span class="o">=</span> <span class="s2">&quot;trainer</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">trainer_rank</span><span class="p">)</span>
             <span class="n">fut</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_async</span><span class="p">(</span>
-                    <span class="n">trainer_name</span><span class="p">,</span> <span class="n">_run_trainer</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">emb_rref</span><span class="p">,</span> <span class="n">rank</span><span class="p">))</span>
+                <span class="n">trainer_name</span><span class="p">,</span> <span class="n">_run_trainer</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">remote_emb_module</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+            <span class="p">)</span>
             <span class="n">futs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fut</span><span class="p">)</span>
 
         <span class="c1"># Wait for all training to finish.</span>
@@ -562,23 +563,26 @@ the trainers and master.</p>
     <span class="k">elif</span> <span class="n">rank</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
         <span class="c1"># Initialize process group for Distributed DataParallel on trainers.</span>
         <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span>
-                <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;gloo&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;gloo&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">init_method</span><span class="o">=</span><span class="s2">&quot;tcp://localhost:29500&quot;</span>
+        <span class="p">)</span>
 
         <span class="c1"># Initialize RPC.</span>
         <span class="n">trainer_name</span> <span class="o">=</span> <span class="s2">&quot;trainer</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
         <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
-                <span class="n">trainer_name</span><span class="p">,</span>
-                <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-                <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
-                <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">)</span>
+            <span class="n">trainer_name</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
+            <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># Trainer just waits for RPCs from master.</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">rpc</span><span class="o">.</span><span class="n">init_rpc</span><span class="p">(</span>
-                <span class="s2">&quot;ps&quot;</span><span class="p">,</span>
-                <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
-                <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
-                <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">)</span>
+            <span class="s2">&quot;ps&quot;</span><span class="p">,</span>
+            <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span>
+            <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
+            <span class="n">rpc_backend_options</span><span class="o">=</span><span class="n">rpc_backend_options</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="c1"># parameter server do nothing</span>
         <span class="k">pass</span>
 
@@ -586,10 +590,10 @@ the trainers and master.</p>
     <span class="n">rpc</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
 
 
-<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="c1"># 2 trainers, 1 parameter server, 1 master.</span>
     <span class="n">world_size</span> <span class="o">=</span> <span class="mi">4</span>
-    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">run_worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,</span> <span class="p">),</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">run_worker</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,),</span> <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Before we discuss details of the Trainer, let’s introduce the <code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> that
@@ -604,23 +608,20 @@ embedding lookup on the parameter server using an
 and passes its output onto the FC layer.</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HybridModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The model consists of a sparse part and a dense part. The dense part is an</span>
-<span class="sd">    nn.Linear module that is replicated across all trainers using</span>
-<span class="sd">    DistributedDataParallel. The sparse part is an nn.EmbeddingBag that is</span>
-<span class="sd">    stored on the parameter server.</span>
-
-<span class="sd">    The model holds a Remote Reference to the embedding table on the parameter</span>
-<span class="sd">    server.</span>
+<span class="sd">    The model consists of a sparse part and a dense part.</span>
+<span class="sd">    1) The dense part is an nn.Linear module that is replicated across all trainers using DistributedDataParallel.</span>
+<span class="sd">    2) The sparse part is a Remote Module that holds an nn.EmbeddingBag on the parameter server.</span>
+<span class="sd">    This remote model can get a Remote Reference to the embedding table on the parameter server.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emb_rref</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">remote_emb_module</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">HybridModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">emb_rref</span> <span class="o">=</span> <span class="n">emb_rref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_emb_module</span> <span class="o">=</span> <span class="n">remote_emb_module</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">device</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">):</span>
-        <span class="n">emb_lookup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">emb_rref</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+        <span class="n">emb_lookup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_emb_module</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc</span><span class="p">(</span><span class="n">emb_lookup</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -641,14 +642,7 @@ each parameter and appending it to a list. Note that <code class="docutils liter
 returns local parameters and doesn’t include <code class="docutils literal notranslate"><span class="pre">emb_rref</span></code>.</p>
 <p>Finally, we create our DistributedOptimizer using all the RRefs and define a
 CrossEntropyLoss function.</p>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_retrieve_embedding_parameters</span><span class="p">(</span><span class="n">emb_rref</span><span class="p">):</span>
-    <span class="n">param_rrefs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">emb_rref</span><span class="o">.</span><span class="n">local_value</span><span class="p">()</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
-        <span class="n">param_rrefs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RRef</span><span class="p">(</span><span class="n">param</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">param_rrefs</span>
-
-
-<span class="k">def</span> <span class="nf">_run_trainer</span><span class="p">(</span><span class="n">emb_rref</span><span class="p">,</span> <span class="n">rank</span><span class="p">):</span>
+<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_run_trainer</span><span class="p">(</span><span class="n">remote_emb_module</span><span class="p">,</span> <span class="n">rank</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Each trainer runs a forward pass which involves an embedding lookup on the</span>
 <span class="sd">    parameter server and running nn.Linear locally. During the backward pass,</span>
@@ -658,16 +652,18 @@ CrossEntropyLoss function.</p>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Setup the model.</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">HybridModel</span><span class="p">(</span><span class="n">emb_rref</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">HybridModel</span><span class="p">(</span><span class="n">remote_emb_module</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
 
     <span class="c1"># Retrieve all model parameters as rrefs for DistributedOptimizer.</span>
 
     <span class="c1"># Retrieve parameters for embedding table.</span>
-    <span class="n">model_parameter_rrefs</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">rpc_sync</span><span class="p">(</span>
-            <span class="s2">&quot;ps&quot;</span><span class="p">,</span> <span class="n">_retrieve_embedding_parameters</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">emb_rref</span><span class="p">,))</span>
+    <span class="n">model_parameter_rrefs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">remote_emb_module</span><span class="o">.</span><span class="n">remote_parameters</span><span class="p">()</span>
 
-    <span class="c1"># model.parameters() only includes local parameters.</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="c1"># model.fc.parameters() only includes local parameters.</span>
+    <span class="c1"># NOTE: Cannot call model.parameters() here,</span>
+    <span class="c1"># because this will call remote_emb_module.parameters(),</span>
+    <span class="c1"># which supports remote_parameters() but not parameters().</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
         <span class="n">model_parameter_rrefs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">RRef</span><span class="p">(</span><span class="n">param</span><span class="p">))</span>
 
     <span class="c1"># Setup distributed optimizer</span>
