@@ -438,7 +438,7 @@
               
   <div class="section" id="combining-distributed-dataparallel-with-distributed-rpc-framework">
 <h1>Combining Distributed DataParallel with Distributed RPC Framework<a class="headerlink" href="#combining-distributed-dataparallel-with-distributed-rpc-framework" title="Permalink to this headline">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/pritamdamania87">Pritam Damania</a></p>
+<p><strong>Authors</strong>: <a class="reference external" href="https://github.com/pritamdamania87">Pritam Damania</a> and <a class="reference external" href="https://github.com/SciPioneer">Yi Wang</a></p>
 <p>This tutorial uses a simple example to demonstrate how you can combine
 <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel">DistributedDataParallel</a> (DDP)
 with the <a class="reference external" href="https://pytorch.org/docs/master/rpc.html">Distributed RPC framework</a>
@@ -482,12 +482,12 @@ pass and optimizer step.</li>
 </div>
 <p>The entire training process is executed as follows:</p>
 <ol class="arabic simple">
-<li>The master creates an embedding table on the Parameter Server and holds an
-<a class="reference external" href="https://pytorch.org/docs/master/rpc.html#rref">RRef</a> to it.</li>
+<li>The master creates a <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#remotemodule">RemoteModule</a>
+that holds an embedding table on the Parameter Server.</li>
 <li>The master, then kicks off the training loop on the trainers and passes the
-embedding table RRef to the trainers.</li>
+remote module to the trainers.</li>
 <li>The trainers create a <code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> which first performs an embedding lookup
-using the embedding table RRef provided by the master and then executes the
+using the remote module provided by the master and then executes the
 FC layer which is wrapped inside DDP.</li>
 <li>The trainer executes the forward pass of the model and uses the loss to
 execute the backward pass using <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework">Distributed Autograd</a>.</li>
@@ -507,9 +507,9 @@ workers before we can perform any training. We create 4 processes such that
 ranks 0 and 1 are our trainers, rank 2 is the master and rank 3 is the
 parameter server.</p>
 <p>We initialize the RPC framework on all 4 workers using the TCP init_method.
-Once RPC initialization is done, the master creates an <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.EmbeddingBag.html">EmbeddingBag</a>
-on the Parameter Server using <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.remote">rpc.remote</a>.
-The master then loops through each trainer and kicks of the training loop by
+Once RPC initialization is done, the master creates a remote module that holds an <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.EmbeddingBag.html">EmbeddingBag</a>
+layer on the Parameter Server using <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.nn.api.remote_module.RemoteModule">RemoteModule</a>.
+The master then loops through each trainer and kicks off the training loop by
 calling <code class="docutils literal notranslate"><span class="pre">_run_trainer</span></code> on each trainer using <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.rpc_async">rpc_async</a>.
 Finally, the master waits for all training to finish before exiting.</p>
 <p>The trainers first initialize a <code class="docutils literal notranslate"><span class="pre">ProcessGroup</span></code> for DDP with world_size=2
@@ -597,14 +597,13 @@ the trainers and master.</p>
 </pre></div>
 </div>
 <p>Before we discuss details of the Trainer, let’s introduce the <code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> that
-the trainer uses. As described below, the <code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> is initialized using an
-RRef to the embedding table (emb_rref) on the parameter server and the <code class="docutils literal notranslate"><span class="pre">device</span></code>
+the trainer uses. As described below, the <code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> is initialized using a
+remote module that holds an embedding table (<code class="docutils literal notranslate"><span class="pre">remote_emb_module</span></code>) on the parameter server and the <code class="docutils literal notranslate"><span class="pre">device</span></code>
 to use for DDP. The initialization of the model wraps an
 <a class="reference external" href="https://pytorch.org/docs/master/generated/torch.nn.Linear.html">nn.Linear</a>
 layer inside DDP to replicate and synchronize this layer across all trainers.</p>
 <p>The forward method of the model is pretty straightforward. It performs an
-embedding lookup on the parameter server using an
-<a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.RRef.rpc_sync">RRef helper</a>
+embedding lookup on the parameter server using RemoteModule’s <code class="docutils literal notranslate"><span class="pre">forward</span></code>
 and passes its output onto the FC layer.</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">HybridModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -626,20 +625,22 @@ and passes its output onto the FC layer.</p>
 </pre></div>
 </div>
 <p>Next, let’s look at the setup on the Trainer. The trainer first creates the
-<code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> described above using an RRef to the embedding table on the
+<code class="docutils literal notranslate"><span class="pre">HybridModel</span></code> described above using a remote module that holds the embedding table on the
 parameter server and its own rank.</p>
 <p>Now, we need to retrieve a list of RRefs to all the parameters that we would
 like to optimize with <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim">DistributedOptimizer</a>.
 To retrieve the parameters for the embedding table from the parameter server,
-we define a simple helper function <code class="docutils literal notranslate"><span class="pre">_retrieve_embedding_parameters</span></code>, which
-basically walks through all the parameters for the embedding table and returns
+we can call RemoteModule’s <a class="reference external" href="https://pytorch.org/docs/master/rpc.html#torch.distributed.nn.api.remote_module.RemoteModule.remote_parameters">remote_parameters</a>,
+which basically walks through all the parameters for the embedding table and returns
 a list of RRefs. The trainer calls this method on the parameter server via RPC
 to receive a list of RRefs to the desired parameters. Since the
 DistributedOptimizer always takes a list of RRefs to parameters that need to
 be optimized, we need to create RRefs even for the local parameters for our
-FC layers. This is done by walking <code class="docutils literal notranslate"><span class="pre">model.parameters()</span></code>, creating an RRef for
-each parameter and appending it to a list. Note that <code class="docutils literal notranslate"><span class="pre">model.parameters()</span></code> only
-returns local parameters and doesn’t include <code class="docutils literal notranslate"><span class="pre">emb_rref</span></code>.</p>
+FC layers. This is done by walking <code class="docutils literal notranslate"><span class="pre">model.fc.parameters()</span></code>, creating an RRef for
+each parameter and appending it to the list returned from <code class="docutils literal notranslate"><span class="pre">remote_parameters()</span></code>.
+Note that we cannnot use <code class="docutils literal notranslate"><span class="pre">model.parameters()</span></code>,
+because it will recursively call <code class="docutils literal notranslate"><span class="pre">model.remote_emb_module.parameters()</span></code>,
+which is not supported by <code class="docutils literal notranslate"><span class="pre">RemoteModule</span></code>.</p>
 <p>Finally, we create our DistributedOptimizer using all the RRefs and define a
 CrossEntropyLoss function.</p>
 <div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_run_trainer</span><span class="p">(</span><span class="n">remote_emb_module</span><span class="p">,</span> <span class="n">rank</span><span class="p">):</span>
