@@ -76,11 +76,11 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
-   :header: Visualizing Models, Data, and Training with Tensorboard
+   :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
-   :tags: Interpretability,Getting-Started,Tensorboard
+   :tags: Interpretability,Getting-Started,TensorBoard
 
 .. Image/Video
 
@@ -323,7 +323,7 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
    :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling,Tensorboard
+   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
 
 .. customcarditem::
    :header: Hyperparameter Tuning Tutorial
