@@ -34,7 +34,7 @@ Datasets & Dataloaders
 # Loading a Dataset
 # -------------------
 #
-# Here is an example of how to load the `Fashion-MNIST <https://research.zalando.com/welcome/mission/research-projects/fashion-mnist/>`_ dataset from TorchVision.
+# Here is an example of how to load the `Fashion-MNIST <https://research.zalando.com/project/fashion_mnist/fashion_mnist/>`_ dataset from TorchVision.
 # Fashion-MNIST is a dataset of Zalando’s article images consisting of of 60,000 training examples and 10,000 test examples.
 # Each example comprises a 28×28 grayscale image and an associated label from one of 10 classes.
 #
