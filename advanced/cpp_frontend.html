@@ -19,6 +19,14 @@
 <link href="torch-script-parallelism.html" rel="next" title="Dynamic Parallelism in TorchScript"/>
 <link href="../intermediate/memory_format_tutorial.html" rel="prev" title="(beta) Channels Last Memory Format in PyTorch"/>
 <!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
 <!-- End Google Analytics -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -126,7 +134,7 @@
 </div>
 </li>
 <li>
-<a href="https://github.com/pytorch/pytorch">Github</a>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
 </li>
 </ul>
 </div>
@@ -247,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -298,10 +307,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">advanced/cpp_frontend</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -631,7 +640,7 @@ to register a module like <code class="docutils literal notranslate"><span class
     <span class="n">another_bias</span> <span class="o">=</span> <span class="n">register_parameter</span><span class="p">(</span><span class="s">"b"</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">randn</span><span class="p">(</span><span class="n">M</span><span class="p">));</span>
   <span class="p">}</span>
   <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">forward</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">input</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nf">linear</span><span class="p">(</span><span class="n">input</span><span class="p">)</span> <span class="o">+</span> <span class="n">another_bias</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">linear</span><span class="p">(</span><span class="n">input</span><span class="p">)</span> <span class="o">+</span> <span class="n">another_bias</span><span class="p">;</span>
   <span class="p">}</span>
   <span class="n">torch</span><span class="o">::</span><span class="n">nn</span><span class="o">::</span><span class="n">Linear</span> <span class="n">linear</span><span class="p">;</span>
   <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">another_bias</span><span class="p">;</span>
@@ -1026,7 +1035,7 @@ Like in Python, PyTorch here provides two APIs for model definition: a functiona
 where inputs are passed through successive functions (e.g. the generator module example),
 and a more object-oriented one where we build a <cite>Sequential</cite> module containing the
 entire model as submodules. Using <cite>Sequential</cite>, the discriminator would look like:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">::</span><span class="n">Sequential</span> <span class="n">discriminator</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">nn</span><span class="o">::</span><span class="n">Sequential</span> <span class="nf">discriminator</span><span class="p">(</span>
   <span class="c1">// Layer 1</span>
   <span class="n">nn</span><span class="o">::</span><span class="n">Conv2d</span><span class="p">(</span>
       <span class="n">nn</span><span class="o">::</span><span class="n">Conv2dOptions</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">4</span><span class="p">).</span><span class="n">stride</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">padding</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">bias</span><span class="p">(</span><span class="nb">false</span><span class="p">)),</span>
@@ -1160,9 +1169,9 @@ Batch size: <span class="m">64</span> <span class="p">|</span> Labels: <span cla
 dance between the generator and discriminator. First, we’ll create two
 optimizers, one for the generator and one for the discriminator. The optimizers
 we use implement the <a class="reference external" href="https://arxiv.org/pdf/1412.6980.pdf">Adam</a> algorithm:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="n">generator_optimizer</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="nf">generator_optimizer</span><span class="p">(</span>
     <span class="n">generator</span><span class="o">-&gt;</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">AdamOptions</span><span class="p">(</span><span class="mf">2e-4</span><span class="p">).</span><span class="n">beta1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="n">discriminator_optimizer</span><span class="p">(</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="nf">discriminator_optimizer</span><span class="p">(</span>
     <span class="n">discriminator</span><span class="o">-&gt;</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">AdamOptions</span><span class="p">(</span><span class="mf">5e-4</span><span class="p">).</span><span class="n">beta1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
 </pre></div>
 </div>
@@ -1283,7 +1292,7 @@ at the top level of our training script, and then pass that device to tensor
 factory functions like <code class="docutils literal notranslate"><span class="pre">torch::zeros</span></code> as well as the <code class="docutils literal notranslate"><span class="pre">to()</span></code> method. We can
 start by doing this with a CPU device:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Place this somewhere at the top of your training script.</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">Device</span> <span class="n">device</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">kCPU</span><span class="p">);</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Device</span> <span class="nf">device</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">kCPU</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>New tensor allocations like</p>
@@ -1333,7 +1342,7 @@ dynamically, which is often useful to make our training scripts more portable:</
 </pre></div>
 </div>
 <p>or even</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Device</span> <span class="n">device</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">cuda</span><span class="o">::</span><span class="n">is_available</span><span class="p">()</span> <span class="o">?</span> <span class="n">torch</span><span class="o">::</span><span class="nl">kCUDA</span> <span class="p">:</span> <span class="n">torch</span><span class="o">::</span><span class="n">kCPU</span><span class="p">);</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Device</span> <span class="nf">device</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">cuda</span><span class="o">::</span><span class="n">is_available</span><span class="p">()</span> <span class="o">?</span> <span class="n">torch</span><span class="o">::</span><span class="nl">kCUDA</span> <span class="p">:</span> <span class="n">torch</span><span class="o">::</span><span class="n">kCPU</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -1369,9 +1378,9 @@ checkpoint every <code class="docutils literal notranslate"><span class="pre">10
 every time we make a checkpoint.</p>
 <p>To restore the training state, you can add lines like these after all models and
 optimizers are created, but before the training loop:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="n">generator_optimizer</span><span class="p">(</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="nf">generator_optimizer</span><span class="p">(</span>
     <span class="n">generator</span><span class="o">-&gt;</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">AdamOptions</span><span class="p">(</span><span class="mf">2e-4</span><span class="p">).</span><span class="n">beta1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
-<span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="n">discriminator_optimizer</span><span class="p">(</span>
+<span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">Adam</span> <span class="nf">discriminator_optimizer</span><span class="p">(</span>
     <span class="n">discriminator</span><span class="o">-&gt;</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">torch</span><span class="o">::</span><span class="n">optim</span><span class="o">::</span><span class="n">AdamOptions</span><span class="p">(</span><span class="mf">2e-4</span><span class="p">).</span><span class="n">beta1</span><span class="p">(</span><span class="mf">0.5</span><span class="p">));</span>
 
 <span class="k">if</span> <span class="p">(</span><span class="n">kRestoreFromCheckpoint</span><span class="p">)</span> <span class="p">{</span>
@@ -1499,17 +1508,17 @@ repository</a>.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
-        © Copyright 2017, PyTorch.
+        © Copyright 2021, PyTorch.
 
     </p>
 </div>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">
@@ -1567,17 +1576,6 @@ repository</a>.</p>
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-
-  window.dataLayer = window.dataLayer || [];
-
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('js', new Date());
-  gtag('config', 'UA-117752657-2');
-
-</script>
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -1597,13 +1595,6 @@ repository</a>.</p>
       tutorialLink: window.location.href,
       downloadTitle: $(this).attr("data-response")
     });
-    ga('send', {
-      hitType: 'event',
-      eventCategory: $(this).attr("data-response"),
-      eventAction: 'click',
-      eventLabel: window.location.href
-    });
-
     gtag('event', 'click', {
       'event_category': $(this).attr("data-response"),
       'event_label': $("h1").first().text(),
@@ -1632,12 +1623,12 @@ repository</a>.</p>
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -1722,8 +1713,8 @@ repository</a>.</p>
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -1829,5 +1820,5 @@ repository</a>.</p>
       });
     })
   </script>
-</body>
+</img></body>
 </html>

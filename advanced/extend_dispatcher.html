@@ -19,6 +19,14 @@
 <link href="../beginner/profiler.html" rel="next" title="Profiling your PyTorch Module"/>
 <link href="dispatcher.html" rel="prev" title="Registering a Dispatched Operator in C++"/>
 <!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
 <!-- End Google Analytics -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -126,7 +134,7 @@
 </div>
 </li>
 <li>
-<a href="https://github.com/pytorch/pytorch">Github</a>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
 </li>
 </ul>
 </div>
@@ -247,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -298,10 +307,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">advanced/extend_dispatcher</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -363,6 +372,16 @@ input tensors and calls the right kernel accordingly.  PyTorch provides three re
 </ul>
 <p>You can choose any of keys above to prototype your customized backend.
 To create a Tensor on <code class="docutils literal notranslate"><span class="pre">PrivateUse1</span></code> backend, you need to set dispatch key in <code class="docutils literal notranslate"><span class="pre">TensorImpl</span></code> constructor.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Example TensorImpl constructor */</span>
+<span class="n">TensorImpl</span><span class="p">(</span>
+    <span class="n">Storage</span><span class="o">&amp;&amp;</span> <span class="n">storage</span><span class="p">,</span>
+    <span class="n">DispatchKeySet</span> <span class="n">ks</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">caffe2</span><span class="o">::</span><span class="n">TypeMeta</span> <span class="n">data_type</span><span class="p">);</span>
+
+<span class="c1">// To create a TensorImpl on PrivateUse1 backend, pass in the following ks to TensorImpl creation.</span>
+<span class="n">DispatchKeySet</span> <span class="n">ks</span> <span class="o">=</span> <span class="n">c10</span><span class="o">::</span><span class="n">DispatchKeySet</span><span class="p">{</span><span class="n">c10</span><span class="o">::</span><span class="n">DispatchKey</span><span class="o">::</span><span class="n">PrivateUse1</span><span class="p">,</span> <span class="n">c10</span><span class="o">::</span><span class="n">DispatchKey</span><span class="o">::</span><span class="n">AutogradPrivateUse1</span><span class="p">};</span>
+</pre></div>
+</div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">TensorImpl</span></code> class above assumes your Tensor is backed by a storage like CPU/CUDA. We also
 provide <code class="docutils literal notranslate"><span class="pre">OpaqueTensorImpl</span></code> for backends without a storage. And you might need to tweak/override certain
 methods to fit your customized hardware.
@@ -489,7 +508,7 @@ you’re using PrivateUse1 for your backend):</p>
   <span class="k">public</span><span class="o">:</span>
   <span class="k">static</span> <span class="n">Tensor</span> <span class="n">forward</span><span class="p">(</span><span class="n">AutogradContext</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">self</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">at</span><span class="o">::</span><span class="n">AutoNonVariableTypeMode</span> <span class="n">g</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nf">myadd</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">myadd</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">other</span><span class="p">);</span>
   <span class="p">}</span>
 
   <span class="k">static</span> <span class="n">tensor_list</span> <span class="n">backward</span><span class="p">(</span><span class="n">AutogradContext</span> <span class="o">*</span><span class="n">ctx</span><span class="p">,</span> <span class="n">tensor_list</span> <span class="n">grad_outputs</span><span class="p">)</span> <span class="p">{</span>
@@ -658,17 +677,17 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
-        © Copyright 2017, PyTorch.
+        © Copyright 2021, PyTorch.
 
     </p>
 </div>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">
@@ -715,17 +734,6 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-
-  window.dataLayer = window.dataLayer || [];
-
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('js', new Date());
-  gtag('config', 'UA-117752657-2');
-
-</script>
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -745,13 +753,6 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
       tutorialLink: window.location.href,
       downloadTitle: $(this).attr("data-response")
     });
-    ga('send', {
-      hitType: 'event',
-      eventCategory: $(this).attr("data-response"),
-      eventAction: 'click',
-      eventLabel: window.location.href
-    });
-
     gtag('event', 'click', {
       'event_category': $(this).attr("data-response"),
       'event_label': $("h1").first().text(),
@@ -780,12 +781,12 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -870,8 +871,8 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -977,5 +978,5 @@ kernels for PyTorch operators in C++), please reach out to us through Github or 
       });
     })
   </script>
-</body>
+</img></body>
 </html>

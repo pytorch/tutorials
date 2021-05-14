@@ -19,6 +19,14 @@
 <link href="torch_script_custom_classes.html" rel="next" title="Extending TorchScript with Custom C++ Classes"/>
 <link href="cpp_extension.html" rel="prev" title="Custom C++ and CUDA Extensions"/>
 <!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
 <!-- End Google Analytics -->
 <script src="../_static/js/modernizr.min.js"></script>
 <!-- Preload the theme fonts -->
@@ -126,7 +134,7 @@
 </div>
 </li>
 <li>
-<a href="https://github.com/pytorch/pytorch">Github</a>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
 </li>
 </ul>
 </div>
@@ -247,6 +255,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -298,10 +307,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">advanced/torch_script_custom_ops</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -348,7 +357,7 @@ function, which applies a perspective transformation to an image, from OpenCV to
 TorchScript as a custom operator. The first step is to write the implementation
 of our custom operator in C++. Let’s call the file for this implementation
 <code class="docutils literal notranslate"><span class="pre">op.cpp</span></code> and make it look like this:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">warp</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="nf">warp_perspective</span><span class="p">(</span><span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">image</span><span class="p">,</span> <span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span> <span class="n">warp</span><span class="p">)</span> <span class="p">{</span>
   <span class="c1">// BEGIN image_mat</span>
   <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="n">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
                     <span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
@@ -405,7 +414,7 @@ can be used as arguments to your custom operator. Currently these types are:
 tensors to OpenCV matrices, as OpenCV’s <code class="docutils literal notranslate"><span class="pre">warpPerspective</span></code> expects <code class="docutils literal notranslate"><span class="pre">cv::Mat</span></code>
 objects as inputs. Fortunately, there is a way to do this <strong>without copying
 any</strong> data. In the first few lines,</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>  <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="n">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>  <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="nf">image_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
                     <span class="cm">/*cols=*/</span><span class="n">image</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
                     <span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
                     <span class="cm">/*data=*/</span><span class="n">image</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
@@ -423,7 +432,7 @@ the original <code class="docutils literal notranslate"><span class="pre">image<
 subsequent OpenCV routines with the library’s native matrix type, even though
 we’re actually storing the data in a PyTorch tensor. We repeat this procedure to
 convert the <code class="docutils literal notranslate"><span class="pre">warp</span></code> PyTorch tensor to the <code class="docutils literal notranslate"><span class="pre">warp_mat</span></code> OpenCV matrix:</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>  <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="n">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span>  <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="nf">warp_mat</span><span class="p">(</span><span class="cm">/*rows=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
                    <span class="cm">/*cols=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
                    <span class="cm">/*type=*/</span><span class="n">CV_32FC1</span><span class="p">,</span>
                    <span class="cm">/*data=*/</span><span class="n">warp</span><span class="p">.</span><span class="n">data_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">());</span>
@@ -693,7 +702,7 @@ our PyTorch trace as if it were <code class="docutils literal notranslate"><span
 </pre></div>
 </div>
 <p>Producing:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="o">.</span><span class="mi">1</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">graph</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="mf">.1</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
       <span class="o">%</span><span class="n">y</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">),</span>
       <span class="o">%</span><span class="n">z</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)):</span>
   <span class="o">%</span><span class="mi">3</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">3</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
@@ -702,7 +711,7 @@ our PyTorch trace as if it were <code class="docutils literal notranslate"><span
   <span class="o">%</span><span class="mi">6</span> <span class="p">:</span> <span class="n">Device</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="s2">"cpu"</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
   <span class="o">%</span><span class="mi">7</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">]()</span> <span class="c1"># test.py:25:0</span>
   <span class="o">%</span><span class="mi">8</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">eye</span><span class="p">(</span><span class="o">%</span><span class="mi">3</span><span class="p">,</span> <span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="o">%</span><span class="mi">5</span><span class="p">,</span> <span class="o">%</span><span class="mi">6</span><span class="p">,</span> <span class="o">%</span><span class="mi">7</span><span class="p">)</span> <span class="c1"># test.py:25:0</span>
-  <span class="o">%</span><span class="n">x</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">my_ops</span><span class="p">::</span><span class="n">warp_perspective</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="o">%</span><span class="mi">8</span><span class="p">)</span> <span class="c1"># test.py:25:0</span>
+  <span class="o">%</span><span class="n">x</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">my_ops</span><span class="p">::</span><span class="n">warp_perspective</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="mf">.1</span><span class="p">,</span> <span class="o">%</span><span class="mi">8</span><span class="p">)</span> <span class="c1"># test.py:25:0</span>
   <span class="o">%</span><span class="mi">10</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">matmul</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="p">,</span> <span class="o">%</span><span class="n">y</span><span class="p">)</span> <span class="c1"># test.py:26:0</span>
   <span class="o">%</span><span class="mi">11</span> <span class="p">:</span> <span class="n">Float</span><span class="p">(</span><span class="mi">8</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">aten</span><span class="p">::</span><span class="n">relu</span><span class="p">(</span><span class="o">%</span><span class="n">z</span><span class="p">)</span> <span class="c1"># test.py:26:0</span>
   <span class="o">%</span><span class="mi">12</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">prim</span><span class="p">::</span><span class="n">Constant</span><span class="p">[</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">]()</span> <span class="c1"># test.py:26:0</span>
@@ -898,7 +907,48 @@ custom operator, that loads and executes a serialized TorchScript model:</p>
 </pre></div>
 </div>
 <p>At this point, we should be able to build the application:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ mkdir build
+$ <span class="nb">cd</span> build
+$ cmake -DCMAKE_PREFIX_PATH<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>python -c <span class="s1">'import torch.utils; print(torch.utils.cmake_prefix_path)'</span><span class="k">)</span><span class="s2">"</span> ..
+-- The C compiler identification is GNU <span class="m">5</span>.4.0
+-- The CXX compiler identification is GNU <span class="m">5</span>.4.0
+-- Check <span class="k">for</span> working C compiler: /usr/bin/cc
+-- Check <span class="k">for</span> working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - <span class="k">done</span>
+-- Detecting C compile features
+-- Detecting C compile features - <span class="k">done</span>
+-- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++
+-- Check <span class="k">for</span> working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - <span class="k">done</span>
+-- Detecting CXX compile features
+-- Detecting CXX compile features - <span class="k">done</span>
+-- Looking <span class="k">for</span> pthread.h
+-- Looking <span class="k">for</span> pthread.h - found
+-- Looking <span class="k">for</span> pthread_create
+-- Looking <span class="k">for</span> pthread_create - not found
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
+-- Found Threads: TRUE
+-- Found torch: /libtorch/lib/libtorch.so
+-- Configuring <span class="k">done</span>
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /example_app/build
+$ make -j
+Scanning dependencies of target example_app
+<span class="o">[</span> <span class="m">50</span>%<span class="o">]</span> Building CXX object CMakeFiles/example_app.dir/main.cpp.o
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Linking CXX executable example_app
+<span class="o">[</span><span class="m">100</span>%<span class="o">]</span> Built target example_app
+</pre></div>
+</div>
 <p>And run it without passing a model just yet:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app
+usage: example_app &lt;path-to-exported-script-module&gt;
+</pre></div>
+</div>
 <p>Next, let’s serialize the script function we wrote earlier that uses our custom
 operator:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">load_library</span><span class="p">(</span><span class="s2">"libwarp_perspective.so"</span><span class="p">)</span>
@@ -918,6 +968,13 @@ operator:</p>
 <p>The last line will serialize the script function into a file called
 “example.pt”. If we then pass this serialized model to our C++ application, we
 can run it straight away:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ./example_app example.pt
+terminate called after throwing an instance of <span class="s1">'torch::jit::script::ErrorReport'</span>
+what<span class="o">()</span>:
+Schema not found <span class="k">for</span> node. File a bug report.
+Node: %16 : <span class="nv">Dynamic</span> <span class="o">=</span> my_ops::warp_perspective<span class="o">(</span>%0, %19<span class="o">)</span>
+</pre></div>
+</div>
 <p>Or maybe not. Maybe not just yet. Of course! We haven’t linked the custom
 operator library with our application yet. Let’s do this right now, and to do it
 properly let’s update our file organization slightly, to look like this:</p>
@@ -1255,17 +1312,17 @@ visible to TorchScript:</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
-        © Copyright 2017, PyTorch.
+        © Copyright 2021, PyTorch.
 
     </p>
 </div>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">
@@ -1318,17 +1375,6 @@ visible to TorchScript:</p>
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-<script>
-
-  window.dataLayer = window.dataLayer || [];
-
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('js', new Date());
-  gtag('config', 'UA-117752657-2');
-
-</script>
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -1348,13 +1394,6 @@ visible to TorchScript:</p>
       tutorialLink: window.location.href,
       downloadTitle: $(this).attr("data-response")
     });
-    ga('send', {
-      hitType: 'event',
-      eventCategory: $(this).attr("data-response"),
-      eventAction: 'click',
-      eventLabel: window.location.href
-    });
-
     gtag('event', 'click', {
       'event_category': $(this).attr("data-response"),
       'event_label': $("h1").first().text(),
@@ -1383,12 +1422,12 @@ visible to TorchScript:</p>
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -1473,8 +1512,8 @@ visible to TorchScript:</p>
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -1580,5 +1619,5 @@ visible to TorchScript:</p>
       });
     })
   </script>
-</body>
+</img></body>
 </html>

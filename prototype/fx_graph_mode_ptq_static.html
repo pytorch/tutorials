@@ -36,6 +36,15 @@
     <link rel="search" title="Search" href="../search.html" />
   <!-- Google Analytics -->
   
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+  
   <!-- End Google Analytics -->
   
 
@@ -159,7 +168,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/pytorch/pytorch">Github</a>
+            <a href="https://github.com/pytorch/pytorch">GitHub</a>
           </li>
         </ul>
       </div>
@@ -311,6 +320,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
 <ul>
@@ -434,6 +444,23 @@ although there might some effort required to make the model compatible with FX G
 we’ll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.
 We also have a tutorial for <a class="reference external" href="https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html">FX Graph Mode Post Training Dynamic Quantization</a>.
 tldr; The FX Graph Mode API looks like the following:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.quantization</span> <span class="kn">import</span> <span class="n">get_default_qconfig</span>
+<span class="c1"># Note that this is temporary, we&#39;ll expose these functions to torch.quantization after official releasee</span>
+<span class="kn">from</span> <span class="nn">torch.quantization.quantize_fx</span> <span class="kn">import</span> <span class="n">prepare_fx</span><span class="p">,</span> <span class="n">convert_fx</span>
+<span class="n">float_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="n">qconfig</span> <span class="o">=</span> <span class="n">get_default_qconfig</span><span class="p">(</span><span class="s2">&quot;fbgemm&quot;</span><span class="p">)</span>
+<span class="n">qconfig_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;&quot;</span><span class="p">:</span> <span class="n">qconfig</span><span class="p">}</span>
+<span class="k">def</span> <span class="nf">calibrate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data_loader</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+            <span class="n">model</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">prepared_model</span> <span class="o">=</span> <span class="n">prepare_fx</span><span class="p">(</span><span class="n">float_model</span><span class="p">,</span> <span class="n">qconfig_dict</span><span class="p">)</span>  <span class="c1"># fuse modules and insert observers</span>
+<span class="n">calibrate</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">,</span> <span class="n">data_loader_test</span><span class="p">)</span>  <span class="c1"># run calibration on sample data</span>
+<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">convert_fx</span><span class="p">(</span><span class="n">prepared_model</span><span class="p">)</span>  <span class="c1"># convert the calibrated model to a quantized model</span>
+</pre></div>
+</div>
 <div class="section" id="motivation-of-fx-graph-mode-quantization">
 <h2>1. Motivation of FX Graph Mode Quantization<a class="headerlink" href="#motivation-of-fx-graph-mode-quantization" title="Permalink to this headline">¶</a></h2>
 <p>Currently PyTorch only has eager mode quantization: <a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">Static Quantization with Eager Mode in PyTorch</a>.</p>
@@ -842,7 +869,7 @@ depending on model, device, build, input batch sizes, threading etc.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, PyTorch.
+        &copy; Copyright 2021, PyTorch.
 
     </p>
   </div>
@@ -912,19 +939,6 @@ depending on model, device, build, input batch sizes, threading etc.</p>
       });
   </script>
  
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
-
-<script>
-
-  window.dataLayer = window.dataLayer || [];
-
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('js', new Date());
-  gtag('config', 'UA-117752657-2');
-
-</script>
-
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -944,13 +958,6 @@ depending on model, device, build, input batch sizes, threading etc.</p>
       tutorialLink: window.location.href,
       downloadTitle: $(this).attr("data-response")
     });
-    ga('send', {
-      hitType: 'event',
-      eventCategory: $(this).attr("data-response"),
-      eventAction: 'click',
-      eventLabel: window.location.href
-    });
-
     gtag('event', 'click', {
       'event_category': $(this).attr("data-response"),
       'event_label': $("h1").first().text(),
