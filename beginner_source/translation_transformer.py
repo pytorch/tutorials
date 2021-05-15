@@ -246,9 +246,11 @@ def sequential_transforms(*transforms):
         return txt_input
     return func
 
-# helper function to create input sequence indices
+# helper function to add BOS/EOS and create tensor for input sequence indices
 def tensor_transform(token_ids: List[int]):
-    return torch.cat((torch.tensor([BOS_IDX]), torch.tensor(token_ids), torch.tensor([EOS_IDX])))
+    return torch.cat((torch.tensor([BOS_IDX]), 
+                      torch.tensor(token_ids), 
+                      torch.tensor([EOS_IDX])))
 
 # src and tgt sentence transforms to convert raw sentence into sequence indices
 src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], #Tokenization
