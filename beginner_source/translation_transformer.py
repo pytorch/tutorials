@@ -63,7 +63,7 @@ for symbol, index in special_symbols.items():
     vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
     vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
 
-# Set default index when OOV token is queried
+# Set default index to return OOV token is queried
 vocab_transform[SRC_LANGUAGE].set_default_index(UNK_IDX)
 vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 
