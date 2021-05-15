@@ -115,13 +115,13 @@ PyTorch has no knowledge of the *algorithm* you are implementing. It knows only
 of the individual operations you use to compose your algorithm. As such, PyTorch
 must execute your operations individually, one after the other. Since each
 individual call to the implementation (or *kernel*) of an operation, which may
-involve launch of a CUDA kernel, has a certain amount of overhead, this overhead
-may become significant across many function calls. Furthermore, the Python
-interpreter that is running our code can itself slow down our program.
+involve the launch of a CUDA kernel, has a certain amount of overhead, this
+overhead may become significant across many function calls. Furthermore, the
+Python interpreter that is running our code can itself slow down our program.
 
 A definite method of speeding things up is therefore to rewrite parts in C++ (or
 CUDA) and *fuse* particular groups of operations. Fusing means combining the
-implementations of many functions into a single functions, which profits from
+implementations of many functions into a single function, which profits from
 fewer kernel launches as well as other optimizations we can perform with
 increased visibility of the global flow of data.
 
@@ -313,7 +313,7 @@ Once you have your operation written in C++ and ATen, you can use pybind11 to
 bind your C++ functions or classes into Python in a very simple manner.
 Questions or issues you have about this part of PyTorch C++ extensions will
 largely be addressed by `pybind11 documentation
-<https://pybind11.readthedocs.io/en/master/>`_.
+<https://pybind11.readthedocs.io/en/stable/>`_.
 
 For our extensions, the necessary binding code spans only four lines:
 
@@ -326,7 +326,7 @@ For our extensions, the necessary binding code spans only four lines:
 
 One bit to note here is the macro ``TORCH_EXTENSION_NAME``. The torch extension
 build will define it as the name you give your extension in the ``setup.py``
-script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm".
+script. In this case, the value of ``TORCH_EXTENSION_NAME`` would be "lltm_cpp".
 This is to avoid having to maintain the name of the extension in two places
 (the build script and your C++ code), as a mismatch between the two can lead to
 nasty and hard to track issues.
@@ -441,7 +441,7 @@ class citizens of PyTorch::
       @staticmethod
       def backward(ctx, grad_h, grad_cell):
           outputs = lltm_cpp.backward(
-              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_variables)
+              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_tensors)
           d_old_h, d_input, d_weights, d_bias, d_old_cell = outputs
           return d_input, d_weights, d_bias, d_old_h, d_old_cell
 
@@ -509,12 +509,12 @@ and with our new C++ version::
   Forward: 349.335 us | Backward 443.523 us
 
 We can already see a significant speedup for the forward function (more than
-30%). For the backward function a speedup is visible, albeit not major one. The
-backward pass I wrote above was not particularly optimized and could definitely
-be improved. Also, PyTorch's automatic differentiation engine can automatically
-parallelize computation graphs, may use a more efficient flow of operations
-overall, and is also implemented in C++, so it's expected to be fast.
-Nevertheless, this is a good start.
+30%). For the backward function, a speedup is visible, albeit not a major one.
+The backward pass I wrote above was not particularly optimized and could
+definitely be improved. Also, PyTorch's automatic differentiation engine can
+automatically parallelize computation graphs, may use a more efficient flow of
+operations overall, and is also implemented in C++, so it's expected to be
+fast. Nevertheless, this is a good start.
 
 Performance on GPU Devices
 **************************
@@ -571,7 +571,7 @@ And C++/ATen::
 
 That's a great overall speedup compared to non-CUDA code. However, we can pull
 even more performance out of our C++ code by writing custom CUDA kernels, which
-we'll dive into soon. Before that, let's dicuss another way of building your C++
+we'll dive into soon. Before that, let's discuss another way of building your C++
 extensions.
 
 JIT Compiling Extensions
@@ -851,7 +851,7 @@ and ``Double``), you can use ``AT_DISPATCH_ALL_TYPES``.
 
 Note that we perform some operations with plain ATen. These operations will
 still run on the GPU, but using ATen's default implementations. This makes
-sense, because ATen will use highly optimized routines for things like matrix
+sense because ATen will use highly optimized routines for things like matrix
 multiplies (e.g. ``addmm``) or convolutions which would be much harder to
 implement and improve ourselves.
 
@@ -903,7 +903,7 @@ You can see in the CUDA kernel that we work directly on pointers with the right
 type. Indeed, working directly with high level type agnostic tensors inside cuda
 kernels would be very inefficient.
 
-However, this comes at a cost of ease of use and readibility, especially for
+However, this comes at a cost of ease of use and readability, especially for
 highly dimensional data. In our example, we know for example that the contiguous
 ``gates`` tensor has 3 dimensions:
 
@@ -920,7 +920,7 @@ arithmetic.
   gates.data<scalar_t>()[n*3*state_size + row*state_size + column]
 
 
-In addition to being verbose, this expression needs stride to be explicitely
+In addition to being verbose, this expression needs stride to be explicitly
 known, and thus passed to the kernel function within its arguments. You can see
 that in the case of kernel functions accepting multiple tensors with different
 sizes you will end up with a very long list of arguments.
@@ -1101,7 +1101,7 @@ on it:
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
 
-    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_forward_cuda", ([&] {
+    AT_DISPATCH_FLOATING_TYPES(X.type(), "lltm_backward_cuda", ([&] {
       lltm_cuda_backward_kernel<scalar_t><<<blocks, threads>>>(
           d_old_cell.packed_accessor32<scalar_t,2,torch::RestrictPtrTraits>(),
           d_gates.packed_accessor32<scalar_t,3,torch::RestrictPtrTraits>(),
