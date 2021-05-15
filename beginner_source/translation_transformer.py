@@ -8,8 +8,8 @@ Transformer. We will be using Multi30k dataset to train a German to English tran
 
 
 ######################################################################
-# Data Processing
-# ---------------
+# Data Sourcing and Processing
+# ----------------------------
 #
 # torchtext has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
@@ -21,42 +21,24 @@ Transformer. We will be using Multi30k dataset to train a German to English tran
 # https://spacy.io/usage/models
 
 
-from torch.nn import (
-    TransformerEncoder,
-    TransformerDecoder,
-    TransformerEncoderLayer,
-    TransformerDecoderLayer)
-
-from torch.utils.data import DataLoader
-from torch.nn.utils.rnn import pad_sequence
-import math
-import torch
-import torch.nn as nn
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import Multi30k
-from torch import Tensor
-from typing import Iterable, List
-from timeit import default_timer as timer
-
-torch.manual_seed(0)
-torch.use_deterministic_algorithms(True)
+from typing import Iterable
 
 
 SRC_LANGUAGE = 'de'
 TGT_LANGUAGE = 'en'
 
 token_transform = {}
-token_transform[SRC_LANGUAGE] = get_tokenizer(
-    'spacy', language='de_core_news_sm')
-token_transform[TGT_LANGUAGE] = get_tokenizer(
-    'spacy', language='en_core_web_sm')
+
+# Create source and target language tokenizer
+token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
+token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
 # helper function to yield list of tokens
-def yeild_tokens(data_iter: Iterable, language: str):
+def yeild_tokens(data_iter: Iterable, language: str) -> str:
     language_index = {SRC_LANGUAGE: 0, TGT_LANGUAGE: 1}
-    assert language in language_index, "Language {} must be either {} or {}".format(
-        language, SRC_LANGUAGE, TGT_LANGUAGE)
 
     for data_sample in data_iter:
         yield token_transform[language](data_sample[language_index[language]])
@@ -64,64 +46,26 @@ def yeild_tokens(data_iter: Iterable, language: str):
 
 vocab_transform = {}
 
-train_iter = Multi30k(
-    split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(
-    yeild_tokens(train_iter, SRC_LANGUAGE))
-train_iter = Multi30k(
-    split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(
-    yeild_tokens(train_iter, TGT_LANGUAGE))
+# Build source vocabulary
+train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(yeild_tokens(train_iter, SRC_LANGUAGE))
 
+# Build target vocabulary
+train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(yeild_tokens(train_iter, TGT_LANGUAGE))
 
-UNK_IDX = 0
-PAD_IDX = 1
-BOS_IDX = 2
-EOS_IDX = 3
-DEFAULT_IDX = UNK_IDX
+# Define special symbols and indices
+UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
+special_symbols = {'<unk>': UNK_IDX, '<pad>': PAD_IDX,'<bos>': BOS_IDX, '<eos>': EOS_IDX}
 
-special_symbols = {'<unk>': UNK_IDX, '<pad>': PAD_IDX,
-                   '<bos>': BOS_IDX, '<eos>': EOS_IDX}
-
+# Insert special symbols
 for symbol, index in special_symbols.items():
     vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
     vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
 
-vocab_transform[SRC_LANGUAGE].set_default_index(DEFAULT_IDX)
-vocab_transform[TGT_LANGUAGE].set_default_index(DEFAULT_IDX)
-
-
-def sequential_transforms(*transforms):
-    def func(txt_input):
-        for transform in transforms:
-            txt_input = transform(txt_input)
-        return txt_input
-
-    return func
-
-
-def tensor_transform(token_ids: List[int]):
-    return torch.cat((torch.tensor([BOS_IDX], dtype=torch.long),
-                      torch.tensor(token_ids, dtype=torch.long),
-                      torch.tensor([EOS_IDX], dtype=torch.long)))
-
-
-src_text_transform = sequential_transforms(
-    token_transform[SRC_LANGUAGE], vocab_transform[SRC_LANGUAGE], tensor_transform)
-tgt_text_transform = sequential_transforms(
-    token_transform[TGT_LANGUAGE], vocab_transform[TGT_LANGUAGE], tensor_transform)
-
-
-def collate_fn(batch: List[str]):
-    src_batch, tgt_batch = [], []
-    for src_sample, tgt_sample in batch:
-        src_batch.append(src_text_transform(src_sample.rstrip("\n")))
-        tgt_batch.append(tgt_text_transform(tgt_sample.rstrip("\n")))
-
-    src_batch = pad_sequence(src_batch, padding_value=PAD_IDX)
-    tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_IDX)
-    return src_batch, tgt_batch
-
+# Set default index when OOV token is queried
+vocab_transform[SRC_LANGUAGE].set_default_index(UNK_IDX)
+vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 
 ######################################################################
 # Transformer!
@@ -140,19 +84,34 @@ def collate_fn(batch: List[str]):
 #
 
 
+from torch import Tensor
+import torch
+import torch.nn as nn
+from torch.nn import (
+    TransformerEncoder,
+    TransformerDecoder,
+    TransformerEncoderLayer,
+    TransformerDecoderLayer
+)
+    
+torch.manual_seed(0)
+torch.use_deterministic_algorithms(True)
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class Seq2SeqTransformer(nn.Module):
-    def __init__(self, num_encoder_layers: int, num_decoder_layers: int,
-                 emb_size: int, src_vocab_size: int, tgt_vocab_size: int,
-                 dim_feedforward: int = 512, dropout: float = 0.1):
+    def __init__(self,
+                 num_encoder_layers: int,
+                 num_decoder_layers: int,
+                 emb_size: int,
+                 src_vocab_size: int,
+                 tgt_vocab_size: int,
+                 dim_feedforward: int = 512,
+                 dropout: float = 0.1):
         super(Seq2SeqTransformer, self).__init__()
-        encoder_layer = TransformerEncoderLayer(d_model=emb_size, nhead=NHEAD,
-                                                dim_feedforward=dim_feedforward)
-        self.transformer_encoder = TransformerEncoder(
-            encoder_layer, num_layers=num_encoder_layers)
-        decoder_layer = TransformerDecoderLayer(d_model=emb_size, nhead=NHEAD,
-                                                dim_feedforward=dim_feedforward)
-        self.transformer_decoder = TransformerDecoder(
-            decoder_layer, num_layers=num_decoder_layers)
+        encoder_layer = TransformerEncoderLayer(d_model=emb_size, nhead=NHEAD, dim_feedforward=dim_feedforward)
+        self.transformer_encoder = TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
+        decoder_layer = TransformerDecoderLayer(d_model=emb_size, nhead=NHEAD, dim_feedforward=dim_feedforward)
+        self.transformer_decoder = TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
 
         self.generator = nn.Linear(emb_size, tgt_vocab_size)
         self.src_tok_emb = TokenEmbedding(src_vocab_size, emb_size)
@@ -160,14 +119,18 @@ class Seq2SeqTransformer(nn.Module):
         self.positional_encoding = PositionalEncoding(
             emb_size, dropout=dropout)
 
-    def forward(self, src: Tensor, trg: Tensor, src_mask: Tensor,
-                tgt_mask: Tensor, src_padding_mask: Tensor,
-                tgt_padding_mask: Tensor, memory_key_padding_mask: Tensor):
+    def forward(self,
+                src: Tensor,
+                trg: Tensor,
+                src_mask: Tensor,
+                tgt_mask: Tensor,
+                src_padding_mask: Tensor,
+                tgt_padding_mask: Tensor,
+                memory_key_padding_mask: Tensor):
         src_emb = self.positional_encoding(self.src_tok_emb(src))
         tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
         memory = self.transformer_encoder(src_emb, src_mask, src_padding_mask)
-        outs = self.transformer_decoder(tgt_emb, memory, tgt_mask, None,
-                                        tgt_padding_mask, memory_key_padding_mask)
+        outs = self.transformer_decoder(tgt_emb, memory, tgt_mask, None, tgt_padding_mask, memory_key_padding_mask)
         return self.generator(outs)
 
     def encode(self, src: Tensor, src_mask: Tensor):
@@ -175,9 +138,7 @@ class Seq2SeqTransformer(nn.Module):
             self.src_tok_emb(src)), src_mask)
 
     def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
-        return self.transformer_decoder(self.positional_encoding(
-            self.tgt_tok_emb(tgt)), memory,
-            tgt_mask)
+        return self.transformer_decoder(self.positional_encoding(self.tgt_tok_emb(tgt)), memory, tgt_mask)
 
 
 ######################################################################
@@ -186,11 +147,15 @@ class Seq2SeqTransformer(nn.Module):
 # order.
 #
 
+import math
+
 class PositionalEncoding(nn.Module):
-    def __init__(self, emb_size: int, dropout, maxlen: int = 5000):
+    def __init__(self,
+                 emb_size: int,
+                 dropout: float,
+                 maxlen: int = 5000):
         super(PositionalEncoding, self).__init__()
-        den = torch.exp(- torch.arange(0, emb_size, 2)
-                        * math.log(10000) / emb_size)
+        den = torch.exp(- torch.arange(0, emb_size, 2)* math.log(10000) / emb_size)
         pos = torch.arange(0, maxlen).reshape(maxlen, 1)
         pos_embedding = torch.zeros((maxlen, emb_size))
         pos_embedding[:, 0::2] = torch.sin(pos * den)
@@ -201,8 +166,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pos_embedding', pos_embedding)
 
     def forward(self, token_embedding: Tensor):
-        return self.dropout(token_embedding +
-                            self.pos_embedding[:token_embedding.size(0), :])
+        return self.dropout(token_embedding + self.pos_embedding[:token_embedding.size(0), :])
 
 
 class TokenEmbedding(nn.Module):
@@ -221,13 +185,10 @@ class TokenEmbedding(nn.Module):
 # source and target padding tokens
 #
 
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 
 def generate_square_subsequent_mask(sz):
     mask = (torch.triu(torch.ones((sz, sz), device=DEVICE)) == 1).transpose(0, 1)
-    mask = mask.float().masked_fill(mask == 0, float(
-        '-inf')).masked_fill(mask == 1, float(0.0))
+    mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
     return mask
 
 
@@ -236,8 +197,7 @@ def create_mask(src, tgt):
     tgt_seq_len = tgt.shape[0]
 
     tgt_mask = generate_square_subsequent_mask(tgt_seq_len)
-    src_mask = torch.zeros((src_seq_len, src_seq_len),
-                           device=DEVICE).type(torch.bool)
+    src_mask = torch.zeros((src_seq_len, src_seq_len),device=DEVICE).type(torch.bool)
 
     src_padding_mask = (src == PAD_IDX).transpose(0, 1)
     tgt_padding_mask = (tgt == PAD_IDX).transpose(0, 1)
@@ -256,11 +216,9 @@ FFN_HID_DIM = 512
 BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
-NUM_EPOCHS = 16
 
-transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS,
-                                 EMB_SIZE, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE,
-                                 FFN_HID_DIM)
+
+transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
 
 for p in transformer.parameters():
     if p.dim() > 1:
@@ -275,78 +233,110 @@ optimizer = torch.optim.Adam(
 )
 
 ######################################################################
+# Collation
+#
+
+from torch.nn.utils.rnn import pad_sequence
+from typing import List
+
+# helper function to club together sequential operations
+def sequential_transforms(*transforms):
+    def func(txt_input):
+        for transform in transforms:
+            txt_input = transform(txt_input)
+        return txt_input
+    return func
+
+# helper function to create input sequence indices
+def tensor_transform(token_ids: List[int]):
+    return torch.cat((torch.tensor([BOS_IDX]), torch.tensor(token_ids), torch.tensor([EOS_IDX])))
+
+# src and tgt sentence transforms to convert raw sentence into sequence indices
+src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], vocab_transform[SRC_LANGUAGE], tensor_transform)
+tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE], vocab_transform[TGT_LANGUAGE], tensor_transform)
+
+# helper function to collate data samples into batch of model input
+def collate_fn(batch: List[str]):
+    src_batch, tgt_batch = [], []
+    for src_sample, tgt_sample in batch:
+        src_batch.append(src_text_transform(src_sample.rstrip("\n")))
+        tgt_batch.append(tgt_text_transform(tgt_sample.rstrip("\n")))
+
+    src_batch = pad_sequence(src_batch, padding_value=PAD_IDX)
+    tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_IDX)
+    return src_batch, tgt_batch
+    
+######################################################################
 # Define training and evaluation loop
 #
 
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 def train_epoch(model, optimizer):
     model.train()
     losses = 0
-    train_iter = Multi30k(
-        split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-    train_dataloader = DataLoader(
-        train_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
-    for src, tgt in train_dataloader:
+    train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+    train_dataloader = DataLoader(train_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
+    
+    for src, tgt in tqdm(train_dataloader):
         src = src.to(DEVICE)
         tgt = tgt.to(DEVICE)
 
         tgt_input = tgt[:-1, :]
 
-        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(
-            src, tgt_input)
+        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(src, tgt_input)
 
-        logits = model(src, tgt_input, src_mask, tgt_mask,
-                       src_padding_mask, tgt_padding_mask, src_padding_mask)
+        logits = model(src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask)
 
         optimizer.zero_grad()
 
         tgt_out = tgt[1:, :]
-        loss = loss_fn(
-            logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
+        loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         loss.backward()
 
         optimizer.step()
         losses += loss.item()
+
     return losses / len(train_dataloader)
 
 
 def evaluate(model):
     model.eval()
     losses = 0
-    val_iter = Multi30k(
-        split='valid', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
 
-    val_dataloader = DataLoader(
-        val_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
-    for src, tgt in val_dataloader:
+    val_iter = Multi30k(split='valid', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+    val_dataloader = DataLoader(val_iter, batch_size=BATCH_SIZE, collate_fn=collate_fn)
+
+    for src, tgt in tqdm(val_dataloader):
         src = src.to(DEVICE)
         tgt = tgt.to(DEVICE)
 
         tgt_input = tgt[:-1, :]
 
-        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(
-            src, tgt_input)
+        src_mask, tgt_mask, src_padding_mask, tgt_padding_mask = create_mask(src, tgt_input)
 
-        logits = model(src, tgt_input, src_mask, tgt_mask,
-                       src_padding_mask, tgt_padding_mask, src_padding_mask)
+        logits = model(src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask)
+        
         tgt_out = tgt[1:, :]
-        loss = loss_fn(
-            logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
+        loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
         losses += loss.item()
+
     return losses / len(val_dataloader)
 
 ######################################################################
 # Train model
 #
 
+from timeit import default_timer as timer
+NUM_EPOCHS = 16
 
 for epoch in range(1, NUM_EPOCHS+1):
     start_time = timer()
     train_loss = train_epoch(transformer, optimizer)
     end_time = timer()
     val_loss = evaluate(transformer)
-    print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "
-           f"Epoch time = {(end_time - start_time):.3f}s"))
+    print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
 ######################################################################
 # Define functions to decode predictions
