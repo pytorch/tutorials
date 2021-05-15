@@ -37,7 +37,7 @@ token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
 # helper function to yield list of tokens
-def yeild_tokens(data_iter: Iterable, language: str) -> str:
+def yield_tokens(data_iter: Iterable, language: str) -> str:
     language_index = {SRC_LANGUAGE: 0, TGT_LANGUAGE: 1}
 
     for data_sample in data_iter:
@@ -48,11 +48,11 @@ vocab_transform = {}
 
 # Build source vocabulary
 train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(yeild_tokens(train_iter, SRC_LANGUAGE))
+vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, SRC_LANGUAGE))
 
 # Build target vocabulary
 train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(yeild_tokens(train_iter, TGT_LANGUAGE))
+vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, TGT_LANGUAGE))
 
 # Define special symbols and indices
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
@@ -252,8 +252,13 @@ def tensor_transform(token_ids: List[int]):
     return torch.cat((torch.tensor([BOS_IDX]), torch.tensor(token_ids), torch.tensor([EOS_IDX])))
 
 # src and tgt sentence transforms to convert raw sentence into sequence indices
-src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], vocab_transform[SRC_LANGUAGE], tensor_transform)
-tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE], vocab_transform[TGT_LANGUAGE], tensor_transform)
+src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], #Step-1: Tokenize input sentence
+                                           vocab_transform[SRC_LANGUAGE], #step-2: Convert tokens to indices
+                                           tensor_transform) #step-3: Add BOS/EOS and create tensor
+                                           
+tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE], 
+                                           vocab_transform[TGT_LANGUAGE], 
+                                           tensor_transform)
 
 # helper function to collate data samples into batch of model input
 def collate_fn(batch: List[str]):
