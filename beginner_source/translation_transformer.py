@@ -24,7 +24,7 @@ Transformer. We will be using Multi30k dataset to train a German to English tran
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import Multi30k
-from typing import Iterable
+from typing import Iterable, List
 
 
 SRC_LANGUAGE = 'de'
@@ -37,7 +37,7 @@ token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
 # helper function to yield list of tokens
-def yield_tokens(data_iter: Iterable, language: str) -> str:
+def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
     language_index = {SRC_LANGUAGE: 0, TGT_LANGUAGE: 1}
 
     for data_sample in data_iter:
@@ -237,7 +237,6 @@ optimizer = torch.optim.Adam(
 #
 
 from torch.nn.utils.rnn import pad_sequence
-from typing import List
 
 # helper function to club together sequential operations
 def sequential_transforms(*transforms):
@@ -252,10 +251,10 @@ def tensor_transform(token_ids: List[int]):
     return torch.cat((torch.tensor([BOS_IDX]), torch.tensor(token_ids), torch.tensor([EOS_IDX])))
 
 # src and tgt sentence transforms to convert raw sentence into sequence indices
-src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], #Step-1: Tokenize input sentence
-                                           vocab_transform[SRC_LANGUAGE], #step-2: Convert tokens to indices
-                                           tensor_transform) #step-3: Add BOS/EOS and create tensor
-                                           
+src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], #Tokenization
+                                           vocab_transform[SRC_LANGUAGE], #Numericalization
+                                           tensor_transform) # Add BOS/EOS and create tensor
+
 tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE], 
                                            vocab_transform[TGT_LANGUAGE], 
                                            tensor_transform)
