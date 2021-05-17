@@ -12,7 +12,7 @@ dataset to train a German to English translation model.
 # Data Sourcing and Processing
 # ----------------------------
 #
-# `torchtext <https://pytorch.org/text/stable/>` has utilities for creating datasets that can be easily
+# `torchtext <https://pytorch.org/text/stable/>`__ has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
 # model. In this example, we show how to use torchtext's inbuilt datasets, 
 # tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor.
@@ -89,7 +89,7 @@ vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 # consists of three parts. First part is the embedding layer. This layer converts tensor of input indices
 # into corresponding tensor of input embeddings. These embedding are further augmented with positional
 # encodings to provide position information of input tokens to the model. The second part is the 
-# actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>` model. 
+# actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model. 
 # Finally, the output of Transformer model is passed through linear layer
 # that give raw probabilities for each token in the target language. 
 #
@@ -236,7 +236,7 @@ optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.
 # Collation
 # ---------
 #   
-# In this tutorial, we use `Multi30k <https://pytorch.org/text/stable/datasets.html#multi30k>` dataset 
+# In this tutorial, we use `Multi30k <https://pytorch.org/text/stable/datasets.html#multi30k>`__ dataset 
 # from torchtext that yield tuples of source-target raw sentences. 
 # We need to convert these string pairs into the batched tensors that can be processed by our Seq2Seq network defined previously.
 # Below we define our collate function that convert batch of raw strings into batch tensors that
