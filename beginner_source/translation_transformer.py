@@ -91,7 +91,7 @@ vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 # encodings to provide position information of input tokens to the model. The second part is the 
 # actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ model. 
 # Finally, the output of Transformer model is passed through linear layer
-# that give raw probabilities for each token in the target language. 
+# that give un-normalized probabilities for each token in the target language. 
 #
 
 
@@ -166,16 +166,9 @@ class Seq2SeqTransformer(nn.Module):
                 memory_key_padding_mask: Tensor):
         src_emb = self.positional_encoding(self.src_tok_emb(src))
         tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
-        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None, src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
+        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None, 
+                                src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
         return self.generator(outs)
-
-    def encode(self, src: Tensor, src_mask: Tensor):
-        return self.transformer_encoder(self.positional_encoding(
-            self.src_tok_emb(src)), src_mask)
-
-    def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
-        return self.transformer_decoder(self.positional_encoding(self.tgt_tok_emb(tgt)), memory, tgt_mask)
-
 
 
 ######################################################################
@@ -269,7 +262,7 @@ tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE],
                                            vocab_transform[TGT_LANGUAGE], 
                                            tensor_transform)
 
-# function to collate data samples into batch of model input
+# function to collate data samples into batch tesors
 def collate_fn(batch: List[str]):
     src_batch, tgt_batch = [], []
     for src_sample, tgt_sample in batch:
@@ -281,7 +274,8 @@ def collate_fn(batch: List[str]):
     return src_batch, tgt_batch
     
 ######################################################################
-# Define training and evaluation loop
+# Let's define training and evaluation loop that will be called for each 
+# epoch
 #
 
 from torch.utils.data import DataLoader
@@ -339,7 +333,7 @@ def evaluate(model):
     return losses / len(val_dataloader)
 
 ######################################################################
-# Train model
+# Now we have all the ingredients to train model. Let's do it!
 #
 
 from timeit import default_timer as timer
