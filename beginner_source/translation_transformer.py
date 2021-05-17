@@ -61,9 +61,12 @@ special_symbols = {'<unk>': UNK_IDX, '<pad>': PAD_IDX,'<bos>': BOS_IDX, '<eos>':
 for symbol, index in special_symbols.items():
     if symbol in vocab_transform[SRC_LANGUAGE]:
         vocab_transform[SRC_LANGUAGE].reassign_token(symbol, index)
-        vocab_transform[TGT_LANGUAGE].reassign_token(symbol, index)
     else:
         vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
+        
+    if symbol in vocab_transform[TGT_LANGUAGE]:
+        vocab_transform[TGT_LANGUAGE].reassign_token(symbol, index)
+    else:
         vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
     
 # Set UNK_IDX as the default index. This index is returned when token is not found. 
