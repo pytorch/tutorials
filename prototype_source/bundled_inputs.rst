@@ -1,7 +1,7 @@
 (Prototype) Introduce lite interpreter workflow in Android and iOS
 ==================================================================
 
-**Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
+**Author**: `Jacob Szwejbka <https://github.com/jacobszwejbka>`_
 
 Introduction
 ------------
