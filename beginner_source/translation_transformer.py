@@ -13,16 +13,15 @@ Transformer. We will be using Multi30k dataset to train a German to English tran
 #
 # torchtext has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
-# model. In this example, we show how to tokenize a raw text sentence,
-# build vocabulary, and numericalize tokens into tensor.
-#
+# model. In this example, we show how to use torchtext inbuild datasets, 
+# tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor.
 # To run this tutorial, first install spacy using pip or conda. Next,
 # download the raw data for the English and German Spacy tokenizers from
 # https://spacy.io/usage/models
 
 
 from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import build_vocab_from_iterator
+from torchtext.vocab import build_vocab_from_iterator, vocab
 from torchtext.datasets import Multi30k
 from typing import Iterable, List
 
@@ -60,10 +59,15 @@ special_symbols = {'<unk>': UNK_IDX, '<pad>': PAD_IDX,'<bos>': BOS_IDX, '<eos>':
 
 # Insert special symbols
 for symbol, index in special_symbols.items():
-    vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
-    vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
-
-# Set default index to return OOV token is queried
+    if symbol in vocab_transform[SRC_LANGUAGE]:
+        vocab_transform[SRC_LANGUAGE].reassign_token(symbol, index)
+        vocab_transform[TGT_LANGUAGE].reassign_token(symbol, index)
+    else:
+        vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
+        vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
+    
+# Set UNK_IDX as the default index. This index is returned when token is not found. 
+# If not set, it throws RuntimeError when queried token is not found in the Vocabulary. 
 vocab_transform[SRC_LANGUAGE].set_default_index(UNK_IDX)
 vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 
@@ -73,82 +77,24 @@ vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 #
 # Transformer is a Seq2Seq model introduced in `“Attention is all you
 # need” <https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`__
-# paper for solving machine translation task. Transformer model consists
-# of an encoder and decoder block each containing fixed number of layers.
-#
-# Encoder processes the input sequence by propogating it, through a series
-# of Multi-head Attention and Feed forward network layers. The output from
-# the Encoder referred to as ``memory``, is fed to the decoder along with
-# target tensors. Encoder and decoder are trained in an end-to-end fashion
-# using teacher forcing technique.
+# paper for solving machine translation task. 
+# Below, we will create a Seq2Seq network that uses Transformer. The network
+# consists of three parts. Firt part is the embedding layer. This layer converts tensor of input indices
+# into corresponding tensor of input embeddings. These embedding are further augmented with positional
+# encodings to provide position information of input tokens to the model. The second part is the 
+# actual transfomer model. Finally, the output of transfomer model is passed through linear layer
+# that give raw probabilities for each token in the target language. 
 #
 
 
 from torch import Tensor
 import torch
 import torch.nn as nn
-from torch.nn import (
-    TransformerEncoder,
-    TransformerDecoder,
-    TransformerEncoderLayer,
-    TransformerDecoderLayer
-)
-    
-torch.manual_seed(0)
-torch.use_deterministic_algorithms(True)
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-class Seq2SeqTransformer(nn.Module):
-    def __init__(self,
-                 num_encoder_layers: int,
-                 num_decoder_layers: int,
-                 emb_size: int,
-                 src_vocab_size: int,
-                 tgt_vocab_size: int,
-                 dim_feedforward: int = 512,
-                 dropout: float = 0.1):
-        super(Seq2SeqTransformer, self).__init__()
-        encoder_layer = TransformerEncoderLayer(d_model=emb_size, nhead=NHEAD, dim_feedforward=dim_feedforward)
-        self.transformer_encoder = TransformerEncoder(encoder_layer, num_layers=num_encoder_layers)
-        decoder_layer = TransformerDecoderLayer(d_model=emb_size, nhead=NHEAD, dim_feedforward=dim_feedforward)
-        self.transformer_decoder = TransformerDecoder(decoder_layer, num_layers=num_decoder_layers)
-
-        self.generator = nn.Linear(emb_size, tgt_vocab_size)
-        self.src_tok_emb = TokenEmbedding(src_vocab_size, emb_size)
-        self.tgt_tok_emb = TokenEmbedding(tgt_vocab_size, emb_size)
-        self.positional_encoding = PositionalEncoding(
-            emb_size, dropout=dropout)
-
-    def forward(self,
-                src: Tensor,
-                trg: Tensor,
-                src_mask: Tensor,
-                tgt_mask: Tensor,
-                src_padding_mask: Tensor,
-                tgt_padding_mask: Tensor,
-                memory_key_padding_mask: Tensor):
-        src_emb = self.positional_encoding(self.src_tok_emb(src))
-        tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
-        memory = self.transformer_encoder(src_emb, src_mask, src_padding_mask)
-        outs = self.transformer_decoder(tgt_emb, memory, tgt_mask, None, tgt_padding_mask, memory_key_padding_mask)
-        return self.generator(outs)
-
-    def encode(self, src: Tensor, src_mask: Tensor):
-        return self.transformer_encoder(self.positional_encoding(
-            self.src_tok_emb(src)), src_mask)
-
-    def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
-        return self.transformer_decoder(self.positional_encoding(self.tgt_tok_emb(tgt)), memory, tgt_mask)
-
-
-######################################################################
-# Text tokens are represented by using token embeddings. Positional
-# encoding is added to the token embedding to introduce a notion of word
-# order.
-#
-
+from torch.nn import Transformer
 import math
 
+
+# Helper class that adds positional encoding to the token embedding to introduce a notion of word order.
 class PositionalEncoding(nn.Module):
     def __init__(self,
                  emb_size: int,
@@ -168,7 +114,7 @@ class PositionalEncoding(nn.Module):
     def forward(self, token_embedding: Tensor):
         return self.dropout(token_embedding + self.pos_embedding[:token_embedding.size(0), :])
 
-
+# Helper class to convert tensor of input indices into corresponding tesor of token embeddings
 class TokenEmbedding(nn.Module):
     def __init__(self, vocab_size: int, emb_size):
         super(TokenEmbedding, self).__init__()
@@ -177,6 +123,51 @@ class TokenEmbedding(nn.Module):
 
     def forward(self, tokens: Tensor):
         return self.embedding(tokens.long()) * math.sqrt(self.emb_size)
+
+# Seq2Seq Network 
+class Seq2SeqTransformer(nn.Module):
+    def __init__(self,
+                 num_encoder_layers: int,
+                 num_decoder_layers: int,
+                 emb_size: int,
+                 nhead: int,
+                 src_vocab_size: int,
+                 tgt_vocab_size: int,
+                 dim_feedforward: int = 512,
+                 dropout: float = 0.1):
+        super(Seq2SeqTransformer, self).__init__()
+        self.transformer = Transformer(d_model=emb_size,
+                                       nhead=nhead,
+                                       num_encoder_layers=num_encoder_layers,
+                                       num_decoder_layers=num_decoder_layers,
+                                       dim_feedforward=dim_feedforward,
+                                       dropout=dropout)
+        self.generator = nn.Linear(emb_size, tgt_vocab_size)
+        self.src_tok_emb = TokenEmbedding(src_vocab_size, emb_size)
+        self.tgt_tok_emb = TokenEmbedding(tgt_vocab_size, emb_size)
+        self.positional_encoding = PositionalEncoding(
+            emb_size, dropout=dropout)
+
+    def forward(self,
+                src: Tensor,
+                trg: Tensor,
+                src_mask: Tensor,
+                tgt_mask: Tensor,
+                src_padding_mask: Tensor,
+                tgt_padding_mask: Tensor,
+                memory_key_padding_mask: Tensor):
+        src_emb = self.positional_encoding(self.src_tok_emb(src))
+        tgt_emb = self.positional_encoding(self.tgt_tok_emb(trg))
+        outs = self.transformer(src_emb, tgt_emb, src_mask, tgt_mask, None, src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
+        return self.generator(outs)
+
+    def encode(self, src: Tensor, src_mask: Tensor):
+        return self.transformer_encoder(self.positional_encoding(
+            self.src_tok_emb(src)), src_mask)
+
+    def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
+        return self.transformer_decoder(self.positional_encoding(self.tgt_tok_emb(tgt)), memory, tgt_mask)
+
 
 
 ######################################################################
@@ -207,6 +198,9 @@ def create_mask(src, tgt):
 ######################################################################
 # Define model parameters and instantiate model
 #
+torch.manual_seed(0)
+torch.use_deterministic_algorithms(True)
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 SRC_VOCAB_SIZE = len(vocab_transform[SRC_LANGUAGE])
 TGT_VOCAB_SIZE = len(vocab_transform[TGT_LANGUAGE])
@@ -217,8 +211,7 @@ BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
 
-
-transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
+transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
 
 for p in transformer.parameters():
     if p.dim() > 1:
@@ -228,13 +221,18 @@ transformer = transformer.to(DEVICE)
 
 loss_fn = torch.nn.CrossEntropyLoss(ignore_index=PAD_IDX)
 
-optimizer = torch.optim.Adam(
-    transformer.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9
-)
+optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 
 ######################################################################
 # Collation
+# ---------
+#   
+# In this tutorial, we use Mult30k dataset from torchtext that yield pair of source and target raw sentences. 
+# We need to convert these string pairs into the batch form than can processed by our Seq2Seq network defined previously.
+# Below we define our collation function that convert batch of raw strings into batch tensors that
+# can be fed directly into our model.   
 #
+
 
 from torch.nn.utils.rnn import pad_sequence
 
@@ -345,10 +343,13 @@ for epoch in range(1, NUM_EPOCHS+1):
     print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
 ######################################################################
-# Define functions to decode predictions
+# Once we have the trained model, we can use it to translate our input sentence in source language into sentence of target language.
+# Below we first define function to decode predictions from our Seq2Seq network using greedy algorithm i.e we take the best prediction
+# at every time stamp in the output. Finally we define a function that make use of greedy decoding to do actual translation.
 #
 
 
+# Function to generate output sequence using greedy algorithm 
 def greedy_decode(model, src, src_mask, max_len, start_symbol):
     src = src.to(DEVICE)
     src_mask = src_mask.to(DEVICE)
@@ -372,6 +373,7 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
     return ys
 
 
+# Actual function to translate input sentence into target language
 def translate(model: torch.nn.Module, src_sentence: str):
     model.eval()
     src = src_text_transform(src_sentence).view(-1, 1)
