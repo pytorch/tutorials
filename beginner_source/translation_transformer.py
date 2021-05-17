@@ -3,7 +3,7 @@ Language Translation with Transformer
 =====================================
 
 This tutorial shows, how to train a translation model from scratch using
-Transformer. We will be using `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>` 
+Transformer. We will be using `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>`__ 
 dataset to train a German to English translation model.
 """
 
