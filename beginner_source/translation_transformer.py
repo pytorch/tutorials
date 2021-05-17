@@ -3,7 +3,8 @@ Language Translation with Transformer
 =====================================
 
 This tutorial shows, how to train a translation model from scratch using
-Transformer. We will be using Multi30k dataset to train a German to English translation model.
+Transformer. We will be using `Multi30k <http://www.statmt.org/wmt16/multimodal-task.html#task1>` 
+dataset to train a German to English translation model.
 """
 
 
@@ -11,9 +12,9 @@ Transformer. We will be using Multi30k dataset to train a German to English tran
 # Data Sourcing and Processing
 # ----------------------------
 #
-# torchtext has utilities for creating datasets that can be easily
+# `torchtext <https://pytorch.org/text/stable/>` has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
-# model. In this example, we show how to use torchtext inbuild datasets, 
+# model. In this example, we show how to use torchtext's inbuilt datasets, 
 # tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor.
 # To run this tutorial, first install spacy using pip or conda. Next,
 # download the raw data for the English and German Spacy tokenizers from
@@ -29,11 +30,15 @@ from typing import Iterable, List
 SRC_LANGUAGE = 'de'
 TGT_LANGUAGE = 'en'
 
+# Place-holders
 token_transform = {}
+vocab_transform = {}
+
 
 # Create source and target language tokenizer
 token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
+
 
 # helper function to yield list of tokens
 def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
@@ -42,15 +47,14 @@ def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
     for data_sample in data_iter:
         yield token_transform[language](data_sample[language_index[language]])
 
-
-vocab_transform = {}
-
-# Build source vocabulary
+# Training data Iterator 
 train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+# Build source vocabulary
 vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, SRC_LANGUAGE))
 
-# Build target vocabulary
+
 train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+# Build target vocabulary
 vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, TGT_LANGUAGE))
 
 # Define special symbols and indices
@@ -80,12 +84,13 @@ vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 #
 # Transformer is a Seq2Seq model introduced in `“Attention is all you
 # need” <https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`__
-# paper for solving machine translation task. 
+# paper for solving machine translation tasks. 
 # Below, we will create a Seq2Seq network that uses Transformer. The network
-# consists of three parts. Firt part is the embedding layer. This layer converts tensor of input indices
+# consists of three parts. First part is the embedding layer. This layer converts tensor of input indices
 # into corresponding tensor of input embeddings. These embedding are further augmented with positional
 # encodings to provide position information of input tokens to the model. The second part is the 
-# actual transfomer model. Finally, the output of transfomer model is passed through linear layer
+# actual `Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>` model. 
+# Finally, the output of Transformer model is passed through linear layer
 # that give raw probabilities for each token in the target language. 
 #
 
@@ -97,7 +102,7 @@ from torch.nn import Transformer
 import math
 
 
-# Helper class that adds positional encoding to the token embedding to introduce a notion of word order.
+# helper Module that adds positional encoding to the token embedding to introduce a notion of word order.
 class PositionalEncoding(nn.Module):
     def __init__(self,
                  emb_size: int,
@@ -117,7 +122,7 @@ class PositionalEncoding(nn.Module):
     def forward(self, token_embedding: Tensor):
         return self.dropout(token_embedding + self.pos_embedding[:token_embedding.size(0), :])
 
-# Helper class to convert tensor of input indices into corresponding tesor of token embeddings
+# helper Module to convert tensor of input indices into corresponding tensor of token embeddings
 class TokenEmbedding(nn.Module):
     def __init__(self, vocab_size: int, emb_size):
         super(TokenEmbedding, self).__init__()
@@ -174,9 +179,9 @@ class Seq2SeqTransformer(nn.Module):
 
 
 ######################################################################
-# We create a ``subsequent word`` mask to stop a target word from
-# attending to its subsequent words. We also create masks, for masking
-# source and target padding tokens
+# Let's define function to create a ``subsequent word`` mask to stop a target word from
+# attending to its subsequent words. We shall also create masks to mask
+# source and target padding tokens.
 #
 
 
@@ -214,7 +219,8 @@ BATCH_SIZE = 128
 NUM_ENCODER_LAYERS = 3
 NUM_DECODER_LAYERS = 3
 
-transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
+transformer = Seq2SeqTransformer(NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, 
+                                 NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM)
 
 for p in transformer.parameters():
     if p.dim() > 1:
@@ -230,9 +236,10 @@ optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.
 # Collation
 # ---------
 #   
-# In this tutorial, we use Mult30k dataset from torchtext that yield pair of source and target raw sentences. 
-# We need to convert these string pairs into the batch form than can processed by our Seq2Seq network defined previously.
-# Below we define our collation function that convert batch of raw strings into batch tensors that
+# In this tutorial, we use `Multi30k <https://pytorch.org/text/stable/datasets.html#multi30k>` dataset 
+# from torchtext that yield tuples of source-target raw sentences. 
+# We need to convert these string pairs into the batched tensors that can be processed by our Seq2Seq network defined previously.
+# Below we define our collate function that convert batch of raw strings into batch tensors that
 # can be fed directly into our model.   
 #
 
@@ -247,7 +254,7 @@ def sequential_transforms(*transforms):
         return txt_input
     return func
 
-# helper function to add BOS/EOS and create tensor for input sequence indices
+# function to add BOS/EOS and create tensor for input sequence indices
 def tensor_transform(token_ids: List[int]):
     return torch.cat((torch.tensor([BOS_IDX]), 
                       torch.tensor(token_ids), 
@@ -262,7 +269,7 @@ tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE],
                                            vocab_transform[TGT_LANGUAGE], 
                                            tensor_transform)
 
-# helper function to collate data samples into batch of model input
+# function to collate data samples into batch of model input
 def collate_fn(batch: List[str]):
     src_batch, tgt_batch = [], []
     for src_sample, tgt_sample in batch:
@@ -346,13 +353,13 @@ for epoch in range(1, NUM_EPOCHS+1):
     print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
 ######################################################################
-# Once we have the trained model, we can use it to translate our input sentence in source language into sentence of target language.
+# Once we have the trained model, we can use it to translate our input sentence into target language.
 # Below we first define function to decode predictions from our Seq2Seq network using greedy algorithm i.e we take the best prediction
-# at every time stamp in the output. Finally we define a function that make use of greedy decoding to do actual translation.
+# at every time stamp in the output. Finally we define a function that makes use of greedy decoding to do actual translation.
 #
 
 
-# Function to generate output sequence using greedy algorithm 
+# function to generate output sequence using greedy algorithm 
 def greedy_decode(model, src, src_mask, max_len, start_symbol):
     src = src.to(DEVICE)
     src_mask = src_mask.to(DEVICE)
@@ -376,7 +383,7 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
     return ys
 
 
-# Actual function to translate input sentence into target language
+# actual function to translate input sentence into target language
 def translate(model: torch.nn.Module, src_sentence: str):
     model.eval()
     src = src_text_transform(src_sentence).view(-1, 1)
