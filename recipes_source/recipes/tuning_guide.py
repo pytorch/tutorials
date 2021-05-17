@@ -189,7 +189,7 @@ def fused_gelu(x):
 #
 # In general cases the following command executes a PyTorch script on cores on the Nth node only, and avoids cross-socket memory access to reduce memory access overhead.
 
-# numactl --cpunodebind=N --membind=N python <pytorch_script>
+``numactl --cpunodebind=N --membind=N python <pytorch_script>``
 
 ###############################################################################
 # More detailed descriptions can be found `here <https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_.
@@ -204,29 +204,29 @@ def fused_gelu(x):
 ###############################################################################
 # With the following command, PyTorch run the task on N OpenMP threads.
 
-# export OMP_NUM_THREADS=N
+``export OMP_NUM_THREADS=N``
 
 ###############################################################################
 # Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. OMP_PROC_BIND specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. OMP_SCHEDULE determines how OpenMP threads are scheduled. GOMP_CPU_AFFINITY binds threads to specific CPUs.
 
-# export OMP_SCHEDULE=STATIC
-# export OMP_PROC_BIND=CLOSE
-# export GOMP_CPU_AFFINITY="N-M"
+``export OMP_SCHEDULE=STATIC``
+``export OMP_PROC_BIND=CLOSE``
+``export GOMP_CPU_AFFINITY="N-M"``
 
 ###############################################################################
 # Intel OpenMP Runtime Library (libiomp)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # By default, PyTorch uses GNU OpenMP (GNU libgomp) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It sometimes brings more performance benefits compared to libgomp. Utilizing environment variable LD_PRELOAD can switch OpenMP library to libiomp:
 
-# export LD_PRELOAD=<path>/libiomp5.so:$LD_PRELOAD
+``export LD_PRELOAD=<path>/libiomp5.so:$LD_PRELOAD``
 
 ###############################################################################
 # Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in libiomp to control CPU affinity settings.
 # KMP_AFFINITY binds OpenMP threads to physical processing units. KMP_BLOCKTIME sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting KMP_BLOCKTIME to 1 or 0 yields good performances.
 # The following commands show a common settings with Intel OpenMP Runtime Library.
 
-# export KMP_AFFINITY=granularity=fine,compact,1,0
-# export KMP_BLOCKTIME=1
+``export KMP_AFFINITY=granularity=fine,compact,1,0``
+``export KMP_BLOCKTIME=1``
 
 ###############################################################################
 # Switch Memory allocator
@@ -234,7 +234,7 @@ def fused_gelu(x):
 # For deep learning workloads, Jemalloc or TCMalloc can get better performance by reusing memory as much as possible than default malloc funtion. `Jemalloc <https://github.com/jemalloc/jemalloc>`_ is a general purpose malloc implementation that emphasizes fragmentation avoidance and scalable concurrency support. `TCMalloc <https://google.github.io/tcmalloc/overview.html>`_ also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
 # Use environment variable LD_PRELOAD to take advantage of one of them.
 
-# export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD
+``export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD``
 
 ###############################################################################
 # Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality
