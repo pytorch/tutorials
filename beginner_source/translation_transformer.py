@@ -15,19 +15,10 @@ dataset to train a German to English translation model.
 # `torchtext library <https://pytorch.org/text/stable/>`__ has utilities for creating datasets that can be easily
 # iterated through for the purposes of creating a language translation
 # model. In this example, we show how to use torchtext's inbuilt datasets, 
-# tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor.
+# tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor. We will use
+# `Multi30k dataset from torchtext library <https://pytorch.org/text/stable/datasets.html#multi30k>`__
+# that yields a pair of source-target raw sentences. 
 #
-#
-# To run this tutorial, first let's make sure we install the dependencies. 
-#
-# ::
-#
-#        pip install -U spacy
-#        python -m spacy download en_core_web_sm
-#        python -m spacy download de_core_news_sm
-#
-#
-# Let's now create the Vocabulary from training data
 #
 
 from torchtext.data.utils import get_tokenizer
@@ -44,7 +35,10 @@ token_transform = {}
 vocab_transform = {}
 
 
-# Create source and target language tokenizer
+# Create source and target language tokenizer. Make sure to install the dependencies.
+# pip install -U spacy
+# python -m spacy download en_core_web_sm
+# python -m spacy download de_core_news_sm
 token_transform[SRC_LANGUAGE] = get_tokenizer('spacy', language='de_core_news_sm')
 token_transform[TGT_LANGUAGE] = get_tokenizer('spacy', language='en_core_web_sm')
 
@@ -82,14 +76,14 @@ for symbol, index in special_symbols.items():
     else:
         vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
     
-# Set UNK_IDX as the default index. This index is returned when token is not found. 
-# If not set, it throws RuntimeError when queried token is not found in the Vocabulary. 
+# Set UNK_IDX as the default index. This index is returned when the token is not found. 
+# If not set, it throws RuntimeError when the queried token is not found in the Vocabulary. 
 vocab_transform[SRC_LANGUAGE].set_default_index(UNK_IDX)
 vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
 
 ######################################################################
-# Transformer!
-# ------------
+# Seq2Seq Network using Transformer
+# ---------------------------------
 #
 # Transformer is a Seq2Seq model introduced in `“Attention is all you
 # need” <https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf>`__
@@ -190,9 +184,9 @@ class Seq2SeqTransformer(nn.Module):
 
 
 ######################################################################
-# Let's define function to create a ``subsequent word`` mask to stop a target word from
-# attending to its subsequent words. We shall also create masks to mask
-# source and target padding tokens.
+# During training, we need a subsequent word mask that will prevent model to look into
+# the future words when making predictions. We will also need masks to hide
+# source and target padding tokens. Below, let's define a function that will take care of both. 
 #
 
 
@@ -215,7 +209,8 @@ def create_mask(src, tgt):
 
 
 ######################################################################
-# Define model parameters and instantiate model
+# Let's now define the parameters of our model and instantiate the same. Below, we also 
+# define our loss function which is the cross-entropy loss and the optmizer used for training.
 #
 torch.manual_seed(0)
 
@@ -245,10 +240,9 @@ optimizer = torch.optim.Adam(transformer.parameters(), lr=0.0001, betas=(0.9, 0.
 # Collation
 # ---------
 #   
-# In this tutorial, we use `Multi30k dataset from torchtext library <https://pytorch.org/text/stable/datasets.html#multi30k>`__
-# that yield tuples of source-target raw sentences. 
-# We need to convert these string pairs into the batched tensors that can be processed by our Seq2Seq network defined previously.
-# Below we define our collate function that convert batch of raw strings into batch tensors that
+# As seen in the ``Data Sourcing and Processing`` section, our data iterator yields a pair of raw strings. 
+# We need to convert these string pairs into the batched tensors that can be processed by our ``Seq2Seq`` network 
+# defined previously. Below we define our collate function that convert batch of raw strings into batch tensors that
 # can be fed directly into our model.   
 #
 
@@ -279,7 +273,7 @@ tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE],
                                            tensor_transform)
 
 # function to collate data samples into batch tesors
-def collate_fn(batch: List[str]):
+def collate_fn(batch):
     src_batch, tgt_batch = [], []
     for src_sample, tgt_sample in batch:
         src_batch.append(src_text_transform(src_sample.rstrip("\n")))
@@ -291,7 +285,7 @@ def collate_fn(batch: List[str]):
     
 ######################################################################
 # Let's define training and evaluation loop that will be called for each 
-# epoch
+# epoch.
 #
 
 from torch.utils.data import DataLoader
@@ -349,7 +343,7 @@ def evaluate(model):
     return losses / len(val_dataloader)
 
 ######################################################################
-# Now we have all the ingredients to train model. Let's do it!
+# Now we have all the ingredients to train our model. Let's do it!
 #
 
 from timeit import default_timer as timer
@@ -389,7 +383,7 @@ for epoch in range(1, NUM_EPOCHS+1):
 #
 # Once we have the trained model, we can use it to translate our input sentence into target language.
 # Below we first define function to decode predictions from our Seq2Seq network using greedy algorithm i.e we take the best prediction
-# at every time stamp in the output. Finally we define a function that makes use of greedy decoding to do actual translation.
+# at every time stamp in the output. Finally we define a function that makes use of greedy decoding to do the actual translation.
 #
 
 
