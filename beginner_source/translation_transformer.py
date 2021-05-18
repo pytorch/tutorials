@@ -50,15 +50,11 @@ def yield_tokens(data_iter: Iterable, language: str) -> List[str]:
     for data_sample in data_iter:
         yield token_transform[language](data_sample[language_index[language]])
 
-# Training data Iterator 
-train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-# Build source vocabulary
-vocab_transform[SRC_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, SRC_LANGUAGE))
-
-
-train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-# Build target vocabulary
-vocab_transform[TGT_LANGUAGE] = build_vocab_from_iterator(yield_tokens(train_iter, TGT_LANGUAGE))
+for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
+  # Training data Iterator 
+  train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
+  # Build source vocabulary
+  vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln))
 
 # Define special symbols and indices
 UNK_IDX, PAD_IDX, BOS_IDX, EOS_IDX = 0, 1, 2, 3
@@ -66,20 +62,16 @@ special_symbols = {'<unk>': UNK_IDX, '<pad>': PAD_IDX,'<bos>': BOS_IDX, '<eos>':
 
 # Insert special symbols
 for symbol, index in special_symbols.items():
-    if symbol in vocab_transform[SRC_LANGUAGE]:
-        vocab_transform[SRC_LANGUAGE].reassign_token(symbol, index)
-    else:
-        vocab_transform[SRC_LANGUAGE].insert_token(symbol, index)
-        
-    if symbol in vocab_transform[TGT_LANGUAGE]:
-        vocab_transform[TGT_LANGUAGE].reassign_token(symbol, index)
-    else:
-        vocab_transform[TGT_LANGUAGE].insert_token(symbol, index)
+    for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
+        if symbol in vocab_transform[ln]:
+            vocab_transform[ln].reassign_token(symbol, index)
+        else:
+            vocab_transform[ln].insert_token(symbol, index)        
     
 # Set UNK_IDX as the default index. This index is returned when the token is not found. 
 # If not set, it throws RuntimeError when the queried token is not found in the Vocabulary. 
-vocab_transform[SRC_LANGUAGE].set_default_index(UNK_IDX)
-vocab_transform[TGT_LANGUAGE].set_default_index(UNK_IDX)
+for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
+  vocab_transform[ln].set_default_index(UNK_IDX)
 
 ######################################################################
 # Seq2Seq Network using Transformer
@@ -263,21 +255,20 @@ def tensor_transform(token_ids: List[int]):
                       torch.tensor(token_ids), 
                       torch.tensor([EOS_IDX])))
 
-# src and tgt sentence transforms to convert raw sentence into sequence indices
-src_text_transform = sequential_transforms(token_transform[SRC_LANGUAGE], #Tokenization
-                                           vocab_transform[SRC_LANGUAGE], #Numericalization
-                                           tensor_transform) # Add BOS/EOS and create tensor
+# src and tgt language text transforms to convert raw strings into tensors indices
+text_transform = {}
+for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
+    text_transform[ln] = sequential_transforms(token_transform[ln], #Tokenization
+                                               vocab_transform[ln], #Numericalization
+                                               tensor_transform) # Add BOS/EOS and create tensor
 
-tgt_text_transform = sequential_transforms(token_transform[TGT_LANGUAGE], 
-                                           vocab_transform[TGT_LANGUAGE], 
-                                           tensor_transform)
 
 # function to collate data samples into batch tesors
 def collate_fn(batch):
     src_batch, tgt_batch = [], []
     for src_sample, tgt_sample in batch:
-        src_batch.append(src_text_transform(src_sample.rstrip("\n")))
-        tgt_batch.append(tgt_text_transform(tgt_sample.rstrip("\n")))
+        src_batch.append(text_transform[SRC_LANGUAGE](src_sample.rstrip("\n")))
+        tgt_batch.append(text_transform[TGT_LANGUAGE](tgt_sample.rstrip("\n")))
 
     src_batch = pad_sequence(src_batch, padding_value=PAD_IDX)
     tgt_batch = pad_sequence(tgt_batch, padding_value=PAD_IDX)
@@ -414,7 +405,7 @@ def greedy_decode(model, src, src_mask, max_len, start_symbol):
 # actual function to translate input sentence into target language
 def translate(model: torch.nn.Module, src_sentence: str):
     model.eval()
-    src = src_text_transform(src_sentence).view(-1, 1)
+    src = text_transform[SRC_LANGUAGE](src_sentence).view(-1, 1)
     num_tokens = src.shape[0]
     src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
     tgt_tokens = greedy_decode(
