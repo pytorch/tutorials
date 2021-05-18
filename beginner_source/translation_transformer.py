@@ -20,13 +20,13 @@ dataset to train a German to English translation model.
 #
 # To run this tutorial, first let's make sure we install the dependencies. 
 #
-
-!pip install -U spacy
-!python -m spacy download en_core_web_sm
-!python -m spacy download de_core_news_sm
-
-
-######################################################################
+# ::
+#
+#         pip install -U spacy
+#         python -m spacy download en_core_web_sm
+#         python -m spacy download de_core_news_sm
+#
+#
 # Let's now create the Vocabulary from training data
 #
 
@@ -353,7 +353,7 @@ def evaluate(model):
 #
 
 from timeit import default_timer as timer
-NUM_EPOCHS = 16
+NUM_EPOCHS = 18
 
 for epoch in range(1, NUM_EPOCHS+1):
     start_time = timer()
@@ -362,7 +362,31 @@ for epoch in range(1, NUM_EPOCHS+1):
     val_loss = evaluate(transformer)
     print((f"Epoch: {epoch}, Train loss: {train_loss:.3f}, Val loss: {val_loss:.3f}, "f"Epoch time = {(end_time - start_time):.3f}s"))
 
-######################################################################
+
+#######################################################################
+# We get the following statistics during training.
+#
+# ::
+#
+#         Epoch: 1, Train loss: 5.345, Val loss: 4.142, Epoch time = 39.488s
+#         Epoch: 2, Train loss: 3.792, Val loss: 3.362, Epoch time = 42.003s
+#         Epoch: 3, Train loss: 3.185, Val loss: 2.927, Epoch time = 43.185s
+#         Epoch: 4, Train loss: 2.784, Val loss: 2.657, Epoch time = 42.497s
+#         Epoch: 5, Train loss: 2.492, Val loss: 2.452, Epoch time = 43.037s
+#         Epoch: 6, Train loss: 2.262, Val loss: 2.318, Epoch time = 42.738s
+#         Epoch: 7, Train loss: 2.070, Val loss: 2.208, Epoch time = 42.730s
+#         Epoch: 8, Train loss: 1.905, Val loss: 2.130, Epoch time = 42.816s
+#         Epoch: 9, Train loss: 1.767, Val loss: 2.069, Epoch time = 42.852s
+#         Epoch: 10, Train loss: 1.641, Val loss: 2.008, Epoch time = 42.818s
+#         Epoch: 11, Train loss: 1.528, Val loss: 1.978, Epoch time = 42.794s
+#         Epoch: 12, Train loss: 1.426, Val loss: 1.962, Epoch time = 42.965s
+#         Epoch: 13, Train loss: 1.336, Val loss: 1.945, Epoch time = 42.854s
+#         Epoch: 14, Train loss: 1.257, Val loss: 1.902, Epoch time = 42.832s
+#         Epoch: 15, Train loss: 1.174, Val loss: 1.890, Epoch time = 42.863s
+#         Epoch: 16, Train loss: 1.105, Val loss: 1.888, Epoch time = 42.889s
+#         Epoch: 17, Train loss: 1.038, Val loss: 1.871, Epoch time = 42.719s
+#         Epoch: 18, Train loss: 0.979, Val loss: 1.881, Epoch time = 42.771s
+#
 # Once we have the trained model, we can use it to translate our input sentence into target language.
 # Below we first define function to decode predictions from our Seq2Seq network using greedy algorithm i.e we take the best prediction
 # at every time stamp in the output. Finally we define a function that makes use of greedy decoding to do actual translation.
@@ -411,7 +435,7 @@ print(translate(transformer, "Eine Gruppe von Menschen steht vor einem Iglu ."))
 
 
 ######################################################################
-# Output: `A group of people stand in front of an igloo .`
+# Output: `A group of people are standing in front of an igloo .`
 
 
 ######################################################################
