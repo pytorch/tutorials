@@ -16,10 +16,19 @@ dataset to train a German to English translation model.
 # iterated through for the purposes of creating a language translation
 # model. In this example, we show how to use torchtext's inbuilt datasets, 
 # tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor.
-# To run this tutorial, first install spacy using pip or conda. Next,
-# download the raw data for the English and German Spacy tokenizers from
-# https://spacy.io/usage/models
+#
+#
+# To run this tutorial, first let's make sure we install the dependencies. 
+#
 
+!pip install -U spacy
+!python -m spacy download en_core_web_sm
+!python -m spacy download de_core_news_sm
+
+
+######################################################################
+# Let's now create the Vocabulary from training data
+#
 
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
@@ -100,7 +109,7 @@ import torch
 import torch.nn as nn
 from torch.nn import Transformer
 import math
-
+DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # helper Module that adds positional encoding to the token embedding to introduce a notion of word order.
 class PositionalEncoding(nn.Module):
@@ -170,6 +179,15 @@ class Seq2SeqTransformer(nn.Module):
                                 src_padding_mask, tgt_padding_mask, memory_key_padding_mask)
         return self.generator(outs)
 
+    def encode(self, src: Tensor, src_mask: Tensor):
+        return self.transformer.encoder(self.positional_encoding(
+                            self.src_tok_emb(src)), src_mask)
+
+    def decode(self, tgt: Tensor, memory: Tensor, tgt_mask: Tensor):
+        return self.transformer.decoder(self.positional_encoding(
+                          self.tgt_tok_emb(tgt)), memory,
+                          tgt_mask)
+
 
 ######################################################################
 # Let's define function to create a ``subsequent word`` mask to stop a target word from
@@ -200,8 +218,6 @@ def create_mask(src, tgt):
 # Define model parameters and instantiate model
 #
 torch.manual_seed(0)
-torch.use_deterministic_algorithms(True)
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 SRC_VOCAB_SIZE = len(vocab_transform[SRC_LANGUAGE])
 TGT_VOCAB_SIZE = len(vocab_transform[TGT_LANGUAGE])
