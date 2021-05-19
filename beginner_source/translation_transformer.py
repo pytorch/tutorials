@@ -22,9 +22,8 @@ dataset to train a German to English translation model.
 #
 
 from torchtext.data.utils import get_tokenizer
-from torchtext.vocab import vocab
+from torchtext.vocab import build_vocab_from_iterator
 from torchtext.datasets import Multi30k
-from collections import OrderedDict, Counter
 from typing import Iterable, List
 
 
@@ -59,29 +58,11 @@ special_symbols = ['<unk>', '<pad>', '<bos>', '<eos>']
 for ln in [SRC_LANGUAGE, TGT_LANGUAGE]:
     # Training data Iterator 
     train_iter = Multi30k(split='train', language_pair=(SRC_LANGUAGE, TGT_LANGUAGE))
-    
-    # Collect tokens
-    tokens_counter = Counter()
-    for tokens in yield_tokens(train_iter, ln):
-        tokens_counter.update(tokens)
-    
-    # Sort tokens according to their occurance frequency
-    sorted_by_freq_tuples = sorted(tokens_counter.items(), key=lambda x: x[1], reverse=True)
-    ordered_dict = OrderedDict(sorted_by_freq_tuples)
-
-    # Remove special symbols if they are already present.
-    # We want them to be in pre-defined location.
-    for symbol in special_symbols:
-      if symbol in ordered_dict:
-        del ordered_dict[symbol]
-
-    # Insert special symbols in their defined location
-    for symbol in special_symbols[::-1]:
-        ordered_dict.update({symbol:1})
-        ordered_dict.move_to_end(symbol, last=False)
-
-    # Create torchtext's Vocab object
-    vocab_transform[ln] = vocab(ordered_dict, min_freq=1)
+    # Create torchtext's Vocab object 
+    vocab_transform[ln] = build_vocab_from_iterator(yield_tokens(train_iter, ln),
+                                                    min_freq=1,
+                                                    specials=special_symbols,
+                                                    special_first=True)
 
 # Set UNK_IDX as the default index. This index is returned when the token is not found. 
 # If not set, it throws RuntimeError when the queried token is not found in the Vocabulary. 
