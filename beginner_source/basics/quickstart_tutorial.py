@@ -158,7 +158,7 @@ def train(dataloader, model, loss_fn, optimizer):
 ##############################################################################
 # We also check the model's performance against the test dataset to ensure it is learning.
 
-def test(dataloader, model):
+def test(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
     model.eval()
     test_loss, correct = 0, 0
