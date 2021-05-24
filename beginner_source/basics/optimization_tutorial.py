@@ -167,7 +167,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
 def test_loop(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
-    num_batches = len(testloader)
+    num_batches = len(dataloader)
     test_loss, correct = 0, 0
 
     with torch.no_grad():
