@@ -46,7 +46,7 @@ with high performance requirements. For that:
 #
 # ::
 #
-#     $ pip install Flask==1.0.3 torchvision-0.3.0
+#     $ pip install Flask==1.0.3 torchvision==0.3.0
 
 
 ######################################################################
@@ -116,11 +116,11 @@ def predict():
 # DenseNet model requires the image to be of 3 channel RGB image of size
 # 224 x 224. We will also normalise the image tensor with the required mean
 # and standard deviation values. You can read more about it
-# `here <https://pytorch.org/docs/stable/torchvision/models.html>`_.
+# `here <https://pytorch.org/vision/stable/models.html>`_.
 #
 # We will use ``transforms`` from ``torchvision`` library and build a
 # transform pipeline, which transforms our images as required. You
-# can read more about transforms `here <https://pytorch.org/docs/stable/torchvision/transforms.html>`_.
+# can read more about transforms `here <https://pytorch.org/vision/stable/transforms.html>`_.
 
 import io
 

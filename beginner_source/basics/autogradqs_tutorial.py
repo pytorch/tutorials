@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
 `Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensor_tutorial.html>`_ || 
+`Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
@@ -47,7 +47,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 #
 # In this network, ``w`` and ``b`` are **parameters**, which we need to
 # optimize. Thus, we need to be able to compute the gradients of loss
-# function with respect to those variables. In orded to do that, we set
+# function with respect to those variables. In order to do that, we set
 # the ``requires_grad`` property of those tensors.
 
 #######################################################################
@@ -58,7 +58,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # A function that we apply to tensors to construct computational graph is
 # in fact an object of class ``Function``. This object knows how to
 # compute the function in the *forward* direction, and also how to compute
-# it's derivative during the *backward propagation* step. A reference to
+# its derivative during the *backward propagation* step. A reference to
 # the backward propagation function is stored in ``grad_fn`` property of a
 # tensor. You can find more information of ``Function`` `in the
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
@@ -189,11 +189,11 @@ print(z_det.requires_grad)
 # .. math::
 #
 #
-#    \begin{align}J=\left(\begin{array}{ccc}
+#    J=\left(\begin{array}{ccc}
 #       \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
 #       \vdots & \ddots & \vdots\\
 #       \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#       \end{array}\right)\end{align}
+#       \end{array}\right)
 #
 # Instead of computing the Jacobian matrix itself, PyTorch allows you to
 # compute **Jacobian Product** :math:`v^T\cdot J` for a given input vector

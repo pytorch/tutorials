@@ -7,10 +7,11 @@ This tutorial introduces the steps to do post training static quantization in gr
 The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model    
 although there might some effort required to make the model compatible with FX Graph Mode Quantizatiion (symbolically traceable with ``torch.fx``), 
 we'll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.   
-We also have a tutorial for FX Graph Mode Post Training Dynamic Quantization(todo).     
+We also have a tutorial for `FX Graph Mode Post Training Dynamic Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_dynamic.html>`_.
 tldr; The FX Graph Mode API looks like the following:
 
-.. code:: python    
+.. code:: python
+
   import torch    
   from torch.quantization import get_default_qconfig  
   # Note that this is temporary, we'll expose these functions to torch.quantization after official releasee   
@@ -54,14 +55,9 @@ Advantages of FX Graph Mode Quantization are:
   
 We’ll start by doing the necessary imports, defining some helper functions and prepare the data.  
 These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html>`_.       
-  
-Download dataset: 
-  
-.. code:: 
-  
-    wget https://s3.amazonaws.com/pytorch-tutorial-assets/imagenet_1k.zip 
-  
-and unzip to `data` folder.   
+
+To run the code in this tutorial using the entire ImageNet dataset, first download imagenet by following the instructions at here `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file into the 'data_path' folder.
+
 Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L12>`_ and rename it to  
 ``data/resnet18_pretrained_float.pth``.   
 
@@ -173,28 +169,24 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
 
     def prepare_data_loaders(data_path):    
 
-        traindir = os.path.join(data_path, 'train') 
-        valdir = os.path.join(data_path, 'val') 
-        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],    
-                                         std=[0.229, 0.224, 0.225]) 
-
-        dataset = torchvision.datasets.ImageFolder( 
-            traindir,   
-            transforms.Compose([    
-                transforms.RandomResizedCrop(224),  
-                transforms.RandomHorizontalFlip(),  
-                transforms.ToTensor(),  
-                normalize,  
-            ])) 
-
-        dataset_test = torchvision.datasets.ImageFolder(    
-            valdir, 
-            transforms.Compose([    
-                transforms.Resize(256), 
-                transforms.CenterCrop(224), 
-                transforms.ToTensor(),  
-                normalize,  
-            ])) 
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],  
+                                         std=[0.229, 0.224, 0.225])
+        dataset = torchvision.datasets.ImageNet(
+               data_path, split="train",
+             transforms.Compose([  
+                       transforms.RandomResizedCrop(224),  
+                       transforms.RandomHorizontalFlip(),  
+                       transforms.ToTensor(),  
+                       normalize,  
+                   ]))  
+        dataset_test = torchvision.datasets.ImageNet(
+              data_path, split="val", 
+                  transforms.Compose([  
+                      transforms.Resize(256), 
+                      transforms.CenterCrop(224), 
+                      transforms.ToTensor(),  
+                      normalize,  
+                  ]))
 
         train_sampler = torch.utils.data.RandomSampler(dataset) 
         test_sampler = torch.utils.data.SequentialSampler(dataset_test) 
@@ -209,12 +201,12 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
 
         return data_loader, data_loader_test    
 
-    data_path = 'data/imagenet_1k'  
+    data_path = '~/.data/imagenet'
     saved_model_dir = 'data/'   
     float_model_file = 'resnet18_pretrained_float.pth'  
 
-    train_batch_size = 30   
-    eval_batch_size = 30    
+    train_batch_size = 30
+    eval_batch_size = 50
 
     data_loader, data_loader_test = prepare_data_loaders(data_path) 
     criterion = nn.CrossEntropyLoss()   
@@ -320,6 +312,7 @@ The purpose for calibration is to run through some sample examples that is repre
 the statistics of the Tensors and we can later use this information to calculate quantization parameters. 
 
 .. code:: python
+
     def calibrate(model, data_loader):  
         model.eval()    
         with torch.no_grad():   
@@ -329,17 +322,19 @@ the statistics of the Tensors and we can later use this information to calculate
 
 7. Convert the Model to a Quantized Model 
 ----------------------------------------- 
-``convert_fx`` takes a calibrated model and produces a quantized model.   
+``convert_fx`` takes a calibrated model and produces a quantized model.
 
 .. code:: python
-    quantized_model = convert_fx(prepared_model)    
+
+    quantized_model = convert_fx(prepared_model)
     print(quantized_model)
-   
+
 8. Evaluation 
 ------------- 
 We can now print the size and accuracy of the quantized model.    
 
 .. code:: python
+
     print("Size of model before quantization")  
     print_size_of_model(float_model)    
     print("Size of model after quantization")   
@@ -381,6 +376,7 @@ we'll first call fuse explicitly to fuse the conv and bn in the model:
 Note that ``fuse_fx`` only works in eval mode.    
 
 .. code:: python
+
     fused = fuse_fx(float_model)    
 
     conv1_weight_after_fuse = fused.conv1[0].weight[0]  
@@ -392,6 +388,7 @@ Note that ``fuse_fx`` only works in eval mode.
 --------------------------------------------------------------------   
 
 .. code:: python
+
     scripted_float_model_file = "resnet18_scripted.pth" 
 
     print("Size of baseline model") 
@@ -406,6 +403,7 @@ quantized in eager mode. FX graph mode and eager mode produce very similar quant
 so the expectation is that the accuracy and speedup are similar as well.  
 
 .. code:: python
+
     print("Size of Fx graph mode quantized model")  
     print_size_of_model(quantized_model)    
     top1, top5 = evaluate(quantized_model, criterion, data_loader_test) 
