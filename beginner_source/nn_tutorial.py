@@ -132,6 +132,10 @@ bias = torch.zeros(10, requires_grad=True)
 def log_softmax(x):
     return x - x.exp().sum(-1).log().unsqueeze(-1)
 
+xb, = map(torch.tensor, (xb, ))
+"""FIX ISSUE for xb not in the right tensor format
+xb, = map(torch.tensor, (xb, ))      # transform x to tensor, so it could multiply the weights otherwise got error
+"""
 def model(xb):
     return log_softmax(xb @ weights + bias)
 
@@ -144,6 +148,8 @@ def model(xb):
 bs = 64  # batch size
 
 xb = x_train[0:bs]  # a mini-batch from x
+xb, = map (torch.tensor, (xb, )) # same issue as tranform xb => tensor
+
 preds = model(xb)  # predictions
 preds[0], preds.shape
 print(preds[0], preds.shape)
