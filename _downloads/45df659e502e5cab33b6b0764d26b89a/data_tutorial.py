@@ -140,8 +140,7 @@ class CustomImageDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        sample = {"image": image, "label": label}
-        return sample
+        return image, label
 
 
 #################################################################
@@ -187,7 +186,7 @@ def __len__(self):
 # The __getitem__ function loads and returns a sample from the dataset at the given index ``idx``. 
 # Based on the index, it identifies the image's location on disk, converts that to a tensor using ``read_image``, retrieves the 
 # corresponding label from the csv data in ``self.img_labels``, calls the transform functions on them (if applicable), and returns the 
-# tensor image and corresponding label in a Python dict.
+# tensor image and corresponding label in a tuple.
 
 def __getitem__(self, idx):
     img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
@@ -197,8 +196,7 @@ def __getitem__(self, idx):
         image = self.transform(image)
     if self.target_transform:
         label = self.target_transform(label)
-    sample = {"image": image, "label": label}
-    return sample
+    return image, label
 
 
 ######################################################################
