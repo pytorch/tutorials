@@ -386,7 +386,7 @@ def run_worker(rank, world_size):
                 print_with_rank('| epoch {:3d} | {:5d}/{:5d} batches | '
                       'lr {:02.2f} | ms/batch {:5.2f} | '
                       'loss {:5.2f} | ppl {:8.2f}'.format(
-                        epoch, batch, nbatches // bptt, scheduler.get_lr()[0],
+                        epoch, batch, nbatches // bptt, scheduler.get_last_lr()[0],
                         elapsed * 1000 / log_interval,
                         cur_loss, math.exp(cur_loss)))
                 total_loss = 0
@@ -453,3 +453,110 @@ import torch.multiprocessing as mp
 if __name__=="__main__":
     world_size = 2
     mp.spawn(run_worker, args=(world_size, ), nprocs=world_size, join=True)
+######################################################################
+# Output
+# ------
+#
+
+
+######################################################################
+#.. code-block:: py
+#
+#    [RANK 0]: | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 778.97 | loss 43.31 | ppl 6432469059895903232.00
+#    [RANK 1]: | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 778.90 | loss 44.50 | ppl 21245447128217366528.00
+#    [RANK 0]: | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 699.89 | loss 44.50 | ppl 21176949187407757312.00
+#    [RANK 1]: | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 699.87 | loss 44.62 | ppl 23975861229620961280.00
+#    [RANK 0]: | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 698.86 | loss 41.62 | ppl 1193312915629888256.00
+#    [RANK 1]: | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 698.87 | loss 40.69 | ppl 471605759847546240.00
+#    [RANK 0]: | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 698.34 | loss 45.20 | ppl 42812308420836458496.00
+#    [RANK 1]: | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 698.33 | loss 45.68 | ppl 68839569686012223488.00
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   1 | time: 40.08s | valid loss  0.80 | valid ppl     2.22
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   1 | time: 40.09s | valid loss  0.80 | valid ppl     2.22
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | epoch   2 |    10/   50 batches | lr 4.75 | ms/batch 768.51 | loss 36.34 | ppl 6063529544668166.00
+#    [RANK 1]: | epoch   2 |    10/   50 batches | lr 4.75 | ms/batch 769.23 | loss 37.41 | ppl 17651211266236086.00
+#    [RANK 0]: | epoch   2 |    20/   50 batches | lr 4.75 | ms/batch 699.57 | loss 28.97 | ppl 3798441739584.11
+#    [RANK 1]: | epoch   2 |    20/   50 batches | lr 4.75 | ms/batch 699.56 | loss 29.28 | ppl 5203636967575.47
+#    [RANK 0]: | epoch   2 |    30/   50 batches | lr 4.75 | ms/batch 699.04 | loss 28.43 | ppl 2212498693571.25
+#    [RANK 1]: | epoch   2 |    30/   50 batches | lr 4.75 | ms/batch 699.05 | loss 28.33 | ppl 2015144761281.48
+#    [RANK 0]: | epoch   2 |    40/   50 batches | lr 4.75 | ms/batch 699.10 | loss 23.30 | ppl 13121380184.92
+#    [RANK 1]: | epoch   2 |    40/   50 batches | lr 4.75 | ms/batch 699.09 | loss 23.41 | ppl 14653799192.87
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   2 | time: 39.97s | valid loss  0.24 | valid ppl     1.27
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   2 | time: 39.98s | valid loss  0.24 | valid ppl     1.27
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | epoch   3 |    10/   50 batches | lr 4.51 | ms/batch 769.36 | loss 12.80 | ppl 361681.11
+#    [RANK 1]: | epoch   3 |    10/   50 batches | lr 4.51 | ms/batch 768.97 | loss 12.57 | ppl 287876.61
+#    [RANK 0]: | epoch   3 |    20/   50 batches | lr 4.51 | ms/batch 698.27 | loss 12.01 | ppl 164364.60
+#    [RANK 1]: | epoch   3 |    20/   50 batches | lr 4.51 | ms/batch 698.30 | loss 11.98 | ppl 159095.89
+#    [RANK 0]: | epoch   3 |    30/   50 batches | lr 4.51 | ms/batch 697.75 | loss 10.90 | ppl 54261.91
+#    [RANK 1]: | epoch   3 |    30/   50 batches | lr 4.51 | ms/batch 697.72 | loss 10.89 | ppl 53372.39
+#    [RANK 0]: | epoch   3 |    40/   50 batches | lr 4.51 | ms/batch 699.49 | loss 10.78 | ppl 47948.35
+#    [RANK 1]: | epoch   3 |    40/   50 batches | lr 4.51 | ms/batch 699.50 | loss 10.79 | ppl 48664.42
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   3 | time: 39.96s | valid loss  0.38 | valid ppl     1.46
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   3 | time: 39.96s | valid loss  0.38 | valid ppl     1.46
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: =========================================================================================
+#    [RANK 0]: | End of training | test loss  0.33 | test ppl     1.39
+#    [RANK 0]: =========================================================================================
+#    [RANK 1]: =========================================================================================
+#    [RANK 1]: | End of training | test loss  0.33 | test ppl     1.39
+#    [RANK 1]: =========================================================================================
+# 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
