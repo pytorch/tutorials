@@ -207,7 +207,7 @@ to obtain the sum of all tensors at all processes, we can use the
 
     """ All-Reduce example."""
     def run(rank, size):
-        """ Simple point-to-point communication. """
+        """ Simple collective communication. """
         group = dist.new_group([0, 1])
         tensor = torch.ones(1)
         dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
