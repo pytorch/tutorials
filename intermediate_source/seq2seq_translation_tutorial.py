@@ -76,17 +76,6 @@ and :doc:`/intermediate/char_rnn_generation_tutorial`
 helpful as those concepts are very similar to the Encoder and Decoder
 models, respectively.
 
-And for more, read the papers that introduced these topics:
-
--  `Learning Phrase Representations using RNN Encoder-Decoder for
-   Statistical Machine Translation <https://arxiv.org/abs/1406.1078>`__
--  `Sequence to Sequence Learning with Neural
-   Networks <https://arxiv.org/abs/1409.3215>`__
--  `Neural Machine Translation by Jointly Learning to Align and
-   Translate <https://arxiv.org/abs/1409.0473>`__
--  `A Neural Conversational Model <https://arxiv.org/abs/1506.05869>`__
-
-
 **Requirements**
 """
 from __future__ import unicode_literals, print_function, division
@@ -416,7 +405,7 @@ class DecoderRNN(nn.Module):
 # Attention Decoder
 # ^^^^^^^^^^^^^^^^^
 #
-# If only the context vector is passed betweeen the encoder and decoder,
+# If only the context vector is passed between the encoder and decoder,
 # that single vector carries the burden of encoding the entire sentence.
 #
 # Attention allows the decoder network to "focus" on a different part of

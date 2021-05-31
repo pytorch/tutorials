@@ -14,7 +14,7 @@ Deep Learning for NLP with Pytorch
 	https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html
 
 4. sequence_models_tutorial.py
-	Sequence Models and Long-Short Term Memory Networks
+	Sequence Models and Long Short-Term Memory Networks
 	https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html
 
 5. advanced_tutorial.py

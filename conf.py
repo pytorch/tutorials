@@ -55,8 +55,11 @@ import pytorch_sphinx_theme
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.mathjax', 'sphinx_copybutton',
-              'sphinx_gallery.gen_gallery']
+extensions = [
+    'sphinxcontrib.katex',
+    'sphinx_copybutton',
+    'sphinx_gallery.gen_gallery',
+]
 
 
 # -- Sphinx-gallery configuration --------------------------------------------
@@ -109,7 +112,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'PyTorch Tutorials'
-copyright = '2017, PyTorch'
+copyright = '2021, PyTorch'
 author = 'PyTorch contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -181,6 +184,7 @@ html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
+    'analytics_id': 'UA-117752657-2',
 }
 
 
@@ -242,6 +246,18 @@ texinfo_documents = [
 
 
 def setup(app):
+    # NOTE: in Sphinx 1.8+ `html_css_files` is an official configuration value
+    # and can be moved outside of this function (and the setup(app) function
+    # can be deleted).
+    html_css_files = [
+        'https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css'
+    ]
+    # In Sphinx 1.8 it was renamed to `add_css_file`, 1.7 and prior it is
+    # `add_stylesheet` (deprecated in 1.8).
+    add_css = getattr(app, 'add_css_file', app.add_stylesheet)
+    for css_file in html_css_files:
+        add_css(css_file)
+
     # Custom CSS
     # app.add_stylesheet('css/pytorch_theme.css')
     # app.add_stylesheet('https://fonts.googleapis.com/css?family=Lato')
