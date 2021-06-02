@@ -594,6 +594,60 @@ or
 </ul>
 </div>
 </div>
+<div class="section" id="cpu-specific-optimizations">
+<h2>CPU specific optimizations<a class="headerlink" href="#cpu-specific-optimizations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="utilize-non-uniform-memory-access-numa-controls">
+<h3>Utilize Non-Uniform Memory Access (NUMA) Controls<a class="headerlink" href="#utilize-non-uniform-memory-access-numa-controls" title="Permalink to this headline">¶</a></h3>
+<p>NUMA or non-uniform memory access is a memory layout design used in data center machines meant to take advantage of locality of memory in multi-socket machines with multiple memory controllers and blocks. Generally speaking, all deep learning workloads, training or inference, get better performance without accessing hardware resources across NUMA nodes. Thus, inference can be run with multiple instances, each instance runs on one socket, to raise throughput. For training tasks on single node, distributed training is recommended to make each training process run on one socket.</p>
+<p>In general cases the following command executes a PyTorch script on cores on the Nth node only, and avoids cross-socket memory access to reduce memory access overhead.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># numactl --cpunodebind=N --membind=N python &lt;pytorch_script&gt;</span>
+</pre></div>
+</div>
+<p>More detailed descriptions can be found <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html">here</a>.</p>
+</div>
+<div class="section" id="utilize-openmp">
+<h3>Utilize OpenMP<a class="headerlink" href="#utilize-openmp" title="Permalink to this headline">¶</a></h3>
+<p>OpenMP is utilized to bring better performance for parallel computation tasks.
+OMP_NUM_THREADS is the easiest switch that can be used to accelerate computations. It determines number of threads used for OpenMP computations.
+CPU affinity setting controls how workloads are distributed over multiple cores. It affects communication overhead, cache line invalidation overhead, or page thrashing, thus proper setting of CPU affinity brings performance benefits. GOMP_CPU_AFFINITY or KMP_AFFINITY determines how to bind OpenMP* threads to physical processing units. Detailed information can be found <a class="reference external" href="https://software.intel.com/content/www/us/en/develop/articles/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html">here</a>.</p>
+<p>With the following command, PyTorch run the task on N OpenMP threads.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export OMP_NUM_THREADS=N</span>
+</pre></div>
+</div>
+<p>Typically, the following environment variables are used to set for CPU affinity with GNU OpenMP implementation. OMP_PROC_BIND specifies whether threads may be moved between processors. Setting it to CLOSE keeps OpenMP threads close to the primary thread in contiguous place partitions. OMP_SCHEDULE determines how OpenMP threads are scheduled. GOMP_CPU_AFFINITY binds threads to specific CPUs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export OMP_SCHEDULE=STATIC</span>
+<span class="c1"># export OMP_PROC_BIND=CLOSE</span>
+<span class="c1"># export GOMP_CPU_AFFINITY=&quot;N-M&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="intel-openmp-runtime-library-libiomp">
+<h3>Intel OpenMP Runtime Library (libiomp)<a class="headerlink" href="#intel-openmp-runtime-library-libiomp" title="Permalink to this headline">¶</a></h3>
+<p>By default, PyTorch uses GNU OpenMP (GNU libgomp) for parallel computation. On Intel platforms, Intel OpenMP Runtime Library (libiomp) provides OpenMP API specification support. It sometimes brings more performance benefits compared to libgomp. Utilizing environment variable LD_PRELOAD can switch OpenMP library to libiomp:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export LD_PRELOAD=&lt;path&gt;/libiomp5.so:$LD_PRELOAD</span>
+</pre></div>
+</div>
+<p>Similar to CPU affinity settings in GNU OpenMP, environment variables are provided in libiomp to control CPU affinity settings.
+KMP_AFFINITY binds OpenMP threads to physical processing units. KMP_BLOCKTIME sets the time, in milliseconds, that a thread should wait, after completing the execution of a parallel region, before sleeping. In most cases, setting KMP_BLOCKTIME to 1 or 0 yields good performances.
+The following commands show a common settings with Intel OpenMP Runtime Library.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export KMP_AFFINITY=granularity=fine,compact,1,0</span>
+<span class="c1"># export KMP_BLOCKTIME=1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="switch-memory-allocator">
+<h3>Switch Memory allocator<a class="headerlink" href="#switch-memory-allocator" title="Permalink to this headline">¶</a></h3>
+<p>For deep learning workloads, Jemalloc or TCMalloc can get better performance by reusing memory as much as possible than default malloc funtion. <a class="reference external" href="https://github.com/jemalloc/jemalloc">Jemalloc</a> is a general purpose malloc implementation that emphasizes fragmentation avoidance and scalable concurrency support. <a class="reference external" href="https://google.github.io/tcmalloc/overview.html">TCMalloc</a> also features a couple of optimizations to speed up program executions. One of them is holding memory in caches to speed up access of commonly-used objects. Holding such caches even after deallocation also helps avoid costly system calls if such memory is later re-allocated.
+Use environment variable LD_PRELOAD to take advantage of one of them.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># export LD_PRELOAD=&lt;jemalloc.so/tcmalloc.so&gt;:$LD_PRELOAD</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">
+<h3>Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality<a class="headerlink" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality" title="Permalink to this headline">¶</a></h3>
+<p>For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. <a class="reference external" href="https://github.com/intel/torch-ccl">Torch-ccl</a>, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.</p>
+</div>
+</div>
 <div class="section" id="gpu-specific-optimizations">
 <h2>GPU specific optimizations<a class="headerlink" href="#gpu-specific-optimizations" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="enable-cudnn-auto-tuner">
@@ -838,6 +892,14 @@ sequence length or even by sorting dataset by sequence length.</p>
 <li><a class="reference internal" href="#enable-channels-last-memory-format-for-computer-vision-models">Enable channels_last memory format for computer vision models</a></li>
 <li><a class="reference internal" href="#checkpoint-intermediate-buffers">Checkpoint intermediate buffers</a></li>
 <li><a class="reference internal" href="#disable-debugging-apis">Disable debugging APIs</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#cpu-specific-optimizations">CPU specific optimizations</a><ul>
+<li><a class="reference internal" href="#utilize-non-uniform-memory-access-numa-controls">Utilize Non-Uniform Memory Access (NUMA) Controls</a></li>
+<li><a class="reference internal" href="#utilize-openmp">Utilize OpenMP</a></li>
+<li><a class="reference internal" href="#intel-openmp-runtime-library-libiomp">Intel OpenMP Runtime Library (libiomp)</a></li>
+<li><a class="reference internal" href="#switch-memory-allocator">Switch Memory allocator</a></li>
+<li><a class="reference internal" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#gpu-specific-optimizations">GPU specific optimizations</a><ul>
