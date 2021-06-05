@@ -1,4 +1,4 @@
-(Prototype) Introduce lite interpreter workflow in Android and iOS
+(beta) Introduce lite interpreter in Android and iOS
 ==================================================================
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
@@ -6,8 +6,12 @@
 Introduction
 ------------
 
-This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Since lite interpreter is currently in the prototype stage, a custom pytorch binary from source is required.
+This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Comparing to prototype stage, lite interpreter now is default in Android/iOS build, and can be used directly with Maven (Android) and Cocoapods (iOS).
 
+.. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
+
+   - If `bytecode.pkl` is missing, likely the model is generated with the api: `module.save(${model_psth})`.
+   - It includes this bullet list.
 
 Android
 -------------------
@@ -28,51 +32,31 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
     # Export lite interpreter version model (compatible with lite interpreter)
     scripted_module._save_for_lite_interpreter("deeplabv3_scripted.ptl")
 
-2. **Build libtorch lite for android**: Build libtorch for android for all 4 android abis (``armeabi-v7a``, ``arm64-v8a``, ``x86``, ``x86_64``) ``BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh``. For example, if it will be tested on Pixel 4 emulator with ``x86``, use cmd ``BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86`` to specify abi to save built time. After the build finish, it will show the library path:
-
-
-.. code-block:: bash
-
-   BUILD SUCCESSFUL in 55s
-   134 actionable tasks: 22 executed, 112 up-to-date
-   + find /Users/chenlai/pytorch/android -type f -name '*aar'
-   + xargs ls -lah
-   -rw-r--r--  1 chenlai  staff    13M Feb 11 11:48 /Users/chenlai/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
-   -rw-r--r--  1 chenlai  staff    36K Feb  9 16:45 /Users/chenlai/pytorch/android/pytorch_android_torchvision/build/outputs/aar/pytorch_android_torchvision-release.aar
-
-3. **Use the PyTorch Android libraries built from source in the ImageSegmentation app**: Create a folder `libs` in the path, the path from repository root will be `ImageSegmentation/app/libs`. Copy `pytorch_android-release` to the path ``ImageSegmentation/app/libs/pytorch_android-release.aar``. Copy `pytorch_android_torchvision` (downloaded from `Pytorch Android Torchvision Nightly <https://oss.sonatype.org/#nexus-search;quick~torchvision_android/>`_) to the path ``ImageSegmentation/app/libs/pytorch_android_torchvision.aar``. Update the `dependencies` part of ``ImageSegmentation/app/build.gradle`` to
+2. **Use the PyTorch Android library in the ImageSegmentation app**: Update the `dependencies` part of ``ImageSegmentation/app/build.gradle`` to
 
 .. code:: gradle
 
-   dependencies {
-       implementation 'androidx.appcompat:appcompat:1.2.0'
-       implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
-       testImplementation 'junit:junit:4.12'
-       androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-       androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-
-
-       implementation(name:'pytorch_android-release', ext:'aar')
-       implementation(name:'pytorch_android_torchvision', ext:'aar')
-
-       implementation 'com.android.support:appcompat-v7:28.0.0'
-       implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
-   }
-
-Update `all projects` part in ``ImageSegmentation/build.gradle`` to
-
-
-.. code:: gradle
-
-    allprojects {
-        repositories {
-            google()
-            jcenter()
-            flatDir {
-                dirs 'libs'
-            }
+    repositories {
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
         }
     }
+
+    dependencies {
+        implementation fileTree(dir: "libs", include: ["*.jar"])
+        implementation 'androidx.appcompat:appcompat:1.2.0'
+        implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+        testImplementation 'junit:junit:4.12'
+        androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+        androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+        implementation 'org.pytorch:pytorch_android:1.9.0-SNAPSHOT'
+        implementation 'org.pytorch:pytorch_android_torchvision:1.9.0-SNAPSHOT'
+
+        implementation 'com.android.support:appcompat-v7:28.0.0'
+        implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
+    }
+
+
 
 4. **Update model loader api**: Update ``ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java`` by
 
@@ -93,30 +77,21 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 1. **Prepare model**: Same as Android.
 
-2. **Build libtorch lite for iOS**:
+2. **Remove Cocoapods from the project** (this step is only needed if you ran `pod install`):
 
-.. code-block:: bash
+.. code-block:: podfile
 
-   BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
+    target 'ImageSegmentation' do
+    # Comment the next line if you don't want to use dynamic frameworks
+    use_frameworks!
 
+    # Pods for ImageSegmentation
+    pod 'LibTorch', '~>1.9.0'
+    end
 
-3. **Remove Cocoapods from the project** (this step is only needed if you ran `pod install`):
+3. **Update library and api**
 
-.. code-block:: bash
-
-   pod deintegrate
-
-4. **Link ImageSegmentation demo app with the custom built library**:
-Open your project in XCode, go to your project Target’s **Build Phases - Link Binaries With Libraries**, click the **+** sign and add all the library files located in `build_ios/install/lib`. Navigate to the project **Build Settings**, set the value **Header Search Paths** to `build_ios/install/include` and **Library Search Paths** to `build_ios/install/lib`.
-In the build settings, search for **other linker flags**. Add a custom linker flag below
-```
--all_load
-```
-Finally, disable bitcode for your target by selecting the Build Settings, searching for Enable Bitcode, and set the value to **No**.
-
-5. **Update library and api**
-
-  5.1 Update ``TorchModule.mm``: To use the custom built libraries the project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via Cocoapods with the code below:
+  3.1 Update ``TorchModule.mm``: To use the custom built libraries the project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via Cocoapods with the code below:
 
 .. code-block:: swift
 
@@ -155,8 +130,7 @@ Finally, disable bitcode for your target by selecting the Build Settings, search
         return self;
     }
 
-
-5.2 Update ``ViewController.swift``
+3.2 Update ``ViewController.swift``
 
 .. code-block:: swift
 
@@ -179,6 +153,8 @@ Finally, disable bitcode for your target by selecting the Build Settings, search
 
 How to use lite interpreter + custom build
 ------------------------------------------
+Custom PyTorch library only contains the operators needed by the model, to do that:
+
 1. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:
 
 .. code-block:: python
@@ -198,13 +174,14 @@ In the snippet above, you first need to load the ScriptModule. Then, use export_
 
 .. code-block:: bash
 
-   SELECTED_OP_LIST=deeplabv3_scripted.yaml BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR BUILD_LITE_INTERPRETER=1 ./scripts/build_ios.sh
+   SELECTED_OP_LIST=deeplabv3_scripted.yaml BUILD_PYTORCH_MOBILE=1 IOS_PLATFORM=SIMULATOR ./scripts/build_ios.sh
 
 **Android**: Take the x86 build for example, the command should be:
 
 .. code-block:: bash
 
-   SELECTED_OP_LIST=deeplabv3_scripted.yaml BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86
+   SELECTED_OP_LIST=deeplabv3_scripted.yaml ./scripts/build_pytorch_android.sh x86
+
 
 
 Conclusion
