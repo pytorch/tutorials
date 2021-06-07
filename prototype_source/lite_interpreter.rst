@@ -49,8 +49,8 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
         testImplementation 'junit:junit:4.12'
         androidTestImplementation 'androidx.test.ext:junit:1.1.2'
         androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-        implementation 'org.pytorch:pytorch_android:1.9.0-SNAPSHOT'
-        implementation 'org.pytorch:pytorch_android_torchvision:1.9.0-SNAPSHOT'
+        implementation 'org.pytorch:pytorch_android_lite:1.9.0'
+        implementation 'org.pytorch:pytorch_android_torchvision:1.9.0'
 
         implementation 'com.android.support:appcompat-v7:28.0.0'
         implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
@@ -58,7 +58,7 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
 
 
 
-4. **Update model loader api**: Update ``ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java`` by
+3. **Update model loader api**: Update ``ImageSegmentation/app/src/main/java/org/pytorch/imagesegmentation/MainActivity.java`` by
 
   4.1 Add new import: `import org.pytorch.LiteModuleLoader`
 
@@ -69,7 +69,7 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
     // mModule = Module.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted.pt"));
     mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted.ptl"));
 
-5. **Test app**: Build and run the `ImageSegmentation` app in Android Studio
+4. **Test app**: Build and run the `ImageSegmentation` app in Android Studio
 
 iOS
 -------------------
