@@ -10,7 +10,7 @@ This tutorial introduces the steps to use PyTorch's efficient interpreter on iOS
 
 This application will take advantage of the pre-built interpreter libraries available for Android and iOS, which can be used directly with Maven (Android) and CocoaPods (iOS). It is important to note that the pre-built libraries are the available for simplicity, but further size optimization can be achieved with by utilizing PyTorch's custom build capabilities.
 
-.. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model with full jit interpreter. Please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
+.. note:: If you see the error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model that requires the use of the PyTorch JIT interpreter (a version of our PyTorch interpreter that is not as size-efficient). In order to leverage our efficient interpreter, please regenerate the model by running: `module._save_for_lite_interpreter(${model_path})`.
 
    - If `bytecode.pkl` is missing, likely the model is generated with the api: `module.save(${model_psth})`.
    - The api `_load_for_lite_interpreter(${model_psth}) can be helpful to validate model with the efficient mobile interpreter.
