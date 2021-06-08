@@ -188,7 +188,11 @@ In the snippet above, you first need to load the ScriptModule. Then, use export_
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to use mobile interpreter in Android and iOS app. We walked through an Image Segmentation example to show how to dump the model, build torch library from source and use the new api to run model. Please be aware of that mobile interpreter is still under development, more library size reduction will be introduced in the future. APIs are subject to change in the future versions.
+In this tutorial, we demonstrated how to use PyTorch's efficient mobile interpreter, in an Android and iOS app.
+
+We walked through an Image Segmentation example to show how to dump the model, build a custom torch library from source and use the new api to run model.
+
+Our efficient mobile interpreter is still under development, and we will continue improving its size in the future. Note, however, that the APIs are subject to change in future versions.
 
 Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
 
