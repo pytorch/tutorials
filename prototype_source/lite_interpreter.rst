@@ -6,7 +6,9 @@
 Introduction
 ------------
 
-This tutorial introduces the steps to use mobile interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Comparing to prototype stage, the prebuilt mobile interpreter now is available in Android/iOS release, and can be used directly with Maven (Android) and Cocoapods (iOS). Further size optimization can be achieved with custom build.
+This tutorial introduces the steps to use PyTorch's efficient interpreter on iOS and Android. We will be using an  Image Segmentation demo application as an example.
+
+This application will take advantage of the pre-built interpreter libraries available for Android and iOS, which can be used directly with Maven (Android) and CocoaPods (iOS). It is important to note that the pre-built libraries are the available for simplicity, but further size optimization can be achieved with by utilizing PyTorch's custom build capabilities.
 
 .. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model with full jit interpreter. Please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
 
