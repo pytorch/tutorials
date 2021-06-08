@@ -1,4 +1,4 @@
-(beta) Introduce mobile interpreter in Android and iOS
+(beta) Efficient mobile interpreter in Android and iOS
 ==================================================================
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
@@ -6,16 +6,18 @@
 Introduction
 ------------
 
-This tutorial introduces the steps to use mobile interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Comparing to prototype stage, the prebuilt mobile interpreter now is available in Android/iOS release, and can be used directly with Maven (Android) and Cocoapods (iOS). Further size optimization can be achieved with custom build.
+This tutorial introduces the steps to use PyTorch's efficient interpreter on iOS and Android. We will be using an  Image Segmentation demo application as an example.
 
-.. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model with full jit interpreter. Please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
+This application will take advantage of the pre-built interpreter libraries available for Android and iOS, which can be used directly with Maven (Android) and CocoaPods (iOS). It is important to note that the pre-built libraries are the available for simplicity, but further size optimization can be achieved with by utilizing PyTorch's custom build capabilities.
+
+.. note:: If you see the error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model that requires the use of the PyTorch JIT interpreter (a version of our PyTorch interpreter that is not as size-efficient). In order to leverage our efficient interpreter, please regenerate the model by running: `module._save_for_lite_interpreter(${model_path})`.
 
    - If `bytecode.pkl` is missing, likely the model is generated with the api: `module.save(${model_psth})`.
-   - The api `_load_for_lite_interpreter(${model_psth}) can be helpful to validate model with mobile interpreter.
+   - The api `_load_for_lite_interpreter(${model_psth}) can be helpful to validate model with the efficient mobile interpreter.
 
 Android
 -------------------
-Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
+Get the Image Segmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
 
 1. **Prepare model**: Prepare the mobile interpreter version of model by run the script below to generate the scripted model `deeplabv3_scripted.pt` and `deeplabv3_scripted.ptl`
 
@@ -88,9 +90,9 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
     pod 'LibTorch_Lite', '~>1.9.0'
     end
 
-3. **Update library and api**
+3. **Update library and API**
 
-  3.1 Update ``TorchModule.mm``: To use the custom built libraries the project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via Cocoapods with the code below:
+  3.1 Update ``TorchModule.mm``: To use the custom built libraries project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via CocoaPods with the code below:
 
 .. code-block:: swift
 
@@ -152,7 +154,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 How to use mobile interpreter + custom build
 ------------------------------------------
-Custom PyTorch library only contains the operators needed by the model, to do that:
+A custom PyTorch interpreter library can be created to reduce binary size, by only containing the operators needed by the model. In order to do that follow these steps:
 
 1. To dump the operators in your model, say `deeplabv3_scripted`, run the following lines of Python code:
 
@@ -186,9 +188,13 @@ In the snippet above, you first need to load the ScriptModule. Then, use export_
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to use mobile interpreter in Android and iOS app. We walked through an Image Segmentation example to show how to dump the model, build torch library from source and use the new api to run model. Please be aware of that mobile interpreter is still under development, more library size reduction will be introduced in the future. APIs are subject to change in the future versions.
+In this tutorial, we demonstrated how to use PyTorch's efficient mobile interpreter, in an Android and iOS app.
 
-Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
+We walked through an Image Segmentation example to show how to dump the model, build a custom torch library from source and use the new api to run model.
+
+Our efficient mobile interpreter is still under development, and we will continue improving its size in the future. Note, however, that the APIs are subject to change in future versions.
+
+Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>` - if you have any.
 
 Learn More
 ----------
