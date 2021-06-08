@@ -22,7 +22,7 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
 .. code:: python
 
     import torch
-
+    from torch.utils.mobile_optimizer import optimize_for_mobile
     model = torch.hub.load('pytorch/vision:v0.7.0', 'deeplabv3_resnet50', pretrained=True)
     model.eval()
 
@@ -30,7 +30,8 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
     # Export full jit version model (not compatible lite interpreter), leave it here for comparison
     scripted_module.save("deeplabv3_scripted.pt")
     # Export lite interpreter version model (compatible with lite interpreter)
-    scripted_module._save_for_lite_interpreter("deeplabv3_scripted.ptl")
+    optimized_scripted_module = optimize_for_mobile(scripted_module)
+    optimized_scripted_module._save_for_lite_interpreter("deeplabv3_scripted.ptl")
 
 2. **Use the PyTorch Android library in the ImageSegmentation app**: Update the `dependencies` part of ``ImageSegmentation/app/build.gradle`` to
 
