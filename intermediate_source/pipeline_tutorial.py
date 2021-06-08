@@ -148,27 +148,24 @@ class PositionalEncoding(nn.Module):
 # efficient batch processing.
 #
 
-import io
 import torch
-from torchtext.utils import download_from_url, extract_archive
+from torchtext.datasets import WikiText2
 from torchtext.data.utils import get_tokenizer
 from torchtext.vocab import build_vocab_from_iterator
 
-url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
-vocab = build_vocab_from_iterator(map(tokenizer,
-                                      iter(io.open(train_filepath,
-                                                   encoding="utf8"))))
+vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=["<unk>"])
+vocab.set_default_index(vocab["<unk>"]) 
 
 def data_process(raw_text_iter):
-  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                       dtype=torch.long) for item in raw_text_iter]
+  data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
   return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+train_iter, val_iter, test_iter = WikiText2()
+train_data = data_process(train_iter)
+val_data = data_process(val_iter)
+test_data = data_process(test_iter)
 
 device = torch.device("cuda")
 
@@ -244,7 +241,7 @@ def get_batch(source, i):
 #    allows the Pipe to work with only two partitions and avoid any
 #    cross-partition overheads.
 
-ntokens = len(vocab.stoi) # the size of vocabulary
+ntokens = len(vocab) # the size of vocabulary
 emsize = 4096 # embedding dimension
 nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 12 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -330,7 +327,7 @@ def train():
     model.train() # Turn on the train mode
     total_loss = 0.
     start_time = time.time()
-    ntokens = len(vocab.stoi)
+    ntokens = len(vocab)
 
     # Train only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -366,7 +363,7 @@ def train():
 def evaluate(eval_model, data_source):
     eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
-    ntokens = len(vocab.stoi)
+    ntokens = len(vocab)
     # Evaluate only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, data_source.size(0) - 1)
     with torch.no_grad():
@@ -418,39 +415,3 @@ print('=' * 89)
 print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
     test_loss, math.exp(test_loss)))
 print('=' * 89)
-
-
-######################################################################
-# Output
-# ------
-#
-
-
-######################################################################
-#.. code-block:: py
-#
-#   Total parameters in model: 1,847,087,215
-#   | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2387.45 | loss 42.16 | ppl 2036775646369743616.00
-#   | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2150.93 | loss 48.24 | ppl 891334049215401558016.00
-#   | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2155.23 | loss 34.66 | ppl 1125676483188404.62
-#   | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2158.42 | loss 38.87 | ppl 76287208340888368.00
-#   -----------------------------------------------------------------------------------------
-#   | end of epoch   1 | time: 119.65s | valid loss  2.95 | valid ppl    19.15
-#   -----------------------------------------------------------------------------------------
-#   | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2376.16 | loss 34.92 | ppl 1458001430957104.00
-#   | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2160.96 | loss 34.75 | ppl 1232463826541886.50
-#   | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2160.66 | loss 28.10 | ppl 1599598251136.51
-#   | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2160.07 | loss 20.25 | ppl 621174306.77
-#   -----------------------------------------------------------------------------------------
-#   | end of epoch   2 | time: 119.76s | valid loss  0.87 | valid ppl     2.38
-#   -----------------------------------------------------------------------------------------
-#   | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2376.49 | loss 13.20 | ppl 537727.23
-#   | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2160.12 | loss 10.98 | ppl 58548.58
-#   | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2160.05 | loss 12.01 | ppl 164152.79
-#   | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2160.03 | loss 10.63 | ppl 41348.00
-#   -----------------------------------------------------------------------------------------
-#   | end of epoch   3 | time: 119.76s | valid loss  0.78 | valid ppl     2.17
-#   -----------------------------------------------------------------------------------------
-#   =========================================================================================
-#   | End of training | test loss  0.69 | test ppl     1.99
-#   =========================================================================================
