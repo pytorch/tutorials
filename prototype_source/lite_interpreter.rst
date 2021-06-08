@@ -194,7 +194,7 @@ We walked through an Image Segmentation example to show how to dump the model, b
 
 Our efficient mobile interpreter is still under development, and we will continue improving its size in the future. Note, however, that the APIs are subject to change in future versions.
 
-Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
+Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>` - if you have any.
 
 Learn More
 ----------
