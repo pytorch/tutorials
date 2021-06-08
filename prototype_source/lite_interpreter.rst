@@ -1,4 +1,4 @@
-(beta) Introduce lite interpreter in Android and iOS
+(beta) Introduce mobile interpreter in Android and iOS
 ==================================================================
 
 **Author**: `Chen Lai <https://github.com/cccclai>`_, `Martin Yuan <https://github.com/iseeyuan>`_
@@ -6,18 +6,18 @@
 Introduction
 ------------
 
-This tutorial introduces the steps to use lite interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Comparing to prototype stage, lite interpreter now is default in Android/iOS build, and can be used directly with Maven (Android) and Cocoapods (iOS).
+This tutorial introduces the steps to use mobile interpreter on iOS and Android. We'll be using the ImageSegmentation demo app as an example. Comparing to prototype stage, the prebuilt mobile interpreter now is available in Android/iOS release, and can be used directly with Maven (Android) and Cocoapods (iOS).
 
-.. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
+.. note:: If you see error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model with full jit interpreter. Please regenerate model by running: `module._save_for_lite_interpreter(${model_path})`.
 
    - If `bytecode.pkl` is missing, likely the model is generated with the api: `module.save(${model_psth})`.
-   - It includes this bullet list.
+   - The api `_load_for_lite_interpreter(${model_psth}) can be helpful to validate model with mobile interpreter.
 
 Android
 -------------------
 Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
 
-1. **Prepare model**: Prepare the lite interpreter version of model by run the script below to generate the scripted model `deeplabv3_scripted.pt` and `deeplabv3_scripted.ptl`
+1. **Prepare model**: Prepare the mobile interpreter version of model by run the script below to generate the scripted model `deeplabv3_scripted.pt` and `deeplabv3_scripted.ptl`
 
 .. code:: python
 
@@ -27,9 +27,9 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
     model.eval()
 
     scripted_module = torch.jit.script(model)
-    # Export full jit version model (not compatible lite interpreter), leave it here for comparison
+    # Export full jit version model (not compatible mobile interpreter), leave it here for comparison
     scripted_module.save("deeplabv3_scripted.pt")
-    # Export lite interpreter version model (compatible with lite interpreter)
+    # Export mobile interpreter version model (compatible with mobile interpreter)
     optimized_scripted_module = optimize_for_mobile(scripted_module)
     optimized_scripted_module._save_for_lite_interpreter("deeplabv3_scripted.ptl")
 
@@ -44,7 +44,6 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
     }
 
     dependencies {
-        implementation fileTree(dir: "libs", include: ["*.jar"])
         implementation 'androidx.appcompat:appcompat:1.2.0'
         implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
         testImplementation 'junit:junit:4.12'
@@ -53,7 +52,6 @@ Get ImageSegmentation demo app in Android: https://github.com/pytorch/android-de
         implementation 'org.pytorch:pytorch_android_lite:1.9.0'
         implementation 'org.pytorch:pytorch_android_torchvision:1.9.0'
 
-        implementation 'com.android.support:appcompat-v7:28.0.0'
         implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
     }
 
@@ -78,7 +76,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 1. **Prepare model**: Same as Android.
 
-2. **Remove Cocoapods from the project** (this step is only needed if you ran `pod install`):
+2. **Build the project with Cocoapods and prebuilt interpreter** Update the `PodFile` and run `pod install`:
 
 .. code-block:: podfile
 
@@ -87,7 +85,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
     use_frameworks!
 
     # Pods for ImageSegmentation
-    pod 'LibTorch', '~>1.9.0'
+    pod 'LibTorch_Lite', '~>1.9.0'
     end
 
 3. **Update library and api**
@@ -150,9 +148,9 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
         fatalError("Can't find the model file!")
     }
 
-6. Build and test the app in Xcode.
+4. Build and test the app in Xcode.
 
-How to use lite interpreter + custom build
+How to use mobile interpreter + custom build
 ------------------------------------------
 Custom PyTorch library only contains the operators needed by the model, to do that:
 
@@ -188,7 +186,7 @@ In the snippet above, you first need to load the ScriptModule. Then, use export_
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to use lite interpreter in Android and iOS app. We walked through an Image Segmentation example to show how to dump the model, build torch library from source and use the new api to run model. Please be aware of that lite interpreter is still under development, more library size reduction will be introduced in the future. APIs are subject to change in the future versions.
+In this tutorial, we demonstrated how to use mobile interpreter in Android and iOS app. We walked through an Image Segmentation example to show how to dump the model, build torch library from source and use the new api to run model. Please be aware of that mobile interpreter is still under development, more library size reduction will be introduced in the future. APIs are subject to change in the future versions.
 
 Thanks for reading! As always, we welcome any feedback, so please create an issue `here <https://github.com/pytorch/pytorch/issues>`_ if you have any.
 
