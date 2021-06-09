@@ -1,11 +1,11 @@
 """
 **Learn the Basics** ||
 `Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensor_tutorial.html>`_ || 
+`Tensors <tensorqs_tutorial.html>`_ || 
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
-`Autograd <autograd_tutorial.html>`_ ||
+`Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
@@ -34,16 +34,16 @@ Running the Tutorial Code
 ------------------
 You can run this tutorial in a couple of ways:
 
-- **In the cloud**: This is the easiest way to get started! Each section has a Colab link at the top, which opens a notebook with the code in a fully-hosted environment. Pro tip: Use Colab with a GPU runtime to speed up operations *Runtime > Change runtime type > GPU*
+- **In the cloud**: This is the easiest way to get started! Each section has a "Run in Microsoft Learn" link at the top, which opens an integrated notebook in Microsoft Learn with the code in a fully-hosted environment. 
 - **Locally**: This option requires you to setup PyTorch and TorchVision first on your local machine (`installation instructions <https://pytorch.org/get-started/locally/>`_). Download the notebook or copy the code into your favorite IDE.
 
 
 How to Use this Guide
 ----------------- 
-If you're new to deep learning frameworks, head right into the first step of our guide: `Tensors <tensor_tutorial.html>`_.
-
-If you're familiar with other deep learning frameworks, check out the `Quickstart <quickstart_tutorial.html>`_ first
+If you're familiar with other deep learning frameworks, check out the `0. Quickstart <quickstart_tutorial.html>`_ first
 to quickly familiarize yourself with PyTorch's API.
+
+If you're new to deep learning frameworks, head right into the first section of our step-by-step guide: `1. Tensors <tensor_tutorial.html>`_.
 
 
 .. include:: /beginner_source/basics/qs_toc.txt

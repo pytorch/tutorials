@@ -35,8 +35,9 @@ REQUIREMENTS="$(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PR
 echo $REQUIREMENTS > requirements.txt
 pip install -r requirements.txt
 pip install pySoundFile
-conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext
-conda install torchaudio -c pytorch-test
+# Force uninstall torch & related packages, we'll install them using conda later.
+pip uninstall -y torch torchvision torchtext
+conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext torchaudio
 python -m spacy download de
 python -m spacy download en
 pushd ${PROJECT_DIR}
@@ -47,6 +48,11 @@ if [[ "${CIRCLE_JOB}" == *worker_* ]]; then
   python $DIR/remove_runnable_code.py intermediate_source/model_parallel_tutorial.py intermediate_source/model_parallel_tutorial.py || true
   python $DIR/remove_runnable_code.py advanced_source/static_quantization_tutorial.py advanced_source/static_quantization_tutorial.py || true
   python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py  beginner_source/audio_preprocessing_tutorial.py || true
+  python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py  beginner_source/dcgan_faces_tutorial.py || true
+  python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py  beginner_source/fgsm_tutorial.py || true
 
   export WORKER_ID=$(echo "${CIRCLE_JOB}" | tr -dc '0-9')
   count=0

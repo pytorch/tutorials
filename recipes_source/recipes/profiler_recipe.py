@@ -4,10 +4,6 @@ PyTorch Profiler
 This recipe explains how to use PyTorch profiler and measure the time and
 memory consumption of the model's operators.
 
-.. note::
-    PyTorch 1.8 introduces the new API that will replace the older profiler API
-    in the future releases. Check the new API at `this page <https://pytorch.org/docs/master/profiler.html>`__.
-
 Introduction
 ------------
 PyTorch includes a simple profiler API that is useful when user needs

@@ -77,7 +77,7 @@ print(my_cell(x, h))
 #    cell <https://colah.github.io/posts/2015-08-Understanding-LSTMs/>`__–that
 #    is–it’s a function that is applied on a loop.
 #
-# We instantiated the module, and made ``x`` and ``y``, which are just 3x4
+# We instantiated the module, and made ``x`` and ``h``, which are just 3x4
 # matrices of random values. Then we invoked the cell with
 # ``my_cell(x, h)``. This in turn calls our ``forward`` function.
 #
@@ -274,6 +274,8 @@ class MyCell(torch.nn.Module):
 
 my_cell = MyCell(MyDecisionGate())
 traced_cell = torch.jit.trace(my_cell, (x, h))
+
+print(traced_cell.dg.code)
 print(traced_cell.code)
 
 
@@ -293,8 +295,10 @@ print(traced_cell.code)
 scripted_gate = torch.jit.script(MyDecisionGate())
 
 my_cell = MyCell(scripted_gate)
-traced_cell = torch.jit.script(my_cell)
-print(traced_cell.code)
+scripted_cell = torch.jit.script(my_cell)
+
+print(scripted_gate.code)
+print(scripted_cell.code)
 
 
 ######################################################################
