@@ -113,7 +113,7 @@ model replicas. Moreover, the model is broadcast at DDP construction time instea
 of in every forward pass, which also helps to speed up training. DDP is shipped
 with several performance optimization technologies. For a more in-depth
 explanation, please refer to this
-`DDP paper <https://arxiv.org/abs/2006.15704>`__ (VLDB'20).
+`DDP paper <http://www.vldb.org/pvldb/vol13/p3005-li.pdf>`__ (VLDB'20).
 
 
 DDP materials are listed below:
@@ -131,6 +131,10 @@ DDP materials are listed below:
    tutorial.
 3. The `Launching and configuring distributed data parallel applications <https://github.com/pytorch/examples/blob/master/distributed/ddp/README.md>`__
    document shows how to use the DDP launching script.
+4. The `Shard Optimizer States With ZeroRedundancyOptimizer <https://pytorch.org/tutorials/recipes/zero_redundancy_optimizer.html>`__
+   recipe demonstrates how `ZeroRedundancyOptimizer <https://pytorch.org/docs/master/distributed.optim.html>`__
+   helps to reduce optimizer memory footprint for distributed data-parallel
+   training.
 
 TorchElastic
 ~~~~~~~~~~~~
@@ -194,12 +198,12 @@ RPC Tutorials are listed below:
    decorator, which can help speed up inference and training. It uses similar
    RL and PS examples employed in the above tutorials 1 and 2.
 5. The `Combining Distributed DataParallel with Distributed RPC Framework <../advanced/rpc_ddp_tutorial.html>`__
-   tutorial demonstrates how to combine DDP with RPC to train a model using 
+   tutorial demonstrates how to combine DDP with RPC to train a model using
    distributed data parallelism combined with distributed model parallelism.
 
 
 PyTorch Distributed Developers
 ------------------------------
 
-If you'd like to contribute to PyTorch Distributed, please refer to our 
+If you'd like to contribute to PyTorch Distributed, please refer to our
 `Developer Guide <https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md>`_.

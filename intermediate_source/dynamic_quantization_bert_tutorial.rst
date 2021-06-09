@@ -494,7 +494,7 @@ follows:
    | FP32 |  0.9019  |   438 MB   | 160 sec  | 85 sec    |
    | INT8 |  0.902   |   181 MB   |  90 sec  | 46 sec    |
 
-We have 0.6% F1 score accuracy after applying the post-training dynamic
+We have 0.6% lower F1 score accuracy after applying the post-training dynamic
 quantization on the fine-tuned BERT model on the MRPC task. As a
 comparison, in a `recent paper <https://arxiv.org/pdf/1910.06188.pdf>`_ (Table 1),
 it achieved 0.8788 by
@@ -541,7 +541,7 @@ To load the quantized model, we can use `torch.jit.load`
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to demonstrate how to convert a
+In this tutorial, we demonstrated how to convert a
 well-known state-of-the-art NLP model like BERT into dynamic quantized
 model. Dynamic quantization can reduce the size of the model while only
 having a limited implication on accuracy.

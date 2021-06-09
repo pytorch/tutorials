@@ -101,7 +101,7 @@ import torchaudio
 
 # A data point in Yesno is a tuple (waveform, sample_rate, labels) where labels 
 # is a list of integers with 1 for yes and 0 for no.
-yesno_data_trainset = torchaudio.datasets.YESNO('./', download=True)
+yesno_data = torchaudio.datasets.YESNO('./', download=True)
 
 # Pick data point number 3 to see an example of the the yesno_data:
 n = 3

@@ -1,11 +1,11 @@
 """
 `Learn the Basics <intro.html>`_ ||
 `Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensor_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 **Build Model** ||
-`Autograd <autograd_tutorial.html>`_ ||
+`Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
@@ -67,7 +67,7 @@ class NeuralNetwork(nn.Module):
 
 ##############################################
 # We create an instance of ``NeuralNetwork``, and move it to the ``device``, and print 
-# it's structure.
+# its structure.
 
 model = NeuralNetwork().to(device)
 print(model)
@@ -97,7 +97,7 @@ print(f"Predicted class: {y_pred}")
 # Model Layers
 # -------------------------
 #
-# Lets break down the layers in the FashionMNIST model. To illustrate it, we 
+# Let's break down the layers in the FashionMNIST model. To illustrate it, we 
 # will take a sample minibatch of 3 images of size 28x28 and see what happens to it as 
 # we pass it through the network. 
 
@@ -119,7 +119,7 @@ print(flat_image.size())
 # nn.Linear 
 # ^^^^^^^^^^^^^^^^^^^^^^
 # The `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_
-# is a module that applies a linear transformation on the input using it's stored weights and biases.
+# is a module that applies a linear transformation on the input using its stored weights and biases.
 #
 layer1 = nn.Linear(in_features=28*28, out_features=20)
 hidden1 = layer1(flat_image)

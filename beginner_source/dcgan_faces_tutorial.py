@@ -52,7 +52,7 @@ DCGAN Tutorial
 # with the discriminator. Let :math:`x` be data representing an image.
 # :math:`D(x)` is the discriminator network which outputs the (scalar)
 # probability that :math:`x` came from training data rather than the
-# generator. Here, since we are dealing with images the input to
+# generator. Here, since we are dealing with images, the input to
 # :math:`D(x)` is an image of CHW size 3x64x64. Intuitively, :math:`D(x)`
 # should be HIGH when :math:`x` comes from training data and LOW when
 # :math:`x` comes from the generator. :math:`D(x)` can also be thought of
@@ -71,7 +71,7 @@ DCGAN Tutorial
 # :math:`D` and :math:`G` play a minimax game in which :math:`D` tries to
 # maximize the probability it correctly classifies reals and fakes
 # (:math:`logD(x)`), and :math:`G` tries to minimize the probability that
-# :math:`D` will predict its outputs are fake (:math:`log(1-D(G(x)))`).
+# :math:`D` will predict its outputs are fake (:math:`log(1-D(G(z)))`).
 # From the paper, the GAN loss function is
 # 
 # .. math:: \underset{G}{\text{min}} \underset{D}{\text{max}}V(D,G) = \mathbb{E}_{x\sim p_{data}(x)}\big[logD(x)\big] + \mathbb{E}_{z\sim p_{z}(z)}\big[log(1-D(G(z)))\big]
@@ -274,7 +274,7 @@ plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=
 # --------------
 # 
 # With our input parameters set and the dataset prepared, we can now get
-# into the implementation. We will start with the weigth initialization
+# into the implementation. We will start with the weight initialization
 # strategy, then talk about the generator, discriminator, loss functions,
 # and training loop in detail.
 # 
@@ -554,7 +554,7 @@ optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 # reported are:
 # 
 # -  **Loss_D** - discriminator loss calculated as the sum of losses for
-#    the all real and all fake batches (:math:`log(D(x)) + log(D(G(z)))`).
+#    the all real and all fake batches (:math:`log(D(x)) + log(1 - D(G(z)))`).
 # -  **Loss_G** - generator loss calculated as :math:`log(D(G(z)))`
 # -  **D(x)** - the average output (across the batch) of the discriminator
 #    for the all real batch. This should start close to 1 then
@@ -610,10 +610,10 @@ for epoch in range(num_epochs):
         output = netD(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
-        # Calculate the gradients for this batch
+        # Calculate the gradients for this batch, accumulated (summed) with previous gradients
         errD_fake.backward()
         D_G_z1 = output.mean().item()
-        # Add the gradients from the all-real and all-fake batches
+        # Compute error of D as sum over the fake and the real batches
         errD = errD_real + errD_fake
         # Update D
         optimizerD.step()

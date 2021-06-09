@@ -1,7 +1,7 @@
 Visualizing Models, Data, and Training with TensorBoard
-====================================================
+=======================================================
 
-In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_, 
+In the `60 Minute Blitz <https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html>`_,
 we show you how to load in data,
 feed it through a model we define as a subclass of ``nn.Module``,
 train this model on training data, and test it on test data.
@@ -138,7 +138,7 @@ folder.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now let's write an image to our TensorBoard - specifically, a grid -
-using `make_grid <https://pytorch.org/docs/stable/torchvision/utils.html#torchvision.utils.make_grid>`__.
+using `make_grid <https://pytorch.org/vision/stable/utils.html#torchvision.utils.make_grid>`__.
 
 .. code:: python
 
@@ -161,7 +161,7 @@ Now running
 
     tensorboard --logdir=runs
 
-from the command line and then navigating to `https://localhost:6006 <https://localhost:6006>`_
+from the command line and then navigating to `http://localhost:6006 <http://localhost:6006>`_
 should show the following.
 
 .. image:: ../../_static/img/tensorboard_first_view.png
@@ -348,7 +348,7 @@ In the prior tutorial, we looked at per-class accuracy once the model
 had been trained; here, we'll use TensorBoard to plot precision-recall
 curves (good explanation
 `here <https://www.scikit-yb.org/en/latest/api/classifier/prcurve.html>`__)
-for each class. 
+for each class.
 
 6. Assessing trained models with TensorBoard
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -359,38 +359,37 @@ for each class.
     # 2. gets the preds in a test_size Tensor
     # takes ~10 seconds to run
     class_probs = []
-    class_preds = []
+    class_label = []
     with torch.no_grad():
         for data in testloader:
             images, labels = data
             output = net(images)
             class_probs_batch = [F.softmax(el, dim=0) for el in output]
-            _, class_preds_batch = torch.max(output, 1)
 
             class_probs.append(class_probs_batch)
-            class_preds.append(class_preds_batch)
+            class_label.append(labels)
 
     test_probs = torch.cat([torch.stack(batch) for batch in class_probs])
-    test_preds = torch.cat(class_preds)
+    test_label = torch.cat(class_label)
 
     # helper function
-    def add_pr_curve_tensorboard(class_index, test_probs, test_preds, global_step=0):
+    def add_pr_curve_tensorboard(class_index, test_probs, test_label, global_step=0):
         '''
         Takes in a "class_index" from 0 to 9 and plots the corresponding
         precision-recall curve
         '''
-        tensorboard_preds = test_preds == class_index
+        tensorboard_truth = test_label == class_index
         tensorboard_probs = test_probs[:, class_index]
 
         writer.add_pr_curve(classes[class_index],
-                            tensorboard_preds,
+                            tensorboard_truth,
                             tensorboard_probs,
                             global_step=global_step)
         writer.close()
 
     # plot all the pr curves
     for i in range(len(classes)):
-        add_pr_curve_tensorboard(i, test_probs, test_preds)
+        add_pr_curve_tensorboard(i, test_probs, test_label)
 
 You will now see a "PR Curves" tab that contains the precision-recall
 curves for each class. Go ahead and poke around; you'll see that on

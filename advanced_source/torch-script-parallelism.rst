@@ -207,6 +207,7 @@ Let's use the profiler along with the Chrome trace export functionality to
 visualize the performance of our parallelized model:
 
 .. code-block:: python
+
     with torch.autograd.profiler.profile() as prof:
         ens(x)
     prof.export_chrome_trace('parallel.json')

@@ -471,7 +471,7 @@ pairs = trimRareWords(voc, pairs, MIN_COUNT)
 # with mini-batches.
 #
 # Using mini-batches also means that we must be mindful of the variation
-# of sentence length in our batches. To accomodate sentences of different
+# of sentence length in our batches. To accommodate sentences of different
 # sizes in the same batch, we will make our batched input tensor of shape
 # *(max_length, batch_size)*, where sentences shorter than the
 # *max_length* are zero padded after an *EOS_token*.
@@ -615,7 +615,7 @@ print("max_target_len:", max_target_len)
 # in normal sequential order, and one that is fed the input sequence in
 # reverse order. The outputs of each network are summed at each time step.
 # Using a bidirectional GRU will give us the advantage of encoding both
-# past and future context.
+# past and future contexts.
 #
 # Bidirectional RNN:
 #
@@ -700,7 +700,7 @@ class EncoderRNN(nn.Module):
 # states to generate the next word in the sequence. It continues
 # generating words until it outputs an *EOS_token*, representing the end
 # of the sentence. A common problem with a vanilla seq2seq decoder is that
-# if we rely soley on the context vector to encode the entire input
+# if we rely solely on the context vector to encode the entire input
 # sequence’s meaning, it is likely that we will have information loss.
 # This is especially the case when dealing with long input sequences,
 # greatly limiting the capability of our decoder.
@@ -950,7 +950,7 @@ def maskNLLLoss(inp, target, mask):
 #   sequence (or batch of sequences). We use the ``GRU`` layer like this in
 #   the ``encoder``. The reality is that under the hood, there is an
 #   iterative process looping over each time step calculating hidden states.
-#   Alternatively, you ran run these modules one time-step at a time. In
+#   Alternatively, you can run these modules one time-step at a time. In
 #   this case, we manually loop over the sequences during the training
 #   process like we must do for the ``decoder`` model. As long as you
 #   maintain the correct conceptual model of these modules, implementing
@@ -1115,7 +1115,7 @@ def trainIters(model_name, voc, pairs, encoder, decoder, encoder_optimizer, deco
 # softmax value. This decoding method is optimal on a single time-step
 # level.
 #
-# To facilite the greedy decoding operation, we define a
+# To facilitate the greedy decoding operation, we define a
 # ``GreedySearchDecoder`` class. When run, an object of this class takes
 # an input sequence (``input_seq``) of shape *(input_seq length, 1)*, a
 # scalar input length (``input_length``) tensor, and a ``max_length`` to
@@ -1207,7 +1207,7 @@ def evaluate(encoder, decoder, searcher, voc, sentence, max_length=MAX_LENGTH):
     input_batch = torch.LongTensor(indexes_batch).transpose(0, 1)
     # Use appropriate device
     input_batch = input_batch.to(device)
-    lengths = lengths.to(device)
+    lengths = lengths.to("cpu")
     # Decode sentence with searcher
     tokens, scores = searcher(input_batch, lengths, max_length)
     # indexes -> words

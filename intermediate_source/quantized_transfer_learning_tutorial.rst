@@ -450,19 +450,20 @@ the feature extractor is quantized).
 .. note:: Because of the random initialization your results might differ from
    the results shown in this tutorial.
 
+.. code:: python
 
-# notice `quantize=False`
-model = models.resnet18(pretrained=True, progress=True, quantize=False)
-num_ftrs = model.fc.in_features
+      # notice `quantize=False`
+      model = models.resnet18(pretrained=True, progress=True, quantize=False)
+      num_ftrs = model.fc.in_features
 
-# Step 1
-model.train()
-model.fuse_model()
-# Step 2
-model_ft = create_combined_model(model)
-model_ft[0].qconfig = torch.quantization.default_qat_qconfig  # Use default QAT configuration
-# Step 3
-model_ft = torch.quantization.prepare_qat(model_ft, inplace=True)
+      # Step 1
+      model.train()
+      model.fuse_model()
+      # Step 2
+      model_ft = create_combined_model(model)
+      model_ft[0].qconfig = torch.quantization.default_qat_qconfig  # Use default QAT configuration
+      # Step 3
+      model_ft = torch.quantization.prepare_qat(model_ft, inplace=True)
 
 
 Finetuning the model

@@ -271,7 +271,7 @@ print_size_of_model(quantized_model)
 ######################################################################
 # Second, we see faster inference time, with no difference in evaluation loss:
 #
-# Note: we number of threads to one for single threaded comparison, since quantized
+# Note: we set the number of threads to one for single threaded comparison, since quantized
 # models run single threaded.
 
 torch.set_num_threads(1)

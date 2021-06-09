@@ -50,7 +50,7 @@ float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
 img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
-qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
+qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
 
 ##############################################################################
 # 1. Compare the weights of float and quantized models
@@ -124,13 +124,13 @@ print(act_compare_dict.keys())
 
 print("\nkeys of act_compare_dict entry for conv1's output:")
 print(act_compare_dict['conv1.stats'].keys())
-print(act_compare_dict['conv1.stats']['float'].shape)
-print(act_compare_dict['conv1.stats']['quantized'].shape)
+print(act_compare_dict['conv1.stats']['float'][0].shape)
+print(act_compare_dict['conv1.stats']['quantized'][0].shape)
 
 ##############################################################################
 # This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following.
 for key in act_compare_dict:
-    print(key, compute_error(act_compare_dict[key]['float'], act_compare_dict[key]['quantized'].dequantize()))
+    print(key, compute_error(act_compare_dict[key]['float'][0], act_compare_dict[key]['quantized'][0].dequantize()))
 
 ##############################################################################
 # If we want to do the comparison for more than one input data, we can do the following.
@@ -206,7 +206,7 @@ float_model.eval()
 float_model.fuse_model()
 float_model.qconfig = torch.quantization.default_qconfig
 img_data = [(torch.rand(2, 3, 10, 10, dtype=torch.float), torch.randint(0, 1, (2,), dtype=torch.long)) for _ in range(2)]
-qmodel = quantize(float_model, default_eval_fn, img_data, inplace=False)
+qmodel = quantize(float_model, default_eval_fn, [img_data], inplace=False)
 
 ##############################################################################
 # In the following example we call ``compare_model_stub()`` from PyTorch Numeric Suite to compare ``QuantizableBasicBlock`` module with its float point equivalent. This API returns a dict with key corresponding to module names and each entry being a dictionary with two keys 'float' and 'quantized', containing the output tensors of quantized and its matching float shadow module.
@@ -224,14 +224,14 @@ print(ob_dict.keys())
 
 print("\nkeys of ob_dict entry for layer1.0's output:")
 print(ob_dict['layer1.0.stats'].keys())
-print(ob_dict['layer1.0.stats']['float'].shape)
-print(ob_dict['layer1.0.stats']['quantized'].shape)
+print(ob_dict['layer1.0.stats']['float'][0].shape)
+print(ob_dict['layer1.0.stats']['quantized'][0].shape)
 
 ##############################################################################
 # This dict can be then used to compare and compute the module level quantization error.
 
 for key in ob_dict:
-    print(key, compute_error(ob_dict[key]['float'], ob_dict[key]['quantized'].dequantize()))
+    print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0].dequantize()))
 
 ##############################################################################
 # If we want to do the comparison for more than one input data, we can do the following.
@@ -370,7 +370,7 @@ print(act_compare_dict.keys())
 
 
 for key in act_compare_dict:
-    print(key, compute_error(act_compare_dict[key]['float'][0], act_compare_dict[key]['quantized'][0]))
+    print(key, compute_error(act_compare_dict[key]['float'][0][0], act_compare_dict[key]['quantized'][0][0]))
 
 ##############################################################################
 #
@@ -405,7 +405,7 @@ print(ob_dict.keys())
 # This dict can be then used to compare and compute the module level quantization error.
 
 for key in ob_dict:
-    print(key, compute_error(ob_dict[key]['float'], ob_dict[key]['quantized']))
+    print(key, compute_error(ob_dict[key]['float'][0], ob_dict[key]['quantized'][0]))
 
 ##############################################################################
 # SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.

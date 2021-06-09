@@ -47,6 +47,11 @@ plt.ion()   # interactive mode
 # standard convolutional network augmented with a spatial transformer
 # network.
 
+from six.moves import urllib
+opener = urllib.request.build_opener()
+opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+urllib.request.install_opener(opener)
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Training dataset
@@ -171,7 +176,7 @@ def train(epoch):
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))
 #
-# A simple test procedure to measure STN the performances on MNIST.
+# A simple test procedure to measure the STN performances on MNIST.
 #
 
 
