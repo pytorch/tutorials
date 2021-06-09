@@ -52,7 +52,6 @@ from botocore.config import Config
 import requests
 import matplotlib
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import time
 from IPython.display import Audio, display
