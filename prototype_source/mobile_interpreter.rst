@@ -92,21 +92,16 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 
 3. **Update library and API**
 
-  3.1 Update ``TorchModule.mm``: To use the custom built libraries project, replace `#import <LibTorch/LibTorch.h>` (in ``TorchModule.mm``) which is needed when using LibTorch via CocoaPods with the code below:
+  3.1 Update ``TorchModule.mm``: To use the custom built libraries project, use `<Libtorch-Lite/Libtorch-Lite.h>` (in ``TorchModule.mm``):
 
 .. code-block:: swift
 
-    //#import <LibTorch/LibTorch.h>
-    #include "ATen/ATen.h"
-    #include "caffe2/core/timer.h"
-    #include "caffe2/utils/string_utils.h"
-    #include "torch/csrc/autograd/grad_mode.h"
-    #include "torch/script.h"
-    #include <torch/csrc/jit/mobile/function.h>
-    #include <torch/csrc/jit/mobile/import.h>
-    #include <torch/csrc/jit/mobile/interpreter.h>
-    #include <torch/csrc/jit/mobile/module.h>
-    #include <torch/csrc/jit/mobile/observer.h>
+    #import <Libtorch-Lite/Libtorch-Lite.h>
+    // If it's built from source with xcode, comment out the line above
+    // and use following headers
+    // #include <torch/csrc/jit/mobile/import.h>
+    // #include <torch/csrc/jit/mobile/module.h>
+    // #include <torch/script.h>
 
 .. code-block:: swift
 
