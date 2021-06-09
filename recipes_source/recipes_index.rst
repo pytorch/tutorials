@@ -209,7 +209,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 
 .. customcarditem::
    :header: Mobile Interpreter Workflow in Android and iOS
-   :card_description: Learn how to use the lite interpreter on iOS and Andriod devices.
+   :card_description: Learn how to use the mobile interpreter on iOS and Andriod devices.
    :image: ../_static/img/thumbnails/cropped/mobile.png
    :link: ../recipes/mobile_interpreter.html
    :tags: Mobile
@@ -301,3 +301,4 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
    /recipes/distributed_optim_torchscript
+   /recipes/mobile_interpreter
