@@ -13,7 +13,7 @@ This application will take advantage of the pre-built interpreter libraries avai
 .. note:: If you see the error message: `PytorchStreamReader failed locating file bytecode.pkl: file not found ()`, likely you are using a torch script model that requires the use of the PyTorch JIT interpreter (a version of our PyTorch interpreter that is not as size-efficient). In order to leverage our efficient interpreter, please regenerate the model by running: `module._save_for_lite_interpreter(${model_path})`.
 
    - If `bytecode.pkl` is missing, likely the model is generated with the api: `module.save(${model_psth})`.
-   - The api `_load_for_lite_interpreter(${model_psth}) can be helpful to validate model with the efficient mobile interpreter.
+   - The api `_load_for_lite_interpreter(${model_psth})` can be helpful to validate model with the efficient mobile interpreter.
 
 Android
 -------------------
