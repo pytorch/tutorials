@@ -91,13 +91,6 @@ Prototype features are not available as part of binary distributions like PyPI o
    :link: ../prototype/vulkan_workflow.html
    :tags: Mobile
 
-.. customcarditem::
-   :header: Lite Interpreter Workflow in Android and iOS
-   :card_description: Learn how to use the lite interpreter on iOS and Andriod devices.
-   :image: ../_static/img/thumbnails/cropped/mobile.png
-   :link: ../prototype/lite_interpreter.html
-   :tags: Mobile
-
 .. TorchScript
 
 .. customcarditem::
@@ -144,4 +137,3 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/torchscript_freezing.html
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
-   prototype/lite_interpreter.html
