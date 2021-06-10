@@ -157,7 +157,7 @@ writer.close()
 # 
 # 
 # .. note::
-#   TensorBoard.dev currently supports only scalars dashboard.
+#   TensorBoard.dev currently supports scalars, graphs, histograms, distributions, hparams, and text dashboards.
 
 ########################################################################
 # Learn More
