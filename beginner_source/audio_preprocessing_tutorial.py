@@ -387,7 +387,7 @@ def benchmark_resample(
     return elapsed / iters
   elif method == "transforms":
     resampler = T.Resample(sample_rate, resample_rate, lowpass_filter_width=lowpass_filter_width,
-                           rolloff=rolloff, resampling_method=resampling_method).to(waveform.dtype)
+                           rolloff=rolloff, resampling_method=resampling_method, dtype=waveform.dtype)
     begin = time.time()
     for _ in range(iters):
       resampler(waveform)
@@ -727,7 +727,7 @@ waveform = get_sine_sweep(sample_rate)
 plot_sweep(waveform, sample_rate, title="Original Waveform")
 play_audio(waveform, sample_rate)
 
-resampler = T.Resample(sample_rate, resample_rate).to(waveform.dtype)
+resampler = T.Resample(sample_rate, resample_rate, dtype=waveform.dtype)
 resampled_waveform = resampler(waveform)
 plot_sweep(resampled_waveform, resample_rate, title="Resampled Waveform")
 play_audio(waveform, sample_rate)
