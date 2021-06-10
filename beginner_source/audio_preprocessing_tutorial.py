@@ -119,7 +119,10 @@ def _get_sample(path, resample=None):
     ["remix", "1"]
   ]
   if resample:
-    effects.append(["rate", f'{resample}'])
+    effects.extend([
+      ["lowpass", f"{resample // 2}"],
+      ["rate", f'{resample}'],
+    ])
   return torchaudio.sox_effects.apply_effects_file(path, effects=effects)
 
 def get_speech_sample(*, resample=None):
@@ -139,18 +142,6 @@ def get_rir_sample(*, resample=None, processed=False):
 
 def get_noise_sample(*, resample=None):
   return _get_sample(SAMPLE_NOISE_PATH, resample=resample)
-
-def print_metadata(metadata, src=None):
-  if src:
-    print("-" * 10)
-    print("Source:", src)
-    print("-" * 10)
-  print(" - sample_rate:", metadata.sample_rate)
-  print(" - num_channels:", metadata.num_channels)
-  print(" - num_frames:", metadata.num_frames)
-  print(" - bits_per_sample:", metadata.bits_per_sample)
-  print(" - encoding:", metadata.encoding)
-  print()
 
 def print_stats(waveform, sample_rate=None, src=None):
   if src:
@@ -224,7 +215,7 @@ def inspect_file(path):
   print("Source:", path)
   print("-" * 10)
   print(f" - File size: {os.path.getsize(path)} bytes")
-  print_metadata(torchaudio.info(path))
+  print(f" - {torchaudio.info(path)}")
 
 def plot_spectrogram(spec, title=None, ylabel='freq_bin', aspect='auto', xmax=None):
   fig, axs = plt.subplots(1, 1)
@@ -419,7 +410,7 @@ def benchmark_resample(
 #
 
 metadata = torchaudio.info(SAMPLE_WAV_PATH)
-print_metadata(metadata, src=SAMPLE_WAV_PATH)
+print(metadata)
 
 
 ######################################################################
@@ -464,10 +455,10 @@ print_metadata(metadata, src=SAMPLE_WAV_PATH)
 #
 
 metadata = torchaudio.info(SAMPLE_MP3_PATH)
-print_metadata(metadata, src=SAMPLE_MP3_PATH)
+print(metadata)
 
 metadata = torchaudio.info(SAMPLE_GSM_PATH)
-print_metadata(metadata, src=SAMPLE_GSM_PATH)
+print(metadata)
 
 
 ######################################################################
@@ -477,9 +468,10 @@ print_metadata(metadata, src=SAMPLE_GSM_PATH)
 # ``info`` function works on file-like object as well.
 #
 
+print("Source:", SAMPLE_WAV_URL)
 with requests.get(SAMPLE_WAV_URL, stream=True) as response:
   metadata = torchaudio.info(response.raw)
-print_metadata(metadata, src=SAMPLE_WAV_URL)
+print(metadata)
 
 
 ######################################################################
@@ -493,11 +485,12 @@ print_metadata(metadata, src=SAMPLE_WAV_URL)
 # -  The returned metadata has ``num_frames = 0``
 #
 
+print("Source:", SAMPLE_MP3_URL)
 with requests.get(SAMPLE_MP3_URL, stream=True) as response:
   metadata = torchaudio.info(response.raw, format="mp3")
 
   print(f"Fetched {response.raw.tell()} bytes.")
-print_metadata(metadata, src=SAMPLE_MP3_URL)
+print(metadata)
 
 
 ######################################################################
@@ -648,7 +641,7 @@ inspect_file(path)
 # ``torchaudio.save`` can also handle other formats. To name a few;
 #
 
-waveform, sample_rate = get_sample()
+waveform, sample_rate = get_sample(resample=8000)
 
 formats = [
   "mp3",
@@ -1343,9 +1336,6 @@ plot_mel_fbank(mel_filters, "Mel Filter Bank - torchaudio")
 # As a comparison, here is the equivalent way to get the mel filter bank
 # with ``librosa``.
 #
-# **Note** Currently, the result matches only when ``htk=True``.
-# ``torchaudio`` does not support the equivalent of ``htk=False`` option.
-#
 
 mel_filters_librosa = librosa.filters.mel(
     sample_rate,
@@ -1390,6 +1380,7 @@ mel_spectrogram = T.MelSpectrogram(
     norm='slaney',
     onesided=True,
     n_mels=n_mels,
+    mel_scale="htk",
 )
 
 melspec = mel_spectrogram(waveform)
@@ -1404,9 +1395,6 @@ plot_spectrogram(
 #
 # As a comparison, here is the equivalent way to get Mel-scale spectrogram
 # with ``librosa``.
-#
-# **Note** Currently, the result matches only when ``htk=True``.
-# ``torchaudio`` does not support the equivalent of ``htk=False`` option.
 #
 
 melspec_librosa = librosa.feature.melspectrogram(
@@ -1444,7 +1432,14 @@ n_mfcc = 256
 
 mfcc_transform = T.MFCC(
     sample_rate=sample_rate,
-    n_mfcc=n_mfcc, melkwargs={'n_fft': n_fft, 'n_mels': n_mels, 'hop_length': hop_length})
+    n_mfcc=n_mfcc,
+    melkwargs={
+      'n_fft': n_fft,
+      'n_mels': n_mels,
+      'hop_length': hop_length,
+      'mel_scale': 'htk',
+    }
+)
 
 mfcc = mfcc_transform(waveform)
 
