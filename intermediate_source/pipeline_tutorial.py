@@ -244,7 +244,7 @@ def get_batch(source, i):
 #    allows the Pipe to work with only two partitions and avoid any
 #    cross-partition overheads.
 
-ntokens = len(vocab.stoi) # the size of vocabulary
+ntokens = len(vocab.get_stoi()) # the size of vocabulary
 emsize = 4096 # embedding dimension
 nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 12 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -330,7 +330,7 @@ def train():
     model.train() # Turn on the train mode
     total_loss = 0.
     start_time = time.time()
-    ntokens = len(vocab.stoi)
+    ntokens = len(vocab.get_stoi())
 
     # Train only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -366,7 +366,7 @@ def train():
 def evaluate(eval_model, data_source):
     eval_model.eval() # Turn on the evaluation mode
     total_loss = 0.
-    ntokens = len(vocab.stoi)
+    ntokens = len(vocab.get_stoi())
     # Evaluate only for 50 batches to keep script execution time low.
     nbatches = min(50 * bptt, data_source.size(0) - 1)
     with torch.no_grad():
