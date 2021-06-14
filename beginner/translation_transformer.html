@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Language Translation with Transformer — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>Language Translation with nn.Transformer and torchtext — PyTorch Tutorials 1.8.1+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -211,7 +211,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
 <li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Language Translation with Transformer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Language Translation with nn.Transformer and torchtext</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
 <ul>
@@ -291,7 +291,7 @@
           
         </a> &gt;
       </li>
-<li>Language Translation with Transformer</li>
+<li>Language Translation with nn.Transformer and torchtext</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/beginner/translation_transformer.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -329,175 +329,96 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-translation-transformer-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="language-translation-with-transformer">
-<span id="sphx-glr-beginner-translation-transformer-py"></span><h1>Language Translation with Transformer<a class="headerlink" href="#language-translation-with-transformer" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="language-translation-with-nn-transformer-and-torchtext">
+<span id="sphx-glr-beginner-translation-transformer-py"></span><h1>Language Translation with nn.Transformer and torchtext<a class="headerlink" href="#language-translation-with-nn-transformer-and-torchtext" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial shows, how to train a translation model from scratch using
-Transformer. We will be using Multi30k dataset to train a German to English translation model.</p>
-<div class="section" id="data-processing">
-<h2>Data Processing<a class="headerlink" href="#data-processing" title="Permalink to this headline">¶</a></h2>
-<p>torchtext has utilities for creating datasets that can be easily
+Transformer. We will be using <a class="reference external" href="http://www.statmt.org/wmt16/multimodal-task.html#task1">Multi30k</a>
+dataset to train a German to English translation model.</p>
+<div class="section" id="data-sourcing-and-processing">
+<h2>Data Sourcing and Processing<a class="headerlink" href="#data-sourcing-and-processing" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://pytorch.org/text/stable/">torchtext library</a> has utilities for creating datasets that can be easily
 iterated through for the purposes of creating a language translation
-model. In this example, we show how to tokenize a raw text sentence,
-build vocabulary, and numericalize tokens into tensor.</p>
-<p>To run this tutorial, first install spacy using pip or conda. Next,
-download the raw data for the English and German Spacy tokenizers from
-<a class="reference external" href="https://spacy.io/usage/models">https://spacy.io/usage/models</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">torchtext</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">Vocab</span>
-<span class="kn">from</span> <span class="nn">torchtext.utils</span> <span class="kn">import</span> <span class="n">download_from_url</span><span class="p">,</span> <span class="n">extract_archive</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">time</span>
-
-<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">use_deterministic_algorithms</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+model. In this example, we show how to use torchtext’s inbuilt datasets,
+tokenize a raw text sentence, build vocabulary, and numericalize tokens into tensor. We will use
+<a class="reference external" href="https://pytorch.org/text/stable/datasets.html#multi30k">Multi30k dataset from torchtext library</a>
+that yields a pair of source-target raw sentences.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
+<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">build_vocab_from_iterator</span>
+<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">Multi30k</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span>
 
 
-<span class="n">url_base</span> <span class="o">=</span> <span class="s1">'https://raw.githubusercontent.com/multi30k/dataset/master/data/task1/raw/'</span>
-<span class="n">train_urls</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'train.de.gz'</span><span class="p">,</span> <span class="s1">'train.en.gz'</span><span class="p">)</span>
-<span class="n">val_urls</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'val.de.gz'</span><span class="p">,</span> <span class="s1">'val.en.gz'</span><span class="p">)</span>
-<span class="n">test_urls</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'test_2016_flickr.de.gz'</span><span class="p">,</span> <span class="s1">'test_2016_flickr.en.gz'</span><span class="p">)</span>
+<span class="n">SRC_LANGUAGE</span> <span class="o">=</span> <span class="s1">'de'</span>
+<span class="n">TGT_LANGUAGE</span> <span class="o">=</span> <span class="s1">'en'</span>
 
-<span class="n">train_filepaths</span> <span class="o">=</span> <span class="p">[</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">download_from_url</span><span class="p">(</span><span class="n">url_base</span> <span class="o">+</span> <span class="n">url</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">train_urls</span><span class="p">]</span>
-<span class="n">val_filepaths</span> <span class="o">=</span> <span class="p">[</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">download_from_url</span><span class="p">(</span><span class="n">url_base</span> <span class="o">+</span> <span class="n">url</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">val_urls</span><span class="p">]</span>
-<span class="n">test_filepaths</span> <span class="o">=</span> <span class="p">[</span><span class="n">extract_archive</span><span class="p">(</span><span class="n">download_from_url</span><span class="p">(</span><span class="n">url_base</span> <span class="o">+</span> <span class="n">url</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">test_urls</span><span class="p">]</span>
-
-<span class="n">de_tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'de_core_news_sm'</span><span class="p">)</span>
-<span class="n">en_tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'en_core_web_sm'</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">build_vocab</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">):</span>
-  <span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
-  <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">string_</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
-      <span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">string_</span><span class="p">))</span>
-  <span class="k">return</span> <span class="n">Vocab</span><span class="p">(</span><span class="n">counter</span><span class="p">,</span> <span class="n">specials</span><span class="o">=</span><span class="p">[</span><span class="s1">'&lt;unk&gt;'</span><span class="p">,</span> <span class="s1">'&lt;pad&gt;'</span><span class="p">,</span> <span class="s1">'&lt;bos&gt;'</span><span class="p">,</span> <span class="s1">'&lt;eos&gt;'</span><span class="p">])</span>
-
-<span class="n">de_vocab</span> <span class="o">=</span> <span class="n">build_vocab</span><span class="p">(</span><span class="n">train_filepaths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">de_tokenizer</span><span class="p">)</span>
-<span class="n">en_vocab</span> <span class="o">=</span> <span class="n">build_vocab</span><span class="p">(</span><span class="n">train_filepaths</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">en_tokenizer</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">data_process</span><span class="p">(</span><span class="n">filepaths</span><span class="p">):</span>
-  <span class="n">raw_de_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filepaths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">))</span>
-  <span class="n">raw_en_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filepaths</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">))</span>
-  <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-  <span class="k">for</span> <span class="p">(</span><span class="n">raw_de</span><span class="p">,</span> <span class="n">raw_en</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">raw_de_iter</span><span class="p">,</span> <span class="n">raw_en_iter</span><span class="p">):</span>
-    <span class="n">de_tensor_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">de_vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">de_tokenizer</span><span class="p">(</span><span class="n">raw_de</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))],</span>
-                            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-    <span class="n">en_tensor_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">en_vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">en_tokenizer</span><span class="p">(</span><span class="n">raw_en</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))],</span>
-                            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">de_tensor_</span><span class="p">,</span> <span class="n">en_tensor_</span><span class="p">))</span>
-  <span class="k">return</span> <span class="n">data</span>
+<span class="c1"># Place-holders</span>
+<span class="n">token_transform</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">vocab_transform</span> <span class="o">=</span> <span class="p">{}</span>
 
 
-<span class="n">train_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">train_filepaths</span><span class="p">)</span>
-<span class="n">val_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">val_filepaths</span><span class="p">)</span>
-<span class="n">test_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">test_filepaths</span><span class="p">)</span>
-<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
+<span class="c1"># Create source and target language tokenizer. Make sure to install the dependencies.</span>
+<span class="c1"># pip install -U spacy</span>
+<span class="c1"># python -m spacy download en_core_web_sm</span>
+<span class="c1"># python -m spacy download de_core_news_sm</span>
+<span class="n">token_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'de_core_news_sm'</span><span class="p">)</span>
+<span class="n">token_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'spacy'</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="s1">'en_core_web_sm'</span><span class="p">)</span>
 
 
-<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
-<span class="n">PAD_IDX</span> <span class="o">=</span> <span class="n">de_vocab</span><span class="p">[</span><span class="s1">'&lt;pad&gt;'</span><span class="p">]</span>
-<span class="n">BOS_IDX</span> <span class="o">=</span> <span class="n">de_vocab</span><span class="p">[</span><span class="s1">'&lt;bos&gt;'</span><span class="p">]</span>
-<span class="n">EOS_IDX</span> <span class="o">=</span> <span class="n">de_vocab</span><span class="p">[</span><span class="s1">'&lt;eos&gt;'</span><span class="p">]</span>
+<span class="c1"># helper function to yield list of tokens</span>
+<span class="k">def</span> <span class="nf">yield_tokens</span><span class="p">(</span><span class="n">data_iter</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">language</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">language_index</span> <span class="o">=</span> <span class="p">{</span><span class="n">SRC_LANGUAGE</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">data_sample</span> <span class="ow">in</span> <span class="n">data_iter</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">token_transform</span><span class="p">[</span><span class="n">language</span><span class="p">](</span><span class="n">data_sample</span><span class="p">[</span><span class="n">language_index</span><span class="p">[</span><span class="n">language</span><span class="p">]])</span>
+
+<span class="c1"># Define special symbols and indices</span>
+<span class="n">UNK_IDX</span><span class="p">,</span> <span class="n">PAD_IDX</span><span class="p">,</span> <span class="n">BOS_IDX</span><span class="p">,</span> <span class="n">EOS_IDX</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span>
+<span class="c1"># Make sure the tokens are in order of their indices to properly insert them in vocab</span>
+<span class="n">special_symbols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'&lt;unk&gt;'</span><span class="p">,</span> <span class="s1">'&lt;pad&gt;'</span><span class="p">,</span> <span class="s1">'&lt;bos&gt;'</span><span class="p">,</span> <span class="s1">'&lt;eos&gt;'</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
+    <span class="c1"># Training data Iterator</span>
+    <span class="n">train_iter</span> <span class="o">=</span> <span class="n">Multi30k</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
+    <span class="c1"># Create torchtext's Vocab object</span>
+    <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span> <span class="o">=</span> <span class="n">build_vocab_from_iterator</span><span class="p">(</span><span class="n">yield_tokens</span><span class="p">(</span><span class="n">train_iter</span><span class="p">,</span> <span class="n">ln</span><span class="p">),</span>
+                                                    <span class="n">min_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                    <span class="n">specials</span><span class="o">=</span><span class="n">special_symbols</span><span class="p">,</span>
+                                                    <span class="n">special_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Set UNK_IDX as the default index. This index is returned when the token is not found.</span>
+<span class="c1"># If not set, it throws RuntimeError when the queried token is not found in the Vocabulary.</span>
+<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
+  <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span><span class="o">.</span><span class="n">set_default_index</span><span class="p">(</span><span class="n">UNK_IDX</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="dataloader">
-<h2>DataLoader<a class="headerlink" href="#dataloader" title="Permalink to this headline">¶</a></h2>
-<p>The last torch specific feature we’ll use is the DataLoader, which is
-easy to use since it takes the data as its first argument. Specifically,
-as the docs say: DataLoader combines a dataset and a sampler, and
-provides an iterable over the given dataset. The DataLoader supports
-both map-style and iterable-style datasets with single- or multi-process
-loading, customizing loading order and optional automatic batching
-(collation) and memory pinning.</p>
-<p>Please pay attention to collate_fn (optional) that merges a list of
-samples to form a mini-batch of Tensor(s). Used when using batched
-loading from a map-style dataset.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_sequence</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-
-<span class="k">def</span> <span class="nf">generate_batch</span><span class="p">(</span><span class="n">data_batch</span><span class="p">):</span>
-  <span class="n">de_batch</span><span class="p">,</span> <span class="n">en_batch</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-  <span class="k">for</span> <span class="p">(</span><span class="n">de_item</span><span class="p">,</span> <span class="n">en_item</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data_batch</span><span class="p">:</span>
-    <span class="n">de_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">BOS_IDX</span><span class="p">]),</span> <span class="n">de_item</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">EOS_IDX</span><span class="p">])],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-    <span class="n">en_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">BOS_IDX</span><span class="p">]),</span> <span class="n">en_item</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">EOS_IDX</span><span class="p">])],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-  <span class="n">de_batch</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">de_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
-  <span class="n">en_batch</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">en_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">de_batch</span><span class="p">,</span> <span class="n">en_batch</span>
-
-<span class="n">train_iter</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-                        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">generate_batch</span><span class="p">)</span>
-<span class="n">valid_iter</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-                        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">generate_batch</span><span class="p">)</span>
-<span class="n">test_iter</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-                       <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">generate_batch</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="transformer">
-<h2>Transformer!<a class="headerlink" href="#transformer" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="seq2seq-network-using-transformer">
+<h2>Seq2Seq Network using Transformer<a class="headerlink" href="#seq2seq-network-using-transformer" title="Permalink to this headline">¶</a></h2>
 <p>Transformer is a Seq2Seq model introduced in <a class="reference external" href="https://papers.nips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf">“Attention is all you
 need”</a>
-paper for solving machine translation task. Transformer model consists
-of an encoder and decoder block each containing fixed number of layers.</p>
-<p>Encoder processes the input sequence by propogating it, through a series
-of Multi-head Attention and Feed forward network layers. The output from
-the Encoder referred to as <code class="docutils literal notranslate"><span class="pre">memory</span></code>, is fed to the decoder along with
-target tensors. Encoder and decoder are trained in an end-to-end fashion
-using teacher forcing technique.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="p">(</span><span class="n">TransformerEncoder</span><span class="p">,</span> <span class="n">TransformerDecoder</span><span class="p">,</span>
-                      <span class="n">TransformerEncoderLayer</span><span class="p">,</span> <span class="n">TransformerDecoderLayer</span><span class="p">)</span>
+paper for solving machine translation tasks.
+Below, we will create a Seq2Seq network that uses Transformer. The network
+consists of three parts. First part is the embedding layer. This layer converts tensor of input indices
+into corresponding tensor of input embeddings. These embedding are further augmented with positional
+encodings to provide position information of input tokens to the model. The second part is the
+actual <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html">Transformer</a> model.
+Finally, the output of Transformer model is passed through linear layer
+that give un-normalized probabilities for each token in the target language.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Transformer</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
 
-
-<span class="k">class</span> <span class="nc">Seq2SeqTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_encoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_decoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">src_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tgt_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">dim_feedforward</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="n">dropout</span><span class="p">:</span><span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">Seq2SeqTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="n">encoder_layer</span> <span class="o">=</span> <span class="n">TransformerEncoderLayer</span><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">nhead</span><span class="o">=</span><span class="n">NHEAD</span><span class="p">,</span>
-                                                <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span> <span class="o">=</span> <span class="n">TransformerEncoder</span><span class="p">(</span><span class="n">encoder_layer</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="n">num_encoder_layers</span><span class="p">)</span>
-        <span class="n">decoder_layer</span> <span class="o">=</span> <span class="n">TransformerDecoderLayer</span><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">nhead</span><span class="o">=</span><span class="n">NHEAD</span><span class="p">,</span>
-                                                <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transformer_decoder</span> <span class="o">=</span> <span class="n">TransformerDecoder</span><span class="p">(</span><span class="n">decoder_layer</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="n">num_decoder_layers</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">tgt_vocab_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">src_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">tgt_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">trg</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-                <span class="n">tgt_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-                <span class="n">tgt_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">memory_key_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
-        <span class="n">src_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
-        <span class="n">tgt_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">trg</span><span class="p">))</span>
-        <span class="n">memory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="n">src_emb</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
-        <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_decoder</span><span class="p">(</span><span class="n">tgt_emb</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
-                                        <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">memory_key_padding_mask</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_encoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">)),</span> <span class="n">src_mask</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">memory</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer_decoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">tgt</span><span class="p">)),</span> <span class="n">memory</span><span class="p">,</span>
-                          <span class="n">tgt_mask</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Text tokens are represented by using token embeddings. Positional
-encoding is added to the token embedding to introduce a notion of word
-order.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PositionalEncoding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dropout</span><span class="p">,</span> <span class="n">maxlen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">):</span>
+<span class="c1"># helper Module that adds positional encoding to the token embedding to introduce a notion of word order.</span>
+<span class="k">class</span> <span class="nc">PositionalEncoding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">maxlen</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">PositionalEncoding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="n">den</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="n">emb_size</span><span class="p">)</span>
+        <span class="n">den</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="n">emb_size</span><span class="p">)</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">maxlen</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">maxlen</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">maxlen</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">))</span>
         <span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pos</span> <span class="o">*</span> <span class="n">den</span><span class="p">)</span>
@@ -508,181 +429,263 @@ order.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">'pos_embedding'</span><span class="p">,</span> <span class="n">pos_embedding</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_embedding</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">token_embedding</span> <span class="o">+</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">pos_embedding</span><span class="p">[:</span><span class="n">token_embedding</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),:])</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">token_embedding</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_embedding</span><span class="p">[:</span><span class="n">token_embedding</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="p">:])</span>
 
+<span class="c1"># helper Module to convert tensor of input indices into corresponding tensor of token embeddings</span>
 <span class="k">class</span> <span class="nc">TokenEmbedding</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">TokenEmbedding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">emb_size</span> <span class="o">=</span> <span class="n">emb_size</span>
+
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">long</span><span class="p">())</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">emb_size</span><span class="p">)</span>
+
+<span class="c1"># Seq2Seq Network</span>
+<span class="k">class</span> <span class="nc">Seq2SeqTransformer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">num_encoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">num_decoder_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">emb_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">nhead</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">src_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">tgt_vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+                 <span class="n">dim_feedforward</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Seq2SeqTransformer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">emb_size</span><span class="p">,</span>
+                                       <span class="n">nhead</span><span class="o">=</span><span class="n">nhead</span><span class="p">,</span>
+                                       <span class="n">num_encoder_layers</span><span class="o">=</span><span class="n">num_encoder_layers</span><span class="p">,</span>
+                                       <span class="n">num_decoder_layers</span><span class="o">=</span><span class="n">num_decoder_layers</span><span class="p">,</span>
+                                       <span class="n">dim_feedforward</span><span class="o">=</span><span class="n">dim_feedforward</span><span class="p">,</span>
+                                       <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">emb_size</span><span class="p">,</span> <span class="n">tgt_vocab_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">src_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span> <span class="o">=</span> <span class="n">TokenEmbedding</span><span class="p">(</span><span class="n">tgt_vocab_size</span><span class="p">,</span> <span class="n">emb_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span> <span class="o">=</span> <span class="n">PositionalEncoding</span><span class="p">(</span>
+            <span class="n">emb_size</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="n">dropout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">src</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">trg</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">src_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">tgt_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">src_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">tgt_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">memory_key_padding_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">src_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
+        <span class="n">tgt_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">trg</span><span class="p">))</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">src_emb</span><span class="p">,</span> <span class="n">tgt_emb</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+                                <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">memory_key_padding_mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">src_tok_emb</span><span class="p">(</span><span class="n">src</span><span class="p">)),</span> <span class="n">src_mask</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">memory</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">positional_encoding</span><span class="p">(</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">tgt_tok_emb</span><span class="p">(</span><span class="n">tgt</span><span class="p">)),</span> <span class="n">memory</span><span class="p">,</span>
+                          <span class="n">tgt_mask</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We create a <code class="docutils literal notranslate"><span class="pre">subsequent</span> <span class="pre">word</span></code> mask to stop a target word from
-attending to its subsequent words. We also create masks, for masking
-source and target padding tokens</p>
+<p>During training, we need a subsequent word mask that will prevent model to look into
+the future words when making predictions. We will also need masks to hide
+source and target padding tokens. Below, let’s define a function that will take care of both.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">sz</span><span class="p">):</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">sz</span><span class="p">,</span> <span class="n">sz</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'-inf'</span><span class="p">))</span><span class="o">.</span><span class="n">masked_fill</span><span class="p">(</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">mask</span>
 
+
 <span class="k">def</span> <span class="nf">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">):</span>
-  <span class="n">src_seq_len</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-  <span class="n">tgt_seq_len</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">src_seq_len</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tgt_seq_len</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-  <span class="n">tgt_mask</span> <span class="o">=</span> <span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">tgt_seq_len</span><span class="p">)</span>
-  <span class="n">src_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">src_seq_len</span><span class="p">,</span> <span class="n">src_seq_len</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="n">tgt_mask</span> <span class="o">=</span> <span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">tgt_seq_len</span><span class="p">)</span>
+    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">src_seq_len</span><span class="p">,</span> <span class="n">src_seq_len</span><span class="p">),</span><span class="n">device</span><span class="o">=</span><span class="n">DEVICE</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
 
-  <span class="n">src_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">src</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">tgt</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span>
+    <span class="n">src_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">src</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">tgt</span> <span class="o">==</span> <span class="n">PAD_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span>
 </pre></div>
 </div>
-<p>Define model parameters and instantiate model</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SRC_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">de_vocab</span><span class="p">)</span>
-<span class="n">TGT_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">en_vocab</span><span class="p">)</span>
+<p>Let’s now define the parameters of our model and instantiate the same. Below, we also
+define our loss function which is the cross-entropy loss and the optmizer used for training.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">SRC_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">])</span>
+<span class="n">TGT_VOCAB_SIZE</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">])</span>
 <span class="n">EMB_SIZE</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">NHEAD</span> <span class="o">=</span> <span class="mi">8</span>
 <span class="n">FFN_HID_DIM</span> <span class="o">=</span> <span class="mi">512</span>
 <span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">NUM_ENCODER_LAYERS</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">NUM_DECODER_LAYERS</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">NUM_EPOCHS</span> <span class="o">=</span> <span class="mi">16</span>
 
-<span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda:0'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
-
-<span class="n">transformer</span> <span class="o">=</span> <span class="n">Seq2SeqTransformer</span><span class="p">(</span><span class="n">NUM_ENCODER_LAYERS</span><span class="p">,</span> <span class="n">NUM_DECODER_LAYERS</span><span class="p">,</span>
-                                 <span class="n">EMB_SIZE</span><span class="p">,</span> <span class="n">SRC_VOCAB_SIZE</span><span class="p">,</span> <span class="n">TGT_VOCAB_SIZE</span><span class="p">,</span>
-                                 <span class="n">FFN_HID_DIM</span><span class="p">)</span>
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">Seq2SeqTransformer</span><span class="p">(</span><span class="n">NUM_ENCODER_LAYERS</span><span class="p">,</span> <span class="n">NUM_DECODER_LAYERS</span><span class="p">,</span> <span class="n">EMB_SIZE</span><span class="p">,</span>
+                                 <span class="n">NHEAD</span><span class="p">,</span> <span class="n">SRC_VOCAB_SIZE</span><span class="p">,</span> <span class="n">TGT_VOCAB_SIZE</span><span class="p">,</span> <span class="n">FFN_HID_DIM</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
     <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
 
-<span class="n">transformer</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 
 <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
 
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
-    <span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">),</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-9</span>
-<span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.98</span><span class="p">),</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">train_iter</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-  <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_iter</span><span class="p">):</span>
-      <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-      <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</div>
+<div class="section" id="collation">
+<h2>Collation<a class="headerlink" href="#collation" title="Permalink to this headline">¶</a></h2>
+<p>As seen in the <code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">Sourcing</span> <span class="pre">and</span> <span class="pre">Processing</span></code> section, our data iterator yields a pair of raw strings.
+We need to convert these string pairs into the batched tensors that can be processed by our <code class="docutils literal notranslate"><span class="pre">Seq2Seq</span></code> network
+defined previously. Below we define our collate function that convert batch of raw strings into batch tensors that
+can be fed directly into our model.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_sequence</span>
 
-      <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+<span class="c1"># helper function to club together sequential operations</span>
+<span class="k">def</span> <span class="nf">sequential_transforms</span><span class="p">(</span><span class="o">*</span><span class="n">transforms</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">txt_input</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">transforms</span><span class="p">:</span>
+            <span class="n">txt_input</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">txt_input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">txt_input</span>
+    <span class="k">return</span> <span class="n">func</span>
 
-      <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
+<span class="c1"># function to add BOS/EOS and create tensor for input sequence indices</span>
+<span class="k">def</span> <span class="nf">tensor_transform</span><span class="p">(</span><span class="n">token_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">BOS_IDX</span><span class="p">]),</span>
+                      <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">token_ids</span><span class="p">),</span>
+                      <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">EOS_IDX</span><span class="p">])))</span>
 
-      <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span>
-                                <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
-
-      <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-
-      <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span>
-      <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-      <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-
-      <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-      <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-  <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="c1"># src and tgt language text transforms to convert raw strings into tensors indices</span>
+<span class="n">text_transform</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">ln</span> <span class="ow">in</span> <span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">]:</span>
+    <span class="n">text_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">]</span> <span class="o">=</span> <span class="n">sequential_transforms</span><span class="p">(</span><span class="n">token_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">],</span> <span class="c1">#Tokenization</span>
+                                               <span class="n">vocab_transform</span><span class="p">[</span><span class="n">ln</span><span class="p">],</span> <span class="c1">#Numericalization</span>
+                                               <span class="n">tensor_transform</span><span class="p">)</span> <span class="c1"># Add BOS/EOS and create tensor</span>
 
 
-<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">val_iter</span><span class="p">):</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-  <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
-  <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">valid_iter</span><span class="p">)):</span>
-    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<span class="c1"># function to collate data samples into batch tesors</span>
+<span class="k">def</span> <span class="nf">collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+    <span class="n">src_batch</span><span class="p">,</span> <span class="n">tgt_batch</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">src_sample</span><span class="p">,</span> <span class="n">tgt_sample</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+        <span class="n">src_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">](</span><span class="n">src_sample</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)))</span>
+        <span class="n">tgt_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">](</span><span class="n">tgt_sample</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)))</span>
 
-    <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
-
-    <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
-
-    <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span>
-                              <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
-    <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-  <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_iter</span><span class="p">)</span>
+    <span class="n">src_batch</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">src_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
+    <span class="n">tgt_batch</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">tgt_batch</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="n">PAD_IDX</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">src_batch</span><span class="p">,</span> <span class="n">tgt_batch</span>
 </pre></div>
 </div>
-<p>Train model</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_EPOCHS</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-  <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-  <span class="n">train_loss</span> <span class="o">=</span> <span class="n">train_epoch</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">train_iter</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-  <span class="n">end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-  <span class="n">val_loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">valid_iter</span><span class="p">)</span>
-  <span class="nb">print</span><span class="p">((</span><span class="sa">f</span><span class="s2">"Epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">, Train loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, Val loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, "</span>
-          <span class="sa">f</span><span class="s2">"Epoch time = </span><span class="si">{</span><span class="p">(</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s"</span><span class="p">))</span>
+<p>Let’s define training and evaluation loop that will be called for each
+epoch.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+
+<span class="k">def</span> <span class="nf">train_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">train_iter</span> <span class="o">=</span> <span class="n">Multi30k</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
+    <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">train_dataloader</span><span class="p">:</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+
+        <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
+
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span><span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
+
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+        <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">losses</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">val_iter</span> <span class="o">=</span> <span class="n">Multi30k</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'valid'</span><span class="p">,</span> <span class="n">language_pair</span><span class="o">=</span><span class="p">(</span><span class="n">SRC_LANGUAGE</span><span class="p">,</span> <span class="n">TGT_LANGUAGE</span><span class="p">))</span>
+    <span class="n">val_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">val_iter</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">collate_fn</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">tgt</span> <span class="ow">in</span> <span class="n">val_dataloader</span><span class="p">:</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+        <span class="n">tgt</span> <span class="o">=</span> <span class="n">tgt</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+
+        <span class="n">tgt_input</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span> <span class="o">=</span> <span class="n">create_mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">)</span>
+
+        <span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">tgt_input</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">,</span><span class="n">src_padding_mask</span><span class="p">,</span> <span class="n">tgt_padding_mask</span><span class="p">,</span> <span class="n">src_padding_mask</span><span class="p">)</span>
+
+        <span class="n">tgt_out</span> <span class="o">=</span> <span class="n">tgt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_fn</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">tgt_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">losses</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">losses</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">val_dataloader</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We get the following results during model training.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">5.316</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">4.065</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">35.322</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">3.727</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">3.285</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">36.283</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">3.131</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.881</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">37.096</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.741</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.625</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">37.714</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.454</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.428</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.263</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.223</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.291</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.415</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.030</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.191</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.412</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.866</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.104</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.511</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.724</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">2.044</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.367</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.600</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.994</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.491</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.488</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.969</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.490</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.390</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.929</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.194</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.299</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.898</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.430</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">14</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.219</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.885</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.406</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.141</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.890</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.365</span><span class="n">s</span>
-<span class="n">Epoch</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span> <span class="n">Train</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.070</span><span class="p">,</span> <span class="n">Val</span> <span class="n">loss</span><span class="p">:</span> <span class="mf">1.873</span><span class="p">,</span> <span class="n">Epoch</span> <span class="n">time</span> <span class="o">=</span> <span class="mf">38.439</span><span class="n">s</span>
-</pre></div>
-</div>
-<p>The models trained using transformer architecture — train faster
-and converge to a lower validation loss compared to RNN models.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">greedy_decode</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">start_symbol</span><span class="p">):</span>
-    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<p>Now we have all the ingredients to train our model. Let’s do it!</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
+<span class="n">NUM_EPOCHS</span> <span class="o">=</span> <span class="mi">18</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">NUM_EPOCHS</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">train_loss</span> <span class="o">=</span> <span class="n">train_epoch</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+    <span class="n">end_time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">val_loss</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">transformer</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">((</span><span class="sa">f</span><span class="s2">"Epoch: </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">, Train loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, Val loss: </span><span class="si">{</span><span class="n">val_loss</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, "</span><span class="sa">f</span><span class="s2">"Epoch time = </span><span class="si">{</span><span class="p">(</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">s"</span><span class="p">))</span>
+
+
+<span class="c1"># function to generate output sequence using greedy algorithm</span>
+<span class="k">def</span> <span class="nf">greedy_decode</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="p">,</span> <span class="n">start_symbol</span><span class="p">):</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+    <span class="n">src_mask</span> <span class="o">=</span> <span class="n">src_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 
     <span class="n">memory</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">)</span>
-    <span class="n">ys</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">start_symbol</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">ys</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">start_symbol</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_len</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">memory_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ys</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">memory</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
         <span class="n">tgt_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">generate_square_subsequent_mask</span><span class="p">(</span><span class="n">ys</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-                                    <span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">tgt_mask</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="n">prob</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">out</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">next_word</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">next_word</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">next_word</span> <span class="o">=</span> <span class="n">next_word</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="n">ys</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">ys</span><span class="p">,</span>
                         <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">next_word</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">next_word</span> <span class="o">==</span> <span class="n">EOS_IDX</span><span class="p">:</span>
-          <span class="k">break</span>
+            <span class="k">break</span>
     <span class="k">return</span> <span class="n">ys</span>
 
 
-<span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_vocab</span><span class="p">,</span> <span class="n">tgt_vocab</span><span class="p">,</span> <span class="n">src_tokenizer</span><span class="p">):</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-  <span class="n">tokens</span> <span class="o">=</span> <span class="p">[</span><span class="n">BOS_IDX</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">src_vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">[</span><span class="n">tok</span><span class="p">]</span> <span class="k">for</span> <span class="n">tok</span> <span class="ow">in</span> <span class="n">src_tokenizer</span><span class="p">(</span><span class="n">src</span><span class="p">)]</span><span class="o">+</span> <span class="p">[</span><span class="n">EOS_IDX</span><span class="p">]</span>
-  <span class="n">num_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
-  <span class="n">src</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_tokens</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
-  <span class="n">src_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_tokens</span><span class="p">,</span> <span class="n">num_tokens</span><span class="p">))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-  <span class="n">tgt_tokens</span> <span class="o">=</span> <span class="n">greedy_decode</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>  <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="n">num_tokens</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span> <span class="n">start_symbol</span><span class="o">=</span><span class="n">BOS_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-  <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">tgt_vocab</span><span class="o">.</span><span class="n">itos</span><span class="p">[</span><span class="n">tok</span><span class="p">]</span> <span class="k">for</span> <span class="n">tok</span> <span class="ow">in</span> <span class="n">tgt_tokens</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;bos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;eos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+<span class="c1"># actual function to translate input sentence into target language</span>
+<span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">src_sentence</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">text_transform</span><span class="p">[</span><span class="n">SRC_LANGUAGE</span><span class="p">](</span><span class="n">src_sentence</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">num_tokens</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">src_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_tokens</span><span class="p">,</span> <span class="n">num_tokens</span><span class="p">))</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+    <span class="n">tgt_tokens</span> <span class="o">=</span> <span class="n">greedy_decode</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span>  <span class="n">src</span><span class="p">,</span> <span class="n">src_mask</span><span class="p">,</span> <span class="n">max_len</span><span class="o">=</span><span class="n">num_tokens</span> <span class="o">+</span> <span class="mi">5</span><span class="p">,</span> <span class="n">start_symbol</span><span class="o">=</span><span class="n">BOS_IDX</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vocab_transform</span><span class="p">[</span><span class="n">TGT_LANGUAGE</span><span class="p">]</span><span class="o">.</span><span class="n">lookup_tokens</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tgt_tokens</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;bos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;eos&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">translate</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="s2">"Eine Gruppe von Menschen steht vor einem Iglu ."</span><span class="p">,</span> <span class="n">de_vocab</span><span class="p">,</span> <span class="n">en_vocab</span><span class="p">,</span> <span class="n">de_tokenizer</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">translate</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="s2">"Eine Gruppe von Menschen steht vor einem Iglu ."</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Output: <cite>A group of people stand in front of an igloo .</cite></p>
 </div>
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
@@ -736,10 +739,10 @@ and converge to a lower validation loss compared to RNN models.</p>
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Language Translation with Transformer</a><ul>
-<li><a class="reference internal" href="#data-processing">Data Processing</a></li>
-<li><a class="reference internal" href="#dataloader">DataLoader</a></li>
-<li><a class="reference internal" href="#transformer">Transformer!</a></li>
+<li><a class="reference internal" href="#">Language Translation with nn.Transformer and torchtext</a><ul>
+<li><a class="reference internal" href="#data-sourcing-and-processing">Data Sourcing and Processing</a></li>
+<li><a class="reference internal" href="#seq2seq-network-using-transformer">Seq2Seq Network using Transformer</a></li>
+<li><a class="reference internal" href="#collation">Collation</a></li>
 <li><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
