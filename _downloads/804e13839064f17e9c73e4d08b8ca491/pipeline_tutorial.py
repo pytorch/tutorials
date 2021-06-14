@@ -199,7 +199,7 @@ test_data = batchify(test_data, eval_batch_size)
 # the transformer model. It subdivides the source data into chunks of
 # length ``bptt``. For the language modeling task, the model needs the
 # following words as ``Target``. For example, with a ``bptt`` value of 2,
-# we’d get the following two Variables for ``i`` = 0:
+# we'd get the following two Variables for ``i`` = 0:
 #
 # .. image:: ../_static/img/transformer_input_target.png
 #
