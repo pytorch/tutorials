@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Deploying a Seq2Seq Model with TorchScript — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>Deploying a Seq2Seq Model with TorchScript — PyTorch Tutorials 1.9.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -150,7 +150,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -196,6 +196,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -204,7 +205,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -1098,35 +1099,35 @@ graph, we just need to print the <cite>scripted_searcher</cite> graph</p>
       %max_length.1 : int):
   %53 : bool = prim::Constant[value=0]()
   %42 : bool = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
-  %21 : None = prim::Constant()
   %18 : int = prim::Constant[value=4]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:68
   %17 : Device = prim::Constant[value="cpu"]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:48
+  %14 : NoneType = prim::Constant()
   %12 : int = prim::Constant[value=2]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:41
   %16 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:35
   %26 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:34
   %4 : __torch__.EncoderRNN = prim::GetAttr[name="encoder"](%self)
   %7 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%4, %input_seq.1, %input_length.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:557:42
   %encoder_outputs.1 : Tensor, %encoder_hidden.1 : Tensor = prim::TupleUnpack(%7)
-  %decoder_hidden.1 : Tensor = aten::slice(%encoder_hidden.1, %26, %26, %12, %16) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
+  %decoder_hidden.1 : Tensor = aten::slice(%encoder_hidden.1, %26, %14, %12, %16) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
   %20 : int[] = prim::ListConstruct(%16, %16)
-  %23 : Tensor = aten::ones(%20, %18, %21, %17, %21) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
+  %23 : Tensor = aten::ones(%20, %18, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
   %decoder_input.1 : Tensor = aten::mul(%23, %16) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
   %27 : int[] = prim::ListConstruct(%26)
-  %all_tokens.1 : Tensor = aten::zeros(%27, %18, %21, %17, %21) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:21
+  %all_tokens.1 : Tensor = aten::zeros(%27, %18, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:21
   %33 : int[] = prim::ListConstruct(%26)
-  %all_scores.1 : Tensor = aten::zeros(%33, %21, %21, %17, %21) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:21
+  %all_scores.1 : Tensor = aten::zeros(%33, %14, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:21
   %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %42, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
-    block0(%43 : int, %all_tokens.6 : Tensor, %all_scores.6 : Tensor, %decoder_hidden.5 : Tensor, %decoder_input.9 : Tensor):
+    block0(%43 : int, %all_tokens.11 : Tensor, %all_scores.11 : Tensor, %decoder_hidden.9 : Tensor, %decoder_input.17 : Tensor):
       %44 : __torch__.LuongAttnDecoderRNN = prim::GetAttr[name="decoder"](%self)
-      %48 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%44, %decoder_input.9, %decoder_hidden.5, %encoder_outputs.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:568:45
-      %decoder_output.1 : Tensor, %decoder_hidden.3 : Tensor = prim::TupleUnpack(%48)
-      %decoder_scores.1 : Tensor, %decoder_input.3 : Tensor = aten::max(%decoder_output.1, %16, %53) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:44
-      %61 : Tensor[] = prim::ListConstruct(%all_tokens.6, %decoder_input.3)
-      %all_tokens.3 : Tensor = aten::cat(%61, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:25
-      %67 : Tensor[] = prim::ListConstruct(%all_scores.6, %decoder_scores.1)
-      %all_scores.3 : Tensor = aten::cat(%67, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:25
-      %decoder_input.7 : Tensor = aten::unsqueeze(%decoder_input.3, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:28
-      -&gt; (%42, %all_tokens.3, %all_scores.3, %decoder_hidden.3, %decoder_input.7)
+      %48 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%44, %decoder_input.17, %decoder_hidden.9, %encoder_outputs.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:568:45
+      %decoder_output.1 : Tensor, %decoder_hidden.5 : Tensor = prim::TupleUnpack(%48)
+      %decoder_scores.1 : Tensor, %decoder_input.5 : Tensor = aten::max(%decoder_output.1, %16, %53) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:44
+      %61 : Tensor[] = prim::ListConstruct(%all_tokens.11, %decoder_input.5)
+      %all_tokens.5 : Tensor = aten::cat(%61, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:25
+      %67 : Tensor[] = prim::ListConstruct(%all_scores.11, %decoder_scores.1)
+      %all_scores.5 : Tensor = aten::cat(%67, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:25
+      %decoder_input.13 : Tensor = aten::unsqueeze(%decoder_input.5, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:28
+      -&gt; (%42, %all_tokens.5, %all_scores.5, %decoder_hidden.5, %decoder_input.13)
   %75 : (Tensor, Tensor) = prim::TupleConstruct(%all_tokens, %all_scores)
   return (%75)
 </pre></div>
@@ -1179,7 +1180,7 @@ of torch.save(model, PATH).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_searcher</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"scripted_chatbot.pth"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.727 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.725 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6dce8206a711b28b2b916bfd7de16bbc/deploy_seq2seq_hybrid_frontend_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_seq2seq_hybrid_frontend_tutorial.py</span></code></a></div>

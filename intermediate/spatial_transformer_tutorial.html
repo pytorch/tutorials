@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Spatial Transformer Networks Tutorial — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>Spatial Transformer Networks Tutorial — PyTorch Tutorials 1.9.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -150,7 +150,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -196,6 +196,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -204,7 +205,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -393,7 +394,6 @@ network.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz to ./MNIST/raw/train-images-idx3-ubyte.gz
 Failed to download (trying next):
 HTTP Error 503: Service Unavailable
 
@@ -403,10 +403,14 @@ Extracting ./MNIST/raw/train-images-idx3-ubyte.gz to ./MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
 Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz to ./MNIST/raw/train-labels-idx1-ubyte.gz
+Failed to download (trying next):
+HTTP Error 503: Service Unavailable
+
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz
+Downloading https://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz to ./MNIST/raw/train-labels-idx1-ubyte.gz
 Extracting ./MNIST/raw/train-labels-idx1-ubyte.gz to ./MNIST/raw
 
 Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
-Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz to ./MNIST/raw/t10k-images-idx3-ubyte.gz
 Failed to download (trying next):
 HTTP Error 503: Service Unavailable
 
@@ -421,9 +425,6 @@ HTTP Error 503: Service Unavailable
 Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz
 Downloading https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz to ./MNIST/raw/t10k-labels-idx1-ubyte.gz
 Extracting ./MNIST/raw/t10k-labels-idx1-ubyte.gz to ./MNIST/raw
-
-Processing...
-Done!
 </pre></div>
 </div>
 </div>
@@ -612,108 +613,108 @@ transformations while training.</p>
 </div>
 <img alt="../_images/sphx_glr_spatial_transformer_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_spatial_transformer_tutorial_001.png"/>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train Epoch: 1 [0/60000 (0%)]   Loss: 2.348122
-Train Epoch: 1 [32000/60000 (53%)]      Loss: 1.274057
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Train Epoch: 1 [0/60000 (0%)]   Loss: 2.307593
+Train Epoch: 1 [32000/60000 (53%)]      Loss: 0.760647
 
-Test set: Average loss: 0.2364, Accuracy: 9333/10000 (93%)
+Test set: Average loss: 0.4167, Accuracy: 8653/10000 (87%)
 
-Train Epoch: 2 [0/60000 (0%)]   Loss: 0.685158
-Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.413271
+Train Epoch: 2 [0/60000 (0%)]   Loss: 0.756044
+Train Epoch: 2 [32000/60000 (53%)]      Loss: 0.541252
 
-Test set: Average loss: 0.1440, Accuracy: 9572/10000 (96%)
+Test set: Average loss: 0.1406, Accuracy: 9575/10000 (96%)
 
-Train Epoch: 3 [0/60000 (0%)]   Loss: 0.319409
-Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.296441
+Train Epoch: 3 [0/60000 (0%)]   Loss: 0.178756
+Train Epoch: 3 [32000/60000 (53%)]      Loss: 0.204135
 
-Test set: Average loss: 0.1090, Accuracy: 9670/10000 (97%)
+Test set: Average loss: 0.1000, Accuracy: 9700/10000 (97%)
 
-Train Epoch: 4 [0/60000 (0%)]   Loss: 0.414277
-Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.204351
+Train Epoch: 4 [0/60000 (0%)]   Loss: 0.256361
+Train Epoch: 4 [32000/60000 (53%)]      Loss: 0.407090
 
-Test set: Average loss: 0.0827, Accuracy: 9744/10000 (97%)
+Test set: Average loss: 0.0859, Accuracy: 9744/10000 (97%)
 
-Train Epoch: 5 [0/60000 (0%)]   Loss: 0.136686
-Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.114165
+Train Epoch: 5 [0/60000 (0%)]   Loss: 0.199621
+Train Epoch: 5 [32000/60000 (53%)]      Loss: 0.114128
 
-Test set: Average loss: 0.0676, Accuracy: 9790/10000 (98%)
+Test set: Average loss: 0.0967, Accuracy: 9690/10000 (97%)
 
-Train Epoch: 6 [0/60000 (0%)]   Loss: 0.128113
-Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.069283
+Train Epoch: 6 [0/60000 (0%)]   Loss: 0.153811
+Train Epoch: 6 [32000/60000 (53%)]      Loss: 0.209166
 
-Test set: Average loss: 0.0697, Accuracy: 9798/10000 (98%)
+Test set: Average loss: 0.0814, Accuracy: 9761/10000 (98%)
 
-Train Epoch: 7 [0/60000 (0%)]   Loss: 0.126914
-Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.387644
+Train Epoch: 7 [0/60000 (0%)]   Loss: 0.075019
+Train Epoch: 7 [32000/60000 (53%)]      Loss: 0.120284
 
-Test set: Average loss: 0.0676, Accuracy: 9785/10000 (98%)
+Test set: Average loss: 0.0751, Accuracy: 9776/10000 (98%)
 
-Train Epoch: 8 [0/60000 (0%)]   Loss: 0.154424
-Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.164536
+Train Epoch: 8 [0/60000 (0%)]   Loss: 0.236981
+Train Epoch: 8 [32000/60000 (53%)]      Loss: 0.052201
 
-Test set: Average loss: 0.0641, Accuracy: 9814/10000 (98%)
+Test set: Average loss: 0.0592, Accuracy: 9823/10000 (98%)
 
-Train Epoch: 9 [0/60000 (0%)]   Loss: 0.097612
-Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.316432
+Train Epoch: 9 [0/60000 (0%)]   Loss: 0.101579
+Train Epoch: 9 [32000/60000 (53%)]      Loss: 0.237346
 
-Test set: Average loss: 0.2494, Accuracy: 9304/10000 (93%)
+Test set: Average loss: 0.0595, Accuracy: 9823/10000 (98%)
 
-Train Epoch: 10 [0/60000 (0%)]  Loss: 0.248729
-Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.081959
+Train Epoch: 10 [0/60000 (0%)]  Loss: 0.054250
+Train Epoch: 10 [32000/60000 (53%)]     Loss: 0.176243
 
-Test set: Average loss: 0.0507, Accuracy: 9844/10000 (98%)
+Test set: Average loss: 0.0607, Accuracy: 9823/10000 (98%)
 
-Train Epoch: 11 [0/60000 (0%)]  Loss: 0.017756
-Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.054801
+Train Epoch: 11 [0/60000 (0%)]  Loss: 0.135370
+Train Epoch: 11 [32000/60000 (53%)]     Loss: 0.310061
 
-Test set: Average loss: 0.0499, Accuracy: 9837/10000 (98%)
+Test set: Average loss: 0.0512, Accuracy: 9842/10000 (98%)
 
-Train Epoch: 12 [0/60000 (0%)]  Loss: 0.131209
-Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.110493
+Train Epoch: 12 [0/60000 (0%)]  Loss: 0.094852
+Train Epoch: 12 [32000/60000 (53%)]     Loss: 0.099562
 
-Test set: Average loss: 0.0470, Accuracy: 9860/10000 (99%)
+Test set: Average loss: 0.0468, Accuracy: 9863/10000 (99%)
 
-Train Epoch: 13 [0/60000 (0%)]  Loss: 0.033614
-Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.273187
+Train Epoch: 13 [0/60000 (0%)]  Loss: 0.061090
+Train Epoch: 13 [32000/60000 (53%)]     Loss: 0.086531
 
-Test set: Average loss: 0.0481, Accuracy: 9856/10000 (99%)
+Test set: Average loss: 0.0426, Accuracy: 9873/10000 (99%)
 
-Train Epoch: 14 [0/60000 (0%)]  Loss: 0.029755
-Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.059688
+Train Epoch: 14 [0/60000 (0%)]  Loss: 0.204018
+Train Epoch: 14 [32000/60000 (53%)]     Loss: 0.240503
 
-Test set: Average loss: 0.0556, Accuracy: 9841/10000 (98%)
+Test set: Average loss: 0.0454, Accuracy: 9861/10000 (99%)
 
-Train Epoch: 15 [0/60000 (0%)]  Loss: 0.060980
-Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.026244
+Train Epoch: 15 [0/60000 (0%)]  Loss: 0.104277
+Train Epoch: 15 [32000/60000 (53%)]     Loss: 0.237353
 
-Test set: Average loss: 0.0417, Accuracy: 9874/10000 (99%)
+Test set: Average loss: 0.0475, Accuracy: 9853/10000 (99%)
 
-Train Epoch: 16 [0/60000 (0%)]  Loss: 0.066391
-Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.281237
+Train Epoch: 16 [0/60000 (0%)]  Loss: 0.108151
+Train Epoch: 16 [32000/60000 (53%)]     Loss: 0.176113
 
-Test set: Average loss: 0.0457, Accuracy: 9874/10000 (99%)
+Test set: Average loss: 0.0447, Accuracy: 9858/10000 (99%)
 
-Train Epoch: 17 [0/60000 (0%)]  Loss: 0.094756
-Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.058554
+Train Epoch: 17 [0/60000 (0%)]  Loss: 0.109636
+Train Epoch: 17 [32000/60000 (53%)]     Loss: 0.041428
 
-Test set: Average loss: 0.0458, Accuracy: 9864/10000 (99%)
+Test set: Average loss: 0.0405, Accuracy: 9883/10000 (99%)
 
-Train Epoch: 18 [0/60000 (0%)]  Loss: 0.067354
-Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.086038
+Train Epoch: 18 [0/60000 (0%)]  Loss: 0.024289
+Train Epoch: 18 [32000/60000 (53%)]     Loss: 0.076757
 
-Test set: Average loss: 0.0418, Accuracy: 9864/10000 (99%)
+Test set: Average loss: 0.0427, Accuracy: 9863/10000 (99%)
 
-Train Epoch: 19 [0/60000 (0%)]  Loss: 0.128480
-Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.095881
+Train Epoch: 19 [0/60000 (0%)]  Loss: 0.121158
+Train Epoch: 19 [32000/60000 (53%)]     Loss: 0.103130
 
-Test set: Average loss: 0.0461, Accuracy: 9861/10000 (99%)
+Test set: Average loss: 0.0641, Accuracy: 9811/10000 (98%)
 
-Train Epoch: 20 [0/60000 (0%)]  Loss: 0.120981
-Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.122077
+Train Epoch: 20 [0/60000 (0%)]  Loss: 0.167737
+Train Epoch: 20 [32000/60000 (53%)]     Loss: 0.034666
 
-Test set: Average loss: 0.0475, Accuracy: 9862/10000 (99%)
+Test set: Average loss: 0.0351, Accuracy: 9893/10000 (99%)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  50.289 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  45.499 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-spatial-transformer-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/8aa31a122008b8db8bbe28365db9ea47/spatial_transformer_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">spatial_transformer_tutorial.py</span></code></a></div>

@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Training Transformer models using Pipeline Parallelism — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>Training Transformer models using Pipeline Parallelism — PyTorch Tutorials 1.9.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -152,7 +152,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -198,6 +198,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -206,7 +207,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -458,27 +459,24 @@ length 6:</p>
 <p>These columns are treated as independent by the model, which means that
 the dependence of <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> can not be learned, but allows more
 efficient batch processing.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torchtext.utils</span> <span class="kn">import</span> <span class="n">download_from_url</span><span class="p">,</span> <span class="n">extract_archive</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">WikiText2</span>
 <span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
 <span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">build_vocab_from_iterator</span>
 
-<span class="n">url</span> <span class="o">=</span> <span class="s1">'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'</span>
-<span class="n">test_filepath</span><span class="p">,</span> <span class="n">valid_filepath</span><span class="p">,</span> <span class="n">train_filepath</span> <span class="o">=</span> <span class="n">extract_archive</span><span class="p">(</span><span class="n">download_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">))</span>
+<span class="n">train_iter</span> <span class="o">=</span> <span class="n">WikiText2</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'basic_english'</span><span class="p">)</span>
-<span class="n">vocab</span> <span class="o">=</span> <span class="n">build_vocab_from_iterator</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span>
-                                      <span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">train_filepath</span><span class="p">,</span>
-                                                   <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">))))</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="n">build_vocab_from_iterator</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">train_iter</span><span class="p">),</span> <span class="n">specials</span><span class="o">=</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
+<span class="n">vocab</span><span class="o">.</span><span class="n">set_default_index</span><span class="p">(</span><span class="n">vocab</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
 
 <span class="k">def</span> <span class="nf">data_process</span><span class="p">(</span><span class="n">raw_text_iter</span><span class="p">):</span>
-  <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">item</span><span class="p">)],</span>
-                       <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_text_iter</span><span class="p">]</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">vocab</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">item</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_text_iter</span><span class="p">]</span>
   <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)))</span>
 
-<span class="n">train_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">train_filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)))</span>
-<span class="n">val_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">valid_filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)))</span>
-<span class="n">test_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">test_filepath</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf8"</span><span class="p">)))</span>
+<span class="n">train_iter</span><span class="p">,</span> <span class="n">val_iter</span><span class="p">,</span> <span class="n">test_iter</span> <span class="o">=</span> <span class="n">WikiText2</span><span class="p">()</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">train_iter</span><span class="p">)</span>
+<span class="n">val_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">val_iter</span><span class="p">)</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="n">data_process</span><span class="p">(</span><span class="n">test_iter</span><span class="p">)</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span>
 
@@ -541,7 +539,7 @@ transformer layers on the other GPU.</p>
 allows the Pipe to work with only two partitions and avoid any
 cross-partition overheads.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
 <span class="n">emsize</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># embedding dimension</span>
 <span class="n">nhid</span> <span class="o">=</span> <span class="mi">4096</span> <span class="c1"># the dimension of the feedforward network model in nn.TransformerEncoder</span>
 <span class="n">nlayers</span> <span class="o">=</span> <span class="mi">12</span> <span class="c1"># the number of nn.TransformerEncoderLayer in nn.TransformerEncoder</span>
@@ -601,7 +599,7 @@ cross-partition overheads.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total parameters in model: 1,444,270,191
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Total parameters in model: 1,444,261,998
 </pre></div>
 </div>
 </div>
@@ -626,7 +624,7 @@ function to scale all the gradient together to prevent exploding.</p>
     <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span> <span class="c1"># Turn on the train mode</span>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
     <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>
 
     <span class="c1"># Train only for 50 batches to keep script execution time low.</span>
     <span class="n">nbatches</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">bptt</span><span class="p">,</span> <span class="n">train_data</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
@@ -662,7 +660,7 @@ function to scale all the gradient together to prevent exploding.</p>
 <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">eval_model</span><span class="p">,</span> <span class="n">data_source</span><span class="p">):</span>
     <span class="n">eval_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span> <span class="c1"># Turn on the evaluation mode</span>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mf">0.</span>
-    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span>
+    <span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>
     <span class="c1"># Evaluate only for 50 batches to keep script execution time low.</span>
     <span class="n">nbatches</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="n">bptt</span><span class="p">,</span> <span class="n">data_source</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
@@ -700,26 +698,26 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3188.69 | loss 43.24 | ppl 5989705875570702336.00
-| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2890.14 | loss 43.64 | ppl 8933215638315930624.00
-| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2896.49 | loss 50.27 | ppl 6766600051271166590976.00
-| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2899.18 | loss 37.41 | ppl 17662527008398952.00
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3165.91 | loss 53.08 | ppl 112790052571065043910656.00
+| epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2861.83 | loss 45.46 | ppl 55157613216139427840.00
+| epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2866.27 | loss 38.73 | ppl 65789227616101416.00
+| epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2868.68 | loss 37.07 | ppl 12511320039201592.00
 -----------------------------------------------------------------------------------------
-| end of epoch   1 | time: 165.64s | valid loss  1.03 | valid ppl     2.81
+| end of epoch   1 | time: 163.96s | valid loss  1.12 | valid ppl     3.08
 -----------------------------------------------------------------------------------------
-| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3200.31 | loss 37.96 | ppl 30569376624186240.00
-| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2906.40 | loss 32.76 | ppl 169411732863441.56
-| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2906.09 | loss 28.43 | ppl 2231736457314.54
-| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2904.91 | loss 24.14 | ppl 30431246752.50
+| epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3164.59 | loss 38.87 | ppl 76377475610995392.00
+| epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2876.95 | loss 30.77 | ppl 23112050743970.68
+| epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2874.38 | loss 26.68 | ppl 385842873543.89
+| epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2873.95 | loss 19.24 | ppl 226565999.35
 -----------------------------------------------------------------------------------------
-| end of epoch   2 | time: 165.95s | valid loss  0.37 | valid ppl     1.45
+| end of epoch   2 | time: 164.26s | valid loss  0.27 | valid ppl     1.31
 -----------------------------------------------------------------------------------------
-| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3194.23 | loss 15.00 | ppl 3267244.89
-| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2901.60 | loss 12.02 | ppl 166039.77
-| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2900.73 | loss 11.26 | ppl 77384.52
-| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2904.02 | loss 10.35 | ppl 31216.45
+| epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3160.90 | loss 13.16 | ppl 518559.25
+| epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2873.67 | loss 11.48 | ppl 96860.07
+| epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2873.59 | loss 10.69 | ppl 43864.98
+| epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2871.87 | loss 10.36 | ppl 31545.93
 -----------------------------------------------------------------------------------------
-| end of epoch   3 | time: 165.79s | valid loss  0.20 | valid ppl     1.22
+| end of epoch   3 | time: 164.16s | valid loss  0.33 | valid ppl     1.39
 -----------------------------------------------------------------------------------------
 </pre></div>
 </div>
@@ -736,41 +734,11 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
-| End of training | test loss  0.17 | test ppl     1.19
+| End of training | test loss  0.29 | test ppl     1.34
 =========================================================================================
 </pre></div>
 </div>
-</div>
-<div class="section" id="output">
-<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-py notranslate"><div class="highlight"><pre><span></span><span class="n">Total</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span><span class="mi">847</span><span class="p">,</span><span class="mi">087</span><span class="p">,</span><span class="mi">215</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>    <span class="mi">10</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">5.00</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2387.45</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">42.16</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">2036775646369743616.00</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>    <span class="mi">20</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">5.00</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2150.93</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">48.24</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">891334049215401558016.00</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>    <span class="mi">30</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">5.00</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2155.23</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">34.66</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">1125676483188404.62</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span>    <span class="mi">40</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">5.00</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2158.42</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">38.87</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">76287208340888368.00</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">1</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span> <span class="mf">119.65</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">loss</span>  <span class="mf">2.95</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">ppl</span>    <span class="mf">19.15</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>    <span class="mi">10</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.51</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2376.16</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">34.92</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">1458001430957104.00</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>    <span class="mi">20</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.51</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.96</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">34.75</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">1232463826541886.50</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>    <span class="mi">30</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.51</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.66</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">28.10</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">1599598251136.51</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span>    <span class="mi">40</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.51</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.07</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">20.25</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">621174306.77</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">2</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span> <span class="mf">119.76</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">loss</span>  <span class="mf">0.87</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">ppl</span>     <span class="mf">2.38</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>    <span class="mi">10</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.29</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2376.49</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">13.20</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">537727.23</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>    <span class="mi">20</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.29</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.12</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">10.98</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">58548.58</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>    <span class="mi">30</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.29</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.05</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">12.01</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">164152.79</span>
-<span class="o">|</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span>    <span class="mi">40</span><span class="o">/</span>   <span class="mi">50</span> <span class="n">batches</span> <span class="o">|</span> <span class="n">lr</span> <span class="mf">4.29</span> <span class="o">|</span> <span class="n">ms</span><span class="o">/</span><span class="n">batch</span> <span class="mf">2160.03</span> <span class="o">|</span> <span class="n">loss</span> <span class="mf">10.63</span> <span class="o">|</span> <span class="n">ppl</span> <span class="mf">41348.00</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">|</span> <span class="n">end</span> <span class="n">of</span> <span class="n">epoch</span>   <span class="mi">3</span> <span class="o">|</span> <span class="n">time</span><span class="p">:</span> <span class="mf">119.76</span><span class="n">s</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">loss</span>  <span class="mf">0.78</span> <span class="o">|</span> <span class="n">valid</span> <span class="n">ppl</span>     <span class="mf">2.17</span>
-<span class="o">-----------------------------------------------------------------------------------------</span>
-<span class="o">=========================================================================================</span>
-<span class="o">|</span> <span class="n">End</span> <span class="n">of</span> <span class="n">training</span> <span class="o">|</span> <span class="n">test</span> <span class="n">loss</span>  <span class="mf">0.69</span> <span class="o">|</span> <span class="n">test</span> <span class="n">ppl</span>     <span class="mf">1.99</span>
-<span class="o">=========================================================================================</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 9 minutes  6.000 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 8 minutes  59.311 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pipeline-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/804e13839064f17e9c73e4d08b8ca491/pipeline_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pipeline_tutorial.py</span></code></a></div>
@@ -824,7 +792,6 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 <li><a class="reference internal" href="#model-scale-and-pipe-initialization">Model scale and Pipe initialization</a></li>
 <li><a class="reference internal" href="#run-the-model">Run the model</a></li>
 <li><a class="reference internal" href="#evaluate-the-model-with-the-test-dataset">Evaluate the model with the test dataset</a></li>
-<li><a class="reference internal" href="#output">Output</a></li>
 </ul>
 </li>
 </ul>

@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PyTorch Profiler &mdash; PyTorch Tutorials 1.8.1+cu102 documentation</title>
+  <title>PyTorch Profiler &mdash; PyTorch Tutorials 1.9.0+cu102 documentation</title>
   
 
   
@@ -201,7 +201,7 @@
               
               
                 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
               
             
@@ -265,6 +265,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../beginner/audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -273,7 +274,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -465,9 +466,12 @@ use profiler to analyze model performance.</p>
 <ol class="arabic simple">
 <li>Import all necessary libraries</li>
 <li>Instantiate a simple Resnet model</li>
-<li>Use profiler to analyze execution time</li>
-<li>Use profiler to analyze memory consumption</li>
+<li>Using profiler to analyze execution time</li>
+<li>Using profiler to analyze memory consumption</li>
 <li>Using tracing functionality</li>
+<li>Examining stack traces</li>
+<li>Visualizing data as a flamegraph</li>
+<li>Using profiler to analyze long-running jobs</li>
 </ol>
 <div class="section" id="import-all-necessary-libraries">
 <h3>1. Import all necessary libraries<a class="headerlink" href="#import-all-necessary-libraries" title="Permalink to this headline">¶</a></h3>
@@ -475,7 +479,7 @@ use profiler to analyze model performance.</p>
 and <code class="docutils literal notranslate"><span class="pre">profiler</span></code> modules:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
-<span class="kn">import</span> <span class="nn">torch.autograd.profiler</span> <span class="k">as</span> <span class="nn">profiler</span>
+<span class="kn">from</span> <span class="nn">torch.profiler</span> <span class="kn">import</span> <span class="n">profile</span><span class="p">,</span> <span class="n">record_function</span><span class="p">,</span> <span class="n">ProfilerActivity</span>
 </pre></div>
 </div>
 </div>
@@ -488,26 +492,38 @@ for it:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="use-profiler-to-analyze-execution-time">
-<h3>3. Use profiler to analyze execution time<a class="headerlink" href="#use-profiler-to-analyze-execution-time" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="using-profiler-to-analyze-execution-time">
+<h3>3. Using profiler to analyze execution time<a class="headerlink" href="#using-profiler-to-analyze-execution-time" title="Permalink to this headline">¶</a></h3>
 <p>PyTorch profiler is enabled through the context manager and accepts
 a number of parameters, some of the most useful are:</p>
 <ul class="simple">
+<li><dl class="first docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">activities</span></code> - a list of activities to profile:</dt>
+<dd><ul class="first last">
+<li><code class="docutils literal notranslate"><span class="pre">ProfilerActivity.CPU</span></code> - PyTorch operators, TorchScript functions and
+user-defined code labels (see <code class="docutils literal notranslate"><span class="pre">record_function</span></code> below);</li>
+<li><code class="docutils literal notranslate"><span class="pre">ProfilerActivity.CUDA</span></code> - on-device CUDA kernels;</li>
+</ul>
+</dd>
+</dl>
+</li>
 <li><code class="docutils literal notranslate"><span class="pre">record_shapes</span></code> - whether to record shapes of the operator inputs;</li>
 <li><code class="docutils literal notranslate"><span class="pre">profile_memory</span></code> - whether to report amount of memory consumed by
 model’s Tensors;</li>
 <li><code class="docutils literal notranslate"><span class="pre">use_cuda</span></code> - whether to measure execution time of CUDA kernels.</li>
 </ul>
+<p>Note: when using CUDA, profiler also shows the runtime CUDA events
+occuring on the host.</p>
 <p>Let’s see how we can use profiler to analyze the execution time:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profile</span><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">],</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
         <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that we can use <code class="docutils literal notranslate"><span class="pre">record_function</span></code> context manager to label
 arbitrary code ranges with user provided names
-(<code class="docutils literal notranslate"><span class="pre">model_inference</span></code> is used as a label in the example above).
-Profiler allows one to check which operators were called during the
+(<code class="docutils literal notranslate"><span class="pre">model_inference</span></code> is used as a label in the example above).</p>
+<p>Profiler allows one to check which operators were called during the
 execution of a code range wrapped with a profiler context manager.
 If multiple profiler ranges are active at the same time (e.g. in
 parallel PyTorch threads), each profiling context manager tracks only
@@ -520,108 +536,280 @@ the backward pass operators launched with <code class="docutils literal notransl
 </pre></div>
 </div>
 <p>The output will look like (omitting some columns):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># -------------------------  --------------  ----------  ------------  ---------</span>
-<span class="c1"># Name                       Self CPU total   CPU total  CPU time avg  # Calls</span>
-<span class="c1"># -------------------------  --------------  ----------  ------------  ---------</span>
-<span class="c1"># model_inference            3.541ms         69.571ms    69.571ms      1</span>
-<span class="c1"># conv2d                     69.122us        40.556ms    2.028ms       20</span>
-<span class="c1"># convolution                79.100us        40.487ms    2.024ms       20</span>
-<span class="c1"># _convolution               349.533us       40.408ms    2.020ms       20</span>
-<span class="c1"># mkldnn_convolution         39.822ms        39.988ms    1.999ms       20</span>
-<span class="c1"># batch_norm                 105.559us       15.523ms    776.134us     20</span>
-<span class="c1"># _batch_norm_impl_index     103.697us       15.417ms    770.856us     20</span>
-<span class="c1"># native_batch_norm          9.387ms         15.249ms    762.471us     20</span>
-<span class="c1"># max_pool2d                 29.400us        7.200ms     7.200ms       1</span>
-<span class="c1"># max_pool2d_with_indices    7.154ms         7.170ms     7.170ms       1</span>
-<span class="c1"># -------------------------  --------------  ----------  ------------  ---------</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ---------------------------------  ------------  ------------  ------------  ------------</span>
+<span class="c1">#                              Name      Self CPU     CPU total  CPU time avg    # of Calls</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------  ------------</span>
+<span class="c1">#                   model_inference       5.509ms      57.503ms      57.503ms             1</span>
+<span class="c1">#                      aten::conv2d     231.000us      31.931ms       1.597ms            20</span>
+<span class="c1">#                 aten::convolution     250.000us      31.700ms       1.585ms            20</span>
+<span class="c1">#                aten::_convolution     336.000us      31.450ms       1.573ms            20</span>
+<span class="c1">#          aten::mkldnn_convolution      30.838ms      31.114ms       1.556ms            20</span>
+<span class="c1">#                  aten::batch_norm     211.000us      14.693ms     734.650us            20</span>
+<span class="c1">#      aten::_batch_norm_impl_index     319.000us      14.482ms     724.100us            20</span>
+<span class="c1">#           aten::native_batch_norm       9.229ms      14.109ms     705.450us            20</span>
+<span class="c1">#                        aten::mean     332.000us       2.631ms     125.286us            21</span>
+<span class="c1">#                      aten::select       1.668ms       2.292ms       8.988us           255</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------  ------------</span>
+<span class="c1"># Self CPU time total: 57.549ms</span>
 </pre></div>
 </div>
 <p>Here we see that, as expected, most of the time is spent in convolution (and specifically in <code class="docutils literal notranslate"><span class="pre">mkldnn_convolution</span></code>
 for PyTorch compiled with MKL-DNN support).
 Note the difference between self cpu time and cpu time - operators can call other operators, self cpu time exludes time
-spent in children operator calls, while total cpu time includes it.</p>
-<p>To get a finer granularity of results and include operator input shapes, pass <code class="docutils literal notranslate"><span class="pre">group_by_input_shape=True</span></code>:</p>
+spent in children operator calls, while total cpu time includes it. You can choose to sort by the self cpu time by passing
+<code class="docutils literal notranslate"><span class="pre">sort_by=&quot;self_cpu_time_total&quot;</span></code> into the <code class="docutils literal notranslate"><span class="pre">table</span></code> call.</p>
+<p>To get a finer granularity of results and include operator input shapes, pass <code class="docutils literal notranslate"><span class="pre">group_by_input_shape=True</span></code>
+(note: this requires running the profiler with <code class="docutils literal notranslate"><span class="pre">record_shapes=True</span></code>):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_input_shape</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 
 <span class="c1"># (omitting some columns)</span>
-<span class="c1"># -------------------------  -----------  --------  -------------------------------------</span>
-<span class="c1"># Name                       CPU total    # Calls         Input Shapes</span>
-<span class="c1"># -------------------------  -----------  --------  -------------------------------------</span>
-<span class="c1"># model_inference            69.571ms     1         []</span>
-<span class="c1"># conv2d                     9.019ms      4         [[5, 64, 56, 56], [64, 64, 3, 3], []]</span>
-<span class="c1"># convolution                9.006ms      4         [[5, 64, 56, 56], [64, 64, 3, 3], []]</span>
-<span class="c1"># _convolution               8.982ms      4         [[5, 64, 56, 56], [64, 64, 3, 3], []]</span>
-<span class="c1"># mkldnn_convolution         8.894ms      4         [[5, 64, 56, 56], [64, 64, 3, 3], []]</span>
-<span class="c1"># max_pool2d                 7.200ms      1         [[5, 64, 112, 112]]</span>
-<span class="c1"># conv2d                     7.189ms      3         [[5, 512, 7, 7], [512, 512, 3, 3], []]</span>
-<span class="c1"># convolution                7.180ms      3         [[5, 512, 7, 7], [512, 512, 3, 3], []]</span>
-<span class="c1"># _convolution               7.171ms      3         [[5, 512, 7, 7], [512, 512, 3, 3], []]</span>
-<span class="c1"># max_pool2d_with_indices    7.170ms      1         [[5, 64, 112, 112]]</span>
-<span class="c1"># -------------------------  -----------  --------  --------------------------------------</span>
+<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
+<span class="c1">#                              Name     CPU total                                 Input Shapes</span>
+<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
+<span class="c1">#                   model_inference      57.503ms                                           []</span>
+<span class="c1">#                      aten::conv2d       8.008ms      [5,64,56,56], [64,64,3,3], [], ..., []]</span>
+<span class="c1">#                 aten::convolution       7.956ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
+<span class="c1">#                aten::_convolution       7.909ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
+<span class="c1">#          aten::mkldnn_convolution       7.834ms     [[5,64,56,56], [64,64,3,3], [], ..., []]</span>
+<span class="c1">#                      aten::conv2d       6.332ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
+<span class="c1">#                 aten::convolution       6.303ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
+<span class="c1">#                aten::_convolution       6.273ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
+<span class="c1">#          aten::mkldnn_convolution       6.233ms    [[5,512,7,7], [512,512,3,3], [], ..., []]</span>
+<span class="c1">#                      aten::conv2d       4.751ms  [[5,256,14,14], [256,256,3,3], [], ..., []]</span>
+<span class="c1"># ---------------------------------  ------------  -------------------------------------------</span>
+<span class="c1"># Self CPU time total: 57.549ms</span>
 </pre></div>
 </div>
+<p>Note the occurence of <code class="docutils literal notranslate"><span class="pre">aten::convolution</span></code> twice with different input shapes.</p>
+<p>Profiler can also be used to analyze performance of models executed on GPUs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">],</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
+        <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cuda_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
 </div>
-<div class="section" id="use-profiler-to-analyze-memory-consumption">
-<h3>4. Use profiler to analyze memory consumption<a class="headerlink" href="#use-profiler-to-analyze-memory-consumption" title="Permalink to this headline">¶</a></h3>
+<p>(Note: the first use of CUDA profiling may bring an extra overhead.)</p>
+<p>The resulting table output:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># (omitting some columns)</span>
+<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
+<span class="c1">#                                                    Name     Self CUDA    CUDA total</span>
+<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
+<span class="c1">#                                         model_inference       0.000us      11.666ms</span>
+<span class="c1">#                                            aten::conv2d       0.000us      10.484ms</span>
+<span class="c1">#                                       aten::convolution       0.000us      10.484ms</span>
+<span class="c1">#                                      aten::_convolution       0.000us      10.484ms</span>
+<span class="c1">#                              aten::_convolution_nogroup       0.000us      10.484ms</span>
+<span class="c1">#                                       aten::thnn_conv2d       0.000us      10.484ms</span>
+<span class="c1">#                               aten::thnn_conv2d_forward      10.484ms      10.484ms</span>
+<span class="c1"># void at::native::im2col_kernel&lt;float&gt;(long, float co...       3.844ms       3.844ms</span>
+<span class="c1">#                                       sgemm_32x32x32_NN       3.206ms       3.206ms</span>
+<span class="c1">#                                   sgemm_32x32x32_NN_vec       3.093ms       3.093ms</span>
+<span class="c1"># -------------------------------------------------------  ------------  ------------</span>
+<span class="c1"># Self CPU time total: 23.015ms</span>
+<span class="c1"># Self CUDA time total: 11.666ms</span>
+</pre></div>
+</div>
+<p>Note the occurence of on-device kernels in the output (e.g. <code class="docutils literal notranslate"><span class="pre">sgemm_32x32x32_NN</span></code>).</p>
+</div>
+<div class="section" id="using-profiler-to-analyze-memory-consumption">
+<h3>4. Using profiler to analyze memory consumption<a class="headerlink" href="#using-profiler-to-analyze-memory-consumption" title="Permalink to this headline">¶</a></h3>
 <p>PyTorch profiler can also show the amount of memory (used by the model’s tensors)
 that was allocated (or released) during the execution of the model’s operators.
 In the output below, ‘self’ memory corresponds to the memory allocated (released)
 by the operator, excluding the children calls to the other operators.
 To enable memory profiling functionality pass <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">],</span>
+        <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;self_cpu_memory_usage&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 
 <span class="c1"># (omitting some columns)</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
-<span class="c1"># Name                         CPU Mem          Self CPU Mem     Number of Calls</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
-<span class="c1"># empty                        94.79 Mb         94.79 Mb         123</span>
-<span class="c1"># resize_                      11.48 Mb         11.48 Mb         2</span>
-<span class="c1"># addmm                        19.53 Kb         19.53 Kb         1</span>
-<span class="c1"># empty_strided                4 b              4 b              1</span>
-<span class="c1"># conv2d                       47.37 Mb         0 b              20</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1">#                              Name       CPU Mem  Self CPU Mem    # of Calls</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1">#                       aten::empty      94.79 Mb      94.79 Mb           121</span>
+<span class="c1">#     aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1</span>
+<span class="c1">#                       aten::addmm      19.53 Kb      19.53 Kb             1</span>
+<span class="c1">#               aten::empty_strided         572 b         572 b            25</span>
+<span class="c1">#                     aten::resize_         240 b         240 b             6</span>
+<span class="c1">#                         aten::abs         480 b         240 b             4</span>
+<span class="c1">#                         aten::add         160 b         160 b            20</span>
+<span class="c1">#               aten::masked_select         120 b         112 b             1</span>
+<span class="c1">#                          aten::ne         122 b          53 b             6</span>
+<span class="c1">#                          aten::eq          60 b          30 b             2</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1"># Self CPU time total: 53.064ms</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cpu_memory_usage&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
 
 <span class="c1"># (omitting some columns)</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
-<span class="c1"># Name                         CPU Mem          Self CPU Mem     Number of Calls</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
-<span class="c1"># empty                        94.79 Mb         94.79 Mb         123</span>
-<span class="c1"># batch_norm                   47.41 Mb         0 b              20</span>
-<span class="c1"># _batch_norm_impl_index       47.41 Mb         0 b              20</span>
-<span class="c1"># native_batch_norm            47.41 Mb         0 b              20</span>
-<span class="c1"># conv2d                       47.37 Mb         0 b              20</span>
-<span class="c1"># convolution                  47.37 Mb         0 b              20</span>
-<span class="c1"># _convolution                 47.37 Mb         0 b              20</span>
-<span class="c1"># mkldnn_convolution           47.37 Mb         0 b              20</span>
-<span class="c1"># empty_like                   47.37 Mb         0 b              20</span>
-<span class="c1"># max_pool2d                   11.48 Mb         0 b              1</span>
-<span class="c1"># max_pool2d_with_indices      11.48 Mb         0 b              1</span>
-<span class="c1"># resize_                      11.48 Mb         11.48 Mb         2</span>
-<span class="c1"># addmm                        19.53 Kb         19.53 Kb         1</span>
-<span class="c1"># adaptive_avg_pool2d          10.00 Kb         0 b              1</span>
-<span class="c1"># mean                         10.00 Kb         0 b              1</span>
-<span class="c1"># ---------------------------  ---------------  ---------------  ---------------</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1">#                              Name       CPU Mem  Self CPU Mem    # of Calls</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1">#                       aten::empty      94.79 Mb      94.79 Mb           121</span>
+<span class="c1">#                  aten::batch_norm      47.41 Mb           0 b            20</span>
+<span class="c1">#      aten::_batch_norm_impl_index      47.41 Mb           0 b            20</span>
+<span class="c1">#           aten::native_batch_norm      47.41 Mb           0 b            20</span>
+<span class="c1">#                      aten::conv2d      47.37 Mb           0 b            20</span>
+<span class="c1">#                 aten::convolution      47.37 Mb           0 b            20</span>
+<span class="c1">#                aten::_convolution      47.37 Mb           0 b            20</span>
+<span class="c1">#          aten::mkldnn_convolution      47.37 Mb           0 b            20</span>
+<span class="c1">#                  aten::max_pool2d      11.48 Mb           0 b             1</span>
+<span class="c1">#     aten::max_pool2d_with_indices      11.48 Mb      11.48 Mb             1</span>
+<span class="c1"># ---------------------------------  ------------  ------------  ------------</span>
+<span class="c1"># Self CPU time total: 53.064ms</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="using-tracing-functionality">
 <h3>5. Using tracing functionality<a class="headerlink" href="#using-tracing-functionality" title="Permalink to this headline">¶</a></h3>
 <p>Profiling results can be outputted as a .json trace file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">profiler</span><span class="o">.</span><span class="n">record_function</span><span class="p">(</span><span class="s2">&quot;model_inference&quot;</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span><span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">])</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
 
 <span class="n">prof</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s2">&quot;trace.json&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>User can examine the sequence of profiled operators after loading the trace file
-in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code>):</p>
-<a class="reference internal image-reference" href="../../_images/trace_img.png"><img alt="../../_images/trace_img.png" src="../../_images/trace_img.png" style="width: 823.5px; height: 78.5px;" /></a>
+<p>You can examine the sequence of profiled operators and CUDA kernels
+in Chrome trace viewer (<code class="docutils literal notranslate"><span class="pre">chrome://tracing</span></code>):</p>
+<a class="reference internal image-reference" href="../../_images/trace_img.png"><img alt="../../_images/trace_img.png" src="../../_images/trace_img.png" style="width: 754.0px; height: 124.5px;" /></a>
+</div>
+<div class="section" id="examining-stack-traces">
+<h3>6. Examining stack traces<a class="headerlink" href="#examining-stack-traces" title="Permalink to this headline">¶</a></h3>
+<p>Profiler can be used to analyze Python and TorchScript stack traces:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">],</span>
+    <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+<span class="c1"># Print aggregated stats</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">(</span><span class="n">group_by_stack_n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;self_cuda_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># (omitting some columns)</span>
+<span class="c1"># -------------------------  -----------------------------------------------------------</span>
+<span class="c1">#                      Name  Source Location</span>
+<span class="c1"># -------------------------  -----------------------------------------------------------</span>
+<span class="c1"># aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward</span>
+<span class="c1">#                            .../torch/nn/modules/conv.py(443): forward</span>
+<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
+<span class="c1">#                            .../site-packages/torchvision/models/resnet.py(63): forward</span>
+<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
+<span class="c1">#</span>
+<span class="c1"># aten::thnn_conv2d_forward  .../torch/nn/modules/conv.py(439): _conv_forward</span>
+<span class="c1">#                            .../torch/nn/modules/conv.py(443): forward</span>
+<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
+<span class="c1">#                            .../site-packages/torchvision/models/resnet.py(59): forward</span>
+<span class="c1">#                            .../torch/nn/modules/module.py(1051): _call_impl</span>
+<span class="c1">#</span>
+<span class="c1"># -------------------------  -----------------------------------------------------------</span>
+<span class="c1"># Self CPU time total: 34.016ms</span>
+<span class="c1"># Self CUDA time total: 11.659ms</span>
+</pre></div>
+</div>
+<p>Note the two convolutions and the two callsites in <code class="docutils literal notranslate"><span class="pre">torchvision/models/resnet.py</span></code> script.</p>
+<p>(Warning: stack tracing adds an extra profiling overhead.)</p>
+</div>
+<div class="section" id="visualizing-data-as-a-flamegraph">
+<h3>7. Visualizing data as a flamegraph<a class="headerlink" href="#visualizing-data-as-a-flamegraph" title="Permalink to this headline">¶</a></h3>
+<p>Execution time (<code class="docutils literal notranslate"><span class="pre">self_cpu_time_total</span></code> and <code class="docutils literal notranslate"><span class="pre">self_cuda_time_total</span></code> metrics) and stack traces
+can also be visualized as a flame graph. To do this, first export the raw data using <code class="docutils literal notranslate"><span class="pre">export_stacks</span></code> (requires <code class="docutils literal notranslate"><span class="pre">with_stack=True</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prof</span><span class="o">.</span><span class="n">export_stacks</span><span class="p">(</span><span class="s2">&quot;/tmp/profiler_stacks.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;self_cuda_time_total&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We recommend using e.g. <a class="reference external" href="https://github.com/brendangregg/FlameGraph">Flamegraph tool</a> to generate an
+interactive SVG:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># git clone https://github.com/brendangregg/FlameGraph</span>
+<span class="c1"># cd FlameGraph</span>
+<span class="c1"># ./flamegraph.pl --title &quot;CUDA time&quot; --countname &quot;us.&quot; /tmp/profiler_stacks.txt &gt; perf_viz.svg</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="../../_images/perf_viz.png"><img alt="../../_images/perf_viz.png" src="../../_images/perf_viz.png" style="width: 592.5px; height: 139.5px;" /></a>
+</div>
+<div class="section" id="using-profiler-to-analyze-long-running-jobs">
+<h3>8. Using profiler to analyze long-running jobs<a class="headerlink" href="#using-profiler-to-analyze-long-running-jobs" title="Permalink to this headline">¶</a></h3>
+<p>PyTorch profiler offers an additional API to handle long-running jobs
+(such as training loops). Tracing all of the execution can be
+slow and result in very large trace files. To avoid this, use optional
+arguments:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">schedule</span></code> - specifies a function that takes an integer argument (step number)
+as an input and returns an action for the profiler, the best way to use this parameter
+is to use <code class="docutils literal notranslate"><span class="pre">torch.profiler.schedule</span></code> helper function that can generate a schedule for you;</li>
+<li><code class="docutils literal notranslate"><span class="pre">on_trace_ready</span></code> - specifies a function that takes a reference to the profiler as
+an input and is called by the profiler each time the new trace is ready.</li>
+</ul>
+<p>To illustrate how the API works, let’s first consider the following example with
+<code class="docutils literal notranslate"><span class="pre">torch.profiler.schedule</span></code> helper function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.profiler</span> <span class="kn">import</span> <span class="n">schedule</span>
+
+<span class="n">my_schedule</span> <span class="o">=</span> <span class="n">schedule</span><span class="p">(</span>
+    <span class="n">skip_first</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">wait</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Profiler assumes that the long-running job is composed of steps, numbered
+starting from zero. The example above defines the following sequence of actions
+for the profiler:</p>
+<ol class="arabic simple">
+<li>Parameter <code class="docutils literal notranslate"><span class="pre">skip_first</span></code> tells profiler that it should ignore the first 10 steps
+(default value of <code class="docutils literal notranslate"><span class="pre">skip_first</span></code> is zero);</li>
+<li>After the first <code class="docutils literal notranslate"><span class="pre">skip_first</span></code> steps, profiler starts executing profiler cycles;</li>
+<li>Each cycle consists of three phases:<ul>
+<li>idling (<code class="docutils literal notranslate"><span class="pre">wait=5</span></code> steps), during this phase profiler is not active;</li>
+<li>warming up (<code class="docutils literal notranslate"><span class="pre">warmup=1</span></code> steps), during this phase profiler starts tracing, but
+the results are discarded; this phase is used to discard the samples obtained by
+the profiler at the beginning of the trace since they are usually skewed by an extra
+overhead;</li>
+<li>active tracing (<code class="docutils literal notranslate"><span class="pre">active=3</span></code> steps), during this phase profiler traces and records data;</li>
+</ul>
+</li>
+<li>An optional <code class="docutils literal notranslate"><span class="pre">repeat</span></code> parameter specifies an upper bound on the number of cycles.
+By default (zero value), profiler will execute cycles as long as the job runs.</li>
+</ol>
+<p>Thus, in the example above, profiler will skip the first 15 steps, spend the next step on the warm up,
+actively record the next 3 steps, skip another 5 steps, spend the next step on the warm up, actively
+record another 3 steps. Since the <code class="docutils literal notranslate"><span class="pre">repeat=2</span></code> parameter value is specified, the profiler will stop
+the recording after the first two cycles.</p>
+<p>At the end of each cycle profiler calls the specified <code class="docutils literal notranslate"><span class="pre">on_trace_ready</span></code> function and passes itself as
+an argument. This function is used to process the new trace - either by obtaining the table output or
+by saving the output on disk as a trace file.</p>
+<p>To send the signal to the profiler that the next step has started, call <code class="docutils literal notranslate"><span class="pre">prof.step()</span></code> function.
+The current profiler step is stored in <code class="docutils literal notranslate"><span class="pre">prof.step_num</span></code>.</p>
+<p>The following example shows how to use all of the concepts above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">trace_handler</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;self_cuda_time_total&quot;</span><span class="p">,</span> <span class="n">row_limit</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">export_chrome_trace</span><span class="p">(</span><span class="s2">&quot;/tmp/trace_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">step_num</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.json&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">],</span>
+    <span class="n">schedule</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span>
+        <span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">active</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">trace_handler</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+        <span class="n">model</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="learn-more">
@@ -629,6 +817,7 @@ in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome:/
 <p>Take a look at the following recipes/tutorials to continue your learning:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://pytorch.org/tutorials/recipes/recipes/benchmark.html">PyTorch Benchmark</a></li>
+<li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler with TensorBoard</a> tutorial</li>
 <li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html">Visualizing models, data, and training with TensorBoard</a> tutorial</li>
 </ul>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
@@ -702,9 +891,12 @@ in Chrome (<code class="docutils literal notranslate"><span class="pre">chrome:/
 <li><a class="reference internal" href="#steps">Steps</a><ul>
 <li><a class="reference internal" href="#import-all-necessary-libraries">1. Import all necessary libraries</a></li>
 <li><a class="reference internal" href="#instantiate-a-simple-resnet-model">2. Instantiate a simple Resnet model</a></li>
-<li><a class="reference internal" href="#use-profiler-to-analyze-execution-time">3. Use profiler to analyze execution time</a></li>
-<li><a class="reference internal" href="#use-profiler-to-analyze-memory-consumption">4. Use profiler to analyze memory consumption</a></li>
+<li><a class="reference internal" href="#using-profiler-to-analyze-execution-time">3. Using profiler to analyze execution time</a></li>
+<li><a class="reference internal" href="#using-profiler-to-analyze-memory-consumption">4. Using profiler to analyze memory consumption</a></li>
 <li><a class="reference internal" href="#using-tracing-functionality">5. Using tracing functionality</a></li>
+<li><a class="reference internal" href="#examining-stack-traces">6. Examining stack traces</a></li>
+<li><a class="reference internal" href="#visualizing-data-as-a-flamegraph">7. Visualizing data as a flamegraph</a></li>
+<li><a class="reference internal" href="#using-profiler-to-analyze-long-running-jobs">8. Using profiler to analyze long-running jobs</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#learn-more">Learn More</a></li>

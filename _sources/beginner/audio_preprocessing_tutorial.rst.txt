@@ -44,8 +44,8 @@ extract features that can be fed to NN models.
 
  .. code-block:: none
 
-    1.8.1+cu102
-    0.8.1
+    1.9.0+cu102
+    0.9.0
 
 
 Preparing data and utility functions (skip this section)
@@ -80,6 +80,8 @@ Preparing data and utility functions (skip this section)
     import requests
     import matplotlib
     import matplotlib.pyplot as plt
+    import pandas as pd
+    import time
     from IPython.display import Audio, display
 
     [width, height] = matplotlib.rcParams['figure.figsize']
@@ -145,7 +147,10 @@ Preparing data and utility functions (skip this section)
         ["remix", "1"]
       ]
       if resample:
-        effects.append(["rate", f'{resample}'])
+        effects.extend([
+          ["lowpass", f"{resample // 2}"],
+          ["rate", f'{resample}'],
+        ])
       return torchaudio.sox_effects.apply_effects_file(path, effects=effects)
 
     def get_speech_sample(*, resample=None):
@@ -165,18 +170,6 @@ Preparing data and utility functions (skip this section)
 
     def get_noise_sample(*, resample=None):
       return _get_sample(SAMPLE_NOISE_PATH, resample=resample)
-
-    def print_metadata(metadata, src=None):
-      if src:
-        print("-" * 10)
-        print("Source:", src)
-        print("-" * 10)
-      print(" - sample_rate:", metadata.sample_rate)
-      print(" - num_channels:", metadata.num_channels)
-      print(" - num_frames:", metadata.num_frames)
-      print(" - bits_per_sample:", metadata.bits_per_sample)
-      print(" - encoding:", metadata.encoding)
-      print()
 
     def print_stats(waveform, sample_rate=None, src=None):
       if src:
@@ -250,7 +243,7 @@ Preparing data and utility functions (skip this section)
       print("Source:", path)
       print("-" * 10)
       print(f" - File size: {os.path.getsize(path)} bytes")
-      print_metadata(torchaudio.info(path))
+      print(f" - {torchaudio.info(path)}")
 
     def plot_spectrogram(spec, title=None, ylabel='freq_bin', aspect='auto', xmax=None):
       fig, axs = plt.subplots(1, 1)
@@ -328,6 +321,105 @@ Preparing data and utility functions (skip this section)
       axis.legend(lns, labels, loc=0)
       plt.show(block=False)
 
+    DEFAULT_OFFSET = 201
+    SWEEP_MAX_SAMPLE_RATE = 48000
+    DEFAULT_LOWPASS_FILTER_WIDTH = 6
+    DEFAULT_ROLLOFF = 0.99
+    DEFAULT_RESAMPLING_METHOD = 'sinc_interpolation'
+
+    def _get_log_freq(sample_rate, max_sweep_rate, offset):
+      """Get freqs evenly spaced out in log-scale, between [0, max_sweep_rate // 2]
+
+      offset is used to avoid negative infinity `log(offset + x)`.
+
+      """
+      half = sample_rate // 2
+      start, stop = math.log(offset), math.log(offset + max_sweep_rate // 2)
+      return torch.exp(torch.linspace(start, stop, sample_rate, dtype=torch.double)) - offset
+
+    def _get_inverse_log_freq(freq, sample_rate, offset):
+      """Find the time where the given frequency is given by _get_log_freq"""
+      half = sample_rate // 2
+      return sample_rate * (math.log(1 + freq / offset) / math.log(1 + half / offset))
+
+    def _get_freq_ticks(sample_rate, offset, f_max):
+      # Given the original sample rate used for generating the sweep,
+      # find the x-axis value where the log-scale major frequency values fall in
+      time, freq = [], []
+      for exp in range(2, 5):
+        for v in range(1, 10):
+          f = v * 10 ** exp
+          if f < sample_rate // 2:
+            t = _get_inverse_log_freq(f, sample_rate, offset) / sample_rate
+            time.append(t)
+            freq.append(f)
+      t_max = _get_inverse_log_freq(f_max, sample_rate, offset) / sample_rate
+      time.append(t_max)
+      freq.append(f_max)
+      return time, freq
+
+    def plot_sweep(waveform, sample_rate, title, max_sweep_rate=SWEEP_MAX_SAMPLE_RATE, offset=DEFAULT_OFFSET):
+      x_ticks = [100, 500, 1000, 5000, 10000, 20000, max_sweep_rate // 2]
+      y_ticks = [1000, 5000, 10000, 20000, sample_rate//2]
+
+      time, freq = _get_freq_ticks(max_sweep_rate, offset, sample_rate // 2)
+      freq_x = [f if f in x_ticks and f <= max_sweep_rate // 2 else None for f in freq]
+      freq_y = [f for f in freq if f >= 1000 and f in y_ticks and f <= sample_rate // 2]
+
+      figure, axis = plt.subplots(1, 1)
+      axis.specgram(waveform[0].numpy(), Fs=sample_rate)
+      plt.xticks(time, freq_x)
+      plt.yticks(freq_y, freq_y)
+      axis.set_xlabel('Original Signal Frequency (Hz, log scale)')
+      axis.set_ylabel('Waveform Frequency (Hz)')
+      axis.xaxis.grid(True, alpha=0.67)
+      axis.yaxis.grid(True, alpha=0.67)
+      figure.suptitle(f'{title} (sample rate: {sample_rate} Hz)')
+      plt.show(block=True)
+
+    def get_sine_sweep(sample_rate, offset=DEFAULT_OFFSET):
+        max_sweep_rate = sample_rate
+        freq = _get_log_freq(sample_rate, max_sweep_rate, offset)
+        delta = 2 * math.pi * freq / sample_rate
+        cummulative = torch.cumsum(delta, dim=0)
+        signal = torch.sin(cummulative).unsqueeze(dim=0)
+        return signal
+
+    def benchmark_resample(
+        method,
+        waveform,
+        sample_rate,
+        resample_rate,
+        lowpass_filter_width=DEFAULT_LOWPASS_FILTER_WIDTH,
+        rolloff=DEFAULT_ROLLOFF,
+        resampling_method=DEFAULT_RESAMPLING_METHOD,
+        beta=None,
+        librosa_type=None,
+        iters=5
+    ):
+      if method == "functional":
+        begin = time.time()
+        for _ in range(iters):
+          F.resample(waveform, sample_rate, resample_rate, lowpass_filter_width=lowpass_filter_width,
+                     rolloff=rolloff, resampling_method=resampling_method)
+        elapsed = time.time() - begin
+        return elapsed / iters
+      elif method == "transforms":
+        resampler = T.Resample(sample_rate, resample_rate, lowpass_filter_width=lowpass_filter_width,
+                               rolloff=rolloff, resampling_method=resampling_method, dtype=waveform.dtype)
+        begin = time.time()
+        for _ in range(iters):
+          resampler(waveform)
+        elapsed = time.time() - begin
+        return elapsed / iters
+      elif method == "librosa":
+        waveform_np = waveform.squeeze().numpy()
+        begin = time.time()
+        for _ in range(iters):
+          librosa.resample(waveform_np, sample_rate, resample_rate, res_type=librosa_type)
+        elapsed = time.time() - begin
+        return elapsed / iters
+
 
 
 
@@ -353,7 +445,7 @@ a path-like object or file-like object.
 
 
     metadata = torchaudio.info(SAMPLE_WAV_PATH)
-    print_metadata(metadata, src=SAMPLE_WAV_PATH)
+    print(metadata)
 
 
 
@@ -366,14 +458,7 @@ a path-like object or file-like object.
 
  .. code-block:: none
 
-    ----------
-    Source: _sample_data/steam.wav
-    ----------
-     - sample_rate: 44100
-     - num_channels: 2
-     - num_frames: 109368
-     - bits_per_sample: 16
-     - encoding: PCM_S
+    AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=2, bits_per_sample=16, encoding=PCM_S)
 
 
 Where
@@ -419,10 +504,10 @@ The values ``encoding`` can take are one of the following
 
 
     metadata = torchaudio.info(SAMPLE_MP3_PATH)
-    print_metadata(metadata, src=SAMPLE_MP3_PATH)
+    print(metadata)
 
     metadata = torchaudio.info(SAMPLE_GSM_PATH)
-    print_metadata(metadata, src=SAMPLE_GSM_PATH)
+    print(metadata)
 
 
 
@@ -435,23 +520,8 @@ The values ``encoding`` can take are one of the following
 
  .. code-block:: none
 
-    ----------
-    Source: _sample_data/steam.mp3
-    ----------
-     - sample_rate: 44100
-     - num_channels: 2
-     - num_frames: 110559
-     - bits_per_sample: 0
-     - encoding: MP3
-
-    ----------
-    Source: _sample_data/steam.gsm
-    ----------
-     - sample_rate: 8000
-     - num_channels: 1
-     - num_frames: 0
-     - bits_per_sample: 0
-     - encoding: GSM
+    AudioMetaData(sample_rate=44100, num_frames=110559, num_channels=2, bits_per_sample=0, encoding=MP3)
+    AudioMetaData(sample_rate=8000, num_frames=0, num_channels=1, bits_per_sample=0, encoding=GSM)
 
 
 Querying file-like object
@@ -464,9 +534,10 @@ Querying file-like object
 .. code-block:: default
 
 
+    print("Source:", SAMPLE_WAV_URL)
     with requests.get(SAMPLE_WAV_URL, stream=True) as response:
       metadata = torchaudio.info(response.raw)
-    print_metadata(metadata, src=SAMPLE_WAV_URL)
+    print(metadata)
 
 
 
@@ -479,14 +550,8 @@ Querying file-like object
 
  .. code-block:: none
 
-    ----------
     Source: https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.wav
-    ----------
-     - sample_rate: 44100
-     - num_channels: 2
-     - num_frames: 109368
-     - bits_per_sample: 16
-     - encoding: PCM_S
+    AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=2, bits_per_sample=16, encoding=PCM_S)
 
 
 **Note** When passing file-like object, ``info`` function does not read
@@ -503,11 +568,12 @@ this.
 .. code-block:: default
 
 
+    print("Source:", SAMPLE_MP3_URL)
     with requests.get(SAMPLE_MP3_URL, stream=True) as response:
       metadata = torchaudio.info(response.raw, format="mp3")
 
       print(f"Fetched {response.raw.tell()} bytes.")
-    print_metadata(metadata, src=SAMPLE_MP3_URL)
+    print(metadata)
 
 
 
@@ -520,15 +586,9 @@ this.
 
  .. code-block:: none
 
-    Fetched 4096 bytes.
-    ----------
     Source: https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.mp3
-    ----------
-     - sample_rate: 44100
-     - num_channels: 2
-     - num_frames: 0
-     - bits_per_sample: 0
-     - encoding: MP3
+    Fetched 4096 bytes.
+    AudioMetaData(sample_rate=44100, num_frames=0, num_channels=2, bits_per_sample=0, encoding=MP3)
 
 
 Loading audio data into Tensor
@@ -788,21 +848,12 @@ resulting file size but loses precision.
     Source: save_example_default.wav
     ----------
      - File size: 437530 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 32
-     - encoding: PCM_F
-
+     - AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=1, bits_per_sample=32, encoding=PCM_F)
     ----------
     Source: save_example_PCM_S16.wav
     ----------
      - File size: 218780 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 16
-     - encoding: PCM_S
+     - AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=1, bits_per_sample=16, encoding=PCM_S)
 
 
 ``torchaudio.save`` can also handle other formats. To name a few;
@@ -812,7 +863,7 @@ resulting file size but loses precision.
 .. code-block:: default
 
 
-    waveform, sample_rate = get_sample()
+    waveform, sample_rate = get_sample(resample=8000)
 
     formats = [
       "mp3",
@@ -844,72 +895,38 @@ resulting file size but loses precision.
     ----------
     Source: save_example.mp3
     ----------
-     - File size: 20062 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 110559
-     - bits_per_sample: 0
-     - encoding: MP3
-
+     - File size: 2664 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=21312, num_channels=1, bits_per_sample=0, encoding=MP3)
     ----------
     Source: save_example.flac
     ----------
-     - File size: 118673 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 24
-     - encoding: FLAC
-
+     - File size: 47315 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=24, encoding=FLAC)
     ----------
     Source: save_example.vorbis
     ----------
-     - File size: 24365 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 0
-     - encoding: VORBIS
-
+     - File size: 9967 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=0, encoding=VORBIS)
     ----------
     Source: save_example.sph
     ----------
-     - File size: 438496 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 32
-     - encoding: PCM_S
-
+     - File size: 80384 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=32, encoding=PCM_S)
     ----------
     Source: save_example.amb
     ----------
-     - File size: 437530 bytes
-     - sample_rate: 44100
-     - num_channels: 1
-     - num_frames: 109368
-     - bits_per_sample: 32
-     - encoding: PCM_F
-
+     - File size: 79418 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=32, encoding=PCM_F)
     ----------
     Source: save_example.amr-nb
     ----------
-     - File size: 5666 bytes
-     - sample_rate: 8000
-     - num_channels: 1
-     - num_frames: 109440
-     - bits_per_sample: 0
-     - encoding: AMR_NB
-
+     - File size: 1618 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=0, encoding=AMR_NB)
     ----------
     Source: save_example.gsm
     ----------
-     - File size: 22572 bytes
-     - sample_rate: 8000
-     - num_channels: 1
-     - num_frames: 0
-     - bits_per_sample: 0
-     - encoding: GSM
+     - File size: 4092 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=0, num_channels=1, bits_per_sample=0, encoding=GSM)
 
 
 Saving to file-like object
@@ -945,6 +962,448 @@ required.
  .. code-block:: none
 
     b'RIFF\x12\xad\x06\x00WAVEfmt '
+
+
+Resampling
+==========
+
+To resample an audio waveform from one freqeuncy to another, you can use
+``transforms.Resample`` or ``functional.resample``.
+``transforms.Resample`` precomputes and caches the kernel used for
+resampling, while ``functional.resample`` computes it on the fly, so
+using ``transforms.Resample`` will result in a speedup if resampling
+multiple waveforms using the same parameters (see Benchmarking section).
+
+Both resampling methods use `bandlimited sinc
+interpolation <https://ccrma.stanford.edu/~jos/resample/>`__ to compute
+signal values at arbitrary time steps. The implementation involves
+convolution, so we can take advantage of GPU / multithreading for
+performance improvements. When using resampling in multiple
+subprocesses, such as data loading with multiple worker processes, your
+application might create more threads than your system can handle
+efficiently. Setting ``torch.set_num_threads(1)`` might help in this
+case.
+
+Because a finite number of samples can only represent a finite number of
+frequencies, resampling does not produce perfect results, and a variety
+of parameters can be used to control for its quality and computational
+speed. We demonstrate these properties through resampling a logarithmic
+sine sweep, which is a sine wave that increases exponentially in
+frequency over time.
+
+The spectrograms below show the frequency representation of the signal,
+where the x-axis labels correspond to the frequency of the original
+waveform (in log scale), the y-axis corresponds to the frequency of the
+plotted waveform, and the color intensity refers to amplitude.
+
+
+
+.. code-block:: default
+
+
+    sample_rate = 48000
+    resample_rate = 32000
+
+    waveform = get_sine_sweep(sample_rate)
+    plot_sweep(waveform, sample_rate, title="Original Waveform")
+    play_audio(waveform, sample_rate)
+
+    resampler = T.Resample(sample_rate, resample_rate, dtype=waveform.dtype)
+    resampled_waveform = resampler(waveform)
+    plot_sweep(resampled_waveform, resample_rate, title="Resampled Waveform")
+    play_audio(waveform, sample_rate)
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_006.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_007.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+
+
+Controling resampling quality with parameters
+---------------------------------------------
+
+Lowpass filter width
+~~~~~~~~~~~~~~~~~~~~
+
+Because the filter used for interpolation extends infinitely, the
+``lowpass_filter_width`` parameter is used to control for the width of
+the filter to use to window the interpolation. It is also referred to as
+the number of zero crossings, since the interpolation passes through
+zero at every time unit. Using a larger ``lowpass_filter_width``
+provides a sharper, more precise filter, but is more computationally
+expensive.
+
+
+
+.. code-block:: default
+
+
+    sample_rate = 48000
+    resample_rate = 32000
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, lowpass_filter_width=6)
+    plot_sweep(resampled_waveform, resample_rate, title="lowpass_filter_width=6")
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, lowpass_filter_width=128)
+    plot_sweep(resampled_waveform, resample_rate, title="lowpass_filter_width=128")
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_008.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_009.png
+            :class: sphx-glr-multi-img
+
+
+
+
+Rolloff
+~~~~~~~
+
+The ``rolloff`` parameter is represented as a fraction of the Nyquist
+frequency, which is the maximal frequency representable by a given
+finite sample rate. ``rolloff`` determines the lowpass filter cutoff and
+controls the degree of aliasing, which takes place when frequencies
+higher than the Nyquist are mapped to lower frequencies. A lower rolloff
+will therefore reduce the amount of aliasing, but it will also reduce
+some of the higher frequencies.
+
+
+
+.. code-block:: default
+
+
+    sample_rate = 48000
+    resample_rate = 32000
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, rolloff=0.99)
+    plot_sweep(resampled_waveform, resample_rate, title="rolloff=0.99")
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, rolloff=0.8)
+    plot_sweep(resampled_waveform, resample_rate, title="rolloff=0.8")
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_010.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_011.png
+            :class: sphx-glr-multi-img
+
+
+
+
+Window function
+~~~~~~~~~~~~~~~
+
+By default, torchaudio’s resample uses the Hann window filter, which is
+a weighted cosine function. It additionally supports the Kaiser window,
+which is a near optimal window function that contains an additional
+``beta`` parameter that allows for the design of the smoothness of the
+filter and width of impulse. This can be controlled using the
+``resampling_method`` parameter.
+
+
+
+.. code-block:: default
+
+
+    sample_rate = 48000
+    resample_rate = 32000
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, resampling_method="sinc_interpolation")
+    plot_sweep(resampled_waveform, resample_rate, title="Hann Window Default")
+
+    resampled_waveform = F.resample(waveform, sample_rate, resample_rate, resampling_method="kaiser_window")
+    plot_sweep(resampled_waveform, resample_rate, title="Kaiser Window Default")
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_012.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_013.png
+            :class: sphx-glr-multi-img
+
+
+
+
+Comparison against librosa
+--------------------------
+
+torchaudio’s resample function can be used to produce results similar to
+that of librosa (resampy)’s kaiser window resampling, with some noise
+
+
+
+.. code-block:: default
+
+
+    sample_rate = 48000
+    resample_rate = 32000
+
+    ### kaiser_best
+    resampled_waveform = F.resample(
+        waveform,
+        sample_rate,
+        resample_rate,
+        lowpass_filter_width=64,
+        rolloff=0.9475937167399596,
+        resampling_method="kaiser_window",
+        beta=14.769656459379492
+    )
+    plot_sweep(resampled_waveform, resample_rate, title="Kaiser Window Best (torchaudio)")
+
+    librosa_resampled_waveform = torch.from_numpy(
+        librosa.resample(waveform.squeeze().numpy(), sample_rate, resample_rate, res_type='kaiser_best')).unsqueeze(0)
+    plot_sweep(librosa_resampled_waveform, resample_rate, title="Kaiser Window Best (librosa)")
+
+    mse = torch.square(resampled_waveform - librosa_resampled_waveform).mean().item()
+    print("torchaudio and librosa kaiser best MSE:", mse)
+
+    ### kaiser_fast
+    resampled_waveform = F.resample(
+        waveform,
+        sample_rate,
+        resample_rate,
+        lowpass_filter_width=16,
+        rolloff=0.85,
+        resampling_method="kaiser_window",
+        beta=8.555504641634386
+    )
+    plot_specgram(resampled_waveform, resample_rate, title="Kaiser Window Fast (torchaudio)")
+
+    librosa_resampled_waveform = torch.from_numpy(
+        librosa.resample(waveform.squeeze().numpy(), sample_rate, resample_rate, res_type='kaiser_fast')).unsqueeze(0)
+    plot_sweep(librosa_resampled_waveform, resample_rate, title="Kaiser Window Fast (librosa)")
+
+    mse = torch.square(resampled_waveform - librosa_resampled_waveform).mean().item()
+    print("torchaudio and librosa kaiser fast MSE:", mse)
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_014.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_015.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_016.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_017.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torchaudio and librosa kaiser best MSE: 2.080690115365992e-06
+    torchaudio and librosa kaiser fast MSE: 2.5200744248601027e-05
+
+
+Performance Benchmarking
+------------------------
+
+Below are benchmarks for downsampling and upsampling waveforms between
+two pairs of sampling rates. We demonstrate the performance implications
+that the ``lowpass_filter_wdith``, window type, and sample rates can
+have. Additionally, we provide a comparison against ``librosa``\ ’s
+``kaiser_best`` and ``kaiser_fast`` using their corresponding parameters
+in ``torchaudio``.
+
+To elaborate on the results:
+- a larger ``lowpass_filter_width`` results in a larger resampling kernel,
+  and therefore increases computation time for both the kernel computation
+  and convolution
+- using ``kaiser_window`` results in longer computation times than the default
+  ``sinc_interpolation`` because it is more complex to compute the intermediate
+  window values - a large GCD between the sample and resample rate will result
+  in a simplification that allows for a smaller kernel and faster kernel computation.
+
+
+
+.. code-block:: default
+
+
+    configs = {
+        "downsample (48 -> 44.1 kHz)": [48000, 44100],
+        "downsample (16 -> 8 kHz)": [16000, 8000],
+        "upsample (44.1 -> 48 kHz)": [44100, 48000],
+        "upsample (8 -> 16 kHz)": [8000, 1600],
+    }
+
+    for label in configs:
+      times, rows = [], []
+      sample_rate = configs[label][0]
+      resample_rate = configs[label][1]
+      waveform = get_sine_sweep(sample_rate)
+
+      # sinc 64 zero-crossings
+      f_time = benchmark_resample("functional", waveform, sample_rate, resample_rate, lowpass_filter_width=64)
+      t_time = benchmark_resample("transforms", waveform, sample_rate, resample_rate, lowpass_filter_width=64)
+      times.append([None, 1000 * f_time, 1000 * t_time])
+      rows.append(f"sinc (width 64)")
+
+      # sinc 6 zero-crossings
+      f_time = benchmark_resample("functional", waveform, sample_rate, resample_rate, lowpass_filter_width=16)
+      t_time = benchmark_resample("transforms", waveform, sample_rate, resample_rate, lowpass_filter_width=16)
+      times.append([None, 1000 * f_time, 1000 * t_time])
+      rows.append(f"sinc (width 16)")
+
+      # kaiser best
+      lib_time = benchmark_resample("librosa", waveform, sample_rate, resample_rate, librosa_type="kaiser_best")
+      f_time = benchmark_resample(
+          "functional",
+          waveform,
+          sample_rate,
+          resample_rate,
+          lowpass_filter_width=64,
+          rolloff=0.9475937167399596,
+          resampling_method="kaiser_window",
+          beta=14.769656459379492)
+      t_time = benchmark_resample(
+          "transforms",
+          waveform,
+          sample_rate,
+          resample_rate,
+          lowpass_filter_width=64,
+          rolloff=0.9475937167399596,
+          resampling_method="kaiser_window",
+          beta=14.769656459379492)
+      times.append([1000 * lib_time, 1000 * f_time, 1000 * t_time])
+      rows.append(f"kaiser_best")
+
+      # kaiser fast
+      lib_time = benchmark_resample("librosa", waveform, sample_rate, resample_rate, librosa_type="kaiser_fast")
+      f_time = benchmark_resample(
+          "functional",
+          waveform,
+          sample_rate,
+          resample_rate,
+          lowpass_filter_width=16,
+          rolloff=0.85,
+          resampling_method="kaiser_window",
+          beta=8.555504641634386)
+      t_time = benchmark_resample(
+          "transforms",
+          waveform,
+          sample_rate,
+          resample_rate,
+          lowpass_filter_width=16,
+          rolloff=0.85,
+          resampling_method="kaiser_window",
+          beta=8.555504641634386)
+      times.append([1000 * lib_time, 1000 * f_time, 1000 * t_time])
+      rows.append(f"kaiser_fast")
+
+      df = pd.DataFrame(times,
+                        columns=["librosa", "functional", "transforms"],
+                        index=rows)
+      df.columns = pd.MultiIndex.from_product([[f"{label} time (ms)"],df.columns])
+      display(df.round(2))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    downsample (48 -> 44.1 kHz) time (ms)                      
+                                                  librosa functional transforms
+    sinc (width 64)                                   NaN      17.53       0.40
+    sinc (width 16)                                   NaN      16.02       0.36
+    kaiser_best                                     49.28      25.56       0.40
+    kaiser_fast                                      9.63      23.85       0.36
+                    downsample (16 -> 8 kHz) time (ms)                      
+                                               librosa functional transforms
+    sinc (width 64)                                NaN       1.92       0.80
+    sinc (width 16)                                NaN       0.53       0.32
+    kaiser_best                                  15.79       1.15       0.85
+    kaiser_fast                                   4.28       0.64       0.35
+                    upsample (44.1 -> 48 kHz) time (ms)                      
+                                                librosa functional transforms
+    sinc (width 64)                                 NaN      18.81       0.44
+    sinc (width 16)                                 NaN      17.30       0.40
+    kaiser_best                                   49.45      27.38       0.44
+    kaiser_fast                                    9.69      25.56       0.41
+                    upsample (8 -> 16 kHz) time (ms)                      
+                                             librosa functional transforms
+    sinc (width 64)                              NaN       0.72       0.47
+    sinc (width 16)                              NaN       0.45       0.24
+    kaiser_best                                 6.91       0.84       0.49
+    kaiser_fast                                 2.79       0.55       0.26
 
 
 Data Augmentation
@@ -998,7 +1457,7 @@ detected from either file extension or header, you can provide
     effects = [
       ["lowpass", "-1", "300"], # apply single-pole lowpass filter
       ["speed", "0.8"],  # reduce the speed
-                         # This only changes sample rate, so it is necessary to 
+                         # This only changes sample rate, so it is necessary to
                          # add `rate` effect with original sample rate after this.
       ["rate", f"{sample_rate1}"],
       ["reverb", "-w"],  # Reverbration gives some dramatic feeling
@@ -1023,12 +1482,12 @@ detected from either file extension or header, you can provide
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_006.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_018.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_007.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_019.png
             :class: sphx-glr-multi-img
 
 
@@ -1044,12 +1503,12 @@ detected from either file extension or header, you can provide
     Sample Rate: 16000
     Shape: (1, 39680)
     Dtype: torch.float32
-     - Max:      0.506
-     - Min:     -0.452
+     - Max:      0.507
+     - Min:     -0.448
      - Mean:    -0.000
      - Std Dev:  0.122
 
-    tensor([[ 0.0030,  0.0104,  0.0128,  ..., -0.0038, -0.0012,  0.0039]])
+    tensor([[ 0.0007,  0.0076,  0.0122,  ..., -0.0049, -0.0025,  0.0020]])
 
     ----------
     Source: Effects Applied
@@ -1058,11 +1517,11 @@ detected from either file extension or header, you can provide
     Shape: (2, 49600)
     Dtype: torch.float32
      - Max:      0.091
-     - Min:     -0.090
+     - Min:     -0.091
      - Mean:    -0.000
      - Std Dev:  0.021
 
-    tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0064, 0.0052, 0.0037],
+    tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0069, 0.0058, 0.0045],
             [0.0000, 0.0000, 0.0000,  ..., 0.0085, 0.0085, 0.0085]])
 
 
@@ -1089,12 +1548,12 @@ sound more dramatic?
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_008.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_020.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_009.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_021.png
             :class: sphx-glr-multi-img
 
 
@@ -1145,12 +1604,12 @@ and clap you hands.
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_010.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_022.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_011.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_023.png
             :class: sphx-glr-multi-img
 
 
@@ -1183,7 +1642,7 @@ normalize the signal power, then flip the time axis.
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_012.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_024.png
     :class: sphx-glr-single-img
 
 
@@ -1195,12 +1654,12 @@ normalize the signal power, then flip the time axis.
 
     Shape: (1, 2320)
     Dtype: torch.float32
-     - Max:      0.289
-     - Min:     -0.252
+     - Max:      0.395
+     - Min:     -0.286
      - Mean:    -0.000
      - Std Dev:  0.021
 
-    tensor([[-0.0054, -0.0059, -0.0081,  ...,  0.0042,  0.0295,  0.0020]])
+    tensor([[-0.0052, -0.0076, -0.0071,  ...,  0.0184,  0.0173,  0.0070]])
 
 
 Then we convolve the speech signal with the RIR filter.
@@ -1233,22 +1692,22 @@ Then we convolve the speech signal with the RIR filter.
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_013.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_025.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_014.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_026.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_015.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_027.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_016.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_028.png
             :class: sphx-glr-multi-img
 
 
@@ -1316,42 +1775,42 @@ change Signal-to-Noise Ratio (SNR).
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_017.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_029.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_018.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_030.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_019.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_031.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_020.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_032.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_021.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_033.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_022.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_034.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_023.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_035.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_024.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_036.png
             :class: sphx-glr-multi-img
 
 
@@ -1405,27 +1864,27 @@ Applying codec to Tensor object
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_025.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_037.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_026.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_038.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_027.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_039.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_028.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_040.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_029.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_041.png
             :class: sphx-glr-multi-img
 
 
@@ -1469,7 +1928,7 @@ in the background.
     play_audio(speech, sample_rate)
 
     # Add background noise
-    # Because the noise is recorded in the actual environment, we consider that 
+    # Because the noise is recorded in the actual environment, we consider that
     # the noise contains the acoustic feature of the environment. Therefore, we add
     # the noise after RIR application.
     noise, _ = get_noise_sample(resample=sample_rate)
@@ -1512,27 +1971,27 @@ in the background.
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_030.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_042.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_031.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_043.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_032.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_044.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_033.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_045.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_034.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_046.png
             :class: sphx-glr-multi-img
 
 
@@ -1608,7 +2067,7 @@ To get the frequency representation of audio signal, you can use
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_035.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_047.png
     :class: sphx-glr-single-img
 
 
@@ -1685,12 +2144,12 @@ To recover a waveform from spectrogram, you can use ``GriffinLim``.
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_036.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_048.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_037.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_049.png
             :class: sphx-glr-multi-img
 
 
@@ -1737,7 +2196,7 @@ equivalent transform in ``torchaudio.transforms``.
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_038.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_050.png
     :class: sphx-glr-single-img
 
 
@@ -1748,9 +2207,6 @@ Comparison against librosa
 
 As a comparison, here is the equivalent way to get the mel filter bank
 with ``librosa``.
-
-**Note** Currently, the result matches only when ``htk=True``.
-``torchaudio`` does not support the equivalent of ``htk=False`` option.
 
 
 
@@ -1776,7 +2232,7 @@ with ``librosa``.
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_039.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_051.png
     :class: sphx-glr-single-img
 
 
@@ -1819,6 +2275,7 @@ which is composed of ``Spectrogram`` and ``MelScale``.
         norm='slaney',
         onesided=True,
         n_mels=n_mels,
+        mel_scale="htk",
     )
 
     melspec = mel_spectrogram(waveform)
@@ -1830,7 +2287,7 @@ which is composed of ``Spectrogram`` and ``MelScale``.
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_040.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_052.png
     :class: sphx-glr-single-img
 
 
@@ -1841,9 +2298,6 @@ Comparison against librosa
 
 As a comparison, here is the equivalent way to get Mel-scale spectrogram
 with ``librosa``.
-
-**Note** Currently, the result matches only when ``htk=True``.
-``torchaudio`` does not support the equivalent of ``htk=False`` option.
 
 
 
@@ -1873,7 +2327,7 @@ with ``librosa``.
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_041.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_053.png
     :class: sphx-glr-single-img
 
 
@@ -1904,7 +2358,14 @@ MFCC
 
     mfcc_transform = T.MFCC(
         sample_rate=sample_rate,
-        n_mfcc=n_mfcc, melkwargs={'n_fft': n_fft, 'n_mels': n_mels, 'hop_length': hop_length})
+        n_mfcc=n_mfcc,
+        melkwargs={
+          'n_fft': n_fft,
+          'n_mels': n_mels,
+          'hop_length': hop_length,
+          'mel_scale': 'htk',
+        }
+    )
 
     mfcc = mfcc_transform(waveform)
 
@@ -1915,7 +2376,7 @@ MFCC
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_042.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_054.png
     :class: sphx-glr-single-img
 
 
@@ -1947,7 +2408,7 @@ Comparing against librosa
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_043.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_055.png
     :class: sphx-glr-single-img
 
 
@@ -1978,7 +2439,7 @@ Pitch
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_044.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_056.png
     :class: sphx-glr-single-img
 
 
@@ -2026,7 +2487,7 @@ application. This is a beta feature in torchaudio, and only
 
 
 
-.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_045.png
+.. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_057.png
     :class: sphx-glr-single-img
 
 
@@ -2083,17 +2544,17 @@ TimeStrech
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_046.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_058.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_047.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_059.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_048.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_060.png
             :class: sphx-glr-multi-img
 
 
@@ -2126,12 +2587,12 @@ TimeMasking
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_049.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_061.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_050.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_062.png
             :class: sphx-glr-multi-img
 
 
@@ -2164,12 +2625,12 @@ FrequencyMasking
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_051.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_063.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_052.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_064.png
             :class: sphx-glr-multi-img
 
 
@@ -2205,17 +2666,17 @@ Here, we take ``YESNO`` dataset and look into how to use it.
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_053.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_065.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_054.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_066.png
             :class: sphx-glr-multi-img
 
     *
 
-      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_055.png
+      .. image:: /beginner/images/sphx_glr_audio_preprocessing_tutorial_067.png
             :class: sphx-glr-multi-img
 
 
@@ -2233,7 +2694,7 @@ Here, we take ``YESNO`` dataset and look into how to use it.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  26.829 seconds)
+   **Total running time of the script:** ( 0 minutes  32.058 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_preprocessing_tutorial.py:

@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>(beta) Building a Simple CPU Performance Profiler with FX — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>(beta) Building a Simple CPU Performance Profiler with FX — PyTorch Tutorials 1.9.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -152,7 +152,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -198,6 +198,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -206,7 +207,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -389,25 +390,26 @@ and examine.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>graph(xx: torch.Tensor) -&gt; torch.Tensor:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>graph():
+    %x : torch.Tensor [#users=1] = placeholder[target=x]
     %conv1 : [#users=1] = call_module[target=conv1](args = (%x,), kwargs = {})
     %bn1 : [#users=1] = call_module[target=bn1](args = (%conv1,), kwargs = {})
-    %relu_1 : [#users=1] = call_module[target=relu](args = (%bn1,), kwargs = {})
-    %maxpool : [#users=2] = call_module[target=maxpool](args = (%relu_1,), kwargs = {})
+    %relu : [#users=1] = call_module[target=relu](args = (%bn1,), kwargs = {})
+    %maxpool : [#users=2] = call_module[target=maxpool](args = (%relu,), kwargs = {})
     %layer1_0_conv1 : [#users=1] = call_module[target=layer1.0.conv1](args = (%maxpool,), kwargs = {})
     %layer1_0_bn1 : [#users=1] = call_module[target=layer1.0.bn1](args = (%layer1_0_conv1,), kwargs = {})
     %layer1_0_relu : [#users=1] = call_module[target=layer1.0.relu](args = (%layer1_0_bn1,), kwargs = {})
     %layer1_0_conv2 : [#users=1] = call_module[target=layer1.0.conv2](args = (%layer1_0_relu,), kwargs = {})
     %layer1_0_bn2 : [#users=1] = call_module[target=layer1.0.bn2](args = (%layer1_0_conv2,), kwargs = {})
-    %add_1 : [#users=1] = call_function[target=operator.add](args = (%layer1_0_bn2, %maxpool), kwargs = {})
-    %layer1_0_relu_1 : [#users=2] = call_module[target=layer1.0.relu](args = (%add_1,), kwargs = {})
+    %add : [#users=1] = call_function[target=operator.add](args = (%layer1_0_bn2, %maxpool), kwargs = {})
+    %layer1_0_relu_1 : [#users=2] = call_module[target=layer1.0.relu](args = (%add,), kwargs = {})
     %layer1_1_conv1 : [#users=1] = call_module[target=layer1.1.conv1](args = (%layer1_0_relu_1,), kwargs = {})
     %layer1_1_bn1 : [#users=1] = call_module[target=layer1.1.bn1](args = (%layer1_1_conv1,), kwargs = {})
     %layer1_1_relu : [#users=1] = call_module[target=layer1.1.relu](args = (%layer1_1_bn1,), kwargs = {})
     %layer1_1_conv2 : [#users=1] = call_module[target=layer1.1.conv2](args = (%layer1_1_relu,), kwargs = {})
     %layer1_1_bn2 : [#users=1] = call_module[target=layer1.1.bn2](args = (%layer1_1_conv2,), kwargs = {})
-    %add_2 : [#users=1] = call_function[target=operator.add](args = (%layer1_1_bn2, %layer1_0_relu_1), kwargs = {})
-    %layer1_1_relu_1 : [#users=2] = call_module[target=layer1.1.relu](args = (%add_2,), kwargs = {})
+    %add_1 : [#users=1] = call_function[target=operator.add](args = (%layer1_1_bn2, %layer1_0_relu_1), kwargs = {})
+    %layer1_1_relu_1 : [#users=2] = call_module[target=layer1.1.relu](args = (%add_1,), kwargs = {})
     %layer2_0_conv1 : [#users=1] = call_module[target=layer2.0.conv1](args = (%layer1_1_relu_1,), kwargs = {})
     %layer2_0_bn1 : [#users=1] = call_module[target=layer2.0.bn1](args = (%layer2_0_conv1,), kwargs = {})
     %layer2_0_relu : [#users=1] = call_module[target=layer2.0.relu](args = (%layer2_0_bn1,), kwargs = {})
@@ -415,15 +417,15 @@ and examine.</p>
     %layer2_0_bn2 : [#users=1] = call_module[target=layer2.0.bn2](args = (%layer2_0_conv2,), kwargs = {})
     %layer2_0_downsample_0 : [#users=1] = call_module[target=layer2.0.downsample.0](args = (%layer1_1_relu_1,), kwargs = {})
     %layer2_0_downsample_1 : [#users=1] = call_module[target=layer2.0.downsample.1](args = (%layer2_0_downsample_0,), kwargs = {})
-    %add_3 : [#users=1] = call_function[target=operator.add](args = (%layer2_0_bn2, %layer2_0_downsample_1), kwargs = {})
-    %layer2_0_relu_1 : [#users=2] = call_module[target=layer2.0.relu](args = (%add_3,), kwargs = {})
+    %add_2 : [#users=1] = call_function[target=operator.add](args = (%layer2_0_bn2, %layer2_0_downsample_1), kwargs = {})
+    %layer2_0_relu_1 : [#users=2] = call_module[target=layer2.0.relu](args = (%add_2,), kwargs = {})
     %layer2_1_conv1 : [#users=1] = call_module[target=layer2.1.conv1](args = (%layer2_0_relu_1,), kwargs = {})
     %layer2_1_bn1 : [#users=1] = call_module[target=layer2.1.bn1](args = (%layer2_1_conv1,), kwargs = {})
     %layer2_1_relu : [#users=1] = call_module[target=layer2.1.relu](args = (%layer2_1_bn1,), kwargs = {})
     %layer2_1_conv2 : [#users=1] = call_module[target=layer2.1.conv2](args = (%layer2_1_relu,), kwargs = {})
     %layer2_1_bn2 : [#users=1] = call_module[target=layer2.1.bn2](args = (%layer2_1_conv2,), kwargs = {})
-    %add_4 : [#users=1] = call_function[target=operator.add](args = (%layer2_1_bn2, %layer2_0_relu_1), kwargs = {})
-    %layer2_1_relu_1 : [#users=2] = call_module[target=layer2.1.relu](args = (%add_4,), kwargs = {})
+    %add_3 : [#users=1] = call_function[target=operator.add](args = (%layer2_1_bn2, %layer2_0_relu_1), kwargs = {})
+    %layer2_1_relu_1 : [#users=2] = call_module[target=layer2.1.relu](args = (%add_3,), kwargs = {})
     %layer3_0_conv1 : [#users=1] = call_module[target=layer3.0.conv1](args = (%layer2_1_relu_1,), kwargs = {})
     %layer3_0_bn1 : [#users=1] = call_module[target=layer3.0.bn1](args = (%layer3_0_conv1,), kwargs = {})
     %layer3_0_relu : [#users=1] = call_module[target=layer3.0.relu](args = (%layer3_0_bn1,), kwargs = {})
@@ -431,15 +433,15 @@ and examine.</p>
     %layer3_0_bn2 : [#users=1] = call_module[target=layer3.0.bn2](args = (%layer3_0_conv2,), kwargs = {})
     %layer3_0_downsample_0 : [#users=1] = call_module[target=layer3.0.downsample.0](args = (%layer2_1_relu_1,), kwargs = {})
     %layer3_0_downsample_1 : [#users=1] = call_module[target=layer3.0.downsample.1](args = (%layer3_0_downsample_0,), kwargs = {})
-    %add_5 : [#users=1] = call_function[target=operator.add](args = (%layer3_0_bn2, %layer3_0_downsample_1), kwargs = {})
-    %layer3_0_relu_1 : [#users=2] = call_module[target=layer3.0.relu](args = (%add_5,), kwargs = {})
+    %add_4 : [#users=1] = call_function[target=operator.add](args = (%layer3_0_bn2, %layer3_0_downsample_1), kwargs = {})
+    %layer3_0_relu_1 : [#users=2] = call_module[target=layer3.0.relu](args = (%add_4,), kwargs = {})
     %layer3_1_conv1 : [#users=1] = call_module[target=layer3.1.conv1](args = (%layer3_0_relu_1,), kwargs = {})
     %layer3_1_bn1 : [#users=1] = call_module[target=layer3.1.bn1](args = (%layer3_1_conv1,), kwargs = {})
     %layer3_1_relu : [#users=1] = call_module[target=layer3.1.relu](args = (%layer3_1_bn1,), kwargs = {})
     %layer3_1_conv2 : [#users=1] = call_module[target=layer3.1.conv2](args = (%layer3_1_relu,), kwargs = {})
     %layer3_1_bn2 : [#users=1] = call_module[target=layer3.1.bn2](args = (%layer3_1_conv2,), kwargs = {})
-    %add_6 : [#users=1] = call_function[target=operator.add](args = (%layer3_1_bn2, %layer3_0_relu_1), kwargs = {})
-    %layer3_1_relu_1 : [#users=2] = call_module[target=layer3.1.relu](args = (%add_6,), kwargs = {})
+    %add_5 : [#users=1] = call_function[target=operator.add](args = (%layer3_1_bn2, %layer3_0_relu_1), kwargs = {})
+    %layer3_1_relu_1 : [#users=2] = call_module[target=layer3.1.relu](args = (%add_5,), kwargs = {})
     %layer4_0_conv1 : [#users=1] = call_module[target=layer4.0.conv1](args = (%layer3_1_relu_1,), kwargs = {})
     %layer4_0_bn1 : [#users=1] = call_module[target=layer4.0.bn1](args = (%layer4_0_conv1,), kwargs = {})
     %layer4_0_relu : [#users=1] = call_module[target=layer4.0.relu](args = (%layer4_0_bn1,), kwargs = {})
@@ -447,18 +449,18 @@ and examine.</p>
     %layer4_0_bn2 : [#users=1] = call_module[target=layer4.0.bn2](args = (%layer4_0_conv2,), kwargs = {})
     %layer4_0_downsample_0 : [#users=1] = call_module[target=layer4.0.downsample.0](args = (%layer3_1_relu_1,), kwargs = {})
     %layer4_0_downsample_1 : [#users=1] = call_module[target=layer4.0.downsample.1](args = (%layer4_0_downsample_0,), kwargs = {})
-    %add_7 : [#users=1] = call_function[target=operator.add](args = (%layer4_0_bn2, %layer4_0_downsample_1), kwargs = {})
-    %layer4_0_relu_1 : [#users=2] = call_module[target=layer4.0.relu](args = (%add_7,), kwargs = {})
+    %add_6 : [#users=1] = call_function[target=operator.add](args = (%layer4_0_bn2, %layer4_0_downsample_1), kwargs = {})
+    %layer4_0_relu_1 : [#users=2] = call_module[target=layer4.0.relu](args = (%add_6,), kwargs = {})
     %layer4_1_conv1 : [#users=1] = call_module[target=layer4.1.conv1](args = (%layer4_0_relu_1,), kwargs = {})
     %layer4_1_bn1 : [#users=1] = call_module[target=layer4.1.bn1](args = (%layer4_1_conv1,), kwargs = {})
     %layer4_1_relu : [#users=1] = call_module[target=layer4.1.relu](args = (%layer4_1_bn1,), kwargs = {})
     %layer4_1_conv2 : [#users=1] = call_module[target=layer4.1.conv2](args = (%layer4_1_relu,), kwargs = {})
     %layer4_1_bn2 : [#users=1] = call_module[target=layer4.1.bn2](args = (%layer4_1_conv2,), kwargs = {})
-    %add_8 : [#users=1] = call_function[target=operator.add](args = (%layer4_1_bn2, %layer4_0_relu_1), kwargs = {})
-    %layer4_1_relu_1 : [#users=1] = call_module[target=layer4.1.relu](args = (%add_8,), kwargs = {})
+    %add_7 : [#users=1] = call_function[target=operator.add](args = (%layer4_1_bn2, %layer4_0_relu_1), kwargs = {})
+    %layer4_1_relu_1 : [#users=1] = call_module[target=layer4.1.relu](args = (%add_7,), kwargs = {})
     %avgpool : [#users=1] = call_module[target=avgpool](args = (%layer4_1_relu_1,), kwargs = {})
-    %flatten_1 : [#users=1] = call_function[target=torch.flatten](args = (%avgpool, 1), kwargs = {})
-    %fc : [#users=1] = call_module[target=fc](args = (%flatten_1,), kwargs = {})
+    %flatten : [#users=1] = call_function[target=torch.flatten](args = (%avgpool, 1), kwargs = {})
+    %fc : [#users=1] = call_module[target=fc](args = (%flatten,), kwargs = {})
     return fc
 </pre></div>
 </div>
@@ -603,77 +605,77 @@ characteristics of our ResNet18 model;</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Op type        Op                       Average runtime (s)    Pct total runtime
 -------------  ---------------------  ---------------------  -------------------
-call_module    maxpool                          0.00738335             9.54904
-call_module    conv1                            0.00626087             8.09732
-call_module    bn1                              0.0046711              6.04123
-call_module    layer4_0_conv2                   0.00375867             4.86116
-call_module    layer1_0_conv1                   0.0033567              4.34128
-call_module    layer4_1_conv1                   0.00328445             4.24785
-call_module    layer1_0_conv2                   0.00316334             4.09121
-call_module    layer1_1_conv1                   0.00307322             3.97465
-call_module    layer4_1_conv2                   0.00306726             3.96694
-call_module    layer1_1_conv2                   0.00302243             3.90897
-call_module    layer4_0_conv1                   0.00278282             3.59908
-call_module    layer3_1_conv2                   0.00271034             3.50534
-call_module    layer3_0_conv2                   0.00270915             3.5038
-call_module    layer3_1_conv1                   0.0026722              3.45601
-call_module    layer2_1_conv2                   0.00264573             3.42178
-call_module    layer2_1_conv1                   0.00244403             3.16091
-call_module    layer2_0_conv2                   0.00239491             3.09739
-call_module    layer2_0_conv1                   0.00218701             2.82851
-call_module    layer3_0_conv1                   0.00178432             2.3077
-call_module    layer2_0_downsample_0            0.00146532             1.89513
-call_module    layer1_0_bn1                     0.000684261            0.884969
-call_module    layer1_1_bn2                     0.000675201            0.873252
-call_module    layer1_0_bn2                     0.000665188            0.860301
-call_module    layer1_1_bn1                     0.000664234            0.859068
-call_function  add_2                            0.000661612            0.855676
-call_module    layer3_0_downsample_0            0.000641823            0.830083
-call_function  add_1                            0.000464916            0.601286
-call_module    layer2_1_bn2                     0.000427008            0.552258
-call_module    layer2_1_bn1                     0.000418901            0.541774
-call_module    layer4_0_downsample_0            0.000407696            0.527281
-call_module    layer2_0_bn2                     0.000405073            0.52389
-call_module    layer2_0_bn1                     0.000399828            0.517106
-call_module    layer2_0_downsample_1            0.000360012            0.465611
-call_function  add_4                            0.000310898            0.402091
-call_module    relu_1                           0.000308752            0.399315
-call_module    layer3_0_bn2                     0.000300169            0.388215
-call_module    layer3_1_bn1                     0.00029397             0.380198
-call_module    layer3_1_bn2                     0.000292778            0.378656
-call_module    layer3_0_downsample_1            0.000266075            0.344121
-call_module    layer3_0_bn1                     0.00026536             0.343195
-call_module    layer4_1_bn1                     0.000236273            0.305577
-call_module    layer4_0_bn1                     0.000226736            0.293242
-call_module    layer4_0_bn2                     0.000226498            0.292934
-call_module    layer4_1_bn2                     0.000225067            0.291084
-call_module    layer4_0_downsample_1            0.000198126            0.25624
-call_module    fc                               0.000175476            0.226947
-call_module    avgpool                          0.00015521             0.200737
-call_module    layer1_0_relu                    0.000105619            0.1366
-call_module    layer1_1_relu_1                  9.53674e-05            0.123341
-call_module    layer1_0_relu_1                  9.48906e-05            0.122724
-call_module    layer1_1_relu                    9.48906e-05            0.122724
-call_function  add_6                            8.74996e-05            0.113165
-call_function  add_3                            8.70228e-05            0.112548
-call_module    layer2_0_relu                    8.2016e-05             0.106073
-call_function  add_8                            8.10623e-05            0.10484
-call_module    layer2_1_relu                    7.53403e-05            0.0974391
-call_module    layer2_1_relu_1                  7.39098e-05            0.095589
-call_module    layer2_0_relu_1                  7.24792e-05            0.0937389
-call_module    layer4_0_relu                    7.12872e-05            0.0921972
-call_module    layer3_1_relu                    7.05719e-05            0.0912721
-call_module    layer3_0_relu                    6.96182e-05            0.0900387
-call_module    layer3_0_relu_1                  6.86646e-05            0.0888053
-call_module    layer3_1_relu_1                  6.84261e-05            0.0884969
-call_module    layer4_1_relu                    6.81877e-05            0.0881886
-call_module    layer4_0_relu_1                  6.77109e-05            0.0875719
-call_module    layer4_1_relu_1                  6.50883e-05            0.08418
-call_function  add_7                            6.38962e-05            0.0826383
-call_function  add_5                            6.24657e-05            0.0807881
-call_function  flatten_1                        3.79086e-05            0.0490279
-placeholder    x                                1.88351e-05            0.0243598
-output         output                           1.62125e-05            0.0209679
+call_module    conv1                            0.00342584             6.80992
+call_module    maxpool                          0.00327563             6.51134
+call_module    layer1_1_conv2                   0.00246358             4.89713
+call_module    layer1_1_conv1                   0.00240231             4.77533
+call_module    layer1_0_conv2                   0.00232768             4.62699
+call_module    layer1_0_conv1                   0.00229549             4.56301
+call_module    bn1                              0.00221872             4.41041
+call_module    layer4_0_conv2                   0.00221276             4.39856
+call_module    layer4_1_conv2                   0.00199866             3.97297
+call_module    layer4_1_conv1                   0.00175095             3.48055
+call_module    layer4_0_conv1                   0.00168777             3.35496
+call_module    layer2_1_conv2                   0.0015707              3.12226
+call_module    layer3_1_conv1                   0.00152683             3.03506
+call_module    layer3_1_conv2                   0.00150895             2.99951
+call_module    layer2_0_conv1                   0.00143981             2.86207
+call_module    layer2_0_conv2                   0.00142336             2.82937
+call_module    layer3_0_conv2                   0.00141907             2.82084
+call_module    layer2_1_conv1                   0.00137997             2.74311
+call_module    layer2_0_downsample_0            0.00118899             2.3635
+call_module    layer3_0_conv1                   0.00108862             2.16397
+call_function  add                              0.000679255            1.35023
+call_function  add_1                            0.000649929            1.29194
+call_module    layer1_0_bn1                     0.000645399            1.28293
+call_module    layer1_1_bn1                     0.000610828            1.21421
+call_module    layer1_1_bn2                     0.000605345            1.20331
+call_module    layer1_0_bn2                     0.000600815            1.19431
+call_module    layer2_0_downsample_1            0.000575542            1.14407
+call_module    layer3_0_downsample_0            0.000397444            0.790044
+call_module    layer2_1_bn2                     0.000381708            0.758764
+call_module    layer2_1_bn1                     0.000380516            0.756395
+call_module    layer2_0_bn2                     0.000374317            0.744072
+call_module    layer2_0_bn1                     0.000371456            0.738385
+call_module    layer4_0_downsample_0            0.000333071            0.662082
+call_module    layer3_1_bn2                     0.000258207            0.513268
+call_function  add_3                            0.00025177             0.500472
+call_module    layer3_0_bn1                     0.000249624            0.496206
+call_module    layer3_1_bn1                     0.000249624            0.496206
+call_module    layer3_0_bn2                     0.000248432            0.493837
+call_module    relu                             0.000247955            0.492889
+call_module    layer4_0_downsample_1            0.00022912             0.455448
+call_module    layer3_0_downsample_1            0.000222683            0.442652
+call_module    layer4_0_bn2                     0.000211716            0.420851
+call_module    layer4_1_bn1                     0.000211477            0.420377
+call_module    layer4_0_bn1                     0.000200033            0.397628
+call_module    layer4_1_bn2                     0.00018692             0.371562
+call_module    fc                               0.000161409            0.320852
+call_module    avgpool                          0.000127316            0.253079
+call_module    layer1_0_relu                    9.01222e-05            0.179146
+call_module    layer1_0_relu_1                  8.67844e-05            0.172511
+call_module    layer1_1_relu                    7.65324e-05            0.152132
+call_module    layer1_1_relu_1                  7.65324e-05            0.152132
+call_function  add_2                            7.12872e-05            0.141705
+call_function  add_5                            6.60419e-05            0.131279
+call_function  add_6                            6.4373e-05             0.127961
+call_module    layer2_1_relu                    6.38962e-05            0.127014
+call_module    layer2_0_relu                    6.34193e-05            0.126066
+call_function  add_7                            6.31809e-05            0.125592
+call_module    layer2_0_relu_1                  6.19888e-05            0.123222
+call_module    layer3_1_relu                    6.19888e-05            0.123222
+call_module    layer2_1_relu_1                  6.1512e-05             0.122274
+call_module    layer3_0_relu                    6.05583e-05            0.120379
+call_module    layer4_0_relu                    6.00815e-05            0.119431
+call_module    layer4_1_relu                    5.98431e-05            0.118957
+call_module    layer4_0_relu_1                  5.96046e-05            0.118483
+call_module    layer4_1_relu_1                  5.93662e-05            0.118009
+call_module    layer3_0_relu_1                  5.91278e-05            0.117535
+call_module    layer3_1_relu_1                  5.91278e-05            0.117535
+call_function  add_4                            5.79357e-05            0.115165
+call_function  flatten                          3.8147e-05             0.075829
+output         output                           1.69277e-05            0.0336491
+placeholder    x                                1.4782e-05             0.0293837
 </pre></div>
 </div>
 <p>There are two things we should call out here:</p>
@@ -697,7 +699,7 @@ feedback you have about using it. Please feel free to use the
 PyTorch Forums (<a class="reference external" href="https://discuss.pytorch.org/">https://discuss.pytorch.org/</a>) and the issue tracker
 (<a class="reference external" href="https://github.com/pytorch/pytorch/issues">https://github.com/pytorch/pytorch/issues</a>) to provide any feedback
 you might have.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.488 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.388 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-profiling-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/830174f2bc5989fa5c09edb2405c41ca/fx_profiling_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fx_profiling_tutorial.py</span></code></a></div>

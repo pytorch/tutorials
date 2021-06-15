@@ -171,27 +171,24 @@ efficient batch processing.
 .. code-block:: default
 
 
-    import io
     import torch
-    from torchtext.utils import download_from_url, extract_archive
+    from torchtext.datasets import WikiText2
     from torchtext.data.utils import get_tokenizer
     from torchtext.vocab import build_vocab_from_iterator
 
-    url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-    test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url))
+    train_iter = WikiText2(split='train')
     tokenizer = get_tokenizer('basic_english')
-    vocab = build_vocab_from_iterator(map(tokenizer,
-                                          iter(io.open(train_filepath,
-                                                       encoding="utf8"))))
+    vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=["<unk>"])
+    vocab.set_default_index(vocab["<unk>"]) 
 
     def data_process(raw_text_iter):
-      data = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                           dtype=torch.long) for item in raw_text_iter]
+      data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
       return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-    train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-    val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-    test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+    train_iter, val_iter, test_iter = WikiText2()
+    train_data = data_process(train_iter)
+    val_data = data_process(val_iter)
+    test_data = data_process(test_iter)
 
     device = torch.device("cuda")
 
@@ -281,7 +278,7 @@ transformer layers on the other GPU.
 .. code-block:: default
 
 
-    ntokens = len(vocab.stoi) # the size of vocabulary
+    ntokens = len(vocab) # the size of vocabulary
     emsize = 4096 # embedding dimension
     nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
     nlayers = 12 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -349,7 +346,7 @@ transformer layers on the other GPU.
 
  .. code-block:: none
 
-    Total parameters in model: 1,444,270,191
+    Total parameters in model: 1,444,261,998
 
 
 Run the model
@@ -381,7 +378,7 @@ function to scale all the gradient together to prevent exploding.
         model.train() # Turn on the train mode
         total_loss = 0.
         start_time = time.time()
-        ntokens = len(vocab.stoi)
+        ntokens = len(vocab)
 
         # Train only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -417,7 +414,7 @@ function to scale all the gradient together to prevent exploding.
     def evaluate(eval_model, data_source):
         eval_model.eval() # Turn on the evaluation mode
         total_loss = 0.
-        ntokens = len(vocab.stoi)
+        ntokens = len(vocab)
         # Evaluate only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, data_source.size(0) - 1)
         with torch.no_grad():
@@ -474,26 +471,26 @@ we've seen so far. Adjust the learning rate after each epoch.
 
  .. code-block:: none
 
-    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3188.69 | loss 43.24 | ppl 5989705875570702336.00
-    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2890.14 | loss 43.64 | ppl 8933215638315930624.00
-    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2896.49 | loss 50.27 | ppl 6766600051271166590976.00
-    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2899.18 | loss 37.41 | ppl 17662527008398952.00
+    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 3165.91 | loss 53.08 | ppl 112790052571065043910656.00
+    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2861.83 | loss 45.46 | ppl 55157613216139427840.00
+    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2866.27 | loss 38.73 | ppl 65789227616101416.00
+    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2868.68 | loss 37.07 | ppl 12511320039201592.00
     -----------------------------------------------------------------------------------------
-    | end of epoch   1 | time: 165.64s | valid loss  1.03 | valid ppl     2.81
+    | end of epoch   1 | time: 163.96s | valid loss  1.12 | valid ppl     3.08
     -----------------------------------------------------------------------------------------
-    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3200.31 | loss 37.96 | ppl 30569376624186240.00
-    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2906.40 | loss 32.76 | ppl 169411732863441.56
-    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2906.09 | loss 28.43 | ppl 2231736457314.54
-    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2904.91 | loss 24.14 | ppl 30431246752.50
+    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 3164.59 | loss 38.87 | ppl 76377475610995392.00
+    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2876.95 | loss 30.77 | ppl 23112050743970.68
+    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2874.38 | loss 26.68 | ppl 385842873543.89
+    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2873.95 | loss 19.24 | ppl 226565999.35
     -----------------------------------------------------------------------------------------
-    | end of epoch   2 | time: 165.95s | valid loss  0.37 | valid ppl     1.45
+    | end of epoch   2 | time: 164.26s | valid loss  0.27 | valid ppl     1.31
     -----------------------------------------------------------------------------------------
-    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3194.23 | loss 15.00 | ppl 3267244.89
-    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2901.60 | loss 12.02 | ppl 166039.77
-    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2900.73 | loss 11.26 | ppl 77384.52
-    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2904.02 | loss 10.35 | ppl 31216.45
+    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 3160.90 | loss 13.16 | ppl 518559.25
+    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2873.67 | loss 11.48 | ppl 96860.07
+    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2873.59 | loss 10.69 | ppl 43864.98
+    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2871.87 | loss 10.36 | ppl 31545.93
     -----------------------------------------------------------------------------------------
-    | end of epoch   3 | time: 165.79s | valid loss  0.20 | valid ppl     1.22
+    | end of epoch   3 | time: 164.16s | valid loss  0.33 | valid ppl     1.39
     -----------------------------------------------------------------------------------------
 
 
@@ -516,8 +513,6 @@ Apply the best model to check the result with the test dataset.
 
 
 
-
-
 .. rst-class:: sphx-glr-script-out
 
  Out:
@@ -525,46 +520,14 @@ Apply the best model to check the result with the test dataset.
  .. code-block:: none
 
     =========================================================================================
-    | End of training | test loss  0.17 | test ppl     1.19
+    | End of training | test loss  0.29 | test ppl     1.34
     =========================================================================================
 
-
-Output
-------
-
-
-.. code-block:: py
-
-   Total parameters in model: 1,847,087,215
-   | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2387.45 | loss 42.16 | ppl 2036775646369743616.00
-   | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 2150.93 | loss 48.24 | ppl 891334049215401558016.00
-   | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 2155.23 | loss 34.66 | ppl 1125676483188404.62
-   | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 2158.42 | loss 38.87 | ppl 76287208340888368.00
-   -----------------------------------------------------------------------------------------
-   | end of epoch   1 | time: 119.65s | valid loss  2.95 | valid ppl    19.15
-   -----------------------------------------------------------------------------------------
-   | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2376.16 | loss 34.92 | ppl 1458001430957104.00
-   | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 2160.96 | loss 34.75 | ppl 1232463826541886.50
-   | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 2160.66 | loss 28.10 | ppl 1599598251136.51
-   | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 2160.07 | loss 20.25 | ppl 621174306.77
-   -----------------------------------------------------------------------------------------
-   | end of epoch   2 | time: 119.76s | valid loss  0.87 | valid ppl     2.38
-   -----------------------------------------------------------------------------------------
-   | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2376.49 | loss 13.20 | ppl 537727.23
-   | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 2160.12 | loss 10.98 | ppl 58548.58
-   | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 2160.05 | loss 12.01 | ppl 164152.79
-   | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 2160.03 | loss 10.63 | ppl 41348.00
-   -----------------------------------------------------------------------------------------
-   | end of epoch   3 | time: 119.76s | valid loss  0.78 | valid ppl     2.17
-   -----------------------------------------------------------------------------------------
-   =========================================================================================
-   | End of training | test loss  0.69 | test ppl     1.99
-   =========================================================================================
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 9 minutes  6.000 seconds)
+   **Total running time of the script:** ( 8 minutes  59.311 seconds)
 
 
 .. _sphx_glr_download_intermediate_pipeline_tutorial.py:

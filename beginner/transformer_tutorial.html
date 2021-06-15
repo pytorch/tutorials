@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sequence-to-Sequence Modeling with nn.Transformer and TorchText — PyTorch Tutorials 1.8.1+cu102 documentation</title>
+<title>Language Modeling with nn.Transformer and TorchText — PyTorch Tutorials 1.9.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -152,7 +152,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.8.1+cu102
+                  1.9.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -198,6 +198,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html">Audio manipulation with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#audio-i-o">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#resampling">Resampling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#data-augmentation">Data Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-extractions">Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="audio_preprocessing_tutorial.html#feature-augmentation">Feature Augmentation</a></li>
@@ -206,7 +207,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Language Modeling with nn.Transformer and TorchText</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -291,7 +292,7 @@
           
         </a> &gt;
       </li>
-<li>Sequence-to-Sequence Modeling with nn.Transformer and TorchText</li>
+<li>Language Modeling with nn.Transformer and TorchText</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/beginner/transformer_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -329,20 +330,20 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-transformer-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="sequence-to-sequence-modeling-with-nn-transformer-and-torchtext">
-<span id="sphx-glr-beginner-transformer-tutorial-py"></span><h1>Sequence-to-Sequence Modeling with nn.Transformer and TorchText<a class="headerlink" href="#sequence-to-sequence-modeling-with-nn-transformer-and-torchtext" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="language-modeling-with-nn-transformer-and-torchtext">
+<span id="sphx-glr-beginner-transformer-tutorial-py"></span><h1>Language Modeling with nn.Transformer and TorchText<a class="headerlink" href="#language-modeling-with-nn-transformer-and-torchtext" title="Permalink to this headline">¶</a></h1>
 <p>This is a tutorial on how to train a sequence-to-sequence model
 that uses the
-<a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=nn%20transformer#torch.nn.Transformer">nn.Transformer</a> module.</p>
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html">nn.Transformer</a> module.</p>
 <p>PyTorch 1.2 release includes a standard transformer module based on the
 paper <a class="reference external" href="https://arxiv.org/pdf/1706.03762.pdf">Attention is All You
 Need</a>. The transformer model
 has been proved to be superior in quality for many sequence-to-sequence
 problems while being more parallelizable. The <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> module
 relies entirely on an attention mechanism (another module recently
-implemented as <a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=multiheadattention#torch.nn.MultiheadAttention">nn.MultiheadAttention</a>) to draw global dependencies
+implemented as <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html">nn.MultiheadAttention</a>) to draw global dependencies
 between input and output. The <code class="docutils literal notranslate"><span class="pre">nn.Transformer</span></code> module is now highly
-modularized such that a single component (like <a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=nn%20transformerencoder#torch.nn.TransformerEncoder">nn.TransformerEncoder</a>
+modularized such that a single component (like <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html">nn.TransformerEncoder</a>
 in this tutorial) can be easily adapted/composed.</p>
 <img alt="../_images/transformer_architecture.jpg" src="../_images/transformer_architecture.jpg"/>
 <div class="section" id="define-the-model">
@@ -354,7 +355,7 @@ to follow a sequence of words. A sequence of tokens are passed to the embedding
 layer first, followed by a positional encoding layer to account for the order
 of the word (see the next paragraph for more details). The
 <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> consists of multiple layers of
-<a class="reference external" href="https://pytorch.org/docs/master/nn.html?highlight=transformerencoderlayer#torch.nn.TransformerEncoderLayer">nn.TransformerEncoderLayer</a>. Along with the input sequence, a square
+<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html">nn.TransformerEncoderLayer</a>. Along with the input sequence, a square
 attention mask is required because the self-attention layers in
 <code class="docutils literal notranslate"><span class="pre">nn.TransformerEncoder</span></code> are only allowed to attend the earlier positions in
 the sequence. For the language modeling task, any tokens on the future
@@ -452,23 +453,18 @@ length 6:</p>
 <p>These columns are treated as independent by the model, which means that
 the dependence of <code class="docutils literal notranslate"><span class="pre">G</span></code> and <code class="docutils literal notranslate"><span class="pre">F</span></code> can not be learned, but allows more
 efficient batch processing.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">torch</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torchtext.datasets</span> <span class="kn">import</span> <span class="n">WikiText2</span>
 <span class="kn">from</span> <span class="nn">torchtext.data.utils</span> <span class="kn">import</span> <span class="n">get_tokenizer</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
-<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">Vocab</span>
+<span class="kn">from</span> <span class="nn">torchtext.vocab</span> <span class="kn">import</span> <span class="n">build_vocab_from_iterator</span>
 
 <span class="n">train_iter</span> <span class="o">=</span> <span class="n">WikiText2</span><span class="p">(</span><span class="n">split</span><span class="o">=</span><span class="s1">'train'</span><span class="p">)</span>
 <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">get_tokenizer</span><span class="p">(</span><span class="s1">'basic_english'</span><span class="p">)</span>
-<span class="n">counter</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">train_iter</span><span class="p">:</span>
-    <span class="n">counter</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
-<span class="n">vocab</span> <span class="o">=</span> <span class="n">Vocab</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="n">build_vocab_from_iterator</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">train_iter</span><span class="p">),</span> <span class="n">specials</span><span class="o">=</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
+<span class="n">vocab</span><span class="o">.</span><span class="n">set_default_index</span><span class="p">(</span><span class="n">vocab</span><span class="p">[</span><span class="s2">"&lt;unk&gt;"</span><span class="p">])</span>
 
 <span class="k">def</span> <span class="nf">data_process</span><span class="p">(</span><span class="n">raw_text_iter</span><span class="p">):</span>
-  <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">vocab</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">item</span><span class="p">)],</span>
-                       <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_text_iter</span><span class="p">]</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">vocab</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">(</span><span class="n">item</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_text_iter</span><span class="p">]</span>
   <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)))</span>
 
 <span class="n">train_iter</span><span class="p">,</span> <span class="n">val_iter</span><span class="p">,</span> <span class="n">test_iter</span> <span class="o">=</span> <span class="n">WikiText2</span><span class="p">()</span>
@@ -519,7 +515,7 @@ with the <code class="docutils literal notranslate"><span class="pre">S</span></
 <h2>Initiate an instance<a class="headerlink" href="#initiate-an-instance" title="Permalink to this headline">¶</a></h2>
 <p>The model is set up with the hyperparameter below. The vocab size is
 equal to the length of the vocab object.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="o">.</span><span class="n">stoi</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ntokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="c1"># the size of vocabulary</span>
 <span class="n">emsize</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># embedding dimension</span>
 <span class="n">nhid</span> <span class="o">=</span> <span class="mi">200</span> <span class="c1"># the dimension of the feedforward network model in nn.TransformerEncoder</span>
 <span class="n">nlayers</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1"># the number of nn.TransformerEncoderLayer in nn.TransformerEncoder</span>
@@ -616,56 +612,56 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   200/ 2928 batches | lr 5.00 | ms/batch 29.27 | loss  8.13 | ppl  3402.74
-| epoch   1 |   400/ 2928 batches | lr 5.00 | ms/batch 28.18 | loss  6.89 | ppl   977.79
-| epoch   1 |   600/ 2928 batches | lr 5.00 | ms/batch 28.19 | loss  6.44 | ppl   625.65
-| epoch   1 |   800/ 2928 batches | lr 5.00 | ms/batch 28.20 | loss  6.31 | ppl   550.38
-| epoch   1 |  1000/ 2928 batches | lr 5.00 | ms/batch 28.23 | loss  6.19 | ppl   488.33
-| epoch   1 |  1200/ 2928 batches | lr 5.00 | ms/batch 28.19 | loss  6.15 | ppl   470.03
-| epoch   1 |  1400/ 2928 batches | lr 5.00 | ms/batch 28.21 | loss  6.11 | ppl   449.77
-| epoch   1 |  1600/ 2928 batches | lr 5.00 | ms/batch 28.17 | loss  6.11 | ppl   450.74
-| epoch   1 |  1800/ 2928 batches | lr 5.00 | ms/batch 28.26 | loss  6.03 | ppl   415.22
-| epoch   1 |  2000/ 2928 batches | lr 5.00 | ms/batch 28.17 | loss  6.02 | ppl   411.43
-| epoch   1 |  2200/ 2928 batches | lr 5.00 | ms/batch 28.17 | loss  5.89 | ppl   362.75
-| epoch   1 |  2400/ 2928 batches | lr 5.00 | ms/batch 28.16 | loss  5.97 | ppl   392.24
-| epoch   1 |  2600/ 2928 batches | lr 5.00 | ms/batch 28.20 | loss  5.96 | ppl   388.30
-| epoch   1 |  2800/ 2928 batches | lr 5.00 | ms/batch 28.18 | loss  5.88 | ppl   358.47
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>| epoch   1 |   200/ 2928 batches | lr 5.00 | ms/batch 28.89 | loss  8.11 | ppl  3332.78
+| epoch   1 |   400/ 2928 batches | lr 5.00 | ms/batch 27.85 | loss  6.86 | ppl   950.80
+| epoch   1 |   600/ 2928 batches | lr 5.00 | ms/batch 27.74 | loss  6.43 | ppl   620.10
+| epoch   1 |   800/ 2928 batches | lr 5.00 | ms/batch 27.94 | loss  6.30 | ppl   543.19
+| epoch   1 |  1000/ 2928 batches | lr 5.00 | ms/batch 28.05 | loss  6.19 | ppl   488.36
+| epoch   1 |  1200/ 2928 batches | lr 5.00 | ms/batch 28.14 | loss  6.15 | ppl   469.60
+| epoch   1 |  1400/ 2928 batches | lr 5.00 | ms/batch 28.03 | loss  6.11 | ppl   452.38
+| epoch   1 |  1600/ 2928 batches | lr 5.00 | ms/batch 28.03 | loss  6.11 | ppl   448.38
+| epoch   1 |  1800/ 2928 batches | lr 5.00 | ms/batch 28.03 | loss  6.02 | ppl   413.37
+| epoch   1 |  2000/ 2928 batches | lr 5.00 | ms/batch 28.04 | loss  6.01 | ppl   409.17
+| epoch   1 |  2200/ 2928 batches | lr 5.00 | ms/batch 28.06 | loss  5.90 | ppl   364.39
+| epoch   1 |  2400/ 2928 batches | lr 5.00 | ms/batch 28.04 | loss  5.97 | ppl   391.03
+| epoch   1 |  2600/ 2928 batches | lr 5.00 | ms/batch 28.12 | loss  5.95 | ppl   382.63
+| epoch   1 |  2800/ 2928 batches | lr 5.00 | ms/batch 28.02 | loss  5.88 | ppl   358.21
 -----------------------------------------------------------------------------------------
-| end of epoch   1 | time: 85.89s | valid loss  5.77 | valid ppl   320.21
+| end of epoch   1 | time: 85.23s | valid loss  5.81 | valid ppl   332.45
 -----------------------------------------------------------------------------------------
-| epoch   2 |   200/ 2928 batches | lr 4.75 | ms/batch 28.38 | loss  5.87 | ppl   353.83
-| epoch   2 |   400/ 2928 batches | lr 4.75 | ms/batch 28.24 | loss  5.85 | ppl   347.37
-| epoch   2 |   600/ 2928 batches | lr 4.75 | ms/batch 28.13 | loss  5.67 | ppl   289.48
-| epoch   2 |   800/ 2928 batches | lr 4.75 | ms/batch 28.25 | loss  5.70 | ppl   299.44
-| epoch   2 |  1000/ 2928 batches | lr 4.75 | ms/batch 28.25 | loss  5.65 | ppl   283.15
-| epoch   2 |  1200/ 2928 batches | lr 4.75 | ms/batch 28.22 | loss  5.68 | ppl   293.78
-| epoch   2 |  1400/ 2928 batches | lr 4.75 | ms/batch 28.17 | loss  5.69 | ppl   294.72
-| epoch   2 |  1600/ 2928 batches | lr 4.75 | ms/batch 28.27 | loss  5.71 | ppl   302.53
-| epoch   2 |  1800/ 2928 batches | lr 4.75 | ms/batch 28.22 | loss  5.65 | ppl   284.68
-| epoch   2 |  2000/ 2928 batches | lr 4.75 | ms/batch 28.24 | loss  5.67 | ppl   291.08
-| epoch   2 |  2200/ 2928 batches | lr 4.75 | ms/batch 28.23 | loss  5.55 | ppl   258.11
-| epoch   2 |  2400/ 2928 batches | lr 4.75 | ms/batch 28.26 | loss  5.65 | ppl   284.69
-| epoch   2 |  2600/ 2928 batches | lr 4.75 | ms/batch 28.25 | loss  5.65 | ppl   284.55
-| epoch   2 |  2800/ 2928 batches | lr 4.75 | ms/batch 28.25 | loss  5.58 | ppl   265.07
+| epoch   2 |   200/ 2928 batches | lr 4.75 | ms/batch 28.17 | loss  5.86 | ppl   351.24
+| epoch   2 |   400/ 2928 batches | lr 4.75 | ms/batch 28.03 | loss  5.84 | ppl   345.05
+| epoch   2 |   600/ 2928 batches | lr 4.75 | ms/batch 28.09 | loss  5.66 | ppl   286.78
+| epoch   2 |   800/ 2928 batches | lr 4.75 | ms/batch 28.10 | loss  5.70 | ppl   300.24
+| epoch   2 |  1000/ 2928 batches | lr 4.75 | ms/batch 28.08 | loss  5.66 | ppl   286.42
+| epoch   2 |  1200/ 2928 batches | lr 4.75 | ms/batch 28.07 | loss  5.68 | ppl   293.80
+| epoch   2 |  1400/ 2928 batches | lr 4.75 | ms/batch 28.06 | loss  5.69 | ppl   295.31
+| epoch   2 |  1600/ 2928 batches | lr 4.75 | ms/batch 28.07 | loss  5.71 | ppl   302.69
+| epoch   2 |  1800/ 2928 batches | lr 4.75 | ms/batch 28.08 | loss  5.66 | ppl   286.23
+| epoch   2 |  2000/ 2928 batches | lr 4.75 | ms/batch 28.05 | loss  5.68 | ppl   292.27
+| epoch   2 |  2200/ 2928 batches | lr 4.75 | ms/batch 28.07 | loss  5.56 | ppl   259.39
+| epoch   2 |  2400/ 2928 batches | lr 4.75 | ms/batch 28.10 | loss  5.65 | ppl   285.36
+| epoch   2 |  2600/ 2928 batches | lr 4.75 | ms/batch 28.10 | loss  5.65 | ppl   283.51
+| epoch   2 |  2800/ 2928 batches | lr 4.75 | ms/batch 28.07 | loss  5.58 | ppl   266.16
 -----------------------------------------------------------------------------------------
-| end of epoch   2 | time: 85.82s | valid loss  5.70 | valid ppl   297.56
+| end of epoch   2 | time: 85.26s | valid loss  5.64 | valid ppl   281.70
 -----------------------------------------------------------------------------------------
-| epoch   3 |   200/ 2928 batches | lr 4.51 | ms/batch 28.42 | loss  5.60 | ppl   270.97
-| epoch   3 |   400/ 2928 batches | lr 4.51 | ms/batch 28.24 | loss  5.62 | ppl   276.96
-| epoch   3 |   600/ 2928 batches | lr 4.51 | ms/batch 28.30 | loss  5.42 | ppl   225.45
-| epoch   3 |   800/ 2928 batches | lr 4.51 | ms/batch 28.19 | loss  5.48 | ppl   240.53
-| epoch   3 |  1000/ 2928 batches | lr 4.51 | ms/batch 28.31 | loss  5.43 | ppl   227.88
-| epoch   3 |  1200/ 2928 batches | lr 4.51 | ms/batch 28.24 | loss  5.48 | ppl   238.81
-| epoch   3 |  1400/ 2928 batches | lr 4.51 | ms/batch 28.28 | loss  5.49 | ppl   242.65
-| epoch   3 |  1600/ 2928 batches | lr 4.51 | ms/batch 28.23 | loss  5.52 | ppl   248.80
-| epoch   3 |  1800/ 2928 batches | lr 4.51 | ms/batch 28.29 | loss  5.48 | ppl   240.92
-| epoch   3 |  2000/ 2928 batches | lr 4.51 | ms/batch 28.22 | loss  5.49 | ppl   242.20
-| epoch   3 |  2200/ 2928 batches | lr 4.51 | ms/batch 28.31 | loss  5.36 | ppl   211.90
-| epoch   3 |  2400/ 2928 batches | lr 4.51 | ms/batch 28.24 | loss  5.46 | ppl   235.54
-| epoch   3 |  2600/ 2928 batches | lr 4.51 | ms/batch 28.29 | loss  5.47 | ppl   236.68
-| epoch   3 |  2800/ 2928 batches | lr 4.51 | ms/batch 28.25 | loss  5.40 | ppl   220.77
+| epoch   3 |   200/ 2928 batches | lr 4.51 | ms/batch 28.22 | loss  5.61 | ppl   271.82
+| epoch   3 |   400/ 2928 batches | lr 4.51 | ms/batch 28.02 | loss  5.62 | ppl   275.21
+| epoch   3 |   600/ 2928 batches | lr 4.51 | ms/batch 28.09 | loss  5.41 | ppl   224.07
+| epoch   3 |   800/ 2928 batches | lr 4.51 | ms/batch 28.02 | loss  5.48 | ppl   239.83
+| epoch   3 |  1000/ 2928 batches | lr 4.51 | ms/batch 28.09 | loss  5.44 | ppl   229.73
+| epoch   3 |  1200/ 2928 batches | lr 4.51 | ms/batch 28.11 | loss  5.47 | ppl   237.75
+| epoch   3 |  1400/ 2928 batches | lr 4.51 | ms/batch 28.11 | loss  5.49 | ppl   243.40
+| epoch   3 |  1600/ 2928 batches | lr 4.51 | ms/batch 28.03 | loss  5.52 | ppl   249.76
+| epoch   3 |  1800/ 2928 batches | lr 4.51 | ms/batch 27.99 | loss  5.47 | ppl   236.96
+| epoch   3 |  2000/ 2928 batches | lr 4.51 | ms/batch 28.02 | loss  5.48 | ppl   240.52
+| epoch   3 |  2200/ 2928 batches | lr 4.51 | ms/batch 28.07 | loss  5.35 | ppl   211.31
+| epoch   3 |  2400/ 2928 batches | lr 4.51 | ms/batch 28.09 | loss  5.47 | ppl   237.54
+| epoch   3 |  2600/ 2928 batches | lr 4.51 | ms/batch 28.08 | loss  5.47 | ppl   237.88
+| epoch   3 |  2800/ 2928 batches | lr 4.51 | ms/batch 28.06 | loss  5.41 | ppl   223.36
 -----------------------------------------------------------------------------------------
-| end of epoch   3 | time: 85.92s | valid loss  5.55 | valid ppl   257.40
+| end of epoch   3 | time: 85.23s | valid loss  5.56 | valid ppl   259.96
 -----------------------------------------------------------------------------------------
 </pre></div>
 </div>
@@ -682,11 +678,11 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>=========================================================================================
-| End of training | test loss  5.46 | test ppl   235.69
+| End of training | test loss  5.47 | test ppl   237.78
 =========================================================================================
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  33.155 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 4 minutes  29.898 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-transformer-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/f53285338820248a7c04a947c5110f7b/transformer_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">transformer_tutorial.py</span></code></a></div>
@@ -731,7 +727,7 @@ we’ve seen so far. Adjust the learning rate after each epoch.</p>
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Sequence-to-Sequence Modeling with nn.Transformer and TorchText</a><ul>
+<li><a class="reference internal" href="#">Language Modeling with nn.Transformer and TorchText</a><ul>
 <li><a class="reference internal" href="#define-the-model">Define the model</a></li>
 <li><a class="reference internal" href="#load-and-batch-data">Load and batch data</a><ul>
 <li><a class="reference internal" href="#functions-to-generate-input-and-target-sequence">Functions to generate input and target sequence</a></li>
