@@ -486,8 +486,12 @@
 </div>
 <p>Note <code class="docutils literal notranslate"><span class="pre">IOS_ARCH</span></code> tells the script to build a arm64 version of Libtorch. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the <a class="reference external" href="https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source">Build PyTorch iOS libraries from source</a> section from the iOS tutorial to setup the XCode settings properly. Don’t forget to copy the <cite>./mobilenetv2_metal.pt</cite> to your XCode project.</p>
 <p>Next we need to make some changes in <code class="docutils literal notranslate"><span class="pre">TorchModule.mm</span></code></p>
-<div class="code objective-c highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span><span class="c1">#import &lt;LibTorch/LibTorch.h&gt;</span>
-<span class="c1">#import &lt;torch/script.h&gt;</span>
+<div class="code objective-c highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="c1">#import &lt;Libtorch-Lite.h&gt;</span>
+<span class="o">//</span> <span class="n">If</span> <span class="n">it</span><span class="s1">&#39;s built from source with xcode, comment out the line above</span>
+<span class="o">//</span> <span class="ow">and</span> <span class="n">use</span> <span class="n">following</span> <span class="n">headers</span>
+<span class="c1">#include &lt;torch/csrc/jit/mobile/import.h&gt;</span>
+<span class="c1">#include &lt;torch/csrc/jit/mobile/module.h&gt;</span>
+<span class="c1">#include &lt;torch/script.h&gt;</span>
 
 <span class="o">-</span> <span class="p">(</span><span class="n">NSArray</span><span class="o">&lt;</span><span class="n">NSNumber</span><span class="o">*&gt;*</span><span class="p">)</span><span class="n">predictImage</span><span class="p">:(</span><span class="n">void</span><span class="o">*</span><span class="p">)</span><span class="n">imageBuffer</span> <span class="p">{</span>
   <span class="n">torch</span><span class="p">::</span><span class="n">jit</span><span class="p">::</span><span class="n">GraphOptimizerEnabledGuard</span> <span class="n">opguard</span><span class="p">(</span><span class="n">false</span><span class="p">);</span>
