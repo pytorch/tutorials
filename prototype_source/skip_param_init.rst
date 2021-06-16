@@ -1,11 +1,6 @@
 Skipping Module Parameter Initialization
 ========================================
 
-Prerequisites
--------------
-
-PyTorch 1.10.0
-
 Introduction
 ------------
 
@@ -32,7 +27,7 @@ the `weight` parameter is large.
 Skipping Initialization
 -----------------------
 
-As of PyTorch 1.10.0, it is possible to skip parameter initialization during module construction, avoiding
+It is now possible to skip parameter initialization during module construction, avoiding
 wasted computation. This is easily accomplished using the :func:`torch.nn.utils.skip_init` function:
 
 ::
