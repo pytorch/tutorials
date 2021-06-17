@@ -15,8 +15,7 @@ right - so that the pole attached to it stays upright. You can find an
 official leaderboard with various algorithms and visualizations at the
 `Gym website <https://gym.openai.com/envs/CartPole-v0>`__.
 
-.. figure:: /_static/img/cartpole.gif
-   :alt: cartpole
+![cartpole](../../_static/img/cartpole.gif)
 
    cartpole
 
