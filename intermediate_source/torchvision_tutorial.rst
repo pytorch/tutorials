@@ -112,7 +112,7 @@ Let’s write a ``torch.utils.data.Dataset`` class for this dataset.
    from PIL import Image
 
 
-   class PennFudanDataset(object):
+   class PennFudanDataset(torch.utils.data.Dataset):
        def __init__(self, root, transforms):
            self.root = root
            self.transforms = transforms
