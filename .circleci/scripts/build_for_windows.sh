@@ -37,7 +37,7 @@ pip install -r requirements.txt
 pip install pySoundFile
 # Force uninstall torch & related packages, we'll install them using conda later.
 pip uninstall -y torch torchvision torchtext
-conda install -yq -c pytorch "cudatoolkit=10.1" pytorch torchvision torchtext torchaudio
+conda install -yq -c pytorch "cudatoolkit=10.2" pytorch torchvision torchtext torchaudio
 python -m spacy download de
 python -m spacy download en
 pushd ${PROJECT_DIR}
