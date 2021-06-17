@@ -225,7 +225,8 @@ with torch.profiler.profile(
 # "Mean Blocks per SM" is weighted average of all runs of this kernel name, using each run’s duration as weight.
 #
 # Mean Est. Achieved Occupancy:
-# Est. Achieved Occupancy is defined in this column’s tooltip. The bigger, the better.
+# Est. Achieved Occupancy is defined in this column’s tooltip.
+# For most cases such as memory bandwidth bounded kernels, the higher the better.
 # "Mean Est. Achieved Occupancy" is weighted average of all runs of this kernel name,
 # using each run’s duration as weight.
 #
