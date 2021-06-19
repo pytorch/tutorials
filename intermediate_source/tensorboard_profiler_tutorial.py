@@ -33,7 +33,7 @@ To install ``torch`` and ``torchvision`` use the following command:
 # 1. Prepare the data and model
 # 2. Use profiler to record execution events
 # 3. Run the profiler
-# 4. Use TensorBoard to view results and analyze performance
+# 4. Use TensorBoard to view results and analyze model performance
 # 5. Improve performance with the help of profiler
 # 6. Analyze performance with other advanced features
 #
@@ -101,10 +101,10 @@ def train(data):
 #   start warming up on the second,
 #   record the following three iterations,
 #   after which the trace will become available and on_trace_ready (when set) is called.
-#   The cycle repeats twice totally. Each cycle is called a "span" in TensorBoard plugin.
+#   In total, the cycle repeats twice. Each cycle is called a "span" in TensorBoard plugin.
 #
-#   During ``wait`` steps, the profiler does not work.
-#   During ``warmup`` steps, the profiler starts profiling as warmup but does not record any events.
+#   During ``wait`` steps, the profiler is disabled.
+#   During ``warmup`` steps, the profiler starts tracing but the results are discarded.
 #   This is for reducing the profiling overhead.
 #   The overhead at the beginning of profiling is high and easy to bring skew to the profiling result.
 #   During ``active`` steps, the profiler works and records events.
@@ -115,7 +115,8 @@ def train(data):
 # - ``record_shapes`` - whether to record shapes of the operator inputs.
 # - ``profile_memory`` - Track tensor memory allocation/deallocation.
 # - ``with_stack`` - Record source information (file and line number) for the ops.
-#   If the TensorBoard is launched in VSCode, clicking a stack frame will navigate to the specific code line.
+#   If the TensorBoard is launched in VSCode (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
+#   clicking a stack frame will navigate to the specific code line.
 
 with torch.profiler.profile(
         schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
@@ -127,7 +128,7 @@ with torch.profiler.profile(
         if step >= (1 + 1 + 3) * 2:
             break
         train(batch_data)
-        prof.step()  # Need call this at the end of each step to notify profiler of steps' boundary.
+        prof.step()  # Need to call this at the end of each step to notify profiler of steps' boundary.
 
 
 ######################################################################
@@ -138,7 +139,7 @@ with torch.profiler.profile(
 
 
 ######################################################################
-# 4. Use TensorBoard to view results and analyze performance
+# 4. Use TensorBoard to view results and analyze model performance
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Install PyTorch Profiler TensorBoard Plugin.
@@ -238,6 +239,10 @@ with torch.profiler.profile(
 #    :scale: 25 %
 #
 # You can move the graph and zoom in/out with the help of right side toolbar.
+# And keyboard can also be used to zoom and move around inside the timeline.
+# The ‘w’ and ‘s’ keys zoom in centered around the mouse,
+# and the ‘a’ and ‘d’ keys move the timeline left and right.
+# You can hit these keys multiple times until you see a readable representation.
 #
 # In this example, we can see the event prefixed with ``enumerate(DataLoader)`` costs a lot of time.
 # And during most of this period, the GPU is idle.
@@ -249,7 +254,7 @@ with torch.profiler.profile(
 # 5. Improve performance with the help of profiler
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# The "Performance Recommendation" in "Overview" hints the bottleneck is DataLoader.
+# At the bottom of "Overview" page, the suggestion in "Performance Recommendation" hints the bottleneck is DataLoader.
 # The PyTorch DataLoader uses single process by default.
 # User could enable multi-process data loading by setting the parameter ``num_workers``.
 # `Here <https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading>`_ is more details.
@@ -263,12 +268,12 @@ with torch.profiler.profile(
 #
 
 ######################################################################
-# Then let’s choose the just profiled run in left "Runs" dropdown list.
+# Then let’s choose the recently profiled run in left "Runs" dropdown list.
 #
 # .. image:: ../../_static/img/profiler_overview2.png
 #    :scale: 25 %
 #
-# From the above view, we can find the step time is reduced,
+# From the above view, we can find the step time is reduced to about 58ms comparing with previous run's 121ms,
 # and the time reduction of ``DataLoader`` mainly contributes.
 #
 # .. image:: ../../_static/img/profiler_trace_view2.png
@@ -285,8 +290,8 @@ with torch.profiler.profile(
 # To profile memory, please add ``profile_memory=True`` in arguments of ``torch.profiler.profile``.
 #
 # Note: Because of the current non-optimized implementation of PyTorch profiler,
-# enabling ``profile_memory=True`` will cost about several minutes to finish.
-# To save time, you can try our existing examples firstly by running:
+# enabling ``profile_memory=True`` will take about several minutes to finish.
+# To save time, you can try our existing examples first by running:
 #
 # ::
 #
@@ -298,7 +303,7 @@ with torch.profiler.profile(
 # .. image:: ../../_static/img/profiler_memory_view.png
 #    :scale: 25 %
 #
-# The memory kind could be selected in "Device" selection box.
+# The memory type could be selected in "Device" selection box.
 # For example, "GPU0" means the following table only shows each operator’s memory usage on GPU 0, not including CPU or other GPUs.
 #
 # The "Size Increase" sums up all allocation bytes and minus all the memory release bytes.
@@ -306,7 +311,7 @@ with torch.profiler.profile(
 # The "Allocation Size" sums up all allocation bytes without considering the memory release.
 #
 # - Distributed view
-# The plugin now supports distributed view on profiling DDP+NCCL.
+# The plugin now supports distributed view on profiling DDP with NCCL as backend.
 #
 # You can try it by using existing example on Azure:
 #
@@ -318,8 +323,8 @@ with torch.profiler.profile(
 #    :scale: 25 %
 #
 # The "Computation/Communication Overview" shows computation/communication ratio and their overlapping degree.
-# User can get the load balance between workers from it.
-# For example, it the computation + overlapping time of one worker is much larger than others,
+# From this view, User can figure out load balance issue among workers.
+# For example, if the computation + overlapping time of one worker is much larger than others,
 # there may be a problem of load balance or this worker may be a straggler.
 #
 # The "Synchronizing/Communication Overview" shows the efficiency of communication.
@@ -335,7 +340,8 @@ with torch.profiler.profile(
 # Learn More
 # ----------
 #
-# Take a look at the following documents to continue your learning:
+# Take a look at the following documents to continue your learning,
+# and feel free to open an issue `here <https://github.com/pytorch/kineto/issues>`_.
 #
 # -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
 # -  `torch.profiler API <https://pytorch.org/docs/master/profiler.html>`_
