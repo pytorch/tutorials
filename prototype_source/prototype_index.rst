@@ -90,13 +90,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../prototype/vulkan_workflow.html
    :tags: Mobile
+   
+.. Modules
 
 .. customcarditem::
-   :header: Lite Interpreter Workflow in Android and iOS
-   :card_description: Learn how to use the lite interpreter on iOS and Andriod devices.
-   :image: ../_static/img/thumbnails/cropped/mobile.png
-   :link: ../prototype/lite_interpreter.html
-   :tags: Mobile
+   :header: Skipping Module Parameter Initialization in PyTorch 1.10
+   :card_description: Describes skipping parameter initialization during module construction in PyTorch 1.10, avoiding wasted computation.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/skip_param_init.html
+   :tags: Modules
 
 .. TorchScript
 
@@ -144,4 +146,3 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/torchscript_freezing.html
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
-   prototype/lite_interpreter.html
