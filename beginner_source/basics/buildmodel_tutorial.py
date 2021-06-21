@@ -97,7 +97,7 @@ print(f"Predicted class: {y_pred}")
 # Model Layers
 # -------------------------
 #
-# Lets break down the layers in the FashionMNIST model. To illustrate it, we 
+# Let's break down the layers in the FashionMNIST model. To illustrate it, we 
 # will take a sample minibatch of 3 images of size 28x28 and see what happens to it as 
 # we pass it through the network. 
 

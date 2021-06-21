@@ -139,7 +139,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # the networks later. To keep track of all this we will use a helper class
 # called ``Lang`` which has word → index (``word2index``) and index → word
 # (``index2word``) dictionaries, as well as a count of each word
-# ``word2count`` to use to later replace rare words.
+# ``word2count`` which will be used to replace rare words later.
 #
 
 SOS_token = 0
