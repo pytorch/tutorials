@@ -168,7 +168,7 @@ class MyOutputLogger(ns.Logger):
 # And then we can pass this logger into above APIs such as:
 
 data = img_data[0][0]
-act_compare_dict = ns.compare_model_outputs(float_model, qmodel, data, Logger=MyOutputLogger)
+act_compare_dict = ns.compare_model_outputs(float_model, qmodel, data, logger_cls=MyOutputLogger)
 
 ##############################################################################
 # or:
@@ -260,7 +260,7 @@ class MyShadowLogger(ns.Logger):
 # And then we can pass this logger into above APIs such as:
 
 data = img_data[0][0]
-ob_dict = ns.compare_model_stub(float_model, qmodel, module_swap_list, data, Logger=MyShadowLogger)
+ob_dict = ns.compare_model_stub(float_model, qmodel, module_swap_list, data, logger_cls=MyShadowLogger)
 
 ##############################################################################
 # or:
