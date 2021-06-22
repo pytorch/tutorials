@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 # all of which include datasets. For this tutorial, we  will be using a TorchVision dataset.
 #
 # The ``torchvision.datasets`` module contains ``Dataset`` objects for many real-world vision data like 
-# CIFAR, COCO (`full list here <https://pytorch.org/docs/stable/torchvision/datasets.html>`_). In this tutorial, we
+# CIFAR, COCO (`full list here <https://pytorch.org/vision/stable/datasets.html>`_). In this tutorial, we
 # use the FashionMNIST dataset. Every TorchVision ``Dataset`` includes two arguments: ``transform`` and
 # ``target_transform`` to modify the samples and labels respectively.
 
@@ -83,7 +83,7 @@ for X, y in test_dataloader:
 # Creating Models
 # ------------------
 # To define a neural network in PyTorch, we create a class that inherits 
-# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html)>`_. We define the layers of the network
+# from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. We define the layers of the network
 # in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate 
 # operations in the neural network, we move it to the GPU if available.
 
@@ -158,8 +158,9 @@ def train(dataloader, model, loss_fn, optimizer):
 ##############################################################################
 # We also check the model's performance against the test dataset to ensure it is learning.
 
-def test(dataloader, model):
+def test(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
+    num_batches = len(dataloader)
     model.eval()
     test_loss, correct = 0, 0
     with torch.no_grad():
@@ -168,7 +169,7 @@ def test(dataloader, model):
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
-    test_loss /= size
+    test_loss /= num_batches
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
@@ -181,7 +182,7 @@ epochs = 5
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
-    test(test_dataloader, model)
+    test(test_dataloader, model, loss_fn)
 print("Done!")
 
 ######################################################################

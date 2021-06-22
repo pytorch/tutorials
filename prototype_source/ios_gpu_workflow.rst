@@ -45,12 +45,12 @@ Note that the ``torch.jit.export_opnames(optimized_model)`` is going to dump all
 
 .. code:: shell
 
-    ['aten::adaptive_avg_pool2d', 
-    'aten::add.Tensor', 
-    'aten::addmm', 
-    'aten::reshape', 
-    'aten::size.int', 
-    'metal::copy_to_host', 
+    ['aten::adaptive_avg_pool2d',
+    'aten::add.Tensor',
+    'aten::addmm',
+    'aten::reshape',
+    'aten::size.int',
+    'metal::copy_to_host',
     'metal_prepack::conv2d_run']
 
 Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now that you have the ``mobilenetv2_metal.pt`` saved on your disk, let's move on to the iOS part.
@@ -62,7 +62,7 @@ Use C++ APIs
 In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app>`_ to demonstrate how to use the C++ APIs. The first thing we need to do is to build a custom LibTorch from Source. Make sure you have deleted the **build** folder from the previous step in PyTorch root directory. Then run the command below
 
 .. code:: shell
-    
+
     IOS_ARCH=arm64 USE_PYTORCH_METAL=1 ./scripts/build_ios.sh
 
 Note ``IOS_ARCH`` tells the script to build a arm64 version of Libtorch. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the `Build PyTorch iOS libraries from source <https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source>`_ section from the iOS tutorial to setup the XCode settings properly. Don't forget to copy the `./mobilenetv2_metal.pt` to your XCode project.
@@ -70,8 +70,13 @@ Note ``IOS_ARCH`` tells the script to build a arm64 version of Libtorch. This is
 Next we need to make some changes in ``TorchModule.mm``
 
 .. code:: objective-c
-    //#import <LibTorch/LibTorch.h>
-    #import <torch/script.h>
+
+    // #import <Libtorch-Lite.h>
+    // If it's built from source with xcode, comment out the line above
+    // and use following headers
+    #include <torch/csrc/jit/mobile/import.h>
+    #include <torch/csrc/jit/mobile/module.h>
+    #include <torch/script.h>
 
     - (NSArray<NSNumber*>*)predictImage:(void*)imageBuffer {
       torch::jit::GraphOptimizerEnabledGuard opguard(false);

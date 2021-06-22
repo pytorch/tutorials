@@ -2,6 +2,11 @@ Learning PyTorch with Examples
 ******************************
 **Author**: `Justin Johnson <https://github.com/jcjohnson/pytorch-examples>`_
 
+.. Note::
+	This is one of our older PyTorch tutorials. You can view our latest
+	beginner content in 
+	`Learn the Basics <https://pytorch.org/tutorials/beginner/basics/intro.html>`_.
+
 This tutorial introduces the fundamental concepts of
 `PyTorch <https://github.com/pytorch/pytorch>`__ through self-contained
 examples.

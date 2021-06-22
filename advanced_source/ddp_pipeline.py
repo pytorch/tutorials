@@ -73,8 +73,11 @@ class PositionalEncoding(nn.Module):
 # The `nn.TransformerEncoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html>`__
 # itself consists of ``nlayers`` of `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
 # As a result, our focus is on ``nn.TransformerEncoder`` and we split the model
-# such that half of the ``nn.TransformerEncoderLayer`` are in ``TransformerModelStage1``
-# and the other half are in ``TransformerModelStage2``.
+# such that half of the ``nn.TransformerEncoderLayer`` are on one GPU and the
+# other half are on another. To do this, we pull out the ``Encoder`` and
+# ``Decoder`` sections into seperate modules and then build an nn.Sequential
+# representing the original Transformer module.
+
 
 if sys.platform == 'win32':
     print('Windows platform is not supported for pipeline parallelism')
@@ -83,69 +86,38 @@ if torch.cuda.device_count() < 4:
     print('Need at least four GPU devices for this tutorial')
     sys.exit(0)
 
-class TransformerModelStage1(nn.Module):
-
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-        super(TransformerModelStage1, self).__init__()
-        self.src_mask = None
+class Encoder(nn.Module):
+    def __init__(self, ntoken, ninp, dropout=0.5):
+        super(Encoder, self).__init__()
         self.pos_encoder = PositionalEncoding(ninp, dropout)
-        encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
         self.encoder = nn.Embedding(ntoken, ninp)
         self.ninp = ninp
-
         self.init_weights()
-
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
 
     def init_weights(self):
         initrange = 0.1
         self.encoder.weight.data.uniform_(-initrange, initrange)
 
     def forward(self, src):
-        if self.src_mask is None or self.src_mask.size(0) != src.size(0):
-            device = src.device
-            mask = self._generate_square_subsequent_mask(src.size(0)).to(device)
-            self.src_mask = mask
-
+        # Need (S, N) format for encoder.
+        src = src.t()
         src = self.encoder(src) * math.sqrt(self.ninp)
-        src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, self.src_mask)
-        return output
+        return self.pos_encoder(src)
 
-class TransformerModelStage2(nn.Module):
-
-    def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-        super(TransformerModelStage2, self).__init__()
-        self.src_mask = None
-        encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
-        self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
+class Decoder(nn.Module):
+    def __init__(self, ntoken, ninp):
+        super(Decoder, self).__init__()
         self.decoder = nn.Linear(ninp, ntoken)
-
         self.init_weights()
-
-    def _generate_square_subsequent_mask(self, sz):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-        return mask
 
     def init_weights(self):
         initrange = 0.1
         self.decoder.bias.data.zero_()
         self.decoder.weight.data.uniform_(-initrange, initrange)
 
-    def forward(self, src):
-        if self.src_mask is None or self.src_mask.size(0) != src.size(0):
-            device = src.device
-            mask = self._generate_square_subsequent_mask(src.size(0)).to(device)
-            self.src_mask = mask
-
-        output = self.transformer_encoder(src, self.src_mask)
-        output = self.decoder(output)
-        return output
+    def forward(self, inp):
+        # Need batch dimension first for output of pipeline.
+        return self.decoder(inp).permute(1, 0, 2)
 
 ######################################################################
 # Start multiple processes for training
@@ -197,26 +169,24 @@ def run_worker(rank, world_size):
     def print_with_rank(msg):
         print('[RANK {}]: {}'.format(rank, msg))
 
-    import io
-    from torchtext.utils import download_from_url, extract_archive
+    from torchtext.datasets import WikiText2
     from torchtext.data.utils import get_tokenizer
     from torchtext.vocab import build_vocab_from_iterator
 
-    url = 'https://s3.amazonaws.com/research.metamind.io/wikitext/wikitext-2-v1.zip'
-    test_filepath, valid_filepath, train_filepath = extract_archive(download_from_url(url, root=".data{}".format(rank)))
+    train_iter = WikiText2(split='train')
     tokenizer = get_tokenizer('basic_english')
-    vocab = build_vocab_from_iterator(map(tokenizer,
-                                          iter(io.open(train_filepath,
-                                                       encoding="utf8"))))
+    vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=["<unk>"])
+    vocab.set_default_index(vocab["<unk>"]) 
 
     def data_process(raw_text_iter):
-      data = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                           dtype=torch.long) for item in raw_text_iter]
+      data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
       return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
-    train_data = data_process(iter(io.open(train_filepath, encoding="utf8")))
-    val_data = data_process(iter(io.open(valid_filepath, encoding="utf8")))
-    test_data = data_process(iter(io.open(test_filepath, encoding="utf8")))
+    train_iter, val_iter, test_iter = WikiText2()
+    train_data = data_process(train_iter)
+    val_data = data_process(val_iter)
+    test_data = data_process(test_iter)
+
     device = torch.device(2 * rank)
 
     def batchify(data, bsz, rank, world_size, is_train=False):
@@ -265,7 +235,8 @@ def run_worker(rank, world_size):
         seq_len = min(bptt, len(source) - 1 - i)
         data = source[i:i+seq_len]
         target = source[i+1:i+1+seq_len].view(-1)
-        return data, target
+        # Need batch dimension first for pipeline parallelism.
+        return data.t(), target
 
 ######################################################################
 # Model scale and Pipe initialization
@@ -291,7 +262,7 @@ def run_worker(rank, world_size):
 # another across GPUs 2 and 3. Both pipes are then replicated using DistributedDataParallel.
 
 # In 'run_worker'
-    ntokens = len(vocab.stoi) # the size of vocabulary
+    ntokens = len(vocab) # the size of vocabulary
     emsize = 4096 # embedding dimension
     nhid = 4096 # the dimension of the feedforward network model in nn.TransformerEncoder
     nlayers = 8 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -306,20 +277,41 @@ def run_worker(rank, world_size):
         world_size=1,
         rpc_backend_options=rpc.TensorPipeRpcBackendOptions(
             init_method="file://{}".format(tmpfile.name),
+            # Specifying _transports and _channels is a workaround and we no longer
+            # will have to specify _transports and _channels for PyTorch
+            # versions >= 1.8.1
+            _transports=["ibv", "uv"],
+            _channels=["cuda_ipc", "cuda_basic"],
         )
     )
+
+    # Num gpus for model parallelism.
+    num_gpus = 2
+    partition_len = ((nlayers - 1) // num_gpus) + 1
+
+    # Add encoder in the beginning.
+    tmp_list = [Encoder(ntokens, emsize, dropout).cuda(2 * rank)]
+    module_list = []
+
+    # Add all the necessary transformer blocks.
+    for i in range(nlayers):
+        transformer_block = TransformerEncoderLayer(emsize, nhead, nhid, dropout)
+        if i != 0 and i % (partition_len) == 0:
+            module_list.append(nn.Sequential(*tmp_list))
+            tmp_list = []
+        device = i // (partition_len)
+        tmp_list.append(transformer_block.to(2 * rank + device))
+
+    # Add decoder in the end.
+    tmp_list.append(Decoder(ntokens, emsize).cuda(2 * rank + num_gpus - 1))
+    module_list.append(nn.Sequential(*tmp_list))
 
     # Need to use 'checkpoint=never' since as of PyTorch 1.8, Pipe checkpointing
     # doesn't work with DDP.
     from torch.distributed.pipeline.sync import Pipe
-    model = Pipe(
-                torch.nn.Sequential(
-                    TransformerModelStage1(ntokens, emsize, nhead, nhid, int(nlayers/2), dropout).cuda(2 * rank),
-                    TransformerModelStage2(ntokens, emsize, nhead, nhid, int(nlayers/2), dropout).cuda(2 * rank + 1),
-                ),
-                chunks = 8,
-                checkpoint = "never"
-            )
+    chunks = 8
+    model = Pipe(torch.nn.Sequential(
+        *module_list), chunks = chunks, checkpoint="never")
 
     # Initialize process group and wrap model in DDP.
     from torch.nn.parallel import DistributedDataParallel
@@ -367,7 +359,7 @@ def run_worker(rank, world_size):
         model.train() # Turn on the train mode
         total_loss = 0.
         start_time = time.time()
-        ntokens = len(vocab.stoi)
+        ntokens = len(vocab)
 
         # Train only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, train_data.size(0) - 1)
@@ -394,7 +386,7 @@ def run_worker(rank, world_size):
                 print_with_rank('| epoch {:3d} | {:5d}/{:5d} batches | '
                       'lr {:02.2f} | ms/batch {:5.2f} | '
                       'loss {:5.2f} | ppl {:8.2f}'.format(
-                        epoch, batch, nbatches // bptt, scheduler.get_lr()[0],
+                        epoch, batch, nbatches // bptt, scheduler.get_last_lr()[0],
                         elapsed * 1000 / log_interval,
                         cur_loss, math.exp(cur_loss)))
                 total_loss = 0
@@ -403,7 +395,7 @@ def run_worker(rank, world_size):
     def evaluate(eval_model, data_source):
         eval_model.eval() # Turn on the evaluation mode
         total_loss = 0.
-        ntokens = len(vocab.stoi)
+        ntokens = len(vocab)
         # Evaluate only for 50 batches to keep script execution time low.
         nbatches = min(50 * bptt, data_source.size(0) - 1)
         with torch.no_grad():
@@ -461,4 +453,61 @@ import torch.multiprocessing as mp
 if __name__=="__main__":
     world_size = 2
     mp.spawn(run_worker, args=(world_size, ), nprocs=world_size, join=True)
+######################################################################
+# Output
+# ------
+#
 
+
+######################################################################
+#.. code-block:: py
+#
+#    [RANK 0]: | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 778.97 | loss 43.31 | ppl 6432469059895903232.00
+#    [RANK 1]: | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 778.90 | loss 44.50 | ppl 21245447128217366528.00
+#    [RANK 0]: | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 699.89 | loss 44.50 | ppl 21176949187407757312.00
+#    [RANK 1]: | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 699.87 | loss 44.62 | ppl 23975861229620961280.00
+#    [RANK 0]: | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 698.86 | loss 41.62 | ppl 1193312915629888256.00
+#    [RANK 1]: | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 698.87 | loss 40.69 | ppl 471605759847546240.00
+#    [RANK 0]: | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 698.34 | loss 45.20 | ppl 42812308420836458496.00
+#    [RANK 1]: | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 698.33 | loss 45.68 | ppl 68839569686012223488.00
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   1 | time: 40.08s | valid loss  0.80 | valid ppl     2.22
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   1 | time: 40.09s | valid loss  0.80 | valid ppl     2.22
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | epoch   2 |    10/   50 batches | lr 4.75 | ms/batch 768.51 | loss 36.34 | ppl 6063529544668166.00
+#    [RANK 1]: | epoch   2 |    10/   50 batches | lr 4.75 | ms/batch 769.23 | loss 37.41 | ppl 17651211266236086.00
+#    [RANK 0]: | epoch   2 |    20/   50 batches | lr 4.75 | ms/batch 699.57 | loss 28.97 | ppl 3798441739584.11
+#    [RANK 1]: | epoch   2 |    20/   50 batches | lr 4.75 | ms/batch 699.56 | loss 29.28 | ppl 5203636967575.47
+#    [RANK 0]: | epoch   2 |    30/   50 batches | lr 4.75 | ms/batch 699.04 | loss 28.43 | ppl 2212498693571.25
+#    [RANK 1]: | epoch   2 |    30/   50 batches | lr 4.75 | ms/batch 699.05 | loss 28.33 | ppl 2015144761281.48
+#    [RANK 0]: | epoch   2 |    40/   50 batches | lr 4.75 | ms/batch 699.10 | loss 23.30 | ppl 13121380184.92
+#    [RANK 1]: | epoch   2 |    40/   50 batches | lr 4.75 | ms/batch 699.09 | loss 23.41 | ppl 14653799192.87
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   2 | time: 39.97s | valid loss  0.24 | valid ppl     1.27
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   2 | time: 39.98s | valid loss  0.24 | valid ppl     1.27
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | epoch   3 |    10/   50 batches | lr 4.51 | ms/batch 769.36 | loss 12.80 | ppl 361681.11
+#    [RANK 1]: | epoch   3 |    10/   50 batches | lr 4.51 | ms/batch 768.97 | loss 12.57 | ppl 287876.61
+#    [RANK 0]: | epoch   3 |    20/   50 batches | lr 4.51 | ms/batch 698.27 | loss 12.01 | ppl 164364.60
+#    [RANK 1]: | epoch   3 |    20/   50 batches | lr 4.51 | ms/batch 698.30 | loss 11.98 | ppl 159095.89
+#    [RANK 0]: | epoch   3 |    30/   50 batches | lr 4.51 | ms/batch 697.75 | loss 10.90 | ppl 54261.91
+#    [RANK 1]: | epoch   3 |    30/   50 batches | lr 4.51 | ms/batch 697.72 | loss 10.89 | ppl 53372.39
+#    [RANK 0]: | epoch   3 |    40/   50 batches | lr 4.51 | ms/batch 699.49 | loss 10.78 | ppl 47948.35
+#    [RANK 1]: | epoch   3 |    40/   50 batches | lr 4.51 | ms/batch 699.50 | loss 10.79 | ppl 48664.42
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: | end of epoch   3 | time: 39.96s | valid loss  0.38 | valid ppl     1.46
+#    [RANK 0]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 1]: | end of epoch   3 | time: 39.96s | valid loss  0.38 | valid ppl     1.46
+#    [RANK 1]: -----------------------------------------------------------------------------------------
+#    [RANK 0]: =========================================================================================
+#    [RANK 0]: | End of training | test loss  0.33 | test ppl     1.39
+#    [RANK 0]: =========================================================================================
+#    [RANK 1]: =========================================================================================
+#    [RANK 1]: | End of training | test loss  0.33 | test ppl     1.39
+#    [RANK 1]: =========================================================================================
+# 

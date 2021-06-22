@@ -302,5 +302,5 @@ print('mean absolute value of the difference between the output tensors is {0:.5
 #
 # Blogs
 # ~~~~~~~~~~~~~~
-# ` Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
+# `Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
 #

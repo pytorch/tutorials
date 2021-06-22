@@ -18,7 +18,7 @@ manipulation of the data and make it suitable for training.
 
 All TorchVision datasets have two parameters -``transform`` to modify the features and
 ``target_transform`` to modify the labels - that accept callables containing the transformation logic.
-The `torchvision.transforms <https://pytorch.org/docs/stable/torchvision/transforms.html>`_ module offers 
+The `torchvision.transforms <https://pytorch.org/vision/stable/transforms.html>`_ module offers 
 several commonly-used transforms out of the box.
 
 The FashionMNIST features are in PIL Image format, and the labels are integers.
@@ -26,6 +26,7 @@ For training, we need the features as normalized tensors, and the labels as one-
 To make these transformations, we use ``ToTensor`` and ``Lambda``.
 """
 
+import torch
 from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda
 
@@ -41,7 +42,7 @@ ds = datasets.FashionMNIST(
 # ToTensor()
 # -------------------------------
 #
-# `ToTensor <https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.ToTensor>`_ 
+# `ToTensor <https://pytorch.org/vision/stable/transforms.html#torchvision.transforms.ToTensor>`_ 
 # converts a PIL image or NumPy ``ndarray`` into a ``FloatTensor``. and scales 
 # the image's pixel intensity values in the range [0., 1.]
 #

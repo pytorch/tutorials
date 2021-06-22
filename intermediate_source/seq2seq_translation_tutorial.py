@@ -76,17 +76,6 @@ and :doc:`/intermediate/char_rnn_generation_tutorial`
 helpful as those concepts are very similar to the Encoder and Decoder
 models, respectively.
 
-And for more, read the papers that introduced these topics:
-
--  `Learning Phrase Representations using RNN Encoder-Decoder for
-   Statistical Machine Translation <https://arxiv.org/abs/1406.1078>`__
--  `Sequence to Sequence Learning with Neural
-   Networks <https://arxiv.org/abs/1409.3215>`__
--  `Neural Machine Translation by Jointly Learning to Align and
-   Translate <https://arxiv.org/abs/1409.0473>`__
--  `A Neural Conversational Model <https://arxiv.org/abs/1506.05869>`__
-
-
 **Requirements**
 """
 from __future__ import unicode_literals, print_function, division
@@ -150,7 +139,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # the networks later. To keep track of all this we will use a helper class
 # called ``Lang`` which has word → index (``word2index``) and index → word
 # (``index2word``) dictionaries, as well as a count of each word
-# ``word2count`` to use to later replace rare words.
+# ``word2count`` which will be used to replace rare words later.
 #
 
 SOS_token = 0
@@ -416,7 +405,7 @@ class DecoderRNN(nn.Module):
 # Attention Decoder
 # ^^^^^^^^^^^^^^^^^
 #
-# If only the context vector is passed betweeen the encoder and decoder,
+# If only the context vector is passed between the encoder and decoder,
 # that single vector carries the burden of encoding the entire sentence.
 #
 # Attention allows the decoder network to "focus" on a different part of

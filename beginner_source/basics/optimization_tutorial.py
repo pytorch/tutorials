@@ -12,13 +12,13 @@
 Optimizing Model Parameters
 ===========================
 
-Now that we have a model and data it's time to train, validate and test our model by optimizing it's parameters on 
+Now that we have a model and data it's time to train, validate and test our model by optimizing its parameters on 
 our data. Training a model is an iterative process; in each iteration (called an *epoch*) the model makes a guess about the output, calculates 
 the error in its guess (*loss*), collects the derivatives of the error with respect to its parameters (as we saw in 
 the `previous section  <autograd_tutorial.html>`_), and **optimizes** these parameters using gradient descent. For a more 
 detailed walkthrough of this process, check out this video on `backpropagation from 3Blue1Brown <https://www.youtube.com/watch?v=tIeHLnjs5U8>`__.
 
-Pre-requisite Code 
+Prerequisite Code 
 -----------------
 We load the code from the previous sections on `Datasets & DataLoaders <data_tutorial.html>`_ 
 and `Build Model  <buildmodel_tutorial.html>`_.
@@ -78,7 +78,7 @@ model = NeuralNetwork()
 #
 # We define the following hyperparameters for training:
 #  - **Number of Epochs** - the number times to iterate over the dataset
-#  - **Batch Size** - the number of data samples seen by the model in each epoch
+#  - **Batch Size** - the number of data samples propagated through the network before the parameters are updated
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
@@ -167,6 +167,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
 def test_loop(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
+    num_batches = len(dataloader)
     test_loss, correct = 0, 0
 
     with torch.no_grad():
@@ -175,7 +176,7 @@ def test_loop(dataloader, model, loss_fn):
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             
-    test_loss /= size
+    test_loss /= num_batches
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 

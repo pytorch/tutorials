@@ -1,9 +1,8 @@
 Shard Optimizer States with ZeroRedundancyOptimizer
 ===================================================
 
-.. note:
-    `ZeroRedundancyOptimizer` is introduced in PyTorch 1.8 as a prototype
-    feature. It API is subject to change.
+.. note:: `ZeroRedundancyOptimizer` is introduced in PyTorch 1.8 as a prototype
+    feature. This API is subject to change.
 
 In this recipe, you will learn:
 
