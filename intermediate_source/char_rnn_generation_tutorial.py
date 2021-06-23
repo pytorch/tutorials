@@ -347,7 +347,6 @@ for iter in range(1, n_iters + 1):
 #
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
 plt.figure()
 plt.plot(all_losses)
