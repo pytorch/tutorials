@@ -90,6 +90,15 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../prototype/vulkan_workflow.html
    :tags: Mobile
+   
+.. Modules
+
+.. customcarditem::
+   :header: Skipping Module Parameter Initialization in PyTorch 1.10
+   :card_description: Describes skipping parameter initialization during module construction in PyTorch 1.10, avoiding wasted computation.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/skip_param_init.html
+   :tags: Modules
 
 .. TorchScript
 
