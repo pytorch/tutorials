@@ -356,8 +356,9 @@ use TensorBoard plugin to analyze model performance.</p>
 <li>Prepare the data and model</li>
 <li>Use profiler to record execution events</li>
 <li>Run the profiler</li>
-<li>Use TensorBoard to view results and analyze performance</li>
+<li>Use TensorBoard to view results and analyze model performance</li>
 <li>Improve performance with the help of profiler</li>
+<li>Analyze performance with other advanced features</li>
 </ol>
 <div class="section" id="prepare-the-data-and-model">
 <h3>1. Prepare the data and model<a class="headerlink" href="#prepare-the-data-and-model" title="Permalink to this headline">¶</a></h3>
@@ -411,45 +412,55 @@ To run on GPU, move model and loss to GPU device.</p>
 <h3>2. Use profiler to record execution events<a class="headerlink" href="#use-profiler-to-record-execution-events" title="Permalink to this headline">¶</a></h3>
 <p>The profiler is enabled through the context manager and accepts several parameters,
 some of the most useful are:</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">schedule</span></code> - callable that takes step (int) as a single parameter
-and returns the profiler action to perform at each step;
-In this example with <code class="docutils literal notranslate"><span class="pre">wait=1,</span> <span class="pre">warmup=1,</span> <span class="pre">active=5</span></code>,
+<ul>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">schedule</span></code> - callable that takes step (int) as a single parameter
+and returns the profiler action to perform at each step.</p>
+<p>In this example with <code class="docutils literal notranslate"><span class="pre">wait=1,</span> <span class="pre">warmup=1,</span> <span class="pre">active=3,</span> <span class="pre">repeat=2</span></code>,
 profiler will skip the first step/iteration,
 start warming up on the second,
-record the following five iterations,
-after which the trace will become available and on_trace_ready (when set) is called;
-The cycle repeats starting with the next step until the loop exits.
-During <code class="docutils literal notranslate"><span class="pre">wait</span></code> steps, the profiler does not work.
-During <code class="docutils literal notranslate"><span class="pre">warmup</span></code> steps, the profiler starts profiling as warmup but does not record any events.
+record the following three iterations,
+after which the trace will become available and on_trace_ready (when set) is called.
+In total, the cycle repeats twice. Each cycle is called a “span” in TensorBoard plugin.</p>
+<p>During <code class="docutils literal notranslate"><span class="pre">wait</span></code> steps, the profiler is disabled.
+During <code class="docutils literal notranslate"><span class="pre">warmup</span></code> steps, the profiler starts tracing but the results are discarded.
 This is for reducing the profiling overhead.
 The overhead at the beginning of profiling is high and easy to bring skew to the profiling result.
-During <code class="docutils literal notranslate"><span class="pre">active</span></code> steps, the profiler works and records events.</li>
-<li><code class="docutils literal notranslate"><span class="pre">on_trace_ready</span></code> - callable that is called at the end of each cycle;
+During <code class="docutils literal notranslate"><span class="pre">active</span></code> steps, the profiler works and records events.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">on_trace_ready</span></code> - callable that is called at the end of each cycle;
 In this example we use <code class="docutils literal notranslate"><span class="pre">torch.profiler.tensorboard_trace_handler</span></code> to generate result files for TensorBoard.
 After profiling, result files will be saved into the <code class="docutils literal notranslate"><span class="pre">./log/resnet18</span></code> directory.
-Specify this directory as a <code class="docutils literal notranslate"><span class="pre">logdir</span></code> parameter to analyze profile in TensorBoard.</li>
-<li><code class="docutils literal notranslate"><span class="pre">record_shapes</span></code> - whether to record shapes of the operator inputs.</li>
+Specify this directory as a <code class="docutils literal notranslate"><span class="pre">logdir</span></code> parameter to analyze profile in TensorBoard.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">record_shapes</span></code> - whether to record shapes of the operator inputs.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">profile_memory</span></code> - Track tensor memory allocation/deallocation.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">with_stack</span></code> - Record source information (file and line number) for the ops.
+If the TensorBoard is launched in VSCode (<a class="reference external" href="https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration">reference</a>),
+clicking a stack frame will navigate to the specific code line.</p>
+</li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span>
-        <span class="n">schedule</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>
+        <span class="n">schedule</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
         <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span><span class="p">(</span><span class="s1">'./log/resnet18'</span><span class="p">),</span>
-        <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span>
+        <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="mi">7</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">step</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">train</span><span class="p">(</span><span class="n">batch_data</span><span class="p">)</span>
-        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># Need call this at the end of each step to notify profiler of steps' boundary.</span>
+        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>  <span class="c1"># Need to call this at the end of each step to notify profiler of steps' boundary.</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="run-the-profiler">
 <h3>3. Run the profiler<a class="headerlink" href="#run-the-profiler" title="Permalink to this headline">¶</a></h3>
-<p>Run the above code. The profiling result will be saved under <code class="docutils literal notranslate"><span class="pre">./log</span></code> directory.</p>
+<p>Run the above code. The profiling result will be saved under <code class="docutils literal notranslate"><span class="pre">./log/resnet18</span></code> directory.</p>
 </div>
-<div class="section" id="use-tensorboard-to-view-results-and-analyze-performance">
-<h3>4. Use TensorBoard to view results and analyze performance<a class="headerlink" href="#use-tensorboard-to-view-results-and-analyze-performance" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="use-tensorboard-to-view-results-and-analyze-model-performance">
+<h3>4. Use TensorBoard to view results and analyze model performance<a class="headerlink" href="#use-tensorboard-to-view-results-and-analyze-model-performance" title="Permalink to this headline">¶</a></h3>
 <p>Install PyTorch Profiler TensorBoard Plugin.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch_tb_profiler</span>
 </pre></div>
@@ -463,8 +474,14 @@ Specify this directory as a <code class="docutils literal notranslate"><span cla
 </pre></div>
 </div>
 <p>You could see Profiler plugin page as shown below.</p>
+<ul class="simple">
+<li>Overview</li>
+</ul>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_overview1.png"><img alt="intermediate/../../_static/img/profiler_overview1.png" src="intermediate/../../_static/img/profiler_overview1.png"/></a>
 <p>The overview shows a high-level summary of model performance.</p>
+<p>The “GPU Summary” panel shows the GPU configuration and the GPU usage.
+In this example, the GPU Utilization is low.
+The details of these metrics are <a class="reference external" href="https://github.com/guyang3532/kineto/blob/readme/tb_plugin/docs/gpu_utilization.md">here</a>.</p>
 <p>The “Step Time Breakdown” shows distribution of time spent in each step over different categories of execution.
 In this example, you can see the <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> overhead is significant.</p>
 <p>The bottom “Performance Recommendation” uses the profiling data
@@ -472,13 +489,49 @@ to automatically highlight likely bottlenecks,
 and gives you actionable optimization suggestions.</p>
 <p>You can change the view page in left “Views” dropdown list.</p>
 <img alt="" src="intermediate/../../_static/img/profiler_views_list.png"/>
+<ul class="simple">
+<li>Operator view</li>
+</ul>
 <p>The operator view displays the performance of every PyTorch operator
 that is executed either on the host or device.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_operator_view.png"><img alt="intermediate/../../_static/img/profiler_operator_view.png" src="intermediate/../../_static/img/profiler_operator_view.png"/></a>
+<p>The “Self” duration does not include its child operators’ time.
+The “Total” duration includes its child operators’ time.</p>
+<ul class="simple">
+<li>View call stack</li>
+</ul>
+<p>Click the “View Callstack” of an operator, the operators with same name but different call stacks will be shown.
+Then click a “View Callstack” in this sub-table, the call stack frames will be shown.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_callstack.png"><img alt="intermediate/../../_static/img/profiler_callstack.png" src="intermediate/../../_static/img/profiler_callstack.png"/></a>
+<p>If the TensorBoard is launched inside VSCode
+(<a class="reference external" href="https://devblogs.microsoft.com/python/python-in-visual-studio-code-february-2021-release/#tensorboard-integration">Launch Guide</a>),
+clicking a call stack frame will navigate to the specific code line.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_vscode.png"><img alt="intermediate/../../_static/img/profiler_vscode.png" src="intermediate/../../_static/img/profiler_vscode.png"/></a>
+<ul class="simple">
+<li>Kernel view</li>
+</ul>
 <p>The GPU kernel view shows all kernels’ time spent on GPU.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_kernel_view.png"><img alt="intermediate/../../_static/img/profiler_kernel_view.png" src="intermediate/../../_static/img/profiler_kernel_view.png"/></a>
+<p>Mean Blocks per SM:
+Blocks per SM = Blocks of this kernel / SM number of this GPU.
+If this number is less than 1, it indicates the GPU multiprocessors are not fully utilized.
+“Mean Blocks per SM” is weighted average of all runs of this kernel name, using each run’s duration as weight.</p>
+<p>Mean Est. Achieved Occupancy:
+Est. Achieved Occupancy is defined in this column’s tooltip.
+For most cases such as memory bandwidth bounded kernels, the higher the better.
+“Mean Est. Achieved Occupancy” is weighted average of all runs of this kernel name,
+using each run’s duration as weight.</p>
+<ul class="simple">
+<li>Trace view</li>
+</ul>
 <p>The trace view shows timeline of profiled operators and GPU kernels.
 You can select it to see details as below.</p>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_trace_view1.png"><img alt="intermediate/../../_static/img/profiler_trace_view1.png" src="intermediate/../../_static/img/profiler_trace_view1.png"/></a>
-<p>You can move the graph and zoom in/out with the help of right side toolbar.</p>
+<p>You can move the graph and zoom in/out with the help of right side toolbar.
+And keyboard can also be used to zoom and move around inside the timeline.
+The ‘w’ and ‘s’ keys zoom in centered around the mouse,
+and the ‘a’ and ‘d’ keys move the timeline left and right.
+You can hit these keys multiple times until you see a readable representation.</p>
 <p>In this example, we can see the event prefixed with <code class="docutils literal notranslate"><span class="pre">enumerate(DataLoader)</span></code> costs a lot of time.
 And during most of this period, the GPU is idle.
 Because this function is loading data and transforming data on host side,
@@ -486,31 +539,72 @@ during which the GPU resource is wasted.</p>
 </div>
 <div class="section" id="improve-performance-with-the-help-of-profiler">
 <h3>5. Improve performance with the help of profiler<a class="headerlink" href="#improve-performance-with-the-help-of-profiler" title="Permalink to this headline">¶</a></h3>
-<p>The PyTorch DataLoader uses single process by default.
+<p>At the bottom of “Overview” page, the suggestion in “Performance Recommendation” hints the bottleneck is DataLoader.
+The PyTorch DataLoader uses single process by default.
 User could enable multi-process data loading by setting the parameter <code class="docutils literal notranslate"><span class="pre">num_workers</span></code>.
 <a class="reference external" href="https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading">Here</a> is more details.</p>
-<p>In this example, we can set <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> as below,
-pass a different name such as <code class="docutils literal notranslate"><span class="pre">./log/resnet18_4workers</span></code> to tensorboard_trace_handler, and run it again.</p>
+<p>In this example, we follow the “Performance Recommendation” and set <code class="docutils literal notranslate"><span class="pre">num_workers</span></code> as below,
+pass a different name such as <code class="docutils literal notranslate"><span class="pre">./log/resnet18_4workers</span></code> to <code class="docutils literal notranslate"><span class="pre">tensorboard_trace_handler</span></code>, and run it again.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Then let’s choose the just profiled run in left “Runs” dropdown list.</p>
+<p>Then let’s choose the recently profiled run in left “Runs” dropdown list.</p>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_overview2.png"><img alt="intermediate/../../_static/img/profiler_overview2.png" src="intermediate/../../_static/img/profiler_overview2.png"/></a>
-<p>From the above view, we can find the step time is reduced,
+<p>From the above view, we can find the step time is reduced to about 58ms comparing with previous run’s 121ms,
 and the time reduction of <code class="docutils literal notranslate"><span class="pre">DataLoader</span></code> mainly contributes.</p>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_trace_view2.png"><img alt="intermediate/../../_static/img/profiler_trace_view2.png" src="intermediate/../../_static/img/profiler_trace_view2.png"/></a>
 <p>From the above view, we can see that the runtime of <code class="docutils literal notranslate"><span class="pre">enumerate(DataLoader)</span></code> is reduced,
 and the GPU utilization is increased.</p>
 </div>
+<div class="section" id="analyze-performance-with-other-advanced-features">
+<h3>6. Analyze performance with other advanced features<a class="headerlink" href="#analyze-performance-with-other-advanced-features" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Memory view</li>
+</ul>
+<p>To profile memory, please add <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code> in arguments of <code class="docutils literal notranslate"><span class="pre">torch.profiler.profile</span></code>.</p>
+<p>Note: Because of the current non-optimized implementation of PyTorch profiler,
+enabling <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code> will take about several minutes to finish.
+To save time, you can try our existing examples first by running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">memory_demo</span>
+</pre></div>
+</div>
+<p>The profiler records all memory allocation/release events during profiling.
+For every specific operator, the plugin aggregates all these memory events inside its life span.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_memory_view.png"><img alt="intermediate/../../_static/img/profiler_memory_view.png" src="intermediate/../../_static/img/profiler_memory_view.png"/></a>
+<p>The memory type could be selected in “Device” selection box.
+For example, “GPU0” means the following table only shows each operator’s memory usage on GPU 0, not including CPU or other GPUs.</p>
+<p>The “Size Increase” sums up all allocation bytes and minus all the memory release bytes.</p>
+<p>The “Allocation Size” sums up all allocation bytes without considering the memory release.</p>
+<ul class="simple">
+<li>Distributed view</li>
+</ul>
+<p>The plugin now supports distributed view on profiling DDP with NCCL as backend.</p>
+<p>You can try it by using existing example on Azure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">distributed_bert</span>
+</pre></div>
+</div>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_distributed_view.png"><img alt="intermediate/../../_static/img/profiler_distributed_view.png" src="intermediate/../../_static/img/profiler_distributed_view.png"/></a>
+<p>The “Computation/Communication Overview” shows computation/communication ratio and their overlapping degree.
+From this view, User can figure out load balance issue among workers.
+For example, if the computation + overlapping time of one worker is much larger than others,
+there may be a problem of load balance or this worker may be a straggler.</p>
+<p>The “Synchronizing/Communication Overview” shows the efficiency of communication.
+“Data Transfer Time” is the time for actual data exchanging.
+“Synchronizing Time” is the time for waiting and synchronizing with other workers.</p>
+<p>If one worker’s “Synchronizing Time” is much shorter than that of other workers’,
+this worker may be a straggler which may have more computation workload than other workers’.</p>
+<p>The “Communication Operations Stats” summarizes the detailed statistics of all communication ops in each worker.</p>
+</div>
 </div>
 <div class="section" id="learn-more">
 <h2>Learn More<a class="headerlink" href="#learn-more" title="Permalink to this headline">¶</a></h2>
-<p>Take a look at the following documents to continue your learning:</p>
+<p>Take a look at the following documents to continue your learning,
+and feel free to open an issue <a class="reference external" href="https://github.com/pytorch/kineto/issues">here</a>.</p>
 <ul class="simple">
 <li><a class="reference external" href="https://github.com/pytorch/kineto/tree/master/tb_plugin">Pytorch TensorBoard Profiler github</a></li>
 <li><a class="reference external" href="https://pytorch.org/docs/master/profiler.html">torch.profiler API</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  11.849 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  14.699 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-tensorboard-profiler-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/d20cbe06d71c96a4bb8f222f7c64cf25/tensorboard_profiler_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensorboard_profiler_tutorial.py</span></code></a></div>
@@ -562,8 +656,9 @@ and the GPU utilization is increased.</p>
 <li><a class="reference internal" href="#prepare-the-data-and-model">1. Prepare the data and model</a></li>
 <li><a class="reference internal" href="#use-profiler-to-record-execution-events">2. Use profiler to record execution events</a></li>
 <li><a class="reference internal" href="#run-the-profiler">3. Run the profiler</a></li>
-<li><a class="reference internal" href="#use-tensorboard-to-view-results-and-analyze-performance">4. Use TensorBoard to view results and analyze performance</a></li>
+<li><a class="reference internal" href="#use-tensorboard-to-view-results-and-analyze-model-performance">4. Use TensorBoard to view results and analyze model performance</a></li>
 <li><a class="reference internal" href="#improve-performance-with-the-help-of-profiler">5. Improve performance with the help of profiler</a></li>
+<li><a class="reference internal" href="#analyze-performance-with-other-advanced-features">6. Analyze performance with other advanced features</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#learn-more">Learn More</a></li>
