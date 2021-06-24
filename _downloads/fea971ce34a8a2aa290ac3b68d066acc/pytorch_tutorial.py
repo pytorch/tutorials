@@ -52,7 +52,7 @@ print(T)
 # A note on terminology:
 # when I say "tensor" in this tutorial, it refers
 # to any torch.Tensor object. Matrices and vectors are special cases of
-# torch.Tensors, where their dimension is 1 and 2 respectively. When I am
+# torch.Tensors, where their dimension is 2 and 1 respectively. When I am
 # talking about 3D tensors, I will explicitly use the term "3D tensor".
 #
 
