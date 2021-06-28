@@ -59,7 +59,7 @@ pip install requests
 #######################################################
 # To run in Google Colab, uncomment the following line:
 
-# !pip install timm, pandas, requests
+# !pip install timm pandas requests
 
 #############################
 # then run the script below:
