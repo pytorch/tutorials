@@ -51,10 +51,7 @@ to the model along the steps.
 # classify images using DeiT, or for a quick test, first install the
 # required packages:
 
-pip install torch torchvision
-pip install timm
-pip install pandas
-pip install requests 
+# pip install torch torchvision timm pandas requests 
 
 #######################################################
 # To run in Google Colab, uncomment the following line:
