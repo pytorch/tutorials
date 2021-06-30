@@ -27,10 +27,11 @@ with the only difference being that we will only save the inputs to the convolut
 To obtain the input of batch norm, which is necessary to backward through
 it, we recompute convolution forward again during the backward pass.
 
-For simplicity, in this tutorial we hardcode `bias=False`, `stride=1`, `padding=0`, dilation=1`,
-and `groups=1` for Conv2D. For BatchNorm2D, we hardcode `eps=1e-3`, momentum=0.1`,
+For simplicity, in this tutorial we hardcode `bias=False`, `stride=1`, `padding=0`, `dilation=1`,
+and `groups=1` for Conv2D. For BatchNorm2D, we hardcode `eps=1e-3`, `momentum=0.1`,
 `affine=False`, and `track_running_statistics=False`. Another small difference
-is that we add epsilon in the denomator outside of the square root.
+is that we add epsilon in the denomator outside of the square root in the computation
+of batch norm.
 
 [0] https://nenadmarkus.com/p/fusing-batchnorm-and-conv/
 """
@@ -80,7 +81,7 @@ def unsqueeze_all(t):
     # Helper function to unsqueeze all the dimensions that we reduce over
     return t[None, :, None, None]
 
-def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps, X_inplace=True):
+def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps):
     # We use the formula: out = (X - mean(X)) / (sqrt(var(X)) + eps)
     # in batch norm 2d's forward. To simplify our derivation, we follow the
     # chain rule and compute the gradients as follows before accumulating
@@ -107,7 +108,7 @@ def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps, X_inplace=True):
     grad_input *= 2 / ((N - 1) * N)
     # (2) mean (see above)
     grad_input += d_mean_dx
-    # (3) Add 'grad_out / unsqueeze_all(sqrt_var + eps)' without allocating an extra buffer
+    # (3) Add 'grad_out / <factor>' without allocating an extra buffer
     grad_input *= unsqueeze_all(sqrt_var + eps)
     grad_input += grad_out
     grad_input /= unsqueeze_all(sqrt_var + eps)  # sqrt_var + eps > 0!
@@ -134,7 +135,7 @@ class BatchNorm(torch.autograd.Function):
     @once_differentiable
     def backward(ctx, grad_out):
         X, = ctx.saved_tensors
-        return batch_norm_backward(grad_out, X, ctx.sum, ctx.sqrt_var, ctx.N, ctx.eps, X_inplace=False)
+        return batch_norm_backward(grad_out, X, ctx.sum, ctx.sqrt_var, ctx.N, ctx.eps)
 
 ######################################################################
 # Testing with gradcheck
@@ -143,18 +144,20 @@ torch.autograd.gradcheck(BatchNorm.apply, (a,), fast_mode=False)
 
 ######################################################################
 # Now that the bulk of the work has been done, we can combine
-# them together. As seen in (1) of the forward pass below, we only need to
-# save a single buffer for backward, but we need to recompute
-# Conv2D again in (2).
+# them together. Note that in (1) we only save a single buffer
+# for backward, but this also means we recompute convolution forward
+# in (5). Also see that in (2), (3), (4), and (5), its the same
+# exact code as the examples above.
 class FusedConvBN2DFunction(torch.autograd.Function):
     @staticmethod
     def forward(ctx, X, conv_weight, eps=1e-3):
         assert X.ndim == 4  # N, C, H, W
-        ctx.save_for_backward(X, conv_weight)  # (1) Only need to save this single buffer for backward!
+        # (1) Only need to save this single buffer for backward!
+        ctx.save_for_backward(X, conv_weight)
 
-        # Exact same Conv2D forward from example above
+        # (2) Exact same Conv2D forward from example above
         X = F.conv2d(X, conv_weight)
-        # Exact same BatchNorm2D forward from example above
+        # (3) Exact same BatchNorm2D forward from example above
         sum = X.sum(dim=(0, 2, 3))
         var = X.var(unbiased=True, dim=(0, 2, 3))
         N = X.numel() / X.size(1)
@@ -165,30 +168,34 @@ class FusedConvBN2DFunction(torch.autograd.Function):
         ctx.sqrt_var = sqrt_var
         mean = sum / N
         denom = sqrt_var + eps
-        return (X - unsqueeze_all(mean)) / unsqueeze_all(denom)
+        # Try to do as many things in-place as possible
+        # Instead of `out = (X - a) / b`, doing `out = X - a; out /= b`
+        # avoids allocating one extra NCHW-sized buffer here
+        out = X - unsqueeze_all(mean)
+        out /= unsqueeze_all(denom)
+        return out
 
     @staticmethod
     def backward(ctx, grad_out):
         X, conv_weight, = ctx.saved_tensors
-        # Batch norm backward
-        X_conv_out = F.conv2d(X, conv_weight)  # (2) We need to recompute conv
+        # (4) Batch norm backward
+        # (5) We need to recompute conv
+        X_conv_out = F.conv2d(X, conv_weight)
         grad_out = batch_norm_backward(grad_out, X_conv_out, ctx.sum, ctx.sqrt_var,
-                                       ctx.N, ctx.eps, X_inplace=True)
-        # Conv2d backward
+                                       ctx.N, ctx.eps)
+        # (6) Conv2d backward
         grad_X, grad_input = convolution_backward(grad_out, X, conv_weight)
         return grad_X, grad_input, None, None, None, None, None
 
 ######################################################################
-# Now that the bulk of the work has been done, it is time to combine
-# them together. As seen in (1) of the forward pass below, we only need to
-# save a single buffer for backward, but we need to recompute
-# Conv2D again in (2).
+# The next step is to wrap our functional variant in a stateful
+# `nn.Module`
 import torch.nn as nn
 import math
 
 class FusedConvBN(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, exp_avg_factor=0.1, eps=1e-3,
-                 device=None, dtype=None):
+    def __init__(self, in_channels, out_channels, kernel_size, exp_avg_factor=0.1,
+                 eps=1e-3, device=None, dtype=None):
         super(FusedConvBN, self).__init__()
         factory_kwargs = {'device': device, 'dtype': dtype}
         # Conv parameters
@@ -283,8 +290,10 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            # sum up batch loss
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            # get the index of the max log-probability
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -321,7 +330,6 @@ test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 mems = []
 for fused in (True, False):
     torch.manual_seed(123456)
-
     torch.cuda.reset_peak_memory_stats()
 
     model = Net(fused=fused).to(device)
