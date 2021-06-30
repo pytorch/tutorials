@@ -95,11 +95,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 #     Download these two images and add them to a directory
 #     with name ``images`` in your current working directory.
 
-# desired size of the output image
-imsize = 512 if torch.cuda.is_available() else 128  # use small size if no gpu
-
 loader = transforms.Compose([
-    transforms.Resize(imsize),  # scale imported image
+    transforms.Resize((224, 224)),  # scale imported image
     transforms.ToTensor()])  # transform it into a torch tensor
 
 
@@ -205,15 +202,6 @@ class ContentLoss(nn.Module):
 # matrix, where :math:`K` is the number of feature maps at layer :math:`L` and :math:`N` is the
 # length of any vectorized feature map :math:`F_{XL}^k`. For example, the first line
 # of :math:`\hat{F}_{XL}` corresponds to the first vectorized feature map :math:`F_{XL}^1`.
-# 
-# Finally, the gram matrix must be normalized by dividing each element by
-# the total number of elements in the matrix. This normalization is to
-# counteract the fact that :math:`\hat{F}_{XL}` matrices with a large :math:`N` dimension yield
-# larger values in the Gram matrix. These larger values will cause the
-# first layers (before pooling layers) to have a larger impact during the
-# gradient descent. Style features tend to be in the deeper layers of the
-# network so this normalization step is crucial.
-# 
 
 def gram_matrix(input):
     a, b, c, d = input.size()  # a=batch size(=1)
@@ -224,9 +212,7 @@ def gram_matrix(input):
 
     G = torch.mm(features, features.t())  # compute the gram product
 
-    # we 'normalize' the values of the gram matrix
-    # by dividing by the number of element in each feature maps.
-    return G.div(a * b * c * d)
+    return G
 
 
 ######################################################################
@@ -302,8 +288,13 @@ class Normalization(nn.Module):
 # 
 
 # desired depth layers to compute style/content losses :
-content_layers_default = ['conv_4']
-style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
+content_layers_default = ['conv4_1']
+style_layers_default = ['conv1_1',
+               'conv2_1',
+               'conv3_1',
+               'conv4_2',
+               'conv5_1'
+               ]
 
 def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                style_img, content_img,
@@ -311,60 +302,62 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                style_layers=style_layers_default):
     cnn = copy.deepcopy(cnn)
 
-    # normalization module
-    normalization = Normalization(normalization_mean, normalization_std).to(device)
 
     # just in order to have an iterable access to or list of content/syle
     # losses
     content_losses = []
     style_losses = []
 
+    # normalization module
+    normalization = Normalization(normalization_mean,  normalization_std).to(device)
+
     # assuming that cnn is a nn.Sequential, so we make a new nn.Sequential
     # to put in modules that are supposed to be activated sequentially
     model = nn.Sequential(normalization)
 
-    i = 0  # increment every time we see a conv
+    
+    block = 1 # represents the block of model
+    subid = 1 # layer number
+
     for layer in cnn.children():
+
         if isinstance(layer, nn.Conv2d):
-            i += 1
-            name = 'conv_{}'.format(i)
+            name = f"conv{block}_{subid}"
+
         elif isinstance(layer, nn.ReLU):
-            name = 'relu_{}'.format(i)
+            layer = nn.ReLU(inplace = False)
             # The in-place version doesn't play very nicely with the ContentLoss
             # and StyleLoss we insert below. So we replace with out-of-place
             # ones here.
-            layer = nn.ReLU(inplace=False)
+            name = f"ReLU{block}_{subid}"
+            subid += 1
+        
         elif isinstance(layer, nn.MaxPool2d):
-            name = 'pool_{}'.format(i)
-        elif isinstance(layer, nn.BatchNorm2d):
-            name = 'bn_{}'.format(i)
-        else:
-            raise RuntimeError('Unrecognized layer: {}'.format(layer.__class__.__name__))
+            # using avrage Pool as it gives slightly better results
+            name = f"avg_pool{block}"
+            layer = nn.AvgPool2d(kernel_size = 2, stride = 2, padding = 0 )
+            block += 1
+            subid = 1
 
         model.add_module(name, layer)
 
         if name in content_layers:
             # add content loss:
-            target = model(content_img).detach()
-            content_loss = ContentLoss(target)
-            model.add_module("content_loss_{}".format(i), content_loss)
-            content_losses.append(content_loss)
+            target = model(content_img).detach()            
+            cl = ContentLoss(target)
+            model.add_module(f"content_loss{block}", cl)
+            content_losses.append(cl)
 
+        
         if name in style_layers:
             # add style loss:
-            target_feature = model(style_img).detach()
-            style_loss = StyleLoss(target_feature)
-            model.add_module("style_loss_{}".format(i), style_loss)
-            style_losses.append(style_loss)
+            target = model(style_img).detach()            
+            sl = StyleLoss(target)
+            model.add_module(f"style_loss{block}", sl)
+            style_losses.append(sl)
 
-    # now we trim off the layers after the last content and style losses
-    for i in range(len(model) - 1, -1, -1):
-        if isinstance(model[i], ContentLoss) or isinstance(model[i], StyleLoss):
-            break
+    return model, content_losses, style_losses
 
-    model = model[:(i + 1)]
-
-    return model, style_losses, content_losses
 
 
 ######################################################################
@@ -397,8 +390,8 @@ def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
 
-
 ######################################################################
+
 # Finally, we must define a function that performs the neural transfer. For
 # each iteration of the networks, it is fed an updated input and computes
 # new losses. We will run the ``backward`` methods of each loss module to
@@ -412,8 +405,8 @@ def get_input_optimizer(input_img):
 # 
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
-                       content_img, style_img, input_img, num_steps=300,
-                       style_weight=1000000, content_weight=1):
+                       content_img, style_img, input_img, num_steps=3000,
+                       style_weight=10000, content_weight=1):
     """Run the style transfer."""
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
