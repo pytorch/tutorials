@@ -24,7 +24,7 @@ functions to be familiar with:
    `Saving & Loading Model Across
    Devices <#saving-loading-model-across-devices>`__).
 
-3) `torch.nn.Module.load_state_dict <https://pytorch.org/docs/stable/nn.html?highlight=load_state_dict#torch.nn.Module.load_state_dict>`__:
+3) `torch.nn.Module.load_state_dict <https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=load_state_dict#torch.nn.Module.load_state_dict>`__:
    Loads a model’s parameter dictionary using a deserialized
    *state_dict*. For more information on *state_dict*, see `What is a
    state_dict? <#what-is-a-state-dict>`__.
