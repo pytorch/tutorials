@@ -44,9 +44,8 @@ can be easily adapted/composed.
 # model is passed through a linear layer followed by a log-softmax function.
 #
 
-from __future__ import annotations
-
 import math
+from typing import Tuple
 
 import torch
 from torch import nn, Tensor
@@ -227,7 +226,7 @@ test_data = batchify(test_data, eval_batch_size)
 #
 
 bptt = 35
-def get_batch(source: Tensor, i: int) -> tuple[Tensor, Tensor]:
+def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
     """
     Args:
         source: Tensor, shape [full_seq_len, batch_size]
