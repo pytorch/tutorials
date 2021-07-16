@@ -85,7 +85,6 @@ x_train, y_train, x_valid, y_valid = map(
     torch.tensor, (x_train, y_train, x_valid, y_valid)
 )
 n, c = x_train.shape
-x_train, x_train.shape, y_train.min(), y_train.max()
 print(x_train, y_train)
 print(x_train.shape)
 print(y_train.min(), y_train.max())

@@ -2,11 +2,6 @@ Welcome to PyTorch Tutorials
 ============================
 .. raw:: html
 
-    <p>Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849 target="_blank">PyTorch Tutorials reader survey</a>. </p>
-
-
-.. raw:: html
-
     <div class="tutorials-callout-container">
         <div class="row">
 
@@ -76,11 +71,11 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
-   :header: Visualizing Models, Data, and Training with Tensorboard
+   :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
-   :tags: Interpretability,Getting-Started,Tensorboard
+   :tags: Interpretability,Getting-Started,TensorBoard
 
 .. Image/Video
 
@@ -132,7 +127,7 @@ Welcome to PyTorch Tutorials
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -319,11 +314,11 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
-   :header: Performance Profiling in Tensorboard
-   :card_description: Learn how to use tensorboard plugin to profile and analyze your model's performance.
+   :header: Performance Profiling in TensorBoard
+   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
    :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling
+   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
 
 .. customcarditem::
    :header: Hyperparameter Tuning Tutorial
@@ -366,6 +361,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
+   
+.. customcarditem::
+   :header: (beta) Static Quantization with Eager Mode in PyTorch
+   :card_description: This tutorial shows how to do post-training static quantization.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Quantization
 
 .. Parallel-and-Distributed-Training
 
@@ -497,7 +499,7 @@ Additional Resources
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
-   :button_text: Download
+   :button_text: Open
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
@@ -509,7 +511,7 @@ Additional Resources
    :header: Run Tutorials on Google Colab
    :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
    :button_link: beginner/colab.html
-   :button_text: Download
+   :button_text: Open
 
 .. End of callout section
 
@@ -578,8 +580,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
-
+   intermediate/speech_command_recognition_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -661,6 +662,7 @@ Additional Resources
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2

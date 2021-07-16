@@ -26,6 +26,7 @@ For training, we need the features as normalized tensors, and the labels as one-
 To make these transformations, we use ``ToTensor`` and ``Lambda``.
 """
 
+import torch
 from torchvision import datasets
 from torchvision.transforms import ToTensor, Lambda
 

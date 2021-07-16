@@ -112,7 +112,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'PyTorch Tutorials'
-copyright = '2017, PyTorch'
+copyright = '2021, PyTorch'
 author = 'PyTorch contributors'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -184,6 +184,7 @@ html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
     'logo_only': False,
+    'analytics_id': 'UA-117752657-2',
 }
 
 

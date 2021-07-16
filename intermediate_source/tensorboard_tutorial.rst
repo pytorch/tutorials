@@ -161,7 +161,7 @@ Now running
 
     tensorboard --logdir=runs
 
-from the command line and then navigating to `https://localhost:6006 <https://localhost:6006>`_
+from the command line and then navigating to `http://localhost:6006 <http://localhost:6006>`_
 should show the following.
 
 .. image:: ../../_static/img/tensorboard_first_view.png

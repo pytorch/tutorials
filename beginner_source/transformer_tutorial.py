@@ -1,10 +1,10 @@
 """
-Sequence-to-Sequence Modeling with nn.Transformer and TorchText
+Language Modeling with nn.Transformer and TorchText
 ===============================================================
 
 This is a tutorial on how to train a sequence-to-sequence model
 that uses the
-`nn.Transformer <https://pytorch.org/docs/master/nn.html?highlight=nn%20transformer#torch.nn.Transformer>`__ module.
+`nn.Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ module.
 
 PyTorch 1.2 release includes a standard transformer module based on the
 paper `Attention is All You
@@ -12,9 +12,9 @@ Need <https://arxiv.org/pdf/1706.03762.pdf>`__. The transformer model
 has been proved to be superior in quality for many sequence-to-sequence
 problems while being more parallelizable. The ``nn.Transformer`` module
 relies entirely on an attention mechanism (another module recently
-implemented as `nn.MultiheadAttention <https://pytorch.org/docs/master/nn.html?highlight=multiheadattention#torch.nn.MultiheadAttention>`__) to draw global dependencies
+implemented as `nn.MultiheadAttention <https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html>`__) to draw global dependencies
 between input and output. The ``nn.Transformer`` module is now highly
-modularized such that a single component (like `nn.TransformerEncoder <https://pytorch.org/docs/master/nn.html?highlight=nn%20transformerencoder#torch.nn.TransformerEncoder>`__
+modularized such that a single component (like `nn.TransformerEncoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html>`__
 in this tutorial) can be easily adapted/composed.
 
 .. image:: ../_static/img/transformer_architecture.jpg
@@ -35,7 +35,7 @@ in this tutorial) can be easily adapted/composed.
 # layer first, followed by a positional encoding layer to account for the order
 # of the word (see the next paragraph for more details). The
 # ``nn.TransformerEncoder`` consists of multiple layers of
-# `nn.TransformerEncoderLayer <https://pytorch.org/docs/master/nn.html?highlight=transformerencoderlayer#torch.nn.TransformerEncoderLayer>`__. Along with the input sequence, a square
+# `nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__. Along with the input sequence, a square
 # attention mask is required because the self-attention layers in
 # ``nn.TransformerEncoder`` are only allowed to attend the earlier positions in
 # the sequence. For the language modeling task, any tokens on the future
@@ -45,15 +45,16 @@ in this tutorial) can be easily adapted/composed.
 #
 
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn import TransformerEncoder, TransformerEncoderLayer
 
 class TransformerModel(nn.Module):
 
     def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
         super(TransformerModel, self).__init__()
-        from torch.nn import TransformerEncoder, TransformerEncoderLayer
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(ninp, dropout)
         encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
@@ -143,23 +144,18 @@ class PositionalEncoding(nn.Module):
 # efficient batch processing.
 #
 
-import io
 import torch
 from torchtext.datasets import WikiText2
 from torchtext.data.utils import get_tokenizer
-from collections import Counter
-from torchtext.vocab import Vocab
+from torchtext.vocab import build_vocab_from_iterator
 
 train_iter = WikiText2(split='train')
 tokenizer = get_tokenizer('basic_english')
-counter = Counter()
-for line in train_iter:
-    counter.update(tokenizer(line))
-vocab = Vocab(counter)
+vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=["<unk>"])
+vocab.set_default_index(vocab["<unk>"]) 
 
 def data_process(raw_text_iter):
-  data = [torch.tensor([vocab[token] for token in tokenizer(item)],
-                       dtype=torch.long) for item in raw_text_iter]
+  data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
   return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
 train_iter, val_iter, test_iter = WikiText2()
@@ -224,7 +220,7 @@ def get_batch(source, i):
 # equal to the length of the vocab object.
 #
 
-ntokens = len(vocab.stoi) # the size of vocabulary
+ntokens = len(vocab) # the size of vocabulary
 emsize = 200 # embedding dimension
 nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
 nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
@@ -251,12 +247,13 @@ model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(devi
 # function to scale all the gradient together to prevent exploding.
 #
 
+import time
+
 criterion = nn.CrossEntropyLoss()
 lr = 5.0 # learning rate
 optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
-import time
 def train():
     model.train() # Turn on the train mode
     total_loss = 0.

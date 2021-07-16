@@ -441,7 +441,7 @@ class citizens of PyTorch::
       @staticmethod
       def backward(ctx, grad_h, grad_cell):
           outputs = lltm_cpp.backward(
-              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_variables)
+              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_tensors)
           d_old_h, d_input, d_weights, d_bias, d_old_cell = outputs
           return d_input, d_weights, d_bias, d_old_h, d_old_cell
 

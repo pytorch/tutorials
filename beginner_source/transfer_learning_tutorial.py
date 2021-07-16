@@ -20,7 +20,7 @@ Quoting these notes,
 
 These two major transfer learning scenarios look as follows:
 
--  **Finetuning the convnet**: Instead of random initializaion, we
+-  **Finetuning the convnet**: Instead of random initialization, we
    initialize the network with a pretrained network, like the one that is
    trained on imagenet 1000 dataset. Rest of the training looks as
    usual.

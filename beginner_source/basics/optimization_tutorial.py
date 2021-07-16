@@ -78,7 +78,7 @@ model = NeuralNetwork()
 #
 # We define the following hyperparameters for training:
 #  - **Number of Epochs** - the number times to iterate over the dataset
-#  - **Batch Size** - the number of data samples seen by the model in each epoch
+#  - **Batch Size** - the number of data samples propagated through the network before the parameters are updated
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
@@ -167,6 +167,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
 
 def test_loop(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
+    num_batches = len(dataloader)
     test_loss, correct = 0, 0
 
     with torch.no_grad():
@@ -175,7 +176,7 @@ def test_loop(dataloader, model, loss_fn):
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
             
-    test_loss /= size
+    test_loss /= num_batches
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 

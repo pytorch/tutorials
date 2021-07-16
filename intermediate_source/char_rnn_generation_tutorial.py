@@ -97,8 +97,8 @@ def unicodeToAscii(s):
 
 # Read a file and split into lines
 def readLines(filename):
-    lines = open(filename, encoding='utf-8').read().strip().split('\n')
-    return [unicodeToAscii(line) for line in lines]
+    with open(filename, encoding='utf-8') as some_file:
+        return [unicodeToAscii(line.strip()) for line in some_file]
 
 # Build the category_lines dictionary, a list of lines per category
 category_lines = {}
@@ -347,7 +347,6 @@ for iter in range(1, n_iters + 1):
 #
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 
 plt.figure()
 plt.plot(all_losses)
