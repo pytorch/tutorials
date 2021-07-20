@@ -72,6 +72,7 @@ plt.ion()   # interactive mode
 # scratch, neural networks with such a small dataset would have a difficult
 # time generalizing to the validation data. Since we are using transfer
 # learning, we should be able to generalize reasonably well.
+# 
 # .. Note ::
 #    Download the data from
 #    `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
