@@ -2,7 +2,7 @@
 """
 Transfer Learning for Computer Vision Tutorial
 ==============================================
-**Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
+**Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_ and `Kaichao You <https://youkaichao.github.io>`_
 
 In this tutorial, you will learn how to train a convolutional neural network for
 image classification using transfer learning. You can read more about the transfer
@@ -18,20 +18,23 @@ Quoting these notes,
     ConvNet either as an initialization or a fixed feature extractor for
     the task of interest.
 
-These two major transfer learning scenarios look as follows:
+To be specific, we will show three transfer learning scenarios as follows:
 
--  **Finetuning the convnet**: Instead of random initialization, we
-   initialize the network with a pretrained network, like the one that is
-   trained on imagenet 1000 dataset. Rest of the training looks as
-   usual.
 -  **ConvNet as fixed feature extractor**: Here, we will freeze the weights
    for all of the network except that of the final fully connected
    layer. This last fully connected layer is replaced with a new one
    with random weights and only this layer is trained.
-
+-  **Finetuning the convnet**: Instead of random initialization, we
+   initialize the network with a pretrained network, like the one that is
+   trained on imagenet 1000 dataset. Rest of the training looks as
+   usual.
+-  **Finetuning the convnet with an advanced method**: Besides vanilla
+   finetuning, we will show how to use an advanced finetuning method named 
+   Co-Tuning to further improve transfer learning almost for free (without
+   any additional data)!
 """
 # License: BSD
-# Author: Sasank Chilamkurthy
+# Author: Sasank Chilamkurthy and Kaichao You
 
 from __future__ import print_function, division
 
@@ -47,6 +50,12 @@ import time
 import os
 import copy
 
+seed = 0 # set seed for reproducibility
+torch.manual_seed(seed)
+import random
+random.seed(seed)
+np.random.seed(seed)
+
 plt.ion()   # interactive mode
 
 ######################################################################
@@ -57,19 +66,18 @@ plt.ion()   # interactive mode
 # data.
 #
 # The problem we're going to solve today is to train a model to classify
-# **ants** and **bees**. We have about 120 training images each for ants and bees.
-# There are 75 validation images for each class. Usually, this is a very
-# small dataset to generalize upon, if trained from scratch. Since we
-# are using transfer learning, we should be able to generalize reasonably
-# well.
-#
-# This dataset is a very small subset of imagenet.
-#
+# fine-grained bird species. The dataset is a subset of the CUB-200-2011
+# dataset with only the first 10 classes to reduce the training time. There
+# are about 300 images for training (~30 images per class). If trained from
+# scratch, neural networks with such a small dataset would have a difficult
+# time generalizing to the validation data. Since we are using transfer
+# learning, we should be able to generalize reasonably well.
 # .. Note ::
 #    Download the data from
 #    `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
 #    and extract it to the current directory.
 
+#
 # Data augmentation and normalization for training
 # Just normalization for validation
 data_transforms = {
@@ -87,13 +95,13 @@ data_transforms = {
     ]),
 }
 
-data_dir = 'data/hymenoptera_data'
+data_dir = 'data/cubsub'
 image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                             shuffle=True, num_workers=4)
-              for x in ['train', 'val']}
+dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64,
+                                              shuffle=(x == 'train'), num_workers=4)
+               for x in ['train', 'val']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
 
@@ -104,6 +112,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # ^^^^^^^^^^^^^^^^^^^^^^
 # Let's visualize a few training images so as to understand the data
 # augmentations.
+
 
 def imshow(inp, title=None):
     """Imshow for Tensor."""
@@ -121,10 +130,10 @@ def imshow(inp, title=None):
 # Get a batch of training data
 inputs, classes = next(iter(dataloaders['train']))
 
-# Make a grid from batch
-out = torchvision.utils.make_grid(inputs)
+# Make a grid from the first 4 images in the batch
+out = torchvision.utils.make_grid(inputs[:4])
 
-imshow(out, title=[class_names[x] for x in classes])
+imshow(out, title=[class_names[x] for x in classes[:4]])
 
 
 ######################################################################
@@ -170,10 +179,11 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
                 optimizer.zero_grad()
 
                 # forward
-                # track history if only in train
+                # compute gradients if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
+                    target_outputs = outputs[1] if isinstance(outputs, tuple) else outputs
+                    _, preds = torch.max(target_outputs, 1)
                     loss = criterion(outputs, labels)
 
                     # backward + optimize only if in training phase
@@ -229,13 +239,15 @@ def visualize_model(model, num_images=6):
             labels = labels.to(device)
 
             outputs = model(inputs)
-            _, preds = torch.max(outputs, 1)
+            target_outputs = outputs[1] if isinstance(outputs, tuple) else outputs
+            _, preds = torch.max(target_outputs, 1)
 
             for j in range(inputs.size()[0]):
+                label = labels[j].item()
                 images_so_far += 1
                 ax = plt.subplot(num_images//2, 2, images_so_far)
                 ax.axis('off')
-                ax.set_title('predicted: {}'.format(class_names[preds[j]]))
+                ax.set_title('label:{}; predicted: {}'.format(class_names[label], class_names[preds[j]]))
                 imshow(inputs.cpu().data[j])
 
                 if images_so_far == num_images:
@@ -243,51 +255,14 @@ def visualize_model(model, num_images=6):
                     return
         model.train(mode=was_training)
 
-######################################################################
-# Finetuning the convnet
-# ----------------------
-#
-# Load a pretrained model and reset final fully connected layer.
-#
-
-model_ft = models.resnet18(pretrained=True)
-num_ftrs = model_ft.fc.in_features
-# Here the size of each output sample is set to 2.
-# Alternatively, it can be generalized to nn.Linear(num_ftrs, len(class_names)).
-model_ft.fc = nn.Linear(num_ftrs, 2)
-
-model_ft = model_ft.to(device)
-
-criterion = nn.CrossEntropyLoss()
-
-# Observe that all parameters are being optimized
-optimizer_ft = optim.SGD(model_ft.parameters(), lr=0.001, momentum=0.9)
-
-# Decay LR by a factor of 0.1 every 7 epochs
-exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
 
 ######################################################################
-# Train and evaluate
-# ^^^^^^^^^^^^^^^^^^
-#
-# It should take around 15-25 min on CPU. On GPU though, it takes less than a
-# minute.
-#
-
-model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                       num_epochs=25)
-
-######################################################################
-#
-
-visualize_model(model_ft)
-
-
-######################################################################
-# ConvNet as fixed feature extractor
+# 1. ConvNet as fixed feature extractor
 # ----------------------------------
 #
-# Here, we need to freeze all the network except the final layer. We need
+# First, we show the simplest way of transfer learning: use pre-trained 
+# network as an fixed feature extractor. Here we need to freeze all the
+# network except the final layer. We need
 # to set ``requires_grad == False`` to freeze the parameters so that the
 # gradients are not computed in ``backward()``.
 #
@@ -301,7 +276,7 @@ for param in model_conv.parameters():
 
 # Parameters of newly constructed modules have requires_grad=True by default
 num_ftrs = model_conv.fc.in_features
-model_conv.fc = nn.Linear(num_ftrs, 2)
+model_conv.fc = nn.Linear(num_ftrs, len(class_names))
 
 model_conv = model_conv.to(device)
 
@@ -309,7 +284,7 @@ criterion = nn.CrossEntropyLoss()
 
 # Observe that only parameters of final layer are being optimized as
 # opposed to before.
-optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.001, momentum=0.9)
+optimizer_conv = optim.SGD(model_conv.fc.parameters(), lr=0.01, momentum=0.9)
 
 # Decay LR by a factor of 0.1 every 7 epochs
 exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
@@ -318,11 +293,6 @@ exp_lr_scheduler = lr_scheduler.StepLR(optimizer_conv, step_size=7, gamma=0.1)
 ######################################################################
 # Train and evaluate
 # ^^^^^^^^^^^^^^^^^^
-#
-# On CPU this will take about half the time compared to previous scenario.
-# This is expected as gradients don't need to be computed for most of the
-# network. However, forward does need to be computed.
-#
 
 model_conv = train_model(model_conv, criterion, optimizer_conv,
                          exp_lr_scheduler, num_epochs=25)
@@ -334,6 +304,191 @@ visualize_model(model_conv)
 
 plt.ioff()
 plt.show()
+
+######################################################################
+# On my computer, using pre-trained ConvNet as fixed feature extractor
+# achieves 83.5% accuracy. Pretty good, but actually, freezing the feature
+# extractor is not a common practice. Keep reading the following to see how
+# to improve.
+# 
+
+        
+######################################################################
+# Finetuning the convnet
+# ----------------------
+# 
+# To train a decent classifier, typically we need to finetune the pre-trained
+# network to better fit the target dataset. Let's load a pre-trained model
+# and reset final fully connected layer, finetuning the feature extractor.
+#
+
+model_ft = models.resnet18(pretrained=True)
+num_ftrs = model_ft.fc.in_features
+model_ft.fc = nn.Linear(num_ftrs, len(class_names))
+
+model_ft = model_ft.to(device)
+
+criterion = nn.CrossEntropyLoss()
+
+######################################################################
+# Since pre-trained models have been trained, it is a common practice to set
+# a smaller learning rate for pre-trained parameters compared to newly created
+# parameters. 
+# 
+# You can read more on how to set parameter groups in the documentation
+# `here <https://pytorch.org/docs/stable/optim.html#how-to-use-an-optimizer>`__.
+#
+
+params = [{"params": [p for name, p in model_ft.named_parameters() if 'fc' in name], "lr": 1e-2},
+               {"params": [p for name, p in model_ft.named_parameters() if 'fc' not in name], "lr": 1e-3}]
+
+# Observe that all parameters are being optimized
+optimizer_ft = optim.SGD(params, momentum=0.9)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=7, gamma=0.1)
+
+######################################################################
+# Train and evaluate
+# ^^^^^^^^^^^^^^^^^^
+#
+
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
+                       num_epochs=25)
+
+######################################################################
+#
+
+visualize_model(model_ft)
+
+######################################################################
+# After finetuning, the classification accuracy is 86.4%, three percents
+# higher than fixing the feature extractor. That's why people often prefer
+# to finetune the pre-trained model. As the task becomes more and more
+# complex, the performance gain of finetuning over fixing ConvNet can be
+# even larger.
+# 
+
+######################################################################
+# Finetuning the convnet with an advanced method
+# ----------------------
+#
+# Can we do better than finetuning? Researchers have explored a lot and 
+# here we present one conceptually simple method named Co-Tuning.
+#
+
+from torch import nn
+from torch.functional import F
+
+
+class CoTuningHead(nn.Module):
+    """
+    Implements the Co-Tuning algorithm as described in the NeurIPS 2020 paper `Co-Tuning for Transfer Learning <https://papers.nips.cc/paper/2020/file/c8067ad1937f728f51288b3eb986afaa-Paper.pdf>`_.
+    """
+    def __init__(self, old_head: nn.Linear, num_class: int):
+        """
+        :param old_head: the last module that transforms features into logits
+        :param num_class: number of classes for the target task
+        """
+        super(CoTuningHead, self).__init__()
+        self.old_head = old_head
+        self.new_head = nn.Linear(old_head.in_features, num_class)
+
+    def forward(self, features):
+        old_output = self.old_head(features)
+        new_output = self.new_head(features)
+        return old_output, new_output
+
+    def deploy(self):
+        """
+        When training finishes, convert the CoTuningHead to an ordinary Linear layer
+        """
+        return copy.deepcopy(self.new_head)
+
+
+class CoTuningLoss(nn.Module):
+    def __init__(self, trade_off: float):
+        super().__init__()
+        self.trade_off = trade_off
+        self.fitted = False
+        self.relationship = torch.Tensor([0, 0, 0]) # placeholder
+
+    def to(self, device):
+        self.relationship = self.relationship.to(device=device)
+        return self
+
+    def fit(self, old_logits: torch.Tensor, new_labels: torch.Tensor):
+        """
+        :param old_logits: shape of [N, Cs], where Cs is the number of classes in the pre-training task
+        :param new_labels: shape of [N], where each element is an integer indicating the class id starting from 0
+        """
+        Ct = new_labels.max().item() + 1
+        old_prob = F.softmax(old_logits, dim=-1)
+        self.relationship = torch.stack([torch.mean(old_prob[new_labels == i], dim=0) for i in range(Ct)])
+        self.fitted = True
+
+    def forward(self, inputs, target):
+        if not self.fitted:
+            raise Exception("please call fit() first!")
+        old_output, new_output = inputs
+        target_loss = F.cross_entropy(new_output, target)
+        old_softlabel = self.relationship[target]
+        cotuning_loss = - (F.log_softmax(old_output, dim=-1) * old_softlabel).sum(dim=-1).mean(dim=0)
+        return target_loss + self.trade_off * cotuning_loss
+
+
+model_ct = models.resnet18(pretrained=True).to(device)
+criterion = CoTuningLoss(trade_off = 2.3)
+
+with torch.no_grad():
+    was_training = model_ct.training
+    model_ct.eval()
+    old_logits = []
+    new_labels = []
+    for i, (inputs, labels) in enumerate(dataloaders['train']):
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        outputs = model_ct(inputs)
+        target_outputs = outputs[1] if isinstance(outputs, tuple) else outputs
+        old_logits.append(target_outputs.cpu())
+        new_labels.append(labels.cpu())
+    old_logits = torch.cat(old_logits)
+    new_labels = torch.cat(new_labels)
+    criterion.fit(old_logits, new_labels)
+    model_ct.train(mode=was_training)
+
+model_ct.fc = CoTuningHead(model_ct.fc, len(class_names))
+
+model_ct = model_ct.to(device)
+criterion = criterion.to(device)
+
+params = [{"params": [p for name, p in model_ct.named_parameters() if 'new' in name], "lr": 1e-2},
+               {"params": [p for name, p in model_ct.named_parameters() if 'new' not in name], "lr": 1e-3}]
+
+# Observe that all parameters are being optimized
+optimizer_ct = optim.SGD(params, momentum=0.9)
+
+# Decay LR by a factor of 0.1 every 7 epochs
+exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ct, step_size=7, gamma=0.1)
+
+######################################################################
+# Train and evaluate
+# ^^^^^^^^^^^^^^^^^^
+#
+
+model_ct = train_model(model_ct, criterion, optimizer_ct, exp_lr_scheduler,
+                       num_epochs=25)
+
+######################################################################
+#
+
+visualize_model(model_ct)
+
+######################################################################
+# Co-Tuning achieves 87.2% accuracy, outperforming finetuning and fixing
+# ConvNet.
+# 
 
 ######################################################################
 # Further Learning
