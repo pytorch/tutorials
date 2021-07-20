@@ -491,6 +491,13 @@ visualize_model(model_ct)
 # ConvNet.
 # 
 
+model_ct.fc = model_ct.fc.deploy()
+
+######################################################################
+# When the training finishes, convert the CoTuningHead to original Linear
+# layer, so that inference procedure is unchanged.
+# 
+
 ######################################################################
 # Further Learning
 # -----------------
