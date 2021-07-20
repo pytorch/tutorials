@@ -75,7 +75,7 @@ plt.ion()   # interactive mode
 # 
 # .. Note ::
 #    Download the data from
-#    `here <https://download.pytorch.org/tutorial/hymenoptera_data.zip>`_
+#    `here <https://cloud.tsinghua.edu.cn/f/d7e8b74e6a4644f985f0/?dl=1>`_
 #    and extract it to the current directory.
 
 #
