@@ -55,6 +55,12 @@ torch.manual_seed(seed)
 import random
 random.seed(seed)
 np.random.seed(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+def seed_worker(worker_id):
+    worker_seed = torch.initial_seed() % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 plt.ion()   # interactive mode
 
@@ -101,7 +107,7 @@ image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x])
                   for x in ['train', 'val']}
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64,
-                                              shuffle=(x == 'train'), num_workers=4)
+                                              shuffle=(x == 'train'), num_workers=4, worker_init_fn=seed_worker)
                for x in ['train', 'val']}
 dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
 class_names = image_datasets['train'].classes
@@ -439,7 +445,7 @@ class CoTuningLoss(nn.Module):
 
 
 model_ct = models.resnet18(pretrained=True).to(device)
-criterion = CoTuningLoss(trade_off = 2.3)
+criterion = CoTuningLoss(trade_off = 1.0)
 
 with torch.no_grad():
     was_training = model_ct.training
