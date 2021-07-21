@@ -20,11 +20,12 @@ point out some things to look out for.
 # Custom functions implicitly affects grad mode in two ways:
 #
 # - During forward, autograd does not record any the graph for any
-# operations performed within the forward function. When forward
-# completes, the backward function of the custom function
-# becomes the `grad_fn` of each of the forward's outputs
+#   operations performed within the forward function. When forward
+#   completes, the backward function of the custom function
+#   becomes the `grad_fn` of each of the forward's outputs
+#
 # - During backward, autograd records the computation graph used to
-# compute the backward pass if create_graph is specified
+#   compute the backward pass if create_graph is specified
 #
 # Next, to understand how `save_for_backward` interacts with the above,
 # we can explore a couple examples:
