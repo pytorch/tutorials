@@ -6,8 +6,8 @@ Fusing Convolution and Batch Norm using Custom Function
 Fusing adjacent convolution and batch norm layers together is typically an
 inference-time optimization to improve run-time. It is usually achieved
 by eliminating the batch norm layer entirely and updating the weight
-and bias of the preceding convolution [0]. This technique is not applicable
-for training models, however.
+and bias of the preceding convolution [0]. However, this technique is not
+applicable for training models.
 
 In this tutorial, we will show a different technique to fuse the two layers
 that can be applied during training. Rather than improved runtime, the
@@ -16,7 +16,7 @@ objective of this optimization is to reduce memory usage.
 The idea behind this optimization is to see that both convolution and
 batch norm (as well as many other ops) need to save a copy of their input
 during forward for the backward pass. For large
-batch sizes, these saved inputs are responsible for much of your memory usage,
+batch sizes, these saved inputs are responsible for most of your memory usage,
 so being able to avoid allocating another input tensor for every
 convolution batch norm pair can be a significant reduction.
 
@@ -37,6 +37,8 @@ of batch norm.
 """
 
 ######################################################################
+# Backward Formula Implementation for Convolution
+# -------------------------------------------------------------------
 # Implementing a custom function requires us to implement the backward
 # ourselves. In this case, we need both the backward formulas for Conv2D
 # and BatchNorm2D. Eventually we'd chain them together in our unified
@@ -57,8 +59,7 @@ class Conv2D(torch.autograd.Function):
         ctx.save_for_backward(X, weight)
         return F.conv2d(X, weight)
 
-    # Use @once_differentiable by default unless we intend to double
-    # backward
+    # Use @once_differentiable by default unless we intend to double backward
     @staticmethod
     @once_differentiable
     def backward(ctx, grad_out):
@@ -72,11 +73,13 @@ X = torch.rand(10, 3, 7, 7, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(Conv2D.apply, (X, weight))
 
 ######################################################################
+# Backward Formula Implementation for Batch Norm
+# -------------------------------------------------------------------
 # Batch Norm has two modes: training and eval mode. In training mode
-# the sample statistics are a function of the inputs, in eval mode,
-# we use the saved running statistics, which are not a function of the inputs
+# the sample statistics are a function of the inputs. In eval mode,
+# we use the saved running statistics, which are not a function of the inputs.
 # This makes non-training mode's backward significantly simpler. Below
-# We implement and test only the training mode case.
+# we implement and test only the training mode case.
 def unsqueeze_all(t):
     # Helper function to unsqueeze all the dimensions that we reduce over
     return t[None, :, None, None]
@@ -143,10 +146,12 @@ a = torch.rand(1, 2, 3, 4, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(BatchNorm.apply, (a,), fast_mode=False)
 
 ######################################################################
+# Fusing Convolution and BatchNorm
+# -------------------------------------------------------------------
 # Now that the bulk of the work has been done, we can combine
 # them together. Note that in (1) we only save a single buffer
 # for backward, but this also means we recompute convolution forward
-# in (5). Also see that in (2), (3), (4), and (5), its the same
+# in (5). Also see that in (2), (3), (4), and (6), it's the same
 # exact code as the examples above.
 class FusedConvBN2DFunction(torch.autograd.Function):
     @staticmethod
@@ -221,6 +226,8 @@ X = torch.rand(2, 3, 4, 4, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(FusedConvBN2DFunction.apply, (X, weight))
 
 ######################################################################
+# Testing out our new Layer
+# -------------------------------------------------------------------
 # Use FusedConvBN to train a basic network
 # The code below is after some light modifications to the example here:
 # https://github.com/pytorch/examples/tree/master/mnist
@@ -326,6 +333,8 @@ train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
 test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
 ######################################################################
+# A Comparison of Memory Usage
+# -------------------------------------------------------------------
 # Print out memory usage for both `fused=True` and `fused=False`
 mems = []
 for fused in (True, False):
