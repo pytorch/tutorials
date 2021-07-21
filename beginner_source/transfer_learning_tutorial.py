@@ -73,15 +73,15 @@ plt.ion()   # interactive mode
 #
 # The problem we're going to solve today is to train a model to classify
 # fine-grained bird species. The dataset is a subset of the CUB-200-2011
-# dataset with only the first 10 classes to reduce the training time. There
-# are about 300 images for training (~30 images per class). If trained from
-# scratch, neural networks with such a small dataset would have a difficult
-# time generalizing to the validation data. Since we are using transfer
-# learning, we should be able to generalize reasonably well.
+# dataset with 200 classes. There are about 1200 images for training 
+# (~6 images per class). If trained from scratch, neural networks with
+# such a small dataset would have a difficult time generalizing to the
+# validation data. Since we are using transfer learning, we should be able
+# to generalize reasonably well.
 # 
 # .. Note ::
 #    Download the data from
-#    `here <https://cloud.tsinghua.edu.cn/f/d7e8b74e6a4644f985f0/?dl=1>`_
+#    `here <https://cloud.tsinghua.edu.cn/f/d222ed46a3064dbe8a48/?dl=1>`_
 #    and extract it to the current directory.
 
 #
@@ -314,9 +314,10 @@ plt.show()
 
 ######################################################################
 # On my computer, using pre-trained ConvNet as fixed feature extractor
-# achieves 83.5% accuracy. Pretty good, but actually, freezing the feature
-# extractor is not a common practice. Keep reading the following to see how
-# to improve.
+# achieves 33.29% accuracy. Considering there are 200 classes, the accuracy
+# is decent enough (much better than random guess accuracy 0.5%). But
+# actually, freezing the feature extractor is not a common practice. Keep
+# reading the following to see how to improve.
 # 
 
         
@@ -369,7 +370,7 @@ model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
 visualize_model(model_ft)
 
 ######################################################################
-# After finetuning, the classification accuracy is 86.4%, three percents
+# After finetuning, the classification accuracy is 38.44%, five percents
 # higher than fixing the feature extractor. That's why people often prefer
 # to finetune the pre-trained model. As the task becomes more and more
 # complex, the performance gain of finetuning over fixing ConvNet can be
@@ -493,7 +494,7 @@ model_ct = train_model(model_ct, criterion, optimizer_ct, exp_lr_scheduler,
 visualize_model(model_ct)
 
 ######################################################################
-# Co-Tuning achieves 87.2% accuracy, outperforming finetuning and fixing
+# Co-Tuning achieves 41.03% accuracy, outperforming finetuning and fixing
 # ConvNet.
 # 
 
@@ -502,6 +503,12 @@ model_ct.fc = model_ct.fc.deploy()
 ######################################################################
 # When the training finishes, convert the CoTuningHead to original Linear
 # layer, so that inference procedure is unchanged.
+# 
+# What's next if the accuracy cannot satisfy your application? Then it is
+# time to collect more data! That's the loop of transfer learning: try fixed
+# ConvNet --> try finetuning ConvNet --> try some advanced finetuning methods
+# (if not satisfied with the performance) --> collect more data and back to
+# the first step.
 # 
 
 ######################################################################
