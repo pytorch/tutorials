@@ -18,12 +18,13 @@ point out some things to look out for.
 # `save_for_backward` works with all of this.
 #
 # Custom functions implicitly affects grad mode in two ways:
+#
 # - During forward, autograd does not record any the graph for any
-#   operations performed within the forward function. When forward
-#   completes, the backward function of the custom function
+# operations performed within the forward function. When forward
+# completes, the backward function of the custom function
 # becomes the `grad_fn` of each of the forward's outputs
 # - During backward, autograd records the computation graph used to
-#   compute the backward pass if create_graph is specified
+# compute the backward pass if create_graph is specified
 #
 # Next, to understand how `save_for_backward` interacts with the above,
 # we can explore a couple examples:
@@ -73,6 +74,7 @@ torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559699-e04f3cb1-aaf2-4a9a-a83d-b8767d04fbd9.png
+#    :scale: 25 %
 
 ######################################################################
 # A slight variation on the previous example is to save an output
@@ -105,12 +107,13 @@ torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559780-d141f2ba-1ee8-4c33-b4eb-c9877b27a954.png
+#    :scale: 25 %
 
 ######################################################################
 # A more tricky case is when we need to save an intermediate result.
-# We demonstrate this case by implementing sinh(x) = (e^x - e^-x) / 2
+# We demonstrate this case by implementing :math:`sinh(x) = (e^x - e^{-x}) / 2`
 # Since the derivative of sinh is cosh, it might be useful to reuse
-# exp(x) and exp(-x), the two intermediate results in forward
+# `exp(x)` and `exp(-x)`, the two intermediate results in forward
 # in the backward computation.
 #
 # Intermediate results should not be directly saved and used in backward though.
@@ -135,7 +138,7 @@ class Sinh(torch.autograd.Function):
         # We cannot skip accumulating these even though we won't use the outputs
         # directly. They will be used later in the second backward.
         grad_input += _grad_out_exp * expx
-        grad_input -= _grad_out_exp * expnegx
+        grad_input -= _grad_out_negexp * expnegx
         return grad_input
 
 def sinh(x):
@@ -152,6 +155,37 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126560494-e48eba62-be84-4b29-8c90-a7f6f40b1438.png
+#    :scale: 25 %
+
+######################################################################
+# Now we show what happens when we don't also return our intermediate
+# results as outputs: `grad_x` would not even have a  backward graph
+# because it is purely a function `exp` and `expnegx`, which don't
+# require grad.
+class Sinh(torch.autograd.Function):
+    # This is an example of what NOT to do!
+    @staticmethod
+    def forward(ctx, x):
+        expx = torch.exp(x)
+        expnegx = torch.exp(-x)
+        ctx.expx = expx
+        ctx.expnegx = expnegx
+        return (expx - expnegx) / 2
+
+    @staticmethod
+    def backward(ctx, grad_out):
+        expx = ctx.expx
+        expnegx = ctx.expnegx
+        grad_input = grad_out * (expx + expnegx) / 2
+        return grad_input
+
+out = Sinh.apply(x)
+grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
+torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+
+######################################################################
+# .. image:: https://user-images.githubusercontent.com/13428986/126565889-13992f01-55bc-411a-8aee-05b721fe064a.png
+#    :scale: 25 %
 
 ######################################################################
 # Finally, let's consider an example when it may not be possible for
@@ -217,3 +251,4 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559935-74526b4d-d419-4983-b1f0-a6ee99428531.png
+#    :scale: 25 %
