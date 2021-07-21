@@ -71,6 +71,8 @@ grad_x, = torch.autograd.grad(out, x, create_graph=True)
 # And the graph of this function has been properly constructed
 torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
+######################################################################
+# .. image:: https://user-images.githubusercontent.com/13428986/126559699-e04f3cb1-aaf2-4a9a-a83d-b8767d04fbd9.png
 
 ######################################################################
 # A slight variation on the previous example is to save an output
@@ -102,6 +104,9 @@ grad_x, = torch.autograd.grad(out, x, create_graph=True)
 torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
 ######################################################################
+# .. image:: https://user-images.githubusercontent.com/13428986/126559780-d141f2ba-1ee8-4c33-b4eb-c9877b27a954.png
+
+######################################################################
 # A more tricky case is when we need to save an intermediate result.
 # We demonstrate this case by implementing sinh(x) = (e^x - e^-x) / 2
 # Since the derivative of sinh is cosh, it might be useful to reuse
@@ -113,7 +118,7 @@ torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 # of the forward pass is used to compute gradients in the backward pass
 # the backward graph of the gradients would not include the operations
 # that computed the intermediate result. This leads to incorrect gradients.
-class Sinh2(torch.autograd.Function):
+class Sinh(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x):
         expx = torch.exp(x)
@@ -133,17 +138,20 @@ class Sinh2(torch.autograd.Function):
         grad_input -= _grad_out_exp * expnegx
         return grad_input
 
-def sinh2(x):
+def sinh(x):
     # Create a wrapper that only returns the first output
-    return Sinh2.apply(x)[0]
+    return Sinh.apply(x)[0]
 
 x = torch.rand(3, 3, requires_grad=True, dtype=torch.double)
-torch.autograd.gradcheck(sinh2, x)
-torch.autograd.gradgradcheck(sinh2, x)
+torch.autograd.gradcheck(sinh, x)
+torch.autograd.gradgradcheck(sinh, x)
 
-out = sinh2(x)
+out = sinh(x)
 grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
 torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+
+######################################################################
+# .. image:: https://user-images.githubusercontent.com/13428986/126560494-e48eba62-be84-4b29-8c90-a7f6f40b1438.png
 
 ######################################################################
 # Finally, let's consider an example when it may not be possible for
@@ -206,3 +214,6 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 # works out of the box. With the third and fourth examples, we demonstrate
 # techniques that enable a backward function to be tracked, when they
 # otherwise would not be.
+
+######################################################################
+# .. image:: https://user-images.githubusercontent.com/13428986/126559935-74526b4d-d419-4983-b1f0-a6ee99428531.png
