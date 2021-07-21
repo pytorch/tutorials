@@ -93,7 +93,8 @@ def batch_norm_backward(grad_out, X, sum, sqrt_var, N, eps):
     #  2) 'grad of out wrt mean(X)' * 'grad of mean(X) wrt X'
     #  3) 'grad of out wrt X in the numerator' * 'grad of X wrt X'
     # We then rewrite the formulas to use as few extra buffers as possible
-    tmp = -((X - unsqueeze_all(sum) / N) * grad_out).sum(dim=(0, 2, 3))
+    tmp = ((X - unsqueeze_all(sum) / N) * grad_out).sum(dim=(0, 2, 3))
+    tmp *= -1
     d_denom = tmp / (sqrt_var + eps)**2  # d_denom = -num / denom**2
     # It is useful to delete tensors when you no longer need them with `del`
     # For example, we could've done `del tmp` here because we won't use it later
@@ -132,7 +133,9 @@ class BatchNorm(torch.autograd.Function):
         ctx.sqrt_var = sqrt_var
         mean = sum / N
         denom = sqrt_var + eps
-        return (X - unsqueeze_all(mean)) / unsqueeze_all(denom)
+        out = X - unsqueeze_all(mean)
+        out /= unsqueeze_all(denom)
+        return out
 
     @staticmethod
     @once_differentiable
@@ -257,19 +260,19 @@ class Net(nn.Module):
         else:
             x = self.conv1(x)
             x = self.bn1(x)
-        x = F.relu(x)
+        F.relu_(x)
         if self.fused:
             x = self.convbn2(x)
         else:
             x = self.conv2(x)
             x = self.bn2(x)
-        x = F.relu(x)
+        F.relu_(x)
         x = F.max_pool2d(x, 2)
-        x = F.relu(x)
+        F.relu_(x)
         x = x.flatten(1)
         x = self.fc1(x)
         x = self.dropout(x)
-        x = F.relu(x)
+        F.relu_(x)
         x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
         return output
