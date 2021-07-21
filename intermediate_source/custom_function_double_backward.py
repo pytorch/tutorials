@@ -16,7 +16,7 @@ point out some things to look out for.
 # it is important to know when operations performed in a custom function
 # are recorded by autograd, when they aren't, and most importantly, how
 # `save_for_backward` works with all of this.
-# 
+#
 # Custom functions implicitly affects grad mode in two ways:
 # 1) During forward, autograd does not record any the graph for any
 #    operations performed within the forward function. When forward
@@ -45,7 +45,7 @@ class Square(torch.autograd.Function):
         # Save non-tensors and non-inputs/non-outputs directly on ctx
         ctx.save_for_backward(x)
         return x**2
-    
+
     @staticmethod
     def backward(ctx, grad_out):
         # A function support double backward automatically if autograd
@@ -82,9 +82,11 @@ class Exp(torch.autograd.Function):
     def forward(ctx, x):
         # This time we save the output
         result = torch.exp(x)
+        # Note that we should use `save_for_backward` here when
+        # the tensor saved is an ouptut (or an input).
         ctx.save_for_backward(result)
         return result
-    
+
     @staticmethod
     def backward(ctx, grad_out):
         result, = ctx.saved_tensors
