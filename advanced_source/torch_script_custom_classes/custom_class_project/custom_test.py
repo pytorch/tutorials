@@ -19,6 +19,11 @@ s = torch.classes.my_classes.MyStackClass(["foo", "bar"])
 s.push("pushed")
 assert s.pop() == "pushed"
 
+# Test custom operator
+s.push("pushed")
+torch.ops.my_classes.manipulate_instance(s)  # acting as s.pop()
+assert s.top() == "bar" 
+
 # Returning and passing instances of custom classes works as you'd expect
 s2 = s.clone()
 s.merge(s2)
@@ -46,3 +51,4 @@ stack, top = do_stacks(torch.classes.my_classes.MyStackClass(["wow"]))
 assert top == "wow"
 for expected in ["wow", "mom", "hi"]:
     assert stack.pop() == expected
+
