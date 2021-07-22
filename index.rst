@@ -314,7 +314,7 @@ Welcome to PyTorch Tutorials
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
-   :link: intermediate/custom_function_double_backward.html
+   :link: intermediate/custom_function_double_backward_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
