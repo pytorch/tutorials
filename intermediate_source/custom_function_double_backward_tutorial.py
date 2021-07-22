@@ -75,7 +75,7 @@ torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559699-e04f3cb1-aaf2-4a9a-a83d-b8767d04fbd9.png
-#    :scale: 25%
+#    :width: 400
 
 ######################################################################
 # A slight variation on the previous example is to save an output
@@ -108,11 +108,15 @@ torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559780-d141f2ba-1ee8-4c33-b4eb-c9877b27a954.png
-#    :scale: 25%
+#    :width: 332
 
 ######################################################################
 # A more tricky case is when we need to save an intermediate result.
-# We demonstrate this case by implementing :math:`sinh(x) = (e^x - e^{-x}) / 2`
+# We demonstrate this case by implementing:
+#
+# .. math::
+#   sinh(x) := \frac{e^x - e^{-x}}{2}
+#
 # Since the derivative of sinh is cosh, it might be useful to reuse
 # `exp(x)` and `exp(-x)`, the two intermediate results in forward
 # in the backward computation.
@@ -156,7 +160,7 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126560494-e48eba62-be84-4b29-8c90-a7f6f40b1438.png
-#    :scale: 25%
+#    :width: 460
 
 ######################################################################
 # Now we show what happens when we don't also return our intermediate
@@ -186,7 +190,7 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126565889-13992f01-55bc-411a-8aee-05b721fe064a.png
-#    :scale: 25%
+#    :width: 232
 
 ######################################################################
 # Finally, let's consider an example when it may not be possible for
@@ -252,4 +256,4 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 
 ######################################################################
 # .. image:: https://user-images.githubusercontent.com/13428986/126559935-74526b4d-d419-4983-b1f0-a6ee99428531.png
-#    :scale: 25%
+#    :width: 352
