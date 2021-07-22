@@ -31,7 +31,7 @@ point out some things to look out for.
 # we can explore a couple examples:
 
 ######################################################################
-# Saving the inputs
+# Saving the Inputs
 # -------------------------------------------------------------------
 # Consider this simple squaring function. It saves an input tensor
 # for backward. Double backward works automatically when autograd
@@ -168,7 +168,7 @@ torch.autograd.gradgradcheck(sinh, x)
 
 ######################################################################
 # Use torchviz to visualize the graph:
-
+#
 # .. code-block:: python
 #
 #    out = sinh(x)
@@ -205,7 +205,7 @@ class SinhBad(torch.autograd.Function):
 ######################################################################
 # Use torchviz to visualize the graph. Notice that `grad_x` is not
 # part of the graph!
-
+#
 # .. code-block:: python
 #
 #    out = SinhBad.apply(x)
@@ -216,7 +216,7 @@ class SinhBad(torch.autograd.Function):
 #    :width: 232
 
 ######################################################################
-# When Backward is not able to be Tracked by Autograd
+# When Backward is not Tracked
 # -------------------------------------------------------------------
 # Finally, let's consider an example when it may not be possible for
 # autograd to track gradients for a functions backward at all.
@@ -269,7 +269,7 @@ torch.autograd.gradgradcheck(Cube.apply, x)
 
 ######################################################################
 # Use torchviz to visualize the graph:
-
+#
 # .. code-block:: python
 #
 #    out = Cube.apply(x)

@@ -670,11 +670,8 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
-<<<<<<< HEAD
-   intermediate/custom_function_conv_bn_tutorial
-=======
    intermediate/custom_function_double_backward
->>>>>>> 4749c7db6... Add images
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
