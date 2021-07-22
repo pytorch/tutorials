@@ -338,21 +338,22 @@ test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 ######################################################################
 # A Comparison of Memory Usage
 # -------------------------------------------------------------------
-# Print out memory usage for both `fused=True` and `fused=False`
-mems = []
-for fused in (True, False):
-    torch.manual_seed(123456)
-    torch.cuda.reset_peak_memory_stats()
+# If cuda is enabled, print out memory usage for both `fused=True` and `fused=False`
+if use_cuda:
+    mems = []
+    for fused in (True, False):
+        torch.manual_seed(123456)
+        torch.cuda.reset_peak_memory_stats()
 
-    model = Net(fused=fused).to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=1.0)
-    scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
+        model = Net(fused=fused).to(device)
+        optimizer = optim.Adadelta(model.parameters(), lr=1.0)
+        scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
 
-    for epoch in range(2):
-        train(model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
-        scheduler.step()
+        for epoch in range(2):
+            train(model, device, train_loader, optimizer, epoch)
+            test(model, device, test_loader)
+            scheduler.step()
 
-    mems.append(torch.cuda.max_memory_allocated(device=None) / 1024**3)
-# Example run: fused peak memory: 1.72GB, unfused peak memory: 2.84GB
-print(f"fused peak memory: {mems[0]:.2f}GB, unfused peak memory: {mems[1]:.2f}GB")
+        mems.append(torch.cuda.max_memory_allocated(device=None) / 1024**3)
+    # Example run: fused peak memory: 1.72GB, unfused peak memory: 2.84GB
+    print(f"fused peak memory: {mems[0]:.2f}GB, unfused peak memory: {mems[1]:.2f}GB")
