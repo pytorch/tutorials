@@ -31,6 +31,8 @@ point out some things to look out for.
 # we can explore a couple examples:
 
 ######################################################################
+# Saving the inputs
+# -------------------------------------------------------------------
 # Consider this simple squaring function. It saves an input tensor
 # for backward. Double backward works automatically when autograd
 # is able to record operations in the backward pass, so there is usually
@@ -63,21 +65,25 @@ torch.autograd.gradgradcheck(Square.apply, x)
 
 ######################################################################
 # We can use torchviz to visualize the graph to see why this works
-import torchviz
-
-x = torch.tensor(1., requires_grad=True).clone()
-out = Square.apply(x)
-grad_x, = torch.autograd.grad(out, x, create_graph=True)
-
+#
+# .. code-block:: python
+#
+#    import torchviz
+#
+#    x = torch.tensor(1., requires_grad=True).clone()
+#    out = Square.apply(x)
+#    grad_x, = torch.autograd.grad(out, x, create_graph=True)
+#    torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
+#
 # We can see that the gradient wrt to x, is itself a function of x (dout/dx = 2x)
 # And the graph of this function has been properly constructed
-torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
-
-######################################################################
+#
 # .. image:: https://user-images.githubusercontent.com/13428986/126559699-e04f3cb1-aaf2-4a9a-a83d-b8767d04fbd9.png
 #    :width: 400
 
 ######################################################################
+# Saving the Outputs
+# -------------------------------------------------------------------
 # A slight variation on the previous example is to save an output
 # instead of input. The mechanics are similar because outputs are also
 # associated with a grad_fn.
@@ -102,15 +108,21 @@ x = torch.tensor(1., requires_grad=True, dtype=torch.double).clone()
 torch.autograd.gradcheck(Exp.apply, x)
 torch.autograd.gradgradcheck(Exp.apply, x)
 
-out = Exp.apply(x)
-grad_x, = torch.autograd.grad(out, x, create_graph=True)
-torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
-
 ######################################################################
+# Use torchviz to visualize the graph:
+#
+# .. code-block:: python
+#
+#    out = Exp.apply(x)
+#    grad_x, = torch.autograd.grad(out, x, create_graph=True)
+#    torchviz.make_dot((grad_x, x, out), {"grad_x": grad_x, "x": x, "out": out})
+#
 # .. image:: https://user-images.githubusercontent.com/13428986/126559780-d141f2ba-1ee8-4c33-b4eb-c9877b27a954.png
 #    :width: 332
 
 ######################################################################
+# Saving Intermediate Results
+# -------------------------------------------------------------------
 # A more tricky case is when we need to save an intermediate result.
 # We demonstrate this case by implementing:
 #
@@ -154,20 +166,26 @@ x = torch.rand(3, 3, requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(sinh, x)
 torch.autograd.gradgradcheck(sinh, x)
 
-out = sinh(x)
-grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
-torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
-
 ######################################################################
+# Use torchviz to visualize the graph:
+
+# .. code-block:: python
+#
+#    out = sinh(x)
+#    grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
+#    torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+#
 # .. image:: https://user-images.githubusercontent.com/13428986/126560494-e48eba62-be84-4b29-8c90-a7f6f40b1438.png
 #    :width: 460
 
 ######################################################################
+# Saving Intermediate Results: What not to do
+# -------------------------------------------------------------------
 # Now we show what happens when we don't also return our intermediate
 # results as outputs: `grad_x` would not even have a  backward graph
 # because it is purely a function `exp` and `expnegx`, which don't
 # require grad.
-class Sinh(torch.autograd.Function):
+class SinhBad(torch.autograd.Function):
     # This is an example of what NOT to do!
     @staticmethod
     def forward(ctx, x):
@@ -184,15 +202,22 @@ class Sinh(torch.autograd.Function):
         grad_input = grad_out * (expx + expnegx) / 2
         return grad_input
 
-out = Sinh.apply(x)
-grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
-torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
-
 ######################################################################
+# Use torchviz to visualize the graph. Notice that `grad_x` is not
+# part of the graph!
+
+# .. code-block:: python
+#
+#    out = SinhBad.apply(x)
+#    grad_x, = torch.autograd.grad(out.sum(), x, create_graph=True)
+#    torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+#
 # .. image:: https://user-images.githubusercontent.com/13428986/126565889-13992f01-55bc-411a-8aee-05b721fe064a.png
 #    :width: 232
 
 ######################################################################
+# When Backward is not able to be Tracked by Autograd
+# -------------------------------------------------------------------
 # Finally, let's consider an example when it may not be possible for
 # autograd to track gradients for a functions backward at all.
 # We can imagine cube_backward to be a function that may require a
@@ -242,9 +267,17 @@ x = torch.tensor(2., requires_grad=True, dtype=torch.double)
 torch.autograd.gradcheck(Cube.apply, x)
 torch.autograd.gradgradcheck(Cube.apply, x)
 
-out = Cube.apply(x)
-grad_x, = torch.autograd.grad(out, x, create_graph=True)
-torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+######################################################################
+# Use torchviz to visualize the graph:
+
+# .. code-block:: python
+#
+#    out = Cube.apply(x)
+#    grad_x, = torch.autograd.grad(out, x, create_graph=True)
+#    torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out})
+#
+# .. image:: https://user-images.githubusercontent.com/13428986/126559935-74526b4d-d419-4983-b1f0-a6ee99428531.png
+#    :width: 352
 
 ######################################################################
 # To conclude, whether double backward works for your custom function
@@ -254,6 +287,3 @@ torchviz.make_dot((grad_x, x, out), params={"grad_x": grad_x, "x": x, "out": out
 # techniques that enable a backward function to be tracked, when they
 # otherwise would not be.
 
-######################################################################
-# .. image:: https://user-images.githubusercontent.com/13428986/126559935-74526b4d-d419-4983-b1f0-a6ee99428531.png
-#    :width: 352
