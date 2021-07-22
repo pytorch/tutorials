@@ -207,7 +207,7 @@ to obtain the sum of all tensors at all processes, we can use the
 
     """ All-Reduce example."""
     def run(rank, size):
-        """ Simple point-to-point communication. """
+        """ Simple collective communication. """
         group = dist.new_group([0, 1])
         tensor = torch.ones(1)
         dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
@@ -233,10 +233,10 @@ of 6 collectives currently implemented in PyTorch.
    ``tensor`` and stores the result in ``dst``.
 -  ``dist.all_reduce(tensor, op, group)``: Same as reduce, but the
    result is stored in all processes.
--  ``dist.scatter(tensor, src, scatter_list, group)``: Copies the
+-  ``dist.scatter(tensor, scatter_list, src, group)``: Copies the
    :math:`i^{\text{th}}` tensor ``scatter_list[i]`` to the
    :math:`i^{\text{th}}` process.
--  ``dist.gather(tensor, dst, gather_list, group)``: Copies ``tensor``
+-  ``dist.gather(tensor, gather_list, dst, group)``: Copies ``tensor``
    from all processes in ``dst``.
 -  ``dist.all_gather(tensor_list, tensor, group)``: Copies ``tensor``
    from all processes to ``tensor_list``, on all processes.
