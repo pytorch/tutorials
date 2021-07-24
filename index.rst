@@ -171,7 +171,7 @@ Welcome to PyTorch Tutorials
    :header: Language Translation with Transformer
    :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/translation_transformer.html
+   :link: beginner/translation_transformer_tutorial.html
    :tags: Text
 
 
@@ -606,7 +606,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/translation_transformer
+   beginner/translation_transformer_tutorial
 
 
 .. toctree::
