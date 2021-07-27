@@ -54,7 +54,7 @@ Code your model:
           self.dequant = torch.quantization.DeQuantStub()
 
       def forward(self, x):
-          x.contiguous(memory_format=torch.channels_last)
+          x = x.contiguous(memory_format=torch.channels_last)
           x = self.quant(x)
           x = self.conv(x)
           x = self.bn(x)
@@ -145,7 +145,7 @@ At the moment of writing this recipe, PyTorch Android java API does not support 
 .. code-block:: python
 
   def forward(self, x):
-      x.contiguous(memory_format=torch.channels_last)
+      x = x.contiguous(memory_format=torch.channels_last)
       ...
 
 
