@@ -318,7 +318,7 @@ Load a pretrained model: for this exercise you will be using
 
 At this point you need to modify the pretrained model. The model
 has the quantize/dequantize blocks in the beginning and the end. However,
-because you will only use the feature extractor, the dequantizatioin layer has
+because you will only use the feature extractor, the dequantization layer has
 to move right before the linear layer (the head). The easiest way to do that
 is to wrap the model in the ``nn.Sequential`` module.
 
