@@ -162,7 +162,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
