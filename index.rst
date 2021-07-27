@@ -303,6 +303,12 @@ Welcome to PyTorch Tutorials
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
+.. customcarditem::
+   :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
+   :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_conv_bn_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. Model Optimization
 
@@ -326,6 +332,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
+
+ .. customcarditem::
+    :header: Optimizing Vision Transformer Model
+    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+    :image: _static/img/thumbnails/cropped/mobile.png
+    :link: beginner/vt_tutorial.html
+    :tags: Model-Optimization,Best-Practice,Mobile
 
 .. customcarditem::
    :header: Parametrizations Tutorial
@@ -642,6 +655,7 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
@@ -657,6 +671,7 @@ Additional Resources
    beginner/profiler
    intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
+   beginner/vt_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
