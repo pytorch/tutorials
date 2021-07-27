@@ -39,7 +39,7 @@ Use the same example model defined in the `PyTorch Mobile Performance Recipes <h
             self.dequant = torch.quantization.DeQuantStub()
 
         def forward(self, x):
-            x.contiguous(memory_format=torch.channels_last)
+            x = x.contiguous(memory_format=torch.channels_last)
             x = self.quant(x)
             x = self.conv(x)
             x = self.bn(x)
