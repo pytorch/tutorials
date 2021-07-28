@@ -574,8 +574,8 @@ either the application or the model <code class="docutils literal notranslate"><
     <span class="n">setup</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
 
     <span class="c1"># setup mp_model and devices for this process</span>
-    <span class="n">dev0</span> <span class="o">=</span> <span class="n">rank</span> <span class="o">*</span> <span class="mi">2</span>
-    <span class="n">dev1</span> <span class="o">=</span> <span class="n">rank</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">dev0</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="n">world_size</span>
+    <span class="n">dev1</span> <span class="o">=</span> <span class="p">(</span><span class="n">rank</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">world_size</span>
     <span class="n">mp_model</span> <span class="o">=</span> <span class="n">ToyMpModel</span><span class="p">(</span><span class="n">dev0</span><span class="p">,</span> <span class="n">dev1</span><span class="p">)</span>
     <span class="n">ddp_mp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">mp_model</span><span class="p">)</span>
 
@@ -594,12 +594,11 @@ either the application or the model <code class="docutils literal notranslate"><
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
     <span class="n">n_gpus</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">device_count</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">n_gpus</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
-      <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Requires at least 8 GPUs to run, but got </span><span class="si">{</span><span class="n">n_gpus</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_basic</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_checkpoint</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-      <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_model_parallel</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">n_gpus</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Requires at least 2 GPUs to run, but got </span><span class="si">{</span><span class="n">n_gpus</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="n">n_gpus</span>
+    <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_basic</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
+    <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_checkpoint</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
+    <span class="n">run_demo</span><span class="p">(</span><span class="n">demo_model_parallel</span><span class="p">,</span> <span class="n">world_size</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
