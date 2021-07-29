@@ -10,20 +10,20 @@
 Language Modeling with nn.Transformer and TorchText
 ===============================================================
 
-This is a tutorial on how to train a sequence-to-sequence model
-that uses the
+This is a tutorial on training a sequence-to-sequence model that uses the
 `nn.Transformer <https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html>`__ module.
 
-PyTorch 1.2 release includes a standard transformer module based on the
-paper `Attention is All You
-Need <https://arxiv.org/pdf/1706.03762.pdf>`__. The transformer model
-has been proved to be superior in quality for many sequence-to-sequence
-problems while being more parallelizable. The ``nn.Transformer`` module
-relies entirely on an attention mechanism (another module recently
-implemented as `nn.MultiheadAttention <https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html>`__) to draw global dependencies
-between input and output. The ``nn.Transformer`` module is now highly
-modularized such that a single component (like `nn.TransformerEncoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html>`__
-in this tutorial) can be easily adapted/composed.
+The PyTorch 1.2 release includes a standard transformer module based on the
+paper `Attention is All You Need <https://arxiv.org/pdf/1706.03762.pdf>`__.
+Compared to Recurrent Neural Networks (RNNs), the transformer model has proven
+to be superior in quality for many sequence-to-sequence tasks while being more
+parallelizable. The ``nn.Transformer`` module relies entirely on an attention
+mechanism (implemented as
+`nn.MultiheadAttention <https://pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html>`__)
+to draw global dependencies between input and output. The ``nn.Transformer``
+module is highly modularized such that a single component (e.g.,
+`nn.TransformerEncoder <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html>`__)
+can be easily adapted/composed.
 
 .. image:: ../_static/img/transformer_architecture.jpg
 
@@ -32,20 +32,20 @@ Define the model
 ----------------
 
 
-In this tutorial, we train ``nn.TransformerEncoder`` model on a
+In this tutorial, we train a ``nn.TransformerEncoder`` model on a
 language modeling task. The language modeling task is to assign a
 probability for the likelihood of a given word (or a sequence of words)
 to follow a sequence of words. A sequence of tokens are passed to the embedding
 layer first, followed by a positional encoding layer to account for the order
 of the word (see the next paragraph for more details). The
 ``nn.TransformerEncoder`` consists of multiple layers of
-`nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__. Along with the input sequence, a square
-attention mask is required because the self-attention layers in
-``nn.TransformerEncoder`` are only allowed to attend the earlier positions in
-the sequence. For the language modeling task, any tokens on the future
-positions should be masked. To have the actual words, the output
-of ``nn.TransformerEncoder`` model is sent to the final Linear
-layer, which is followed by a log-Softmax function.
+`nn.TransformerEncoderLayer <https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html>`__.
+Along with the input sequence, a square attention mask is required because the
+self-attention layers in ``nn.TransformerEncoder`` are only allowed to attend
+the earlier positions in the sequence. For the language modeling task, any
+tokens on the future positions should be masked. To produce a probability
+distribution over output words, the output of the ``nn.TransformerEncoder``
+model is passed through a linear layer followed by a log-softmax function.
 
 
 
@@ -53,43 +53,54 @@ layer, which is followed by a log-Softmax function.
 
 
     import math
+    from typing import Tuple
 
     import torch
-    import torch.nn as nn
+    from torch import nn, Tensor
     import torch.nn.functional as F
     from torch.nn import TransformerEncoder, TransformerEncoderLayer
+    from torch.utils.data import dataset
 
     class TransformerModel(nn.Module):
 
-        def __init__(self, ntoken, ninp, nhead, nhid, nlayers, dropout=0.5):
-            super(TransformerModel, self).__init__()
+        def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
+                     nlayers: int, dropout: float = 0.5):
+            super().__init__()
             self.model_type = 'Transformer'
-            self.pos_encoder = PositionalEncoding(ninp, dropout)
-            encoder_layers = TransformerEncoderLayer(ninp, nhead, nhid, dropout)
+            self.pos_encoder = PositionalEncoding(d_model, dropout)
+            encoder_layers = TransformerEncoderLayer(d_model, nhead, d_hid, dropout)
             self.transformer_encoder = TransformerEncoder(encoder_layers, nlayers)
-            self.encoder = nn.Embedding(ntoken, ninp)
-            self.ninp = ninp
-            self.decoder = nn.Linear(ninp, ntoken)
+            self.encoder = nn.Embedding(ntoken, d_model)
+            self.d_model = d_model
+            self.decoder = nn.Linear(d_model, ntoken)
 
             self.init_weights()
 
-        def generate_square_subsequent_mask(self, sz):
-            mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-            mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
-            return mask
-
-        def init_weights(self):
+        def init_weights(self) -> None:
             initrange = 0.1
             self.encoder.weight.data.uniform_(-initrange, initrange)
             self.decoder.bias.data.zero_()
             self.decoder.weight.data.uniform_(-initrange, initrange)
 
-        def forward(self, src, src_mask):
-            src = self.encoder(src) * math.sqrt(self.ninp)
+        def forward(self, src: Tensor, src_mask: Tensor) -> Tensor:
+            """
+            Args:
+                src: Tensor, shape [seq_len, batch_size]
+                src_mask: Tensor, shape [seq_len, seq_len]
+
+            Returns:
+                output Tensor of shape [seq_len, batch_size, ntoken]
+            """
+            src = self.encoder(src) * math.sqrt(self.d_model)
             src = self.pos_encoder(src)
             output = self.transformer_encoder(src, src_mask)
             output = self.decoder(output)
             return output
+
+
+    def generate_square_subsequent_mask(sz: int) -> Tensor:
+        """Generates an upper-triangular matrix of -inf, with zeros on diag."""
+        return torch.triu(torch.ones(sz, sz) * float('-inf'), diagonal=1)
 
 
 
@@ -111,20 +122,23 @@ different frequencies.
 
     class PositionalEncoding(nn.Module):
 
-        def __init__(self, d_model, dropout=0.1, max_len=5000):
-            super(PositionalEncoding, self).__init__()
+        def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000):
+            super().__init__()
             self.dropout = nn.Dropout(p=dropout)
 
-            pe = torch.zeros(max_len, d_model)
-            position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
-            div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
-            pe[:, 0::2] = torch.sin(position * div_term)
-            pe[:, 1::2] = torch.cos(position * div_term)
-            pe = pe.unsqueeze(0).transpose(0, 1)
+            position = torch.arange(max_len).unsqueeze(1)
+            div_term = torch.exp(torch.arange(0, d_model, 2) * (-math.log(10000.0) / d_model))
+            pe = torch.zeros(max_len, 1, d_model)
+            pe[:, 0, 0::2] = torch.sin(position * div_term)
+            pe[:, 0, 1::2] = torch.cos(position * div_term)
             self.register_buffer('pe', pe)
 
-        def forward(self, x):
-            x = x + self.pe[:x.size(0), :]
+        def forward(self, x: Tensor) -> Tensor:
+            """
+            Args:
+                x: Tensor, shape [seq_len, batch_size, embedding_dim]
+            """
+            x = x + self.pe[:x.size(0)]
             return self.dropout(x)
 
 
@@ -140,12 +154,13 @@ Load and batch data
 
 This tutorial uses ``torchtext`` to generate Wikitext-2 dataset. The
 vocab object is built based on the train dataset and is used to numericalize
-tokens into tensors. Starting from sequential data, the ``batchify()``
-function arranges the dataset into columns, trimming off any tokens remaining
-after the data has been divided into batches of size ``batch_size``.
-For instance, with the alphabet as the sequence (total length of 26)
-and a batch size of 4, we would divide the alphabet into 4 sequences of
-length 6:
+tokens into tensors. Wikitext-2 represents rare tokens as `<unk>`.
+
+Given a 1-D vector of sequential data, ``batchify()`` arranges the data
+into ``batch_size`` columns. If the data does not divide evenly into
+``batch_size`` columns, then the data is trimmed to fit. For instance, with
+the alphabet as the data (total length of 26) and ``batch_size=4``, we would
+divide the alphabet into 4 sequences of length 6:
 
 .. math::
   \begin{bmatrix}
@@ -159,48 +174,57 @@ length 6:
   \begin{bmatrix}\text{S} \\ \text{T} \\ \text{U} \\ \text{V} \\ \text{W} \\ \text{X}\end{bmatrix}
   \end{bmatrix}
 
-These columns are treated as independent by the model, which means that
-the dependence of ``G`` and ``F`` can not be learned, but allows more
-efficient batch processing.
+Batching enables more parallelizable processing. However, batching means that
+the model treats each column independently; for example, the dependence of
+``G`` and ``F`` can not be learned in the example above.
 
 
 
 .. code-block:: default
 
 
-    import torch
     from torchtext.datasets import WikiText2
     from torchtext.data.utils import get_tokenizer
     from torchtext.vocab import build_vocab_from_iterator
 
     train_iter = WikiText2(split='train')
     tokenizer = get_tokenizer('basic_english')
-    vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=["<unk>"])
-    vocab.set_default_index(vocab["<unk>"]) 
+    vocab = build_vocab_from_iterator(map(tokenizer, train_iter), specials=['<unk>'])
+    vocab.set_default_index(vocab['<unk>']) 
 
-    def data_process(raw_text_iter):
-      data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
-      return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
+    def data_process(raw_text_iter: dataset.IterableDataset) -> Tensor:
+        """Converts raw text into a flat Tensor."""
+        data = [torch.tensor(vocab(tokenizer(item)), dtype=torch.long) for item in raw_text_iter]
+        return torch.cat(tuple(filter(lambda t: t.numel() > 0, data)))
 
+    # train_iter was "consumed" by the process of building the vocab,
+    # so we have to create it again
     train_iter, val_iter, test_iter = WikiText2()
     train_data = data_process(train_iter)
     val_data = data_process(val_iter)
     test_data = data_process(test_iter)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def batchify(data, bsz):
-        # Divide the dataset into bsz parts.
-        nbatch = data.size(0) // bsz
-        # Trim off any extra elements that wouldn't cleanly fit (remainders).
-        data = data.narrow(0, 0, nbatch * bsz)
-        # Evenly divide the data across the bsz batches.
-        data = data.view(bsz, -1).t().contiguous()
+    def batchify(data: Tensor, bsz: int) -> Tensor:
+        """Divides the data into bsz separate sequences, removing extra elements
+        that wouldn't cleanly fit.
+
+        Args:
+            data: Tensor, shape [N]
+            bsz: int, batch size
+
+        Returns:
+            Tensor of shape [N // bsz, bsz]
+        """
+        seq_len = data.size(0) // bsz
+        data = data[:seq_len * bsz]
+        data = data.view(bsz, seq_len).t().contiguous()
         return data.to(device)
 
     batch_size = 20
     eval_batch_size = 10
-    train_data = batchify(train_data, batch_size)
+    train_data = batchify(train_data, batch_size)  # shape [seq_len, batch_size]
     val_data = batchify(val_data, eval_batch_size)
     test_data = batchify(test_data, eval_batch_size)
 
@@ -215,7 +239,7 @@ Functions to generate input and target sequence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-``get_batch()`` function generates the input and target sequence for
+``get_batch()`` generates a pair of input-target sequences for
 the transformer model. It subdivides the source data into chunks of
 length ``bptt``. For the language modeling task, the model needs the
 following words as ``Target``. For example, with a ``bptt`` value of 2,
@@ -233,7 +257,16 @@ with the ``S`` dimension in the Transformer model. The batch dimension
 
 
     bptt = 35
-    def get_batch(source, i):
+    def get_batch(source: Tensor, i: int) -> Tuple[Tensor, Tensor]:
+        """
+        Args:
+            source: Tensor, shape [full_seq_len, batch_size]
+            i: int
+
+        Returns:
+            tuple (data, target), where data has shape [seq_len, batch_size] and
+            target has shape [seq_len * batch_size]
+        """
         seq_len = min(bptt, len(source) - 1 - i)
         data = source[i:i+seq_len]
         target = source[i+1:i+1+seq_len].reshape(-1)
@@ -250,7 +283,7 @@ Initiate an instance
 --------------------
 
 
-The model is set up with the hyperparameter below. The vocab size is
+The model hyperparameters are defined below. The vocab size is
 equal to the length of the vocab object.
 
 
@@ -258,13 +291,13 @@ equal to the length of the vocab object.
 .. code-block:: default
 
 
-    ntokens = len(vocab) # the size of vocabulary
-    emsize = 200 # embedding dimension
-    nhid = 200 # the dimension of the feedforward network model in nn.TransformerEncoder
-    nlayers = 2 # the number of nn.TransformerEncoderLayer in nn.TransformerEncoder
-    nhead = 2 # the number of heads in the multiheadattention models
-    dropout = 0.2 # the dropout value
-    model = TransformerModel(ntokens, emsize, nhead, nhid, nlayers, dropout).to(device)
+    ntokens = len(vocab)  # size of vocabulary
+    emsize = 200  # embedding dimension
+    d_hid = 200  # dimension of the feedforward network model in nn.TransformerEncoder
+    nlayers = 2  # number of nn.TransformerEncoderLayer in nn.TransformerEncoder
+    nhead = 2  # number of heads in nn.MultiheadAttention
+    dropout = 0.2  # dropout probability
+    model = TransformerModel(ntokens, emsize, nhead, d_hid, nlayers, dropout).to(device)
 
 
 
@@ -277,71 +310,73 @@ Run the model
 -------------
 
 
-`CrossEntropyLoss <https://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
-is applied to track the loss and
-`SGD <https://pytorch.org/docs/master/optim.html?highlight=sgd#torch.optim.SGD>`__
-implements stochastic gradient descent method as the optimizer. The initial
-learning rate is set to 5.0. `StepLR <https://pytorch.org/docs/master/optim.html?highlight=steplr#torch.optim.lr_scheduler.StepLR>`__ is
-applied to adjust the learn rate through epochs. During the
-training, we use
-`nn.utils.clip_grad_norm\_ <https://pytorch.org/docs/master/nn.html?highlight=nn%20utils%20clip_grad_norm#torch.nn.utils.clip_grad_norm_>`__
-function to scale all the gradient together to prevent exploding.
+We use `CrossEntropyLoss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html>`__
+with the `SGD <https://pytorch.org/docs/stable/generated/torch.optim.SGD.html>`__
+(stochastic gradient descent) optimizer. The learning rate is initially set to
+5.0 and follows a `StepLR <https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.StepLR.html>`__
+schedule. During training, we use `nn.utils.clip_grad_norm\_ <https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html>`__
+to prevent gradients from exploding.
 
 
 
 .. code-block:: default
 
 
+    import copy
     import time
 
     criterion = nn.CrossEntropyLoss()
-    lr = 5.0 # learning rate
+    lr = 5.0  # learning rate
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.95)
 
-    def train():
-        model.train() # Turn on the train mode
+    def train(model: nn.Module) -> None:
+        model.train()  # turn on train mode
         total_loss = 0.
+        log_interval = 200
         start_time = time.time()
-        src_mask = model.generate_square_subsequent_mask(bptt).to(device)
+        src_mask = generate_square_subsequent_mask(bptt).to(device)
+
+        num_batches = len(train_data) // bptt
         for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
             data, targets = get_batch(train_data, i)
-            optimizer.zero_grad()
-            if data.size(0) != bptt:
-                src_mask = model.generate_square_subsequent_mask(data.size(0)).to(device)
+            batch_size = data.size(0)
+            if batch_size != bptt:  # only on last batch
+                src_mask = src_mask[:batch_size, :batch_size]
             output = model(data, src_mask)
             loss = criterion(output.view(-1, ntokens), targets)
+
+            optimizer.zero_grad()
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
             optimizer.step()
 
             total_loss += loss.item()
-            log_interval = 200
             if batch % log_interval == 0 and batch > 0:
+                lr = scheduler.get_last_lr()[0]
+                ms_per_batch = (time.time() - start_time) * 1000 / log_interval
                 cur_loss = total_loss / log_interval
-                elapsed = time.time() - start_time
-                print('| epoch {:3d} | {:5d}/{:5d} batches | '
-                      'lr {:02.2f} | ms/batch {:5.2f} | '
-                      'loss {:5.2f} | ppl {:8.2f}'.format(
-                        epoch, batch, len(train_data) // bptt, scheduler.get_last_lr()[0],
-                        elapsed * 1000 / log_interval,
-                        cur_loss, math.exp(cur_loss)))
+                ppl = math.exp(cur_loss)
+                print(f'| epoch {epoch:3d} | {batch:5d}/{num_batches:5d} batches | '
+                      f'lr {lr:02.2f} | ms/batch {ms_per_batch:5.2f} | '
+                      f'loss {cur_loss:5.2f} | ppl {ppl:8.2f}')
                 total_loss = 0
                 start_time = time.time()
 
-    def evaluate(eval_model, data_source):
-        eval_model.eval() # Turn on the evaluation mode
+    def evaluate(model: nn.Module, eval_data: Tensor) -> float:
+        model.eval()  # turn on evaluation mode
         total_loss = 0.
-        src_mask = model.generate_square_subsequent_mask(bptt).to(device)
+        src_mask = generate_square_subsequent_mask(bptt).to(device)
         with torch.no_grad():
-            for i in range(0, data_source.size(0) - 1, bptt):
-                data, targets = get_batch(data_source, i)
-                if data.size(0) != bptt:
-                    src_mask = model.generate_square_subsequent_mask(data.size(0)).to(device)
-                output = eval_model(data, src_mask)
+            for i in range(0, eval_data.size(0) - 1, bptt):
+                data, targets = get_batch(eval_data, i)
+                batch_size = data.size(0)
+                if batch_size != bptt:
+                    src_mask = src_mask[:batch_size, :batch_size]
+                output = model(data, src_mask)
                 output_flat = output.view(-1, ntokens)
-                total_loss += len(data) * criterion(output_flat, targets).item()
-        return total_loss / (len(data_source) - 1)
+                total_loss += batch_size * criterion(output_flat, targets).item()
+        return total_loss / (len(eval_data) - 1)
 
 
 
@@ -356,23 +391,24 @@ we've seen so far. Adjust the learning rate after each epoch.
 .. code-block:: default
 
 
-    best_val_loss = float("inf")
-    epochs = 3 # The number of epochs
+    best_val_loss = float('inf')
+    epochs = 3
     best_model = None
 
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()
-        train()
+        train(model)
         val_loss = evaluate(model, val_data)
+        val_ppl = math.exp(val_loss)
+        elapsed = time.time() - epoch_start_time
         print('-' * 89)
-        print('| end of epoch {:3d} | time: {:5.2f}s | valid loss {:5.2f} | '
-              'valid ppl {:8.2f}'.format(epoch, (time.time() - epoch_start_time),
-                                         val_loss, math.exp(val_loss)))
+        print(f'| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | '
+              f'valid loss {val_loss:5.2f} | valid ppl {val_ppl:8.2f}')
         print('-' * 89)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            best_model = model
+            best_model = copy.deepcopy(model)
 
         scheduler.step()
 
@@ -387,72 +423,72 @@ we've seen so far. Adjust the learning rate after each epoch.
 
  .. code-block:: none
 
-    | epoch   1 |   200/ 2928 batches | lr 5.00 | ms/batch 28.95 | loss  8.14 | ppl  3415.82
-    | epoch   1 |   400/ 2928 batches | lr 5.00 | ms/batch 27.91 | loss  6.92 | ppl  1010.87
-    | epoch   1 |   600/ 2928 batches | lr 5.00 | ms/batch 27.88 | loss  6.47 | ppl   642.46
-    | epoch   1 |   800/ 2928 batches | lr 5.00 | ms/batch 27.94 | loss  6.32 | ppl   556.90
-    | epoch   1 |  1000/ 2928 batches | lr 5.00 | ms/batch 27.92 | loss  6.20 | ppl   492.76
-    | epoch   1 |  1200/ 2928 batches | lr 5.00 | ms/batch 27.97 | loss  6.16 | ppl   475.23
-    | epoch   1 |  1400/ 2928 batches | lr 5.00 | ms/batch 27.95 | loss  6.12 | ppl   454.36
-    | epoch   1 |  1600/ 2928 batches | lr 5.00 | ms/batch 27.96 | loss  6.11 | ppl   452.15
-    | epoch   1 |  1800/ 2928 batches | lr 5.00 | ms/batch 27.95 | loss  6.04 | ppl   418.69
-    | epoch   1 |  2000/ 2928 batches | lr 5.00 | ms/batch 27.95 | loss  6.03 | ppl   414.75
-    | epoch   1 |  2200/ 2928 batches | lr 5.00 | ms/batch 27.96 | loss  5.90 | ppl   366.25
-    | epoch   1 |  2400/ 2928 batches | lr 5.00 | ms/batch 27.94 | loss  5.98 | ppl   395.51
-    | epoch   1 |  2600/ 2928 batches | lr 5.00 | ms/batch 27.94 | loss  5.96 | ppl   387.31
-    | epoch   1 |  2800/ 2928 batches | lr 5.00 | ms/batch 27.97 | loss  5.89 | ppl   359.73
+    | epoch   1 |   200/ 2928 batches | lr 5.00 | ms/batch 28.78 | loss  8.10 | ppl  3305.19
+    | epoch   1 |   400/ 2928 batches | lr 5.00 | ms/batch 27.76 | loss  6.87 | ppl   963.44
+    | epoch   1 |   600/ 2928 batches | lr 5.00 | ms/batch 27.57 | loss  6.44 | ppl   625.45
+    | epoch   1 |   800/ 2928 batches | lr 5.00 | ms/batch 27.79 | loss  6.30 | ppl   543.53
+    | epoch   1 |  1000/ 2928 batches | lr 5.00 | ms/batch 27.71 | loss  6.19 | ppl   487.19
+    | epoch   1 |  1200/ 2928 batches | lr 5.00 | ms/batch 27.75 | loss  6.15 | ppl   470.98
+    | epoch   1 |  1400/ 2928 batches | lr 5.00 | ms/batch 27.85 | loss  6.11 | ppl   452.42
+    | epoch   1 |  1600/ 2928 batches | lr 5.00 | ms/batch 27.76 | loss  6.10 | ppl   446.98
+    | epoch   1 |  1800/ 2928 batches | lr 5.00 | ms/batch 27.72 | loss  6.03 | ppl   415.17
+    | epoch   1 |  2000/ 2928 batches | lr 5.00 | ms/batch 27.68 | loss  6.02 | ppl   410.48
+    | epoch   1 |  2200/ 2928 batches | lr 5.00 | ms/batch 27.84 | loss  5.90 | ppl   365.56
+    | epoch   1 |  2400/ 2928 batches | lr 5.00 | ms/batch 27.74 | loss  5.98 | ppl   395.24
+    | epoch   1 |  2600/ 2928 batches | lr 5.00 | ms/batch 27.85 | loss  5.95 | ppl   383.90
+    | epoch   1 |  2800/ 2928 batches | lr 5.00 | ms/batch 27.86 | loss  5.88 | ppl   356.22
     -----------------------------------------------------------------------------------------
-    | end of epoch   1 | time: 85.00s | valid loss  5.76 | valid ppl   318.83
+    | end of epoch   1 | time: 84.45s | valid loss  5.78 | valid ppl   324.80
     -----------------------------------------------------------------------------------------
-    | epoch   2 |   200/ 2928 batches | lr 4.75 | ms/batch 28.10 | loss  5.86 | ppl   352.25
-    | epoch   2 |   400/ 2928 batches | lr 4.75 | ms/batch 27.99 | loss  5.85 | ppl   346.44
-    | epoch   2 |   600/ 2928 batches | lr 4.75 | ms/batch 28.00 | loss  5.67 | ppl   291.37
-    | epoch   2 |   800/ 2928 batches | lr 4.75 | ms/batch 27.98 | loss  5.71 | ppl   301.63
-    | epoch   2 |  1000/ 2928 batches | lr 4.75 | ms/batch 27.99 | loss  5.66 | ppl   286.13
-    | epoch   2 |  1200/ 2928 batches | lr 4.75 | ms/batch 27.99 | loss  5.68 | ppl   294.40
-    | epoch   2 |  1400/ 2928 batches | lr 4.75 | ms/batch 28.01 | loss  5.69 | ppl   295.74
-    | epoch   2 |  1600/ 2928 batches | lr 4.75 | ms/batch 27.99 | loss  5.72 | ppl   304.51
-    | epoch   2 |  1800/ 2928 batches | lr 4.75 | ms/batch 27.98 | loss  5.65 | ppl   285.38
-    | epoch   2 |  2000/ 2928 batches | lr 4.75 | ms/batch 27.99 | loss  5.67 | ppl   291.36
-    | epoch   2 |  2200/ 2928 batches | lr 4.75 | ms/batch 27.97 | loss  5.56 | ppl   258.60
-    | epoch   2 |  2400/ 2928 batches | lr 4.75 | ms/batch 28.00 | loss  5.65 | ppl   283.65
-    | epoch   2 |  2600/ 2928 batches | lr 4.75 | ms/batch 27.97 | loss  5.64 | ppl   282.75
-    | epoch   2 |  2800/ 2928 batches | lr 4.75 | ms/batch 27.95 | loss  5.58 | ppl   264.29
+    | epoch   2 |   200/ 2928 batches | lr 4.75 | ms/batch 27.95 | loss  5.86 | ppl   351.51
+    | epoch   2 |   400/ 2928 batches | lr 4.75 | ms/batch 27.88 | loss  5.84 | ppl   344.59
+    | epoch   2 |   600/ 2928 batches | lr 4.75 | ms/batch 27.77 | loss  5.66 | ppl   288.28
+    | epoch   2 |   800/ 2928 batches | lr 4.75 | ms/batch 27.88 | loss  5.70 | ppl   298.95
+    | epoch   2 |  1000/ 2928 batches | lr 4.75 | ms/batch 27.76 | loss  5.65 | ppl   283.82
+    | epoch   2 |  1200/ 2928 batches | lr 4.75 | ms/batch 27.83 | loss  5.68 | ppl   292.69
+    | epoch   2 |  1400/ 2928 batches | lr 4.75 | ms/batch 27.84 | loss  5.69 | ppl   296.11
+    | epoch   2 |  1600/ 2928 batches | lr 4.75 | ms/batch 27.81 | loss  5.71 | ppl   301.53
+    | epoch   2 |  1800/ 2928 batches | lr 4.75 | ms/batch 27.90 | loss  5.65 | ppl   284.27
+    | epoch   2 |  2000/ 2928 batches | lr 4.75 | ms/batch 27.76 | loss  5.66 | ppl   286.99
+    | epoch   2 |  2200/ 2928 batches | lr 4.75 | ms/batch 27.86 | loss  5.55 | ppl   256.43
+    | epoch   2 |  2400/ 2928 batches | lr 4.75 | ms/batch 27.83 | loss  5.64 | ppl   281.83
+    | epoch   2 |  2600/ 2928 batches | lr 4.75 | ms/batch 27.85 | loss  5.64 | ppl   281.46
+    | epoch   2 |  2800/ 2928 batches | lr 4.75 | ms/batch 27.85 | loss  5.57 | ppl   263.25
     -----------------------------------------------------------------------------------------
-    | end of epoch   2 | time: 84.95s | valid loss  5.62 | valid ppl   276.65
+    | end of epoch   2 | time: 84.47s | valid loss  5.63 | valid ppl   278.90
     -----------------------------------------------------------------------------------------
-    | epoch   3 |   200/ 2928 batches | lr 4.51 | ms/batch 28.14 | loss  5.60 | ppl   270.62
-    | epoch   3 |   400/ 2928 batches | lr 4.51 | ms/batch 28.01 | loss  5.62 | ppl   276.89
-    | epoch   3 |   600/ 2928 batches | lr 4.51 | ms/batch 27.99 | loss  5.42 | ppl   226.93
-    | epoch   3 |   800/ 2928 batches | lr 4.51 | ms/batch 28.00 | loss  5.48 | ppl   240.29
-    | epoch   3 |  1000/ 2928 batches | lr 4.51 | ms/batch 27.97 | loss  5.43 | ppl   227.56
-    | epoch   3 |  1200/ 2928 batches | lr 4.51 | ms/batch 27.99 | loss  5.46 | ppl   236.22
-    | epoch   3 |  1400/ 2928 batches | lr 4.51 | ms/batch 28.01 | loss  5.48 | ppl   240.62
-    | epoch   3 |  1600/ 2928 batches | lr 4.51 | ms/batch 27.98 | loss  5.52 | ppl   250.26
-    | epoch   3 |  1800/ 2928 batches | lr 4.51 | ms/batch 28.00 | loss  5.45 | ppl   233.47
-    | epoch   3 |  2000/ 2928 batches | lr 4.51 | ms/batch 27.96 | loss  5.46 | ppl   235.87
-    | epoch   3 |  2200/ 2928 batches | lr 4.51 | ms/batch 28.00 | loss  5.34 | ppl   209.35
-    | epoch   3 |  2400/ 2928 batches | lr 4.51 | ms/batch 28.00 | loss  5.46 | ppl   234.13
-    | epoch   3 |  2600/ 2928 batches | lr 4.51 | ms/batch 27.99 | loss  5.46 | ppl   234.30
-    | epoch   3 |  2800/ 2928 batches | lr 4.51 | ms/batch 27.97 | loss  5.39 | ppl   219.40
+    | epoch   3 |   200/ 2928 batches | lr 4.51 | ms/batch 27.93 | loss  5.60 | ppl   270.22
+    | epoch   3 |   400/ 2928 batches | lr 4.51 | ms/batch 27.90 | loss  5.61 | ppl   274.33
+    | epoch   3 |   600/ 2928 batches | lr 4.51 | ms/batch 27.81 | loss  5.42 | ppl   226.29
+    | epoch   3 |   800/ 2928 batches | lr 4.51 | ms/batch 27.88 | loss  5.49 | ppl   241.55
+    | epoch   3 |  1000/ 2928 batches | lr 4.51 | ms/batch 27.86 | loss  5.43 | ppl   228.30
+    | epoch   3 |  1200/ 2928 batches | lr 4.51 | ms/batch 27.87 | loss  5.47 | ppl   237.07
+    | epoch   3 |  1400/ 2928 batches | lr 4.51 | ms/batch 27.88 | loss  5.48 | ppl   239.63
+    | epoch   3 |  1600/ 2928 batches | lr 4.51 | ms/batch 27.88 | loss  5.51 | ppl   247.86
+    | epoch   3 |  1800/ 2928 batches | lr 4.51 | ms/batch 27.91 | loss  5.45 | ppl   233.86
+    | epoch   3 |  2000/ 2928 batches | lr 4.51 | ms/batch 27.87 | loss  5.47 | ppl   238.47
+    | epoch   3 |  2200/ 2928 batches | lr 4.51 | ms/batch 27.92 | loss  5.34 | ppl   208.92
+    | epoch   3 |  2400/ 2928 batches | lr 4.51 | ms/batch 27.89 | loss  5.45 | ppl   233.70
+    | epoch   3 |  2600/ 2928 batches | lr 4.51 | ms/batch 27.95 | loss  5.46 | ppl   235.80
+    | epoch   3 |  2800/ 2928 batches | lr 4.51 | ms/batch 27.92 | loss  5.39 | ppl   219.79
     -----------------------------------------------------------------------------------------
-    | end of epoch   3 | time: 84.97s | valid loss  5.60 | valid ppl   271.19
+    | end of epoch   3 | time: 84.62s | valid loss  5.57 | valid ppl   263.03
     -----------------------------------------------------------------------------------------
 
 
-Evaluate the model with the test dataset
--------------------------------------
+Evaluate the best model on the test dataset
+-------------------------------------------
 
-Apply the best model to check the result with the test dataset.
 
 
 .. code-block:: default
 
 
     test_loss = evaluate(best_model, test_data)
+    test_ppl = math.exp(test_loss)
     print('=' * 89)
-    print('| End of training | test loss {:5.2f} | test ppl {:8.2f}'.format(
-        test_loss, math.exp(test_loss)))
+    print(f'| End of training | test loss {test_loss:5.2f} | '
+          f'test ppl {test_ppl:8.2f}')
     print('=' * 89)
 
 
@@ -465,14 +501,14 @@ Apply the best model to check the result with the test dataset.
  .. code-block:: none
 
     =========================================================================================
-    | End of training | test loss  5.52 | test ppl   248.72
+    | End of training | test loss  5.47 | test ppl   238.57
     =========================================================================================
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 4 minutes  29.175 seconds)
+   **Total running time of the script:** ( 4 minutes  27.930 seconds)
 
 
 .. _sphx_glr_download_beginner_transformer_tutorial.py:
