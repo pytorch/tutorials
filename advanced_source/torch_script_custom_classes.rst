@@ -329,7 +329,7 @@ Once this is done, you can use the op like the following example:
           self.f = torch.classes.my_classes.MyStackClass(["foo", "bar"])
 
       def forward(self):
-          return torch.ops.foo.manipulate_instance(self.f)
+          return torch.ops.my_classes.manipulate_instance(self.f)
 
 .. note::
 

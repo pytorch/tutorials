@@ -8,7 +8,7 @@ Welcome to PyTorch Tutorials
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
+   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide.
    :header: Learn the Basics
    :button_link:  beginner/basics/intro.html
    :button_text: Get started with PyTorch
@@ -92,7 +92,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
    :tags: Image/Video
-   
+
 .. customcarditem::
    :header: Optimizing Vision Transformer Model
    :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
@@ -162,7 +162,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
@@ -288,7 +288,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++
-   
+
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
@@ -303,6 +303,12 @@ Welcome to PyTorch Tutorials
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
+.. customcarditem::
+   :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
+   :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_conv_bn_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. Model Optimization
 
@@ -326,6 +332,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
+
+ .. customcarditem::
+    :header: Optimizing Vision Transformer Model
+    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+    :image: _static/img/thumbnails/cropped/mobile.png
+    :link: beginner/vt_tutorial.html
+    :tags: Model-Optimization,Best-Practice,Mobile
 
 .. customcarditem::
    :header: Parametrizations Tutorial
@@ -354,14 +367,14 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
-   
+
 .. customcarditem::
    :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
-   
+
 .. customcarditem::
    :header: (beta) Static Quantization with Eager Mode in PyTorch
    :card_description: This tutorial shows how to do post-training static quantization.
@@ -549,7 +562,7 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
-   
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -621,7 +634,7 @@ Additional Resources
    :includehidden:
    :hidden:
    :caption: Code Transforms with FX
-   
+
    intermediate/fx_conv_bn_fuser
    intermediate/fx_profiling_tutorial
 
@@ -635,13 +648,14 @@ Additional Resources
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
-   
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
@@ -657,6 +671,7 @@ Additional Resources
    beginner/profiler
    intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
+   beginner/vt_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
