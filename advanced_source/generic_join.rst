@@ -1,10 +1,12 @@
 Distributed Training with Uneven Inputs Using the Join Context Manager
 ======================================================================
 
+**Author**\ : `Andrew Gu <https://github.com/andwgu>`_
+
 .. note:: ``Join`` is introduced in PyTorch 1.10 as a prototype feature. This
     API is subject to change.
 
-In this recipe, you will see:
+In this tutorial, you will see:
 
 - An overview of the ``Join`` context manager.
 - An example of how to use the context manager with ``DistributedDataParallel``.
@@ -25,7 +27,7 @@ Requirements
 What is ``Join``?
 -----------------
 In `Getting Started with Distributed Data Parallel - Basic Use Case`_, you saw
-the general skeleton for using ``DistributedDataParallel`` to perform data
+the general skeleton for using `DistributedDataParallel`_ to perform data
 parallel training. This implicitly schedules all-reduces in each backward pass
 to synchronize gradients across ranks. Such `collective communications
 <https://pytorch.org/docs/stable/distributed.html>`__ require participation
@@ -42,7 +44,7 @@ the communications are shadowed are specified by hooks.
 
 Using ``Join`` with ``DistributedDataParallel``
 -----------------------------------------------
-PyTorch's ``DistributedDataParallel`` works out-of-the-box with the ``Join``
+PyTorch's `DistributedDataParallel`_ works out-of-the-box with the ``Join``
 context manager. Here is an example usage:
 
 ::
@@ -91,13 +93,13 @@ rank 1 may be arbitrarily ordered):
   Rank 1 has exhausted all 6 of its inputs!
 
 .. note::
-    ``DistributedDataParallel`` provided its own ``join()`` context manager
+    `DistributedDataParallel`_ provided its own `join()`_ context manager
     prior to the introduction of this generic ``Join`` context manager. In the
     above example, using ``with Join([model]):`` is equivalent to using
     ``with model.join():``. One limitation of the existing
     ``DistributedDataParallel.join()`` is that it does not allow multiple
     participating classes, e.g. ``DistributedDataParallel`` and
-    ``ZeroRedundancyOptimizer`` together.
+    `ZeroRedundancyOptimizer`_ together.
 
 Using ``Join`` with ``DistributedDataParallel`` and ``ZeroRedundancyOptimizer``
 -------------------------------------------------------------------------------
@@ -190,6 +192,13 @@ collective communications, e.g. ``torch.device("cuda:0")`` or
 This returns the process group to be used by the ``Join`` context manager to
 perform collective communications.
 
+In particular, the ``join_device`` and ``join_process_group`` are required
+attributes to ensure that the context manager can schedule collective
+communications between joined and non-joined processes. One usage is to count
+the number of non-joined processes on each iteration using an all-reduce.
+Another usage is for implementing the mechanism required for
+``throw_on_early_termination=True``, which we will explain later below.
+
 ``DistributedDataParallel`` and ``ZeroRedundancyOptimizer`` already inherit
 from ``Joinable`` and implement the above methods, which is why we could
 directly use them in the previous examples.
@@ -218,10 +227,10 @@ This hook is called once all ranks have joined. It is passed an additional
 ``bool`` argument ``is_last_joiner``, which indicates if the rank was one of
 the last to join. The argument may be useful for synchronization.
 
-To provide concrete examples of what these hooks may look like, the
+To give concrete examples of what these hooks may look like, the provided
 ``ZeroRedundancyOptimizer`` main hook performs an optimizer step per normal
 since the joined rank is still responsible for updating and synchronizing its
-shard of the parameters, and the ``DistributedDataParallel`` post-hook
+shard of the parameters, and the provided ``DistributedDataParallel`` post-hook
 broadcasts the final updated model from one of the last joining ranks to ensure
 that it is the same across all ranks.
 
@@ -234,7 +243,7 @@ Finally, let us examine how these fit into the ``Join`` class itself.
 
 As we saw in the previous examples, the constructor takes in a list of the
 ``Joinable`` s that participate in the training loop. These should be the
-classes that perform collective communciations in each iteration.
+classes that perform collective communications in each iteration.
 
 ``enable`` is a ``bool`` that can be set to ``False`` if you know that there
 will not be uneven inputs, in which case the context manager becomes vacuous
@@ -432,3 +441,6 @@ Some key points to highlight:
 .. _Getting Started with Distributed Data Parallel: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html
 .. _Getting Started with Distributed Data Parallel - Basic Use Case: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#basic-use-case
 .. _Shard Optimizer States with ZeroRedundancyOptimizer: https://pytorch.org/tutorials/recipes/zero_redundancy_optimizer.html
+.. _DistributedDataParallel: https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html
+.. _join(): https://pytorch.org/docs/stable/_modules/torch/nn/parallel/distributed.html#DistributedDataParallel.join
+.. _ZeroRedundancyOptimizer: https://pytorch.org/docs/stable/distributed.optim.html
