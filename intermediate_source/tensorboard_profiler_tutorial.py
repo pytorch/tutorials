@@ -132,6 +132,7 @@ with torch.profiler.profile(
         train(batch_data)
         prof.step()  # Need to call this at the end of each step to notify profiler of steps' boundary.
 
+######################################################################
 # Alternatively, the following non-context manager start/stop is supported as well.
 p = torch.profiler.profile(
         schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
@@ -143,7 +144,7 @@ for step, batch_data in enumerate(train_loader):
     if step >= (1 + 1 + 3) * 2:
         break
     train(batch_data)
-    prof.step() # Need to call this at the end of each step to notify profiler of steps' boundary.
+    prof.step()
 p.stop()
 
 ######################################################################
