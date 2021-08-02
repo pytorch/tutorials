@@ -162,7 +162,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
@@ -303,6 +303,12 @@ Welcome to PyTorch Tutorials
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
+.. customcarditem::
+   :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
+   :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_conv_bn_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. Model Optimization
 
@@ -649,6 +655,7 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
