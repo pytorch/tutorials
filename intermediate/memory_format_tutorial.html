@@ -338,7 +338,7 @@
 <div class="section" id="what-is-channels-last">
 <h2>What is Channels Last<a class="headerlink" href="#what-is-channels-last" title="Permalink to this headline">¶</a></h2>
 <p>Channels last memory format is an alternative way of ordering NCHW tensors in memory preserving dimensions ordering. Channels last tensors ordered in such a way that channels become the densest dimension (aka storing images pixel-per-pixel).</p>
-<p>For example, classic (contiguous) storage of NCHW tensor (in our case it is two 2x2 images with 3 color channels) look like this:</p>
+<p>For example, classic (contiguous) storage of NCHW tensor (in our case it is two 4x4 images with 3 color channels) look like this:</p>
 <div class="figure">
 <img alt="classic_memory_format" src="../_images/classic_memory_format.png"/>
 </div>
@@ -356,9 +356,10 @@ For example, 10x3x16x16 batch in Channels last format will have strides equal to
 last memory formats.</p>
 <p>Classic PyTorch contiguous tensor</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
 <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1024, 32, 1)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1024, 32, 1)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -367,8 +368,8 @@ last memory formats.</p>
 </div>
 <p>Conversion operator</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># Outputs: (10, 3, 32, 32) as dimensions order preserved</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Outputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># Outputs: (10, 3, 32, 32) as dimensions order preserved</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Outputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -378,7 +379,7 @@ last memory formats.</p>
 </div>
 <p>Back to contiguous</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Outputs: (3072, 1024, 32, 1)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Outputs: (3072, 1024, 32, 1)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -387,7 +388,7 @@ last memory formats.</p>
 </div>
 <p>Alternative option</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -395,7 +396,7 @@ last memory formats.</p>
 </pre></div>
 </div>
 <p>Format checks</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span>  <span class="c1"># Ouputs: True</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -419,8 +420,8 @@ would restride tensor with a meaningful stride on dimensions whose
 sizes are 1 in order to properly represent the intended memory
 format</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">special_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span>  <span class="c1"># Ouputs: True</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">special_x</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">contiguous_format</span><span class="p">))</span>  <span class="c1"># Ouputs: True</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -439,7 +440,7 @@ current implementation cannot mark a tensor as channels last memory
 format.</p>
 <p>Create as channels last</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -448,7 +449,7 @@ format.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">clone</span></code> preserves memory format</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -458,7 +459,7 @@ format.</p>
 <p><code class="docutils literal notranslate"><span class="pre">to</span></code>, <code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">float</span></code> … preserves memory format</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -467,7 +468,7 @@ format.</p>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">empty_like</span></code>, <code class="docutils literal notranslate"><span class="pre">*_like</span></code> operators preserves memory format</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -476,7 +477,7 @@ format.</p>
 </div>
 <p>Pointwise operators preserves memory format</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span> <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">stride</span><span class="p">())</span>  <span class="c1"># Ouputs: (3072, 1, 96, 3)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -491,13 +492,13 @@ produces output in contiguous memory format. Otherwise, output wil
 be in channels last memroy format.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">cudnn</span><span class="o">.</span><span class="n">version</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">7603</span><span class="p">:</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span><span class="o">.</span><span class="n">half</span><span class="p">()</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Module parameters need to be channels last</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>  <span class="c1"># Module parameters need to be channels last</span>
 
     <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
 
     <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span> <span class="c1"># Ouputs: True</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">))</span>  <span class="c1"># Ouputs: True</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -603,10 +604,10 @@ model can be converted to channels last and propagate format through
 the graph as soon as input (or certain weight) is formatted
 correctly.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Need to be done once, after model initialization (or load)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Replace with your model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>  <span class="c1"># Replace with your model</span>
 
 <span class="c1"># Need to be done for every input</span>
-<span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span> <span class="c1"># Replace with your input</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>  <span class="c1"># Replace with your input</span>
 <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -638,13 +639,13 @@ operator doesn’t match the memory format of the input.</p>
     <span class="k">return</span> <span class="kc">False</span>
 
 
-<span class="k">def</span> <span class="nf">print_inputs</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s1">''</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">print_inputs</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="s2">""</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">indent</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">t</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">indent</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
-            <span class="n">print_inputs</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="s1">'    '</span><span class="p">)</span>
+            <span class="n">print_inputs</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="s2">"    "</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">indent</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
 
@@ -659,32 +660,38 @@ operator doesn’t match the memory format of the input.</p>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">"`</span><span class="si">{}</span><span class="s2">` inputs are:"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
             <span class="n">print_inputs</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">'-------------------'</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"-------------------"</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">e</span>
         <span class="n">failed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">was_cl</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">is_contiguous</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">):</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">"`</span><span class="si">{}</span><span class="s2">` got channels_last input, but output is not channels_last:"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
-                          <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span> <span class="n">result</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s2">"`</span><span class="si">{}</span><span class="s2">` got channels_last input, but output is not channels_last:"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">stride</span><span class="p">(),</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+                        <span class="n">result</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                    <span class="p">)</span>
                     <span class="n">failed</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">failed</span> <span class="ow">and</span> <span class="kc">True</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">"`</span><span class="si">{}</span><span class="s2">` inputs are:"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
             <span class="n">print_inputs</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s1">'Operator `</span><span class="si">{}</span><span class="s1">` lost channels_last property'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Operator `</span><span class="si">{}</span><span class="s2">` lost channels_last property"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">result</span>
+
     <span class="k">return</span> <span class="n">check_cl</span>
 
+
 <span class="n">old_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
 
 <span class="k">def</span> <span class="nf">attribute</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
     <span class="n">old_attrs</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
         <span class="n">e</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="n">exclude_functions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'is_cuda'</span><span class="p">,</span> <span class="s1">'has_names'</span><span class="p">,</span> <span class="s1">'numel'</span><span class="p">,</span>
-                             <span class="s1">'stride'</span><span class="p">,</span> <span class="s1">'Tensor'</span><span class="p">,</span> <span class="s1">'is_contiguous'</span><span class="p">,</span> <span class="s1">'__class__'</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_functions</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'_'</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">'__call__'</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+        <span class="n">exclude_functions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"is_cuda"</span><span class="p">,</span> <span class="s2">"has_names"</span><span class="p">,</span> <span class="s2">"numel"</span><span class="p">,</span> <span class="s2">"stride"</span><span class="p">,</span> <span class="s2">"Tensor"</span><span class="p">,</span> <span class="s2">"is_contiguous"</span><span class="p">,</span> <span class="s2">"__class__"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_functions</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"__call__"</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">old_attrs</span><span class="p">[</span><span class="n">m</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">e</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">check_wrapper</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
@@ -708,8 +715,8 @@ and you want to contribute, feel free to use following developers
 guide <a class="reference external" href="https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators">https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators</a>.</p>
 <p>Code below is to recover the attributes of torch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span> <span class="ow">in</span> <span class="n">old_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-  <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -723,7 +730,7 @@ guide <a class="reference external" href="https://github.com/pytorch/pytorch/wik
 </ul>
 <p>If you have feedback and/or suggestions for improvement, please let us
 know by creating <a class="reference external" href="https://github.com/pytorch/pytorch/issues">an issue</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.067 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.065 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-memory-format-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6c290a5fc635f734b10bbca97b52d2f1/memory_format_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">memory_format_tutorial.py</span></code></a></div>
