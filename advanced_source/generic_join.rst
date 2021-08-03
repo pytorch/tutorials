@@ -363,7 +363,7 @@ of inputs across all ranks.
             dist.all_reduce(t)
             self.count += t
 
-        def _join_hook(self, **kwargs) -> JoinHook:
+        def join_hook(self, **kwargs) -> JoinHook:
             r"""
             Return a join hook that shadows the all-reduce in :meth:`__call__`.
             
@@ -375,11 +375,11 @@ of inputs across all ranks.
             return CounterJoinHook(self, sync_max_count)
 
         @property
-        def _join_device(self) -> torch.device:
+        def join_device(self) -> torch.device:
             return self.device
 
         @property
-        def _join_process_group(self):
+        def join_process_group(self):
             return self.process_group
 
         def find_common_rank(self, rank, to_consider):
