@@ -16,7 +16,7 @@ Since GPUs consume weights in a different order, the first step we need to do is
 .. code:: shell
 
     cd PYTORCH_ROOT
-    USE_PYTORCH_METAL=ON python setup.py install --cmake
+    USE_PYTORCH_METAL=ON python setup.py develop --cmake
 
 The command above will build a custom pytorch binary from master. The ``install`` argument simply tells ``setup.py`` to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is ``1.8.0a0+41237a4``. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.
 
@@ -38,7 +38,7 @@ The next step is going to be converting the mobilenetv2 torchscript model to a M
     scripted_model = torch.jit.script(model)
     optimized_model = optimize_for_mobile(scripted_model, backend='metal')
     print(torch.jit.export_opnames(optimized_model))
-    torch.jit._save_for_lite_interpreter(optimized_model, './mobilenetv2_metal.pt')
+    optimized_model._save_for_lite_interpreter(optimized_model, './mobilenetv2_metal.pt')
 
 Note that the ``torch.jit.export_opnames(optimized_model)`` is going to dump all the optimized operators from the ``optimized_mobile``. If everything works well, you should be able to see the following ops being printed out from the console
 
@@ -90,7 +90,7 @@ Next we need to make some changes in ``TorchModule.mm``
 
 As you can see, we simply just call ``.metal()`` to move our input tensor from CPU to GPU, and then call ``.cpu()`` to move the result back. Internally, ``.metal()`` will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When `.cpu()` is invoked, the GPU command buffer will be flushed and synced. After `forward` finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.
 
-The last step we have to do is to add the `Accelerate.framework` and the `MetalShaderPerformance.framework` to your xcode project. (Open your project via XCode, go to your project target’s "General" tab, locate the "Frameworks, Libraries and Embedded Content" section and click the "+" button)
+The last step we have to do is to add the `Accelerate.framework` and the `MetalPerformanceShaders.framework` to your xcode project. (Open your project via XCode, go to your project target’s "General" tab, locate the "Frameworks, Libraries and Embedded Content" section and click the "+" button)
 
 If everything works fine, you should be able to see the inference results on your phone. The result below was captured from an iPhone 11 device
 
