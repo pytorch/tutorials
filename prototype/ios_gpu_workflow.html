@@ -338,6 +338,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -465,7 +466,7 @@
 <span class="n">scripted_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="n">optimized_model</span> <span class="o">=</span> <span class="n">optimize_for_mobile</span><span class="p">(</span><span class="n">scripted_model</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s1">&#39;metal&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">export_opnames</span><span class="p">(</span><span class="n">optimized_model</span><span class="p">))</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="n">optimized_model</span><span class="p">,</span> <span class="s1">&#39;./mobilenetv2_metal.pt&#39;</span><span class="p">)</span>
+<span class="n">optimized_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="s1">&#39;./mobilenetv2_metal.pt&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">torch.jit.export_opnames(optimized_model)</span></code> is going to dump all the optimized operators from the <code class="docutils literal notranslate"><span class="pre">optimized_mobile</span></code>. If everything works well, you should be able to see the following ops being printed out from the console</p>
@@ -507,7 +508,7 @@
 </pre></div>
 </div>
 <p>As you can see, we simply just call <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> to move our input tensor from CPU to GPU, and then call <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> to move the result back. Internally, <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When <cite>.cpu()</cite> is invoked, the GPU command buffer will be flushed and synced. After <cite>forward</cite> finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.</p>
-<p>The last step we have to do is to add the <cite>Accelerate.framework</cite> and the <cite>MetalShaderPerformance.framework</cite> to your xcode project. (Open your project via XCode, go to your project target’s “General” tab, locate the “Frameworks, Libraries and Embedded Content” section and click the “+” button)</p>
+<p>The last step we have to do is to add the <cite>Accelerate.framework</cite> and the <cite>MetalPerformanceShaders.framework</cite> to your xcode project (Open your project via XCode, go to your project target’s “General” tab, locate the “Frameworks, Libraries and Embedded Content” section and click the “+” button).</p>
 <p>If everything works fine, you should be able to see the inference results on your phone. The result below was captured from an iPhone 11 device</p>
 <div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">timber</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">grey</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">gray</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">Canis</span> <span class="n">lupus</span>
 <span class="o">-</span> <span class="n">malamute</span><span class="p">,</span> <span class="n">malemute</span><span class="p">,</span> <span class="n">Alaskan</span> <span class="n">malamute</span>

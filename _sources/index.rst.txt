@@ -696,6 +696,7 @@ Additional Resources
    advanced/rpc_ddp_tutorial
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
+   advanced/generic_join
 
 .. toctree::
    :maxdepth: 2

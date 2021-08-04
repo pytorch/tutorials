@@ -273,6 +273,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Mobile</span></p>
 <ul>
@@ -399,35 +400,36 @@ parameters <code class="docutils literal notranslate"><span class="pre">weight</
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight', Parameter containing:
-tensor([[[[-0.0090, -0.0607, -0.2094],
-          [-0.3243, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+tensor([[[[ 1.8310e-01, -2.1151e-01,  2.4462e-01],
+          [ 2.9576e-01,  1.0443e-01, -2.1690e-01],
+          [-3.2077e-01, -2.2846e-01,  6.9660e-02]]],
 
 
-        [[[-0.3280,  0.1267,  0.2999],
-          [-0.0607,  0.2478, -0.1025],
-          [ 0.0593,  0.2602, -0.0007]]],
+        [[[ 2.8825e-01, -8.8145e-02, -1.9256e-01],
+          [-1.5414e-01,  2.0952e-02, -1.7750e-01],
+          [ 2.6078e-01,  3.1172e-01,  7.8371e-02]]],
 
 
-        [[[ 0.1949,  0.0579, -0.0211],
-          [ 0.2493,  0.2310, -0.2063],
-          [ 0.0307, -0.0822, -0.1669]]],
+        [[[-6.0277e-02,  1.3032e-01, -6.3827e-02],
+          [ 2.9666e-01, -2.7439e-01,  3.0171e-01],
+          [ 2.7434e-02, -1.3052e-01, -3.2016e-01]]],
 
 
-        [[[ 0.0365, -0.2989,  0.2369],
-          [-0.0913,  0.0517, -0.0851],
-          [ 0.0876,  0.0992,  0.0967]]],
+        [[[-4.1147e-02,  5.5551e-02, -2.3182e-01],
+          [ 2.3143e-01,  6.0519e-02,  2.4027e-03],
+          [-3.2494e-01,  1.4212e-01, -2.3751e-01]]],
 
 
-        [[[-0.0679,  0.0476, -0.2473],
-          [-0.2694,  0.2659,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
+        [[[ 2.6681e-01, -1.1127e-02, -1.4246e-01],
+          [ 7.4837e-03,  5.4145e-02,  1.3511e-01],
+          [-1.3431e-01, -3.1214e-01,  1.9809e-01]]],
 
 
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.1606, -0.2736],
-          [ 0.2965,  0.3154,  0.3283]]]], device='cuda:0', requires_grad=True)), ('bias', Parameter containing:
-tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
+        [[[ 3.2129e-01,  2.0398e-01, -2.0347e-01],
+          [-1.3550e-01,  3.0593e-01, -1.7525e-01],
+          [ 2.7605e-04,  2.1377e-01,  1.1485e-02]]]], device='cuda:0',
+       requires_grad=True)), ('bias', Parameter containing:
+tensor([ 0.2221,  0.2466,  0.0550, -0.2442, -0.3055, -0.2653], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
@@ -468,36 +470,37 @@ the tensor. The <code class="docutils literal notranslate"><span class="pre">bia
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias', Parameter containing:
-tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
+tensor([ 0.2221,  0.2466,  0.0550, -0.2442, -0.3055, -0.2653], device='cuda:0',
        requires_grad=True)), ('weight_orig', Parameter containing:
-tensor([[[[-0.0090, -0.0607, -0.2094],
-          [-0.3243, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+tensor([[[[ 1.8310e-01, -2.1151e-01,  2.4462e-01],
+          [ 2.9576e-01,  1.0443e-01, -2.1690e-01],
+          [-3.2077e-01, -2.2846e-01,  6.9660e-02]]],
 
 
-        [[[-0.3280,  0.1267,  0.2999],
-          [-0.0607,  0.2478, -0.1025],
-          [ 0.0593,  0.2602, -0.0007]]],
+        [[[ 2.8825e-01, -8.8145e-02, -1.9256e-01],
+          [-1.5414e-01,  2.0952e-02, -1.7750e-01],
+          [ 2.6078e-01,  3.1172e-01,  7.8371e-02]]],
 
 
-        [[[ 0.1949,  0.0579, -0.0211],
-          [ 0.2493,  0.2310, -0.2063],
-          [ 0.0307, -0.0822, -0.1669]]],
+        [[[-6.0277e-02,  1.3032e-01, -6.3827e-02],
+          [ 2.9666e-01, -2.7439e-01,  3.0171e-01],
+          [ 2.7434e-02, -1.3052e-01, -3.2016e-01]]],
 
 
-        [[[ 0.0365, -0.2989,  0.2369],
-          [-0.0913,  0.0517, -0.0851],
-          [ 0.0876,  0.0992,  0.0967]]],
+        [[[-4.1147e-02,  5.5551e-02, -2.3182e-01],
+          [ 2.3143e-01,  6.0519e-02,  2.4027e-03],
+          [-3.2494e-01,  1.4212e-01, -2.3751e-01]]],
 
 
-        [[[-0.0679,  0.0476, -0.2473],
-          [-0.2694,  0.2659,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
+        [[[ 2.6681e-01, -1.1127e-02, -1.4246e-01],
+          [ 7.4837e-03,  5.4145e-02,  1.3511e-01],
+          [-1.3431e-01, -3.1214e-01,  1.9809e-01]]],
 
 
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.1606, -0.2736],
-          [ 0.2965,  0.3154,  0.3283]]]], device='cuda:0', requires_grad=True))]
+        [[[ 3.2129e-01,  2.0398e-01, -2.0347e-01],
+          [-1.3550e-01,  3.0593e-01, -1.7525e-01],
+          [ 2.7605e-04,  2.1377e-01,  1.1485e-02]]]], device='cuda:0',
+       requires_grad=True))]
 </pre></div>
 </div>
 <p>The pruning mask generated by the pruning technique selected above is saved
@@ -508,33 +511,33 @@ initial parameter <code class="docutils literal notranslate"><span class="pre">n
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[0., 1., 1.],
-          [0., 1., 1.],
+          [1., 0., 0.],
           [1., 1., 1.]]],
 
 
-        [[[1., 0., 0.],
-          [0., 1., 0.],
-          [0., 0., 1.]]],
-
-
-        [[[0., 1., 0.],
-          [1., 1., 1.],
-          [1., 1., 1.]]],
+        [[[1., 1., 0.],
+          [1., 0., 1.],
+          [1., 1., 0.]]],
 
 
         [[[1., 1., 1.],
-          [1., 0., 1.],
-          [1., 1., 1.]]],
+          [1., 1., 1.],
+          [0., 1., 1.]]],
+
+
+        [[[1., 1., 1.],
+          [1., 1., 1.],
+          [0., 1., 0.]]],
+
+
+        [[[1., 1., 0.],
+          [0., 1., 1.],
+          [0., 1., 1.]]],
 
 
         [[[1., 0., 1.],
           [1., 0., 1.],
-          [1., 1., 1.]]],
-
-
-        [[[1., 1., 1.],
-          [1., 0., 0.],
-          [1., 1., 0.]]]], device='cuda:0'))]
+          [0., 1., 0.]]]], device='cuda:0'))]
 </pre></div>
 </div>
 <p>For the forward pass to work without modification, the <code class="docutils literal notranslate"><span class="pre">weight</span></code> attribute
@@ -547,34 +550,34 @@ it is now simply an attribute.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[-0.0000, -0.0607, -0.2094],
-          [-0.0000, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.0000, -0.2115,  0.2446],
+          [ 0.2958,  0.0000, -0.0000],
+          [-0.3208, -0.2285,  0.0697]]],
 
 
-        [[[-0.3280,  0.0000,  0.0000],
-          [-0.0000,  0.2478, -0.0000],
-          [ 0.0000,  0.0000, -0.0007]]],
+        [[[ 0.2882, -0.0881, -0.0000],
+          [-0.1541,  0.0000, -0.1775],
+          [ 0.2608,  0.3117,  0.0000]]],
 
 
-        [[[ 0.0000,  0.0579, -0.0000],
-          [ 0.2493,  0.2310, -0.2063],
-          [ 0.0307, -0.0822, -0.1669]]],
+        [[[-0.0603,  0.1303, -0.0638],
+          [ 0.2967, -0.2744,  0.3017],
+          [ 0.0000, -0.1305, -0.3202]]],
 
 
-        [[[ 0.0365, -0.2989,  0.2369],
-          [-0.0913,  0.0000, -0.0851],
-          [ 0.0876,  0.0992,  0.0967]]],
+        [[[-0.0411,  0.0556, -0.2318],
+          [ 0.2314,  0.0605,  0.0024],
+          [-0.0000,  0.1421, -0.0000]]],
 
 
-        [[[-0.0679,  0.0000, -0.2473],
-          [-0.2694,  0.0000,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
+        [[[ 0.2668, -0.0111, -0.0000],
+          [ 0.0000,  0.0541,  0.1351],
+          [-0.0000, -0.3121,  0.1981]]],
 
 
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.0000, -0.0000],
-          [ 0.2965,  0.3154,  0.0000]]]], device='cuda:0',
+        [[[ 0.3213,  0.0000, -0.2035],
+          [-0.1355,  0.0000, -0.1752],
+          [ 0.0000,  0.2138,  0.0000]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -588,7 +591,7 @@ present.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7fdcdfdddba8&gt;)])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f52ab4dfc18&gt;)])
 </pre></div>
 </div>
 <p>For completeness, we can now prune the <code class="docutils literal notranslate"><span class="pre">bias</span></code> too, to see how the
@@ -608,35 +611,36 @@ module attributes, and the module will now have two <code class="docutils litera
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_orig', Parameter containing:
-tensor([[[[-0.0090, -0.0607, -0.2094],
-          [-0.3243, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+tensor([[[[ 1.8310e-01, -2.1151e-01,  2.4462e-01],
+          [ 2.9576e-01,  1.0443e-01, -2.1690e-01],
+          [-3.2077e-01, -2.2846e-01,  6.9660e-02]]],
 
 
-        [[[-0.3280,  0.1267,  0.2999],
-          [-0.0607,  0.2478, -0.1025],
-          [ 0.0593,  0.2602, -0.0007]]],
+        [[[ 2.8825e-01, -8.8145e-02, -1.9256e-01],
+          [-1.5414e-01,  2.0952e-02, -1.7750e-01],
+          [ 2.6078e-01,  3.1172e-01,  7.8371e-02]]],
 
 
-        [[[ 0.1949,  0.0579, -0.0211],
-          [ 0.2493,  0.2310, -0.2063],
-          [ 0.0307, -0.0822, -0.1669]]],
+        [[[-6.0277e-02,  1.3032e-01, -6.3827e-02],
+          [ 2.9666e-01, -2.7439e-01,  3.0171e-01],
+          [ 2.7434e-02, -1.3052e-01, -3.2016e-01]]],
 
 
-        [[[ 0.0365, -0.2989,  0.2369],
-          [-0.0913,  0.0517, -0.0851],
-          [ 0.0876,  0.0992,  0.0967]]],
+        [[[-4.1147e-02,  5.5551e-02, -2.3182e-01],
+          [ 2.3143e-01,  6.0519e-02,  2.4027e-03],
+          [-3.2494e-01,  1.4212e-01, -2.3751e-01]]],
 
 
-        [[[-0.0679,  0.0476, -0.2473],
-          [-0.2694,  0.2659,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
+        [[[ 2.6681e-01, -1.1127e-02, -1.4246e-01],
+          [ 7.4837e-03,  5.4145e-02,  1.3511e-01],
+          [-1.3431e-01, -3.1214e-01,  1.9809e-01]]],
 
 
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.1606, -0.2736],
-          [ 0.2965,  0.3154,  0.3283]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
-tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
+        [[[ 3.2129e-01,  2.0398e-01, -2.0347e-01],
+          [-1.3550e-01,  3.0593e-01, -1.7525e-01],
+          [ 2.7605e-04,  2.1377e-01,  1.1485e-02]]]], device='cuda:0',
+       requires_grad=True)), ('bias_orig', Parameter containing:
+tensor([ 0.2221,  0.2466,  0.0550, -0.2442, -0.3055, -0.2653], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
@@ -645,40 +649,40 @@ tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[0., 1., 1.],
-          [0., 1., 1.],
+          [1., 0., 0.],
           [1., 1., 1.]]],
 
 
-        [[[1., 0., 0.],
-          [0., 1., 0.],
-          [0., 0., 1.]]],
-
-
-        [[[0., 1., 0.],
-          [1., 1., 1.],
-          [1., 1., 1.]]],
+        [[[1., 1., 0.],
+          [1., 0., 1.],
+          [1., 1., 0.]]],
 
 
         [[[1., 1., 1.],
-          [1., 0., 1.],
-          [1., 1., 1.]]],
+          [1., 1., 1.],
+          [0., 1., 1.]]],
+
+
+        [[[1., 1., 1.],
+          [1., 1., 1.],
+          [0., 1., 0.]]],
+
+
+        [[[1., 1., 0.],
+          [0., 1., 1.],
+          [0., 1., 1.]]],
 
 
         [[[1., 0., 1.],
           [1., 0., 1.],
-          [1., 1., 1.]]],
-
-
-        [[[1., 1., 1.],
-          [1., 0., 0.],
-          [1., 1., 0.]]]], device='cuda:0')), ('bias_mask', tensor([1., 0., 1., 1., 0., 0.], device='cuda:0'))]
+          [0., 1., 0.]]]], device='cuda:0')), ('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([0.3176, -0.0000, 0.2277, 0.2255, 0.0000, -0.0000], device='cuda:0',
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([ 0.0000,  0.2466,  0.0000, -0.0000, -0.3055, -0.2653], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -686,7 +690,7 @@ tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7fdcdfdddba8&gt;), (1, &lt;torch.nn.utils.prune.L1Unstructured object at 0x7fdcdfddde80&gt;)])
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>OrderedDict([(0, &lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f52ab4dfc18&gt;), (1, &lt;torch.nn.utils.prune.L1Unstructured object at 0x7f52ab4dff28&gt;)])
 </pre></div>
 </div>
 </div>
@@ -711,34 +715,34 @@ achieved using the <code class="docutils literal notranslate"><span class="pre">
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[-0.0000, -0.0607, -0.2094],
-          [-0.0000, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.0000, -0.2115,  0.2446],
+          [ 0.2958,  0.0000, -0.0000],
+          [-0.3208, -0.2285,  0.0697]]],
 
 
-        [[[-0.0000,  0.0000,  0.0000],
-          [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000]]],
+        [[[ 0.2882, -0.0881, -0.0000],
+          [-0.1541,  0.0000, -0.1775],
+          [ 0.2608,  0.3117,  0.0000]]],
+
+
+        [[[-0.0603,  0.1303, -0.0638],
+          [ 0.2967, -0.2744,  0.3017],
+          [ 0.0000, -0.1305, -0.3202]]],
+
+
+        [[[-0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
+
+
+        [[[ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000, -0.0000,  0.0000]]],
 
 
         [[[ 0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
-
-
-        [[[ 0.0000, -0.0000,  0.0000],
           [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000,  0.0000]]],
-
-
-        [[[-0.0679,  0.0000, -0.2473],
-          [-0.2694,  0.0000,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
-
-
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.0000, -0.0000],
-          [ 0.2965,  0.3154,  0.0000]]]], device='cuda:0',
+          [ 0.0000,  0.0000,  0.0000]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -753,7 +757,7 @@ pruning applied to the <code class="docutils literal notranslate"><span class="p
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;torch.nn.utils.prune.RandomUnstructured object at 0x7fdcdfdddba8&gt;, &lt;torch.nn.utils.prune.LnStructured object at 0x7fdcdfdddda0&gt;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&lt;torch.nn.utils.prune.RandomUnstructured object at 0x7f52ab4dfc18&gt;, &lt;torch.nn.utils.prune.LnStructured object at 0x7f52ab4dfd68&gt;]
 </pre></div>
 </div>
 </div>
@@ -784,35 +788,36 @@ model parameters, in its pruned version.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_orig', Parameter containing:
-tensor([[[[-0.0090, -0.0607, -0.2094],
-          [-0.3243, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+tensor([[[[ 1.8310e-01, -2.1151e-01,  2.4462e-01],
+          [ 2.9576e-01,  1.0443e-01, -2.1690e-01],
+          [-3.2077e-01, -2.2846e-01,  6.9660e-02]]],
 
 
-        [[[-0.3280,  0.1267,  0.2999],
-          [-0.0607,  0.2478, -0.1025],
-          [ 0.0593,  0.2602, -0.0007]]],
+        [[[ 2.8825e-01, -8.8145e-02, -1.9256e-01],
+          [-1.5414e-01,  2.0952e-02, -1.7750e-01],
+          [ 2.6078e-01,  3.1172e-01,  7.8371e-02]]],
 
 
-        [[[ 0.1949,  0.0579, -0.0211],
-          [ 0.2493,  0.2310, -0.2063],
-          [ 0.0307, -0.0822, -0.1669]]],
+        [[[-6.0277e-02,  1.3032e-01, -6.3827e-02],
+          [ 2.9666e-01, -2.7439e-01,  3.0171e-01],
+          [ 2.7434e-02, -1.3052e-01, -3.2016e-01]]],
 
 
-        [[[ 0.0365, -0.2989,  0.2369],
-          [-0.0913,  0.0517, -0.0851],
-          [ 0.0876,  0.0992,  0.0967]]],
+        [[[-4.1147e-02,  5.5551e-02, -2.3182e-01],
+          [ 2.3143e-01,  6.0519e-02,  2.4027e-03],
+          [-3.2494e-01,  1.4212e-01, -2.3751e-01]]],
 
 
-        [[[-0.0679,  0.0476, -0.2473],
-          [-0.2694,  0.2659,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
+        [[[ 2.6681e-01, -1.1127e-02, -1.4246e-01],
+          [ 7.4837e-03,  5.4145e-02,  1.3511e-01],
+          [-1.3431e-01, -3.1214e-01,  1.9809e-01]]],
 
 
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.1606, -0.2736],
-          [ 0.2965,  0.3154,  0.3283]]]], device='cuda:0', requires_grad=True)), ('bias_orig', Parameter containing:
-tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
+        [[[ 3.2129e-01,  2.0398e-01, -2.0347e-01],
+          [-1.3550e-01,  3.0593e-01, -1.7525e-01],
+          [ 2.7605e-04,  2.1377e-01,  1.1485e-02]]]], device='cuda:0',
+       requires_grad=True)), ('bias_orig', Parameter containing:
+tensor([ 0.2221,  0.2466,  0.0550, -0.2442, -0.3055, -0.2653], device='cuda:0',
        requires_grad=True))]
 </pre></div>
 </div>
@@ -821,67 +826,67 @@ tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('weight_mask', tensor([[[[0., 1., 1.],
-          [0., 1., 1.],
+          [1., 0., 0.],
           [1., 1., 1.]]],
 
 
-        [[[0., 0., 0.],
-          [0., 0., 0.],
-          [0., 0., 0.]]],
-
-
-        [[[0., 0., 0.],
-          [0., 0., 0.],
-          [0., 0., 0.]]],
-
-
-        [[[0., 0., 0.],
-          [0., 0., 0.],
-          [0., 0., 0.]]],
-
-
-        [[[1., 0., 1.],
+        [[[1., 1., 0.],
           [1., 0., 1.],
-          [1., 1., 1.]]],
+          [1., 1., 0.]]],
 
 
         [[[1., 1., 1.],
-          [1., 0., 0.],
-          [1., 1., 0.]]]], device='cuda:0')), ('bias_mask', tensor([1., 0., 1., 1., 0., 0.], device='cuda:0'))]
+          [1., 1., 1.],
+          [0., 1., 1.]]],
+
+
+        [[[0., 0., 0.],
+          [0., 0., 0.],
+          [0., 0., 0.]]],
+
+
+        [[[0., 0., 0.],
+          [0., 0., 0.],
+          [0., 0., 0.]]],
+
+
+        [[[0., 0., 0.],
+          [0., 0., 0.],
+          [0., 0., 0.]]]], device='cuda:0')), ('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[-0.0000, -0.0607, -0.2094],
-          [-0.0000, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[[ 0.0000, -0.2115,  0.2446],
+          [ 0.2958,  0.0000, -0.0000],
+          [-0.3208, -0.2285,  0.0697]]],
 
 
-        [[[-0.0000,  0.0000,  0.0000],
-          [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000]]],
+        [[[ 0.2882, -0.0881, -0.0000],
+          [-0.1541,  0.0000, -0.1775],
+          [ 0.2608,  0.3117,  0.0000]]],
+
+
+        [[[-0.0603,  0.1303, -0.0638],
+          [ 0.2967, -0.2744,  0.3017],
+          [ 0.0000, -0.1305, -0.3202]]],
+
+
+        [[[-0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
+
+
+        [[[ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000, -0.0000,  0.0000]]],
 
 
         [[[ 0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
-
-
-        [[[ 0.0000, -0.0000,  0.0000],
           [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000,  0.0000]]],
-
-
-        [[[-0.0679,  0.0000, -0.2473],
-          [-0.2694,  0.0000,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
-
-
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.0000, -0.0000],
-          [ 0.2965,  0.3154,  0.0000]]]], device='cuda:0',
+          [ 0.0000,  0.0000,  0.0000]]]], device='cuda:0',
        grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
@@ -892,43 +897,43 @@ tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_orig', Parameter containing:
-tensor([ 0.3176, -0.0864,  0.2277,  0.2255,  0.2014, -0.0903], device='cuda:0',
+tensor([ 0.2221,  0.2466,  0.0550, -0.2442, -0.3055, -0.2653], device='cuda:0',
        requires_grad=True)), ('weight', Parameter containing:
-tensor([[[[-0.0000, -0.0607, -0.2094],
-          [-0.0000, -0.3320, -0.0116],
-          [ 0.1636,  0.2902,  0.3305]]],
+tensor([[[[ 0.0000, -0.2115,  0.2446],
+          [ 0.2958,  0.0000, -0.0000],
+          [-0.3208, -0.2285,  0.0697]]],
 
 
-        [[[-0.0000,  0.0000,  0.0000],
-          [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000]]],
+        [[[ 0.2882, -0.0881, -0.0000],
+          [-0.1541,  0.0000, -0.1775],
+          [ 0.2608,  0.3117,  0.0000]]],
+
+
+        [[[-0.0603,  0.1303, -0.0638],
+          [ 0.2967, -0.2744,  0.3017],
+          [ 0.0000, -0.1305, -0.3202]]],
+
+
+        [[[-0.0000,  0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000,  0.0000, -0.0000]]],
+
+
+        [[[ 0.0000, -0.0000, -0.0000],
+          [ 0.0000,  0.0000,  0.0000],
+          [-0.0000, -0.0000,  0.0000]]],
 
 
         [[[ 0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000, -0.0000],
-          [ 0.0000, -0.0000, -0.0000]]],
-
-
-        [[[ 0.0000, -0.0000,  0.0000],
           [-0.0000,  0.0000, -0.0000],
-          [ 0.0000,  0.0000,  0.0000]]],
-
-
-        [[[-0.0679,  0.0000, -0.2473],
-          [-0.2694,  0.0000,  0.0467],
-          [ 0.0847,  0.3135,  0.0661]]],
-
-
-        [[[-0.2360,  0.1601,  0.1797],
-          [ 0.2581,  0.0000, -0.0000],
-          [ 0.2965,  0.3154,  0.0000]]]], device='cuda:0', requires_grad=True))]
+          [ 0.0000,  0.0000,  0.0000]]]], device='cuda:0', requires_grad=True))]
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">()))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_mask', tensor([1., 0., 1., 1., 0., 0.], device='cuda:0'))]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[('bias_mask', tensor([0., 1., 0., 0., 1., 1.], device='cuda:0'))]
 </pre></div>
 </div>
 </div>
@@ -1037,11 +1042,11 @@ not be equal to 20% in each layer. However, the global sparsity will be
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sparsity in conv1.weight: 1.85%
-Sparsity in conv2.weight: 8.33%
-Sparsity in fc1.weight: 22.00%
-Sparsity in fc2.weight: 12.40%
-Sparsity in fc3.weight: 10.00%
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Sparsity in conv1.weight: 0.00%
+Sparsity in conv2.weight: 9.03%
+Sparsity in fc1.weight: 22.03%
+Sparsity in fc2.weight: 12.26%
+Sparsity in fc3.weight: 9.52%
 Global sparsity: 20.00%
 </pre></div>
 </div>
@@ -1127,7 +1132,7 @@ applies it.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([0., 1., 0., 1., 0., 1., 0., 1., 0., 1.])
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.133 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.128 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-pruning-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/8eb4a30bf66c6a1a0d1faba246c07bb3/pruning_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">pruning_tutorial.py</span></code></a></div>
