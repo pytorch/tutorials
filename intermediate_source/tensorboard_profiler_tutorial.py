@@ -134,18 +134,18 @@ with torch.profiler.profile(
 
 ######################################################################
 # Alternatively, the following non-context manager start/stop is supported as well.
-p = torch.profiler.profile(
+prof = torch.profiler.profile(
         schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
         with_stack=True)
-p.start()
+prof.start()
 for step, batch_data in enumerate(train_loader):
     if step >= (1 + 1 + 3) * 2:
         break
     train(batch_data)
     prof.step()
-p.stop()
+prof.stop()
 
 ######################################################################
 # 3. Run the profiler
