@@ -38,7 +38,7 @@ The next step is going to be converting the mobilenetv2 torchscript model to a M
     scripted_model = torch.jit.script(model)
     optimized_model = optimize_for_mobile(scripted_model, backend='metal')
     print(torch.jit.export_opnames(optimized_model))
-    torch.jit._save_for_lite_interpreter(optimized_model, './mobilenetv2_metal.pt')
+    optimized_model._save_for_lite_interpreter('./mobilenetv2_metal.pt')
 
 Note that the ``torch.jit.export_opnames(optimized_model)`` is going to dump all the optimized operators from the ``optimized_mobile``. If everything works well, you should be able to see the following ops being printed out from the console
 
