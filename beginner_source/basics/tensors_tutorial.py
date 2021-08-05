@@ -112,7 +112,7 @@ print(f"Device tensor is stored on: {tensor.device}")
 
 # We move our tensor to the GPU if available
 if torch.cuda.is_available():
-  tensor = tensor.to('cuda')
+    tensor = tensor.to('cuda')
 
 
 ######################################################################
@@ -124,7 +124,7 @@ if torch.cuda.is_available():
 # **Standard numpy-like indexing and slicing:**
 
 tensor = torch.ones(4, 4)
-print('First row: ',tensor[0])
+print('First row: ', tensor[0])
 print('First column: ', tensor[:, 0])
 print('Last column:', tensor[..., -1])
 tensor[:,1] = 0
