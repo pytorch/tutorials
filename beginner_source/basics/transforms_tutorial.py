@@ -54,7 +54,7 @@ ds = datasets.FashionMNIST(
 # Lambda transforms apply any user-defined lambda function. Here, we define a function
 # to turn the integer into a one-hot encoded tensor.
 # It first creates a zero tensor of size 10 (the number of labels in our dataset) and calls
-# `scatter_ <https://pytorch.org/docs/stable/tensors.html#torch.Tensor.scatter_>`_ which assigns a
+# `scatter_ <https://pytorch.org/docs/stable/generated/torch.Tensor.scatter_.html>`_ which assigns a
 # ``value=1`` on the index as given by the label ``y``.
 
 target_transform = Lambda(lambda y: torch.zeros(
