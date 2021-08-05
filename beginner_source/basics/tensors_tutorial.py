@@ -1,23 +1,23 @@
 """
 `Learn the Basics <intro.html>`_ ||
-`Quickstart <quickstart_tutorial.html>`_ || 
-**Tensors** || 
+`Quickstart <quickstart_tutorial.html>`_ ||
+**Tensors** ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
-`Autograd <autogradqs_tutorial.html>`_ ||
+`Autograd <autograds_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-Tensors 
+Tensors
 ==========================
 
-Tensors are a specialized data structure that are very similar to arrays and matrices. 
+Tensors are a specialized data structure that are very similar to arrays and matrices.
 In PyTorch, we use tensors to encode the inputs and outputs of a model, as well as the model’s parameters.
 
 Tensors are similar to `NumPy’s <https://numpy.org/>`_ ndarrays, except that tensors can run on GPUs or other hardware accelerators. In fact, tensors and
-NumPy arrays can often share the same underlying memory, eliminating the need to copy data (see :ref:`bridge-to-np-label`). Tensors 
-are also optimized for automatic differentiation (we'll see more about that later in the `Autograd <autogradqs_tutorial.html>`__ 
+NumPy arrays can often share the same underlying memory, eliminating the need to copy data (see :ref:`bridge-to-np-label`). Tensors
+are also optimized for automatic differentiation (we'll see more about that later in the `Autograd <autograds_tutorial.html>`__
 section). If you’re familiar with ndarrays, you’ll be right at home with the Tensor API. If not, follow along!
 """
 
@@ -99,14 +99,14 @@ print(f"Device tensor is stored on: {tensor.device}")
 # Operations on Tensors
 # ~~~~~~~~~~~~~~~~~
 #
-# Over 100 tensor operations, including arithmetic, linear algebra, matrix manipulation (transposing, 
+# Over 100 tensor operations, including arithmetic, linear algebra, matrix manipulation (transposing,
 # indexing, slicing), sampling and more are
 # comprehensively described `here <https://pytorch.org/docs/stable/torch.html>`__.
 #
 # Each of these operations can be run on the GPU (at typically higher speeds than on a
 # CPU). If you’re using Colab, allocate a GPU by going to Runtime > Change runtime type > GPU.
-# 
-# By default, tensors are created on the CPU. We need to explicitly move tensors to the GPU using 
+#
+# By default, tensors are created on the CPU. We need to explicitly move tensors to the GPU using
 # ``.to`` method (after checking for GPU availability). Keep in mind that copying large tensors
 # across devices can be expensive in terms of time and memory!
 
@@ -163,13 +163,13 @@ torch.mul(tensor, tensor, out=z3)
 # numerical value using ``item()``:
 
 agg = tensor.sum()
-agg_item = agg.item()  
+agg_item = agg.item()
 print(agg_item, type(agg_item))
 
 
 ######################################################################
 # **In-place operations**
-# Operations that store the result into the operand are called in-place. They are denoted by a ``_`` suffix. 
+# Operations that store the result into the operand are called in-place. They are denoted by a ``_`` suffix.
 # For example: ``x.copy_(y)``, ``x.t_()``, will change ``x``.
 
 print(tensor, "\n")
