@@ -442,7 +442,7 @@ print(metadata)
 # -  ``"OPUS"``: Opus [`opus-codec.org <https://opus-codec.org/>`__]
 # -  ``"GSM"``: GSM-FR
 #    [`wikipedia <https://en.wikipedia.org/wiki/Full_Rate>`__]
-# -  ``"UNKNOWN"`` None of avobe
+# -  ``"UNKNOWN"`` None of above
 #
 
 
@@ -450,7 +450,7 @@ print(metadata)
 # **Note**
 #
 # -  ``bits_per_sample`` can be ``0`` for formats with compression and/or
-#    variable bit rate. (such as mp3)
+#    variable bit rate (such as mp3).
 # -  ``num_frames`` can be ``0`` for GSM-FR format.
 #
 
@@ -859,6 +859,7 @@ print("torchaudio and librosa kaiser fast MSE:", mse)
 # in ``torchaudio``.
 #
 # To elaborate on the results:
+#
 # - a larger ``lowpass_filter_width`` results in a larger resampling kernel,
 #   and therefore increases computation time for both the kernel computation
 #   and convolution

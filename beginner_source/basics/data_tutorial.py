@@ -9,7 +9,7 @@
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 
-Datasets & Dataloaders
+Datasets & DataLoaders
 ===================
 
 """
@@ -222,7 +222,7 @@ test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 # Iterate through the DataLoader
 # --------------------------
 #
-# We have loaded that dataset into the ``Dataloader`` and can iterate through the dataset as needed.
+# We have loaded that dataset into the ``DataLoader`` and can iterate through the dataset as needed.
 # Each iteration below returns a batch of ``train_features`` and ``train_labels`` (containing ``batch_size=64`` features and labels respectively).
 # Because we specified ``shuffle=True``, after we iterate over all batches the data is shuffled (for finer-grained control over 
 # the data loading order, take a look at `Samplers <https://pytorch.org/docs/stable/data.html#data-loading-order-and-sampler>`_).
