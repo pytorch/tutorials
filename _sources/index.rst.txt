@@ -113,6 +113,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/DCGAN-Tutorial.png
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
+   
+.. customcarditem::
+   :header: Spatial Transformer Networks Tutorial
+   :card_description: Learn how to augment your network using a visual attention mechanism.
+   :image: _static/img/stn/Five.gif
+   :link: intermediate/spatial_transformer_tutorial.html
+   :tags: Image/Video
 
 .. Audio
 
@@ -584,6 +591,7 @@ Additional Resources
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+   intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
 
 .. toctree::
