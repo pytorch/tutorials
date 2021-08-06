@@ -32,7 +32,7 @@ Common case, bundling an input to a model that only uses 'forward' for inference
     model = Net()
     scripted_module = torch.jit.script(model)
 
-2. **Create example input and attach to model
+2. **Create example input and attach to model**
 
 .. code:: python
 
@@ -43,7 +43,7 @@ Common case, bundling an input to a model that only uses 'forward' for inference
     bundled_model = bundle_inputs(scripted_module, input)
 
 
-3. **Retrieve inputs and run model on them
+3. **Retrieve inputs and run model on them**
 
 .. code:: python
     inputs = bundled_model.get_all_bundled_inputs()
@@ -79,7 +79,7 @@ Uncommon case bundling and retrieving inputs for functions beyond 'forward'
     model = Net()
     scripted_module = torch.jit.script(model)
 
-2. **Create example input and attach to model
+2. **Create example input and attach to model**
 
 .. code:: python
 
@@ -94,7 +94,7 @@ Uncommon case bundling and retrieving inputs for functions beyond 'forward'
     bundled_model = bundle_inputs(scripted_module, input)
 
 
-3. **Retrieve inputs and run model on them
+3. **Retrieve inputs and run model on them**
 
 .. code:: python
     all_info = bundled_model.get_bundled_inputs_functions_and_info()
@@ -117,7 +117,7 @@ Attaching inputs to models can result in nontrivial size increases. Inflatable a
 
    - ie if your model takes in a List type of inputs you would need to create an inflatable arg that returned a list not create a list of inflatable args.
 
-1. **Existing Inflatable args
+1. **Existing Inflatable args**
 
 The following input types are compressed automatically without requiring an explicit inflatable arg:
     - Small contiguous tensors are cloned to have small storage.
@@ -129,7 +129,7 @@ The following input types are compressed automatically without requiring an expl
     bundled_model = bundle_inputs(scripted_module, inputs)
     print(bundled_model.get_all_bundled_inputs())
 
-2. **Creating your own
+2. **Creating your own**
 
 Inflatable args are composed of 2 parts, the deflated (compressed) argument, and an expression or function definition to inflate them.
 
@@ -142,7 +142,7 @@ Inflatable args are composed of 2 parts, the deflated (compressed) argument, and
         # {0} is replaced with deflated[foo][bar] and is how you access your deflated value in the inflation expression
         return InflatableArg(value=deflated_input, fmt="(torch.randn_like({0})), torch.randn_like({0}))")
 
-3. **Using a function instead
+3. **Using a function instead**
     If you need to create a more complicated input providing a function is an easy alternative
 
 .. code:: python
@@ -186,5 +186,4 @@ Inflatable args are composed of 2 parts, the deflated (compressed) argument, and
 
 Learn More
 ----------
-
 - To learn more about PyTorch Mobile, please refer to `PyTorch Mobile Home Page <https://pytorch.org/mobile/home/>`_
