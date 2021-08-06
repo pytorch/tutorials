@@ -265,8 +265,8 @@ either the application or the model ``forward()`` method.
         setup(rank, world_size)
 
         # setup mp_model and devices for this process
-        dev0 = (rank * 2) % world_size
-        dev1 = (rank * 2 + 1) % world_size
+        dev0 = rank * 2
+        dev1 = rank * 2 + 1
         mp_model = ToyMpModel(dev0, dev1)
         ddp_mp_model = DDP(mp_model)
 
@@ -286,7 +286,9 @@ either the application or the model ``forward()`` method.
     if __name__ == "__main__":
         n_gpus = torch.cuda.device_count()
         assert n_gpus >= 2, f"Requires at least 2 GPUs to run, but got {n_gpus}"
-        world_size = n_gpus
-        run_demo(demo_basic, world_size)
-        run_demo(demo_checkpoint, world_size)
-        run_demo(demo_model_parallel, world_size)
+        run_demo(demo_basic, n_gpus)
+        run_demo(demo_checkpoint, n_gpus)
+        if n_gpus < 4:
+            print("Skipped demo_model_parallel since it requires >= 4 GPUs.")
+        else:
+            run_demo(demo_model_parallel, world_size)
