@@ -97,6 +97,7 @@ Uncommon case bundling and retrieving inputs for functions beyond 'forward'
 3. **Retrieve inputs and run model on them**
 
 .. code:: python
+
     all_info = bundled_model.get_bundled_inputs_functions_and_info()
 
     # The return type for get_bundled_inputs_functions_and_info is complex, but essentially we are retrieving the name
@@ -124,6 +125,7 @@ The following input types are compressed automatically without requiring an expl
     - Inputs from torch.zeros, torch.ones, or torch.full are moved to their compact representations.
 
 .. code:: python
+
     # bundle_randn will generate a random tensor when the model is asked for bundled inputs
     inputs = [(torch.utils.bundled_inputs.bundle_randn((1,10)),)]
     bundled_model = bundle_inputs(scripted_module, inputs)
@@ -134,6 +136,7 @@ The following input types are compressed automatically without requiring an expl
 Inflatable args are composed of 2 parts, the deflated (compressed) argument, and an expression or function definition to inflate them.
 
 .. code:: python
+
     def create_example(*size, dtype=None):
         """Generate a tuple of 2 random tensors both of the specified size"""
 
@@ -146,6 +149,7 @@ Inflatable args are composed of 2 parts, the deflated (compressed) argument, and
     If you need to create a more complicated input providing a function is an easy alternative
 
 .. code:: python
+
         sample = dict(
             a=torch.zeros([10, 20]),
             b=torch.zeros([1, 1]),
