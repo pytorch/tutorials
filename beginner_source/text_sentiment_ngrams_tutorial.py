@@ -199,12 +199,12 @@ def train(dataloader):
 
     for idx, (label, text, offsets) in enumerate(dataloader):
         optimizer.zero_grad()
-        predited_label = model(text, offsets)
-        loss = criterion(predited_label, label)
+        predicted_label = model(text, offsets)
+        loss = criterion(predicted_label, label)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 0.1)
         optimizer.step()
-        total_acc += (predited_label.argmax(1) == label).sum().item()
+        total_acc += (predicted_label.argmax(1) == label).sum().item()
         total_count += label.size(0)
         if idx % log_interval == 0 and idx > 0:
             elapsed = time.time() - start_time
@@ -220,9 +220,9 @@ def evaluate(dataloader):
 
     with torch.no_grad():
         for idx, (label, text, offsets) in enumerate(dataloader):
-            predited_label = model(text, offsets)
-            loss = criterion(predited_label, label)
-            total_acc += (predited_label.argmax(1) == label).sum().item()
+            predicted_label = model(text, offsets)
+            loss = criterion(predicted_label, label)
+            total_acc += (predicted_label.argmax(1) == label).sum().item()
             total_count += label.size(0)
     return total_acc/total_count
 
