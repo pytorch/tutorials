@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
 `Quickstart <quickstart_tutorial.html>`_ ||
-`Tensors <tensors_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 **Datasets & DataLoaders** ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||

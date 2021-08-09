@@ -1,11 +1,11 @@
 """
 `Learn the Basics <intro.html>`_ ||
 **Quickstart** ||
-`Tensors <tensors_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
-`Autograd <autograds_tutorial.html>`_ ||
+`Autograd <autogradqs_tutorial.html>`_ ||
 `Optimization <optimization_tutorial.html>`_ ||
 `Save & Load Model <saveloadrun_tutorial.html>`_
 

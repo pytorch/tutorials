@@ -555,11 +555,11 @@ Additional Resources
 
    beginner/basics/intro
    beginner/basics/quickstart_tutorial
-   beginner/basics/tensors_tutorial
+   beginner/basics/tensorqs_tutorial
    beginner/basics/data_tutorial
    beginner/basics/transforms_tutorial
    beginner/basics/buildmodel_tutorial
-   beginner/basics/autograds_tutorial
+   beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
 

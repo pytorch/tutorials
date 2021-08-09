@@ -9,7 +9,7 @@ Learn the Basics
     Quickstart
     https://pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html
 
-3. tensors_tutorial.py
+3. tensorqs_tutorial.py
     Tensors
     https://pytorch.org/tutorials/beginner/basics/tensor_tutorial.html
 
