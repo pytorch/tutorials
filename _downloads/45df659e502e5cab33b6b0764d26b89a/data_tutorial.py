@@ -1,6 +1,6 @@
 """
 `Learn the Basics <intro.html>`_ ||
-`Quickstart <quickstart_tutorial.html>`_ || 
+`Quickstart <quickstart_tutorial.html>`_ ||
 `Tensors <tensorqs_tutorial.html>`_ ||
 **Datasets & DataLoaders** ||
 `Transforms <transforms_tutorial.html>`_ ||
@@ -22,7 +22,7 @@ Datasets & DataLoaders
 # ``Dataset`` stores the samples and their corresponding labels, and ``DataLoader`` wraps an iterable around
 # the ``Dataset`` to enable easy access to the samples.
 #
-# PyTorch domain libraries provide a number of pre-loaded datasets (such as FashionMNIST) that 
+# PyTorch domain libraries provide a number of pre-loaded datasets (such as FashionMNIST) that
 # subclass ``torch.utils.data.Dataset`` and implement functions specific to the particular data.
 # They can be used to prototype and benchmark your model. You can find them
 # here: `Image Datasets <https://pytorch.org/vision/stable/datasets.html>`_,
@@ -71,7 +71,7 @@ test_data = datasets.FashionMNIST(
 # Iterating and Visualizing the Dataset
 # -----------------
 #
-# We can index ``Datasets`` manually like a list: ``training_data[index]``. 
+# We can index ``Datasets`` manually like a list: ``training_data[index]``.
 # We use ``matplotlib`` to visualize some samples in our training data.
 
 labels_map = {
@@ -111,9 +111,9 @@ plt.show()
 # Creating a Custom Dataset for your files
 # ---------------------------------------------------
 #
-# A custom Dataset class must implement three functions: `__init__`, `__len__`, and `__getitem__`. 
-# Take a look at this implementation; the FashionMNIST images are stored 
-# in a directory ``img_dir``, and their labels are stored separately in a CSV file ``annotations_file``. 
+# A custom Dataset class must implement three functions: `__init__`, `__len__`, and `__getitem__`.
+# Take a look at this implementation; the FashionMNIST images are stored
+# in a directory ``img_dir``, and their labels are stored separately in a CSV file ``annotations_file``.
 #
 # In the next sections, we'll break down what's happening in each of these functions.
 
@@ -148,8 +148,8 @@ class CustomImageDataset(Dataset):
 # ^^^^^^^^^^^^^^^^^^^^
 #
 # The __init__ function is run once when instantiating the Dataset object. We initialize
-# the directory containing the images, the annotations file, and both transforms (covered 
-# in more detail in the next section). 
+# the directory containing the images, the annotations file, and both transforms (covered
+# in more detail in the next section).
 #
 # The labels.csv file looks like: ::
 #
@@ -183,9 +183,9 @@ def __len__(self):
 # __getitem__
 # ^^^^^^^^^^^^^^^^^^^^
 #
-# The __getitem__ function loads and returns a sample from the dataset at the given index ``idx``. 
-# Based on the index, it identifies the image's location on disk, converts that to a tensor using ``read_image``, retrieves the 
-# corresponding label from the csv data in ``self.img_labels``, calls the transform functions on them (if applicable), and returns the 
+# The __getitem__ function loads and returns a sample from the dataset at the given index ``idx``.
+# Based on the index, it identifies the image's location on disk, converts that to a tensor using ``read_image``, retrieves the
+# corresponding label from the csv data in ``self.img_labels``, calls the transform functions on them (if applicable), and returns the
 # tensor image and corresponding label in a tuple.
 
 def __getitem__(self, idx):
@@ -207,7 +207,7 @@ def __getitem__(self, idx):
 #################################################################
 # Preparing your data for training with DataLoaders
 # -------------------------------------------------
-# The ``Dataset`` retrieves our dataset's features and labels one sample at a time. While training a model, we typically want to 
+# The ``Dataset`` retrieves our dataset's features and labels one sample at a time. While training a model, we typically want to
 # pass samples in "minibatches", reshuffle the data at every epoch to reduce model overfitting, and use Python's ``multiprocessing`` to
 # speed up data retrieval.
 #
@@ -224,7 +224,7 @@ test_dataloader = DataLoader(test_data, batch_size=64, shuffle=True)
 #
 # We have loaded that dataset into the ``DataLoader`` and can iterate through the dataset as needed.
 # Each iteration below returns a batch of ``train_features`` and ``train_labels`` (containing ``batch_size=64`` features and labels respectively).
-# Because we specified ``shuffle=True``, after we iterate over all batches the data is shuffled (for finer-grained control over 
+# Because we specified ``shuffle=True``, after we iterate over all batches the data is shuffled (for finer-grained control over
 # the data loading order, take a look at `Samplers <https://pytorch.org/docs/stable/data.html#data-loading-order-and-sampler>`_).
 
 # Display image and label.
@@ -245,5 +245,3 @@ print(f"Label: {label}")
 # Further Reading
 # --------------
 # - `torch.utils.data API <https://pytorch.org/docs/stable/data.html>`_
-
-
