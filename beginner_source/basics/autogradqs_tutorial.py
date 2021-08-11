@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
-`Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensorqs_tutorial.html>`_ || 
+`Quickstart <quickstart_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
@@ -64,7 +64,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
-print('Gradient function for z =',z.grad_fn)
+print('Gradient function for z =', z.grad_fn)
 print('Gradient function for loss =', loss.grad_fn)
 
 ######################################################################
@@ -240,4 +240,3 @@ print("\nCall after zeroing gradients\n", inp.grad)
 # Further Reading
 # ~~~~~~~~~~~~~~~~~
 # - `Autograd Mechanics <https://pytorch.org/docs/stable/notes/autograd.html>`_
-
