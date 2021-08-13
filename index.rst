@@ -311,6 +311,13 @@ Welcome to PyTorch Tutorials
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
+   :header: Custom Function Tutorial: Double Backward
+   :card_description: Learn how to write a custom autograd Function that supports double backward.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_double_backward_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
    :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
    :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
@@ -663,6 +670,7 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_double_backward
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
