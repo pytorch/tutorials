@@ -355,11 +355,8 @@ if use_cuda:
             scheduler.step()
 
         mems.append(torch.cuda.max_memory_allocated(device=None) / 1024**3)
-    # Example run (CuDNN v8.0): fused peak memory: 1.56GB, unfused peak memory: 2.68GB
+    # Example run: fused peak memory: 1.56GB, unfused peak memory: 2.68GB
     #
-    # NOTE: Results are for reference only
-    #       Actual memory usage may vary depending the specific CuDNN implementation of ops
-    #       (e.g., convolution). Colab (with CUDNN v7.6.5) yielded a fused peak memory of
-    #       2.33GB and unfused peak memory of 2.74GB.
+    # NOTE: Actual memory usage may vary depending the specific CuDNN convolution algorithm used
     print(f"CuDNN version: {torch.backends.cudnn.version()}")
-    print(f"fused peak memory: {mems[0]:.2f}GB, unfused peak memory: {mems[1]:.2f}GB")
+    print(f"fused peak memory: {mems[0]:.2f}GB, unfused peak memory: {mems[0]:.2f}GB")
