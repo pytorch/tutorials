@@ -670,7 +670,7 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
-   intermediate/custom_function_double_backward
+   intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
