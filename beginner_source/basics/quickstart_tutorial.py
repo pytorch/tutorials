@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
-**Quickstart** || 
-`Tensors <tensorqs_tutorial.html>`_ || 
+**Quickstart** ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
@@ -15,7 +15,7 @@ This section runs through the API for common tasks in machine learning. Refer to
 
 Working with data
 -----------------
-PyTorch has two `primitives to work with data <https://pytorch.org/docs/stable/data.html>`_: 
+PyTorch has two `primitives to work with data <https://pytorch.org/docs/stable/data.html>`_:
 ``torch.utils.data.DataLoader`` and ``torch.utils.data.Dataset``.
 ``Dataset`` stores the samples and their corresponding labels, and ``DataLoader`` wraps an iterable around
 the ``Dataset``.
@@ -30,11 +30,11 @@ from torchvision.transforms import ToTensor, Lambda, Compose
 import matplotlib.pyplot as plt
 
 ######################################################################
-# PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_, 
-# `TorchVision <https://pytorch.org/vision/stable/index.html>`_, and `TorchAudio <https://pytorch.org/audio/stable/index.html>`_, 
+# PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_,
+# `TorchVision <https://pytorch.org/vision/stable/index.html>`_, and `TorchAudio <https://pytorch.org/audio/stable/index.html>`_,
 # all of which include datasets. For this tutorial, we  will be using a TorchVision dataset.
 #
-# The ``torchvision.datasets`` module contains ``Dataset`` objects for many real-world vision data like 
+# The ``torchvision.datasets`` module contains ``Dataset`` objects for many real-world vision data like
 # CIFAR, COCO (`full list here <https://pytorch.org/vision/stable/datasets.html>`_). In this tutorial, we
 # use the FashionMNIST dataset. Every TorchVision ``Dataset`` includes two arguments: ``transform`` and
 # ``target_transform`` to modify the samples and labels respectively.
@@ -57,7 +57,7 @@ test_data = datasets.FashionMNIST(
 
 ######################################################################
 # We pass the ``Dataset`` as an argument to ``DataLoader``. This wraps an iterable over our dataset, and supports
-# automatic batching, sampling, shuffling and multiprocess data loading. Here we define a batch size of 64, i.e. each element 
+# automatic batching, sampling, shuffling and multiprocess data loading. Here we define a batch size of 64, i.e. each element
 # in the dataloader iterable will return a batch of 64 features and labels.
 
 batch_size = 64
@@ -82,9 +82,9 @@ for X, y in test_dataloader:
 ################################
 # Creating Models
 # ------------------
-# To define a neural network in PyTorch, we create a class that inherits 
+# To define a neural network in PyTorch, we create a class that inherits
 # from `nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`_. We define the layers of the network
-# in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate 
+# in the ``__init__`` function and specify how data will pass through the network in the ``forward`` function. To accelerate
 # operations in the neural network, we move it to the GPU if available.
 
 # Get cpu or gpu device for training.
@@ -127,26 +127,26 @@ print(model)
 # Optimizing the Model Parameters
 # ----------------------------------------
 # To train a model, we need a `loss function <https://pytorch.org/docs/stable/nn.html#loss-functions>`_
-# and an `optimizer <https://pytorch.org/docs/stable/optim.html>`_. 
+# and an `optimizer <https://pytorch.org/docs/stable/optim.html>`_.
 
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
 
 
-####################################################################### 
-# In a single training loop, the model makes predictions on the training dataset (fed to it in batches), and 
-# backpropagates the prediction error to adjust the model's parameters. 
+#######################################################################
+# In a single training loop, the model makes predictions on the training dataset (fed to it in batches), and
+# backpropagates the prediction error to adjust the model's parameters.
 
 def train(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device)
-        
+
         # Compute prediction error
         pred = model(X)
         loss = loss_fn(pred, y)
-        
+
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
@@ -175,7 +175,7 @@ def test(dataloader, model, loss_fn):
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 ##############################################################################
-# The training process is conducted over several iterations (*epochs*). During each epoch, the model learns 
+# The training process is conducted over several iterations (*epochs*). During each epoch, the model learns
 # parameters to make better predictions. We print the model's accuracy and loss at each epoch; we'd like to see the
 # accuracy increase and the loss decrease with every epoch.
 
@@ -209,7 +209,7 @@ print("Saved PyTorch Model State to model.pth")
 # ----------------------------
 #
 # The process for loading a model includes re-creating the model structure and loading
-# the state dictionary into it. 
+# the state dictionary into it.
 
 model = NeuralNetwork()
 model.load_state_dict(torch.load("model.pth"))
@@ -237,9 +237,7 @@ with torch.no_grad():
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
-      
+
 ######################################################################
 # Read more about `Saving & Loading your model <saveloadrun_tutorial.html>`_.
 #
-
-
