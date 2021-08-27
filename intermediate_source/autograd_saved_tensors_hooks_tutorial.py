@@ -432,7 +432,11 @@ x = torch.ones(5, requires_grad=True)
 with torch.autograd.graph.saved_tensors_hooks(pack_hook, unpack_hook):
     y = x.pow(2)
 print(y.grad_fn._saved_self)
-print(y.grad_fn._saved_self)
+try:
+    print(y.grad_fn._saved_self)
+    print("Double access succeeded!")
+except:
+    print("Double access failed!")
 
 
 ######################################################################
