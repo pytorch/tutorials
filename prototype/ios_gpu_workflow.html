@@ -483,13 +483,26 @@
 </div>
 <p>Those are all the ops we need to run the mobilenetv2 model on iOS GPU. Cool! Now that you have the <code class="docutils literal notranslate"><span class="pre">mobilenetv2_metal.pt</span></code> saved on your disk, let’s move on to the iOS part.</p>
 </div>
-<div class="section" id="use-c-apis">
-<h2>Use C++ APIs<a class="headerlink" href="#use-c-apis" title="Permalink to this headline">¶</a></h2>
-<p>In this section, we’ll be using the <a class="reference external" href="https://github.com/pytorch/ios-demo-app">HelloWorld example</a> to demonstrate how to use the C++ APIs. The first thing we need to do is to build a custom LibTorch from Source. Make sure you have deleted the <strong>build</strong> folder from the previous step in PyTorch root directory. Then run the command below</p>
+<div class="section" id="use-pytorch-ios-library-with-metal">
+<h2>Use PyTorch iOS library with Metal<a class="headerlink" href="#use-pytorch-ios-library-with-metal" title="Permalink to this headline">¶</a></h2>
+<p>The PyTorch iOS library with Metal support <cite>LibTorch-Lite-Nightly</cite> is available in Cocoapods. You can read the <a class="reference external" href="https://pytorch.org/mobile/ios/#using-the-nightly-pytorch-ios-libraries-in-cocoapods">Using the Nightly PyTorch iOS Libraries in CocoaPods</a> section from the iOS tutorial for more detail about its usage.</p>
+<p>We also have the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-Metal">HelloWorld-Metal example</a> that shows how to conect all pieces together.</p>
+<p>Note that if you run the HelloWorld-Metal example, you may notice that the results are slighly different from the <a class="reference external" href="https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods">results</a> we got from the CPU model as shown in the iOS tutorial.</p>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">timber</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">grey</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">gray</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">Canis</span> <span class="n">lupus</span>
+<span class="o">-</span> <span class="n">malamute</span><span class="p">,</span> <span class="n">malemute</span><span class="p">,</span> <span class="n">Alaskan</span> <span class="n">malamute</span>
+<span class="o">-</span> <span class="n">Eskimo</span> <span class="n">dog</span><span class="p">,</span> <span class="n">husky</span>
+</pre></div>
+</div>
+<p>This is because by default Metal uses fp16 rather than fp32 to compute. The precision loss is expected.</p>
+</div>
+<div class="section" id="use-libtorch-lite-built-from-source">
+<h2>Use LibTorch-Lite Built from Source<a class="headerlink" href="#use-libtorch-lite-built-from-source" title="Permalink to this headline">¶</a></h2>
+<p>You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we’ll be using the <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld">HelloWorld example</a> to demonstrate this process.</p>
+<p>First, make sure you have deleted the <strong>build</strong> folder from the “Model Preparation” step in PyTorch root directory. Then run the command below</p>
 <div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IOS_ARCH</span><span class="o">=</span><span class="n">arm64</span> <span class="n">USE_PYTORCH_METAL</span><span class="o">=</span><span class="mi">1</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">build_ios</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
-<p>Note <code class="docutils literal notranslate"><span class="pre">IOS_ARCH</span></code> tells the script to build a arm64 version of Libtorch. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the <a class="reference external" href="https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source">Build PyTorch iOS libraries from source</a> section from the iOS tutorial to setup the XCode settings properly. Don’t forget to copy the <cite>./mobilenetv2_metal.pt</cite> to your XCode project and modify the model file path accordingly.</p>
+<p>Note <code class="docutils literal notranslate"><span class="pre">IOS_ARCH</span></code> tells the script to build a arm64 version of Libtorch-Lite. This is because in PyTorch, Metal is only available for the iOS devices that support the Apple A9 chip or above. Once the build finished, follow the <a class="reference external" href="https://pytorch.org/mobile/ios/#build-pytorch-ios-libraries-from-source">Build PyTorch iOS libraries from source</a> section from the iOS tutorial to setup the XCode settings properly. Don’t forget to copy the <cite>./mobilenetv2_metal.pt</cite> to your XCode project and modify the model file path accordingly.</p>
 <p>Next we need to make some changes in <code class="docutils literal notranslate"><span class="pre">TorchModule.mm</span></code></p>
 <div class="code objective-c highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
 <span class="o">//</span> <span class="c1">#import &lt;Libtorch-Lite/Libtorch-Lite.h&gt;</span>
@@ -511,13 +524,7 @@
 </div>
 <p>As you can see, we simply just call <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> to move our input tensor from CPU to GPU, and then call <code class="docutils literal notranslate"><span class="pre">.cpu()</span></code> to move the result back. Internally, <code class="docutils literal notranslate"><span class="pre">.metal()</span></code> will copy the input data from the CPU buffer to a GPU buffer with a GPU compatible memory format. When <cite>.cpu()</cite> is invoked, the GPU command buffer will be flushed and synced. After <cite>forward</cite> finished, the final result will then be copied back from the GPU buffer back to a CPU buffer.</p>
 <p>The last step we have to do is to add the <cite>Accelerate.framework</cite> and the <cite>MetalPerformanceShaders.framework</cite> to your xcode project (Open your project via XCode, go to your project target’s “General” tab, locate the “Frameworks, Libraries and Embedded Content” section and click the “+” button).</p>
-<p>If everything works fine, you should be able to see the inference results on your phone. The result below was captured from an iPhone 11 device</p>
-<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">timber</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">grey</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">gray</span> <span class="n">wolf</span><span class="p">,</span> <span class="n">Canis</span> <span class="n">lupus</span>
-<span class="o">-</span> <span class="n">malamute</span><span class="p">,</span> <span class="n">malemute</span><span class="p">,</span> <span class="n">Alaskan</span> <span class="n">malamute</span>
-<span class="o">-</span> <span class="n">Eskimo</span> <span class="n">dog</span><span class="p">,</span> <span class="n">husky</span>
-</pre></div>
-</div>
-<p>You may notice that the results are slighly different from the <a class="reference external" href="https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods">results</a> we got from the CPU model as shown in the iOS tutorial. This is because by default Metal uses fp16 rather than fp32 to compute. The precision loss is expected.</p>
+<p>If everything works fine, you should be able to see the inference results on your phone.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
@@ -581,7 +588,8 @@
 <li><a class="reference internal" href="#">(Prototype) Use iOS GPU in PyTorch</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#model-preparation">Model Preparation</a></li>
-<li><a class="reference internal" href="#use-c-apis">Use C++ APIs</a></li>
+<li><a class="reference internal" href="#use-pytorch-ios-library-with-metal">Use PyTorch iOS library with Metal</a></li>
+<li><a class="reference internal" href="#use-libtorch-lite-built-from-source">Use LibTorch-Lite Built from Source</a></li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a></li>
 <li><a class="reference internal" href="#learn-more">Learn More</a></li>
 </ul>
