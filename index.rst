@@ -2,18 +2,13 @@ Welcome to PyTorch Tutorials
 ============================
 .. raw:: html
 
-    <p>Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849 target="_blank">PyTorch Tutorials reader survey</a>. </p>
-
-
-.. raw:: html
-
     <div class="tutorials-callout-container">
         <div class="row">
 
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
+   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide.
    :header: Learn the Basics
    :button_link:  beginner/basics/intro.html
    :button_text: Get started with PyTorch
@@ -76,11 +71,11 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
-   :header: Visualizing Models, Data, and Training with Tensorboard
+   :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
-   :tags: Interpretability,Getting-Started,Tensorboard
+   :tags: Interpretability,Getting-Started,TensorBoard
 
 .. Image/Video
 
@@ -97,7 +92,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
    :tags: Image/Video
-   
+
 .. customcarditem::
    :header: Optimizing Vision Transformer Model
    :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
@@ -118,6 +113,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/DCGAN-Tutorial.png
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
+   
+.. customcarditem::
+   :header: Spatial Transformer Networks Tutorial
+   :card_description: Learn how to augment your network using a visual attention mechanism.
+   :image: _static/img/stn/Five.gif
+   :link: intermediate/spatial_transformer_tutorial.html
+   :tags: Image/Video
 
 .. Audio
 
@@ -132,7 +134,7 @@ Welcome to PyTorch Tutorials
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -167,17 +169,18 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
 
 .. customcarditem::
-   :header: Language Translation with Torchtext
-   :card_description: Use torchtext to reprocess data from a well-known datasets containing both English and German. Then use it to train a sequence-to-sequence model.
+   :header: Language Translation with Transformer
+   :card_description: Train a language translation model from scratch using Transformer.
    :image: _static/img/thumbnails/cropped/Language-Translation-with-TorchText.png
-   :link: beginner/torchtext_translation.html
+   :link: beginner/translation_transformer.html
    :tags: Text
+
 
 .. Reinforcement Learning
 
@@ -292,7 +295,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++
-   
+
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
@@ -307,6 +310,19 @@ Welcome to PyTorch Tutorials
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
+.. customcarditem::
+   :header: Custom Function Tutorial: Double Backward
+   :card_description: Learn how to write a custom autograd Function that supports double backward.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_double_backward_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
+   :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
+   :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_conv_bn_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. Model Optimization
 
@@ -318,10 +334,31 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
+   :header: Performance Profiling in TensorBoard
+   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
+   :image: _static/img/thumbnails/cropped/profiler.png
+   :link: intermediate/tensorboard_profiler_tutorial.html
+   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
+
+.. customcarditem::
    :header: Hyperparameter Tuning Tutorial
    :card_description: Learn how to use Ray Tune to find the best performing set of hyperparameters for your model.
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
+   :tags: Model-Optimization,Best-Practice
+
+ .. customcarditem::
+    :header: Optimizing Vision Transformer Model
+    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+    :image: _static/img/thumbnails/cropped/mobile.png
+    :link: beginner/vt_tutorial.html
+    :tags: Model-Optimization,Best-Practice,Mobile
+
+.. customcarditem::
+   :header: Parametrizations Tutorial
+   :card_description: Learn how to use torch.nn.utils.parametrize to put constriants on your parameters (e.g. make them orthogonal, symmetric positive definite, low-rank...)
+   :image: _static/img/thumbnails/cropped/parametrizations.png
+   :link: intermediate/parametrizations.html
    :tags: Model-Optimization,Best-Practice
 
 .. customcarditem::
@@ -344,13 +381,20 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
-   
+
 .. customcarditem::
    :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
+
+.. customcarditem::
+   :header: (beta) Static Quantization with Eager Mode in PyTorch
+   :card_description: This tutorial shows how to do post-training static quantization.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Quantization
 
 .. Parallel-and-Distributed-Training
 
@@ -482,7 +526,7 @@ Additional Resources
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
-   :button_text: Download
+   :button_text: Open
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
@@ -490,6 +534,11 @@ Additional Resources
    :button_link: https://github.com/pytorch/tutorials
    :button_text: Go To GitHub
 
+.. customcalloutitem::
+   :header: Run Tutorials on Google Colab
+   :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
+   :button_link: beginner/colab.html
+   :button_text: Open
 
 .. End of callout section
 
@@ -516,9 +565,24 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
-   :caption: Learning PyTorch
+   :caption: Introduction to PyTorch
 
    beginner/basics/intro
+   beginner/basics/quickstart_tutorial
+   beginner/basics/tensorqs_tutorial
+   beginner/basics/data_tutorial
+   beginner/basics/transforms_tutorial
+   beginner/basics/buildmodel_tutorial
+   beginner/basics/autogradqs_tutorial
+   beginner/basics/optimization_tutorial
+   beginner/basics/saveloadrun_tutorial
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Learning PyTorch
+
    beginner/deep_learning_60min_blitz
    beginner/pytorch_with_examples
    beginner/nn_tutorial
@@ -534,6 +598,7 @@ Additional Resources
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+   intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
 
 .. toctree::
@@ -543,8 +608,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
-
+   intermediate/speech_command_recognition_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -557,7 +621,7 @@ Additional Resources
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
    beginner/text_sentiment_ngrams_tutorial
-   beginner/torchtext_translation
+   beginner/translation_transformer
 
 
 .. toctree::
@@ -585,7 +649,7 @@ Additional Resources
    :includehidden:
    :hidden:
    :caption: Code Transforms with FX
-   
+
    intermediate/fx_conv_bn_fuser
    intermediate/fx_profiling_tutorial
 
@@ -599,13 +663,15 @@ Additional Resources
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
-   
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_double_backward_tutorial
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
@@ -619,11 +685,15 @@ Additional Resources
    :caption: Model Optimization
 
    beginner/profiler
+   intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
+   beginner/vt_tutorial
+   intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -642,6 +712,7 @@ Additional Resources
    advanced/rpc_ddp_tutorial
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
+   advanced/generic_join
 
 .. toctree::
    :maxdepth: 2

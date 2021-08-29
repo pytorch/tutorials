@@ -62,7 +62,7 @@ class ToyModel(nn.Module):
 
 ######################################################################
 # Note that, the above ``ToyModel`` looks very similar to how one would
-# implement it on a single GPU, except the five ``to(device)`` calls which
+# implement it on a single GPU, except the four ``to(device)`` calls which
 # place linear layers and tensors on proper devices. That is the only place in
 # the model that requires changes. The ``backward()`` and ``torch.optim`` will
 # automatically take care of gradients as if the model is on one GPU. You only
@@ -192,9 +192,6 @@ num_repeat = 10
 stmt = "train(model)"
 
 setup = "model = ModelParallelResNet50()"
-# globals arg is only available in Python 3. In Python 2, use the following
-# import __builtin__
-# __builtin__.__dict__.update(locals())
 mp_run_times = timeit.repeat(
     stmt, setup, number=1, repeat=num_repeat, globals=globals())
 mp_mean, mp_std = np.mean(mp_run_times), np.std(mp_run_times)

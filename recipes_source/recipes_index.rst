@@ -208,6 +208,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
   :tags: Mobile
 
 .. customcarditem::
+   :header: Mobile Interpreter Workflow in Android and iOS
+   :card_description: Learn how to use the mobile interpreter on iOS and Andriod devices.
+   :image: ../_static/img/thumbnails/cropped/mobile.png
+   :link: ../recipes/mobile_interpreter.html
+   :tags: Mobile
+
+.. customcarditem::
    :header: Profiling PyTorch RPC-Based Workloads
    :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
    :image: ../_static/img/thumbnails/cropped/profile.png
@@ -248,6 +255,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/cuda_rpc.html
    :tags: Distributed-Training
 
+.. customcarditem::
+   :header: Distributed Optimizer with TorchScript support
+   :card_description: How to enable TorchScript support for Distributed Optimizer.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_optim_torchscript.html
+   :tags: Distributed-Training,TorchScript
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -286,3 +300,5 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
+   /recipes/distributed_optim_torchscript
+   /recipes/mobile_interpreter

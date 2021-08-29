@@ -24,7 +24,7 @@ Setup
 The distributed package included in PyTorch (i.e.,
 ``torch.distributed``) enables researchers and practitioners to easily
 parallelize their computations across processes and clusters of
-machines. To do so, it leverages messaging passing semantics
+machines. To do so, it leverages message passing semantics
 allowing each process to communicate data to any of the other processes.
 As opposed to the multiprocessing (``torch.multiprocessing``) package,
 processes can use different communication backends and are not
@@ -32,10 +32,10 @@ restricted to being executed on the same machine.
 
 In order to get started we need the ability to run multiple processes
 simultaneously. If you have access to compute cluster you should check
-with your local sysadmin or use your favorite coordination tool. (e.g.,
+with your local sysadmin or use your favorite coordination tool (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
 `clustershell <https://cea-hpc.github.io/clustershell/>`__, or
-`others <https://slurm.schedmd.com/>`__) For the purpose of this
+`others <https://slurm.schedmd.com/>`__). For the purpose of this
 tutorial, we will use a single machine and fork multiple processes using
 the following template.
 
@@ -207,7 +207,7 @@ to obtain the sum of all tensors at all processes, we can use the
 
     """ All-Reduce example."""
     def run(rank, size):
-        """ Simple point-to-point communication. """
+        """ Simple collective communication. """
         group = dist.new_group([0, 1])
         tensor = torch.ones(1)
         dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
@@ -233,10 +233,10 @@ of 6 collectives currently implemented in PyTorch.
    ``tensor`` and stores the result in ``dst``.
 -  ``dist.all_reduce(tensor, op, group)``: Same as reduce, but the
    result is stored in all processes.
--  ``dist.scatter(tensor, src, scatter_list, group)``: Copies the
+-  ``dist.scatter(tensor, scatter_list, src, group)``: Copies the
    :math:`i^{\text{th}}` tensor ``scatter_list[i]`` to the
    :math:`i^{\text{th}}` process.
--  ``dist.gather(tensor, dst, gather_list, group)``: Copies ``tensor``
+-  ``dist.gather(tensor, gather_list, dst, group)``: Copies ``tensor``
    from all processes in ``dst``.
 -  ``dist.all_gather(tensor_list, tensor, group)``: Copies ``tensor``
    from all processes to ``tensor_list``, on all processes.

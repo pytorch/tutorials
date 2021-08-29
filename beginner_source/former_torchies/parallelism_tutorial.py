@@ -41,7 +41,7 @@ class DataParallelModel(nn.Module):
 # The code does not need to be changed in CPU-mode.
 #
 # The documentation for DataParallel can be found
-# `here <https://pytorch.org/docs/nn.html#dataparallel>`_.
+# `here <https://pytorch.org/docs/stable/nn.html#dataparallel-layers-multi-gpu-distributed>`_.
 # 
 # **Attributes of the wrapped module**
 # 
