@@ -137,6 +137,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
    :tags: Audio
 
+.. customcarditem::
+   :header: Text-to-Speech with torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a text-to-speech application.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/text_to_speech_with_torchaudio_tutorial.html
+   :tags: Audio
+
 .. Text
 
 .. customcarditem::
@@ -609,6 +616,7 @@ Additional Resources
 
    beginner/audio_preprocessing_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
+   intermediate/text_to_speech_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
