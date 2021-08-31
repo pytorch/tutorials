@@ -424,7 +424,8 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
         def closure():
             # correct the values of updated input image
-            input_img.data.clamp_(0, 1)
+            with torch.no_grad():
+                input_img.clamp_(0, 1)
 
             optimizer.zero_grad()
             model(input_img)
@@ -454,7 +455,8 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
         optimizer.step(closure)
 
     # a last correction...
-    input_img.data.clamp_(0, 1)
+    with torch.no_grad():
+        input_img.clamp_(0, 1)
 
     return input_img
 
