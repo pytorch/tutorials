@@ -309,8 +309,6 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
                                style_img, content_img,
                                content_layers=content_layers_default,
                                style_layers=style_layers_default):
-    cnn = copy.deepcopy(cnn)
-
     # normalization module
     normalization = Normalization(normalization_mean, normalization_std).to(device)
 
