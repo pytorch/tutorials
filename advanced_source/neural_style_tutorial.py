@@ -392,7 +392,7 @@ imshow(input_img, title='Input Image')
 
 def get_input_optimizer(input_img):
     # this line to show that input is a parameter that requires a gradient
-    optimizer = optim.LBFGS([input_img.requires_grad_()])
+    optimizer = optim.LBFGS([input_img])
     return optimizer
 
 
@@ -416,6 +416,12 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     print('Building the style transfer model..')
     model, style_losses, content_losses = get_style_model_and_losses(cnn,
         normalization_mean, normalization_std, style_img, content_img)
+
+    # We want to optimize the input and not the model parameters so we
+    # update all the requires_grad fields accordingly
+    input_img.requires_grad_(True)
+    model.requires_grad_(False)
+
     optimizer = get_input_optimizer(input_img)
 
     print('Optimizing..')
