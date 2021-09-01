@@ -616,8 +616,6 @@ module that has content loss and style loss modules correctly inserted.</p>
                                <span class="n">style_img</span><span class="p">,</span> <span class="n">content_img</span><span class="p">,</span>
                                <span class="n">content_layers</span><span class="o">=</span><span class="n">content_layers_default</span><span class="p">,</span>
                                <span class="n">style_layers</span><span class="o">=</span><span class="n">style_layers_default</span><span class="p">):</span>
-    <span class="n">cnn</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">cnn</span><span class="p">)</span>
-
     <span class="c1"># normalization module</span>
     <span class="n">normalization</span> <span class="o">=</span> <span class="n">Normalization</span><span class="p">(</span><span class="n">normalization_mean</span><span class="p">,</span> <span class="n">normalization_std</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
@@ -696,7 +694,7 @@ losses. We will create a PyTorch L-BFGS optimizer <code class="docutils literal 
 our image to it as the tensor to optimize.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_input_optimizer</span><span class="p">(</span><span class="n">input_img</span><span class="p">):</span>
     <span class="c1"># this line to show that input is a parameter that requires a gradient</span>
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">input_img</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">()])</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">LBFGS</span><span class="p">([</span><span class="n">input_img</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">optimizer</span>
 </pre></div>
 </div>
@@ -716,6 +714,12 @@ between 0 to 1 each time the network is run.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Building the style transfer model..'</span><span class="p">)</span>
     <span class="n">model</span><span class="p">,</span> <span class="n">style_losses</span><span class="p">,</span> <span class="n">content_losses</span> <span class="o">=</span> <span class="n">get_style_model_and_losses</span><span class="p">(</span><span class="n">cnn</span><span class="p">,</span>
         <span class="n">normalization_mean</span><span class="p">,</span> <span class="n">normalization_std</span><span class="p">,</span> <span class="n">style_img</span><span class="p">,</span> <span class="n">content_img</span><span class="p">)</span>
+
+    <span class="c1"># We want to optimize the input and not the model parameters so we</span>
+    <span class="c1"># update all the requires_grad fields accordingly</span>
+    <span class="n">input_img</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
     <span class="n">optimizer</span> <span class="o">=</span> <span class="n">get_input_optimizer</span><span class="p">(</span><span class="n">input_img</span><span class="p">)</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Optimizing..'</span><span class="p">)</span>
@@ -724,7 +728,8 @@ between 0 to 1 each time the network is run.</p>
 
         <span class="k">def</span> <span class="nf">closure</span><span class="p">():</span>
             <span class="c1"># correct the values of updated input image</span>
-            <span class="n">input_img</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="n">input_img</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
             <span class="n">model</span><span class="p">(</span><span class="n">input_img</span><span class="p">)</span>
@@ -754,7 +759,8 @@ between 0 to 1 each time the network is run.</p>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">closure</span><span class="p">)</span>
 
     <span class="c1"># a last correction...</span>
-    <span class="n">input_img</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">input_img</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">input_img</span>
 </pre></div>
@@ -794,7 +800,7 @@ run [300]:
 Style Loss : 0.263698 Content Loss: 2.358449
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  44.204 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  41.645 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-neural-style-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/7d103bc16c40d35006cd24e65cf978d0/neural_style_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">neural_style_tutorial.py</span></code></a></div>
