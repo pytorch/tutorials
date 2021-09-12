@@ -207,7 +207,8 @@ Proving his beauty by succession thine!
 This were to be new made when thou art old,
 And see thy blood warm when thou feel'st it cold.""".split()
 # we should tokenize the input, but we will ignore that for now
-# build a list of tuples.  Each tuple is ([ word_i-2, word_i-1 ], target word)
+# build a list of tuples.
+# Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)
 ngrams = [
     (
         [test_sentence[i - j - 1] for j in range(CONTEXT_SIZE)],
@@ -339,8 +340,8 @@ class CBOW(nn.Module):
     def forward(self, inputs):
         pass
 
-# create your model and train.  here are some functions to help you make
-# the data ready for use by your module
+# Create your model and train. Here are some functions to help you make
+# the data ready for use by your module.
 
 
 def make_context_vector(context, word_to_ix):
