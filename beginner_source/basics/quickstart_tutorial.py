@@ -17,7 +17,7 @@ Working with data
 -----------------
 PyTorch has two `primitives to work with data <https://pytorch.org/docs/stable/data.html>`_:
 ``torch.utils.data.DataLoader`` and ``torch.utils.data.Dataset``.
-``Dataset`` stores the samples and their corresponding labels, and ``DataLoader`` wraps an iterable around
+``Dataset`` stores the samples and their corresponding labels, and ``DataLoader`` wraps an iterator around
 the ``Dataset``.
 
 """
@@ -56,9 +56,9 @@ test_data = datasets.FashionMNIST(
 )
 
 ######################################################################
-# We pass the ``Dataset`` as an argument to ``DataLoader``. This wraps an iterable over our dataset, and supports
+# We pass the ``Dataset`` as an argument to ``DataLoader``. This wraps an iterator over our dataset, and supports
 # automatic batching, sampling, shuffling and multiprocess data loading. Here we define a batch size of 64, i.e. each element
-# in the dataloader iterable will return a batch of 64 features and labels.
+# in the dataloader iterator will return a batch of 64 features and labels.
 
 batch_size = 64
 
