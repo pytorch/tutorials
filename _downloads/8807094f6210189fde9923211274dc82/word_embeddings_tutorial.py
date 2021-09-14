@@ -207,11 +207,17 @@ Proving his beauty by succession thine!
 This were to be new made when thou art old,
 And see thy blood warm when thou feel'st it cold.""".split()
 # we should tokenize the input, but we will ignore that for now
-# build a list of tuples.  Each tuple is ([ word_i-2, word_i-1 ], target word)
-trigrams = [([test_sentence[i], test_sentence[i + 1]], test_sentence[i + 2])
-            for i in range(len(test_sentence) - 2)]
-# print the first 3, just so you can see what they look like
-print(trigrams[:3])
+# build a list of tuples.
+# Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)
+ngrams = [
+    (
+        [test_sentence[i - j - 1] for j in range(CONTEXT_SIZE)],
+        test_sentence[i]
+    )
+    for i in range(CONTEXT_SIZE, len(test_sentence))
+]
+# Print the first 3, just so you can see what they look like.
+print(ngrams[:3])
 
 vocab = set(test_sentence)
 word_to_ix = {word: i for i, word in enumerate(vocab)}
@@ -240,7 +246,7 @@ optimizer = optim.SGD(model.parameters(), lr=0.001)
 
 for epoch in range(10):
     total_loss = 0
-    for context, target in trigrams:
+    for context, target in ngrams:
 
         # Step 1. Prepare the inputs to be passed to the model (i.e, turn the words
         # into integer indices and wrap them in tensors)
@@ -290,7 +296,7 @@ print(model.embeddings.weight[word_to_ix["beauty"]])
 # and :math:`w_{i+1}, \dots, w_{i+N}`, referring to all context words
 # collectively as :math:`C`, CBOW tries to minimize
 #
-# .. math::  -\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+# .. math::  -\log p(w_i | C) = -\log \text{Softmax}\left(A(\sum_{w \in C} q_w) + b\right)
 #
 # where :math:`q_w` is the embedding for word :math:`w`.
 #
@@ -316,9 +322,11 @@ vocab_size = len(vocab)
 
 word_to_ix = {word: i for i, word in enumerate(vocab)}
 data = []
-for i in range(2, len(raw_text) - 2):
-    context = [raw_text[i - 2], raw_text[i - 1],
-               raw_text[i + 1], raw_text[i + 2]]
+for i in range(CONTEXT_SIZE, len(raw_text) - CONTEXT_SIZE):
+    context = (
+        [raw_text[i - j - 1] for j in range(CONTEXT_SIZE)]
+        + [raw_text[i + j + 1] for j in range(CONTEXT_SIZE)]
+    )
     target = raw_text[i]
     data.append((context, target))
 print(data[:5])
@@ -332,8 +340,8 @@ class CBOW(nn.Module):
     def forward(self, inputs):
         pass
 
-# create your model and train.  here are some functions to help you make
-# the data ready for use by your module
+# Create your model and train. Here are some functions to help you make
+# the data ready for use by your module.
 
 
 def make_context_vector(context, word_to_ix):

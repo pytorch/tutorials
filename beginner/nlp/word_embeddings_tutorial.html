@@ -515,11 +515,17 @@ examples and update the parameters with backpropagation.</p>
 <span class="s2">This were to be new made when thou art old,</span>
 <span class="s2">And see thy blood warm when thou feel'st it cold."""</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
 <span class="c1"># we should tokenize the input, but we will ignore that for now</span>
-<span class="c1"># build a list of tuples.  Each tuple is ([ word_i-2, word_i-1 ], target word)</span>
-<span class="n">trigrams</span> <span class="o">=</span> <span class="p">[([</span><span class="n">test_sentence</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">test_sentence</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">test_sentence</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test_sentence</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)]</span>
-<span class="c1"># print the first 3, just so you can see what they look like</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">trigrams</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
+<span class="c1"># build a list of tuples.</span>
+<span class="c1"># Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)</span>
+<span class="n">ngrams</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span>
+        <span class="p">[</span><span class="n">test_sentence</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">CONTEXT_SIZE</span><span class="p">)],</span>
+        <span class="n">test_sentence</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">CONTEXT_SIZE</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_sentence</span><span class="p">))</span>
+<span class="p">]</span>
+<span class="c1"># Print the first 3, just so you can see what they look like.</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">ngrams</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span>
 
 <span class="n">vocab</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">test_sentence</span><span class="p">)</span>
 <span class="n">word_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="n">word</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)}</span>
@@ -548,7 +554,7 @@ examples and update the parameters with backpropagation.</p>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">total_loss</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">for</span> <span class="n">context</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">trigrams</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">context</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">ngrams</span><span class="p">:</span>
 
         <span class="c1"># Step 1. Prepare the inputs to be passed to the model (i.e, turn the words</span>
         <span class="c1"># into integer indices and wrap them in tensors)</span>
@@ -581,10 +587,10 @@ examples and update the parameters with backpropagation.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['When', 'forty'], 'winters'), (['forty', 'winters'], 'shall'), (['winters', 'shall'], 'besiege')]
-[517.5436136722565, 514.8995923995972, 512.2736141681671, 509.6633725166321, 507.06803011894226, 504.487505197525, 501.920330286026, 499.36658549308777, 496.82590889930725, 494.2970106601715]
-tensor([ 2.0830,  0.2845, -1.1649, -0.4377,  0.5812,  0.8392,  0.0217,  2.1878,
-         0.3690,  0.8335], grad_fn=&lt;SelectBackward&gt;)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['forty', 'When'], 'winters'), (['winters', 'forty'], 'shall'), (['shall', 'winters'], 'besiege')]
+[523.1400110721588, 520.5221683979034, 517.9230709075928, 515.3407771587372, 512.7743813991547, 510.2232735157013, 507.68530893325806, 505.1594045162201, 502.64621686935425, 500.1437895298004]
+tensor([-0.9657,  0.1432, -0.1625, -0.3587, -0.0595, -2.4918,  0.2421,  0.2872,
+         0.1037,  1.0999], grad_fn=&lt;SelectBackward&gt;)
 </pre></div>
 </div>
 </div>
@@ -604,7 +610,7 @@ of percent.</p>
 and <span class="math">\(w_{i+1}, \dots, w_{i+N}\)</span>, referring to all context words
 collectively as <span class="math">\(C\)</span>, CBOW tries to minimize</p>
 <div class="math">
-\[-\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+\[-\log p(w_i | C) = -\log \text{Softmax}\left(A(\sum_{w \in C} q_w) + b\right)
 
 \]</div>
 <p>where <span class="math">\(q_w\)</span> is the embedding for word <span class="math">\(w\)</span>.</p>
@@ -629,9 +635,11 @@ reshape.</li>
 
 <span class="n">word_to_ix</span> <span class="o">=</span> <span class="p">{</span><span class="n">word</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">word</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)}</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_text</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">):</span>
-    <span class="n">context</span> <span class="o">=</span> <span class="p">[</span><span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">2</span><span class="p">],</span> <span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
-               <span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">CONTEXT_SIZE</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_text</span><span class="p">)</span> <span class="o">-</span> <span class="n">CONTEXT_SIZE</span><span class="p">):</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span><span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">CONTEXT_SIZE</span><span class="p">)]</span>
+        <span class="o">+</span> <span class="p">[</span><span class="n">raw_text</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">CONTEXT_SIZE</span><span class="p">)]</span>
+    <span class="p">)</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">raw_text</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">context</span><span class="p">,</span> <span class="n">target</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
@@ -645,8 +653,8 @@ reshape.</li>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
         <span class="k">pass</span>
 
-<span class="c1"># create your model and train.  here are some functions to help you make</span>
-<span class="c1"># the data ready for use by your module</span>
+<span class="c1"># Create your model and train. Here are some functions to help you make</span>
+<span class="c1"># the data ready for use by your module.</span>
 
 
 <span class="k">def</span> <span class="nf">make_context_vector</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">word_to_ix</span><span class="p">):</span>
@@ -658,10 +666,10 @@ reshape.</li>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['We', 'are', 'to', 'study'], 'about'), (['are', 'about', 'study', 'the'], 'to'), (['about', 'to', 'the', 'idea'], 'study'), (['to', 'study', 'idea', 'of'], 'the'), (['study', 'the', 'of', 'a'], 'idea')]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[(['are', 'We', 'to', 'study'], 'about'), (['about', 'are', 'study', 'the'], 'to'), (['to', 'about', 'the', 'idea'], 'study'), (['study', 'to', 'idea', 'of'], 'the'), (['the', 'study', 'of', 'a'], 'idea')]
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.470 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.494 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-nlp-word-embeddings-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../../_downloads/8807094f6210189fde9923211274dc82/word_embeddings_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">word_embeddings_tutorial.py</span></code></a></div>

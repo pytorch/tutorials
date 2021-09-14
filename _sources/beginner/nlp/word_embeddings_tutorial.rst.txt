@@ -242,11 +242,17 @@ examples and update the parameters with backpropagation.
     This were to be new made when thou art old,
     And see thy blood warm when thou feel'st it cold.""".split()
     # we should tokenize the input, but we will ignore that for now
-    # build a list of tuples.  Each tuple is ([ word_i-2, word_i-1 ], target word)
-    trigrams = [([test_sentence[i], test_sentence[i + 1]], test_sentence[i + 2])
-                for i in range(len(test_sentence) - 2)]
-    # print the first 3, just so you can see what they look like
-    print(trigrams[:3])
+    # build a list of tuples.
+    # Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)
+    ngrams = [
+        (
+            [test_sentence[i - j - 1] for j in range(CONTEXT_SIZE)],
+            test_sentence[i]
+        )
+        for i in range(CONTEXT_SIZE, len(test_sentence))
+    ]
+    # Print the first 3, just so you can see what they look like.
+    print(ngrams[:3])
 
     vocab = set(test_sentence)
     word_to_ix = {word: i for i, word in enumerate(vocab)}
@@ -275,7 +281,7 @@ examples and update the parameters with backpropagation.
 
     for epoch in range(10):
         total_loss = 0
-        for context, target in trigrams:
+        for context, target in ngrams:
 
             # Step 1. Prepare the inputs to be passed to the model (i.e, turn the words
             # into integer indices and wrap them in tensors)
@@ -316,10 +322,10 @@ examples and update the parameters with backpropagation.
 
  .. code-block:: none
 
-    [(['When', 'forty'], 'winters'), (['forty', 'winters'], 'shall'), (['winters', 'shall'], 'besiege')]
-    [517.5436136722565, 514.8995923995972, 512.2736141681671, 509.6633725166321, 507.06803011894226, 504.487505197525, 501.920330286026, 499.36658549308777, 496.82590889930725, 494.2970106601715]
-    tensor([ 2.0830,  0.2845, -1.1649, -0.4377,  0.5812,  0.8392,  0.0217,  2.1878,
-             0.3690,  0.8335], grad_fn=<SelectBackward>)
+    [(['forty', 'When'], 'winters'), (['winters', 'forty'], 'shall'), (['shall', 'winters'], 'besiege')]
+    [523.1400110721588, 520.5221683979034, 517.9230709075928, 515.3407771587372, 512.7743813991547, 510.2232735157013, 507.68530893325806, 505.1594045162201, 502.64621686935425, 500.1437895298004]
+    tensor([-0.9657,  0.1432, -0.1625, -0.3587, -0.0595, -2.4918,  0.2421,  0.2872,
+             0.1037,  1.0999], grad_fn=<SelectBackward>)
 
 
 Exercise: Computing Word Embeddings: Continuous Bag-of-Words
@@ -340,7 +346,7 @@ The CBOW model is as follows. Given a target word :math:`w_i` and an
 and :math:`w_{i+1}, \dots, w_{i+N}`, referring to all context words
 collectively as :math:`C`, CBOW tries to minimize
 
-.. math::  -\log p(w_i | C) = -\log \text{Softmax}(A(\sum_{w \in C} q_w) + b)
+.. math::  -\log p(w_i | C) = -\log \text{Softmax}\left(A(\sum_{w \in C} q_w) + b\right)
 
 where :math:`q_w` is the embedding for word :math:`w`.
 
@@ -370,9 +376,11 @@ tips:
 
     word_to_ix = {word: i for i, word in enumerate(vocab)}
     data = []
-    for i in range(2, len(raw_text) - 2):
-        context = [raw_text[i - 2], raw_text[i - 1],
-                   raw_text[i + 1], raw_text[i + 2]]
+    for i in range(CONTEXT_SIZE, len(raw_text) - CONTEXT_SIZE):
+        context = (
+            [raw_text[i - j - 1] for j in range(CONTEXT_SIZE)]
+            + [raw_text[i + j + 1] for j in range(CONTEXT_SIZE)]
+        )
         target = raw_text[i]
         data.append((context, target))
     print(data[:5])
@@ -386,8 +394,8 @@ tips:
         def forward(self, inputs):
             pass
 
-    # create your model and train.  here are some functions to help you make
-    # the data ready for use by your module
+    # Create your model and train. Here are some functions to help you make
+    # the data ready for use by your module.
 
 
     def make_context_vector(context, word_to_ix):
@@ -406,13 +414,13 @@ tips:
 
  .. code-block:: none
 
-    [(['We', 'are', 'to', 'study'], 'about'), (['are', 'about', 'study', 'the'], 'to'), (['about', 'to', 'the', 'idea'], 'study'), (['to', 'study', 'idea', 'of'], 'the'), (['study', 'the', 'of', 'a'], 'idea')]
+    [(['are', 'We', 'to', 'study'], 'about'), (['about', 'are', 'study', 'the'], 'to'), (['to', 'about', 'the', 'idea'], 'study'), (['study', 'to', 'idea', 'of'], 'the'), (['the', 'study', 'of', 'a'], 'idea')]
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  4.470 seconds)
+   **Total running time of the script:** ( 0 minutes  4.494 seconds)
 
 
 .. _sphx_glr_download_beginner_nlp_word_embeddings_tutorial.py:
