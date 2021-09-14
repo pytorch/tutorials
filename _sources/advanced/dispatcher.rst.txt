@@ -105,6 +105,50 @@ speaking, the structure of your registrations will look like this:
     that provides implementations for all basic operators on the XLA dispatch
     key.
 
+
+For operators that do not need autograd
+---------------------------------------
+
+In the next section, we will discuss how to add autograd support to an operator.
+But for the ops that do not need autograd support, the following line can be
+added to improve useability and make your op behave like PyTorch's built-in
+operators.
+
+.. code-block:: cpp
+
+  REGISTER_AUTOGRAD_NOT_IMPLEMENTED_FALLBACK(myops, "myadd");
+
+Including the above line will an register an Autograd kernel that appends a dummy
+`NotImplemented` node on forward (preserving the `require_grad`-ness of
+the inputs). On backward, the `NotImplemented` node raises an error. This
+can be helpful for debugging in larger models where previously it can be hard
+to pin-point exactly where the `requires_grad`-ness is lost during the forward pass.
+
+This macro **always** registers both the Autograd and ADInplaceOrView kernels
+whether or not your operator is view or inplace. As a consequence,
+**there may be an additional overhead for non-view-or-inplace ops in
+inference mode when the input is non-inference.** If your operator is neither
+view nor in-place, and this is an issue for your use case, consider only
+registering the Autograd kernel:
+
+.. code-block:: cpp
+
+  TORCH_LIBRARY_IMPL(myops, Autograd, m) {
+    m.def(op, autogradNotImplementedFallback());
+  }
+
+
+Inplace or view ops
+^^^^^^^^^^^^^^^^^^^
+
+For operators that dispatch through the Autograd boxed kernels, we rely on operator
+schema information in our logic. To ensure correctness and best possible performance,
+if your op mutates an input in-place or returns a tensor that aliases with
+one of the inputs, it is important to ensure that your schema properly reflects
+this. See
+`here <https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md>`_
+for more information on how to annotate the schema.
+
 .. _autograd-support:
 
 Adding autograd support
