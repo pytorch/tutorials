@@ -27,8 +27,9 @@ from torch import vmap
 # that runs on examples and then lift it to a function that can
 # take batches of examples with `vmap(func)`. `func` however
 # is subject to many restrictions:
+#
 # - it must be functional (one cannot mutate a Python data structure
-#   inside of it), with teh exception of in-place PyTorch operations.
+#   inside of it), with the exception of in-place PyTorch operations.
 # - batches of examples must be provided as Tensors. This means that
 #   vmap doesn't handle variable-length sequences out of the box.
 #
@@ -67,6 +68,7 @@ assert torch.allclose(result, expected)
 # `vmap` can also help vectorize computations that were previously difficult
 # or impossible to batch. This bring us to our second use case: batched
 # gradient computation.
+#
 # - https://github.com/pytorch/pytorch/issues/8304
 # - https://github.com/pytorch/pytorch/issues/23475
 #
