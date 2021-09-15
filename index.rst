@@ -113,6 +113,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/DCGAN-Tutorial.png
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
+   
+.. customcarditem::
+   :header: Spatial Transformer Networks Tutorial
+   :card_description: Learn how to augment your network using a visual attention mechanism.
+   :image: _static/img/stn/Five.gif
+   :link: intermediate/spatial_transformer_tutorial.html
+   :tags: Image/Video
 
 .. Audio
 
@@ -162,7 +169,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
@@ -302,6 +309,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
+
+.. customcarditem::
+   :header: Custom Function Tutorial: Double Backward
+   :card_description: Learn how to write a custom autograd Function that supports double backward.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/custom_function_double_backward_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
    :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
@@ -584,6 +598,7 @@ Additional Resources
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+   intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
 
 .. toctree::
@@ -655,6 +670,7 @@ Additional Resources
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_double_backward_tutorial
    intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
@@ -696,6 +712,7 @@ Additional Resources
    advanced/rpc_ddp_tutorial
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
+   advanced/generic_join
 
 .. toctree::
    :maxdepth: 2
