@@ -176,9 +176,9 @@ with torch.profiler.profile(
 #
 # The overview shows a high-level summary of model performance.
 #
-# The "GPU Summary" panel shows the GPU configuration and the GPU usage.
+# The "GPU Summary" panel shows the GPU configuration, GPU usage and Tensor Cores usage.
 # In this example, the GPU Utilization is low.
-# The details of these metrics are `here <https://github.com/guyang3532/kineto/blob/readme/tb_plugin/docs/gpu_utilization.md>`_.
+# The details of these metrics are `here <https://github.com/pytorch/kineto/blob/main/tb_plugin/docs/gpu_utilization.md>`_.
 #
 # The "Step Time Breakdown" shows distribution of time spent in each step over different categories of execution.
 # In this example, you can see the ``DataLoader`` overhead is significant.
@@ -222,6 +222,9 @@ with torch.profiler.profile(
 #
 # .. image:: ../../_static/img/profiler_kernel_view.png
 #    :scale: 25 %
+# Tensor Cores Used:
+# Whether this kernel uses Tensor Cores.
+#
 # Mean Blocks per SM:
 # Blocks per SM = Blocks of this kernel / SM number of this GPU.
 # If this number is less than 1, it indicates the GPU multiprocessors are not fully utilized.
