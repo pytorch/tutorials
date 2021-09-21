@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Registering a Dispatched Operator in C++ — PyTorch Tutorials 1.9.0+cu102 documentation</title>
+<title>Registering a Dispatched Operator in C++ — PyTorch Tutorials 1.9.1+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -152,7 +152,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.9.0+cu102
+                  1.9.1+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -444,38 +444,48 @@ key.</p>
 </div>
 <div class="section" id="for-operators-that-do-not-need-autograd">
 <h2>For operators that do not need autograd<a class="headerlink" href="#for-operators-that-do-not-need-autograd" title="Permalink to this headline">¶</a></h2>
+<p>Note: This section only applies to versions of PyTorch <code class="docutils literal notranslate"><span class="pre">&gt;=</span> <span class="pre">3.10</span></code>.</p>
 <p>In the next section, we will discuss how to add autograd support to an operator.
-But for the ops that do not need autograd support, the following line can be
-added to improve useability and make your op behave like PyTorch’s built-in
+But for the ops that do not need autograd support, the following kernel should be
+registered improve useability and make your op behave like PyTorch’s built-in
 operators.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">REGISTER_AUTOGRAD_NOT_IMPLEMENTED_FALLBACK</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span><span class="w"> </span><span class="s">"myadd"</span><span class="p">);</span><span class="w"></span>
-</pre></div>
-</div>
-<p>Including the above line will an register an Autograd kernel that appends a dummy
-<cite>NotImplemented</cite> node on forward (preserving the <cite>require_grad</cite>-ness of
-the inputs). On backward, the <cite>NotImplemented</cite> node raises an error. This
-can be helpful for debugging in larger models where previously it can be hard
-to pin-point exactly where the <cite>requires_grad</cite>-ness is lost during the forward pass.</p>
-<p>This macro <strong>always</strong> registers both the Autograd and ADInplaceOrView kernels
-whether or not your operator is view or inplace. As a consequence,
-<strong>there may be an additional overhead for non-view-or-inplace ops in
-inference mode when the input is non-inference.</strong> If your operator is neither
-view nor in-place, and this is an issue for your use case, consider only
-registering the Autograd kernel:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TORCH_LIBRARY_IMPL</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span><span class="w"> </span><span class="n">Autograd</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="w"> </span><span class="n">autogradNotImplementedFallback</span><span class="p">());</span><span class="w"></span>
+<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">impl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="w"> </span><span class="n">autogradNotImplementedFallback</span><span class="p">());</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
-<div class="section" id="inplace-or-view-ops">
-<h3>Inplace or view ops<a class="headerlink" href="#inplace-or-view-ops" title="Permalink to this headline">¶</a></h3>
-<p>For operators that dispatch through the Autograd boxed kernels, we rely on operator
-schema information in our logic. To ensure correctness and best possible performance,
-if your op mutates an input in-place or returns a tensor that aliases with
-one of the inputs, it is important to ensure that your schema properly reflects
-this. See
+<p>The above lines registers an <code class="docutils literal notranslate"><span class="pre">Autograd</span></code> kernel that appends a dummy
+<code class="docutils literal notranslate"><span class="pre">NotImplemented</span></code> node on forward (preserving the <code class="docutils literal notranslate"><span class="pre">require_grad</span></code>-ness of the inputs).
+On backward, the <code class="docutils literal notranslate"><span class="pre">NotImplemented</span></code> node raises an error. This can be helpful
+for debugging in larger models where previously it can be hard to pin-point
+exactly where the <code class="docutils literal notranslate"><span class="pre">requires_grad</span></code>-ness is lost during the forward pass.</p>
+<div class="section" id="in-place-or-view-ops">
+<h3>In-place or view ops<a class="headerlink" href="#in-place-or-view-ops" title="Permalink to this headline">¶</a></h3>
+<p>To ensure correctness and best possible performance, if your op mutates an input
+in-place or returns a tensor that aliases with one of the inputs, two additional
+steps should be taken:</p>
+<ol class="arabic simple">
+<li>Register an <code class="docutils literal notranslate"><span class="pre">ADInplaceOrView</span></code> kernel in addition to the <code class="docutils literal notranslate"><span class="pre">Autograd</span></code> kernel
+above. This kernel handles the necessary bookkeeping to ensure the correctness
+of in-place or view operations. It is important to note that this ADInplaceOrView
+kernel should only be used with <code class="docutils literal notranslate"><span class="pre">autogradNotImplementedFallback</span></code>.</li>
+</ol>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">TORCH_LIBRARY_IMPL</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span><span class="w"> </span><span class="n">Autograd</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">impl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="w"> </span><span class="n">autogradNotImplementedFallback</span><span class="p">());</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+<span class="n">TORCH_LIBRARY_IMPL</span><span class="p">(</span><span class="n">myops</span><span class="p">,</span><span class="w"> </span><span class="n">ADInplaceOrView</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">m</span><span class="p">.</span><span class="n">impl</span><span class="p">(</span><span class="n">op</span><span class="p">,</span><span class="w"> </span><span class="n">autogradNotImplementedInplaceOrViewFallback</span><span class="p">());</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>The <code class="docutils literal notranslate"><span class="pre">Autograd</span></code> or <code class="docutils literal notranslate"><span class="pre">ADInplaceOrView</span></code> boxed kernels registered above
+rely on operator schema information in their logi. If your op mutates an input
+in-place or returns a tensor that aliases with one of the inputs it is important to
+ensure that your schema properly reflects this. See
 <a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md">here</a>
-for more information on how to annotate the schema.</p>
+for more information on how to annotate the schema.</li>
+</ol>
 </div>
 </div>
 <div class="section" id="adding-autograd-support">
@@ -755,7 +765,7 @@ progress.</p>
 <li><a class="reference internal" href="#">Registering a Dispatched Operator in C++</a><ul>
 <li><a class="reference internal" href="#defining-schema-and-backend-implementations">Defining schema and backend implementations</a></li>
 <li><a class="reference internal" href="#for-operators-that-do-not-need-autograd">For operators that do not need autograd</a><ul>
-<li><a class="reference internal" href="#inplace-or-view-ops">Inplace or view ops</a></li>
+<li><a class="reference internal" href="#in-place-or-view-ops">In-place or view ops</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#adding-autograd-support">Adding autograd support</a></li>
