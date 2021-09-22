@@ -14,7 +14,7 @@ This tutorial demonstrates how to build batch-processing RPC applications with
 the `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator, which helps to speed up training by reducing the number of blocked
 RPC threads and consolidating CUDA operations on the callee. This shares the
-same idea as `Batch Inference with TorchServer <https://pytorch.org/serve/batch_inference_with_ts.html>`__.
+same idea as `Batch Inference with TorchServe <https://pytorch.org/serve/batch_inference_with_ts.html>`__.
 
 .. note:: This tutorial requires PyTorch v1.6.0 or above.
 
