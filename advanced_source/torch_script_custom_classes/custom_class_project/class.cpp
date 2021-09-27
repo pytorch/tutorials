@@ -125,8 +125,8 @@ TORCH_LIBRARY(my_classes, m) {
 
 // BEGIN def_free
     m.def(
-      "foo::manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y",
+      "manipulate_instance(__torch__.torch.classes.my_classes.MyStackClass x) -> __torch__.torch.classes.my_classes.MyStackClass Y",
       manipulate_instance
     );
 // END def_free
-
+}

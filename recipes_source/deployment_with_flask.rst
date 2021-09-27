@@ -185,7 +185,7 @@ Paste the following into a file called ``app.py``:
 
    app = Flask(__name__)
    model = models.densenet121(pretrained=True)               # Trained on 1000 classes from ImageNet
-   model.eval()                                              # Turns off autograd and 
+   model.eval()                                              # Turns off autograd 
 
 
 
