@@ -199,7 +199,7 @@ Batch-Processing CartPole Solver
 
 This section uses CartPole-v1 from `OpenAI Gym <https://gym.openai.com/>`__ as
 an example to show the performance impact of batch processing RPC. Please note
-that the goal is to demonstrate the usage of
+that since the goal is to demonstrate the usage of
 `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 instead of building the best CartPole solver or solving most different RL
 problems, we use very simple policies and reward calculation strategies and
