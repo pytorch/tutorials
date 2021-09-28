@@ -873,7 +873,7 @@ configs = {
     "downsample (48 -> 44.1 kHz)": [48000, 44100],
     "downsample (16 -> 8 kHz)": [16000, 8000],
     "upsample (44.1 -> 48 kHz)": [44100, 48000],
-    "upsample (8 -> 16 kHz)": [8000, 1600],
+    "upsample (8 -> 16 kHz)": [8000, 16000],
 }
 
 for label in configs:
