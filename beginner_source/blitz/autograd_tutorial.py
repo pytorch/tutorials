@@ -62,7 +62,7 @@ loss = (prediction - labels).sum()
 loss.backward() # backward pass
 
 ############################################################
-# Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and momentum of 0.9.
+# Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and [momentum](https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d) of 0.9.
 # We register all the parameters of the model in the optimizer.
 #
 
