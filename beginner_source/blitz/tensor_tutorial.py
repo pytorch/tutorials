@@ -27,7 +27,7 @@ import numpy as np
 #
 # Tensors can be created directly from data. The data type is automatically inferred.
 
-data = [[1, 2],[3, 4]]
+data = [[1, 2], [3, 4]]
 x_data = torch.tensor(data)
 
 ######################################################################
@@ -55,7 +55,7 @@ print(f"Random Tensor: \n {x_rand} \n")
 #
 # ``shape`` is a tuple of tensor dimensions. In the functions below, it determines the dimensionality of the output tensor.
 
-shape = (2,3,)
+shape = (2, 3,)
 rand_tensor = torch.rand(shape)
 ones_tensor = torch.ones(shape)
 zeros_tensor = torch.zeros(shape)
@@ -78,7 +78,7 @@ print(f"Zeros Tensor: \n {zeros_tensor}")
 #
 # Tensor attributes describe their shape, datatype, and the device on which they are stored.
 
-tensor = torch.rand(3,4)
+tensor = torch.rand(3, 4)
 
 print(f"Shape of tensor: {tensor.shape}")
 print(f"Datatype of tensor: {tensor.dtype}")
