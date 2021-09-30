@@ -107,6 +107,7 @@ print(f"Device tensor is stored on: {tensor.device}")
 # We move our tensor to the GPU if available
 if torch.cuda.is_available():
   tensor = tensor.to('cuda')
+  print(f"Device tensor is stored on: {tensor.device}")
 
 
 ######################################################################
