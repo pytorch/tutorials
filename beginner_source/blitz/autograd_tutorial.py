@@ -38,6 +38,10 @@ For this example, we load a pretrained resnet18 model from ``torchvision``.
 We create a random data tensor to represent a single image with 3 channels, and height & width of 64,
 and its corresponding ``label`` initialized to some random values. Label in pretrained models has
 shape (1,1000).
+
+Important
+~~~~~~~~~~~
+This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
 """
 import torch, torchvision
 model = torchvision.models.resnet18(pretrained=True)
