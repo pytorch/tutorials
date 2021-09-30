@@ -36,7 +36,8 @@ Usage in PyTorch
 Let's take a look at a single training step.
 For this example, we load a pretrained resnet18 model from ``torchvision``.
 We create a random data tensor to represent a single image with 3 channels, and height & width of 64,
-and its corresponding ``label`` initialized to some random values.
+and its corresponding ``label`` initialized to some random values. Label in pretrained models has
+shape (1,1000).
 """
 import torch, torchvision
 model = torchvision.models.resnet18(pretrained=True)
