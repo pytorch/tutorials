@@ -37,8 +37,8 @@ from torchvision import datasets, transforms
 # `torch.cuda <https://pytorch.org/docs/stable/notes/cuda.html>`_ is available, else we
 # continue to use the CPU.
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print('Using {} device'.format(device))
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
 
 ##############################################
 # Define the Class
