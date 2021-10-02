@@ -290,7 +290,7 @@ be using Mask R-CNN:
 
 
    def get_model_instance_segmentation(num_classes):
-       # load an instance segmentation model pre-trained pre-trained on COCO
+       # load an instance segmentation model pre-trained on COCO
        model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
        # get number of input features for the classifier
