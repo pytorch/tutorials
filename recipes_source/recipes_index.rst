@@ -239,6 +239,15 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Intel(R) Extension for PyTorch*
+
+.. customcarditem::
+   :header: Intel(R) Extension for PyTorch*
+   :card_description: Introduction of Intel(R) Extension for PyTorch*
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/intel_extension_for_pytorch.html
+   :tags: Model-Optimization
+
 .. Distributed Training
 
 .. customcarditem::
