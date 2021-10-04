@@ -27,6 +27,11 @@ with the only difference being that we will only save the inputs to the convolut
 To obtain the input of batch norm, which is necessary to backward through
 it, we recompute convolution forward again during the backward pass.
 
+It is important to note that the usage of this optimization is situational.
+Though (by avoiding one buffer saved) we always reduce the memory allocated at
+the end of the forward pass, there are cases when the *peak* memory allocated
+may not actually be reduced. See the final section for more details.
+
 For simplicity, in this tutorial we hardcode `bias=False`, `stride=1`, `padding=0`, `dilation=1`,
 and `groups=1` for Conv2D. For BatchNorm2D, we hardcode `eps=1e-3`, `momentum=0.1`,
 `affine=False`, and `track_running_statistics=False`. Another small difference
@@ -238,6 +243,9 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+# Record memory allocated at the end of the forward pass
+memory_allocated = [[],[]]
+
 class Net(nn.Module):
     def __init__(self, fused=True):
         super(Net, self).__init__()
@@ -275,6 +283,10 @@ class Net(nn.Module):
         F.relu_(x)
         x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
+        if fused:
+            memory_allocated[0].append(torch.cuda.memory_allocated())
+        else:
+            memory_allocated[1].append(torch.cuda.memory_allocated())
         return output
 
 def train(model, device, train_loader, optimizer, epoch):
@@ -339,21 +351,44 @@ test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 # A Comparison of Memory Usage
 # -------------------------------------------------------------------
 # If cuda is enabled, print out memory usage for both `fused=True` and `fused=False`
+# For an example run on RTX 3070, CuDNN 8.0.5: fused peak memory: 1.56GB,
+# unfused peak memory: 2.68GB
+#
+# It is important to note that the *peak* memory usage for this model may vary depending
+# the specific CuDNN convolution algorithm used. For shallower models, it
+# may be possible for the peak memory allocated of the fused model to exceed
+# that of the unfused model! This is because the memory allocated to compute
+# certain CuDNN convolution algorithms can be high enough to "hide" the typical peak
+# you would expect to be near the start of the backward pass.
+#
+# For this reason, we also record and display the memory allocated at the end
+# of the forward pass as an approximation, and to demonstrate that we indeed
+# allocate one fewer buffer per fused conv-bn pair.
+from statistics import mean
+
+torch.backends.cudnn.enabled = True
+
 if use_cuda:
-    mems = []
+    peak_memory_allocated = []
+
     for fused in (True, False):
         torch.manual_seed(123456)
-        torch.cuda.reset_peak_memory_stats()
 
         model = Net(fused=fused).to(device)
         optimizer = optim.Adadelta(model.parameters(), lr=1.0)
         scheduler = StepLR(optimizer, step_size=1, gamma=0.7)
 
-        for epoch in range(2):
+        for epoch in range(1):
             train(model, device, train_loader, optimizer, epoch)
             test(model, device, test_loader)
             scheduler.step()
+        peak_memory_allocated.append(torch.cuda.max_memory_allocated())
+        torch.cuda.reset_peak_memory_stats()
+    print("CuDNN version:", torch.backends.cudnn.version())
+    print()
+    print("Peak memory allocated:")
+    print(f"fused: {peak_memory_allocated[0]/1024**3:.2f}GB, unfused: {peak_memory_allocated[1]/1024**3:.2f}GB")
+    print("Memory allocated at end of forward pass:")
+    print(f"fused: {mean(memory_allocated[0])/1024**3:.2f}GB, unfused: {mean(memory_allocated[1])/1024**3:.2f}GB")
 
-        mems.append(torch.cuda.max_memory_allocated(device=None) / 1024**3)
-    # Example run: fused peak memory: 1.72GB, unfused peak memory: 2.84GB
-    print(f"fused peak memory: {mems[0]:.2f}GB, unfused peak memory: {mems[1]:.2f}GB")
+

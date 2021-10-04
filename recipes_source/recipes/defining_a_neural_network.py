@@ -37,7 +37,7 @@ available.
 # -----
 # 
 # 1. Import all necessary libraries for loading our data
-# 2. Define and intialize the neural network
+# 2. Define and initialize the neural network
 # 3. Specify how data will pass through your model
 # 4. [Optional] Pass data through your model to test
 # 
