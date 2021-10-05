@@ -22,24 +22,27 @@ Features
   Typically, only 2 to 3 clauses are required to be added to the original code.
 * Channels Last: Comparing to the default NCHW memory format, channels_last
   (NHWC) memory format could further accelerate convolutional neural networks.
-  In Intel® Extension for PyTorch*, NHWC memory format  has been enabled for
+  In Intel® Extension for PyTorch*, NHWC memory format has been enabled for
   most key CPU operators, though not all of them have been merged to PyTorch
   master branch yet. They are expected to be fully landed in PyTorch upstream
   soon.
 * Auto Mixed Precision (AMP): Low precision data type BFloat16 has been
   natively supported on the 3rd Generation Xeon scalable Servers (aka Cooper
-  Lake) with AVX512 instruction set and will be  supported on the next
+  Lake) with AVX512 instruction set and will be supported on the next
   generation of Intel® Xeon® Scalable Processors with Intel® Advanced Matrix
   Extensions (Intel® AMX) instruction set with further boosted performance. The
   support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16
-  optimization of operators have been  massively enabled in Intel® Extension
+  optimization of operators have been massively enabled in Intel® Extension
   for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
   these optimizations will be landed in PyTorch master through PRs that are
-  being submitted and reviewed. Graph Optimization: To optimize performance
-  further with torchscript, Intel® Extension for PyTorch* supports fusion of
-  frequently used operator patterns, like Conv2D+ReLU, Linear+ReLU, etc. The
-  benefit of the fusions are delivered to users in a transparant fashion.
-  Detailed fusion patterns supported can be found `here <https://github.com/intel/intel-extension-for-pytorch>`_.
+  being submitted and reviewed.
+* Graph Optimization: To optimize performance further with torchscript,
+  Intel® Extension for PyTorch* supports fusion of frequently used operator
+  patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
+  delivered to users in a transparant fashion. Detailed fusion patterns
+  supported can be found `here <https://github.com/intel/intel-extension-for-pytorch>`_.
+  The graph optimization will be up-streamed to PyTorch with the introduction
+  of oneDNN Graph API.
 * Operator Optimization: Intel® Extension for PyTorch* also optimizes
   operators and implements several customized operators for performance. A few
   ATen operators are replaced by their optimized counterparts in Intel®
@@ -275,8 +278,13 @@ with torch.cpu.amp.autocast():
 # inference workload only, such as service deployment. For regular development,
 # please use Python interface. Comparing to usage of libtorch, no specific code
 # changes are required, except for converting input data into channels last data
-# format. During compilation, Intel optimizations will be activated automatically
+# format. Compilation follows the recommended methodology with CMake. Detailed
+# instructions can be found in `PyTorch tutorial <https://pytorch.org/tutorials/advanced/cpp_export.html#depending-on-libtorch-and-building-the-application>`_.
+# During compilation, Intel optimizations will be activated automatically
 # once C++ dynamic library of Intel® Extension for PyTorch* is linked.
+
+###############################################################################
+# **example-app.cpp**
 
 '''
 #include <torch/script.h>
@@ -284,22 +292,46 @@ with torch.cpu.amp.autocast():
 #include <memory>
 
 int main(int argc, const char* argv[]) {
-  torch::jit::script::Module module;
-  try {
-    module = torch::jit::load(argv[1]);
-  }
-  catch (const c10::Error& e) {
-    std::cerr << "error loading the model\n";
-    return -1;
-  }
-std::vector<torch::jit::IValue> inputs;
-// make sure input data are converted to channels last format
-inputs.push_back(torch::ones({1, 3, 224, 224}).to(c10::MemoryFormat::ChannelsLast));
+    torch::jit::script::Module module;
+    try {
+        module = torch::jit::load(argv[1]);
+    }
+    catch (const c10::Error& e) {
+        std::cerr << "error loading the model\n";
+        return -1;
+    }
+    std::vector<torch::jit::IValue> inputs;
+    // make sure input data are converted to channels last format
+    inputs.push_back(torch::ones({1, 3, 224, 224}).to(c10::MemoryFormat::ChannelsLast));
 
-at::Tensor output = module.forward(inputs).toTensor();
+    at::Tensor output = module.forward(inputs).toTensor();
 
-  return 0;
+    return 0;
 }
+'''
+
+###############################################################################
+# **CMakeList.txt**
+
+'''
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+project(example-app)
+
+find_package(Torch REQUIRED)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wl,--no-as-needed")
+
+add_executable(example-app example-app.cpp)
+# Link the binary aganist the C++ dynamic library file of Intel® Extension for PyTorch*
+target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib/lib<TBA>.so")
+
+set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
+'''
+
+###############################################################################
+# **Command for compilation**
+
+'''
+cmake -DCMAKE_PREFIX_PATH=<LIBPYTORCH_PATH> -DINTEL_EXTENSION_FOR_PYTORCH_PATH=<INTEL_EXTENSION_FOR_PYTORCH_INSTALLATION_PATH> ..
 '''
 
 ###############################################################################
@@ -307,5 +339,4 @@ at::Tensor output = module.forward(inputs).toTensor();
 # ---------
 
 ###############################################################################
-# Numerous tutorials will be hosted on Intel® Extension for PyTorch* Github
-# repo. Please visit the `Github repo <https://github.com/intel/intel-extension-for-pytorch>`_ for detailed info.
+# Please visit `Intel® Extension for PyTorch* Github repo <https://github.com/intel/intel-extension-for-pytorch>`_ for more tutorials.
