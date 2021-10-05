@@ -365,6 +365,8 @@ with open("../_static/img/sample_file.jpeg", 'rb') as f:
 #   multiple images at once. In addition, the `service-streamer <https://github.com/ShannonAI/service-streamer>`_
 #   library automatically queues requests to your service and samples them into mini-batches
 #   that can be fed into your model. You can check out `this tutorial <https://github.com/ShannonAI/service-streamer/wiki/Vision-Recognition-Service-with-Flask-and-service-streamer>`_.
+#   `Mosec <https://github.com/mosecorg/mosec>`_ is another handy model serving framework. Besides supporting dynamic batching,
+#   it is highly efficient powered by Rust web layer, while providing an easy-to-use interface in Python.
 #
 # - Finally, we encourage you to check out our other tutorials on deploying PyTorch models
 #   linked-to at the top of the page.
