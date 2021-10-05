@@ -242,8 +242,8 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
 .. Intel(R) Extension for PyTorch*
 
 .. customcarditem::
-   :header: Intel(R) Extension for PyTorch*
-   :card_description: Introduction of Intel(R) Extension for PyTorch*
+   :header: Intel® Extension for PyTorch*
+   :card_description: Introduction of Intel® Extension for PyTorch*
    :image: ../_static/img/thumbnails/cropped/profiler.png
    :link: ../recipes/recipes/intel_extension_for_pytorch.html
    :tags: Model-Optimization
@@ -304,6 +304,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
+   /recipes/recipes/intel_extension_for_pytorch
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
