@@ -322,7 +322,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wl,--no-as-needed")
 
 add_executable(example-app example-app.cpp)
 # Link the binary aganist the C++ dynamic library file of Intel® Extension for PyTorch*
-target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib/lib<TBA>.so")
+target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib/libintel-ext-pt-cpu.so")
 
 set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 '''
