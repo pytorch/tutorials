@@ -39,7 +39,7 @@ Features
 * Graph Optimization: To optimize performance further with torchscript,
   Intel® Extension for PyTorch* supports fusion of frequently used operator
   patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
-  delivered to users in a transparant fashion. Detailed fusion patterns
+  delivered to users in a transparent fashion. Detailed fusion patterns
   supported can be found `here <https://github.com/intel/intel-extension-for-pytorch>`_.
   The graph optimization will be up-streamed to PyTorch with the introduction
   of oneDNN Graph API.
@@ -321,7 +321,7 @@ find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS} -Wl,--no-as-needed")
 
 add_executable(example-app example-app.cpp)
-# Link the binary aganist the C++ dynamic library file of Intel® Extension for PyTorch*
+# Link the binary against the C++ dynamic library file of Intel® Extension for PyTorch*
 target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PYTORCH_PATH}/lib/libintel-ext-pt-cpu.so")
 
 set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
