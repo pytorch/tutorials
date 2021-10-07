@@ -173,8 +173,9 @@ class Model(nn.Module):
 
 input = torch.randn(2, 4)
 model = Model()
+model.eval()
 # Invoke optimize function against the model object
-model = ipex.optimize(model)
+model = ipex.optimize(model, dtype=torch.float32)
 res = model(input)
 
 ###############################################################################
@@ -196,6 +197,7 @@ class Model(nn.Module):
 
 input = torch.randn(2, 4)
 model = Model()
+model.eval()
 # Invoke optimize function against the model object with data type set to torch.bfloat16
 model = ipex.optimize(model, dtype=torch.bfloat16)
 with torch.cpu.amp.autocast():
@@ -233,9 +235,10 @@ class Model(nn.Module):
 
 input = torch.randn(2, 4)
 model = Model()
+model.eval()
 # Invoke optimize function against the model object
-model = ipex.optimize(model)
-model = torch.jit.trace(model, torch.rand(args.batch_size, 3, 224, 224))
+model = ipex.optimize(model, dtype=torch.float32)
+model = torch.jit.trace(model, torch.randn(2, 4))
 model = torch.jit.freeze(model)
 res = model(input)
 
@@ -261,10 +264,11 @@ class Model(nn.Module):
 
 input = torch.randn(2, 4)
 model = Model()
+model.eval()
 # Invoke optimize function against the model with data type set to torch.bfloat16
 model = ipex.optimize(model, dtype=torch.bfloat16)
 with torch.cpu.amp.autocast():
-    model = torch.jit.trace(model, torch.rand(args.batch_size, 3, 224, 224))
+    model = torch.jit.trace(model, torch.randn(2, 4))
     model = torch.jit.freeze(model)
     res = model(input)
 
@@ -326,6 +330,12 @@ target_link_libraries(example-app "${TORCH_LIBRARIES}" "${INTEL_EXTENSION_FOR_PY
 
 set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 '''
+
+###############################################################################
+# **Note:** Since Intel® Extension for PyTorch* is still under development, name of
+# the c++ dynamic library in the master branch may defer to
+# *libintel-ext-pt-cpu.so* shown above. Please check the name out in the
+# installation folder. The so file name starts with *libintel-*.
 
 ###############################################################################
 # **Command for compilation**
