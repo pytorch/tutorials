@@ -6,9 +6,9 @@
 Introduction
 ------------
 
-This tutorial shows how to prepare a computer vision model to use the PyTorch Core ML mobile backend. Core ML provides access to powerful and efficient NPUs(Neural Process Unit) on modern iPhone devices.
+Core ML provides access to powerful and efficient NPUs(Neural Process Unit) on modern iPhone devices. This tutorial shows how to prepare a computer vision model (mobilenetv2) to use the PyTorch Core ML mobile backend. 
 
-The Core ML backend is currently in the “prototype” phase and only supports a limited numbers of operators, but we expect to solidify the integration and expand our operator support over time. The APIs are subject to change in the future.
+Note that this feature is currently in the “prototype” phase and only supports a limited numbers of operators, but we expect to solidify the integration and expand our operator support over time. The APIs are subject to change in the future.
 
 Environment Setup (MacOS)
 -------------------------
