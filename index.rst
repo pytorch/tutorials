@@ -166,6 +166,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/NLP-From-Scratch-Translation-with-a-Sequence-to-Sequence-Network-and-Attention.png
    :link: intermediate/seq2seq_translation_tutorial.html
    :tags: Text
+   
+.. customcarditem::
+   :header: Word2vec Tutorial
+   :card_description: Train your own word2vec model from scratch - define model architecture, initialize dataloader, create vocabulary, preprocess data, and do training.
+   :image: _static/img/thumbnails/cropped/Word2vec-Tutorial.png
+   :link: begginer/word2vec_tutorial.html
+   :tags: Text
 
 .. customcarditem::
    :header: Text Classification with Torchtext
@@ -620,6 +627,7 @@ Additional Resources
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
+   beginner/word2vec_tutorial
    beginner/text_sentiment_ngrams_tutorial
    beginner/translation_transformer
 
