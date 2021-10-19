@@ -1015,7 +1015,7 @@ probabilities.
 	is called *label smoothing*.
 
 Before evaluating the discriminator, we zero out the gradients of its
-parameters. After computing the loss, we back-propagate through the network by
+parameters. After computing the loss, we back-propagate it through the network by
 calling ``d_loss.backward()`` to compute new gradients. We repeat this spiel for
 the fake images. Instead of using images from the dataset, we let the generator
 create fake images for this by feeding it a batch of random noise. We then
@@ -1270,7 +1270,7 @@ Let's now train our model for around 30 epochs:
   -> checkpoint 120
   [30/30][938/938] D_loss: 0.3610 | G_loss: 3.8084
 
-And display the imags in a plot:
+And display the images in a plot:
 
 .. code-block:: shell
 
