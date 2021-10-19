@@ -1537,13 +1537,13 @@ strech = T.TimeStretch()
 
 rate = 1.2
 spec_ = strech(spec, rate)
-plot_spectrogram(F.complex_norm(spec_[0]), title=f"Stretched x{rate}", aspect='equal', xmax=304)
+plot_spectrogram(torch.view_as_real(F.complex_norm(spec_[0])), title=f"Stretched x{rate}", aspect='equal', xmax=304)
 
-plot_spectrogram(F.complex_norm(spec[0]), title="Original", aspect='equal', xmax=304)
+plot_spectrogram(torch.view_as_real(F.complex_norm(spec[0])), title="Original", aspect='equal', xmax=304)
 
 rate = 0.9
 spec_ = strech(spec, rate)
-plot_spectrogram(F.complex_norm(spec_[0]), title=f"Stretched x{rate}", aspect='equal', xmax=304)
+plot_spectrogram(torch.view_as_real(F.complex_norm(spec_[0])), title=f"Stretched x{rate}", aspect='equal', xmax=304)
 
 
 ######################################################################
