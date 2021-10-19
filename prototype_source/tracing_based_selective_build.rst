@@ -169,10 +169,7 @@ Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/t
 3.  **Link ImageSegmentation demo app with the custom built library**:
 
 Open your project in XCode, go to your project Target’s **Build Phases - Link Binaries With Libraries**, click the **+** sign and add all the library files located in `build_ios/install/lib`. Navigate to the project **Build Settings**, set the value **Header Search Paths** to `build_ios/install/include` and **Library Search Paths** to `build_ios/install/lib`.
-In the build settings, search for **other linker flags**. Add a custom linker flag below
-```
--all_load
-```
+In the build settings, search for **other linker flags**. Add a custom linker flag below `-all_load`.
 Finally, disable bitcode for your target by selecting the Build Settings, searching for Enable Bitcode, and set the value to **No**.
 
 
