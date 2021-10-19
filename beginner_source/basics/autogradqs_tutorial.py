@@ -1,7 +1,7 @@
 """
 `Learn the Basics <intro.html>`_ ||
-`Quickstart <quickstart_tutorial.html>`_ || 
-`Tensors <tensorqs_tutorial.html>`_ || 
+`Quickstart <quickstart_tutorial.html>`_ ||
+`Tensors <tensorqs_tutorial.html>`_ ||
 `Datasets & DataLoaders <data_tutorial.html>`_ ||
 `Transforms <transforms_tutorial.html>`_ ||
 `Build Model <buildmodel_tutorial.html>`_ ||
@@ -64,7 +64,7 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
-print('Gradient function for z =',z.grad_fn)
+print('Gradient function for z =', z.grad_fn)
 print('Gradient function for loss =', loss.grad_fn)
 
 ######################################################################
@@ -130,7 +130,7 @@ print(z_det.requires_grad)
 
 ######################################################################
 # There are reasons you might want to disable gradient tracking:
-#   - To mark some parameters in your neural network at **frozen parameters**. This is
+#   - To mark some parameters in your neural network as **frozen parameters**. This is
 #     a very common scenario for
 #     `finetuning a pretrained network <https://pytorch.org/tutorials/beginner/finetuning_torchvision_models_tutorial.html>`__
 #   - To **speed up computations** when you are only doing forward pass, because computations on tensors that do
@@ -240,4 +240,3 @@ print("\nCall after zeroing gradients\n", inp.grad)
 # Further Reading
 # ~~~~~~~~~~~~~~~~~
 # - `Autograd Mechanics <https://pytorch.org/docs/stable/notes/autograd.html>`_
-
