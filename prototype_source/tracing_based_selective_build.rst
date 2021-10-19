@@ -35,12 +35,14 @@ Following are the processes to use tracing-based selective approach to build a c
     # Export full jit version model (not compatible lite interpreter), leave it here for comparison
     scripted_module.save("deeplabv3_scripted.pt")
     # Export lite interpreter version model (compatible with lite interpreter)
-    scripted_module._save_for_lite_interpreter("${path}/deeplabv3_scripted.ptl")
+    # path = "<base directory where models are stored>"
 
-    model_file = "${path}/deeplabv3_scripted.ptl"
+    scripted_module._save_for_lite_interpreter(f"${path}/deeplabv3_scripted.ptl")
+
+    model_file = f"${path}/deeplabv3_scripted.ptl"
 
     # Step 2. Prepare inputs for the model
-    input_image_1 = Image.open("${path}/dog.jpg")
+    input_image_1 = Image.open(f"${path}/dog.jpg")
     preprocess = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -52,7 +54,7 @@ Following are the processes to use tracing-based selective approach to build a c
     scripted_module = torch.jit.load(model_file)
     scripted_module.forward(input_batch_1) # optional, to validate the model can run with the input_batch_1
 
-    input_image_2 = Image.open("${path}/deeplab.jpg")
+    input_image_2 = Image.open(f"${path}/deeplab.jpg")
     input_tensor_2 = preprocess(input_image_2)
     input_batch_2 = input_tensor_2.unsqueeze(0) # create a mini-batch as expected by the model
 
@@ -64,7 +66,7 @@ Following are the processes to use tracing-based selective approach to build a c
         (torch.utils.bundled_inputs.bundle_large_tensor(input_batch_1), ),
         (torch.utils.bundled_inputs.bundle_large_tensor(input_batch_2), )]
     bundled_model = torch.utils.bundled_inputs.bundle_inputs(scripted_module, bundled_model_input)
-    bundled_model._save_for_lite_interpreter("${path}/deeplabv3_scripted_with_bundled_input.ptl")
+    bundled_model._save_for_lite_interpreter(f"${path}/deeplabv3_scripted_with_bundled_input.ptl")
 
 2. Build tracer
 
