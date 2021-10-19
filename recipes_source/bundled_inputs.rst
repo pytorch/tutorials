@@ -8,7 +8,7 @@ Introduction
 
 This tutorial introduces the steps to use PyTorch's utility to bundle example or trivial inputs directly into your TorchScript Module.
 
-The interface of the model is not changed (other than adding a few methods), so it can still be safely deployed to production. The advantage of this standardized interface is that tools that run models can use it instead of having some sort of external file (or worse, document) that tells you how to run the model properly.
+The interface of the model remains unchanged (other than adding a few methods), so it can still be safely deployed to production. The advantage of this standardized interface is that tools that run models can use it instead of having some sort of external file (or worse, document) that tells you how to run the model properly.
 
 Common case, bundling an input to a model that only uses 'forward' for inference
 -------------------
@@ -37,21 +37,22 @@ Common case, bundling an input to a model that only uses 'forward' for inference
 .. code:: python
 
     # For each method create a list of inputs and each input is a tuple of arguments
-    input = [(torch.zeros(1,10),)]
+    sample_input = [(torch.zeros(1,10),)]
 
     # Create model with bundled inputs, if type(input) is list then the input is bundled to 'forward'
-    bundled_model = bundle_inputs(scripted_module, input)
+    bundled_model = bundle_inputs(scripted_module, sample_input)
 
 
-3. **Retrieve inputs and run model on them**
+3. **Run model with input as arguments**
 
 .. code:: python
-    inputs = bundled_model.get_all_bundled_inputs()
 
-    print(bundled_model(*inputs[0]))
+    sample_inputs = bundled_model.get_all_bundled_inputs()
+
+    print(bundled_model(*sample_inputs[0]))
 
 
-Uncommon case bundling and retrieving inputs for functions beyond 'forward'
+Uncommon case, bundling and retrieving inputs for functions beyond 'forward'
 -------------------
 1. **Prepare model**: Convert your model to TorchScript through either tracing or scripting
 
@@ -85,13 +86,13 @@ Uncommon case bundling and retrieving inputs for functions beyond 'forward'
 
     # For each method create a list of inputs and each input is a tuple of arguments
     example_dict = {'a' : 1, 'b' : 2}
-    input = {
+    sample_input = {
         scripted_module.forward : [(torch.zeros(1,10),)],
         scripted_module.foo : [(example_dict,)]
     }
 
-    # Create model with bundled inputs, if type(input) is Dict then each callable key is mapped to its corresponding bundled input
-    bundled_model = bundle_inputs(scripted_module, input)
+    # Create model with bundled inputs, if type(sample_input) is Dict then each callable key is mapped to its corresponding bundled input
+    bundled_model = bundle_inputs(scripted_module, sample_input)
 
 
 3. **Retrieve inputs and run model on them**
@@ -106,9 +107,10 @@ Uncommon case bundling and retrieving inputs for functions beyond 'forward'
         input_func_name = all_info[func_name]['get_inputs_function_name'][0]
         func_to_run = getattr(bundled_model, input_func_name)
         # retrieve input
-        input = func_to_run()
+        sample_input = func_to_run()
         model_function = getattr(bundled_model, func_name)
-        print(model_function(*input[0]))
+        for i in range(len(sample_input)):
+            print(model_function(*sample_input[i]))
 
 Inflatable args
 -------------------
@@ -127,8 +129,8 @@ The following input types are compressed automatically without requiring an expl
 .. code:: python
 
     # bundle_randn will generate a random tensor when the model is asked for bundled inputs
-    inputs = [(torch.utils.bundled_inputs.bundle_randn((1,10)),)]
-    bundled_model = bundle_inputs(scripted_module, inputs)
+    sample_inputs = [(torch.utils.bundled_inputs.bundle_randn((1,10)),)]
+    bundled_model = bundle_inputs(scripted_module, sample_inputs)
     print(bundled_model.get_all_bundled_inputs())
 
 2. **Creating your own**
@@ -142,8 +144,11 @@ Inflatable args are composed of 2 parts, the deflated (compressed) argument, and
 
         deflated_input = (torch.zeros(1, dtype=dtype).expand(*size), torch.zeros(1, dtype=dtype).expand(*size))
 
-        # {0} is replaced with deflated[foo][bar] and is how you access your deflated value in the inflation expression
-        return InflatableArg(value=deflated_input, fmt="(torch.randn_like({0})), torch.randn_like({0}))")
+        # {0} is how you access your deflated value in the inflation expression
+        return torch.utils.bundled_inputs.InflatableArg(
+            value=stub,
+            fmt="(torch.randn_like({0}[0]), torch.randn_like({0}[1]))",
+        )
 
 3. **Using a function instead**
     If you need to create a more complicated input providing a function is an easy alternative
@@ -183,7 +188,7 @@ Inflatable args are composed of 2 parts, the deflated (compressed) argument, and
                 """,
             )
 
-        inputs = (
+        sample_inputs = (
             bundle_optional_dict_of_randn(sample),
         )
 
