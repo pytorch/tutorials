@@ -5,7 +5,7 @@
 *Author*: Chen Lai <https://github.com/cccclai>, Dhruv Matani <https://github.com/dhruvbird>
 
 .. warning::
-    Tracing-based selective build a prototype feature to minimize library size. Since the traced result relies on the model input and traced environment, If the tracer runs in a different environment than mobile interpreter, the operator list might be different from the actual used operator list and missing operators error might raise.
+    Tracing-based selective build a prototype feature to minimize library size. Since the traced result relies on the model input and traced environment, if the tracer runs in a different environment than mobile interpreter, the operator list might be different from the actual used operator list and missing operators error might raise.
 
 Introduction
 
@@ -13,7 +13,7 @@ Introduction
 This tutorial introduces a new way to custom build mobile interpreter to further optimize mobile interpreter size. It restricts the set of operators included in the compiled binary to only the set of operators actually needed by target models. It is a technique to reduce the binary size of PyTorch for mobile deployments. Tracing Based Selective Build runs a model with specific representative inputs, and records which operators were called. The build then includes just those operators.
 
 
-Following are the processes to use tracing-based selective approach to build a customize mobile interpreter.
+Following are the processes to use tracing-based selective approach to build a custom mobile interpreter.
 
 1. *Prepare model with bundled input*
 
@@ -90,7 +90,7 @@ Get the Image Segmentation demo app in Android: https://github.com/pytorch/andro
 
    SELECTED_OP_LIST=${path}/deeplabv3_scripted.yaml TRACING_BASED=1  ./scripts/build_pytorch_android.sh
 
-if it will be tested on Pixel 4 emulator with ``x86``, use cmd ``BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86`` to specify abi to save built time.
+if it will be tested on Pixel 4 emulator with ``x86``, use cmd ``BUILD_LITE_INTERPRETER=1 ./scripts/build_pytorch_android.sh x86`` to specify abi to save build time.
 
 .. code-block:: bash
 
@@ -183,13 +183,13 @@ Finally, disable bitcode for your target by selecting the Build Settings, search
 Conclusion
 ----------
 
-In this tutorial, we demonstrated how to a new way to custom build PyTorch's efficient mobile interpreter - tracing-based selective build, in an Android and iOS app.
+In this tutorial, we demonstrated a new way to custom build PyTorch's efficient mobile interpreter - tracing-based selective build, in an Android and iOS app.
 
 We walked through an Image Segmentation example to show how to bundle inputs to a model, generated operator list by tracing the model with bundled input, and build a custom torch library from source with the operator list from tracing result.
 
 The custom build is still under development, and we will continue improving its size in the future. Note, however, that the APIs are subject to change in future versions.
 
-Thanks for reading! As always, we welcome any feedback, so please create an issue here <https://github.com/pytorch/pytorch/issues>` - if you have any.
+Thanks for reading! As always, we welcome any feedback, so please create an issue here <https://github.com/pytorch/pytorch/issues>`.
 
 Learn More
 
@@ -197,5 +197,3 @@ Learn More
 - To learn more about PyTorch Mobile, please refer to PyTorch Mobile Home Page <https://pytorch.org/mobile/home/>
 
 * To learn more about Image Segmentation, please refer to the Image Segmentation DeepLabV3 on Android Recipe <https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html>_
-
-EDd
