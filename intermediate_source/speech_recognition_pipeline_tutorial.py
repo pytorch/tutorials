@@ -225,7 +225,7 @@ print("Class labels:", bundle.get_labels())
 # “decoding”.
 # 
 # Decoding is more elaborate than simple classification because
-# classification at certain time step can be affected by surrounding
+# decoding at certain time step can be affected by surrounding
 # observations.
 # 
 # For example, take a word like ``night`` and ``knight``. Even if their
