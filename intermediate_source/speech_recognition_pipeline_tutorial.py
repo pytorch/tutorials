@@ -235,7 +235,7 @@ print("Class labels:", bundle.get_labels())
 # the decoding process has to postpone the final decision until it sees
 # enough context.
 # 
-# There are many decoding technicque proposed, and they require external
+# There are many decoding techniques proposed, and they require external
 # resources, such as word dictionary and language models.
 # 
 # In this tutorial, for the sake of simplicity, we will perform greeding
@@ -287,15 +287,15 @@ IPython.display.Audio(SPEECH_FILE)
 ######################################################################
 # There are few remarks in decoding.
 # 
-# Firstly, the ASR model is fine-tuned using a loss function calle CTC.
+# Firstly, the ASR model is fine-tuned using a loss function called CTC.
 # The detail of CTC loss is explained
 # `here <https://distill.pub/2017/ctc/>`__. In CTC a blank token (ϵ) is a
-# special token which represents a repetation of the previous symbol. In
+# special token which represents a repetition of the previous symbol. In
 # decoding, these are simply ignored.
 # 
 # Secondly, as is explained in the feature extraction section, the
 # Wav2Vec2 model originated from ``fairseq`` has labels that are not used.
-# These also has to be ignored.
+# These also have to be ignored.
 # 
 
 
