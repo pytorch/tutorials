@@ -91,7 +91,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 # each character of the input text into the index of the corresponding
 # symbol in the table.
 # 
-# The following is an exmaple of such processing. In the example, symbols
+# The following is an example of such processing. In the example, symbols
 # that are not in the table are ignored.
 # 
 
@@ -108,9 +108,9 @@ print(text_to_sequence(text))
 
 
 ######################################################################
-# As mentioned in the above, since the symbol table and indices must match
+# As mentioned in the above, the symbol table and indices must match
 # what the pretrained Tacotron2 model expects. ``torchaudio`` provides the
-# such transform along with the pretrained model. For example, you can
+# transform along with the pretrained model. For example, you can
 # instantiate and use such transform as follow.
 # 
 
