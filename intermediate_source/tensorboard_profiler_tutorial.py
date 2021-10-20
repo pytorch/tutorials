@@ -329,7 +329,7 @@ with torch.profiler.profile(
 # ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
 # ``aten::fill_``. Solely display the opeartor name as ``aten::empty`` is of little help. It will be shown as
 # ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
-# columns' data might be missing if the event occurs outside of the time range.
+# columns' data might be missing if the event occurs outside of the time range. 
 #
 # In the memory statistics table, the "Size Increase" column sums up all allocation size and minus all the memory
 # release size, that is, the net increase of memory usage after this operator. The "Self Size Increase" column is
