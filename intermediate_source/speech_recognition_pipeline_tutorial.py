@@ -105,7 +105,7 @@ print("Labels:", bundle.get_labels())
 
 model = bundle.get_model().to(device)
 
-print(type(model))
+print(model.__class__)
 
 
 ######################################################################
