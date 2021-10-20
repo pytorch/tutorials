@@ -76,16 +76,16 @@ import IPython
 # are firstly trained with audio only for representation learning, then
 # fine-tuned for a specific task with additional labels.
 # 
-# The pre-trained weights without fine-tuning can be used not only ASR but
-# also for other downstream tasks as well, but this tutorial does not
-# cover them.
+# The pre-trained weights without fine-tuning can be fine-tuned
+# for other downstream tasks as well, but this tutorial does not
+# cover that.
 # 
-# We will use fine-tuned weights. There are multiple models available in
+# We will use ``torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H`` here.
+# 
+# There are multiple models available in
 # ``torchaudio.pipelines``. Please check the
 # `documentation <https://pytorch.org/audio/stable/pipelines.html>`__ for
 # the detail of how they are trained.
-# 
-# We will use ``torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H`` here.
 # 
 # The bundle object provides the interface to instantiate model and other
 # information. Sampling rate and the class labels are found as follow.
