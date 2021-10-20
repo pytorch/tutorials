@@ -131,6 +131,13 @@ Welcome to PyTorch Tutorials
    :tags: Audio
 
 .. customcarditem::
+   :header: Automatic Speech Recognition with torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
+   :image: _static/img/thumbnails/cropped/torchaudio-asr.png
+   :link: intermediate_source/speech_recognition_pipeline_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
