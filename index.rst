@@ -138,6 +138,13 @@ Welcome to PyTorch Tutorials
    :tags: Audio
 
 .. customcarditem::
+   :header: torchaudio Tutorial
+   :card_description: Learn to load data with PyTorch's torchaudio library.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_io.html
+   :tags: Audio
+
+.. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
@@ -622,6 +629,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
+   beginner/audio_io
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
