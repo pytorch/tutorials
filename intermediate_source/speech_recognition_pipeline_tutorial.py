@@ -309,6 +309,6 @@ IPython.display.Audio(SPEECH_FILE)
 # 
 # ::
 # 
-#    model = buWAV2VEC2_ASR_BASE_960Hndle.get_model()
+#    model = torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H.get_model()
 #    emission = model(waveforms, ...)
 # 
