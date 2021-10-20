@@ -3,7 +3,7 @@ Text-to-speech with torchaudio
 ==============================
 
 **Author**: `Yao-Yuan Yang <https://github.com/yangarbiter>`__, `Moto
-Hira <https://github.com/mthrok>`__
+Hira <moto@fb.com>`__
 
 """
 
