@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Shard Optimizer States with ZeroRedundancyOptimizer &mdash; PyTorch Tutorials 1.9.1+cu102 documentation</title>
+  <title>Conclusion &mdash; PyTorch Tutorials 1.9.1+cu102 documentation</title>
   
 
   
@@ -34,8 +34,6 @@
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Direct Device-to-Device Communication with TensorPipe CUDA RPC" href="cuda_rpc.html" />
-    <link rel="prev" title="Profiling PyTorch RPC-Based Workloads" href="distributed_rpc_profiling.html" />
   <!-- Google Analytics -->
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
@@ -230,9 +228,9 @@
             
             
               <p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="recipes_index.html">See All Recipes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prototype_index.html">See All Prototype Recipes</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Introduction to PyTorch</span></p>
 <ul>
@@ -388,15 +386,13 @@
       </li>
 
         
-          <li><a href="recipes_index.html">PyTorch Recipes</a> &gt;</li>
-        
-      <li>Shard Optimizer States with ZeroRedundancyOptimizer</li>
+      <li>Conclusion</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
         
             
-            <a href="../_sources/recipes/zero_redundancy_optimizer.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+            <a href="../_sources/prototype/tracing_based_selective_build.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
           
         
       </li>
@@ -418,7 +414,7 @@
         
 
           <div class="pytorch-call-to-action-links">
-            <div id="tutorial-type">recipes/zero_redundancy_optimizer</div>
+            <div id="tutorial-type">prototype/tracing_based_selective_build</div>
 
             <div id="google-colab-link">
               <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
@@ -444,153 +440,144 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="section" id="shard-optimizer-states-with-zeroredundancyoptimizer">
-<h1>Shard Optimizer States with ZeroRedundancyOptimizer<a class="headerlink" href="#shard-optimizer-states-with-zeroredundancyoptimizer" title="Permalink to this headline">¶</a></h1>
-<p>In this recipe, you will learn:</p>
-<ul class="simple">
-<li>The high-level idea of <a class="reference external" href="https://pytorch.org/docs/master/distributed.optim.html">ZeroRedundancyOptimizer</a>.</li>
-<li>How to use <a class="reference external" href="https://pytorch.org/docs/master/distributed.optim.html">ZeroRedundancyOptimizer</a>
-in distributed training and its impact.</li>
-</ul>
-<div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>PyTorch 1.8+</li>
-<li><a class="reference external" href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">Getting Started With Distributed Data Parallel</a></li>
-</ul>
+  <p>(prototype) Tracing-based Selective Build Mobile Interpreter in Android and iOS</p>
+<p><em>Author</em>: Chen Lai &lt;<a class="reference external" href="https://github.com/cccclai">https://github.com/cccclai</a>&gt;, Dhruv Matani &lt;<a class="reference external" href="https://github.com/dhruvbird">https://github.com/dhruvbird</a>&gt;</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Tracing-based selective build a prototype feature to minimize library size. Since the traced result relies on the model input and traced environment, if the tracer runs in a different environment than mobile interpreter, the operator list might be different from the actual used operator list and missing operators error might raise.</p>
 </div>
-<div class="section" id="what-is-zeroredundancyoptimizer">
-<h2>What is <code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>?<a class="headerlink" href="#what-is-zeroredundancyoptimizer" title="Permalink to this headline">¶</a></h2>
-<p>The idea of <a class="reference external" href="https://pytorch.org/docs/master/distributed.optim.html">ZeroRedundancyOptimizer</a>
-comes from <a class="reference external" href="https://github.com/microsoft/DeepSpeed">DeepSpeed/ZeRO project</a> and
-<a class="reference external" href="https://github.com/marian-nmt/marian-dev">Marian</a> that shard
-optimizer states across distributed data-parallel processes to
-reduce per-process memory footprint. In the
-<a class="reference external" href="https://pytorch.org/tutorials/intermediate/ddp_tutorial.html">Getting Started With Distributed Data Parallel</a>
-tutorial, we have shown how to use
-<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>
-(DDP) to train models. In that tutorial, each process keeps a dedicated replica
-of the optimizer. Since DDP has already synchronized gradients in the
-backward pass, all optimizer replicas will operate on the same parameter and
-gradient values in every iteration, and this is how DDP keeps model replicas in
-the same state. Oftentimes, optimizers also maintain local states. For example,
-the <code class="docutils literal notranslate"><span class="pre">Adam</span></code> optimizer uses per-parameter <code class="docutils literal notranslate"><span class="pre">exp_avg</span></code> and <code class="docutils literal notranslate"><span class="pre">exp_avg_sq</span></code> states. As a
-result, the <code class="docutils literal notranslate"><span class="pre">Adam</span></code> optimizer’s memory consumption is at least twice the model
-size. Given this observation, we can reduce the optimizer memory footprint by
-sharding optimizer states across DDP processes. More specifically, instead of
-creating per-param states for all parameters, each optimizer instance in
-different DDP processes only keeps optimizer states for a shard of all model
-parameters. The optimizer <code class="docutils literal notranslate"><span class="pre">step()</span></code> function only updates the parameters in its
-shard and then broadcasts its updated parameters to all other peer DDP
-processes, so that all model replicas still land in the same state.</p>
-</div>
-<div class="section" id="how-to-use-zeroredundancyoptimizer">
-<h2>How to use <code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>?<a class="headerlink" href="#how-to-use-zeroredundancyoptimizer" title="Permalink to this headline">¶</a></h2>
-<p>The code below demonstrates how to use
-<a class="reference external" href="https://pytorch.org/docs/master/distributed.optim.html">ZeroRedundancyOptimizer</a>.
-The majority of the code is similar to the simple DDP example presented in
-<a class="reference external" href="https://pytorch.org/docs/stable/notes/ddp.html">Distributed Data Parallel notes</a>.
-The main difference is the <code class="docutils literal notranslate"><span class="pre">if-else</span></code> clause in the <code class="docutils literal notranslate"><span class="pre">example</span></code> function which
-wraps optimizer constructions, toggling between
-<a class="reference external" href="https://pytorch.org/docs/master/distributed.optim.html">ZeroRedundancyOptimizer</a>
-and <code class="docutils literal notranslate"><span class="pre">Adam</span></code> optimizer.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<p>Introduction</p>
+<p>This tutorial introduces a new way to custom build mobile interpreter to further optimize mobile interpreter size. It restricts the set of operators included in the compiled binary to only the set of operators actually needed by target models. It is a technique to reduce the binary size of PyTorch for mobile deployments. Tracing Based Selective Build runs a model with specific representative inputs, and records which operators were called. The build then includes just those operators.</p>
+<p>Following are the processes to use tracing-based selective approach to build a custom mobile interpreter.</p>
+<ol class="arabic simple">
+<li><em>Prepare model with bundled input</em></li>
+</ol>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
-<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">torch.distributed.optim</span> <span class="kn">import</span> <span class="n">ZeroRedundancyOptimizer</span>
-<span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
+<span class="kn">import</span> <span class="nn">torch.jit</span>
+<span class="kn">import</span> <span class="nn">torch.utils</span>
+<span class="kn">import</span> <span class="nn">torch.utils.bundled_inputs</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 
-<span class="k">def</span> <span class="nf">print_peak_memory</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">max_memory_allocated</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="o">//</span> <span class="mf">1e6</span><span class="si">}</span><span class="s2">MB &quot;</span><span class="p">)</span>
+<span class="c1"># Step 1. Get the model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">hub</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;pytorch/vision:v0.7.0&#39;</span><span class="p">,</span> <span class="s1">&#39;deeplabv3_resnet50&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">example</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">use_zero</span><span class="p">):</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_ADDR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;MASTER_PORT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;29500&#39;</span>
-    <span class="c1"># create default process group</span>
-    <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;gloo&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="o">=</span><span class="n">world_size</span><span class="p">)</span>
+<span class="n">scripted_module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="c1"># Export full jit version model (not compatible lite interpreter), leave it here for comparison</span>
+<span class="n">scripted_module</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;deeplabv3_scripted.pt&quot;</span><span class="p">)</span>
+<span class="c1"># Export lite interpreter version model (compatible with lite interpreter)</span>
+<span class="c1"># path = &quot;&lt;base directory where models are stored&gt;&quot;</span>
 
-    <span class="c1"># create local model</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)])</span>
-    <span class="n">print_peak_memory</span><span class="p">(</span><span class="s2">&quot;Max memory allocated after creating local model&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+<span class="n">scripted_module</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/deeplabv3_scripted.ptl&quot;</span><span class="p">)</span>
 
-    <span class="c1"># construct DDP model</span>
-    <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
-    <span class="n">print_peak_memory</span><span class="p">(</span><span class="s2">&quot;Max memory allocated after creating DDP&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+<span class="n">model_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/deeplabv3_scripted.ptl&quot;</span>
 
-    <span class="c1"># define loss function and optimizer</span>
-    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">use_zero</span><span class="p">:</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">ZeroRedundancyOptimizer</span><span class="p">(</span>
-            <span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span>
-            <span class="n">optimizer_class</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
-            <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="c1"># Step 2. Prepare inputs for the model</span>
+<span class="n">input_image_1</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/dog.jpg&quot;</span><span class="p">)</span>
+<span class="n">preprocess</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]),</span>
+<span class="p">])</span>
 
-    <span class="c1"># forward pass</span>
-    <span class="n">outputs</span> <span class="o">=</span> <span class="n">ddp_model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">))</span>
-    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="c1"># backward pass</span>
-    <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="n">input_tensor_1</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">input_image_1</span><span class="p">)</span>
+<span class="n">input_batch_1</span> <span class="o">=</span> <span class="n">input_tensor_1</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># create a mini-batch as expected by the model</span>
 
-    <span class="c1"># update parameters</span>
-    <span class="n">print_peak_memory</span><span class="p">(</span><span class="s2">&quot;Max memory allocated before optimizer step()&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-    <span class="n">print_peak_memory</span><span class="p">(</span><span class="s2">&quot;Max memory allocated after optimizer step()&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+<span class="n">scripted_module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+<span class="n">scripted_module</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">input_batch_1</span><span class="p">)</span> <span class="c1"># optional, to validate the model can run with the input_batch_1</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;params sum is: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">input_image_2</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/deeplab.jpg&quot;</span><span class="p">)</span>
+<span class="n">input_tensor_2</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">input_image_2</span><span class="p">)</span>
+<span class="n">input_batch_2</span> <span class="o">=</span> <span class="n">input_tensor_2</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># create a mini-batch as expected by the model</span>
 
+<span class="n">scripted_module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_file</span><span class="p">)</span>
+<span class="n">scripted_module</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">input_batch_2</span><span class="p">)</span> <span class="c1"># optional, to validate the model can run with the input_batch_2</span>
 
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">world_size</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== Using ZeroRedundancyOptimizer ===&quot;</span><span class="p">)</span>
-    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">example</span><span class="p">,</span>
-        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
-        <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
-        <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== Not Using ZeroRedundancyOptimizer ===&quot;</span><span class="p">)</span>
-    <span class="n">mp</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">example</span><span class="p">,</span>
-        <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">world_size</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
-        <span class="n">nprocs</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
-        <span class="n">join</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-    <span class="n">main</span><span class="p">()</span>
+<span class="c1"># Step 3. Bundle the model with the prepared input from step2. Can bundle as many input as possible.</span>
+<span class="n">bundled_model_input</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">bundled_inputs</span><span class="o">.</span><span class="n">bundle_large_tensor</span><span class="p">(</span><span class="n">input_batch_1</span><span class="p">),</span> <span class="p">),</span>
+    <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">bundled_inputs</span><span class="o">.</span><span class="n">bundle_large_tensor</span><span class="p">(</span><span class="n">input_batch_2</span><span class="p">),</span> <span class="p">)]</span>
+<span class="n">bundled_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">bundled_inputs</span><span class="o">.</span><span class="n">bundle_inputs</span><span class="p">(</span><span class="n">scripted_module</span><span class="p">,</span> <span class="n">bundled_model_input</span><span class="p">)</span>
+<span class="n">bundled_model</span><span class="o">.</span><span class="n">_save_for_lite_interpreter</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">/deeplabv3_scripted_with_bundled_input.ptl&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The output is shown below. When enabling <code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code> with <code class="docutils literal notranslate"><span class="pre">Adam</span></code>,
-the optimizer <code class="docutils literal notranslate"><span class="pre">step()</span></code> peak memory consumption is half of vanilla <code class="docutils literal notranslate"><span class="pre">Adam</span></code>’s
-memory consumption. This agrees with our expectation, as we are sharding
-<code class="docutils literal notranslate"><span class="pre">Adam</span></code> optimizer states across two processes. The output also shows that, with
-<code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>, the model parameters still end up with the same
-values after one iterations (the parameters sum is the same with and without
-<code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">Using</span> <span class="n">ZeroRedundancyOptimizer</span> <span class="o">===</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">creating</span> <span class="n">local</span> <span class="n">model</span><span class="p">:</span> <span class="mf">335.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">creating</span> <span class="n">DDP</span><span class="p">:</span> <span class="mf">656.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">before</span> <span class="n">optimizer</span> <span class="n">step</span><span class="p">():</span> <span class="mf">992.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">optimizer</span> <span class="n">step</span><span class="p">():</span> <span class="mf">1361.0</span><span class="n">MB</span>
-<span class="n">params</span> <span class="nb">sum</span> <span class="ow">is</span><span class="p">:</span> <span class="o">-</span><span class="mf">3453.6123046875</span>
-<span class="n">params</span> <span class="nb">sum</span> <span class="ow">is</span><span class="p">:</span> <span class="o">-</span><span class="mf">3453.6123046875</span>
-<span class="o">===</span> <span class="n">Not</span> <span class="n">Using</span> <span class="n">ZeroRedundancyOptimizer</span> <span class="o">===</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">creating</span> <span class="n">local</span> <span class="n">model</span><span class="p">:</span> <span class="mf">335.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">creating</span> <span class="n">DDP</span><span class="p">:</span> <span class="mf">656.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">before</span> <span class="n">optimizer</span> <span class="n">step</span><span class="p">():</span> <span class="mf">992.0</span><span class="n">MB</span>
-<span class="n">Max</span> <span class="n">memory</span> <span class="n">allocated</span> <span class="n">after</span> <span class="n">optimizer</span> <span class="n">step</span><span class="p">():</span> <span class="mf">1697.0</span><span class="n">MB</span>
-<span class="n">params</span> <span class="nb">sum</span> <span class="ow">is</span><span class="p">:</span> <span class="o">-</span><span class="mf">3453.6123046875</span>
-<span class="n">params</span> <span class="nb">sum</span> <span class="ow">is</span><span class="p">:</span> <span class="o">-</span><span class="mf">3453.6123046875</span>
+<ol class="arabic simple" start="2">
+<li>Build tracer</li>
+</ol>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MACOSX_DEPLOYMENT_TARGET</span><span class="o">=</span><span class="mf">10.9</span> <span class="n">CC</span><span class="o">=</span><span class="n">clang</span> <span class="n">CXX</span><span class="o">=</span><span class="n">clang</span><span class="o">++</span> <span class="n">MAX_JOBS</span><span class="o">=</span><span class="mi">16</span> <span class="n">TRACING_BASED</span><span class="o">=</span><span class="mi">1</span> <span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">develop</span>
 </pre></div>
 </div>
+<ol class="arabic simple" start="3">
+<li>Run tracer with the model with bundled input</li>
+</ol>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span>./build/bin/model_tracer --model_input_path ${path}/deeplabv3_scripted_with_bundled_input.ptl --build_yaml_path ${path}/deeplabv3_scripted.yaml
+</pre></div>
 </div>
+<p>Android</p>
+<p>Get the Image Segmentation demo app in Android: <a class="reference external" href="https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation">https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation</a></p>
+<ol class="arabic simple">
+<li><strong>Tracing-based build libtorch lite for android</strong>: Build libtorch for android for all 4 android abis (<code class="docutils literal notranslate"><span class="pre">armeabi-v7a</span></code>, <code class="docutils literal notranslate"><span class="pre">arm64-v8a</span></code>, <code class="docutils literal notranslate"><span class="pre">x86</span></code>, <code class="docutils literal notranslate"><span class="pre">x86_64</span></code>) by running</li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SELECTED_OP_LIST</span><span class="o">=</span><span class="si">${</span><span class="nv">path</span><span class="si">}</span>/deeplabv3_scripted.yaml <span class="nv">TRACING_BASED</span><span class="o">=</span><span class="m">1</span>  ./scripts/build_pytorch_android.sh
+</pre></div>
+</div>
+<p>if it will be tested on Pixel 4 emulator with <code class="docutils literal notranslate"><span class="pre">x86</span></code>, use cmd <code class="docutils literal notranslate"><span class="pre">BUILD_LITE_INTERPRETER=1</span> <span class="pre">./scripts/build_pytorch_android.sh</span> <span class="pre">x86</span></code> to specify abi to save build time.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SELECTED_OP_LIST</span><span class="o">=</span><span class="si">${</span><span class="nv">path</span><span class="si">}</span>/deeplabv3_scripted.yaml <span class="nv">TRACING_BASED</span><span class="o">=</span><span class="m">1</span>  ./scripts/build_pytorch_android.sh x86
+</pre></div>
+</div>
+<p>After the build finish, it will show the library path:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>BUILD SUCCESSFUL <span class="k">in</span> 55s
+<span class="m">134</span> actionable tasks: <span class="m">22</span> executed, <span class="m">112</span> up-to-date
++ find /Users/chenlai/pytorch/android -type f -name <span class="s1">&#39;*aar&#39;</span>
++ xargs ls -lah
+-rw-r--r--  <span class="m">1</span> chenlai  staff    13M Feb <span class="m">11</span> <span class="m">11</span>:48 /Users/chenlai/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar
+-rw-r--r--  <span class="m">1</span> chenlai  staff    36K Feb  <span class="m">9</span> <span class="m">16</span>:45 /Users/chenlai/pytorch/android/pytorch_android_torchvision/build/outputs/aar/pytorch_android_torchvision-release.aar
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><strong>Use the PyTorch Android libraries built from source in the ImageSegmentation app</strong>: Create a folder <cite>libs</cite> in the path, the path from repository root will be <cite>ImageSegmentation/app/libs</cite>. Copy <cite>pytorch_android-release</cite> to the path <code class="docutils literal notranslate"><span class="pre">ImageSegmentation/app/libs/pytorch_android-release.aar</span></code>. Copy <cite>pytorch_android_torchvision</cite> (downloaded from <a class="reference external" href="https://oss.sonatype.org/#nexus-search;quick~torchvision_android/">Pytorch Android Torchvision Nightly</a>) to the path <code class="docutils literal notranslate"><span class="pre">ImageSegmentation/app/libs/pytorch_android_torchvision.aar</span></code>. Update the <cite>dependencies</cite> part of <code class="docutils literal notranslate"><span class="pre">ImageSegmentation/app/build.gradle</span></code> to</li>
+</ol>
+<p>Update <cite>all projects</cite> part in <code class="docutils literal notranslate"><span class="pre">ImageSegmentation/build.gradle</span></code> to</p>
+<ol class="arabic simple" start="3">
+<li><strong>Test app</strong>: Build and run the <cite>ImageSegmentation</cite> app in Android Studio</li>
+</ol>
+<p>iOS</p>
+<p>Get ImageSegmentation demo app in iOS: <a class="reference external" href="https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation">https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation</a></p>
+<ol class="arabic simple">
+<li><strong>Build libtorch lite for iOS</strong>:</li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SELECTED_OP_LIST</span><span class="o">=</span><span class="si">${</span><span class="nv">path</span><span class="si">}</span>/deeplabv3_scripted.yaml <span class="nv">TRACING_BASED</span><span class="o">=</span><span class="m">1</span> <span class="nv">IOS_PLATFORM</span><span class="o">=</span>SIMULATOR ./scripts/build_ios.sh
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><strong>Remove Cocoapods from the project</strong> (this step is only needed if you ran <cite>pod install</cite>):</li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pod deintegrate
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><strong>Link ImageSegmentation demo app with the custom built library</strong>:</li>
+</ol>
+<p>Open your project in XCode, go to your project Target’s <strong>Build Phases - Link Binaries With Libraries</strong>, click the <strong>+</strong> sign and add all the library files located in <cite>build_ios/install/lib</cite>. Navigate to the project <strong>Build Settings</strong>, set the value <strong>Header Search Paths</strong> to <cite>build_ios/install/include</cite> and <strong>Library Search Paths</strong> to <cite>build_ios/install/lib</cite>.
+In the build settings, search for <strong>other linker flags</strong>. Add a custom linker flag below <cite>-all_load</cite>.
+Finally, disable bitcode for your target by selecting the Build Settings, searching for Enable Bitcode, and set the value to <strong>No</strong>.</p>
+<ol class="arabic simple" start="4">
+<li><strong>Build and test the app in Xcode.</strong></li>
+</ol>
+<div class="section" id="conclusion">
+<h1>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial, we demonstrated a new way to custom build PyTorch’s efficient mobile interpreter - tracing-based selective build, in an Android and iOS app.</p>
+<p>We walked through an Image Segmentation example to show how to bundle inputs to a model, generated operator list by tracing the model with bundled input, and build a custom torch library from source with the operator list from tracing result.</p>
+<p>The custom build is still under development, and we will continue improving its size in the future. Note, however, that the APIs are subject to change in future versions.</p>
+<p>Thanks for reading! As always, we welcome any feedback, so please create an issue here &lt;<a class="reference external" href="https://github.com/pytorch/pytorch/issues">https://github.com/pytorch/pytorch/issues</a>&gt;`.</p>
+<p>Learn More</p>
+<ul class="simple">
+<li>To learn more about PyTorch Mobile, please refer to PyTorch Mobile Home Page &lt;<a class="reference external" href="https://pytorch.org/mobile/home/">https://pytorch.org/mobile/home/</a>&gt;</li>
+</ul>
+<ul class="simple">
+<li>To learn more about Image Segmentation, please refer to the Image Segmentation DeepLabV3 on Android Recipe &lt;<a class="reference external" href="https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html">https://pytorch.org/tutorials/beginner/deeplabv3_on_android.html</a>&gt;_</li>
+</ul>
 </div>
 
 
@@ -598,15 +585,6 @@ values after one iterations (the parameters sum is the same with and without
              
             </div>
             <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="cuda_rpc.html" class="btn btn-neutral float-right" title="Direct Device-to-Device Communication with TensorPipe CUDA RPC" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
-      
-      
-        <a href="distributed_rpc_profiling.html" class="btn btn-neutral" title="Profiling PyTorch RPC-Based Workloads" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
-      
-    </div>
   
 
   
@@ -647,12 +625,7 @@ values after one iterations (the parameters sum is the same with and without
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">Shard Optimizer States with ZeroRedundancyOptimizer</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#what-is-zeroredundancyoptimizer">What is <code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>?</a></li>
-<li><a class="reference internal" href="#how-to-use-zeroredundancyoptimizer">How to use <code class="docutils literal notranslate"><span class="pre">ZeroRedundancyOptimizer</span></code>?</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Conclusion</a></li>
 </ul>
 
             </div>
