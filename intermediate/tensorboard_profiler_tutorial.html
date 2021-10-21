@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>PyTorch Profiler With TensorBoard — PyTorch Tutorials 1.9.1+cu102 documentation</title>
+<title>PyTorch Profiler With TensorBoard — PyTorch Tutorials 1.10.0+cu111 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -152,7 +152,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.9.1+cu102
+                  1.10.0+cu111
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -439,7 +439,8 @@ Specify this directory as a <code class="docutils literal notranslate"><span cla
 </li>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">record_shapes</span></code> - whether to record shapes of the operator inputs.</p>
 </li>
-<li><p class="first"><code class="docutils literal notranslate"><span class="pre">profile_memory</span></code> - Track tensor memory allocation/deallocation.</p>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">profile_memory</span></code> - Track tensor memory allocation/deallocation. Note, for old version of pytorch with version
+before 1.10, if you suffer long profiling time, please disable it or upgrade to new version.</p>
 </li>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">with_stack</span></code> - Record source information (file and line number) for the ops.
 If the TensorBoard is launched in VSCode (<a class="reference external" href="https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration">reference</a>),
@@ -450,6 +451,7 @@ clicking a stack frame will navigate to the specific code line.</p>
         <span class="n">schedule</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
         <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span><span class="p">(</span><span class="s1">'./log/resnet18'</span><span class="p">),</span>
         <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">batch_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
@@ -566,26 +568,46 @@ and the GPU utilization is increased.</p>
 <ul class="simple">
 <li>Memory view</li>
 </ul>
-<p>To profile memory, please add <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code> in arguments of <code class="docutils literal notranslate"><span class="pre">torch.profiler.profile</span></code>.</p>
-<p>Note: Because of the current non-optimized implementation of PyTorch profiler,
-enabling <code class="docutils literal notranslate"><span class="pre">profile_memory=True</span></code> will take about several minutes to finish.
-To save time, you can try our existing examples first by running:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">memory_demo</span>
+<p>To profile memory, <code class="docutils literal notranslate"><span class="pre">profile_memory</span></code> must be set to <code class="docutils literal notranslate"><span class="pre">True</span></code> in arguments of <code class="docutils literal notranslate"><span class="pre">torch.profiler.profile</span></code>.</p>
+<p>You can try it by using existing example on Azure</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">azure</span><span class="o">-</span><span class="n">storage</span><span class="o">-</span><span class="n">blob</span>
+<span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">memory_demo_1_10</span>
 </pre></div>
 </div>
-<p>The profiler records all memory allocation/release events during profiling.
-For every specific operator, the plugin aggregates all these memory events inside its life span.</p>
+<p>The profiler records all memory allocation/release events and allocator’s internal state during profiling.
+The memory view consists of three components as shown in the following.</p>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_memory_view.png"><img alt="intermediate/../../_static/img/profiler_memory_view.png" src="intermediate/../../_static/img/profiler_memory_view.png"/></a>
+<p>The components are memory curve graph, memory events table and memory statistics table, from top to bottom, respectively.</p>
 <p>The memory type could be selected in “Device” selection box.
 For example, “GPU0” means the following table only shows each operator’s memory usage on GPU 0, not including CPU or other GPUs.</p>
-<p>The “Size Increase” sums up all allocation bytes and minus all the memory release bytes.</p>
-<p>The “Allocation Size” sums up all allocation bytes without considering the memory release.</p>
+<p>The memory curve shows the trends of memory consumption. The “Allocated” curve shows the total memory that is actually
+in use, e.g., tensors. In PyTorch, caching mechanism is employed in CUDA allocator and some other allocators. The
+“Reserved” curve shows the total memory that is reserved by the allocator. You can left click and drag on the graph
+to select events in the desired range:</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_memory_curve_selecting.png"><img alt="intermediate/../../_static/img/profiler_memory_curve_selecting.png" src="intermediate/../../_static/img/profiler_memory_curve_selecting.png"/></a>
+<p>After selection, the three components will be updated for the restricted time range, so that you can gain more
+information about it. By repeating this process, you can zoom into a very fine-grained detail. Right click on the graph
+will reset the graph to the initial state.</p>
+<a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_memory_curve_single.png"><img alt="intermediate/../../_static/img/profiler_memory_curve_single.png" src="intermediate/../../_static/img/profiler_memory_curve_single.png"/></a>
+<p>In the memory events table, the allocation and release events are paired into one entry. The “operator” column shows
+the immediate ATen operator that is causing the allocation. Notice that in PyTorch, ATen operators commonly use
+<code class="docutils literal notranslate"><span class="pre">aten::empty</span></code> to allocate memory. For example, <code class="docutils literal notranslate"><span class="pre">aten::ones</span></code> is implemented as <code class="docutils literal notranslate"><span class="pre">aten::empty</span></code> followed by an
+<code class="docutils literal notranslate"><span class="pre">aten::fill_</span></code>. Solely display the opeartor name as <code class="docutils literal notranslate"><span class="pre">aten::empty</span></code> is of little help. It will be shown as
+<code class="docutils literal notranslate"><span class="pre">aten::ones</span> <span class="pre">(aten::empty)</span></code> in this special case. The “Allocation Time”, “Release Time” and “Duration”
+columns’ data might be missing if the event occurs outside of the time range.</p>
+<p>In the memory statistics table, the “Size Increase” column sums up all allocation size and minus all the memory
+release size, that is, the net increase of memory usage after this operator. The “Self Size Increase” column is
+similar to “Size Increase”, but it does not count children operators’ allocation. With regards to ATen operators’
+implementation detail, some operators might call other operators, so memory allocations can happen at any level of the
+call stack. That says, “Self Size Increase” only count the memory usage increase at current level of call stack.
+Finally, the “Allocation Size” column sums up all allocation without considering the memory release.</p>
 <ul class="simple">
 <li>Distributed view</li>
 </ul>
 <p>The plugin now supports distributed view on profiling DDP with NCCL/GLOO as backend.</p>
 <p>You can try it by using existing example on Azure:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">distributed_bert</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">azure</span><span class="o">-</span><span class="n">storage</span><span class="o">-</span><span class="n">blob</span>
+<span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">torchtbprofiler</span><span class="o">.</span><span class="n">blob</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">torchtbprofiler</span><span class="o">/</span><span class="n">demo</span><span class="o">/</span><span class="n">distributed_bert</span>
 </pre></div>
 </div>
 <a class="reference internal image-reference" href="intermediate/../../_static/img/profiler_distributed_view.png"><img alt="intermediate/../../_static/img/profiler_distributed_view.png" src="intermediate/../../_static/img/profiler_distributed_view.png"/></a>
@@ -609,7 +631,7 @@ and feel free to open an issue <a class="reference external" href="https://githu
 <li><a class="reference external" href="https://github.com/pytorch/kineto/tree/master/tb_plugin">Pytorch TensorBoard Profiler github</a></li>
 <li><a class="reference external" href="https://pytorch.org/docs/master/profiler.html">torch.profiler API</a></li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  13.954 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  17.393 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-tensorboard-profiler-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/d20cbe06d71c96a4bb8f222f7c64cf25/tensorboard_profiler_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensorboard_profiler_tutorial.py</span></code></a></div>
