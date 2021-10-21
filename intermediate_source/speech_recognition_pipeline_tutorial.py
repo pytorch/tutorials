@@ -59,6 +59,14 @@ if width < 10:
 
 import IPython
 
+import requests
+
+SPEECH_FILE = "speech.wav"
+
+url = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+with open(SPEECH_FILE, 'wb') as file_:
+  file_.write(requests.get(url).content)
+
 
 
 ######################################################################
@@ -117,12 +125,7 @@ print(model.__class__)
 # Creative Commos BY 4.0.
 # 
 
-# In Colab, uncomment the following line to download the audio.
-# !wget -O speech.wav https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav
-
-SPEECH_FILE = "speech.wav"
-
-IPython.display.Audio(SPEECH_FILE)
+IPython.display.display(IPython.display.Audio(SPEECH_FILE))
 
 
 ######################################################################
@@ -281,7 +284,7 @@ transcript = decoder(emission[0])
 # 
 
 print(transcript)
-IPython.display.Audio(SPEECH_FILE)
+IPython.display.display(IPython.display.Audio(SPEECH_FILE))
 
 
 ######################################################################
