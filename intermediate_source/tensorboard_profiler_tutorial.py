@@ -6,7 +6,7 @@ to detect performance bottlenecks of the model.
 
 Introduction
 ------------
-PyTorch 1.8 includes an updated profiler API capable of 
+PyTorch 1.8 includes an updated profiler API capable of
 recording the CPU side operations as well as the CUDA kernel launches on the GPU side.
 The profiler can visualize this information
 in TensorBoard Plugin and provide analysis of the performance bottlenecks.
@@ -113,7 +113,8 @@ def train(data):
 #   After profiling, result files will be saved into the ``./log/resnet18`` directory.
 #   Specify this directory as a ``logdir`` parameter to analyze profile in TensorBoard.
 # - ``record_shapes`` - whether to record shapes of the operator inputs.
-# - ``profile_memory`` - Track tensor memory allocation/deallocation.
+# - ``profile_memory`` - Track tensor memory allocation/deallocation. Note, for old version of pytorch with version
+#   before 1.10, if you suffer long profiling time, please disable it or upgrade to new version.
 # - ``with_stack`` - Record source information (file and line number) for the ops.
 #   If the TensorBoard is launched in VSCode (`reference <https://code.visualstudio.com/docs/datascience/pytorch-support#_tensorboard-integration>`_),
 #   clicking a stack frame will navigate to the specific code line.
@@ -122,6 +123,7 @@ with torch.profiler.profile(
         schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
         on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
         record_shapes=True,
+        profile_memory=True,
         with_stack=True
 ) as prof:
     for step, batch_data in enumerate(train_loader):
@@ -287,28 +289,54 @@ with torch.profiler.profile(
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # - Memory view
-# To profile memory, please add ``profile_memory=True`` in arguments of ``torch.profiler.profile``.
+# To profile memory, ``profile_memory`` must be set to ``True`` in arguments of ``torch.profiler.profile``.
 #
-# Note: Because of the current non-optimized implementation of PyTorch profiler,
-# enabling ``profile_memory=True`` will take about several minutes to finish.
-# To save time, you can try our existing examples first by running:
+# You can try it by using existing example on Azure
 #
 # ::
 #
-#     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/memory_demo
+#     pip install azure-storage-blob
+#     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/memory_demo_1_10
 #
-# The profiler records all memory allocation/release events during profiling.
-# For every specific operator, the plugin aggregates all these memory events inside its life span.
+# The profiler records all memory allocation/release events and allocator's internal state during profiling.
+# The memory view consists of three components as shown in the following.
 #
 # .. image:: ../../_static/img/profiler_memory_view.png
 #    :scale: 25 %
 #
+# The components are memory curve graph, memory events table and memory statistics table, from top to bottom, respectively.
+#
 # The memory type could be selected in "Device" selection box.
-# For example, "GPU0" means the following table only shows each operator’s memory usage on GPU 0, not including CPU or other GPUs.
+# For example, "GPU0" means the following table only shows each operator's memory usage on GPU 0, not including CPU or other GPUs.
 #
-# The "Size Increase" sums up all allocation bytes and minus all the memory release bytes.
+# The memory curve shows the trends of memory consumption. The "Allocated" curve shows the total memory that is actually
+# in use, e.g., tensors. In PyTorch, caching mechanism is employed in CUDA allocator and some other allocators. The
+# "Reserved" curve shows the total memory that is reserved by the allocator. You can left click and drag on the graph
+# to select events in the desired range:
 #
-# The "Allocation Size" sums up all allocation bytes without considering the memory release.
+# .. image:: ../../_static/img/profiler_memory_curve_selecting.png
+#    :scale: 25 %
+#
+# After selection, the three components will be updated for the restricted time range, so that you can gain more
+# information about it. By repeating this process, you can zoom into a very fine-grained detail. Right click on the graph
+# will reset the graph to the initial state.
+#
+# .. image:: ../../_static/img/profiler_memory_curve_single.png
+#    :scale: 25 %
+#
+# In the memory events table, the allocation and release events are paired into one entry. The "operator" column shows
+# the immediate ATen operator that is causing the allocation. Notice that in PyTorch, ATen operators commonly use
+# ``aten::empty`` to allocate memory. For example, ``aten::ones`` is implemented as ``aten::empty`` followed by an
+# ``aten::fill_``. Solely display the opeartor name as ``aten::empty`` is of little help. It will be shown as
+# ``aten::ones (aten::empty)`` in this special case. The "Allocation Time", "Release Time" and "Duration"
+# columns' data might be missing if the event occurs outside of the time range. 
+#
+# In the memory statistics table, the "Size Increase" column sums up all allocation size and minus all the memory
+# release size, that is, the net increase of memory usage after this operator. The "Self Size Increase" column is
+# similar to "Size Increase", but it does not count children operators' allocation. With regards to ATen operators'
+# implementation detail, some operators might call other operators, so memory allocations can happen at any level of the
+# call stack. That says, "Self Size Increase" only count the memory usage increase at current level of call stack.
+# Finally, the "Allocation Size" column sums up all allocation without considering the memory release.
 #
 # - Distributed view
 # The plugin now supports distributed view on profiling DDP with NCCL/GLOO as backend.
@@ -317,6 +345,7 @@ with torch.profiler.profile(
 #
 # ::
 #
+#     pip install azure-storage-blob
 #     tensorboard --logdir=https://torchtbprofiler.blob.core.windows.net/torchtbprofiler/demo/distributed_bert
 #
 # .. image:: ../../_static/img/profiler_distributed_view.png
