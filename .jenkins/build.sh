@@ -29,8 +29,8 @@ pip install -r $DIR/../requirements.txt
 # RC Link
 # pip uninstall -y torch torchvision torchaudio torchtext
 # pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
-pip uninstall -y torch torchvision torchaudio torchtext
-pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
+# pip uninstall -y torch torchvision torchaudio torchtext
+# pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
@@ -55,6 +55,8 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
+  # Temp remove for 1.10 release. 
+  python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
 
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
