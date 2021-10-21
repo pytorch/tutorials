@@ -139,9 +139,16 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: torchaudio Tutorial
-   :card_description: Learn to load data with PyTorch's torchaudio library.
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
    :link: beginner/audio_io.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: torchaudio Tutorial
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
 
 .. customcarditem::
@@ -630,6 +637,7 @@ Additional Resources
 
    beginner/audio_preprocessing_tutorial
    beginner/audio_io
+   beginner/resampling
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
