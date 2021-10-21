@@ -339,7 +339,7 @@ with torch.profiler.profile(
 # Finally, the "Allocation Size" column sums up all allocation without considering the memory release.
 #
 # - Distributed view
-# The plugin now supports distributed view on profiling DDP with NCCL as backend.
+# The plugin now supports distributed view on profiling DDP with NCCL/GLOO as backend.
 #
 # You can try it by using existing example on Azure:
 #
