@@ -16,7 +16,6 @@ In this section we will look at how to persist model state with saving, loading 
 """
 
 import torch
-import torch.onnx as onnx
 import torchvision.models as models
 
 
@@ -58,3 +57,7 @@ model = torch.load('model.pth')
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.
 
+#######################
+# Related Tutorials
+# ==================
+# `Saving and Loading a General Checkpoint in PyTorch<https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html>`_.
