@@ -11,15 +11,30 @@ Data Augmentation
 
 # When running this tutorial in Google Colab, install the required packages
 # with the following.
-# !pip install torchaudio librosa boto3
+# !pip install torchaudio
 
 import torch
 import torchaudio
 import torchaudio.functional as F
-import torchaudio.transforms as T
 
 print(torch.__version__)
 print(torchaudio.__version__)
+
+######################################################################
+# Preparing data and utility functions (skip this section)
+# --------------------------------------------------------
+#
+
+#@title Prepare data and utility functions. {display-mode: "form"}
+#@markdown
+#@markdown You do not need to look into this cell.
+#@markdown Just execute once and you are good to go.
+#@markdown
+#@markdown In this tutorial, we will use a speech data from [VOiCES dataset](https://iqtlabs.github.io/voices/), which is licensed under Creative Commos BY 4.0.
+
+#-------------------------------------------------------------------------------
+# Preparation of data and helper functions.
+#-------------------------------------------------------------------------------
 
 import math
 import os

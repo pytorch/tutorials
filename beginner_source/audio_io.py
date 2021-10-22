@@ -11,7 +11,7 @@ torchaudio integrates ``libsox`` and provides a rich set of audio I/O.
 
 # When running this tutorial in Google Colab, install the required packages
 # with the following.
-# !pip install torchaudio librosa boto3
+# !pip install torchaudio boto3
 
 import torch
 import torchaudio

@@ -9,7 +9,7 @@ Here, we will walk through resampling audio waveforms using `torchaudio`.
 
 # When running this tutorial in Google Colab, install the required packages
 # with the following.
-# !pip install torchaudio librosa boto3
+# !pip install torchaudio librosa
 
 import torch
 import torchaudio
@@ -19,37 +19,19 @@ import torchaudio.transforms as T
 print(torch.__version__)
 print(torchaudio.__version__)
 
-
 ######################################################################
-# To resample an audio waveform from one freqeuncy to another, you can use
-# ``transforms.Resample`` or ``functional.resample``.
-# ``transforms.Resample`` precomputes and caches the kernel used for
-# resampling, while ``functional.resample`` computes it on the fly, so
-# using ``transforms.Resample`` will result in a speedup if resampling
-# multiple waveforms using the same parameters (see Benchmarking section).
+# Preparing data and utility functions (skip this section)
+# --------------------------------------------------------
 #
-# Both resampling methods use `bandlimited sinc
-# interpolation <https://ccrma.stanford.edu/~jos/resample/>`__ to compute
-# signal values at arbitrary time steps. The implementation involves
-# convolution, so we can take advantage of GPU / multithreading for
-# performance improvements. When using resampling in multiple
-# subprocesses, such as data loading with multiple worker processes, your
-# application might create more threads than your system can handle
-# efficiently. Setting ``torch.set_num_threads(1)`` might help in this
-# case.
-#
-# Because a finite number of samples can only represent a finite number of
-# frequencies, resampling does not produce perfect results, and a variety
-# of parameters can be used to control for its quality and computational
-# speed. We demonstrate these properties through resampling a logarithmic
-# sine sweep, which is a sine wave that increases exponentially in
-# frequency over time.
-#
-# The spectrograms below show the frequency representation of the signal,
-# where the x-axis labels correspond to the frequency of the original
-# waveform (in log scale), the y-axis corresponds to the frequency of the
-# plotted waveform, and the color intensity refers to amplitude.
-#
+
+#@title Prepare data and utility functions. {display-mode: "form"}
+#@markdown
+#@markdown You do not need to look into this cell.
+#@markdown Just execute once and you are good to go.
+
+#-------------------------------------------------------------------------------
+# Preparation of data and helper functions.
+#-------------------------------------------------------------------------------
 
 import math
 import time
@@ -188,6 +170,37 @@ def benchmark_resample(
       librosa.resample(waveform_np, sample_rate, resample_rate, res_type=librosa_type)
     elapsed = time.time() - begin
     return elapsed / iters
+
+######################################################################
+# To resample an audio waveform from one freqeuncy to another, you can use
+# ``transforms.Resample`` or ``functional.resample``.
+# ``transforms.Resample`` precomputes and caches the kernel used for
+# resampling, while ``functional.resample`` computes it on the fly, so
+# using ``transforms.Resample`` will result in a speedup if resampling
+# multiple waveforms using the same parameters (see Benchmarking section).
+#
+# Both resampling methods use `bandlimited sinc
+# interpolation <https://ccrma.stanford.edu/~jos/resample/>`__ to compute
+# signal values at arbitrary time steps. The implementation involves
+# convolution, so we can take advantage of GPU / multithreading for
+# performance improvements. When using resampling in multiple
+# subprocesses, such as data loading with multiple worker processes, your
+# application might create more threads than your system can handle
+# efficiently. Setting ``torch.set_num_threads(1)`` might help in this
+# case.
+#
+# Because a finite number of samples can only represent a finite number of
+# frequencies, resampling does not produce perfect results, and a variety
+# of parameters can be used to control for its quality and computational
+# speed. We demonstrate these properties through resampling a logarithmic
+# sine sweep, which is a sine wave that increases exponentially in
+# frequency over time.
+#
+# The spectrograms below show the frequency representation of the signal,
+# where the x-axis labels correspond to the frequency of the original
+# waveform (in log scale), the y-axis corresponds to the frequency of the
+# plotted waveform, and the color intensity refers to amplitude.
+#
 
 sample_rate = 48000
 resample_rate = 32000
