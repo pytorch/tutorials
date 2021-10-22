@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>(Prototype) Convert MobileNetV2 to NNAPI &mdash; PyTorch Tutorials 1.10.0+cu102 documentation</title>
+  <title>(Beta) Convert MobileNetV2 to NNAPI &mdash; PyTorch Tutorials 1.10.0+cu102 documentation</title>
   
 
   
@@ -387,7 +387,7 @@
       </li>
 
         
-      <li>(Prototype) Convert MobileNetV2 to NNAPI</li>
+      <li>(Beta) Convert MobileNetV2 to NNAPI</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -441,8 +441,8 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="section" id="prototype-convert-mobilenetv2-to-nnapi">
-<h1>(Prototype) Convert MobileNetV2 to NNAPI<a class="headerlink" href="#prototype-convert-mobilenetv2-to-nnapi" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="beta-convert-mobilenetv2-to-nnapi">
+<h1>(Beta) Convert MobileNetV2 to NNAPI<a class="headerlink" href="#beta-convert-mobilenetv2-to-nnapi" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial shows how to prepare a computer vision model to use
@@ -455,11 +455,8 @@ and expand our operator support over time.</p>
 </div>
 <div class="section" id="environment">
 <h2>Environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h2>
-<p>Install PyTorch and torchvision.
-This tutorial is currently incompatible with the latest trunk,
-so we recommend running
-<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--upgrade</span> <span class="pre">--pre</span> <span class="pre">--find-links</span> <span class="pre">https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html</span> <span class="pre">torch==1.8.0.dev20201106+cpu</span> <span class="pre">torchvision==0.9.0.dev20201107+cpu</span></code>
-until this incompatibility is corrected.</p>
+<p>Install PyTorch and torchvision.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">torchvision==0.10.1</span> <span class="pre">torch==1.10.0</span></code></p>
 </div>
 <div class="section" id="model-preparation">
 <h2>Model Preparation<a class="headerlink" href="#model-preparation" title="Permalink to this headline">¶</a></h2>
@@ -595,6 +592,36 @@ Omitting that argument will use one thread per big core.
 The CPU models can get improved performance (at the cost of memory usage)
 by passing <code class="docutils literal notranslate"><span class="pre">--use_caching_allocator=true</span></code>.</p>
 </div>
+<div class="section" id="running-model-on-host">
+<h2>Running model on host<a class="headerlink" href="#running-model-on-host" title="Permalink to this headline">¶</a></h2>
+<p>We can now run models on your linux machine using the reference implementation
+of NNAPI. You need to build the NNAPI library from Android source code:</p>
+<ul class="simple">
+<li>Make sure you have at least 200GB of disk space</li>
+<li>Follow <a class="reference external" href="https://source.android.com/setup/develop#installing-repo">these instructions</a> to install <code class="docutils literal notranslate"><span class="pre">repo</span></code></li>
+</ul>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">~/</span><span class="n">android</span><span class="o">-</span><span class="n">nnapi</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="o">~/</span><span class="n">android</span><span class="o">-</span><span class="n">nnapi</span>
+<span class="n">repo</span> <span class="n">init</span> <span class="o">-</span><span class="n">u</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">android</span><span class="o">.</span><span class="n">googlesource</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">platform</span><span class="o">/</span><span class="n">manifest</span> <span class="o">-</span><span class="n">b</span> <span class="n">master</span>
+<span class="n">repo</span> <span class="n">sync</span> <span class="o">--</span><span class="n">network</span><span class="o">-</span><span class="n">only</span> <span class="o">-</span><span class="n">j</span> <span class="mi">16</span>
+<span class="n">repo</span> <span class="n">sync</span> <span class="o">-</span><span class="n">l</span>
+<span class="o">.</span> <span class="n">build</span><span class="o">/</span><span class="n">envsetup</span><span class="o">.</span><span class="n">sh</span>
+<span class="n">lunch</span> <span class="n">aosp_x86_64</span><span class="o">-</span><span class="n">eng</span>
+<span class="n">mm</span> <span class="o">-</span><span class="n">j16</span> <span class="n">out</span><span class="o">/</span><span class="n">host</span><span class="o">/</span><span class="n">linux</span><span class="o">-</span><span class="n">x86</span><span class="o">/</span><span class="n">lib64</span><span class="o">/</span><span class="n">libneuralnetworks</span><span class="o">.</span><span class="n">so</span>
+</pre></div>
+</div>
+<p>With the host build of <code class="docutils literal notranslate"><span class="pre">libneuralnetworks.so</span></code> you can run Pytorch NNAPI models on
+your linux machine:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">ctypes</span><span class="o">.</span><span class="n">cdll</span><span class="o">.</span><span class="n">LoadLibrary</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;android-nnapi/out/host/linux-x86/lib64/libneuralnetworks.so&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">Path</span><span class="o">.</span><span class="n">home</span><span class="p">()</span> <span class="o">/</span> <span class="s2">&quot;mobilenetv2-nnapi/mobilenetv2-quant_full-nnapi.pt&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="o">*</span><span class="n">model</span><span class="o">.</span><span class="n">get_all_bundled_inputs</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="integration">
 <h2>Integration<a class="headerlink" href="#integration" title="Permalink to this headline">¶</a></h2>
 <p>The converted models are ordinary TorchScript models.
@@ -658,11 +685,12 @@ for an introduction to using PyTorch on Android.</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">(Prototype) Convert MobileNetV2 to NNAPI</a><ul>
+<li><a class="reference internal" href="#">(Beta) Convert MobileNetV2 to NNAPI</a><ul>
 <li><a class="reference internal" href="#introduction">Introduction</a></li>
 <li><a class="reference internal" href="#environment">Environment</a></li>
 <li><a class="reference internal" href="#model-preparation">Model Preparation</a></li>
 <li><a class="reference internal" href="#running-benchmarks">Running Benchmarks</a></li>
+<li><a class="reference internal" href="#running-model-on-host">Running model on host</a></li>
 <li><a class="reference internal" href="#integration">Integration</a></li>
 <li><a class="reference internal" href="#learn-more">Learn More</a></li>
 </ul>

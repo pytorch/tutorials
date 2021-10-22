@@ -1,4 +1,4 @@
-(Prototype) Convert MobileNetV2 to NNAPI
+(Beta) Convert MobileNetV2 to NNAPI
 ========================================
 
 Introduction
@@ -18,10 +18,8 @@ Environment
 -----------
 
 Install PyTorch and torchvision.
-This tutorial is currently incompatible with the latest trunk,
-so we recommend running
-``pip install --upgrade --pre --find-links https://download.pytorch.org/whl/nightly/cpu/torch_nightly.html torch==1.8.0.dev20201106+cpu torchvision==0.9.0.dev20201107+cpu``
-until this incompatibility is corrected.
+
+``pip install torchvision==0.10.1 torch==1.10.0``
 
 
 Model Preparation
@@ -165,6 +163,41 @@ at the cost of increased CPU usage.
 Omitting that argument will use one thread per big core.
 The CPU models can get improved performance (at the cost of memory usage)
 by passing ``--use_caching_allocator=true``.
+
+
+Running model on host
+--------------------
+
+We can now run models on your linux machine using the reference implementation
+of NNAPI. You need to build the NNAPI library from Android source code:
+
+* Make sure you have at least 200GB of disk space
+* Follow `these instructions <https://source.android.com/setup/develop#installing-repo>`_ to install ``repo`` 
+
+.. code:: shell
+
+    mkdir ~/android-nnapi && cd ~/android-nnapi
+    repo init -u https://android.googlesource.com/platform/manifest -b master
+    repo sync --network-only -j 16
+    repo sync -l
+    . build/envsetup.sh
+    lunch aosp_x86_64-eng
+    mm -j16 out/host/linux-x86/lib64/libneuralnetworks.so
+
+
+With the host build of ``libneuralnetworks.so`` you can run Pytorch NNAPI models on
+your linux machine:
+
+.. code:: python
+
+    #!/usr/bin/env python
+    import ctypes
+    import torch
+    from pathlib import Path
+
+    ctypes.cdll.LoadLibrary(Path.home() / "android-nnapi/out/host/linux-x86/lib64/libneuralnetworks.so")
+    model = torch.jit.load(Path.home() / "mobilenetv2-nnapi/mobilenetv2-quant_full-nnapi.pt")
+    print(model(*model.get_all_bundled_inputs()[0]))
 
 
 Integration
