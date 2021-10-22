@@ -124,10 +124,24 @@ Welcome to PyTorch Tutorials
 .. Audio
 
 .. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
+   :header: Audio IO
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
+   :link: beginner/audio_io.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Resampling
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/resampling.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Data Augmentation
+   :card_description: Learn to apply data augmentations using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/data_augmentation.html
    :tags: Audio
 
 .. customcarditem::
@@ -135,20 +149,6 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
    :image: _static/img/thumbnails/cropped/torchaudio-asr.png
    :link: intermediate_source/speech_recognition_pipeline_tutorial.html
-   :tags: Audio
-
-.. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load data with torchaudio.
-   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_io.html
-   :tags: Audio
-
-.. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to resample audio waveforms using torchaudio.
-   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
    :tags: Audio
 
 .. customcarditem::
@@ -635,9 +635,9 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_preprocessing_tutorial
    beginner/audio_io
    beginner/resampling
+   beginner/data_augmentation
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
