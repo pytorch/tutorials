@@ -50,10 +50,11 @@ if [[ "${CIRCLE_JOB}" == *worker_* ]]; then
   python $DIR/remove_runnable_code.py beginner_source/hyperparameter_tuning_tutorial.py beginner_source/hyperparameter_tuning_tutorial.py || true
   python $DIR/remove_runnable_code.py beginner_source/audio_preprocessing_tutorial.py  beginner_source/audio_preprocessing_tutorial.py || true
   python $DIR/remove_runnable_code.py beginner_source/audio_io.py  beginner_source/audio_io.py || true
-  python $DIR/remove_runnable_code.py beginner_source/resampling.py  beginner_source/resampling.py || true
-  python $DIR/remove_runnable_code.py beginner_source/data_augmentation.py  beginner_source/data_augmentation.py || true
-  python $DIR/remove_runnable_code.py beginner_source/feature_extractions.py  beginner_source/feature_extractions.py || true
-  python $DIR/remove_runnable_code.py beginner_source/feature_augmentation.py  beginner_source/feature_augmentation.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_resampling.py  beginner_source/audio_resampling.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_data_augmentation.py  beginner_source/audio_data_augmentation.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_feature_extractions.py  beginner_source/audio_feature_extractions.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_feature_augmentation.py  beginner_source/audio_feature_augmentation.py || true
+  python $DIR/remove_runnable_code.py beginner_source/audio_datasets.py  beginner_source/audio_datasets.py || true
   python $DIR/remove_runnable_code.py beginner_source/dcgan_faces_tutorial.py  beginner_source/dcgan_faces_tutorial.py || true
   python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
