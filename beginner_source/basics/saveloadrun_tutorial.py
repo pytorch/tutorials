@@ -58,25 +58,3 @@ model = torch.load('model.pth')
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.
 
-#######################################################################
-# Exporting Model to ONNX
-# -----------------------
-# PyTorch also has native ONNX export support. Given the dynamic nature of the
-# PyTorch execution graph, however, the export process must
-# traverse the execution graph to produce a persisted ONNX model. For this reason, a
-# test variable of the appropriate size should be passed in to the
-# export routine (in our case, we will create a dummy zero tensor of the correct size):
-
-input_image = torch.zeros((1,3,224,224))
-onnx.export(model, input_image, 'model.onnx')
-
-###########################
-# There are a lot of things you can do with ONNX model, including running inference on different platforms
-# and in different programming languages. For more details, we recommend
-# visiting `ONNX tutorial <https://github.com/onnx/tutorials>`_.
-#
-# Congratulations! You have completed the PyTorch beginner tutorial! Try
-# `revisting the first page <quickstart_tutorial.html>`_ to see the tutorial in its entirety
-# again. We hope this tutorial has helped you get started with deep learning on PyTorch.
-# Good luck!
-#
