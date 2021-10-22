@@ -152,6 +152,13 @@ Welcome to PyTorch Tutorials
    :tags: Audio
 
 .. customcarditem::
+   :header: Feature Augmentation
+   :card_description: Learn to augment features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/feature_augmentation.html
+   :tags: Audio
+
+.. customcarditem::
    :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
    :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
    :image: _static/img/thumbnails/cropped/torchaudio-asr.png
@@ -646,6 +653,7 @@ Additional Resources
    beginner/resampling
    beginner/data_augmentation
    beginner/feature_extractions
+   beginner_source/feature_augmentation
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
