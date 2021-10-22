@@ -190,9 +190,9 @@ prof.stop()
 #
 # The overview shows a high-level summary of model performance.
 #
-# The "GPU Summary" panel shows the GPU configuration and the GPU usage.
+# The "GPU Summary" panel shows the GPU configuration, GPU usage and Tensor Cores usage.
 # In this example, the GPU Utilization is low.
-# The details of these metrics are `here <https://github.com/guyang3532/kineto/blob/readme/tb_plugin/docs/gpu_utilization.md>`_.
+# The details of these metrics are `here <https://github.com/pytorch/kineto/blob/main/tb_plugin/docs/gpu_utilization.md>`_.
 #
 # The "Step Time Breakdown" shows distribution of time spent in each step over different categories of execution.
 # In this example, you can see the ``DataLoader`` overhead is significant.
@@ -236,6 +236,9 @@ prof.stop()
 #
 # .. image:: ../../_static/img/profiler_kernel_view.png
 #    :scale: 25 %
+# Tensor Cores Used:
+# Whether this kernel uses Tensor Cores.
+#
 # Mean Blocks per SM:
 # Blocks per SM = Blocks of this kernel / SM number of this GPU.
 # If this number is less than 1, it indicates the GPU multiprocessors are not fully utilized.
@@ -259,6 +262,12 @@ prof.stop()
 # The ‘w’ and ‘s’ keys zoom in centered around the mouse,
 # and the ‘a’ and ‘d’ keys move the timeline left and right.
 # You can hit these keys multiple times until you see a readable representation.
+#
+# If a backward operator's "Incoming Flow" field is with value "forward correspond to backward",
+# you can click the text to get its launching forward operator.
+#
+# .. image:: ../../_static/img/profiler_trace_view_fwd_bwd.png
+#    :scale: 25 %
 #
 # In this example, we can see the event prefixed with ``enumerate(DataLoader)`` costs a lot of time.
 # And during most of this period, the GPU is idle.
@@ -289,7 +298,7 @@ prof.stop()
 # .. image:: ../../_static/img/profiler_overview2.png
 #    :scale: 25 %
 #
-# From the above view, we can find the step time is reduced to about 58ms comparing with previous run's 121ms,
+# From the above view, we can find the step time is reduced to about 76ms comparing with previous run's 132ms,
 # and the time reduction of ``DataLoader`` mainly contributes.
 #
 # .. image:: ../../_static/img/profiler_trace_view2.png
