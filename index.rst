@@ -131,6 +131,13 @@ Welcome to PyTorch Tutorials
    :tags: Audio
 
 .. customcarditem::
+   :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
+   :image: _static/img/thumbnails/cropped/torchaudio-asr.png
+   :link: intermediate_source/speech_recognition_pipeline_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
    :header: Speech Command Recognition
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
@@ -622,6 +629,7 @@ Additional Resources
    :caption: Audio
 
    beginner/audio_preprocessing_tutorial
+   intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
 
