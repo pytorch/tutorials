@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Data Augmentation
+Audio Data Augmentation
 =================
 
 ``torchaudio`` provides a variety of ways to augment audio data.
 """
-
-# Commented out IPython magic to ensure Python compatibility.
-# %matplotlib inline
 
 # When running this tutorial in Google Colab, install the required packages
 # with the following.
@@ -174,31 +171,33 @@ def get_noise_sample(*, resample=None):
 # Applying effects and filtering
 # ------------------------------
 #
-# ``torchaudio.sox_effects`` allows for directly applying filters similar to those available in ``sox`` on Tensor objects and file-object audio sources.
+# ``torchaudio.sox_effects`` allows for directly applying filters similar to
+# those available in ``sox`` to Tensor objects and file object audio sources.
 #
 # There are two functions for this:
 #
 # -  ``torchaudio.sox_effects.apply_effects_tensor`` for applying effects
-#    on Tensor.
-# -  ``torchaudio.sox_effects.apply_effects_file`` for applying effects on
-#    other audio source.
+#    to Tensor.
+# -  ``torchaudio.sox_effects.apply_effects_file`` for applying effects to
+#    other audio sources.
 #
-# Both functions take effects in the form of ``List[List[str]]``. This
-# mostly corresponds to how ``sox`` command works, but one caveat is that
-# ``sox`` command adds some effects automatically, whereas torchaudio’s
-# implementation doesn't.
+# Both functions accept effect definitions in the form
+# ``List[List[str]]``.
+# This is mostly consistent with how ``sox`` command works, but one caveat is
+# that ``sox`` adds some effects automatically, whereas ``torchaudio``’s
+# implementation does not.
 #
 # For the list of available effects, please refer to `the sox
 # documentation <http://sox.sourceforge.net/sox.html>`__.
 #
 # **Tip** If you need to load and resample your audio data on the fly,
 # then you can use ``torchaudio.sox_effects.apply_effects_file`` with
-# ``"rate"`` effect.
+# effect ``"rate"``.
 #
-# **Note** ``apply_effects_file`` accepts file-like object or path-like
+# **Note** ``apply_effects_file`` accepts a file-like object or path-like
 # object. Similar to ``torchaudio.load``, when the audio format cannot be
-# detected from either file extension or header, you can provide
-# ``format`` argument to tell what format the audio source is.
+# inferred from either the file extension or header, you can provide
+# argument ``format`` to specify the format of the audio source.
 #
 # **Note** This process is not differentiable.
 #
@@ -227,8 +226,9 @@ print_stats(waveform1, sample_rate=sample_rate1, src="Original")
 print_stats(waveform2, sample_rate=sample_rate2, src="Effects Applied")
 
 ######################################################################
-# Note that the number of frames and number of channels are different from those of the original after the effects. Let’s listen to the audio. Doesn’t it
-# sound more dramatic?
+# Note that the number of frames and number of channels are different from
+# those of the original after the effects are applied. Let’s listen to the
+# audio. Doesn’t it sound more dramatic?
 #
 
 plot_specgram(waveform1, sample_rate1, title="Original", xlim=(0, 3.04))
@@ -238,18 +238,18 @@ play_audio(waveform2, sample_rate2)
 
 
 ######################################################################
-# Simulating room reverbration
+# Simulating room reverberation
 # ----------------------------
 #
 # `Convolution
 # reverb <https://en.wikipedia.org/wiki/Convolution_reverb>`__ is a
-# technique used to make clean audio sound like it's produced in a different
-# environment.
+# technique that's used to make clean audio sound as though it has been
+# produced in a different environment.
 #
-# Using Room Impulse Response (RIR), we can make clean speech sound like it's
-# uttered in a conference room.
+# Using Room Impulse Response (RIR), for instance, we can make clean speech
+# sound as though it has been uttered in a conference room.
 #
-# For this process, we need RIR data. The following data are from VOiCES
+# For this process, we need RIR data. The following data are from the VOiCES
 # dataset, but you can record your own — just turn on your microphone
 # and clap your hands.
 #
@@ -293,7 +293,9 @@ play_audio(augmented, sample_rate)
 # Adding background noise
 # -----------------------
 #
-# To add background noise to audio data, you can simply add a noise Tensor to the Tensor representing the audio data. A common way to adjust the intensity of noise is changing the Signal-to-Noise Ratio (SNR).
+# To add background noise to audio data, you can simply add a noise Tensor to
+# the Tensor representing the audio data. A common method to adjust the
+# intensity of noise is changing the Signal-to-Noise Ratio (SNR).
 # [`wikipedia <https://en.wikipedia.org/wiki/Signal-to-noise_ratio>`__]
 #
 # \begin{align}\mathrm{SNR} = \frac{P_\mathrm{signal}}{P_\mathrm{noise}}\end{align}
@@ -327,7 +329,7 @@ for snr_db in [20, 10, 3]:
 # Applying codec to Tensor object
 # -------------------------------
 #
-# ``torchaudio.functional.apply_codec`` can apply codecs to Tensor object.
+# ``torchaudio.functional.apply_codec`` can apply codecs to a Tensor object.
 #
 # **Note** This process is not differentiable.
 #

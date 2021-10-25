@@ -3,11 +3,8 @@
 Audio I/O
 =========
 
-torchaudio integrates ``libsox`` and provides a rich set of audio I/O.
+``torchaudio`` integrates ``libsox`` and provides a rich set of audio I/O.
 """
-
-# Commented out IPython magic to ensure Python compatibility.
-# %matplotlib inline
 
 # When running this tutorial in Google Colab, install the required packages
 # with the following.
@@ -172,7 +169,7 @@ def inspect_file(path):
 # Quering audio metadata
 # ----------------------
 #
-# ``torchaudio.info`` function fetches metadata of audio. You can provide
+# Function ``torchaudio.info`` fetches audio metadata. You can provide
 # a path-like object or file-like object.
 #
 
@@ -188,7 +185,7 @@ print(metadata)
 # -  ``bits_per_sample`` is bit depth
 # -  ``encoding`` is the sample coding format
 #
-# The values ``encoding`` can take are one of the following
+# ``encoding`` can take on one of the following values:
 #
 # -  ``"PCM_S"``: Signed integer linear PCM
 # -  ``"PCM_U"``: Unsigned integer linear PCM
@@ -215,7 +212,7 @@ print(metadata)
 # **Note**
 #
 # -  ``bits_per_sample`` can be ``0`` for formats with compression and/or
-#    variable bit rate (such as mp3).
+#    variable bit rate (such as MP3).
 # -  ``num_frames`` can be ``0`` for GSM-FR format.
 #
 
@@ -230,7 +227,7 @@ print(metadata)
 # Querying file-like object
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# ``info`` function works on file-like object as well.
+# ``info`` works on file-like objects.
 #
 
 print("Source:", SAMPLE_WAV_URL)
@@ -239,13 +236,14 @@ with requests.get(SAMPLE_WAV_URL, stream=True) as response:
 print(metadata)
 
 ######################################################################
-# **Note** When passing file-like object, ``info`` function does not read
-# all the data, instead it only reads the beginning portion of data.
-# Therefore, depending on the audio format, it cannot get the correct
-# metadata, including the format itself. The following example illustrates
-# this.
+# **Note** When passing a file-like object, ``info`` does not read
+# all of the underlying data; rather, it reads only a portion
+# of the data from the beginning.
+# Therefore, for a given audio format, it may not be able to retrieve the
+# correct metadata, including the format itself.
+# The following example illustrates this.
 #
-# -  Use ``format`` argument to tell what audio format it is.
+# -  Use argument ``format`` to specify the audio format of the input.
 # -  The returned metadata has ``num_frames = 0``
 #
 
@@ -262,7 +260,7 @@ print(metadata)
 #
 # To load audio data, you can use ``torchaudio.load``.
 #
-# This function accepts path-like object and file-like object.
+# This function accepts a path-like object or file-like object as input.
 #
 # The returned value is a tuple of waveform (``Tensor``) and sample rate
 # (``int``).
@@ -286,9 +284,10 @@ play_audio(waveform, sample_rate)
 # Loading from file-like object
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# ``torchaudio``\ ’s I/O functions now support file-like object. This
-# allows to fetch audio data and decode at the same time from the location
-# other than local file system. The following examples illustrates this.
+# ``torchaudio``\ ’s I/O functions now support file-like objects. This
+# allows for fetching and decoding audio data from locations
+# within and beyond the local file system.
+# The following examples illustrate this.
 #
 
 # Load audio data as HTTP request
@@ -313,20 +312,20 @@ plot_specgram(waveform, sample_rate, title="From S3")
 # Tips on slicing
 # ~~~~~~~~~~~~~~~
 #
-# Providing ``num_frames`` and ``frame_offset`` arguments will slice the
-# resulting Tensor object while decoding.
+# Providing ``num_frames`` and ``frame_offset`` arguments restricts
+# decoding to the corresponding segment of the input.
 #
-# The same result can be achieved using the regular Tensor slicing,
-# (i.e. ``waveform[:, frame_offset:frame_offset+num_frames]``) however,
+# The same result can be achieved using vanilla Tensor slicing,
+# (i.e. ``waveform[:, frame_offset:frame_offset+num_frames]``). However,
 # providing ``num_frames`` and ``frame_offset`` arguments is more
 # efficient.
 #
-# This is because the function will stop data acquisition and decoding
+# This is because the function will end data acquisition and decoding
 # once it finishes decoding the requested frames. This is advantageous
-# when the audio data are transfered via network as the data transfer will
+# when the audio data are transferred via network as the data transfer will
 # stop as soon as the necessary amount of data is fetched.
 #
-# The following example illustrates this;
+# The following example illustrates this.
 #
 
 # Illustration of two different decoding methods.
@@ -357,24 +356,24 @@ print("matched!")
 # Saving audio to file
 # --------------------
 #
-# To save audio data in the formats intepretable by common applications,
+# To save audio data in formats interpretable by common applications,
 # you can use ``torchaudio.save``.
 #
-# This function accepts path-like object and file-like object.
+# This function accepts a path-like object or file-like object.
 #
-# When passing file-like object, you also need to provide ``format``
-# argument so that the function knows which format it should be using. In
-# case of path-like object, the function will detemine the format based on
-# the extension. If you are saving to a file without extension, you need
-# to provide ``format`` argument.
+# When passing a file-like object, you also need to provide argument ``format``
+# so that the function knows which format it should use. In the
+# case of a path-like object, the function will infer the format from
+# the extension. If you are saving to a file without an extension, you need
+# to provide argument ``format``.
 #
-# When saving as WAV format, the default encoding for ``float32`` Tensor
-# is 32-bit floating-point PCM. You can provide ``encoding`` and
-# ``bits_per_sample`` argument to change this. For example, to save data
-# in 16 bit signed integer PCM, you can do the following.
+# When saving WAV-formatted data, the default encoding for ``float32`` Tensor
+# is 32-bit floating-point PCM. You can provide arguments ``encoding`` and
+# ``bits_per_sample`` to change this behavior. For example, to save data
+# in 16-bit signed integer PCM, you can do the following.
 #
 # **Note** Saving data in encodings with lower bit depth reduces the
-# resulting file size but loses precision.
+# resulting file size but also precision.
 #
 
 
@@ -398,7 +397,7 @@ inspect_file(path)
 
 
 ######################################################################
-# ``torchaudio.save`` can also handle other formats. To name a few;
+# ``torchaudio.save`` can also handle other formats. To name a few:
 #
 
 waveform, sample_rate = get_sample(resample=8000)
@@ -423,15 +422,15 @@ for format in formats:
 # Saving to file-like object
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# Similar to the other I/O functions, you can save audio into file-like
-# object. When saving to file-like object, ``format`` argument is
+# Similar to the other I/O functions, you can save audio to file-like
+# objects. When saving to a file-like object, argument ``format`` is
 # required.
 #
 
 
 waveform, sample_rate = get_sample()
 
-# Saving to Bytes buffer
+# Saving to bytes buffer
 buffer_ = io.BytesIO()
 torchaudio.save(buffer_, waveform, sample_rate, format="wav")
 

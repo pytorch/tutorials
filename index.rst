@@ -124,45 +124,45 @@ Welcome to PyTorch Tutorials
 .. Audio
 
 .. customcarditem::
-   :header: IO
+   :header: Audio IO
    :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_io.html
+   :link: beginner/audio_io_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Resampling
+   :header: Audio Resampling
    :card_description: Learn to resample audio waveforms using torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_resampling.html
+   :link: beginner/audio_resampling_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Data Augmentation
+   :header: Audio Data Augmentation
    :card_description: Learn to apply data augmentations using torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_data_augmentation.html
+   :link: beginner/audio_data_augmentation_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Feature Extractions
+   :header: Audio Feature Extractions
    :card_description: Learn to extract features using torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_feature_extractions.html
+   :link: beginner/audio_feature_extractions_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Feature Augmentation
+   :header: Audio Feature Augmentation
    :card_description: Learn to augment features using torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_feature_augmentation.html
+   :link: beginner/audio_feature_augmentation_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Datasets
+   :header: Audio Datasets
    :card_description: Learn to use torchaudio datasets.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_datasets.html
+   :link: beginner/audio_datasets_tutorial.html
    :tags: Audio
 
 .. customcarditem::
@@ -656,12 +656,12 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_io
-   beginner/audio_resampling
-   beginner/audio_data_augmentation
-   beginner/audio_feature_extractions
-   beginner/audio_feature_augmentation
-   beginner/audio_datasets
+   beginner/audio_io_tutorial
+   beginner/audio_resampling_tutorial
+   beginner/audio_data_augmentation_tutorial
+   beginner/audio_feature_extractions_tutorial
+   beginner/audio_feature_augmentation_tutorial
+   beginner/audio_datasets_tutorial
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio

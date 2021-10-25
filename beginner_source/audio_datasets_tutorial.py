@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Datasets
+Audio Datasets
 ========
 
 ``torchaudio`` provides easy access to common, publicly accessible
@@ -14,8 +14,6 @@ available datasets.
 
 import torch
 import torchaudio
-import torchaudio.functional as F
-import torchaudio.transforms as T
 
 print(torch.__version__)
 print(torchaudio.__version__)
@@ -82,7 +80,7 @@ def play_audio(waveform, sample_rate):
     raise ValueError("Waveform with more than 2 channels are not supported.")
 
 ######################################################################
-# Here, we take the ``YESNO`` dataset and show how to use it.
+# Here, we show how to use the ``YESNO`` dataset.
 #
 
 YESNO_DOWNLOAD_PROCESS.join()

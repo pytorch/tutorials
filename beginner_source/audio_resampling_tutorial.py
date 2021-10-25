@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Resampling
+Audio Resampling
 ==========
 
-Here, we will walk through resampling audio waveforms using `torchaudio`.
+Here, we will walk through resampling audio waveforms using ``torchaudio``.
 
 """
 
@@ -176,7 +176,7 @@ def benchmark_resample(
 # ``transforms.Resample`` or ``functional.resample``.
 # ``transforms.Resample`` precomputes and caches the kernel used for
 # resampling, while ``functional.resample`` computes it on the fly, so
-# using ``transforms.Resample`` will result in a speedup if resampling
+# using ``transforms.Resample`` will result in a speedup when resampling
 # multiple waveforms using the same parameters (see Benchmarking section).
 #
 # Both resampling methods use `bandlimited sinc
@@ -197,9 +197,9 @@ def benchmark_resample(
 # frequency over time.
 #
 # The spectrograms below show the frequency representation of the signal,
-# where the x-axis labels correspond to the frequency of the original
-# waveform (in log scale), the y-axis corresponds to the frequency of the
-# plotted waveform, and the color intensity refers to amplitude.
+# where the x-axis corresponds to the frequency of the original
+# waveform (in log scale), y-axis the frequency of the
+# plotted waveform, and color intensity the amplitude.
 #
 
 sample_rate = 48000
@@ -270,7 +270,7 @@ plot_sweep(resampled_waveform, resample_rate, title="rolloff=0.8")
 # Window function
 # ~~~~~~~~~~~~~~~
 #
-# By default, torchaudio’s resample uses the Hann window filter, which is
+# By default, ``torchaudio``’s resample uses the Hann window filter, which is
 # a weighted cosine function. It additionally supports the Kaiser window,
 # which is a near optimal window function that contains an additional
 # ``beta`` parameter that allows for the design of the smoothness of the
@@ -293,7 +293,7 @@ plot_sweep(resampled_waveform, resample_rate, title="Kaiser Window Default")
 # Comparison against librosa
 # --------------------------
 #
-# torchaudio’s resample function can be used to produce results similar to
+# ``torchaudio``’s resample function can be used to produce results similar to
 # that of librosa (resampy)’s kaiser window resampling, with some noise
 #
 

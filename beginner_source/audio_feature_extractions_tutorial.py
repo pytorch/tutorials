@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Feature Extractions
+Audio Feature Extractions
 ===================
 
 ``torchaudio`` implements feature extractions commonly used in the audio
@@ -18,7 +18,7 @@ using TorchScript.
 For the complete list of available features, please refer to the
 documentation. In this tutorial, we will look into converting between the
 time domain and frequency domain (``Spectrogram``, ``GriffinLim``,
-``MelSpectrogram``) and an augmentation technique called SpecAugment.
+``MelSpectrogram``).
 """
 
 # When running this tutorial in Google Colab, install the required packages
@@ -232,7 +232,7 @@ plot_spectrogram(spec[0], title='torchaudio')
 # GriffinLim
 # ----------
 #
-# To recover a waveform from spectrogram, you can use ``GriffinLim``.
+# To recover a waveform from a spectrogram, you can use ``GriffinLim``.
 #
 
 
@@ -266,7 +266,7 @@ play_audio(waveform, sample_rate)
 # ---------------
 #
 # ``torchaudio.functional.create_fb_matrix`` generates the filter bank
-# for converting frequency bins to Mel-scale bins.
+# for converting frequency bins to mel-scale bins.
 #
 # Since this function does not require input audio/features, there is no
 # equivalent transform in ``torchaudio.transforms``.
@@ -315,9 +315,9 @@ print('Mean Square Difference: ', mse)
 # MelSpectrogram
 # --------------
 #
-# Mel-scale spectrogram is a combination of Spectrogram and mel scale
-# conversion. In ``torchaudio``, there is a transform ``MelSpectrogram``
-# which is composed of ``Spectrogram`` and ``MelScale``.
+# Generating a mel-scale spectrogram involves generating a spectrogram
+# and performing mel-scale conversion. In ``torchaudio``, ``MelSpectrogram`` provides
+# this functionality.
 #
 
 
@@ -350,7 +350,7 @@ plot_spectrogram(
 # Comparison against librosa
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# For reference, here is the equivalent means of generating Mel-scale
+# For reference, here is the equivalent means of generating mel-scale
 # spectrograms with ``librosa``.
 #
 
@@ -439,7 +439,7 @@ play_audio(waveform, sample_rate)
 # ------------------
 #
 # Kaldi Pitch feature [1] is a pitch detection mechanism tuned for automatic
-# speech recognition (ASR) applications. This is a beta feature in torchaudio,
+# speech recognition (ASR) applications. This is a beta feature in ``torchaudio``,
 # and it is available only in ``functional``.
 #
 # 1. A pitch extraction algorithm tuned for automatic speech recognition
