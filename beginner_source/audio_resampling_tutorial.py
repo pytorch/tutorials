@@ -38,7 +38,7 @@ import time
 
 import librosa
 import matplotlib.pyplot as plt
-from IPython.display import Audio
+from IPython.display import Audio, display
 import pandas as pd
 
 

@@ -263,7 +263,10 @@ plot_waveform(rir_raw, sample_rate, title="Room Impulse Response (raw)", ylim=No
 plot_specgram(rir_raw, sample_rate, title="Room Impulse Response (raw)")
 play_audio(rir_raw, sample_rate)
 
-"""First, we need to clean up the RIR. We extract the main impulse, normalize the signal power, then flip along the time axis."""
+######################################################################
+# First, we need to clean up the RIR. We extract the main impulse, normalize
+# the signal power, then flip along the time axis.
+#
 
 rir = rir_raw[:, int(sample_rate*1.01):int(sample_rate*1.3)]
 rir = rir / torch.norm(rir, p=2)
@@ -272,7 +275,9 @@ rir = torch.flip(rir, [1])
 print_stats(rir)
 plot_waveform(rir, sample_rate, title="Room Impulse Response", ylim=None)
 
-"""Then, we convolve the speech signal with the RIR filter."""
+######################################################################
+# Then, we convolve the speech signal with the RIR filter.
+#
 
 speech, _ = get_speech_sample(resample=sample_rate)
 
