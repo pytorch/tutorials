@@ -38,7 +38,7 @@ import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
 import matplotlib.pyplot as plt
-from IPython.display import Audio
+from IPython.display import Audio, display
 
 
 _SAMPLE_DIR = "_sample_data"

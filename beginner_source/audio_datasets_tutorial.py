@@ -35,7 +35,7 @@ import multiprocessing
 import os
 
 import matplotlib.pyplot as plt
-from IPython.display import Audio
+from IPython.display import Audio, display
 
 
 _SAMPLE_DIR = "_sample_data"
