@@ -19,7 +19,7 @@ Environment
 
 Install PyTorch and torchvision.
 
-``pip install torchvision==0.10.1 torch==1.10.0``
+``pip install torch==1.10.0 torchvision==0.11.1``
 
 
 Model Preparation
@@ -135,8 +135,8 @@ Please create that directory first.
             nnapi_model, [(torch.utils.bundled_inputs.bundle_large_tensor(input_tensor),)])
 
         # Save both models.
-        model.save(output_dir_path / ("mobilenetv2-quant_{}-cpu.pt".format(quantize_mode)))
-        nnapi_model.save(output_dir_path / ("mobilenetv2-quant_{}-nnapi.pt".format(quantize_mode)))
+        model._save_for_lite_interpreter(str(output_dir_path / ("mobilenetv2-quant_{}-cpu.pt".format(quantize_mode))))
+        nnapi_model._save_for_lite_interpreter(str(output_dir_path / ("mobilenetv2-quant_{}-nnapi.pt".format(quantize_mode))))
 
 
     if __name__ == "__main__":
