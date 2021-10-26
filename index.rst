@@ -151,6 +151,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/text_to_speech_with_torchaudio.html
    :tags: Audio
 
+.. customcarditem::
+   :header: Forced Alignment with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's Wav2Vec2 pretrained models for aligning text to speech
+   :image: _static/img/thumbnails/cropped/torchaudio-alignment.png
+   :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
+   :tags: Audio
+
 .. Text
 
 .. customcarditem::
@@ -625,6 +632,7 @@ Additional Resources
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
+   intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
