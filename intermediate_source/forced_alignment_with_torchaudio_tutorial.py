@@ -41,7 +41,6 @@ Recognition <https://arxiv.org/abs/2007.09127>`__.
 # %matplotlib inline
 
 import os
-from copy import copy
 from dataclasses import dataclass
 
 import requests
