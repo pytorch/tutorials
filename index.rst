@@ -124,10 +124,45 @@ Welcome to PyTorch Tutorials
 .. Audio
 
 .. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
+   :header: Audio IO
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
+   :link: beginner/audio_io_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Resampling
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_resampling_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Data Augmentation
+   :card_description: Learn to apply data augmentations using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_data_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Extractions
+   :card_description: Learn to extract features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_extractions_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Augmentation
+   :card_description: Learn to augment features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Datasets
+   :card_description: Learn to use torchaudio datasets.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_datasets_tutorial.html
    :tags: Audio
 
 .. customcarditem::
@@ -621,7 +656,12 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_preprocessing_tutorial
+   beginner/audio_io_tutorial
+   beginner/audio_resampling_tutorial
+   beginner/audio_data_augmentation_tutorial
+   beginner/audio_feature_extractions_tutorial
+   beginner/audio_feature_augmentation_tutorial
+   beginner/audio_datasets_tutorial
    intermediate/speech_recognition_pipeline_tutorial
    intermediate/speech_command_recognition_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
