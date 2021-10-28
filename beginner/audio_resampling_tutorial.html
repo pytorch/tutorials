@@ -1,0 +1,1190 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Audio Resampling — PyTorch Tutorials 1.10.0+cu102 documentation</title>
+<link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="audio_data_augmentation_tutorial.html" rel="next" title="Audio Data Augmentation"/>
+<link href="audio_io_tutorial.html" rel="prev" title="Audio I/O"/>
+<!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+<!-- End Google Analytics -->
+<script src="../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+<span class="dropdown-title">torchaudio</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+<span class="dropdown-title">torchtext</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+<span class="dropdown-title">torchvision</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/elastic/">
+<span class="dropdown-title">TorchElastic</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+<span class="dropdown-title">TorchServe</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+<span class="dropdown-title">PyTorch on XLA Devices</span>
+<p></p>
+</a>
+</div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Resources
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/features">
+<span class="dropdown-title">About</span>
+<p>Learn about PyTorch’s features and capabilities</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/hub">
+<span class="dropdown-title">Models (Beta)</span>
+<p>Discover, publish, and reuse pre-trained models</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.10.0+cu102
+                </div>
+<div role="search">
+<form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Audio</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_command_recognition_with_torchaudio_tutorial.html">Speech Command Recognition with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with torchaudio</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translation_transformer.html">Language Translation with nn.Transformer and torchtext</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Audio Resampling</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../_sources/beginner/audio_resampling_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">beginner/audio_resampling_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-audio-resampling-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="audio-resampling">
+<span id="sphx-glr-beginner-audio-resampling-tutorial-py"></span><h1>Audio Resampling<a class="headerlink" href="#audio-resampling" title="Permalink to this headline">¶</a></h1>
+<p>Here, we will walk through resampling audio waveforms using <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># When running this tutorial in Google Colab, install the required packages</span>
+<span class="c1"># with the following.</span>
+<span class="c1"># !pip install torchaudio librosa</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchaudio</span>
+<span class="kn">import</span> <span class="nn">torchaudio.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torchaudio.transforms</span> <span class="k">as</span> <span class="nn">T</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torchaudio</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.10.0+cu102
+0.10.0+cu102
+</pre></div>
+</div>
+<div class="section" id="preparing-data-and-utility-functions-skip-this-section">
+<h2>Preparing data and utility functions (skip this section)<a class="headerlink" href="#preparing-data-and-utility-functions-skip-this-section" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Prepare data and utility functions. {display-mode: "form"}</span>
+<span class="c1">#@markdown</span>
+<span class="c1">#@markdown You do not need to look into this cell.</span>
+<span class="c1">#@markdown Just execute once and you are good to go.</span>
+
+<span class="c1">#-------------------------------------------------------------------------------</span>
+<span class="c1"># Preparation of data and helper functions.</span>
+<span class="c1">#-------------------------------------------------------------------------------</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">librosa</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Audio</span><span class="p">,</span> <span class="n">display</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<span class="n">DEFAULT_OFFSET</span> <span class="o">=</span> <span class="mi">201</span>
+<span class="n">SWEEP_MAX_SAMPLE_RATE</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">DEFAULT_LOWPASS_FILTER_WIDTH</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">DEFAULT_ROLLOFF</span> <span class="o">=</span> <span class="mf">0.99</span>
+<span class="n">DEFAULT_RESAMPLING_METHOD</span> <span class="o">=</span> <span class="s1">'sinc_interpolation'</span>
+
+
+<span class="k">def</span> <span class="nf">_get_log_freq</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">max_sweep_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+  <span class="sd">"""Get freqs evenly spaced out in log-scale, between [0, max_sweep_rate // 2]</span>
+
+<span class="sd">  offset is used to avoid negative infinity `log(offset + x)`.</span>
+
+<span class="sd">  """</span>
+  <span class="n">half</span> <span class="o">=</span> <span class="n">sample_rate</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="n">start</span><span class="p">,</span> <span class="n">stop</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">offset</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="n">max_sweep_rate</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">))</span> <span class="o">-</span> <span class="n">offset</span>
+
+<span class="k">def</span> <span class="nf">_get_inverse_log_freq</span><span class="p">(</span><span class="n">freq</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+  <span class="sd">"""Find the time where the given frequency is given by _get_log_freq"""</span>
+  <span class="n">half</span> <span class="o">=</span> <span class="n">sample_rate</span> <span class="o">//</span> <span class="mi">2</span>
+  <span class="k">return</span> <span class="n">sample_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">freq</span> <span class="o">/</span> <span class="n">offset</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">half</span> <span class="o">/</span> <span class="n">offset</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">_get_freq_ticks</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">f_max</span><span class="p">):</span>
+  <span class="c1"># Given the original sample rate used for generating the sweep,</span>
+  <span class="c1"># find the x-axis value where the log-scale major frequency values fall in</span>
+  <span class="n">time</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+  <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+      <span class="n">f</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">exp</span>
+      <span class="k">if</span> <span class="n">f</span> <span class="o">&lt;</span> <span class="n">sample_rate</span> <span class="o">//</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">_get_inverse_log_freq</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span> <span class="o">/</span> <span class="n">sample_rate</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">freq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+  <span class="n">t_max</span> <span class="o">=</span> <span class="n">_get_inverse_log_freq</span><span class="p">(</span><span class="n">f_max</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span> <span class="o">/</span> <span class="n">sample_rate</span>
+  <span class="n">time</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_max</span><span class="p">)</span>
+  <span class="n">freq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_max</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">time</span><span class="p">,</span> <span class="n">freq</span>
+
+<span class="k">def</span> <span class="nf">get_sine_sweep</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">DEFAULT_OFFSET</span><span class="p">):</span>
+  <span class="n">max_sweep_rate</span> <span class="o">=</span> <span class="n">sample_rate</span>
+  <span class="n">freq</span> <span class="o">=</span> <span class="n">_get_log_freq</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">max_sweep_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+  <span class="n">delta</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">freq</span> <span class="o">/</span> <span class="n">sample_rate</span>
+  <span class="n">cummulative</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="n">signal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">cummulative</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">signal</span>
+
+<span class="k">def</span> <span class="nf">plot_sweep</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">max_sweep_rate</span><span class="o">=</span><span class="n">SWEEP_MAX_SAMPLE_RATE</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">DEFAULT_OFFSET</span><span class="p">):</span>
+  <span class="n">x_ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="n">max_sweep_rate</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+  <span class="n">y_ticks</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="n">sample_rate</span><span class="o">//</span><span class="mi">2</span><span class="p">]</span>
+
+  <span class="n">time</span><span class="p">,</span> <span class="n">freq</span> <span class="o">=</span> <span class="n">_get_freq_ticks</span><span class="p">(</span><span class="n">max_sweep_rate</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">sample_rate</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+  <span class="n">freq_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">if</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">x_ticks</span> <span class="ow">and</span> <span class="n">f</span> <span class="o">&lt;=</span> <span class="n">max_sweep_rate</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freq</span><span class="p">]</span>
+  <span class="n">freq_y</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">freq</span> <span class="k">if</span> <span class="n">f</span> <span class="o">&gt;=</span> <span class="mi">1000</span> <span class="ow">and</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">y_ticks</span> <span class="ow">and</span> <span class="n">f</span> <span class="o">&lt;=</span> <span class="n">sample_rate</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+
+  <span class="n">figure</span><span class="p">,</span> <span class="n">axis</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">axis</span><span class="o">.</span><span class="n">specgram</span><span class="p">(</span><span class="n">waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">Fs</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">freq_x</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">freq_y</span><span class="p">,</span> <span class="n">freq_y</span><span class="p">)</span>
+  <span class="n">axis</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'Original Signal Frequency (Hz, log scale)'</span><span class="p">)</span>
+  <span class="n">axis</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'Waveform Frequency (Hz)'</span><span class="p">)</span>
+  <span class="n">axis</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+  <span class="n">axis</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.67</span><span class="p">)</span>
+  <span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1"> (sample rate: </span><span class="si">{</span><span class="n">sample_rate</span><span class="si">}</span><span class="s1"> Hz)'</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">play_audio</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">):</span>
+  <span class="n">waveform</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+  <span class="n">num_channels</span><span class="p">,</span> <span class="n">num_frames</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">shape</span>
+  <span class="k">if</span> <span class="n">num_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Audio</span><span class="p">(</span><span class="n">waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">))</span>
+  <span class="k">elif</span> <span class="n">num_channels</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Audio</span><span class="p">((</span><span class="n">waveform</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">waveform</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">rate</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">))</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Waveform with more than 2 channels are not supported."</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">plot_specgram</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Spectrogram"</span><span class="p">,</span> <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+  <span class="n">waveform</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+  <span class="n">num_channels</span><span class="p">,</span> <span class="n">num_frames</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">shape</span>
+  <span class="n">time_axis</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_frames</span><span class="p">)</span> <span class="o">/</span> <span class="n">sample_rate</span>
+
+  <span class="n">figure</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">num_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">num_channels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="n">axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">axes</span><span class="p">]</span>
+  <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_channels</span><span class="p">):</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">specgram</span><span class="p">(</span><span class="n">waveform</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">Fs</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">num_channels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+      <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Channel </span><span class="si">{</span><span class="n">c</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xlim</span><span class="p">:</span>
+      <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+  <span class="n">figure</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">benchmark_resample</span><span class="p">(</span>
+    <span class="n">method</span><span class="p">,</span>
+    <span class="n">waveform</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">,</span>
+    <span class="n">resample_rate</span><span class="p">,</span>
+    <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="n">DEFAULT_LOWPASS_FILTER_WIDTH</span><span class="p">,</span>
+    <span class="n">rolloff</span><span class="o">=</span><span class="n">DEFAULT_ROLLOFF</span><span class="p">,</span>
+    <span class="n">resampling_method</span><span class="o">=</span><span class="n">DEFAULT_RESAMPLING_METHOD</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">librosa_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">iters</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">):</span>
+  <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"functional"</span><span class="p">:</span>
+    <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+      <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="n">lowpass_filter_width</span><span class="p">,</span>
+                 <span class="n">rolloff</span><span class="o">=</span><span class="n">rolloff</span><span class="p">,</span> <span class="n">resampling_method</span><span class="o">=</span><span class="n">resampling_method</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>
+    <span class="k">return</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="n">iters</span>
+  <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"transforms"</span><span class="p">:</span>
+    <span class="n">resampler</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Resample</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="n">lowpass_filter_width</span><span class="p">,</span>
+                           <span class="n">rolloff</span><span class="o">=</span><span class="n">rolloff</span><span class="p">,</span> <span class="n">resampling_method</span><span class="o">=</span><span class="n">resampling_method</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">waveform</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+      <span class="n">resampler</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>
+    <span class="k">return</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="n">iters</span>
+  <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">"librosa"</span><span class="p">:</span>
+    <span class="n">waveform_np</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+      <span class="n">librosa</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform_np</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">res_type</span><span class="o">=</span><span class="n">librosa_type</span><span class="p">)</span>
+    <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">begin</span>
+    <span class="k">return</span> <span class="n">elapsed</span> <span class="o">/</span> <span class="n">iters</span>
+</pre></div>
+</div>
+<p>To resample an audio waveform from one freqeuncy to another, you can use
+<code class="docutils literal notranslate"><span class="pre">transforms.Resample</span></code> or <code class="docutils literal notranslate"><span class="pre">functional.resample</span></code>.
+<code class="docutils literal notranslate"><span class="pre">transforms.Resample</span></code> precomputes and caches the kernel used for
+resampling, while <code class="docutils literal notranslate"><span class="pre">functional.resample</span></code> computes it on the fly, so
+using <code class="docutils literal notranslate"><span class="pre">transforms.Resample</span></code> will result in a speedup when resampling
+multiple waveforms using the same parameters (see Benchmarking section).</p>
+<p>Both resampling methods use <a class="reference external" href="https://ccrma.stanford.edu/~jos/resample/">bandlimited sinc
+interpolation</a> to compute
+signal values at arbitrary time steps. The implementation involves
+convolution, so we can take advantage of GPU / multithreading for
+performance improvements. When using resampling in multiple
+subprocesses, such as data loading with multiple worker processes, your
+application might create more threads than your system can handle
+efficiently. Setting <code class="docutils literal notranslate"><span class="pre">torch.set_num_threads(1)</span></code> might help in this
+case.</p>
+<p>Because a finite number of samples can only represent a finite number of
+frequencies, resampling does not produce perfect results, and a variety
+of parameters can be used to control for its quality and computational
+speed. We demonstrate these properties through resampling a logarithmic
+sine sweep, which is a sine wave that increases exponentially in
+frequency over time.</p>
+<p>The spectrograms below show the frequency representation of the signal,
+where the x-axis corresponds to the frequency of the original
+waveform (in log scale), y-axis the frequency of the
+plotted waveform, and color intensity the amplitude.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">resample_rate</span> <span class="o">=</span> <span class="mi">32000</span>
+
+<span class="n">waveform</span> <span class="o">=</span> <span class="n">get_sine_sweep</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Original Waveform"</span><span class="p">)</span>
+<span class="n">play_audio</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">)</span>
+
+<span class="n">resampler</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Resample</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">waveform</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">resampler</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Resampled Waveform"</span><span class="p">)</span>
+<span class="n">play_audio</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_001.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_001.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_002.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_002.png"/>
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;IPython.lib.display.Audio object&gt;
+&lt;IPython.lib.display.Audio object&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="controling-resampling-quality-with-parameters">
+<h2>Controling resampling quality with parameters<a class="headerlink" href="#controling-resampling-quality-with-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="lowpass-filter-width">
+<h3>Lowpass filter width<a class="headerlink" href="#lowpass-filter-width" title="Permalink to this headline">¶</a></h3>
+<p>Because the filter used for interpolation extends infinitely, the
+<code class="docutils literal notranslate"><span class="pre">lowpass_filter_width</span></code> parameter is used to control for the width of
+the filter to use to window the interpolation. It is also referred to as
+the number of zero crossings, since the interpolation passes through
+zero at every time unit. Using a larger <code class="docutils literal notranslate"><span class="pre">lowpass_filter_width</span></code>
+provides a sharper, more precise filter, but is more computationally
+expensive.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">resample_rate</span> <span class="o">=</span> <span class="mi">32000</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"lowpass_filter_width=6"</span><span class="p">)</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"lowpass_filter_width=128"</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_003.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_003.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_004.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_004.png"/>
+</li>
+</ul>
+</div>
+<div class="section" id="rolloff">
+<h3>Rolloff<a class="headerlink" href="#rolloff" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">rolloff</span></code> parameter is represented as a fraction of the Nyquist
+frequency, which is the maximal frequency representable by a given
+finite sample rate. <code class="docutils literal notranslate"><span class="pre">rolloff</span></code> determines the lowpass filter cutoff and
+controls the degree of aliasing, which takes place when frequencies
+higher than the Nyquist are mapped to lower frequencies. A lower rolloff
+will therefore reduce the amount of aliasing, but it will also reduce
+some of the higher frequencies.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">resample_rate</span> <span class="o">=</span> <span class="mi">32000</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.99</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"rolloff=0.99"</span><span class="p">)</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"rolloff=0.8"</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_005.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_005.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_006.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_006.png"/>
+</li>
+</ul>
+</div>
+<div class="section" id="window-function">
+<h3>Window function<a class="headerlink" href="#window-function" title="Permalink to this headline">¶</a></h3>
+<p>By default, <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>’s resample uses the Hann window filter, which is
+a weighted cosine function. It additionally supports the Kaiser window,
+which is a near optimal window function that contains an additional
+<code class="docutils literal notranslate"><span class="pre">beta</span></code> parameter that allows for the design of the smoothness of the
+filter and width of impulse. This can be controlled using the
+<code class="docutils literal notranslate"><span class="pre">resampling_method</span></code> parameter.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">resample_rate</span> <span class="o">=</span> <span class="mi">32000</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"sinc_interpolation"</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Hann Window Default"</span><span class="p">)</span>
+
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Kaiser Window Default"</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_007.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_007.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_008.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_008.png"/>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="comparison-against-librosa">
+<h2>Comparison against librosa<a class="headerlink" href="#comparison-against-librosa" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>’s resample function can be used to produce results similar to
+that of librosa (resampy)’s kaiser window resampling, with some noise</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sample_rate</span> <span class="o">=</span> <span class="mi">48000</span>
+<span class="n">resample_rate</span> <span class="o">=</span> <span class="mi">32000</span>
+
+<span class="c1">### kaiser_best</span>
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span>
+    <span class="n">waveform</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">,</span>
+    <span class="n">resample_rate</span><span class="p">,</span>
+    <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.9475937167399596</span><span class="p">,</span>
+    <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">14.769656459379492</span>
+<span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Kaiser Window Best (torchaudio)"</span><span class="p">)</span>
+
+<span class="n">librosa_resampled_waveform</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span>
+    <span class="n">librosa</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">res_type</span><span class="o">=</span><span class="s1">'kaiser_best'</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">librosa_resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Kaiser Window Best (librosa)"</span><span class="p">)</span>
+
+<span class="n">mse</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">resampled_waveform</span> <span class="o">-</span> <span class="n">librosa_resampled_waveform</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"torchaudio and librosa kaiser best MSE:"</span><span class="p">,</span> <span class="n">mse</span><span class="p">)</span>
+
+<span class="c1">### kaiser_fast</span>
+<span class="n">resampled_waveform</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span>
+    <span class="n">waveform</span><span class="p">,</span>
+    <span class="n">sample_rate</span><span class="p">,</span>
+    <span class="n">resample_rate</span><span class="p">,</span>
+    <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+    <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+    <span class="n">beta</span><span class="o">=</span><span class="mf">8.555504641634386</span>
+<span class="p">)</span>
+<span class="n">plot_specgram</span><span class="p">(</span><span class="n">resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Kaiser Window Fast (torchaudio)"</span><span class="p">)</span>
+
+<span class="n">librosa_resampled_waveform</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span>
+    <span class="n">librosa</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">waveform</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">res_type</span><span class="o">=</span><span class="s1">'kaiser_fast'</span><span class="p">))</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plot_sweep</span><span class="p">(</span><span class="n">librosa_resampled_waveform</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Kaiser Window Fast (librosa)"</span><span class="p">)</span>
+
+<span class="n">mse</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">resampled_waveform</span> <span class="o">-</span> <span class="n">librosa_resampled_waveform</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"torchaudio and librosa kaiser fast MSE:"</span><span class="p">,</span> <span class="n">mse</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="sphx-glr-horizontal">
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_009.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_009.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_010.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_010.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_011.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_011.png"/>
+</li>
+<li><img alt="../_images/sphx_glr_audio_resampling_tutorial_012.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_resampling_tutorial_012.png"/>
+</li>
+</ul>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>torchaudio and librosa kaiser best MSE: 2.080690115365992e-06
+torchaudio and librosa kaiser fast MSE: 2.5200744248601027e-05
+</pre></div>
+</div>
+</div>
+<div class="section" id="performance-benchmarking">
+<h2>Performance Benchmarking<a class="headerlink" href="#performance-benchmarking" title="Permalink to this headline">¶</a></h2>
+<p>Below are benchmarks for downsampling and upsampling waveforms between
+two pairs of sampling rates. We demonstrate the performance implications
+that the <code class="docutils literal notranslate"><span class="pre">lowpass_filter_wdith</span></code>, window type, and sample rates can
+have. Additionally, we provide a comparison against <code class="docutils literal notranslate"><span class="pre">librosa</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">kaiser_best</span></code> and <code class="docutils literal notranslate"><span class="pre">kaiser_fast</span></code> using their corresponding parameters
+in <code class="docutils literal notranslate"><span class="pre">torchaudio</span></code>.</p>
+<p>To elaborate on the results:</p>
+<ul class="simple">
+<li>a larger <code class="docutils literal notranslate"><span class="pre">lowpass_filter_width</span></code> results in a larger resampling kernel,
+and therefore increases computation time for both the kernel computation
+and convolution</li>
+<li>using <code class="docutils literal notranslate"><span class="pre">kaiser_window</span></code> results in longer computation times than the default
+<code class="docutils literal notranslate"><span class="pre">sinc_interpolation</span></code> because it is more complex to compute the intermediate
+window values - a large GCD between the sample and resample rate will result
+in a simplification that allows for a smaller kernel and faster kernel computation.</li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">configs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"downsample (48 -&gt; 44.1 kHz)"</span><span class="p">:</span> <span class="p">[</span><span class="mi">48000</span><span class="p">,</span> <span class="mi">44100</span><span class="p">],</span>
+    <span class="s2">"downsample (16 -&gt; 8 kHz)"</span><span class="p">:</span> <span class="p">[</span><span class="mi">16000</span><span class="p">,</span> <span class="mi">8000</span><span class="p">],</span>
+    <span class="s2">"upsample (44.1 -&gt; 48 kHz)"</span><span class="p">:</span> <span class="p">[</span><span class="mi">44100</span><span class="p">,</span> <span class="mi">48000</span><span class="p">],</span>
+    <span class="s2">"upsample (8 -&gt; 16 kHz)"</span><span class="p">:</span> <span class="p">[</span><span class="mi">8000</span><span class="p">,</span> <span class="mi">16000</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">configs</span><span class="p">:</span>
+  <span class="n">times</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+  <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">configs</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+  <span class="n">resample_rate</span> <span class="o">=</span> <span class="n">configs</span><span class="p">[</span><span class="n">label</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+  <span class="n">waveform</span> <span class="o">=</span> <span class="n">get_sine_sweep</span><span class="p">(</span><span class="n">sample_rate</span><span class="p">)</span>
+
+  <span class="c1"># sinc 64 zero-crossings</span>
+  <span class="n">f_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"functional"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+  <span class="n">t_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"transforms"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+  <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">f_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">t_time</span><span class="p">])</span>
+  <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sinc (width 64)"</span><span class="p">)</span>
+
+  <span class="c1"># sinc 6 zero-crossings</span>
+  <span class="n">f_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"functional"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+  <span class="n">t_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"transforms"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+  <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="kc">None</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">f_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">t_time</span><span class="p">])</span>
+  <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sinc (width 16)"</span><span class="p">)</span>
+
+  <span class="c1"># kaiser best</span>
+  <span class="n">lib_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"librosa"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">librosa_type</span><span class="o">=</span><span class="s2">"kaiser_best"</span><span class="p">)</span>
+  <span class="n">f_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span>
+      <span class="s2">"functional"</span><span class="p">,</span>
+      <span class="n">waveform</span><span class="p">,</span>
+      <span class="n">sample_rate</span><span class="p">,</span>
+      <span class="n">resample_rate</span><span class="p">,</span>
+      <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+      <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.9475937167399596</span><span class="p">,</span>
+      <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+      <span class="n">beta</span><span class="o">=</span><span class="mf">14.769656459379492</span><span class="p">)</span>
+  <span class="n">t_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span>
+      <span class="s2">"transforms"</span><span class="p">,</span>
+      <span class="n">waveform</span><span class="p">,</span>
+      <span class="n">sample_rate</span><span class="p">,</span>
+      <span class="n">resample_rate</span><span class="p">,</span>
+      <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+      <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.9475937167399596</span><span class="p">,</span>
+      <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+      <span class="n">beta</span><span class="o">=</span><span class="mf">14.769656459379492</span><span class="p">)</span>
+  <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">lib_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">f_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">t_time</span><span class="p">])</span>
+  <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kaiser_best"</span><span class="p">)</span>
+
+  <span class="c1"># kaiser fast</span>
+  <span class="n">lib_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span><span class="s2">"librosa"</span><span class="p">,</span> <span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span><span class="p">,</span> <span class="n">resample_rate</span><span class="p">,</span> <span class="n">librosa_type</span><span class="o">=</span><span class="s2">"kaiser_fast"</span><span class="p">)</span>
+  <span class="n">f_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span>
+      <span class="s2">"functional"</span><span class="p">,</span>
+      <span class="n">waveform</span><span class="p">,</span>
+      <span class="n">sample_rate</span><span class="p">,</span>
+      <span class="n">resample_rate</span><span class="p">,</span>
+      <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+      <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+      <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+      <span class="n">beta</span><span class="o">=</span><span class="mf">8.555504641634386</span><span class="p">)</span>
+  <span class="n">t_time</span> <span class="o">=</span> <span class="n">benchmark_resample</span><span class="p">(</span>
+      <span class="s2">"transforms"</span><span class="p">,</span>
+      <span class="n">waveform</span><span class="p">,</span>
+      <span class="n">sample_rate</span><span class="p">,</span>
+      <span class="n">resample_rate</span><span class="p">,</span>
+      <span class="n">lowpass_filter_width</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+      <span class="n">rolloff</span><span class="o">=</span><span class="mf">0.85</span><span class="p">,</span>
+      <span class="n">resampling_method</span><span class="o">=</span><span class="s2">"kaiser_window"</span><span class="p">,</span>
+      <span class="n">beta</span><span class="o">=</span><span class="mf">8.555504641634386</span><span class="p">)</span>
+  <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">lib_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">f_time</span><span class="p">,</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">t_time</span><span class="p">])</span>
+  <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"kaiser_fast"</span><span class="p">)</span>
+
+  <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">times</span><span class="p">,</span>
+                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"librosa"</span><span class="p">,</span> <span class="s2">"functional"</span><span class="p">,</span> <span class="s2">"transforms"</span><span class="p">],</span>
+                    <span class="n">index</span><span class="o">=</span><span class="n">rows</span><span class="p">)</span>
+  <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_product</span><span class="p">([[</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> time (ms)"</span><span class="p">],</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">])</span>
+  <span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>downsample (48 -&gt; 44.1 kHz) time (ms)
+                                              librosa functional transforms
+sinc (width 64)                                   NaN      18.56       0.39
+sinc (width 16)                                   NaN      16.91       0.37
+kaiser_best                                     54.68      26.02       0.40
+kaiser_fast                                      9.63      24.37       0.36
+                downsample (16 -&gt; 8 kHz) time (ms)
+                                           librosa functional transforms
+sinc (width 64)                                NaN       1.42       0.48
+sinc (width 16)                                NaN       0.46       0.26
+kaiser_best                                  15.84       0.85       0.50
+kaiser_fast                                   4.28       0.55       0.26
+                upsample (44.1 -&gt; 48 kHz) time (ms)
+                                            librosa functional transforms
+sinc (width 64)                                 NaN      21.36       0.44
+sinc (width 16)                                 NaN      19.21       0.40
+kaiser_best                                   60.56      29.23       0.42
+kaiser_fast                                   10.18      27.30       0.39
+                upsample (8 -&gt; 16 kHz) time (ms)
+                                         librosa functional transforms
+sinc (width 64)                              NaN       0.93       0.45
+sinc (width 16)                              NaN       0.60       0.25
+kaiser_best                                19.84       0.90       0.40
+kaiser_fast                                 4.36       0.71       0.26
+</pre></div>
+</div>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  6.436 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-audio-resampling-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/b055a5327771589541ffaeb9d7cf147b/audio_resampling_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">audio_resampling_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../_downloads/1aef021e14ad103677849017365f101c/audio_resampling_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">audio_resampling_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="audio_data_augmentation_tutorial.html" rel="next" title="Audio Data Augmentation">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="audio_io_tutorial.html" rel="prev" title="Audio I/O"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2021, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Audio Resampling</a><ul>
+<li><a class="reference internal" href="#preparing-data-and-utility-functions-skip-this-section">Preparing data and utility functions (skip this section)</a></li>
+<li><a class="reference internal" href="#controling-resampling-quality-with-parameters">Controling resampling quality with parameters</a><ul>
+<li><a class="reference internal" href="#lowpass-filter-width">Lowpass filter width</a></li>
+<li><a class="reference internal" href="#rolloff">Rolloff</a></li>
+<li><a class="reference internal" href="#window-function">Window function</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#comparison-against-librosa">Comparison against librosa</a></li>
+<li><a class="reference internal" href="#performance-benchmarking">Performance Benchmarking</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js" type="text/javascript"></script>
+<script src="../_static/jquery.js" type="text/javascript"></script>
+<script src="../_static/underscore.js" type="text/javascript"></script>
+<script src="../_static/doctools.js" type="text/javascript"></script>
+<script src="../_static/clipboard.min.js" type="text/javascript"></script>
+<script src="../_static/copybutton.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../_static/katex_autorenderer.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; isplay: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Stay Connected</li>
+<li>
+<div id="mc_embed_signup">
+<form action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&amp;id=91d0dccd39" class="email-subscribe-form validate" id="mc-embedded-subscribe-form" method="post" name="mc-embedded-subscribe-form" novalidate="" target="_blank">
+<div class="email-subscribe-form-fields-wrapper" id="mc_embed_signup_scroll">
+<div class="mc-field-group">
+<label for="mce-EMAIL" style="display:none;">Email Address</label>
+<input class="required email" id="mce-EMAIL" name="EMAIL" placeholder="Email Address" type="email" value=""/>
+</div>
+<div class="clear" id="mce-responses">
+<div class="response" id="mce-error-response" style="display:none"></div>
+<div class="response" id="mce-success-response" style="display:none"></div>
+</div> <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+<div aria-hidden="true" style="position: absolute; left: -5000px;"><input name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" type="text" value=""/></div>
+<div class="clear">
+<input class="button email-subscribe-button" id="mc-embedded-subscribe" name="subscribe" type="submit" value=""/>
+</div>
+</div>
+</form>
+</div>
+</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">PyTorch Hub</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li class="resources-mobile-menu-title">
+            Docs
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+</li>
+<li>
+<a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+</li>
+<li>
+<a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+</li>
+<li>
+<a href="https://pytorch.org/elastic/">TorchElastic</a>
+</li>
+<li>
+<a href="https://pytorch.org/serve/">TorchServe</a>
+</li>
+<li>
+<a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+            Resources
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">About</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">Models (Beta)</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+</ul>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
