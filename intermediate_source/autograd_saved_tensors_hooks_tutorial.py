@@ -408,7 +408,9 @@ def unpack_hook(name):
 
 import uuid
 import os
-tmp_dir = os.path.join(os.getcwd(), "temp")
+import tempfile
+tmp_dir_obj = tempfile.TemporaryDirectory()
+tmp_dir = tmp_dir_obj.name
 
 def pack_hook(tensor):
     name = os.path.join(tmp_dir, str(uuid.uuid4()))
