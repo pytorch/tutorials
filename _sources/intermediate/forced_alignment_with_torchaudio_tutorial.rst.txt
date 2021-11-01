@@ -1,0 +1,719 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_intermediate_forced_alignment_with_torchaudio_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_intermediate_forced_alignment_with_torchaudio_tutorial.py:
+
+
+Forced Alignment with Wav2Vec2
+==============================
+
+**Author** `Moto Hira <moto@fb.com>`__
+
+This tutorial shows how to align transcript to speech with
+``torchaudio``, using CTC segmentation algorithm described in
+`CTC-Segmentation of Large Corpora for German End-to-end Speech
+Recognition <https://arxiv.org/abs/2007.09127>`__.
+
+
+Overview
+--------
+
+The process of alignment looks like the following.
+
+1. Estimate the frame-wise label probability from audio waveform
+2. Generate the trellis matrix which represents the probability of
+   labels aligned at time step.
+3. Find the most likely path from the trellis matrix.
+
+In this example, we use ``torchaudio``\ ’s ``Wav2Vec2`` model for
+acoustic feature extraction.
+
+
+Preparation
+-----------
+
+First, we install ``torchaudio``, import packages and fetch the speech
+file.
+
+
+
+.. code-block:: default
+
+
+    # !pip install torchaudio
+
+    # %matplotlib inline
+
+    import os
+    from dataclasses import dataclass
+
+    import requests
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    [width, height] = matplotlib.rcParams['figure.figsize']
+    if width < 10:
+      matplotlib.rcParams['figure.figsize'] = [width * 2.5, height]
+
+    import torch
+    import torchaudio
+
+    SPEECH_URL = 'https://download.pytorch.org/torchaudio/test-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.flac'
+    SPEECH_FILE = 'speech.flac'
+
+    if not os.path.exists(SPEECH_FILE):
+      with open(SPEECH_FILE, 'wb') as file:
+        with requests.get(SPEECH_URL) as resp:
+          resp.raise_for_status()
+          file.write(resp.content)
+
+    import IPython
+
+
+
+
+
+
+
+
+Generate frame-wise label probability
+-------------------------------------
+
+The first step is to generate the label class porbability of each aduio
+frame. We can use a Wav2Vec2 model that is trained for ASR.
+
+``torchaudio`` provides easy access to pretrained models with associated
+labels.
+
+**Note** In the subsequent sections, we will compute the probability in
+log-domain to avoid numerical instability. For this purpose, we
+normalize the ``emission`` with ``log_softmax``.
+
+
+
+.. code-block:: default
+
+
+    bundle = torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H
+    model = bundle.get_model()
+    labels = bundle.get_labels()
+    with torch.inference_mode():
+      waveform, _ = torchaudio.load(SPEECH_FILE)
+      emissions, _ = model(waveform)
+      emissions = torch.log_softmax(emissions, dim=-1)
+
+    emission = emissions[0].cpu().detach()
+
+
+
+
+
+
+
+Visualization
+###############################################################################
+
+
+.. code-block:: default
+
+    print(labels)
+    plt.imshow(emission.T)
+    plt.colorbar()
+    plt.title("Frame-wise class probability")
+    plt.xlabel("Time")
+    plt.ylabel("Labels")
+    plt.show()
+
+
+
+
+
+.. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('<s>', '<pad>', '</s>', '<unk>', '|', 'E', 'T', 'A', 'O', 'N', 'I', 'H', 'S', 'R', 'D', 'L', 'U', 'M', 'W', 'C', 'F', 'G', 'Y', 'P', 'B', 'V', 'K', "'", 'X', 'J', 'Q', 'Z')
+
+
+Generate alignment probability (trellis)
+----------------------------------------
+
+From the emission matrix, next we generate the trellis which represents
+the probability of transcript labels occur at each time frame.
+
+Trellis is 2D matrix with time axis and label axis. The label axis
+represents the transcript that we are aligning. In the following, we use
+:math:`t` to denote the index in time axis and :math:`j` to denote the
+index in label axis. :math:`c_j` represents the label at label index
+:math:`j`.
+
+To generate, the probability of time step :math:`t+1`, we look at the
+trellis from time step :math:`t` and emission at time step :math:`t+1`.
+There are two path to reach to time step :math:`t+1` with label
+:math:`c_{j+1}`. The first one is the case where the label was
+:math:`c_{j+1}` at :math:`t` and there was no label change from
+:math:`t` to :math:`t+1`. The other case is where the label was
+:math:`c_j` at :math:`t` and it transitioned to the next label
+:math:`c_{j+1}` at :math:`t+1`.
+
+The follwoing diagram illustrates this transition.
+
+.. image:: https://download.pytorch.org/torchaudio/tutorial-assets/ctc-forward.png
+
+Since we are looking for the most likely transitions, we take the more
+likely path for the value of :math:`k_{(t+1, j+1)}`, that is
+
+$ k_{(t+1, j+1)} = max( k_{(t, j)} p(t+1, c_{j+1}), k_{(t, j+1)} p(t+1,
+repeat) ) $
+
+where :math:`k` represents is trellis matrix, and :math:`p(t, c_j)`
+represents the probability of label :math:`c_j` at time step :math:`t`.
+:math:`repeat` represents the blank token from CTC formulation. (For the
+detail of CTC algorithm, please refer to the `Sequence Modeling with CTC
+[distill.pub] <https://distill.pub/2017/ctc/>`__)
+
+
+
+.. code-block:: default
+
+
+    transcript = 'I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT'
+    dictionary  = {c: i for i, c in enumerate(labels)}
+
+    tokens = [dictionary[c] for c in transcript]
+    print(list(zip(transcript, tokens)))
+
+    def get_trellis(emission, tokens, blank_id=0):
+      num_frame = emission.size(0)
+      num_tokens = len(tokens)
+
+      # Trellis has extra diemsions for both time axis and tokens.
+      # The extra dim for tokens represents <SoS> (start-of-sentence)
+      # The extra dim for time axis is for simplification of the code. 
+      trellis = torch.full((num_frame+1, num_tokens+1), -float('inf'))
+      trellis[:, 0] = 0
+      for t in range(num_frame):
+        trellis[t+1, 1:] = torch.maximum(
+            # Score for staying at the same token
+            trellis[t, 1:] + emission[t, blank_id],
+            # Score for changing to the next token
+            trellis[t, :-1] + emission[t, tokens],
+        )
+      return trellis
+
+    trellis = get_trellis(emission, tokens)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [('I', 10), ('|', 4), ('H', 11), ('A', 7), ('D', 14), ('|', 4), ('T', 6), ('H', 11), ('A', 7), ('T', 6), ('|', 4), ('C', 19), ('U', 16), ('R', 13), ('I', 10), ('O', 8), ('S', 12), ('I', 10), ('T', 6), ('Y', 22), ('|', 4), ('B', 24), ('E', 5), ('S', 12), ('I', 10), ('D', 14), ('E', 5), ('|', 4), ('M', 17), ('E', 5), ('|', 4), ('A', 7), ('T', 6), ('|', 4), ('T', 6), ('H', 11), ('I', 10), ('S', 12), ('|', 4), ('M', 17), ('O', 8), ('M', 17), ('E', 5), ('N', 9), ('T', 6)]
+
+
+Visualization
+###############################################################################
+
+
+.. code-block:: default
+
+    plt.imshow(trellis[1:, 1:].T, origin='lower')
+    plt.annotate("- Inf", (trellis.size(1) / 5, trellis.size(1) / 1.5))
+    plt.colorbar()
+    plt.show()
+
+
+
+
+
+
+.. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_002.png
+    :class: sphx-glr-single-img
+
+
+
+
+In the above visualization, we can see that there is a trace of high
+probability crossing the matrix diagonally.
+
+
+Find the most likely path (backtracking)
+----------------------------------------
+
+Once the trellis is generated, we will traverse it following the
+elements with high probability.
+
+We will start from the last label index with the time step of highest
+probability, then, we traverse back in time, picking stay
+(:math:`c_j \rightarrow c_j`) or transition
+(:math:`c_j \rightarrow c_{j+1}`), based on the post-transition
+probability :math:`k_{t, j} p(t+1, c_{j+1})` or
+:math:`k_{t, j+1} p(t+1, repeat)`.
+
+Transition is done once the label reaches the beginning.
+
+The trellis matrix is used for path-finding, but for the final
+probability of each segment, we take the frame-wise probability from
+emission matrix.
+
+
+
+.. code-block:: default
+
+
+    @dataclass
+    class Point:
+      token_index: int
+      time_index: int
+      score: float
+
+
+    def backtrack(trellis, emission, tokens, blank_id=0):
+      # Note:
+      # j and t are indices for trellis, which has extra dimensions 
+      # for time and tokens at the beginning.
+      # When refering to time frame index `T` in trellis,
+      # the corresponding index in emission is `T-1`.
+      # Similarly, when refering to token index `J` in trellis,
+      # the corresponding index in transcript is `J-1`.
+      j = trellis.size(1) - 1
+      t_start = torch.argmax(trellis[:, j]).item()
+
+      path = []
+      for t in range(t_start, 0, -1):
+        # 1. Figure out if the current position was stay or change
+        # Note (again):
+        # `emission[J-1]` is the emission at time frame `J` of trellis dimension.
+        # Score for token staying the same from time frame J-1 to T.
+        stayed = trellis[t-1, j] + emission[t-1, blank_id]
+        # Score for token changing from C-1 at T-1 to J at T.
+        changed = trellis[t-1, j-1] + emission[t-1, tokens[j-1]]
+
+        # 2. Store the path with frame-wise probability.
+        prob = emission[t-1, tokens[j-1] if changed > stayed else 0].exp().item()
+        # Return token index and time index in non-trellis coordinate.
+        path.append(Point(j-1, t-1, prob))
+
+        # 3. Update the token
+        if changed > stayed:
+          j -= 1
+          if j == 0:
+            break
+      else:
+        raise ValueError('Failed to align')
+      return path[::-1]
+
+    path = backtrack(trellis, emission, tokens)
+    print(path)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [Point(token_index=0, time_index=30, score=0.9999842643737793), Point(token_index=0, time_index=31, score=0.9847108721733093), Point(token_index=0, time_index=32, score=0.9999707937240601), Point(token_index=0, time_index=33, score=0.15400302410125732), Point(token_index=1, time_index=34, score=0.9999173879623413), Point(token_index=1, time_index=35, score=0.6079767346382141), Point(token_index=2, time_index=36, score=0.9997720122337341), Point(token_index=2, time_index=37, score=0.9997127652168274), Point(token_index=3, time_index=38, score=0.9999357461929321), Point(token_index=3, time_index=39, score=0.9861568212509155), Point(token_index=4, time_index=40, score=0.923858642578125), Point(token_index=4, time_index=41, score=0.9257323741912842), Point(token_index=4, time_index=42, score=0.015660647302865982), Point(token_index=5, time_index=43, score=0.9998378753662109), Point(token_index=6, time_index=44, score=0.9988443851470947), Point(token_index=6, time_index=45, score=0.10139644145965576), Point(token_index=7, time_index=46, score=0.9999426603317261), Point(token_index=7, time_index=47, score=0.9999946355819702), Point(token_index=8, time_index=48, score=0.9979603290557861), Point(token_index=8, time_index=49, score=0.036036744713783264), Point(token_index=8, time_index=50, score=0.06163117289543152), Point(token_index=9, time_index=51, score=4.333446850068867e-05), Point(token_index=10, time_index=52, score=0.999980092048645), Point(token_index=10, time_index=53, score=0.996711015701294), Point(token_index=10, time_index=54, score=0.9999257326126099), Point(token_index=11, time_index=55, score=0.9999982118606567), Point(token_index=11, time_index=56, score=0.9990690350532532), Point(token_index=11, time_index=57, score=0.9999996423721313), Point(token_index=11, time_index=58, score=0.9999996423721313), Point(token_index=11, time_index=59, score=0.8457310795783997), Point(token_index=12, time_index=60, score=0.9999995231628418), Point(token_index=12, time_index=61, score=0.9996013045310974), Point(token_index=13, time_index=62, score=0.999998927116394), Point(token_index=13, time_index=63, score=0.003523927880451083), Point(token_index=13, time_index=64, score=1.0), Point(token_index=13, time_index=65, score=1.0), Point(token_index=14, time_index=66, score=0.9999916553497314), Point(token_index=14, time_index=67, score=0.9971596002578735), Point(token_index=14, time_index=68, score=0.9999990463256836), Point(token_index=14, time_index=69, score=0.9999991655349731), Point(token_index=14, time_index=70, score=0.9999998807907104), Point(token_index=14, time_index=71, score=0.9999998807907104), Point(token_index=14, time_index=72, score=0.9999881982803345), Point(token_index=14, time_index=73, score=0.011430311016738415), Point(token_index=15, time_index=74, score=0.9999978542327881), Point(token_index=15, time_index=75, score=0.9996135830879211), Point(token_index=15, time_index=76, score=0.999998927116394), Point(token_index=15, time_index=77, score=0.9727472066879272), Point(token_index=16, time_index=78, score=0.999998927116394), Point(token_index=16, time_index=79, score=0.9949321150779724), Point(token_index=16, time_index=80, score=0.999998927116394), Point(token_index=16, time_index=81, score=0.9999121427536011), Point(token_index=17, time_index=82, score=0.9999774694442749), Point(token_index=17, time_index=83, score=0.6576217412948608), Point(token_index=17, time_index=84, score=0.9984301924705505), Point(token_index=18, time_index=85, score=0.9999874830245972), Point(token_index=18, time_index=86, score=0.9993745684623718), Point(token_index=18, time_index=87, score=0.9999988079071045), Point(token_index=18, time_index=88, score=0.10429900139570236), Point(token_index=19, time_index=89, score=0.9999969005584717), Point(token_index=19, time_index=90, score=0.397830605506897), Point(token_index=20, time_index=91, score=0.9999933242797852), Point(token_index=20, time_index=92, score=1.6992555629258277e-06), Point(token_index=20, time_index=93, score=0.9861308932304382), Point(token_index=21, time_index=94, score=0.9999960660934448), Point(token_index=21, time_index=95, score=0.9992735981941223), Point(token_index=21, time_index=96, score=0.9993409514427185), Point(token_index=22, time_index=97, score=0.9999983310699463), Point(token_index=22, time_index=98, score=0.9999971389770508), Point(token_index=22, time_index=99, score=0.9999997615814209), Point(token_index=22, time_index=100, score=0.9999995231628418), Point(token_index=23, time_index=101, score=0.9999732971191406), Point(token_index=23, time_index=102, score=0.9983217120170593), Point(token_index=23, time_index=103, score=0.9999992847442627), Point(token_index=23, time_index=104, score=0.9999997615814209), Point(token_index=23, time_index=105, score=1.0), Point(token_index=23, time_index=106, score=1.0), Point(token_index=23, time_index=107, score=0.9998630285263062), Point(token_index=24, time_index=108, score=0.9999982118606567), Point(token_index=24, time_index=109, score=0.9988584518432617), Point(token_index=25, time_index=110, score=0.9999798536300659), Point(token_index=25, time_index=111, score=0.8573040962219238), Point(token_index=26, time_index=112, score=0.9999847412109375), Point(token_index=26, time_index=113, score=0.9870275259017944), Point(token_index=26, time_index=114, score=1.9045113731408492e-05), Point(token_index=27, time_index=115, score=0.9999794960021973), Point(token_index=27, time_index=116, score=0.9998254179954529), Point(token_index=28, time_index=117, score=0.9999991655349731), Point(token_index=28, time_index=118, score=0.9999734163284302), Point(token_index=28, time_index=119, score=0.0009003913728520274), Point(token_index=29, time_index=120, score=0.9993476271629333), Point(token_index=29, time_index=121, score=0.997545063495636), Point(token_index=29, time_index=122, score=0.0003049637016374618), Point(token_index=30, time_index=123, score=0.9999344348907471), Point(token_index=30, time_index=124, score=6.0794504861405585e-06), Point(token_index=31, time_index=125, score=0.9833148717880249), Point(token_index=32, time_index=126, score=0.9974580407142639), Point(token_index=32, time_index=127, score=0.0008236843277700245), Point(token_index=33, time_index=128, score=0.9965147972106934), Point(token_index=33, time_index=129, score=0.017463525757193565), Point(token_index=34, time_index=130, score=0.9989169836044312), Point(token_index=35, time_index=131, score=0.9999698400497437), Point(token_index=35, time_index=132, score=0.9999842643737793), Point(token_index=36, time_index=133, score=0.9997639060020447), Point(token_index=36, time_index=134, score=0.509823739528656), Point(token_index=37, time_index=135, score=0.9998301267623901), Point(token_index=37, time_index=136, score=0.08523716777563095), Point(token_index=37, time_index=137, score=0.004073848482221365), Point(token_index=38, time_index=138, score=0.9999814033508301), Point(token_index=38, time_index=139, score=0.012053033336997032), Point(token_index=38, time_index=140, score=0.9999979734420776), Point(token_index=38, time_index=141, score=0.0005783037049695849), Point(token_index=39, time_index=142, score=0.9999068975448608), Point(token_index=39, time_index=143, score=0.9999960660934448), Point(token_index=39, time_index=144, score=0.9999980926513672), Point(token_index=40, time_index=145, score=0.9999915361404419), Point(token_index=40, time_index=146, score=0.9971177577972412), Point(token_index=40, time_index=147, score=0.9981799125671387), Point(token_index=41, time_index=148, score=0.9999310970306396), Point(token_index=41, time_index=149, score=0.9879516959190369), Point(token_index=41, time_index=150, score=0.9997628331184387), Point(token_index=42, time_index=151, score=0.9999535083770752), Point(token_index=43, time_index=152, score=0.9999716281890869), Point(token_index=44, time_index=153, score=0.6812253594398499)]
+
+
+visualization
+###############################################################################
+
+
+.. code-block:: default
+
+    def plot_trellis_with_path(trellis, path):
+      # To plot trellis with path, we take advantage of 'nan' value
+      trellis_with_path = trellis.clone()
+      for i, p in enumerate(path):
+        trellis_with_path[p.time_index, p.token_index] = float('nan')
+      plt.imshow(trellis_with_path[1:, 1:].T, origin='lower')
+
+    plot_trellis_with_path(trellis, path)
+    plt.title("The path found by backtracking")
+    plt.show()
+
+
+
+
+
+.. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_003.png
+    :class: sphx-glr-single-img
+
+
+
+
+Looking good. Now this path contains repetations for the same labels, so
+let’s merge them to make it close to the original transcript.
+
+When merging the multiple path points, we simply take the average
+probability for the merged segments.
+
+
+
+.. code-block:: default
+
+
+    # Merge the labels
+    @dataclass
+    class Segment:
+      label: str
+      start: int
+      end: int
+      score: float
+
+      def __repr__(self):
+        return f"{self.label}\t({self.score:4.2f}): [{self.start:5d}, {self.end:5d})"
+
+      @property
+      def length(self):
+        return self.end - self.start
+
+    def merge_repeats(path):
+      i1, i2 = 0, 0
+      segments = []
+      while i1 < len(path):
+        while i2 < len(path) and path[i1].token_index == path[i2].token_index:
+          i2 += 1
+        score = sum(path[k].score for k in range(i1, i2)) / (i2 - i1)
+        segments.append(Segment(transcript[path[i1].token_index], path[i1].time_index, path[i2-1].time_index + 1, score))
+        i1 = i2
+      return segments
+
+    segments = merge_repeats(path)
+    for seg in segments:
+      print(seg)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    I       (0.78): [   30,    34)
+    |       (0.80): [   34,    36)
+    H       (1.00): [   36,    38)
+    A       (0.99): [   38,    40)
+    D       (0.62): [   40,    43)
+    |       (1.00): [   43,    44)
+    T       (0.55): [   44,    46)
+    H       (1.00): [   46,    48)
+    A       (0.37): [   48,    51)
+    T       (0.00): [   51,    52)
+    |       (1.00): [   52,    55)
+    C       (0.97): [   55,    60)
+    U       (1.00): [   60,    62)
+    R       (0.75): [   62,    66)
+    I       (0.88): [   66,    74)
+    O       (0.99): [   74,    78)
+    S       (1.00): [   78,    82)
+    I       (0.89): [   82,    85)
+    T       (0.78): [   85,    89)
+    Y       (0.70): [   89,    91)
+    |       (0.66): [   91,    94)
+    B       (1.00): [   94,    97)
+    E       (1.00): [   97,   101)
+    S       (1.00): [  101,   108)
+    I       (1.00): [  108,   110)
+    D       (0.93): [  110,   112)
+    E       (0.66): [  112,   115)
+    |       (1.00): [  115,   117)
+    M       (0.67): [  117,   120)
+    E       (0.67): [  120,   123)
+    |       (0.50): [  123,   125)
+    A       (0.98): [  125,   126)
+    T       (0.50): [  126,   128)
+    |       (0.51): [  128,   130)
+    T       (1.00): [  130,   131)
+    H       (1.00): [  131,   133)
+    I       (0.75): [  133,   135)
+    S       (0.36): [  135,   138)
+    |       (0.50): [  138,   142)
+    M       (1.00): [  142,   145)
+    O       (1.00): [  145,   148)
+    M       (1.00): [  148,   151)
+    E       (1.00): [  151,   152)
+    N       (1.00): [  152,   153)
+    T       (0.68): [  153,   154)
+
+
+visualization
+###############################################################################
+
+
+.. code-block:: default
+
+    def plot_trellis_with_segments(trellis, segments, transcript):
+      # To plot trellis with path, we take advantage of 'nan' value
+      trellis_with_path = trellis.clone()
+      for i, seg in enumerate(segments):
+        if seg.label != '|':
+          trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
+
+      plt.figure()
+      plt.title("Path, label and probability for each label")
+      ax1 = plt.axes()
+      ax1.imshow(trellis_with_path.T, origin='lower')
+      ax1.set_xticks([])
+
+      for i, seg in enumerate(segments):
+        if seg.label != '|':
+          ax1.annotate(seg.label, (seg.start + .7, i + 0.3))
+          ax1.annotate(f'{seg.score:.2f}', (seg.start - .3, i + 4.3))
+  
+      plt.figure()
+      plt.title("Probability for each label at each time index")
+      ax2 = plt.axes()
+      xs, hs = [], []
+      for p in path:
+        label = transcript[p.token_index]
+        if label != '|':
+          xs.append(p.time_index + 1)
+          hs.append(p.score)
+  
+      for seg in segments:
+        if seg.label != '|':
+          ax2.axvspan(seg.start+.4, seg.end+.4, color='gray', alpha=0.2)
+          ax2.annotate(seg.label, (seg.start + .8, -0.07))
+
+      ax2.bar(xs, hs, width=0.5)
+      ax2.axhline(0, color='black')
+      ax2.set_position(ax1.get_position())
+      ax2.set_xlim(ax1.get_xlim())
+      ax2.set_ylim(-0.1, 1.1)
+
+    plot_trellis_with_segments(trellis, segments, transcript)
+    plt.show()
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_004.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_005.png
+            :class: sphx-glr-multi-img
+
+
+
+
+Looks good. Now let’s merge the words. The Wav2Vec2 model uses ``'|'``
+as the word boundary, so we merge the segments before each occurance of
+``'|'``.
+
+Then, finally, we segment the original audio into segmented audio and
+listen to them to see if the segmentation is correct.
+
+
+
+.. code-block:: default
+
+
+    # Merge words
+    def merge_words(segments, separator='|'):
+      words = []
+      i1, i2 = 0, 0
+      while i1 < len(segments):
+        if i2 >= len(segments) or segments[i2].label == separator:
+          if i1 != i2:
+            segs = segments[i1:i2]
+            word = ''.join([seg.label for seg in segs])
+            score = sum(seg.score * seg.length for seg in segs) / sum(seg.length for seg in segs)
+            words.append(Segment(word, segments[i1].start, segments[i2-1].end, score))
+          i1 = i2 + 1
+          i2 = i1
+        else:
+          i2 += 1
+      return words
+
+    word_segments = merge_words(segments)
+    for word in word_segments:
+      print(word)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    I       (0.78): [   30,    34)
+    HAD     (0.84): [   36,    43)
+    THAT    (0.52): [   44,    52)
+    CURIOSITY       (0.89): [   55,    91)
+    BESIDE  (0.94): [   94,   115)
+    ME      (0.67): [  117,   123)
+    AT      (0.66): [  125,   128)
+    THIS    (0.70): [  130,   138)
+    MOMENT  (0.97): [  142,   154)
+
+
+visualization
+###############################################################################
+
+
+.. code-block:: default
+
+    trellis_with_path = trellis.clone()
+    for i, seg in enumerate(segments):
+      if seg.label != '|':
+        trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
+
+    plt.imshow(trellis_with_path[1:, 1:].T, origin='lower')
+    ax1 = plt.gca()
+    ax1.set_yticks([])
+    ax1.set_xticks([])
+
+
+    for word in word_segments:
+      plt.axvline(word.start - 0.5)
+      plt.axvline(word.end - 0.5)
+
+    for i, seg in enumerate(segments):
+      if seg.label != '|':
+        plt.annotate(seg.label, (seg.start, i + 0.3))
+        plt.annotate(f'{seg.score:.2f}', (seg.start , i + 4), fontsize=8)
+
+    plt.show()
+
+    # The original waveform
+    ratio = waveform.size(1) / (trellis.size(0) - 1)
+    plt.plot(waveform[0])
+    for word in word_segments:
+      x0 = ratio * word.start
+      x1 = ratio * word.end
+      plt.axvspan(x0, x1, alpha=0.1, color='red')
+      plt.annotate(f'{word.score:.2f}', (x0, 0.8))
+
+    for seg in segments:
+      if seg.label != '|':
+        plt.annotate(seg.label, (seg.start * ratio, 0.9))
+
+    ax2 = plt.gca()
+    xticks = ax2.get_xticks()
+    plt.xticks(xticks, xticks / bundle.sample_rate)
+    plt.xlabel('time [second]')
+    ax2.set_position(ax1.get_position())
+    ax2.set_yticks([])
+    ax2.set_ylim(-1.0, 1.0)
+    ax2.set_xlim(0, waveform.size(-1))
+    plt.show()
+
+    # Generate the audio for each segment
+    print(transcript)
+    IPython.display.display(IPython.display.Audio(SPEECH_FILE))
+    for i, word in enumerate(word_segments):
+      x0 = int(ratio * word.start)
+      x1 = int(ratio * word.end)
+      filename = f"{i}_{word.label}.wav"
+      torchaudio.save(filename, waveform[:, x0:x1], bundle.sample_rate)
+      print(f"{word.label}: {x0 / bundle.sample_rate:.3f} - {x1 / bundle.sample_rate:.3f}")
+      IPython.display.display(IPython.display.Audio(filename))
+
+
+
+
+
+.. image:: /intermediate/images/sphx_glr_forced_alignment_with_torchaudio_tutorial_006.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT
+    <IPython.lib.display.Audio object>
+    I: 0.604 - 0.684
+    <IPython.lib.display.Audio object>
+    HAD: 0.724 - 0.865
+    <IPython.lib.display.Audio object>
+    THAT: 0.885 - 1.046
+    <IPython.lib.display.Audio object>
+    CURIOSITY: 1.107 - 1.831
+    <IPython.lib.display.Audio object>
+    BESIDE: 1.891 - 2.314
+    <IPython.lib.display.Audio object>
+    ME: 2.354 - 2.474
+    <IPython.lib.display.Audio object>
+    AT: 2.515 - 2.575
+    <IPython.lib.display.Audio object>
+    THIS: 2.615 - 2.776
+    <IPython.lib.display.Audio object>
+    MOMENT: 2.857 - 3.098
+    <IPython.lib.display.Audio object>
+
+
+Conclusion
+----------
+
+In this tutorial, we looked how to use torchaudio’s Wav2Vec2 model to
+perform CTC segmentation for forced alignment.
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  7.366 seconds)
+
+
+.. _sphx_glr_download_intermediate_forced_alignment_with_torchaudio_tutorial.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: forced_alignment_with_torchaudio_tutorial.py <forced_alignment_with_torchaudio_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: forced_alignment_with_torchaudio_tutorial.ipynb <forced_alignment_with_torchaudio_tutorial.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
