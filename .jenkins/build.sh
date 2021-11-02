@@ -41,7 +41,7 @@ python -m spacy download de
 
 # PyTorch Theme
 rm -rf src
-pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+pip install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==8.1.0
 
 aws configure set default.s3.multipart_threshold 5120MB
