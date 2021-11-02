@@ -173,10 +173,10 @@ Welcome to PyTorch Tutorials
    :tags: Audio
 
 .. customcarditem::
-   :header: Speech Command Recognition
+   :header: Speech Command Classification
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
+   :link: intermediate/speech_command_classification_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. customcarditem::
@@ -184,6 +184,13 @@ Welcome to PyTorch Tutorials
    :card_description: Learn how to use torchaudio's pretrained models for building a text-to-speech application.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
    :link: intermediate/text_to_speech_with_torchaudio.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Forced Alignment with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's Wav2Vec2 pretrained models for aligning text to speech
+   :image: _static/img/thumbnails/cropped/torchaudio-alignment.png
+   :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -663,8 +670,9 @@ Additional Resources
    beginner/audio_feature_augmentation_tutorial
    beginner/audio_datasets_tutorial
    intermediate/speech_recognition_pipeline_tutorial
-   intermediate/speech_command_recognition_with_torchaudio_tutorial
+   intermediate/speech_command_classification_with_torchaudio_tutorial
    intermediate/text_to_speech_with_torchaudio
+   intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
