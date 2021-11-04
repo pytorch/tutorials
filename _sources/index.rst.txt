@@ -169,7 +169,7 @@ Welcome to PyTorch Tutorials
    :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
    :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
    :image: _static/img/thumbnails/cropped/torchaudio-asr.png
-   :link: intermediate_source/speech_recognition_pipeline_tutorial.html
+   :link: intermediate/speech_recognition_pipeline_tutorial.html
    :tags: Audio
 
 .. customcarditem::
