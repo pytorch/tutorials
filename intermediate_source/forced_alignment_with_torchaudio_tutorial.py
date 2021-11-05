@@ -32,61 +32,62 @@ Recognition <https://arxiv.org/abs/2007.09127>`__.
 # Preparation
 # -----------
 # 
-# First, we install ``torchaudio``, import packages and fetch the speech
-# file.
+# First we import the necessary packages, and fetch data that we work on.
 # 
-
-# !pip install torchaudio
 
 # %matplotlib inline
 
 import os
 from dataclasses import dataclass
 
+import torch
+import torchaudio
 import requests
 import matplotlib
 import matplotlib.pyplot as plt
-
-[width, height] = matplotlib.rcParams['figure.figsize']
-if width < 10:
-  matplotlib.rcParams['figure.figsize'] = [width * 2.5, height]
-
-import torch
-import torchaudio
-
-SPEECH_URL = 'https://download.pytorch.org/torchaudio/test-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.flac'
-SPEECH_FILE = 'speech.flac'
-
-if not os.path.exists(SPEECH_FILE):
-  with open(SPEECH_FILE, 'wb') as file:
-    with requests.get(SPEECH_URL) as resp:
-      resp.raise_for_status()
-      file.write(resp.content)
-
 import IPython
 
+matplotlib.rcParams['figure.figsize'] = [16.0, 4.8]
+
+torch.random.manual_seed(0)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+print(torch.__version__)
+print(torchaudio.__version__)
+print(device)
+
+SPEECH_URL = 'https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav'
+SPEECH_FILE = '_assets/speech.wav'
+
+if not os.path.exists(SPEECH_FILE):
+  os.makedirs('_assets', exist_ok=True)
+  with open(SPEECH_FILE, 'wb') as file:
+    file.write(requests.get(SPEECH_URL).content)
 
 ######################################################################
 # Generate frame-wise label probability
 # -------------------------------------
 # 
 # The first step is to generate the label class porbability of each aduio
-# frame. We can use a Wav2Vec2 model that is trained for ASR.
+# frame. We can use a Wav2Vec2 model that is trained for ASR. Here we use
+# :py:func:`torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H`.
 # 
 # ``torchaudio`` provides easy access to pretrained models with associated
 # labels.
 # 
-# **Note** In the subsequent sections, we will compute the probability in
-# log-domain to avoid numerical instability. For this purpose, we
-# normalize the ``emission`` with ``log_softmax``.
+# .. note::
+#
+#    In the subsequent sections, we will compute the probability in
+#    log-domain to avoid numerical instability. For this purpose, we
+#    normalize the ``emission`` with :py:func:`torch.log_softmax`.
 # 
 
 bundle = torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H
-model = bundle.get_model()
+model = bundle.get_model().to(device)
 labels = bundle.get_labels()
 with torch.inference_mode():
   waveform, _ = torchaudio.load(SPEECH_FILE)
-  emissions, _ = model(waveform)
+  emissions, _ = model(waveform.to(device))
   emissions = torch.log_softmax(emissions, dim=-1)
 
 emission = emissions[0].cpu().detach()
@@ -132,14 +133,13 @@ plt.show()
 # Since we are looking for the most likely transitions, we take the more
 # likely path for the value of :math:`k_{(t+1, j+1)}`, that is
 # 
-# $ k_{(t+1, j+1)} = max( k_{(t, j)} p(t+1, c_{j+1}), k_{(t, j+1)} p(t+1,
-# repeat) ) $
+# :math:`k_{(t+1, j+1)} = max( k_{(t, j)} p(t+1, c_{j+1}), k_{(t, j+1)} p(t+1, repeat) )`
 # 
 # where :math:`k` represents is trellis matrix, and :math:`p(t, c_j)`
 # represents the probability of label :math:`c_j` at time step :math:`t`.
 # :math:`repeat` represents the blank token from CTC formulation. (For the
-# detail of CTC algorithm, please refer to the `Sequence Modeling with CTC
-# [distill.pub] <https://distill.pub/2017/ctc/>`__)
+# detail of CTC algorithm, please refer to the *Sequence Modeling with CTC*
+# [`distill.pub <https://distill.pub/2017/ctc/>`__])
 # 
 
 transcript = 'I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT'
@@ -175,8 +175,6 @@ plt.imshow(trellis[1:, 1:].T, origin='lower')
 plt.annotate("- Inf", (trellis.size(1) / 5, trellis.size(1) / 1.5))
 plt.colorbar()
 plt.show()
-
-
 
 ######################################################################
 # In the above visualization, we can see that there is a trace of high
@@ -251,7 +249,7 @@ path = backtrack(trellis, emission, tokens)
 print(path)
 
 ################################################################################
-# visualization
+# Visualization
 ################################################################################
 def plot_trellis_with_path(trellis, path):
   # To plot trellis with path, we take advantage of 'nan' value
@@ -263,7 +261,6 @@ def plot_trellis_with_path(trellis, path):
 plot_trellis_with_path(trellis, path)
 plt.title("The path found by backtracking")
 plt.show()
-
 
 ######################################################################
 # Looking good. Now this path contains repetations for the same labels, so
@@ -304,7 +301,7 @@ for seg in segments:
   print(seg)
 
 ################################################################################
-# visualization
+# Visualization
 ################################################################################
 def plot_trellis_with_segments(trellis, segments, transcript):
   # To plot trellis with path, we take advantage of 'nan' value
@@ -313,20 +310,26 @@ def plot_trellis_with_segments(trellis, segments, transcript):
     if seg.label != '|':
       trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
 
-  plt.figure()
-  plt.title("Path, label and probability for each label")
-  ax1 = plt.axes()
+  fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
+  ax1.set_title("Path, label and probability for each label")
   ax1.imshow(trellis_with_path.T, origin='lower')
   ax1.set_xticks([])
 
   for i, seg in enumerate(segments):
     if seg.label != '|':
-      ax1.annotate(seg.label, (seg.start + .7, i + 0.3))
+      ax1.annotate(seg.label, (seg.start + .7, i + 0.3), weight='bold')
       ax1.annotate(f'{seg.score:.2f}', (seg.start - .3, i + 4.3))
-  
-  plt.figure()
-  plt.title("Probability for each label at each time index")
-  ax2 = plt.axes()
+
+  ax2.set_title("Label probability with and without repetation")
+  xs, hs, ws = [], [], []
+  for seg in segments:
+    if seg.label != '|':
+      xs.append((seg.end + seg.start) / 2 + .4)
+      hs.append(seg.score)
+      ws.append(seg.end - seg.start)
+      ax2.annotate(seg.label, (seg.start + .8, -0.07), weight='bold')
+  ax2.bar(xs, hs, width=ws, color='gray', alpha=0.5, edgecolor='black')
+
   xs, hs = [], []
   for p in path:
     label = transcript[p.token_index]
@@ -334,18 +337,13 @@ def plot_trellis_with_segments(trellis, segments, transcript):
       xs.append(p.time_index + 1)
       hs.append(p.score)
   
-  for seg in segments:
-    if seg.label != '|':
-      ax2.axvspan(seg.start+.4, seg.end+.4, color='gray', alpha=0.2)
-      ax2.annotate(seg.label, (seg.start + .8, -0.07))
-
-  ax2.bar(xs, hs, width=0.5)
+  ax2.bar(xs, hs, width=0.5, alpha=0.5)
   ax2.axhline(0, color='black')
-  ax2.set_position(ax1.get_position())
   ax2.set_xlim(ax1.get_xlim())
   ax2.set_ylim(-0.1, 1.1)
 
 plot_trellis_with_segments(trellis, segments, transcript)
+plt.tight_layout()
 plt.show()
 
 
@@ -380,64 +378,116 @@ for word in word_segments:
   print(word)
 
 ################################################################################
-# visualization
+# Visualization
 ################################################################################
-trellis_with_path = trellis.clone()
-for i, seg in enumerate(segments):
-  if seg.label != '|':
-    trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
+def plot_alignments(trellis, segments, word_segments, waveform):
+  trellis_with_path = trellis.clone()
+  for i, seg in enumerate(segments):
+    if seg.label != '|':
+      trellis_with_path[seg.start+1:seg.end+1, i+1] = float('nan')
 
-plt.imshow(trellis_with_path[1:, 1:].T, origin='lower')
-ax1 = plt.gca()
-ax1.set_yticks([])
-ax1.set_xticks([])
+  fig, [ax1, ax2] = plt.subplots(2, 1, figsize=(16, 9.5))
 
+  ax1.imshow(trellis_with_path[1:, 1:].T, origin='lower')
+  ax1.set_xticks([])
+  ax1.set_yticks([])
 
-for word in word_segments:
-  plt.axvline(word.start - 0.5)
-  plt.axvline(word.end - 0.5)
+  for word in word_segments:
+    ax1.axvline(word.start - 0.5)
+    ax1.axvline(word.end - 0.5)
 
-for i, seg in enumerate(segments):
-  if seg.label != '|':
-    plt.annotate(seg.label, (seg.start, i + 0.3))
-    plt.annotate(f'{seg.score:.2f}', (seg.start , i + 4), fontsize=8)
+  for i, seg in enumerate(segments):
+    if seg.label != '|':
+      ax1.annotate(seg.label, (seg.start, i + 0.3))
+      ax1.annotate(f'{seg.score:.2f}', (seg.start , i + 4), fontsize=8)
 
+  # The original waveform
+  ratio = waveform.size(0) / (trellis.size(0) - 1)
+  ax2.plot(waveform)
+  for word in word_segments:
+    x0 = ratio * word.start
+    x1 = ratio * word.end
+    ax2.axvspan(x0, x1, alpha=0.1, color='red')
+    ax2.annotate(f'{word.score:.2f}', (x0, 0.8))
+
+  for seg in segments:
+    if seg.label != '|':
+      ax2.annotate(seg.label, (seg.start * ratio, 0.9))
+  xticks = ax2.get_xticks()
+  plt.xticks(xticks, xticks / bundle.sample_rate)
+  ax2.set_xlabel('time [second]')
+  ax2.set_yticks([])
+  ax2.set_ylim(-1.0, 1.0)
+  ax2.set_xlim(0, waveform.size(-1))
+
+plot_alignments(trellis, segments, word_segments, waveform[0],)
 plt.show()
 
-# The original waveform
-ratio = waveform.size(1) / (trellis.size(0) - 1)
-plt.plot(waveform[0])
-for word in word_segments:
-  x0 = ratio * word.start
-  x1 = ratio * word.end
-  plt.axvspan(x0, x1, alpha=0.1, color='red')
-  plt.annotate(f'{word.score:.2f}', (x0, 0.8))
+# A trick to embed the resulting audio to the generated file.
+# `IPython.display.Audio` has to be the last call in a cell,
+# and there should be only one call par cell.
+def display_segment(i):
+  ratio = waveform.size(1) / (trellis.size(0) - 1)
+  word = word_segments[i]
+  x0 = int(ratio * word.start)
+  x1 = int(ratio * word.end)
+  filename = f"_assets/{i}_{word.label}.wav"
+  torchaudio.save(filename, waveform[:, x0:x1], bundle.sample_rate)
+  print(f"{word.label} ({word.score:.2f}): {x0 / bundle.sample_rate:.3f} - {x1 / bundle.sample_rate:.3f} sec")
+  return IPython.display.Audio(filename)
 
-for seg in segments:
-  if seg.label != '|':
-    plt.annotate(seg.label, (seg.start * ratio, 0.9))
-
-ax2 = plt.gca()
-xticks = ax2.get_xticks()
-plt.xticks(xticks, xticks / bundle.sample_rate)
-plt.xlabel('time [second]')
-ax2.set_position(ax1.get_position())
-ax2.set_yticks([])
-ax2.set_ylim(-1.0, 1.0)
-ax2.set_xlim(0, waveform.size(-1))
-plt.show()
+######################################################################
+# 
 
 # Generate the audio for each segment
 print(transcript)
-IPython.display.display(IPython.display.Audio(SPEECH_FILE))
-for i, word in enumerate(word_segments):
-  x0 = int(ratio * word.start)
-  x1 = int(ratio * word.end)
-  filename = f"{i}_{word.label}.wav"
-  torchaudio.save(filename, waveform[:, x0:x1], bundle.sample_rate)
-  print(f"{word.label}: {x0 / bundle.sample_rate:.3f} - {x1 / bundle.sample_rate:.3f}")
-  IPython.display.display(IPython.display.Audio(filename))
+IPython.display.Audio(SPEECH_FILE)
 
+
+######################################################################
+# 
+
+display_segment(0)
+
+######################################################################
+# 
+
+display_segment(1)
+
+######################################################################
+# 
+
+display_segment(2)
+
+######################################################################
+# 
+
+display_segment(3)
+
+######################################################################
+# 
+
+display_segment(4)
+
+######################################################################
+# 
+
+display_segment(5)
+
+######################################################################
+# 
+
+display_segment(6)
+
+######################################################################
+# 
+
+display_segment(7)
+
+######################################################################
+# 
+
+display_segment(8)
 
 ######################################################################
 # Conclusion
