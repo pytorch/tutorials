@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>TorchScript for Deployment &mdash; PyTorch Tutorials 1.10.0+cu102 documentation</title>
+  <title>Intel® Extension for PyTorch* &mdash; PyTorch Tutorials 1.10.0+cu102 documentation</title>
   
 
   
@@ -34,8 +34,6 @@
   <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Deploying with Flask" href="deployment_with_flask.html" />
-    <link rel="prev" title="Performance Tuning Guide" href="recipes/tuning_guide.html" />
   <!-- Google Analytics -->
   
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
@@ -230,8 +228,8 @@
             
             
               <p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="recipes_index.html">See All Recipes</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="recipes_index.html">See All Recipes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Introduction to PyTorch</span></p>
@@ -390,15 +388,13 @@
       </li>
 
         
-          <li><a href="recipes_index.html">PyTorch Recipes</a> &gt;</li>
-        
-      <li>TorchScript for Deployment</li>
+      <li>Intel® Extension for PyTorch*</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
         
             
-            <a href="../_sources/recipes/torchscript_inference.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+            <a href="../_sources/recipes/intel_extension_for_pytorch.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
           
         
       </li>
@@ -420,7 +416,7 @@
         
 
           <div class="pytorch-call-to-action-links">
-            <div id="tutorial-type">recipes/torchscript_inference</div>
+            <div id="tutorial-type">recipes/intel_extension_for_pytorch</div>
 
             <div id="google-colab-link">
               <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
@@ -446,178 +442,323 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <div class="section" id="torchscript-for-deployment">
-<h1>TorchScript for Deployment<a class="headerlink" href="#torchscript-for-deployment" title="Permalink to this headline">¶</a></h1>
-<p>In this recipe, you will learn:</p>
+  <div class="section" id="intel-extension-for-pytorch">
+<h1>Intel® Extension for PyTorch*<a class="headerlink" href="#intel-extension-for-pytorch" title="Permalink to this headline">¶</a></h1>
+<p>Intel Extension for PyTorch* extends PyTorch with optimizations for extra
+performance boost on Intel hardware. Most of the optimizations will be
+included in stock PyTorch releases eventually, and the intention of the
+extension is to deliver up to date features and optimizations for PyTorch
+on Intel hardware, examples include AVX-512 Vector Neural Network
+Instructions (AVX512 VNNI) and Intel® Advanced Matrix Extensions (Intel® AMX).</p>
+<p>Intel® Extension for PyTorch* has been released as an open–source project
+at <a class="reference external" href="https://github.com/intel/intel-extension-for-pytorch">Github</a>.</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>What TorchScript is</li>
-<li>How to export your trained model in TorchScript format</li>
-<li>How to load your TorchScript model in C++ and do inference</li>
+<li><strong>Ease-of-use Python API:</strong> Intel® Extension for PyTorch* provides simple
+frontend Python APIs and utilities for users to get performance optimizations
+such as graph optimization and operator optimization with minor code changes.
+Typically, only 2 to 3 clauses are required to be added to the original code.</li>
+<li><strong>Channels Last:</strong> Comparing to the default NCHW memory format, channels_last
+(NHWC) memory format could further accelerate convolutional neural networks.
+In Intel® Extension for PyTorch*, NHWC memory format has been enabled for
+most key CPU operators, though not all of them have been merged to PyTorch
+master branch yet. They are expected to be fully landed in PyTorch upstream
+soon.</li>
+<li><strong>Auto Mixed Precision (AMP):</strong> Low precision data type BFloat16 has been
+natively supported on the 3rd Generation Xeon scalable Servers (aka Cooper
+Lake) with AVX512 instruction set and will be supported on the next
+generation of Intel® Xeon® Scalable Processors with Intel® Advanced Matrix
+Extensions (Intel® AMX) instruction set with further boosted performance. The
+support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16
+optimization of operators have been massively enabled in Intel® Extension
+for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
+these optimizations will be landed in PyTorch master through PRs that are
+being submitted and reviewed.</li>
+<li><strong>Graph Optimization:</strong> To optimize performance further with torchscript,
+Intel® Extension for PyTorch* supports fusion of frequently used operator
+patterns, like Conv2D+ReLU, Linear+ReLU, etc. The benefit of the fusions are
+delivered to users in a transparent fashion. Detailed fusion patterns
+supported can be found <a class="reference external" href="https://github.com/intel/intel-extension-for-pytorch">here</a>.
+The graph optimization will be up-streamed to PyTorch with the introduction
+of oneDNN Graph API.</li>
+<li><strong>Operator Optimization:</strong> Intel® Extension for PyTorch* also optimizes
+operators and implements several customized operators for performance. A few
+ATen operators are replaced by their optimized counterparts in Intel®
+Extension for PyTorch* via ATen registration mechanism. Moreover, some
+customized operators are implemented for several popular topologies. For
+instance, ROIAlign and NMS are defined in Mask R-CNN. To improve performance
+of these topologies, Intel® Extension for PyTorch* also optimized these
+customized operators.</li>
 </ul>
-<div class="section" id="requirements">
-<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li>PyTorch 1.5</li>
-<li>TorchVision 0.6.0</li>
-<li>libtorch 1.5</li>
-<li>C++ compiler</li>
-</ul>
-<p>The instructions for installing the three PyTorch components are
-available at <a class="reference external" href="https://pytorch.org/">pytorch.org</a>. The C++ compiler will depend on your
-platform.</p>
 </div>
-<div class="section" id="what-is-torchscript">
-<h2>What is TorchScript?<a class="headerlink" href="#what-is-torchscript" title="Permalink to this headline">¶</a></h2>
-<p><strong>TorchScript</strong> is an intermediate representation of a PyTorch model
-(subclass of <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code>) that can then be run in a high-performance
-environment like C++. It’s a high-performance subset of Python that is
-meant to be consumed by the <strong>PyTorch JIT Compiler,</strong> which performs
-run-time optimization on your model’s computation. TorchScript is the
-recommended model format for doing scaled inference with PyTorch models.
-For more information, see the PyTorch <a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript
-tutorial</a>, the <a class="reference external" href="https://pytorch.org/tutorials/advanced/cpp_export.html">Loading A TorchScript Model in C++ tutorial</a>, and the
-<a class="reference external" href="https://pytorch.org/docs/stable/jit.html">full TorchScript documentation</a>, all of which are available on
-<a class="reference external" href="https://pytorch.org/">pytorch.org</a>.</p>
-</div>
-<div class="section" id="how-to-export-your-model">
-<h2>How to Export Your Model<a class="headerlink" href="#how-to-export-your-model" title="Permalink to this headline">¶</a></h2>
-<p>As an example, let’s take a pretrained vision model. All of the
-pretrained models in TorchVision are compatible with TorchScript.</p>
-<p>Run the following Python 3 code, either in a script or from the REPL:</p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>Minor code changes are required for users to get start with Intel® Extension
+for PyTorch*. Both PyTorch imperative mode and TorchScript mode are
+supported. This section introduces usage of Intel® Extension for PyTorch* API
+functions for both imperative mode and TorchScript mode, covering data type
+Float32 and BFloat16. C++ usage will also be introduced at the end.</p>
+<p>You just need to import Intel® Extension for PyTorch* package and apply its
+optimize function against the model object. If it is a training workload, the
+optimize function also needs to be applied against the optimizer object.</p>
+<p>For training and inference with BFloat16 data type, torch.cpu.amp has been
+enabled in PyTorch upstream to support mixed precision with convenience, and
+BFloat16 datatype has been enabled excessively for CPU operators in PyTorch
+upstream and Intel® Extension for PyTorch*. Running torch.cpu.amp will match
+each operator to its appropriate datatype and returns the best possible
+performance.</p>
+<p>The code changes that are required for Intel® Extension for PyTorch* are
+highlighted with comments in a line above.</p>
+<div class="section" id="training">
+<h3>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="float32">
+<h4>Float32<a class="headerlink" href="#float32" title="Permalink to this headline">¶</a></h4>
 <div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
 
-<span class="n">r18</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>       <span class="c1"># We now have an instance of the pretrained model</span>
-<span class="n">r18_scripted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">r18</span><span class="p">)</span>         <span class="c1"># *** This is the TorchScript export</span>
-<span class="n">dummy_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>     <span class="c1"># We should run a quick test</span>
-</pre></div>
-</div>
-<p>Let’s do a sanity check on the equivalence of the two models:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">unscripted_output</span> <span class="o">=</span> <span class="n">r18</span><span class="p">(</span><span class="n">dummy_input</span><span class="p">)</span>         <span class="c1"># Get the unscripted model&#39;s prediction...</span>
-<span class="n">scripted_output</span> <span class="o">=</span> <span class="n">r18_scripted</span><span class="p">(</span><span class="n">dummy_input</span><span class="p">)</span>  <span class="c1"># ...and do the same for the scripted version</span>
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
-<span class="n">unscripted_top5</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">unscripted_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span>
-<span class="n">scripted_top5</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">scripted_output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">indices</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Python model top 5 results:</span><span class="se">\n</span><span class="s1">  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">unscripted_top5</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TorchScript model top 5 results:</span><span class="se">\n</span><span class="s1">  </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scripted_top5</span><span class="p">))</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">set_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+<span class="c1"># Invoke optimize function against the model object and optimizer object</span>
+<span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">images</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">():</span>
+    <span class="c1"># Setting memory_format to torch.channels_last could improve performance with 4D input data. This is optional.</span>
+    <span class="n">images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">),</span> <span class="n">label</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You should see that both versions of the model give the same results:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Python</span> <span class="n">model</span> <span class="n">top</span> <span class="mi">5</span> <span class="n">results</span><span class="p">:</span>
-  <span class="n">tensor</span><span class="p">([[</span><span class="mi">463</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">731</span><span class="p">,</span> <span class="mi">899</span><span class="p">,</span> <span class="mi">898</span><span class="p">]])</span>
-<span class="n">TorchScript</span> <span class="n">model</span> <span class="n">top</span> <span class="mi">5</span> <span class="n">results</span><span class="p">:</span>
-  <span class="n">tensor</span><span class="p">([[</span><span class="mi">463</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="mi">731</span><span class="p">,</span> <span class="mi">899</span><span class="p">,</span> <span class="mi">898</span><span class="p">]])</span>
+</div>
+<div class="section" id="bfloat16">
+<h4>BFloat16<a class="headerlink" href="#bfloat16" title="Permalink to this headline">¶</a></h4>
+<div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">set_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">set_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">PATH</span><span class="p">))</span>
+<span class="c1"># Invoke optimize function against the model object and optimizer object with data type set to torch.bfloat16</span>
+<span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">images</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+        <span class="c1"># Setting memory_format to torch.channels_last could improve performance with 4D input data. This is optional.</span>
+        <span class="n">images</span> <span class="o">=</span> <span class="n">images</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">memory_format</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">channels_last</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">images</span><span class="p">),</span> <span class="n">label</span><span class="p">)</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">PATH</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>With that check confirmed, go ahead and save the model:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">r18_scripted</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;r18_scripted.pt&#39;</span><span class="p">)</span>
+</div>
+</div>
+<div class="section" id="inference-imperative-mode">
+<h3>Inference - Imperative Mode<a class="headerlink" href="#inference-imperative-mode" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Float32<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="c1"># Invoke optimize function against the model object</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="loading-torchscript-models-in-c">
-<h2>Loading TorchScript Models in C++<a class="headerlink" href="#loading-torchscript-models-in-c" title="Permalink to this headline">¶</a></h2>
-<p>Create the following C++ file and name it <code class="docutils literal notranslate"><span class="pre">ts-infer.cpp</span></code>:</p>
+<div class="section" id="id2">
+<h4>BFloat16<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="c1"># Invoke optimize function against the model object with data type set to torch.bfloat16</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="inference-torchscript-mode">
+<h3>Inference - TorchScript Mode<a class="headerlink" href="#inference-torchscript-mode" title="Permalink to this headline">¶</a></h3>
+<p>TorchScript mode makes graph optimization possible, hence improves
+performance for some topologies. Intel® Extension for PyTorch* enables most
+commonly used operator pattern fusion, and users can get the performance
+benefit without additional code changes.</p>
+<div class="section" id="id3">
+<h4>Float32<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+
+<span class="c1"># oneDNN graph fusion is enabled by default, uncomment the line below to disable it explicitly</span>
+<span class="c1"># ipex.enable_onednn_fusion(False)</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="c1"># Invoke optimize function against the model object</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h4>BFloat16<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<div class="code python3 highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="c1"># Import intel_extension_for_pytorch</span>
+<span class="kn">import</span> <span class="nn">intel_extension_for_pytorch</span> <span class="k">as</span> <span class="nn">ipex</span>
+
+<span class="c1"># oneDNN graph fusion is enabled by default, uncomment the line below to disable it explicitly</span>
+<span class="c1"># ipex.enable_onednn_fusion(False)</span>
+
+<span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="c1"># Invoke optimize function against the model with data type set to torch.bfloat16</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ipex</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">cpu</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">autocast</span><span class="p">():</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="c">
+<h3>C++<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h3>
+<p>To work with libtorch, C++ library of PyTorch, Intel® Extension for PyTorch*
+provides its C++ dynamic library as well. The C++ library is supposed to handle
+inference workload only, such as service deployment. For regular development,
+please use Python interface. Comparing to usage of libtorch, no specific code
+changes are required, except for converting input data into channels last data
+format. Compilation follows the recommended methodology with CMake. Detailed
+instructions can be found in <a class="reference external" href="https://pytorch.org/tutorials/advanced/cpp_export.html#depending-on-libtorch-and-building-the-application">PyTorch tutorial</a>.
+During compilation, Intel optimizations will be activated automatically
+once C++ dynamic library of Intel® Extension for PyTorch* is linked.</p>
+<p><strong>example-app.cpp</strong></p>
 <div class="code cpp highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#include &lt;torch/script.h&gt;</span>
-<span class="c1">#include &lt;torch/nn/functional/activation.h&gt;</span>
-
+<span class="c1">#include &lt;iostream&gt;</span>
+<span class="c1">#include &lt;memory&gt;</span>
 
 <span class="nb">int</span> <span class="n">main</span><span class="p">(</span><span class="nb">int</span> <span class="n">argc</span><span class="p">,</span> <span class="n">const</span> <span class="n">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">std</span><span class="p">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;usage: ts-infer &lt;path-to-exported-model&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Loading model...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-    <span class="o">//</span> <span class="n">deserialize</span> <span class="n">ScriptModule</span>
     <span class="n">torch</span><span class="p">::</span><span class="n">jit</span><span class="p">::</span><span class="n">script</span><span class="p">::</span><span class="n">Module</span> <span class="n">module</span><span class="p">;</span>
     <span class="k">try</span> <span class="p">{</span>
         <span class="n">module</span> <span class="o">=</span> <span class="n">torch</span><span class="p">::</span><span class="n">jit</span><span class="p">::</span><span class="n">load</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-    <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">const</span> <span class="n">c10</span><span class="p">::</span><span class="n">Error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">std</span><span class="p">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Error loading model</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-        <span class="n">std</span><span class="p">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="o">.</span><span class="n">msg_without_backtrace</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">catch</span> <span class="p">(</span><span class="n">const</span> <span class="n">c10</span><span class="p">::</span><span class="n">Error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="p">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;error loading the model</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
     <span class="p">}</span>
-
-    <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Model loaded successfully</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-    <span class="n">torch</span><span class="p">::</span><span class="n">NoGradGuard</span> <span class="n">no_grad</span><span class="p">;</span> <span class="o">//</span> <span class="n">ensures</span> <span class="n">that</span> <span class="n">autograd</span> <span class="ow">is</span> <span class="n">off</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">eval</span><span class="p">();</span> <span class="o">//</span> <span class="n">turn</span> <span class="n">off</span> <span class="n">dropout</span> <span class="ow">and</span> <span class="n">other</span> <span class="n">training</span><span class="o">-</span><span class="n">time</span> <span class="n">layers</span><span class="o">/</span><span class="n">functions</span>
-
-    <span class="o">//</span> <span class="n">create</span> <span class="n">an</span> <span class="nb">input</span> <span class="s2">&quot;image&quot;</span>
     <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">torch</span><span class="p">::</span><span class="n">jit</span><span class="p">::</span><span class="n">IValue</span><span class="o">&gt;</span> <span class="n">inputs</span><span class="p">;</span>
-    <span class="n">inputs</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="p">::</span><span class="n">rand</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">}));</span>
+    <span class="o">//</span> <span class="n">make</span> <span class="n">sure</span> <span class="nb">input</span> <span class="n">data</span> <span class="n">are</span> <span class="n">converted</span> <span class="n">to</span> <span class="n">channels</span> <span class="n">last</span> <span class="nb">format</span>
+    <span class="n">inputs</span><span class="o">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">torch</span><span class="p">::</span><span class="n">ones</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">})</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">c10</span><span class="p">::</span><span class="n">MemoryFormat</span><span class="p">::</span><span class="n">ChannelsLast</span><span class="p">));</span>
 
-    <span class="o">//</span> <span class="n">execute</span> <span class="n">model</span> <span class="ow">and</span> <span class="n">package</span> <span class="n">output</span> <span class="k">as</span> <span class="n">tensor</span>
     <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">output</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="o">.</span><span class="n">toTensor</span><span class="p">();</span>
 
-    <span class="n">namespace</span> <span class="n">F</span> <span class="o">=</span> <span class="n">torch</span><span class="p">::</span><span class="n">nn</span><span class="p">::</span><span class="n">functional</span><span class="p">;</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">output_sm</span> <span class="o">=</span> <span class="n">F</span><span class="p">::</span><span class="n">softmax</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">F</span><span class="p">::</span><span class="n">SoftmaxFuncOptions</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
-    <span class="n">std</span><span class="p">::</span><span class="nb">tuple</span><span class="o">&lt;</span><span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span><span class="o">&gt;</span> <span class="n">top5_tensor</span> <span class="o">=</span> <span class="n">output_sm</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
-    <span class="n">at</span><span class="p">::</span><span class="n">Tensor</span> <span class="n">top5</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">get</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span><span class="n">top5_tensor</span><span class="p">);</span>
-
-    <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">top5</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
-
-    <span class="n">std</span><span class="p">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">DONE</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">;</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>This program:</p>
-<ul class="simple">
-<li>Loads the model you specify on the command line</li>
-<li>Creates a dummy “image” input tensor</li>
-<li>Performs inference on the input</li>
-</ul>
-<p>Also, notice that there is no dependency on TorchVision in this code.
-The saved version of your TorchScript model has your learning weights
-<em>and</em> your computation graph - nothing else is needed.</p>
-</div>
-<div class="section" id="building-and-running-your-c-inference-engine">
-<h2>Building and Running Your C++ Inference Engine<a class="headerlink" href="#building-and-running-your-c-inference-engine" title="Permalink to this headline">¶</a></h2>
-<p>Create the following <code class="docutils literal notranslate"><span class="pre">CMakeLists.txt</span></code> file:</p>
+<p><strong>CMakeList.txt</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake_minimum_required</span><span class="p">(</span><span class="n">VERSION</span> <span class="mf">3.0</span> <span class="n">FATAL_ERROR</span><span class="p">)</span>
-<span class="n">project</span><span class="p">(</span><span class="n">custom_ops</span><span class="p">)</span>
+<span class="n">project</span><span class="p">(</span><span class="n">example</span><span class="o">-</span><span class="n">app</span><span class="p">)</span>
 
 <span class="n">find_package</span><span class="p">(</span><span class="n">Torch</span> <span class="n">REQUIRED</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="n">CMAKE_CXX_FLAGS</span> <span class="s2">&quot;$</span><span class="si">{CMAKE_CXX_FLAGS}</span><span class="s2"> $</span><span class="si">{TORCH_CXX_FLAGS}</span><span class="s2"> -Wl,--no-as-needed&quot;</span><span class="p">)</span>
 
-<span class="n">add_executable</span><span class="p">(</span><span class="n">ts</span><span class="o">-</span><span class="n">infer</span> <span class="n">ts</span><span class="o">-</span><span class="n">infer</span><span class="o">.</span><span class="n">cpp</span><span class="p">)</span>
-<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">ts</span><span class="o">-</span><span class="n">infer</span> <span class="s2">&quot;$</span><span class="si">{TORCH_LIBRARIES}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">set_property</span><span class="p">(</span><span class="n">TARGET</span> <span class="n">ts</span><span class="o">-</span><span class="n">infer</span> <span class="n">PROPERTY</span> <span class="n">CXX_STANDARD</span> <span class="mi">11</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Make the program:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">DCMAKE_PREFIX_PATH</span><span class="o">=&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">your</span> <span class="n">libtorch</span> <span class="n">installation</span><span class="o">&gt;</span>
-<span class="n">make</span>
-</pre></div>
-</div>
-<p>Now, we can run inference in C++, and verify that we get a result:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ./ts-infer r18_scripted.pt
-Loading model...
-Model loaded successfully
- 418
- 845
- 111
- 892
- 644
-[ CPULongType{5} ]
+<span class="n">add_executable</span><span class="p">(</span><span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span><span class="o">.</span><span class="n">cpp</span><span class="p">)</span>
+<span class="c1"># Link the binary against the C++ dynamic library file of Intel® Extension for PyTorch*</span>
+<span class="n">target_link_libraries</span><span class="p">(</span><span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="s2">&quot;$</span><span class="si">{TORCH_LIBRARIES}</span><span class="s2">&quot;</span> <span class="s2">&quot;$</span><span class="si">{INTEL_EXTENSION_FOR_PYTORCH_PATH}</span><span class="s2">/lib/libintel-ext-pt-cpu.so&quot;</span><span class="p">)</span>
 
-DONE
+<span class="n">set_property</span><span class="p">(</span><span class="n">TARGET</span> <span class="n">example</span><span class="o">-</span><span class="n">app</span> <span class="n">PROPERTY</span> <span class="n">CXX_STANDARD</span> <span class="mi">14</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> Since Intel® Extension for PyTorch* is still under development, name of
+the c++ dynamic library in the master branch may defer to
+<em>libintel-ext-pt-cpu.so</em> shown above. Please check the name out in the
+installation folder. The so file name starts with <em>libintel-</em>.</p>
+<p><strong>Command for compilation</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cmake -DCMAKE_PREFIX_PATH=&lt;LIBPYTORCH_PATH&gt; -DINTEL_EXTENSION_FOR_PYTORCH_PATH=&lt;INTEL_EXTENSION_FOR_PYTORCH_INSTALLATION_PATH&gt; ..
+$ make
 </pre></div>
 </div>
 </div>
-<div class="section" id="important-resources">
-<h2>Important Resources<a class="headerlink" href="#important-resources" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><a class="reference external" href="https://pytorch.org/">pytorch.org</a> for installation instructions, and more documentation
-and tutorials.</li>
-<li><a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript tutorial</a> for a deeper initial
-exposition of TorchScript</li>
-<li><a class="reference external" href="https://pytorch.org/docs/stable/jit.html">Full TorchScript documentation</a> for complete TorchScript language
-and API reference</li>
-</ul>
+</div>
+<div class="section" id="tutorials">
+<h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h2>
+<p>Please visit <a class="reference external" href="https://github.com/intel/intel-extension-for-pytorch">Intel® Extension for PyTorch* Github repo</a> for more tutorials.</p>
 </div>
 </div>
 
@@ -626,15 +767,6 @@ and API reference</li>
              
             </div>
             <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="deployment_with_flask.html" class="btn btn-neutral float-right" title="Deploying with Flask" accesskey="n" rel="next">Next <img src="../_static/images/chevron-right-orange.svg" class="next-page"></a>
-      
-      
-        <a href="recipes/tuning_guide.html" class="btn btn-neutral" title="Performance Tuning Guide" accesskey="p" rel="prev"><img src="../_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
-      
-    </div>
   
 
   
@@ -675,13 +807,28 @@ and API reference</li>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">TorchScript for Deployment</a><ul>
-<li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#what-is-torchscript">What is TorchScript?</a></li>
-<li><a class="reference internal" href="#how-to-export-your-model">How to Export Your Model</a></li>
-<li><a class="reference internal" href="#loading-torchscript-models-in-c">Loading TorchScript Models in C++</a></li>
-<li><a class="reference internal" href="#building-and-running-your-c-inference-engine">Building and Running Your C++ Inference Engine</a></li>
-<li><a class="reference internal" href="#important-resources">Important Resources</a></li>
+<li><a class="reference internal" href="#">Intel® Extension for PyTorch*</a><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#training">Training</a><ul>
+<li><a class="reference internal" href="#float32">Float32</a></li>
+<li><a class="reference internal" href="#bfloat16">BFloat16</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-imperative-mode">Inference - Imperative Mode</a><ul>
+<li><a class="reference internal" href="#id1">Float32</a></li>
+<li><a class="reference internal" href="#id2">BFloat16</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-torchscript-mode">Inference - TorchScript Mode</a><ul>
+<li><a class="reference internal" href="#id3">Float32</a></li>
+<li><a class="reference internal" href="#id4">BFloat16</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#c">C++</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
 </ul>
 </li>
 </ul>
