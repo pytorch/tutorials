@@ -55,6 +55,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: beginner/basics/intro.html
    :tags: Getting-Started
+   
+.. customcarditem::
+   :header: Introduction to PyTorch on YouTube
+   :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on youtube.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: beginner/introyt/introyt.html
+   :tags: Getting-Started
 
 .. customcarditem::
    :header: Learning PyTorch with Examples
@@ -632,6 +639,21 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Introduction to PyTorch on YouTube
+
+   beginner/introyt/introyt
+   beginner/introyt/introyt1_tutorial
+   beginner/introyt/tensors_deeper_tutorial
+   beginner/introyt/autogradyt_tutorial
+   beginner/introyt/modelsyt_tutorial
+   beginner/introyt/tensorboardyt_tutorial
+   beginner/introyt/trainingyt_tutorial
+   beginner/introyt/captumyt_tutorial
 
 .. toctree::
    :maxdepth: 2
