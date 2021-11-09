@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
+r"""
 PyTorch: Defining New autograd Functions
 ----------------------------------------
 
 A third order polynomial, trained to predict :math:`y=\sin(x)` from :math:`-\pi`
-to :math:`pi` by minimizing squared Euclidean distance. Instead of writing the
+to :math:`\pi` by minimizing squared Euclidean distance. Instead of writing the
 polynomial as :math:`y=a+bx+cx^2+dx^3`, we write the polynomial as
 :math:`y=a+b P_3(c+dx)` where :math:`P_3(x)=\frac{1}{2}\left(5x^3-3x\right)` is
 the `Legendre polynomial`_ of degree three.
