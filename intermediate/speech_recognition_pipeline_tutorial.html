@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Speech Recognition with Torchaudio — PyTorch Tutorials 1.10.0+cu102 documentation</title>
+<title>Speech Recognition with Wav2Vec2 — PyTorch Tutorials 1.10.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -203,7 +203,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Speech Recognition with Torchaudio</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Speech Recognition with Wav2Vec2</a></li>
 <li class="toctree-l1"><a class="reference internal" href="speech_command_classification_with_torchaudio_tutorial.html">Speech Command Classification with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="text_to_speech_with_torchaudio.html">Text-to-speech with torchaudio</a></li>
 <li class="toctree-l1"><a class="reference internal" href="forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
@@ -299,7 +299,7 @@
           
         </a> &gt;
       </li>
-<li>Speech Recognition with Torchaudio</li>
+<li>Speech Recognition with Wav2Vec2</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/intermediate/speech_recognition_pipeline_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -337,8 +337,8 @@
 <p class="first admonition-title">Note</p>
 <p class="last">Click <a class="reference internal" href="#sphx-glr-download-intermediate-speech-recognition-pipeline-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="speech-recognition-with-torchaudio">
-<span id="sphx-glr-intermediate-speech-recognition-pipeline-tutorial-py"></span><h1>Speech Recognition with Torchaudio<a class="headerlink" href="#speech-recognition-with-torchaudio" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="speech-recognition-with-wav2vec2">
+<span id="sphx-glr-intermediate-speech-recognition-pipeline-tutorial-py"></span><h1>Speech Recognition with Wav2Vec2<a class="headerlink" href="#speech-recognition-with-wav2vec2" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="mailto:moto%40fb.com">Moto Hira</a></p>
 <p>This tutorial shows how to perform speech recognition using using
 pre-trained models from wav2vec 2.0
@@ -361,33 +361,31 @@ labels. They are bundled together and available under
 <p>First we import the necessary packages, and fetch data that we work on.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># %matplotlib inline</span>
 
+<span class="kn">import</span> <span class="nn">os</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torchaudio</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">IPython</span>
+
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'figure.figsize'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">16.0</span><span class="p">,</span> <span class="mf">4.8</span><span class="p">]</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">torchaudio</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
-
-<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">'cuda'</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">'cpu'</span><span class="p">)</span>
-
 <span class="nb">print</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
+<span class="n">SPEECH_URL</span> <span class="o">=</span> <span class="s2">"https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"</span>
+<span class="n">SPEECH_FILE</span> <span class="o">=</span> <span class="s2">"_assets/speech.wav"</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-<span class="p">[</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">]</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'figure.figsize'</span><span class="p">]</span>
-<span class="k">if</span> <span class="n">width</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
-  <span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">'figure.figsize'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span> <span class="o">*</span> <span class="mf">2.5</span><span class="p">,</span> <span class="n">height</span><span class="p">]</span>
-
-<span class="kn">import</span> <span class="nn">IPython</span>
-
-<span class="kn">import</span> <span class="nn">requests</span>
-
-<span class="n">SPEECH_FILE</span> <span class="o">=</span> <span class="s2">"speech.wav"</span>
-
-<span class="n">url</span> <span class="o">=</span> <span class="s2">"https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
-  <span class="n">file_</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">):</span>
+  <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">'_assets'</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SPEECH_URL</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -410,10 +408,9 @@ fine-tuned for a specific task with additional labels.</p>
 <p>The pre-trained weights without fine-tuning can be fine-tuned
 for other downstream tasks as well, but this tutorial does not
 cover that.</p>
-<p>We will use <code class="docutils literal notranslate"><span class="pre">torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H</span></code> here.</p>
-<p>There are multiple models available in
-<code class="docutils literal notranslate"><span class="pre">torchaudio.pipelines</span></code>. Please check the
-<a class="reference external" href="https://pytorch.org/audio/stable/pipelines.html">documentation</a> for
+<p>We will use <code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H()</span></code> here.</p>
+<p>There are multiple models available as
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">torchaudio.pipelines</span></code>. Please check the documentation for
 the detail of how they are trained.</p>
 <p>The bundle object provides the interface to instantiate model and other
 information. Sampling rate and the class labels are found as follow.</p>
@@ -446,22 +443,20 @@ fetch the pre-trained weights and load it into the model.</p>
 <p>We will use the speech data from <a class="reference external" href="https://iqtlabs.github.io/voices/">VOiCES
 dataset</a>, which is licensed under
 Creative Commos BY 4.0.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&lt;IPython.lib.display.Audio object&gt;
-</pre></div>
-</div>
-<p>To load data, we use <code class="docutils literal notranslate"><span class="pre">torchaudio.load</span></code>.</p>
+<p>To load data, we use <code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.load()</span></code>.</p>
 <p>If the sampling rate is different from what the pipeline expects, then
-we can use <code class="docutils literal notranslate"><span class="pre">torchaudio.functional.resample</span></code> for resampling.</p>
-<p><strong>Note</strong> -
-<code class="docutils literal notranslate"><span class="pre">`torchaudio.functional.resample</span></code> &lt;<a class="reference external" href="https://pytorch.org/audio/stable/functional.html#resample">https://pytorch.org/audio/stable/functional.html#resample</a>&gt;`__
-works on CUDA tensors as well. - When performing resampling multiple
-times on the same set of sample rates, using
-<code class="docutils literal notranslate"><span class="pre">`torchaudio.transforms.Resample</span></code> &lt;<a class="reference external" href="https://pytorch.org/audio/stable/transforms.html#resample">https://pytorch.org/audio/stable/transforms.html#resample</a>&gt;`__
-might improve the performace.</p>
+we can use <code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.functional.resample()</span></code> for resampling.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ul class="last simple">
+<li><code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.functional.resample()</span></code> works on CUDA tensors as well.</li>
+<li>When performing resampling multiple times on the same set of sample rates,
+using <code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.transforms.Resample()</span></code> might improve the performace.</li>
+</ul>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">waveform</span><span class="p">,</span> <span class="n">sample_rate</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
 <span class="n">waveform</span> <span class="o">=</span> <span class="n">waveform</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
@@ -473,21 +468,26 @@ might improve the performace.</p>
 <div class="section" id="extracting-acoustic-features">
 <h2>Extracting acoustic features<a class="headerlink" href="#extracting-acoustic-features" title="Permalink to this headline">¶</a></h2>
 <p>The next step is to extract acoustic features from the audio.</p>
-<p>Note that Wav2Vec2 models fine-tuned for ASR task can perform feature
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Wav2Vec2 models fine-tuned for ASR task can perform feature
 extraction and classification with one step, but for the sake of the
 tutorial, we also show how to perform feature extraction here.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">():</span>
   <span class="n">features</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">extract_features</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The returned features is a list of tensors. Each tensor is the output of
 a transformer layer.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feats</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">feats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Feature from transformer layer </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Feature dimension"</span><span class="p">)</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Frame (time-axis)"</span><span class="p">)</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mf">4.3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">feats</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+  <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">feats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+  <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Feature from transformer layer </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+  <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Feature dimension"</span><span class="p">)</span>
+  <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Frame (time-axis)"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 <img alt="../_images/sphx_glr_speech_recognition_pipeline_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_speech_recognition_pipeline_tutorial_001.png"/>
@@ -509,7 +509,6 @@ probability.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">"Classification result"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">"Frame (time-axis)"</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">"Class"</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Class labels:"</span><span class="p">,</span> <span class="n">bundle</span><span class="o">.</span><span class="n">get_labels</span><span class="p">())</span>
 </pre></div>
@@ -542,7 +541,7 @@ the decoding process has to postpone the final decision until it sees
 enough context.</p>
 <p>There are many decoding techniques proposed, and they require external
 resources, such as word dictionary and language models.</p>
-<p>In this tutorial, for the sake of simplicity, we will perform greeding
+<p>In this tutorial, for the sake of simplicity, we will perform greedy
 decoding which does not depend on such external components, and simply
 pick up the best hypothesis at each time step. Therefore, the context
 information are not used, and only one transcript can be generated.</p>
@@ -557,6 +556,7 @@ information are not used, and only one transcript can be generated.</p>
     <span class="sd">"""Given a sequence emission over labels, get the best path string</span>
 <span class="sd">    Args:</span>
 <span class="sd">      emission (Tensor): Logit tensors. Shape `[num_seq, num_label]`.</span>
+
 <span class="sd">    Returns:</span>
 <span class="sd">      str: The resulting transcript</span>
 <span class="sd">    """</span>
@@ -574,18 +574,16 @@ information are not used, and only one transcript can be generated.</p>
 <span class="n">transcript</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span><span class="n">emission</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>Let’s check the result and listen again the audio.</p>
+<p>Let’s check the result and listen again to the audio.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">transcript</span><span class="p">)</span>
-<span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">display</span><span class="p">(</span><span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">))</span>
+<span class="n">IPython</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">Audio</span><span class="p">(</span><span class="n">SPEECH_FILE</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>I|HAD|THAT|CURIOSITY|BESIDE|ME|AT|THIS|MOMENT|
-&lt;IPython.lib.display.Audio object&gt;
 </pre></div>
 </div>
-<p>There are few remarks in decoding.</p>
-<p>Firstly, the ASR model is fine-tuned using a loss function called CTC.
+<p>The ASR model is fine-tuned using a loss function called Connectionist Temporal Classification (CTC).
 The detail of CTC loss is explained
 <a class="reference external" href="https://distill.pub/2017/ctc/">here</a>. In CTC a blank token (ϵ) is a
 special token which represents a repetition of the previous symbol. In
@@ -596,14 +594,14 @@ These also have to be ignored.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this headline">¶</a></h2>
-<p>In this tutorial, we looked at how to use <code class="docutils literal notranslate"><span class="pre">torchaudio.pipeline</span></code> to
+<p>In this tutorial, we looked at how to use <code class="xref py py-mod docutils literal notranslate"><span class="pre">torchaudio.pipelines</span></code> to
 perform acoustic feature extraction and speech recognition. Constructing
 a model and getting the emission is as short as two lines.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">pipelines</span><span class="o">.</span><span class="n">WAV2VEC2_ASR_BASE_960H</span><span class="o">.</span><span class="n">get_model</span><span class="p">()</span>
 <span class="n">emission</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">waveforms</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.695 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  14.174 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-speech-recognition-pipeline-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/72bca090de09f15d3d28c204e8488626/speech_recognition_pipeline_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">speech_recognition_pipeline_tutorial.py</span></code></a></div>
@@ -648,7 +646,7 @@ a model and getting the emission is as short as two lines.</p>
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Speech Recognition with Torchaudio</a><ul>
+<li><a class="reference internal" href="#">Speech Recognition with Wav2Vec2</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#preparation">Preparation</a></li>
 <li><a class="reference internal" href="#creating-a-pipeline">Creating a pipeline</a></li>
