@@ -245,7 +245,7 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :header: Intel® Extension for PyTorch*
    :card_description: Introduction of Intel® Extension for PyTorch*
    :image: ../_static/img/thumbnails/cropped/profiler.png
-   :link: ../recipes/recipes/intel_extension_for_pytorch.html
+   :link: ../recipes/intel_extension_for_pytorch.html
    :tags: Model-Optimization
 
 .. Distributed Training

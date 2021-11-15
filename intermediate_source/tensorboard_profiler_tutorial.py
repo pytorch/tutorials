@@ -132,6 +132,20 @@ with torch.profiler.profile(
         train(batch_data)
         prof.step()  # Need to call this at the end of each step to notify profiler of steps' boundary.
 
+######################################################################
+# Alternatively, the following non-context manager start/stop is supported as well.
+prof = torch.profiler.profile(
+        schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=2),
+        on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/resnet18'),
+        record_shapes=True,
+        with_stack=True)
+prof.start()
+for step, batch_data in enumerate(train_loader):
+    if step >= (1 + 1 + 3) * 2:
+        break
+    train(batch_data)
+    prof.step()
+prof.stop()
 
 ######################################################################
 # 3. Run the profiler
@@ -176,9 +190,9 @@ with torch.profiler.profile(
 #
 # The overview shows a high-level summary of model performance.
 #
-# The "GPU Summary" panel shows the GPU configuration and the GPU usage.
+# The "GPU Summary" panel shows the GPU configuration, GPU usage and Tensor Cores usage.
 # In this example, the GPU Utilization is low.
-# The details of these metrics are `here <https://github.com/guyang3532/kineto/blob/readme/tb_plugin/docs/gpu_utilization.md>`_.
+# The details of these metrics are `here <https://github.com/pytorch/kineto/blob/main/tb_plugin/docs/gpu_utilization.md>`_.
 #
 # The "Step Time Breakdown" shows distribution of time spent in each step over different categories of execution.
 # In this example, you can see the ``DataLoader`` overhead is significant.
@@ -222,6 +236,9 @@ with torch.profiler.profile(
 #
 # .. image:: ../../_static/img/profiler_kernel_view.png
 #    :scale: 25 %
+# Tensor Cores Used:
+# Whether this kernel uses Tensor Cores.
+#
 # Mean Blocks per SM:
 # Blocks per SM = Blocks of this kernel / SM number of this GPU.
 # If this number is less than 1, it indicates the GPU multiprocessors are not fully utilized.
@@ -245,6 +262,12 @@ with torch.profiler.profile(
 # The ‘w’ and ‘s’ keys zoom in centered around the mouse,
 # and the ‘a’ and ‘d’ keys move the timeline left and right.
 # You can hit these keys multiple times until you see a readable representation.
+#
+# If a backward operator's "Incoming Flow" field is with value "forward correspond to backward",
+# you can click the text to get its launching forward operator.
+#
+# .. image:: ../../_static/img/profiler_trace_view_fwd_bwd.png
+#    :scale: 25 %
 #
 # In this example, we can see the event prefixed with ``enumerate(DataLoader)`` costs a lot of time.
 # And during most of this period, the GPU is idle.
@@ -275,7 +298,7 @@ with torch.profiler.profile(
 # .. image:: ../../_static/img/profiler_overview2.png
 #    :scale: 25 %
 #
-# From the above view, we can find the step time is reduced to about 58ms comparing with previous run's 121ms,
+# From the above view, we can find the step time is reduced to about 76ms comparing with previous run's 132ms,
 # and the time reduction of ``DataLoader`` mainly contributes.
 #
 # .. image:: ../../_static/img/profiler_trace_view2.png
