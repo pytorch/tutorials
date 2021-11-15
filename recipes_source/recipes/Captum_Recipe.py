@@ -16,9 +16,8 @@ Model Interpretability using Captum
 # 
 # In this recipe you will learn how to use Captum to: 
 #
-# - attribute the predictions of an image classifier to their corresponding image
-# features. 
-# - visualize the attribution results.
+# - Attribute the predictions of an image classifier to their corresponding image features. 
+# - Visualize the attribution results.
 # 
 
 
