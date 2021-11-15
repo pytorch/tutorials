@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""
+"""
 PyTorch: Defining New autograd Functions
 ----------------------------------------
 
