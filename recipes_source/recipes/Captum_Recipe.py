@@ -15,9 +15,10 @@ Model Interpretability using Captum
 # \ ``Integrated Gradients``\  in a unified way.
 # 
 # In this recipe you will learn how to use Captum to: 
-# * attribute the predictions of an image classifier to their corresponding image
+#
+# - attribute the predictions of an image classifier to their corresponding image
 # features. 
-# * visualize the attribution results.
+# - visualize the attribution results.
 # 
 
 
