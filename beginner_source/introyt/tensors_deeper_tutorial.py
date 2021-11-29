@@ -293,12 +293,14 @@ print(dozens)
 # 
 # .. note::
 #      The following cell throws a run-time error. This is intentional.
-# 
-
-a = torch.rand(2, 3)
-b = torch.rand(3, 2)
-
-print(a * b)
+#
+# ::
+#
+#    a = torch.rand(2, 3)
+#    b = torch.rand(3, 2)
+#
+#    print(a * b)
+#
 
 
 ##########################################################################
@@ -389,15 +391,17 @@ print(d)
 # 
 # .. note::
 #       The following cell throws a run-time error. This is intentional.
-# 
-
-a =     torch.ones(4, 3, 2)
-
-b = a * torch.rand(4, 3)    # dimensions must match last-to-first
-
-c = a * torch.rand(   2, 3) # both 3rd & 2nd dims different
-
-d = a * torch.rand((0, ))   # can't broadcast with an empty tensor
+#
+# ::
+#
+#    a =     torch.ones(4, 3, 2)
+#
+#    b = a * torch.rand(4, 3)    # dimensions must match last-to-first
+#
+#    c = a * torch.rand(   2, 3) # both 3rd & 2nd dims different
+#
+#    d = a * torch.rand((0, ))   # can't broadcast with an empty tensor
+#
 
 
 ###########################################################################
