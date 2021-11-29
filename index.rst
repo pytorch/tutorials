@@ -653,7 +653,7 @@ Additional Resources
    beginner/introyt/modelsyt_tutorial
    beginner/introyt/tensorboardyt_tutorial
    beginner/introyt/trainingyt_tutorial
-   beginner/introyt/captumyt_tutorial
+   beginner/introyt/captumyt
 
 .. toctree::
    :maxdepth: 2
