@@ -456,10 +456,11 @@ print(y)
 # .. note::
 #     The following code cell throws a runtime error. This is expected.
 # 
-
-a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
-torch.sin_(a)
-
+# ::
+#
+#    a = torch.linspace(0., 2. * math.pi, steps=25, requires_grad=True)
+#    torch.sin_(a)
+#
 
 #########################################################################
 # Autograd Profiler
