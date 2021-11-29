@@ -6,26 +6,25 @@ Forward-mode Auto Differentiation
 This tutorial demonstrates how to use forward-mode AD to compute
 directional derivatives (or equivalently, Jacobian-vector products).
 
-"""
+Basic Usage
+--------------------------------------------------------------------
+Unlike reverse-mode AD, forward-mode AD computes gradients eagerly
+alongside the forward pass. We can use forward-mode AD to compute a
+directional derivative by performing the forward pass as before,
+except we first associate with our input with another tensor representing
+the direction of the directional derivative (or equivalently, the ``v``
+in a Jacobian-vector product). When a input, which we call "primal", is
+associated with a "direction" tensor, which we call "tangent", the
+resultant new tensor object is called a "dual tensor" for its connection
+to dual numbers[0].
 
-######################################################################
-# Basic Usage
-# --------------------------------------------------------------------
-# Unlike reverse-mode AD, forward-mode AD computes gradients eagerly
-# alongside the forward pass. We can use forward-mode AD to compute a
-# directional derivative by performing the forward pass as before,
-# except we first associate with our input with another tensor representing
-# the direction of the directional derivative (or equivalently, the ``v``
-# in a Jacobian-vector product). When a input, which we call "primal", is
-# associated with a "direction" tensor, which we call "tangent", the
-# resultant new tensor object is called a "dual tensor" for its connection
-# to dual numbers[0].
-#
-# As the forward pass is performed, if any input tensors are dual tensors,
-# extra computation is performed to propogate this "sensitivity" of the
-# function.
-#
-# [0] https://en.wikipedia.org/wiki/Dual_number
+As the forward pass is performed, if any input tensors are dual tensors,
+extra computation is performed to propogate this "sensitivity" of the
+function.
+
+[0] https://en.wikipedia.org/wiki/Dual_number
+
+"""
 
 import torch
 import torch.autograd.forward_ad as fwAD
