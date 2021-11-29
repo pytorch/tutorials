@@ -10,7 +10,8 @@
 Model Understanding with Captum
 ===============================
 
-Follow along with the video below or on `youtube <https://www.youtube.com/watch?v=Am2EF9CLu-g>`__.
+Follow along with the video below or on `youtube <https://www.youtube.com/watch?v=Am2EF9CLu-g>`__. Download the notebook and corresponding files
+`here <https://pytorch-tutorial-assets.s3.amazonaws.com/youtube-series/video7.zip>`__.
 
 .. raw:: html
 
@@ -105,10 +106,13 @@ Before you get started, you need to have a Python environment with:
 To install Captum in an Anaconda or pip virtual environment, use the
 appropriate command for your environment below:
 
-::
+With ``conda``:
 
-   conda install captum -c pytorch
-   pip install captum
+``conda install pytorch torchvision captum -c pytorch``
+
+With ``pip``:
+
+``pip install torch torchvision captum``
 
 Restart this notebook in the environment you set up, and you’re ready to
 go!
