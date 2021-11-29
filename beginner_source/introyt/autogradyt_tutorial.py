@@ -36,78 +36,80 @@ computing gradients.
 What Do We Need Autograd For?
 -----------------------------
 
-A machine learning model is a *function*, with inputs and outputs. For
-this discussion, we’ll treat the inputs a as an *i*-dimensional vector
-:math:`\vec{x}`, with elements :math:`x_{i}`. We can then express the
-model, *M*, as a vector-valued function of the input: *:math:`\vec{y} =
-\vec{M}(\vec{x})`*. (We treat the value of M’s output as
-a vector because in general, a model may have any number of outputs.)
-
-Since we’ll mostly be discussing autograd in the context of training,
-our output of interest will be the model’s loss. The *loss function*
-*L(:math:`\vec y`) = L(:math:`\vec M`\ (:math:`\vec x`))* is a
-single-valued scalar function of the model’s output. This function
-expresses how far off our model’s prediction was from a particular
-input’s *ideal* output. *Note: After this point, we will often omit the
-vector sign where it should be contextually clear - e.g., :math:`y`
-instead of :math:`\vec y`.*
-
-In training a model, we want to minimize the loss. In the idealized case
-of a perfect model, that means adjusting its learning weights - that is,
-the adjustable parameters of the function - such that loss is zero for
-all inputs. In the real world, it means an iterative process of nudging
-the learning weights until we see that we get a tolerable loss for a
-wide variety of inputs.
-
-How do we decide how far and in which direction to nudge the weights? We
-want to *minimize* the loss, which means making its first derivative
-with respect to the input equal to 0:
-:math:`\frac{\partial L}{\partial x} = 0`.
-
-Recall, though, that the loss is not *directly* derived from the input,
-but a function of the model’s output (which is a function of the input
-directly), :math:`\frac{\partial L}{\partial x}` =
-:math:`\frac{\partial {L({\vec y})}}{\partial x}`. By the chain rule of
-differential calculus, we have
-:math:`\frac{\partial {L({\vec y})}}{\partial x}` =
-:math:`\frac{\partial L}{\partial y}\frac{\partial y}{\partial x}` =
-:math:`\frac{\partial L}{\partial y}\frac{\partial M(x)}{\partial x}`.
-
-:math:`\frac{\partial M(x)}{\partial x}` is where things get complex.
-The partial derivatives of the model’s outputs with respect to its
-inputs, if we were to expand the expression using the chain rule again,
-would involve many local partial derivatives over every multiplied
-learning weight, every activation function, and every other mathematical
-transformation in the model. The full expression for each such partial
-derivative is the sum of the products of the local gradient of *every
-possible path* through the computation graph that ends with the variable
-whose gradient we are trying to measure.
-
-In particular, the gradients over the learning weights are of interest
-to us - they tell us *what direction to change each weight* to get the
-loss function closer to zero.
-
-Since the number of such local derivatives (each corresponding to a
-separate path through the model’s computation graph) will tend to go up
-exponentially with the depth of a neural network, so does the complexity
-in computing them. This is where autograd comes in: It tracks the
-history of every computation. Every computed tensor in your PyTorch
-model carries a history of its input tensors and the function used to
-create it. Combined with the fact that PyTorch functions meant to act on
-tensors each have a built-in implementation for computing their own
-derivatives, this greatly speeds the computation of the local
-derivatives needed for learning.
-
-A Simple Example
-----------------
-
-That was a lot of theory - but what does it look like to use autograd in
-practice?
-
-Let’s start with a straightforward example. First, we’ll do some imports
-to let us graph our results:
-
 """
+
+###########################################################################
+# A machine learning model is a *function*, with inputs and outputs. For
+# this discussion, we’ll treat the inputs a as an *i*-dimensional vector
+# :math:`\vec{x}`, with elements :math:`x_{i}`. We can then express the
+# model, *M*, as a vector-valued function of the input: :math:`\vec{y} =
+# \vec{M}(\vec{x})`. (We treat the value of M’s output as
+# a vector because in general, a model may have any number of outputs.)
+#
+# Since we’ll mostly be discussing autograd in the context of training,
+# our output of interest will be the model’s loss. The *loss function*
+# L(:math:`\vec{y}`) = L(:math:`\vec{M}`\ (:math:`\vec{x}`)) is a
+# single-valued scalar function of the model’s output. This function
+# expresses how far off our model’s prediction was from a particular
+# input’s *ideal* output. *Note: After this point, we will often omit the
+# vector sign where it should be contextually clear - e.g.,* :math:`y`
+# instead of :math:`\vec y`.
+#
+# In training a model, we want to minimize the loss. In the idealized case
+# of a perfect model, that means adjusting its learning weights - that is,
+# the adjustable parameters of the function - such that loss is zero for
+# all inputs. In the real world, it means an iterative process of nudging
+# the learning weights until we see that we get a tolerable loss for a
+# wide variety of inputs.
+#
+# How do we decide how far and in which direction to nudge the weights? We
+# want to *minimize* the loss, which means making its first derivative
+# with respect to the input equal to 0:
+# :math:`\frac{\partial L}{\partial x} = 0`.
+#
+# Recall, though, that the loss is not *directly* derived from the input,
+# but a function of the model’s output (which is a function of the input
+# directly), :math:`\frac{\partial L}{\partial x}` =
+# :math:`\frac{\partial {L({\vec y})}}{\partial x}`. By the chain rule of
+# differential calculus, we have
+# :math:`\frac{\partial {L({\vec y})}}{\partial x}` =
+# :math:`\frac{\partial L}{\partial y}\frac{\partial y}{\partial x}` =
+# :math:`\frac{\partial L}{\partial y}\frac{\partial M(x)}{\partial x}`.
+#
+# :math:`\frac{\partial M(x)}{\partial x}` is where things get complex.
+# The partial derivatives of the model’s outputs with respect to its
+# inputs, if we were to expand the expression using the chain rule again,
+# would involve many local partial derivatives over every multiplied
+# learning weight, every activation function, and every other mathematical
+# transformation in the model. The full expression for each such partial
+# derivative is the sum of the products of the local gradient of *every
+# possible path* through the computation graph that ends with the variable
+# whose gradient we are trying to measure.
+#
+# In particular, the gradients over the learning weights are of interest
+# to us - they tell us *what direction to change each weight* to get the
+# loss function closer to zero.
+#
+# Since the number of such local derivatives (each corresponding to a
+# separate path through the model’s computation graph) will tend to go up
+# exponentially with the depth of a neural network, so does the complexity
+# in computing them. This is where autograd comes in: It tracks the
+# history of every computation. Every computed tensor in your PyTorch
+# model carries a history of its input tensors and the function used to
+# create it. Combined with the fact that PyTorch functions meant to act on
+# tensors each have a built-in implementation for computing their own
+# derivatives, this greatly speeds the computation of the local
+# derivatives needed for learning.
+#
+# A Simple Example
+# ----------------
+#
+# That was a lot of theory - but what does it look like to use autograd in
+# practice?
+#
+# Let’s start with a straightforward example. First, we’ll do some imports
+# to let us graph our results:
+#
 
 # %matplotlib inline
 
@@ -500,11 +502,15 @@ print(prf.key_averages().table(sort_by='self_cpu_time_total'))
 # the derivative of every output with respect to every input, called the
 # *Jacobian:*
 # 
-# :raw-latex:`\begin{align}J=\left(\begin{array}{ccc}
-#    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
-#    \vdots & \ddots & \vdots\\
-#    \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
-#    \end{array}\right)\end{align}`
+# .. math::
+#
+#      J
+#      =
+#      \left(\begin{array}{ccc}
+#      \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{1}}{\partial x_{n}}\\
+#      \vdots & \ddots & \vdots\\
+#      \frac{\partial y_{m}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
+#      \end{array}\right)
 # 
 # If you have a second function, :math:`l=g\left(\vec{y}\right)` that
 # takes m-dimensional input (that is, the same dimensionality as the
@@ -521,7 +527,9 @@ print(prf.key_averages().table(sort_by='self_cpu_time_total'))
 # If we multiply the first function’s Jacobian by the gradient of the
 # second function, and apply the chain rule, we get:
 # 
-# :raw-latex:`\begin{align}J^{T}\cdot v=\left(\begin{array}{ccc}
+# .. math::
+#
+#    J^{T}\cdot v=\left(\begin{array}{ccc}
 #    \frac{\partial y_{1}}{\partial x_{1}} & \cdots & \frac{\partial y_{m}}{\partial x_{1}}\\
 #    \vdots & \ddots & \vdots\\
 #    \frac{\partial y_{1}}{\partial x_{n}} & \cdots & \frac{\partial y_{m}}{\partial x_{n}}
@@ -533,10 +541,10 @@ print(prf.key_averages().table(sort_by='self_cpu_time_total'))
 #    \frac{\partial l}{\partial x_{1}}\\
 #    \vdots\\
 #    \frac{\partial l}{\partial x_{n}}
-#    \end{array}\right)\end{align}`
+#    \end{array}\right)
 # 
-# *Note: You could also use the equivalent operation :math:`v^{T}\cdot J`,
-# and get back a row vector.*
+# Note: You could also use the equivalent operation :math:`v^{T}\cdot J`,
+# and get back a row vector.
 # 
 # The resulting column vector is the *gradient of the second function with
 # respect to the inputs of the first* - or in the case of our model and
