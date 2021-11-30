@@ -1,10 +1,10 @@
-`Introduction <introyt1_tutorial.html>`_ ||
-`Tensors <tensors_deeper_tutorial.html>`_ ||
-`Autograd <autogradyt_tutorial.html>`_ ||
-`Building Models <modelsyt_tutorial.html>`_ ||
-`TensorBoard Support <tensorboardyt_tutorial.html>`_ ||
-`Training Models <trainingyt_tutorial.html>`_ ||
-`Model Understanding <captumyt_tutorial.html>`_
+`Introduction <introyt/introyt1_tutorial.html>`_ ||
+`Tensors <introyt/tensors_deeper_tutorial.html>`_ ||
+`Autograd <introyt/autogradyt_tutorial.html>`_ ||
+`Building Models <introyt/modelsyt_tutorial.html>`_ ||
+`TensorBoard Support <introyt/tensorboardyt_tutorial.html>`_ ||
+`Training Models <introyt/trainingyt_tutorial.html>`_ ||
+`Model Understanding <introyt/captumyt_tutorial.html>`_
 
 Introduction to PyTorch - YouTube Series
 ========================================
