@@ -360,5 +360,5 @@ for epoch in range(EPOCHS):
 #    pytorch.org <https://pytorch.org/tutorials/>`__ contains tutorials on
 #    a broad variety of training tasks, including classification in
 #    different domains, generative adversarial networks, reinforcement
-#    learning, and more
+#    learning, and more 
 # 
