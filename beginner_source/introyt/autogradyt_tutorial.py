@@ -4,8 +4,8 @@
 **Autograd** ||
 `Building Models <modelsyt_tutorial.html>`_ ||
 `TensorBoard Support <tensorboardyt_tutorial.html>`_ ||
-`Training Models <trainingyt_tutorial.html>`_ ||
-`Model Understanding <captumyt_tutorial.html>`_
+`Training Models <trainingyt.html>`_ ||
+`Model Understanding <captumyt.html>`_
 
 The Fundamentals of Autograd
 ============================
