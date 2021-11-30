@@ -1,6 +1,6 @@
 """
-Speech Recognition with Torchaudio
-==================================
+Speech Recognition with Wav2Vec2
+================================
 
 **Author**: `Moto Hira <moto@fb.com>`__
 
@@ -39,34 +39,31 @@ pre-trained models from wav2vec 2.0
 
 # %matplotlib inline
 
+import os
+
 import torch
 import torchaudio
+import requests
+import matplotlib
+import matplotlib.pyplot as plt
+import IPython
+
+matplotlib.rcParams['figure.figsize'] = [16.0, 4.8]
+
+torch.random.manual_seed(0)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 print(torch.__version__)
 print(torchaudio.__version__)
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
 print(device)
 
+SPEECH_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+SPEECH_FILE = "_assets/speech.wav"
 
-import matplotlib
-import matplotlib.pyplot as plt
-
-[width, height] = matplotlib.rcParams['figure.figsize']
-if width < 10:
-  matplotlib.rcParams['figure.figsize'] = [width * 2.5, height]
-
-import IPython
-
-import requests
-
-SPEECH_FILE = "speech.wav"
-
-url = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
-with open(SPEECH_FILE, 'wb') as file_:
-  file_.write(requests.get(url).content)
-
+if not os.path.exists(SPEECH_FILE):
+  os.makedirs('_assets', exist_ok=True)
+  with open(SPEECH_FILE, 'wb') as file:
+    file.write(requests.get(SPEECH_URL).content)
 
 
 ######################################################################
@@ -88,11 +85,10 @@ with open(SPEECH_FILE, 'wb') as file_:
 # for other downstream tasks as well, but this tutorial does not
 # cover that.
 # 
-# We will use ``torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H`` here.
+# We will use :py:func:`torchaudio.pipelines.WAV2VEC2_ASR_BASE_960H` here.
 # 
-# There are multiple models available in
-# ``torchaudio.pipelines``. Please check the
-# `documentation <https://pytorch.org/audio/stable/pipelines.html>`__ for
+# There are multiple models available as
+# :py:mod:`torchaudio.pipelines`. Please check the documentation for
 # the detail of how they are trained.
 # 
 # The bundle object provides the interface to instantiate model and other
@@ -125,21 +121,20 @@ print(model.__class__)
 # Creative Commos BY 4.0.
 # 
 
-IPython.display.display(IPython.display.Audio(SPEECH_FILE))
+IPython.display.Audio(SPEECH_FILE)
 
 
 ######################################################################
-# To load data, we use ``torchaudio.load``.
+# To load data, we use :py:func:`torchaudio.load`.
 # 
 # If the sampling rate is different from what the pipeline expects, then
-# we can use ``torchaudio.functional.resample`` for resampling.
+# we can use :py:func:`torchaudio.functional.resample` for resampling.
 # 
-# **Note** -
-# ```torchaudio.functional.resample`` <https://pytorch.org/audio/stable/functional.html#resample>`__
-# works on CUDA tensors as well. - When performing resampling multiple
-# times on the same set of sample rates, using
-# ```torchaudio.transforms.Resample`` <https://pytorch.org/audio/stable/transforms.html#resample>`__
-# might improve the performace.
+# .. note::
+#
+#    - :py:func:`torchaudio.functional.resample` works on CUDA tensors as well.
+#    - When performing resampling multiple times on the same set of sample rates,
+#      using :py:func:`torchaudio.transforms.Resample` might improve the performace.
 # 
 
 waveform, sample_rate = torchaudio.load(SPEECH_FILE)
@@ -155,9 +150,10 @@ if sample_rate != bundle.sample_rate:
 # 
 # The next step is to extract acoustic features from the audio.
 # 
-# Note that Wav2Vec2 models fine-tuned for ASR task can perform feature
-# extraction and classification with one step, but for the sake of the
-# tutorial, we also show how to perform feature extraction here.
+# .. note::
+#    Wav2Vec2 models fine-tuned for ASR task can perform feature
+#    extraction and classification with one step, but for the sake of the
+#    tutorial, we also show how to perform feature extraction here.
 # 
 
 with torch.inference_mode():
@@ -169,12 +165,14 @@ with torch.inference_mode():
 # a transformer layer.
 # 
 
+fig, ax = plt.subplots(len(features), 1, figsize=(16, 4.3 * len(features)))
 for i, feats in enumerate(features):
-  plt.imshow(feats[0].cpu())
-  plt.title(f"Feature from transformer layer {i+1}")
-  plt.xlabel("Feature dimension")
-  plt.ylabel("Frame (time-axis)")
-  plt.show()
+  ax[i].imshow(feats[0].cpu())
+  ax[i].set_title(f"Feature from transformer layer {i+1}")
+  ax[i].set_xlabel("Feature dimension")
+  ax[i].set_ylabel("Frame (time-axis)")
+plt.tight_layout()
+plt.show()
 
 
 ######################################################################
@@ -203,7 +201,6 @@ plt.imshow(emission[0].cpu().T)
 plt.title("Classification result")
 plt.xlabel("Frame (time-axis)")
 plt.ylabel("Class")
-plt.colorbar()
 plt.show()
 print("Class labels:", bundle.get_labels())
 
@@ -217,7 +214,6 @@ print("Class labels:", bundle.get_labels())
 # ``fairseq`` implementation where these labels are added by default but
 # not used during the training.
 # 
-
 
 ######################################################################
 # Generating transcripts
@@ -241,7 +237,7 @@ print("Class labels:", bundle.get_labels())
 # There are many decoding techniques proposed, and they require external
 # resources, such as word dictionary and language models.
 # 
-# In this tutorial, for the sake of simplicity, we will perform greeding
+# In this tutorial, for the sake of simplicity, we will perform greedy
 # decoding which does not depend on such external components, and simply
 # pick up the best hypothesis at each time step. Therefore, the context
 # information are not used, and only one transcript can be generated.
@@ -259,6 +255,7 @@ class GreedyCTCDecoder(torch.nn.Module):
     """Given a sequence emission over labels, get the best path string
     Args:
       emission (Tensor): Logit tensors. Shape `[num_seq, num_label]`.
+
     Returns:
       str: The resulting transcript
     """
@@ -273,24 +270,22 @@ class GreedyCTCDecoder(torch.nn.Module):
 # 
 
 decoder = GreedyCTCDecoder(
-    labels=bundle.get_labels(), 
+    labels=bundle.get_labels(),
     ignore=(0, 1, 2, 3),
 )
 transcript = decoder(emission[0])
 
 
 ######################################################################
-# Let’s check the result and listen again the audio.
+# Let’s check the result and listen again to the audio.
 # 
 
 print(transcript)
-IPython.display.display(IPython.display.Audio(SPEECH_FILE))
+IPython.display.Audio(SPEECH_FILE)
 
 
 ######################################################################
-# There are few remarks in decoding.
-# 
-# Firstly, the ASR model is fine-tuned using a loss function called CTC.
+# The ASR model is fine-tuned using a loss function called Connectionist Temporal Classification (CTC).
 # The detail of CTC loss is explained
 # `here <https://distill.pub/2017/ctc/>`__. In CTC a blank token (ϵ) is a
 # special token which represents a repetition of the previous symbol. In
@@ -301,12 +296,11 @@ IPython.display.display(IPython.display.Audio(SPEECH_FILE))
 # These also have to be ignored.
 # 
 
-
 ######################################################################
 # Conclusion
 # ----------
 # 
-# In this tutorial, we looked at how to use ``torchaudio.pipeline`` to
+# In this tutorial, we looked at how to use :py:mod:`torchaudio.pipelines` to
 # perform acoustic feature extraction and speech recognition. Constructing
 # a model and getting the emission is as short as two lines.
 # 
