@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Forward-mode Auto Differentiation
-=================================
+Forward-mode Automatic Differentiation
+======================================
 
 This tutorial demonstrates how to use forward-mode AD to compute
 directional derivatives (or equivalently, Jacobian-vector products).
@@ -11,9 +11,9 @@ Basic Usage
 Unlike reverse-mode AD, forward-mode AD computes gradients eagerly
 alongside the forward pass. We can use forward-mode AD to compute a
 directional derivative by performing the forward pass as before,
-except we first associate with our input with another tensor representing
+except we first associate our input with another tensor representing
 the direction of the directional derivative (or equivalently, the ``v``
-in a Jacobian-vector product). When a input, which we call "primal", is
+in a Jacobian-vector product). When an input, which we call "primal", is
 associated with a "direction" tensor, which we call "tangent", the
 resultant new tensor object is called a "dual tensor" for its connection
 to dual numbers[0].
@@ -21,8 +21,6 @@ to dual numbers[0].
 As the forward pass is performed, if any input tensors are dual tensors,
 extra computation is performed to propogate this "sensitivity" of the
 function.
-
-[0] https://en.wikipedia.org/wiki/Dual_number
 
 """
 
@@ -52,8 +50,12 @@ with fwAD.dual_level():
     # It is also important to note that the dual tensor created by
     # ``make_dual`` is a view of the primal.
     dual_input = fwAD.make_dual(primal, tangent)
-    assert dual_input._base is primal
     assert fwAD.unpack_dual(dual_input).tangent is tangent
+
+    # To demonstrate the case where the copy of the tangent happens,
+    # we pass in a tangent with a layout different from that of the primal
+    dual_input_alt = fwAD.make_dual(primal, tangent.T)
+    assert fwAD.unpack_dual(dual_input_alt).tangent is not tangent
 
     # Tensors that do not not have an associated tangent are automatically
     # considered to have a zero-filled tangent of the same shape.
@@ -65,7 +67,6 @@ with fwAD.dual_level():
     jvp = fwAD.unpack_dual(dual_output).tangent
 
 assert fwAD.unpack_dual(dual_output).tangent is None
-output = fwAD.unpack_dual(dual_output)
 
 ######################################################################
 # Usage with Modules
@@ -145,7 +146,7 @@ class Fn(torch.autograd.Function):
 
 fn = Fn.apply
 
-primal = torch.randn(10, 10, dtype=torch.double, requires_grad=True)  # Fix this?
+primal = torch.randn(10, 10, dtype=torch.double, requires_grad=True)
 tangent = torch.randn(10, 10)
 
 with fwAD.dual_level():
@@ -164,3 +165,6 @@ with fwAD.dual_level():
 torch.autograd.gradcheck(Fn.apply, (primal,), check_forward_ad=True,
                          check_backward_ad=False, check_undefined_grad=False,
                          check_batched_grad=False)
+
+######################################################################
+# [0] https://en.wikipedia.org/wiki/Dual_number
