@@ -1,0 +1,1219 @@
+
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Building Models with PyTorch — PyTorch Tutorials 1.10.0+cu102 documentation</title>
+<link href="../../_static/css/theme.css" rel="stylesheet" type="text/css"/>
+<!-- <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" /> -->
+<link href="../../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/gallery.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" rel="stylesheet" type="text/css"/>
+<link href="../../_static/katex-math.css" rel="stylesheet" type="text/css"/>
+<link href="../../genindex.html" rel="index" title="Index"/>
+<link href="../../search.html" rel="search" title="Search"/>
+<link href="tensorboardyt_tutorial.html" rel="next" title="PyTorch TensorBoard Support"/>
+<link href="autogradyt_tutorial.html" rel="prev" title="The Fundamentals of Autograd"/>
+<!-- Google Analytics -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+<!-- End Google Analytics -->
+<script src="../../_static/js/modernizr.min.js"></script>
+<!-- Preload the theme fonts -->
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-book.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" rel="preload" type="font/woff2"/>
+<!-- Preload the katex fonts -->
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" rel="preload" type="font/woff2"/>
+<link as="font" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" rel="preload" type="font/woff2"/>
+<link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" rel="stylesheet"/>
+</head>
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+<div class="container">
+<div class="header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+<div class="resources-dropdown-menu">
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+<span class="dropdown-title">PyTorch</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+<span class="dropdown-title">torchaudio</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+<span class="dropdown-title">torchtext</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+<span class="dropdown-title">torchvision</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/elastic/">
+<span class="dropdown-title">TorchElastic</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+<span class="dropdown-title">TorchServe</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+<span class="dropdown-title">PyTorch on XLA Devices</span>
+<p></p>
+</a>
+</div>
+</div></li>
+<li>
+<div class="resources-dropdown" data-toggle="resources-dropdown" id="resourcesDropdownButton">
+<a class="resource-option with-down-arrow">
+                Resources
+              </a>
+<div class="resources-dropdown-menu">
+<a class="nav-dropdown-item" href="https://pytorch.org/features">
+<span class="dropdown-title">About</span>
+<p>Learn about PyTorch’s features and capabilities</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+<span class="dropdown-title">Community</span>
+<p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/resources">
+<span class="dropdown-title">Developer Resources</span>
+<p>Find resources and get questions answered</p>
+</a>
+<a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+<span class="dropdown-title">Forums</span>
+<p>A place to discuss PyTorch code, issues, install, research</p>
+</a>
+<a class="nav-dropdown-item" href="https://pytorch.org/hub">
+<span class="dropdown-title">Models (Beta)</span>
+<p>Discover, publish, and reuse pre-trained models</p>
+</a>
+</div>
+</div>
+</li>
+<li>
+<a href="https://github.com/pytorch/pytorch">GitHub</a>
+</li>
+</ul>
+</div>
+<a class="main-menu-open-button" data-behavior="open-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<body class="pytorch-body">
+<div class="table-of-contents-link-wrapper">
+<span>Table of Contents</span>
+<a class="toggle-table-of-contents" data-behavior="toggle-table-of-contents" href="#"></a>
+</div>
+<nav class="pytorch-left-menu" data-toggle="wy-nav-shift" id="pytorch-left-menu">
+<div class="pytorch-side-scroll">
+<div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
+<div class="pytorch-left-menu-search">
+<div class="version">
+                  1.10.0+cu102
+                </div>
+<div role="search">
+<form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input name="q" placeholder="Search Tutorials" type="text"/>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
+</form>
+</div>
+</div>
+<p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../recipes/recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/speech_command_classification_with_torchaudio_tutorial.html">Speech Command Classification with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../translation_transformer.html">Language Translation with nn.Transformer and torchtext</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="pytorch-container">
+<div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+<div class="pytorch-breadcrumbs-wrapper">
+<div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="pytorch-breadcrumbs">
+<li>
+<a href="../../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+<li>Building Models with PyTorch</li>
+<li class="pytorch-breadcrumbs-aside">
+<a href="../../_sources/beginner/introyt/modelsyt_tutorial.rst.txt" rel="nofollow"><img src="../../_static/images/view-page-source-icon.svg"/></a>
+</li>
+</ul>
+</div>
+</div>
+<div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+</div>
+<section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
+<div class="pytorch-content-left">
+<div class="pytorch-call-to-action-links">
+<div id="tutorial-type">beginner/introyt/modelsyt_tutorial</div>
+<div id="google-colab-link">
+<img class="call-to-action-img" src="../../_static/images/pytorch-colab.svg"/>
+<div class="call-to-action-desktop-view">Run in Google Colab</div>
+<div class="call-to-action-mobile-view">Colab</div>
+</div>
+<div id="download-notebook-link">
+<img class="call-to-action-notebook-img" src="../../_static/images/pytorch-download.svg"/>
+<div class="call-to-action-desktop-view">Download Notebook</div>
+<div class="call-to-action-mobile-view">Notebook</div>
+</div>
+<div id="github-view-link">
+<img class="call-to-action-img" src="../../_static/images/pytorch-github.svg"/>
+<div class="call-to-action-desktop-view">View on GitHub</div>
+<div class="call-to-action-mobile-view">GitHub</div>
+</div>
+</div>
+<div class="rst-content">
+<div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="sphx-glr-download-link-note admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Click <a class="reference internal" href="#sphx-glr-download-beginner-introyt-modelsyt-tutorial-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<p class="sphx-glr-example-title" id="sphx-glr-beginner-introyt-modelsyt-tutorial-py"><a class="reference external" href="introyt1_tutorial.html">Introduction</a> ||
+<a class="reference external" href="tensors_deeper_tutorial.html">Tensors</a> ||
+<a class="reference external" href="autogradyt_tutorial.html">Autograd</a> ||
+<strong>Building Models</strong> ||
+<a class="reference external" href="tensorboardyt_tutorial.html">TensorBoard Support</a> ||
+<a class="reference external" href="trainingyt.html">Training Models</a> ||
+<a class="reference external" href="captumyt.html">Model Understanding</a></p>
+<div class="section" id="building-models-with-pytorch">
+<h1>Building Models with PyTorch<a class="headerlink" href="#building-models-with-pytorch" title="Permalink to this headline">¶</a></h1>
+<p>Follow along with the video below or on <a class="reference external" href="https://www.youtube.com/watch?v=OSqIP-mOWOI">youtube</a>.</p>
+<div style="margin-top:10px; margin-bottom:10px;">
+<iframe allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/OSqIP-mOWOI" width="560"></iframe>
+</div><div class="section" id="torch-nn-module-and-torch-nn-parameter">
+<h2><code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code><a class="headerlink" href="#torch-nn-module-and-torch-nn-parameter" title="Permalink to this headline">¶</a></h2>
+<p>In this video, we’ll be discussing some of the tools PyTorch makes
+available for building deep learning networks.</p>
+<p>Except for <code class="docutils literal notranslate"><span class="pre">Parameter</span></code>, the classes we discuss in this video are all
+subclasses of <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code>. This is the PyTorch base class meant
+to encapsulate behaviors specific to PyTorch Models and their
+components.</p>
+<p>One important behavior of <code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> is registering parameters.
+If a particular <code class="docutils literal notranslate"><span class="pre">Module</span></code> subclass has learning weights, these weights
+are expressed as instances of <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code>. The <code class="docutils literal notranslate"><span class="pre">Parameter</span></code>
+class is a subclass of <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>, with the special behavior that
+when they are assigned as attributes of a <code class="docutils literal notranslate"><span class="pre">Module</span></code>, they are added to
+the list of that modules parameters. These parameters may be accessed
+through the <code class="docutils literal notranslate"><span class="pre">parameters()</span></code> method on the <code class="docutils literal notranslate"><span class="pre">Module</span></code> class.</p>
+<p>As a simple example, here’s a very simple model with two linear layers
+and an activation function. We’ll create an instance of it and ask it to
+report on its parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="k">class</span> <span class="nc">TinyModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TinyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softmax</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+<span class="n">tinymodel</span> <span class="o">=</span> <span class="n">TinyModel</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">'The model:'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tinymodel</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Just one layer:'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tinymodel</span><span class="o">.</span><span class="n">linear2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Model params:'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">tinymodel</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Layer params:'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">tinymodel</span><span class="o">.</span><span class="n">linear2</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>The model:
+TinyModel(
+  (linear1): Linear(in_features=100, out_features=200, bias=True)
+  (activation): ReLU()
+  (linear2): Linear(in_features=200, out_features=10, bias=True)
+  (softmax): Softmax(dim=None)
+)
+
+
+Just one layer:
+Linear(in_features=200, out_features=10, bias=True)
+
+
+Model params:
+Parameter containing:
+tensor([[-0.0641, -0.0286,  0.0168,  ...,  0.0221,  0.0152,  0.0039],
+        [ 0.0970, -0.0303, -0.0296,  ...,  0.0607, -0.0393,  0.0624],
+        [ 0.0572, -0.0989, -0.0960,  ..., -0.0246,  0.0288, -0.0661],
+        ...,
+        [ 0.0161, -0.0851,  0.0819,  ...,  0.0744, -0.0234,  0.0280],
+        [-0.0418, -0.0279,  0.0605,  ...,  0.0127, -0.0829,  0.0392],
+        [ 0.0648, -0.0634, -0.0231,  ..., -0.0111, -0.0478, -0.0015]],
+       requires_grad=True)
+Parameter containing:
+tensor([-0.0980,  0.0079,  0.0764,  0.0523,  0.0421,  0.0237,  0.0275,  0.0133,
+        -0.0499,  0.0139, -0.0029,  0.0227, -0.0765, -0.0388,  0.0708, -0.0993,
+         0.0872,  0.0822, -0.0778, -0.0517,  0.0082, -0.0303,  0.0793, -0.0845,
+         0.0716,  0.0777, -0.0398,  0.0404,  0.0573,  0.0384,  0.0896, -0.0233,
+        -0.0039, -0.0225,  0.0645,  0.0809, -0.0032,  0.0433,  0.0700,  0.0553,
+        -0.0503,  0.0478,  0.0123,  0.0765, -0.0974, -0.0755,  0.0114,  0.0594,
+         0.0383, -0.0460, -0.0050,  0.0794,  0.0248, -0.0200, -0.0392,  0.0105,
+         0.0796,  0.0074, -0.0606,  0.0666,  0.0448, -0.0594, -0.0347,  0.0967,
+        -0.0847,  0.0291,  0.0353, -0.0114, -0.0747, -0.0755,  0.0545, -0.0348,
+         0.0932,  0.0108,  0.0434, -0.0468,  0.0939,  0.0130, -0.0530,  0.0353,
+         0.0624,  0.0123, -0.0242, -0.0692,  0.0857,  0.0975,  0.0073, -0.0949,
+         0.0857,  0.0348, -0.0708,  0.0296,  0.0181,  0.0150,  0.0464,  0.0854,
+        -0.0667, -0.0052,  0.0818,  0.0277, -0.0161,  0.0247,  0.0533, -0.0539,
+         0.0748, -0.0675,  0.0268,  0.0746,  0.0704,  0.0394,  0.0562, -0.0450,
+        -0.0542,  0.0561, -0.0298,  0.0833,  0.0098, -0.0246, -0.0303,  0.0971,
+        -0.0888, -0.0186,  0.0204,  0.0404, -0.0917,  0.0786,  0.0050, -0.0223,
+        -0.0948, -0.0179, -0.0716,  0.0016, -0.0205,  0.0006,  0.0423,  0.0065,
+         0.0796,  0.0322,  0.0140, -0.0862, -0.0065, -0.0287,  0.0383,  0.0148,
+         0.0430, -0.0615,  0.0550, -0.0136,  0.0772, -0.0073, -0.0654,  0.0016,
+         0.0994,  0.0194,  0.0486,  0.0350,  0.0335, -0.0694,  0.0248,  0.0455,
+        -0.0621,  0.0569, -0.0932,  0.0211,  0.0374, -0.0189, -0.0304,  0.0891,
+        -0.0999, -0.0158, -0.0127, -0.0868,  0.0602,  0.0119, -0.0735,  0.0817,
+        -0.0012,  0.0240,  0.0969, -0.0478,  0.0759, -0.0724,  0.0651,  0.0194,
+         0.0328, -0.0696, -0.0574,  0.0573, -0.0119, -0.0610,  0.0642, -0.0452,
+        -0.0069,  0.0058,  0.0460, -0.0505,  0.0251,  0.0321,  0.0644,  0.0805],
+       requires_grad=True)
+Parameter containing:
+tensor([[-0.0618, -0.0036,  0.0293,  ..., -0.0011,  0.0525, -0.0008],
+        [ 0.0116, -0.0488, -0.0028,  ...,  0.0521,  0.0556, -0.0134],
+        [-0.0529, -0.0119, -0.0153,  ...,  0.0145,  0.0186,  0.0025],
+        ...,
+        [ 0.0202,  0.0648, -0.0650,  ..., -0.0280, -0.0495,  0.0040],
+        [-0.0492,  0.0697, -0.0589,  ..., -0.0618, -0.0628,  0.0222],
+        [-0.0445,  0.0036, -0.0104,  ..., -0.0250, -0.0529,  0.0416]],
+       requires_grad=True)
+Parameter containing:
+tensor([-0.0222, -0.0032,  0.0576, -0.0204, -0.0420,  0.0634,  0.0418, -0.0583,
+        -0.0030,  0.0279], requires_grad=True)
+
+
+Layer params:
+Parameter containing:
+tensor([[-0.0618, -0.0036,  0.0293,  ..., -0.0011,  0.0525, -0.0008],
+        [ 0.0116, -0.0488, -0.0028,  ...,  0.0521,  0.0556, -0.0134],
+        [-0.0529, -0.0119, -0.0153,  ...,  0.0145,  0.0186,  0.0025],
+        ...,
+        [ 0.0202,  0.0648, -0.0650,  ..., -0.0280, -0.0495,  0.0040],
+        [-0.0492,  0.0697, -0.0589,  ..., -0.0618, -0.0628,  0.0222],
+        [-0.0445,  0.0036, -0.0104,  ..., -0.0250, -0.0529,  0.0416]],
+       requires_grad=True)
+Parameter containing:
+tensor([-0.0222, -0.0032,  0.0576, -0.0204, -0.0420,  0.0634,  0.0418, -0.0583,
+        -0.0030,  0.0279], requires_grad=True)
+</pre></div>
+</div>
+<p>This shows the fundamental structure of a PyTorch model: there is an
+<code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method that defines the layers and other components of a
+model, and a <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method where the computation gets done. Note
+that we can print the model, or any of its submodules, to learn about
+its structure.</p>
+</div>
+<div class="section" id="common-layer-types">
+<h2>Common Layer Types<a class="headerlink" href="#common-layer-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="linear-layers">
+<h3>Linear Layers<a class="headerlink" href="#linear-layers" title="Permalink to this headline">¶</a></h3>
+<p>The most basic type of neural network layer is a <em>linear</em> or <em>fully
+connected</em> layer. This is a layer where every input influences every
+output of the layer to a degree specified by the layer’s weights. If a
+model has <em>m</em> inputs and <em>n</em> outputs, the weights will be an <em>m*x*n</em>
+matrix. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">lin</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Input:'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Weight and Bias parameters:'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">lin</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+<span class="n">y</span> <span class="o">=</span> <span class="n">lin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n\n</span><span class="s1">Output:'</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Input:
+tensor([[0.2848, 0.2228, 0.8014]])
+
+
+Weight and Bias parameters:
+Parameter containing:
+tensor([[-0.1869, -0.3369,  0.5412],
+        [ 0.5234,  0.3791,  0.3379]], requires_grad=True)
+Parameter containing:
+tensor([-0.3805,  0.4395], requires_grad=True)
+
+
+Output:
+tensor([[-0.0752,  0.9438]], grad_fn=&lt;AddmmBackward0&gt;)
+</pre></div>
+</div>
+<p>If you do the matrix multiplication of <code class="docutils literal notranslate"><span class="pre">x</span></code> by the linear layer’s
+weights, and add the biases, you’ll find that you get the output vector
+<code class="docutils literal notranslate"><span class="pre">y</span></code>.</p>
+<p>One other important feature to note: When we checked the weights of our
+layer with <code class="docutils literal notranslate"><span class="pre">lin.weight</span></code>, it reported itself as a <code class="docutils literal notranslate"><span class="pre">Parameter</span></code> (which
+is a subclass of <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>), and let us know that it’s tracking
+gradients with autograd. This is a default behavior for <code class="docutils literal notranslate"><span class="pre">Parameter</span></code>
+that differs from <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>.</p>
+<p>Linear layers are used widely in deep learning models. One of the most
+common places you’ll see them is in classifier models, which will
+usually have one or more linear layers at the end, where the last layer
+will have <em>n</em> outputs, where <em>n</em> is the number of classes the classifier
+addresses.</p>
+</div>
+<div class="section" id="convolutional-layers">
+<h3>Convolutional Layers<a class="headerlink" href="#convolutional-layers" title="Permalink to this headline">¶</a></h3>
+<p><em>Convolutional</em> layers are built to handle data with a high degree of
+spatial correlation. They are very commonly used in computer vision,
+where they detect close groupings of features which the compose into
+higher-level features. They pop up in other contexts too - for example,
+in NLP applications, where the a word’s immediate context (that is, the
+other words nearby in the sequence) can affect the meaning of a
+sentence.</p>
+<p>We saw convolutional layers in action in LeNet5 in an earlier video:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+
+<span class="k">class</span> <span class="nc">LeNet</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LeNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="c1"># 1 input image channel (black &amp; white), 6 output channels, 3x3 square convolution</span>
+        <span class="c1"># kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="c1"># an affine operation: y = Wx + b</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">6</span> <span class="o">*</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>  <span class="c1"># 6*6 from image dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">120</span><span class="p">,</span> <span class="mi">84</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">84</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># Max pooling over a (2, 2) window</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="c1"># If the size is a square you can only specify a single number</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_flat_features</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">num_flat_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># all dimensions except the batch dimension</span>
+        <span class="n">num_features</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">size</span><span class="p">:</span>
+            <span class="n">num_features</span> <span class="o">*=</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">num_features</span>
+</pre></div>
+</div>
+<p>Let’s break down what’s happening in the convolutional layers of this
+model. Starting with <code class="docutils literal notranslate"><span class="pre">conv1</span></code>:</p>
+<ul class="simple">
+<li>LeNet5 is meant to take in a 1x32x32 black &amp; white image. <strong>The first
+argument to a convolutional layer’s constructor is the number of
+input channels.</strong> Here, it is 1. If we were building this model to
+look at 3-color channels, it would be 3.</li>
+<li>A convolutional layer is like a window that scans over the image,
+looking for a pattern it recognizes. These patterns are called
+<em>features,</em> and one of the parameters of a convolutional layer is the
+number of features we would like it to learn. <strong>This is the second
+argument to the constructor is the number of output features.</strong> Here,
+we’re asking our layer to learn 6 features.</li>
+<li>Just above, I likened the convolutional layer to a window - but how
+big is the window? <strong>The third argument is the window or kernel
+size.</strong> Here, the “5” means we’ve chosen a 5x5 kernel. (If you want a
+kernel with height different from width, you can specify a tuple for
+this argument - e.g., <code class="docutils literal notranslate"><span class="pre">(3,</span> <span class="pre">5)</span></code> to get a 3x5 convolution kernel.)</li>
+</ul>
+<p>The output of a convolutional layer is an <em>activation map</em> - a spatial
+representation of the presence of features in the input tensor.
+<code class="docutils literal notranslate"><span class="pre">conv1</span></code> will give us an output tensor of 6x28x28; 6 is the number of
+features, and 28 is the height and width of our map. (The 28 comes from
+the fact that when scanning a 5-pixel window over a 32-pixel row, there
+are only 28 valid positions.)</p>
+<p>We then pass the output of the convolution through a ReLU activation
+function (more on activation functions later), then through a max
+pooling layer. The max pooling layer takes features near each other in
+the activation map and groups them together. It does this by reducing
+the tensor, merging every 2x2 group of cells in the output into a single
+cell, and assigning that cell the maximum value of the 4 cells that went
+into it. This gives us a lower-resolution version of the activation map,
+with dimensions 6x14x14.</p>
+<p>Our next convolutional layer, <code class="docutils literal notranslate"><span class="pre">conv2</span></code>, expects 6 input channels
+(corresponding to the 6 features sought by the first layer), has 16
+output channels, and a 3x3 kernel. It puts out a 16x12x12 activation
+map, which is again reduced by a max pooling layer to 16x6x6. Prior to
+passing this output to the linear layers, it is reshaped to a 16 * 6 *
+6 = 576-element vector for consumption by the next layer.</p>
+<p>There are convolutional layers for addressing 1D, 2D, and 3D tensors.
+There are also many more optional arguments for a conv layer
+constructor, including stride length(e.g., only scanning every second or
+every third position) in the input, padding (so you can scan out to the
+edges of the input), and more. See the
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.html#convolution-layers">documentation</a>
+for more information.</p>
+</div>
+<div class="section" id="recurrent-layers">
+<h3>Recurrent Layers<a class="headerlink" href="#recurrent-layers" title="Permalink to this headline">¶</a></h3>
+<p><em>Recurrent neural networks</em> (or <em>RNNs)</em> are used for sequential data -
+anything from time-series measurements from a scientific instrument to
+natural language sentences to DNA nucleotides. An RNN does this by
+maintaining a <em>hidden state</em> that acts as a sort of memory for what it
+has seen in the sequence so far.</p>
+<p>The internal structure of an RNN layer - or its variants, the LSTM (long
+short-term memory) and GRU (gated recurrent unit) - is moderately
+complex and beyond the scope of this video, but we’ll show you what one
+looks like in action with an LSTM-based part-of-speech tagger (a type of
+classifier that tells you if a word is a noun, verb, etc.):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LSTMTagger</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">tagset_size</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LSTMTagger</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_embeddings</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">)</span>
+
+        <span class="c1"># The LSTM takes word embeddings as inputs, and outputs hidden states</span>
+        <span class="c1"># with dimensionality hidden_dim.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">embedding_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">)</span>
+
+        <span class="c1"># The linear layer that maps from hidden state space to tag space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">tagset_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sentence</span><span class="p">):</span>
+        <span class="n">embeds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_embeddings</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm</span><span class="p">(</span><span class="n">embeds</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">tag_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden2tag</span><span class="p">(</span><span class="n">lstm_out</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">tag_scores</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">tag_space</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tag_scores</span>
+</pre></div>
+</div>
+<p>The constructor has four arguments:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">vocab_size</span></code> is the number of words in the input vocabulary. Each
+word is a one-hot vector (or unit vector) in a
+<code class="docutils literal notranslate"><span class="pre">vocab_size</span></code>-dimensional space.</li>
+<li><code class="docutils literal notranslate"><span class="pre">tagset_size</span></code> is the number of tags in the output set.</li>
+<li><code class="docutils literal notranslate"><span class="pre">embedding_dim</span></code> is the size of the <em>embedding</em> space for the
+vocabulary. An embedding maps a vocabulary onto a low-dimensional
+space, where words with similar meanings are close together in the
+space.</li>
+<li><code class="docutils literal notranslate"><span class="pre">hidden_dim</span></code> is the size of the LSTM’s memory.</li>
+</ul>
+<p>The input will be a sentence with the words represented as indices of
+one-hot vectors. The embedding layer will then map these down to an
+<code class="docutils literal notranslate"><span class="pre">embedding_dim</span></code>-dimensional space. The LSTM takes this sequence of
+embeddings and iterates over it, fielding an output vector of length
+<code class="docutils literal notranslate"><span class="pre">hidden_dim</span></code>. The final linear layer acts as a classifier; applying
+<code class="docutils literal notranslate"><span class="pre">log_softmax()</span></code> to the output of the final layer converts the output
+into a normalized set of estimated probabilities that a given word maps
+to a given tag.</p>
+<p>If you’d like to see this network in action, check out the <a class="reference external" href="https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html">Sequence
+Models and LSTM
+Networks</a>
+tutorial on pytorch.org.</p>
+</div>
+<div class="section" id="transformers">
+<h3>Transformers<a class="headerlink" href="#transformers" title="Permalink to this headline">¶</a></h3>
+<p><em>Transformers</em> are multi-purpose networks that have taken over the state
+of the art in NLP with models like BERT. A discussion of transformer
+architecture is beyond the scope of this video, but PyTorch has a
+<code class="docutils literal notranslate"><span class="pre">Transformer</span></code> class that allows you to define the overall parameters
+of a transformer model - the number of attention heads, the number of
+encoder &amp; decoder layers, dropout and activation functions, etc. (You
+can even build the BERT model from this single class, with the right
+parameters!) The <code class="docutils literal notranslate"><span class="pre">torch.nn.Transformer</span></code> class also has classes to
+encapsulate the individual components (<code class="docutils literal notranslate"><span class="pre">TransformerEncoder</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TransformerDecoder</span></code>) and subcomponents (<code class="docutils literal notranslate"><span class="pre">TransformerEncoderLayer</span></code>,
+<code class="docutils literal notranslate"><span class="pre">TransformerDecoderLayer</span></code>). For details, check out the
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.html#transformer-layers">documentation</a>
+on transformer classes, and the relevant
+<a class="reference external" href="https://pytorch.org/tutorials/beginner/transformer_tutorial.html">tutorial</a>
+on pytorch.org.</p>
+</div>
+</div>
+<div class="section" id="other-layers-and-functions">
+<h2>Other Layers and Functions<a class="headerlink" href="#other-layers-and-functions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="data-manipulation-layers">
+<h3>Data Manipulation Layers<a class="headerlink" href="#data-manipulation-layers" title="Permalink to this headline">¶</a></h3>
+<p>There are other layer types that perform important functions in models,
+but don’t participate in the learning process themselves.</p>
+<p><strong>Max pooling</strong> (and its twin, min pooling) reduce a tensor by combining
+cells, and assigning the maximum value of the input cells to the output
+cell (we saw this). For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">)</span>
+
+<span class="n">maxpool_layer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">maxpool_layer</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.9371, 0.5279, 0.9600, 0.5052, 0.3147, 0.5431],
+         [0.0061, 0.0304, 0.7877, 0.7555, 0.9046, 0.2654],
+         [0.4368, 0.6365, 0.4045, 0.5136, 0.9904, 0.5329],
+         [0.4522, 0.5445, 0.4073, 0.8565, 0.6504, 0.2720],
+         [0.7219, 0.2455, 0.6107, 0.6896, 0.3997, 0.5261],
+         [0.4414, 0.2888, 0.0602, 0.6620, 0.7797, 0.9239]]])
+tensor([[[0.9600, 0.9904],
+         [0.7219, 0.9239]]])
+</pre></div>
+</div>
+<p>If you look closely at the values above, you’ll see that each of the
+values in the maxpooled output is the maximum value of each quadrant of
+the 6x6 input.</p>
+<p><strong>Normalization layers</strong> re-center and normalize the output of one layer
+before feeding it to another. Centering the and scaling the intermediate
+tensors has a number of beneficial effects, such as letting you use
+higher learning rates without exploding/vanishing gradients.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">my_tensor</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+
+<span class="n">norm_layer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">normed_tensor</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">normed_tensor</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">normed_tensor</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[24.4622, 13.2586, 16.0957, 20.5801],
+         [17.1542, 23.8304, 22.6147,  5.3914],
+         [15.7086, 14.5833,  9.8483, 17.2129],
+         [10.5477,  7.5275, 19.6470, 13.4524]]])
+tensor(15.7447)
+tensor([[[ 1.3716, -1.2494, -0.5856,  0.4634],
+         [-0.0128,  0.9027,  0.7360, -1.6258],
+         [ 0.4974,  0.0889, -1.6297,  1.0434],
+         [-0.5016, -1.1762,  1.5307,  0.1471]]],
+       grad_fn=&lt;NativeBatchNormBackward0&gt;)
+tensor(-5.9605e-08, grad_fn=&lt;MeanBackward0&gt;)
+</pre></div>
+</div>
+<p>Running the cell above, we’ve added a large scaling factor and offset to
+an input tensor; you should see the input tensor’s <code class="docutils literal notranslate"><span class="pre">mean()</span></code> somewhere
+in the neighborhood of 15. After running it through the normalization
+layer, you can see that the values are smaller, and grouped around zero
+- in fact, the mean should be very small (&gt; 1e-8).</p>
+<p>This is beneficial because many activation functions (discussed below)
+have their strongest gradients near 0, but sometimes suffer from
+vanishing or exploding gradients for inputs that drive them far away
+from zero. Keeping the data centered around the area of steepest
+gradient will tend to mean faster, better learning and higher feasible
+learning rates.</p>
+<p><strong>Dropout layers</strong> are a tool for encouraging <em>sparse representations</em>
+in your model - that is, pushing it to do inference with less data.</p>
+<p>Dropout layers work by randomly setting parts of the input tensor
+<em>during training</em> - dropout layers are always turned off for inference.
+This forces the model to learn against this masked or reduced dataset.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="n">dropout</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dropout</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dropout</span><span class="p">(</span><span class="n">my_tensor</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[[0.4315, 0.8534, 1.0763, 0.0000],
+         [0.9193, 0.0000, 0.0000, 0.7373],
+         [0.0000, 0.0000, 0.9428, 0.7523],
+         [0.0000, 0.0000, 1.3396, 0.0000]]])
+tensor([[[0.0000, 0.0000, 1.0763, 0.0000],
+         [0.0000, 0.0000, 0.8531, 0.7373],
+         [0.0000, 0.0534, 0.9428, 0.7523],
+         [0.0000, 0.4423, 1.3396, 0.0000]]])
+</pre></div>
+</div>
+<p>Above, you can see the effect of dropout on a sample tensor. You can use
+the optional <code class="docutils literal notranslate"><span class="pre">p</span></code> argument to set the probability of an individual
+weight dropping out; if you don’t it defaults to 0.5.</p>
+</div>
+<div class="section" id="activation-functions">
+<h3>Activation Functions<a class="headerlink" href="#activation-functions" title="Permalink to this headline">¶</a></h3>
+<p>Activation functions make deep learning possible. A neural network is
+really a program - with many parameters - that <em>simulates a mathematical
+function</em>. If all we did was multiple tensors by layer weights
+repeatedly, we could only simulate <em>linear functions;</em> further, there
+would be no point to having many layers, as the whole network would
+reduce could be reduced to a single matrix multiplication. Inserting
+<em>non-linear</em> activation functions between layers is what allows a deep
+learning model to simulate any function, rather than just linear ones.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> has objects encapsulating all of the major
+activation functions including ReLU and its many variants, Tanh,
+Hardtanh, sigmoid, and more. It also includes other functions, such as
+Softmax, that are most useful at the output stage of a model.</p>
+</div>
+<div class="section" id="loss-functions">
+<h3>Loss Functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h3>
+<p>Loss functions tell us how far a model’s prediction is from the correct
+answer. PyTorch contains a variety of loss functions, including common
+MSE (mean squared error = L2 norm), Cross Entropy Loss and Negative
+Likelihood Loss (useful for classifiers), and others.</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.063 seconds)</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-introyt-modelsyt-tutorial-py">
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../../_downloads/e92e578a26024f36095f1f0f8c2fdfd5/modelsyt_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">modelsyt_tutorial.py</span></code></a></div>
+<div class="sphx-glr-download docutils container">
+<a class="reference download internal" download="" href="../../_downloads/611efa3e10bb2b546f3a33742edc4ecc/modelsyt_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">modelsyt_tutorial.ipynb</span></code></a></div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+</div>
+</article>
+</div>
+<footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="tensorboardyt_tutorial.html" rel="next" title="PyTorch TensorBoard Support">Next <img class="next-page" src="../../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="autogradyt_tutorial.html" rel="prev" title="The Fundamentals of Autograd"><img class="previous-page" src="../../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
+<hr class="rating-hr hr-top"/>
+<div class="rating-container">
+<div class="rating-prompt">Rate this Tutorial</div>
+<div class="stars-outer">
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="1" title="1 Star"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="2" title="2 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="3" title="3 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="4" title="4 Stars"></i>
+<i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
+</div>
+</div>
+<hr class="rating-hr hr-bottom"/>
+<div role="contentinfo">
+<p>
+        © Copyright 2021, PyTorch.
+
+    </p>
+</div>
+<div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+</footer>
+</div>
+</div>
+<div class="pytorch-content-right" id="pytorch-content-right">
+<div class="pytorch-right-menu" id="pytorch-right-menu">
+<div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+<ul>
+<li><a class="reference internal" href="#">Building Models with PyTorch</a><ul>
+<li><a class="reference internal" href="#torch-nn-module-and-torch-nn-parameter"><code class="docutils literal notranslate"><span class="pre">torch.nn.Module</span></code> and <code class="docutils literal notranslate"><span class="pre">torch.nn.Parameter</span></code></a></li>
+<li><a class="reference internal" href="#common-layer-types">Common Layer Types</a><ul>
+<li><a class="reference internal" href="#linear-layers">Linear Layers</a></li>
+<li><a class="reference internal" href="#convolutional-layers">Convolutional Layers</a></li>
+<li><a class="reference internal" href="#recurrent-layers">Recurrent Layers</a></li>
+<li><a class="reference internal" href="#transformers">Transformers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#other-layers-and-functions">Other Layers and Functions</a><ul>
+<li><a class="reference internal" href="#data-manipulation-layers">Data Manipulation Layers</a></li>
+<li><a class="reference internal" href="#activation-functions">Activation Functions</a></li>
+<li><a class="reference internal" href="#loss-functions">Loss Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+</div>
+<script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js" type="text/javascript"></script>
+<script src="../../_static/jquery.js" type="text/javascript"></script>
+<script src="../../_static/underscore.js" type="text/javascript"></script>
+<script src="../../_static/doctools.js" type="text/javascript"></script>
+<script src="../../_static/clipboard.min.js" type="text/javascript"></script>
+<script src="../../_static/copybutton.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js" type="text/javascript"></script>
+<script src="../../_static/katex_autorenderer.js" type="text/javascript"></script>
+<script src="../../_static/js/vendor/popper.min.js" type="text/javascript"></script>
+<script src="../../_static/js/vendor/bootstrap.min.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+<script src="../../_static/js/theme.js" type="text/javascript"></script>
+<script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; isplay: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+<noscript>
+<img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
+  &amp;noscript=1" width="1"/>
+</noscript>
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<!-- Begin Footer -->
+<div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+<div class="container">
+<div class="row">
+<div class="col-md-4 text-center">
+<h2>Docs</h2>
+<p>Access comprehensive developer documentation for PyTorch</p>
+<a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Tutorials</h2>
+<p>Get in-depth tutorials for beginners and advanced developers</p>
+<a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+</div>
+<div class="col-md-4 text-center">
+<h2>Resources</h2>
+<p>Find development resources and get your questions answered</p>
+<a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+</div>
+</div>
+</div>
+</div>
+<footer class="site-footer">
+<div class="container footer-container">
+<div class="footer-logo-wrapper">
+<a class="footer-logo" href="https://pytorch.org/"></a>
+</div>
+<div class="footer-links-wrapper">
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+<li><a href="https://pytorch.org/get-started">Get Started</a></li>
+<li><a href="https://pytorch.org/features">Features</a></li>
+<li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+<li><a href="https://pytorch.org/blog/">Blog</a></li>
+<li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+</ul>
+</div>
+<div class="footer-links-col">
+<ul>
+<li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+<li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+<li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+<li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+<li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+<li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+</ul>
+</div>
+<div class="footer-links-col follow-us-col">
+<ul>
+<li class="list-title">Stay Connected</li>
+<li>
+<div id="mc_embed_signup">
+<form action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&amp;id=91d0dccd39" class="email-subscribe-form validate" id="mc-embedded-subscribe-form" method="post" name="mc-embedded-subscribe-form" novalidate="" target="_blank">
+<div class="email-subscribe-form-fields-wrapper" id="mc_embed_signup_scroll">
+<div class="mc-field-group">
+<label for="mce-EMAIL" style="display:none;">Email Address</label>
+<input class="required email" id="mce-EMAIL" name="EMAIL" placeholder="Email Address" type="email" value=""/>
+</div>
+<div class="clear" id="mce-responses">
+<div class="response" id="mce-error-response" style="display:none"></div>
+<div class="response" id="mce-success-response" style="display:none"></div>
+</div> <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+<div aria-hidden="true" style="position: absolute; left: -5000px;"><input name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" type="text" value=""/></div>
+<div class="clear">
+<input class="button email-subscribe-button" id="mc-embedded-subscribe" name="subscribe" type="submit" value=""/>
+</div>
+</div>
+</form>
+</div>
+</li>
+</ul>
+<div class="footer-social-icons">
+<a class="facebook" href="https://www.facebook.com/pytorch" target="_blank"></a>
+<a class="twitter" href="https://twitter.com/pytorch" target="_blank"></a>
+<a class="youtube" href="https://www.youtube.com/pytorch" target="_blank"></a>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<div class="cookie-banner-wrapper">
+<div class="container">
+<p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+<img class="close-button" src="../../_static/images/pytorch-x.svg">
+</img></div>
+</div>
+<!-- End Footer -->
+<!-- Begin Mobile Menu -->
+<div class="mobile-main-menu">
+<div class="container-fluid">
+<div class="container">
+<div class="mobile-main-menu-header-container">
+<a aria-label="PyTorch" class="header-logo" href="https://pytorch.org/"></a>
+<a class="main-menu-close-button" data-behavior="close-mobile-menu" href="#"></a>
+</div>
+</div>
+</div>
+<div class="mobile-main-menu-links-container">
+<div class="main-menu">
+<ul>
+<li>
+<a href="https://pytorch.org/get-started">Get Started</a>
+</li>
+<li>
+<a href="https://pytorch.org/ecosystem">Ecosystem</a>
+</li>
+<li>
+<a href="https://pytorch.org/mobile">Mobile</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">PyTorch Hub</a>
+</li>
+<li>
+<a href="https://pytorch.org/blog/">Blog</a>
+</li>
+<li class="active">
+<a href="https://pytorch.org/tutorials">Tutorials</a>
+</li>
+<li class="resources-mobile-menu-title">
+            Docs
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+</li>
+<li>
+<a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+</li>
+<li>
+<a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+</li>
+<li>
+<a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+</li>
+<li>
+<a href="https://pytorch.org/elastic/">TorchElastic</a>
+</li>
+<li>
+<a href="https://pytorch.org/serve/">TorchServe</a>
+</li>
+<li>
+<a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+</li>
+</ul>
+<li class="resources-mobile-menu-title">
+            Resources
+          </li>
+<ul class="resources-mobile-menu-items">
+<li>
+<a href="https://pytorch.org/resources">Developer Resources</a>
+</li>
+<li>
+<a href="https://pytorch.org/features">About</a>
+</li>
+<li>
+<a href="https://pytorch.org/hub">Models (Beta)</a>
+</li>
+<li>
+<a href="https://pytorch.org/#community-module">Community</a>
+</li>
+<li>
+<a href="https://discuss.pytorch.org/">Forums</a>
+</li>
+</ul>
+<li>
+<a href="https://github.com/pytorch/pytorch">Github</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- End Mobile Menu -->
+<script src="../../_static/js/vendor/anchor.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
