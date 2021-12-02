@@ -71,7 +71,7 @@ assert fwAD.unpack_dual(dual_output).tangent is None
 ######################################################################
 # Usage with Modules
 # --------------------------------------------------------------------
-# To use ``nn.Module``s with forward AD, replace the parameters of your
+# To use ``nn.Module`` with forward AD, replace the parameters of your
 # model with dual tensors before performing the forward pass. At the
 # time of writing, it is not possible to create dual tensor
 # `nn.Parameter`s. As a workaround, one must register the dual tensor
@@ -96,7 +96,7 @@ with fwAD.dual_level():
 ######################################################################
 # Using Modules stateless API (experimental)
 # --------------------------------------------------------------------
-# Another way to use ``nn.Module``s with forward AD is to utilize
+# Another way to use ``nn.Module`` with forward AD is to utilize
 # the stateless API. NB: At the time of writing the stateless API is still
 # experimental and may be subject to change.
 
