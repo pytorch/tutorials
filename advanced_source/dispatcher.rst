@@ -109,7 +109,7 @@ speaking, the structure of your registrations will look like this:
 For operators that do not need autograd
 ---------------------------------------
 
-Note: This section only applies to versions of PyTorch ``>= 3.10``.
+Note: This section only applies to versions of PyTorch ``>= 1.10``.
 
 In the next section, we will discuss how to add autograd support to an operator.
 But for the ops that do not need autograd support, the following kernel should be
