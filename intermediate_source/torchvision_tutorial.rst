@@ -3,7 +3,7 @@ TorchVision Object Detection Finetuning Tutorial
 
 .. tip::
    To get the most of this tutorial, we suggest using this 
-   `Colab Version <https://colab.research.google.com/github/pytorch/vision/blob/temp-tutorial/tutorials/torchvision_finetuning_instance_segmentation.ipynb>`__. 
+   `Colab Version <https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/torchvision_finetuning_instance_segmentation.ipynb>`__. 
    This will allow you to experiment with the information presented below. 
 
 For this tutorial, we will be finetuning a pre-trained `Mask
@@ -220,7 +220,7 @@ way of doing it:
    import torchvision
    from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
-   # load a model pre-trained pre-trained on COCO
+   # load a model pre-trained on COCO
    model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
    # replace the classifier with a new one, that has
@@ -290,7 +290,7 @@ be using Mask R-CNN:
 
 
    def get_model_instance_segmentation(num_classes):
-       # load an instance segmentation model pre-trained pre-trained on COCO
+       # load an instance segmentation model pre-trained on COCO
        model = torchvision.models.detection.maskrcnn_resnet50_fpn(pretrained=True)
 
        # get number of input features for the classifier

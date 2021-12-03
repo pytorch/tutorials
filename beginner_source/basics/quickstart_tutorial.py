@@ -89,7 +89,7 @@ for X, y in test_dataloader:
 
 # Get cpu or gpu device for training.
 device = "cuda" if torch.cuda.is_available() else "cpu"
-print("Using {} device".format(device))
+print(f"Using {device} device")
 
 # Define model
 class NeuralNetwork(nn.Module):

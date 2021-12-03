@@ -55,6 +55,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: beginner/basics/intro.html
    :tags: Getting-Started
+   
+.. customcarditem::
+   :header: Introduction to PyTorch on YouTube
+   :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: beginner/introyt.html
+   :tags: Getting-Started
 
 .. customcarditem::
    :header: Learning PyTorch with Examples
@@ -124,17 +131,73 @@ Welcome to PyTorch Tutorials
 .. Audio
 
 .. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
+   :header: Audio IO
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
+   :link: beginner/audio_io_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Speech Command Recognition
+   :header: Audio Resampling
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_resampling_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Data Augmentation
+   :card_description: Learn to apply data augmentations using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_data_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Extractions
+   :card_description: Learn to extract features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_extractions_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Augmentation
+   :card_description: Learn to augment features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Datasets
+   :card_description: Learn to use torchaudio datasets.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_datasets_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
+   :image: _static/img/thumbnails/cropped/torchaudio-asr.png
+   :link: intermediate/speech_recognition_pipeline_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Speech Command Classification
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
+   :link: intermediate/speech_command_classification_with_torchaudio_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Text-to-Speech with torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a text-to-speech application.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/text_to_speech_with_torchaudio.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Forced Alignment with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's Wav2Vec2 pretrained models for aligning text to speech
+   :image: _static/img/thumbnails/cropped/torchaudio-alignment.png
+   :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -576,6 +639,21 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
+   
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Introduction to PyTorch on YouTube
+
+   beginner/introyt
+   beginner/introyt/introyt1_tutorial
+   beginner/introyt/tensors_deeper_tutorial
+   beginner/introyt/autogradyt_tutorial
+   beginner/introyt/modelsyt_tutorial
+   beginner/introyt/tensorboardyt_tutorial
+   beginner/introyt/trainingyt
+   beginner/introyt/captumyt
 
 .. toctree::
    :maxdepth: 2
@@ -607,8 +685,16 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio_tutorial
+   beginner/audio_io_tutorial
+   beginner/audio_resampling_tutorial
+   beginner/audio_data_augmentation_tutorial
+   beginner/audio_feature_extractions_tutorial
+   beginner/audio_feature_augmentation_tutorial
+   beginner/audio_datasets_tutorial
+   intermediate/speech_recognition_pipeline_tutorial
+   intermediate/speech_command_classification_with_torchaudio_tutorial
+   intermediate/text_to_speech_with_torchaudio
+   intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
