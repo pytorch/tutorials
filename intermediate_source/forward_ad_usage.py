@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Forward-mode Automatic Differentiation
-======================================
+Forward-mode Automatic Differentiation (Beta)
+=============================================
 
 This tutorial demonstrates how to use forward-mode AD to compute
 directional derivatives (or equivalently, Jacobian-vector products).
+
+The tutorial below uses some APIs only available in versions >= 1.11
+(or nightly builds).
+
+Also note that forward-mode AD is currently in beta. The API is
+subject to change and operator coverage is still incomplete.
 
 Basic Usage
 --------------------------------------------------------------------
