@@ -387,6 +387,13 @@ Welcome to PyTorch Tutorials
    :link: intermediate/custom_function_conv_bn_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
 
+.. customcarditem::
+   :header: Forward-mode Automatic Differentiation
+   :card_description: Learn how to use forward-mode automatic differentiation
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :link: intermediate/forward_ad_usage.html
+   :tags: Frontend-APIs
+
 .. Model Optimization
 
 .. customcarditem::
@@ -746,6 +753,7 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
+   intermediate/forward_ad_usage
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
