@@ -75,7 +75,7 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
     import sys  
     import torch.quantization   
 
-    # Setup warnings    
+    # Set up warnings
     import warnings 
     warnings.filterwarnings(    
         action='ignore',    
@@ -168,25 +168,22 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
         os.remove("temp.p") 
 
     def prepare_data_loaders(data_path):    
-
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],  
                                          std=[0.229, 0.224, 0.225])
         dataset = torchvision.datasets.ImageNet(
-               data_path, split="train",
-             transforms.Compose([  
-                       transforms.RandomResizedCrop(224),  
-                       transforms.RandomHorizontalFlip(),  
-                       transforms.ToTensor(),  
-                       normalize,  
-                   ]))  
+            data_path, split="train", transform=transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
         dataset_test = torchvision.datasets.ImageNet(
-              data_path, split="val", 
-                  transforms.Compose([  
-                      transforms.Resize(256), 
-                      transforms.CenterCrop(224), 
-                      transforms.ToTensor(),  
-                      normalize,  
-                  ]))
+            data_path, split="val", transform=transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
         train_sampler = torch.utils.data.RandomSampler(dataset) 
         test_sampler = torch.utils.data.SequentialSampler(dataset_test) 
@@ -239,7 +236,7 @@ of the observers for activation and weight. ``qconfig_dict`` is a dictionary wit
 .. code:: python  
   
   qconfig = { 
-      " : qconfig_global,
+      "" : qconfig_global,
       "sub" : qconfig_sub,    
       "sub.fc" : qconfig_fc,  
       "sub.conv": None    
@@ -294,6 +291,7 @@ Utility functions related to ``qconfig`` can be found in the `qconfig <https://g
   
 .. code:: python  
   
+    from torch.ao.quantization.quantize_fx import prepare_fx
     prepared_model = prepare_fx(model_to_quantize, qconfig_dict)  
   
 prepare_fx folds BatchNorm modules into previous Conv2d modules, and insert observers     
@@ -326,6 +324,7 @@ the statistics of the Tensors and we can later use this information to calculate
 
 .. code:: python
 
+    from torch.ao.quantization.quantize_fx import convert_fx
     quantized_model = convert_fx(prepared_model)
     print(quantized_model)
 
@@ -377,6 +376,7 @@ Note that ``fuse_fx`` only works in eval mode.
 
 .. code:: python
 
+    from torch.ao.quantization.quantize_fx import fuse_fx
     fused = fuse_fx(float_model)    
 
     conv1_weight_after_fuse = fused.conv1[0].weight[0]  

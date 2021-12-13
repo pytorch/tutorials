@@ -32,7 +32,7 @@ We'll start by doing the necessary imports:
     import sys  
     import torch.quantization 
 
-    # # Setup warnings  
+    # Set up warnings
     import warnings 
     warnings.filterwarnings(  
         action='ignore',  
@@ -196,9 +196,7 @@ Note: this code is taken from
                     nn.init.zeros_(m.bias)  
 
         def forward(self, x): 
-
             x = self.quant(x) 
-
             x = self.features(x)  
             x = x.mean([2, 3])  
             x = self.classifier(x)  
@@ -314,25 +312,22 @@ in this data. These functions mostly come from
 .. code:: python
 
     def prepare_data_loaders(data_path):  
-
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],  
                                          std=[0.229, 0.224, 0.225])
         dataset = torchvision.datasets.ImageNet(
-               data_path, split="train",
-             transforms.Compose([  
-                       transforms.RandomResizedCrop(224),  
-                       transforms.RandomHorizontalFlip(),  
-                       transforms.ToTensor(),  
-                       normalize,  
-                   ]))  
+            data_path, split="train", transform=transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
         dataset_test = torchvision.datasets.ImageNet(
-              data_path, split="val", 
-                  transforms.Compose([  
-                      transforms.Resize(256), 
-                      transforms.CenterCrop(224), 
-                      transforms.ToTensor(),  
-                      normalize,  
-                  ])) 
+            data_path, split="val", transform=transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
         train_sampler = torch.utils.data.RandomSampler(dataset) 
         test_sampler = torch.utils.data.SequentialSampler(dataset_test) 
