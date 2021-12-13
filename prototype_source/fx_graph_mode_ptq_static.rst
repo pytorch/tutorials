@@ -13,9 +13,8 @@ tldr; The FX Graph Mode API looks like the following:
 .. code:: python
 
   import torch    
-  from torch.quantization import get_default_qconfig  
-  # Note that this is temporary, we'll expose these functions to torch.quantization after official releasee   
-  from torch.quantization.quantize_fx import prepare_fx, convert_fx   
+  from torch.ao.quantization import get_default_qconfig
+  from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx
   float_model.eval()  
   qconfig = get_default_qconfig("fbgemm") 
   qconfig_dict = {"": qconfig}    
@@ -63,19 +62,23 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
 
 .. code:: python
 
-    import numpy as np  
-    import torch    
-    import torch.nn as nn   
-    import torchvision  
-    from torch.utils.data import DataLoader 
-    from torchvision import datasets    
-    import torchvision.transforms as transforms 
-    import os   
-    import time 
-    import sys  
-    import torch.quantization   
+    import os
+    import sys
+    import time
+    import numpy as np
 
-    # Setup warnings    
+    import torch
+    from torch.ao.quantization import get_default_qconfig
+    from torch.ao.quantization.quantize_fx import prepare_fx, convert_fx, fuse_fx
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+
+    import torchvision
+    from torchvision import datasets
+    from torchvision.models.resnet import resnet18
+    import torchvision.transforms as transforms
+
+    # Set up warnings
     import warnings 
     warnings.filterwarnings(    
         action='ignore',    
@@ -84,15 +87,12 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
     )   
     warnings.filterwarnings(    
         action='default',   
-        module=r'torch.quantization'    
+        module=r'torch.ao.quantization'
     )   
 
     # Specify random seed for repeatable results    
     _ = torch.manual_seed(191009)   
 
-
-    from torchvision.models.resnet import resnet18  
-    from torch.quantization import get_default_qconfig, quantize_jit    
 
     class AverageMeter(object): 
         """Computes and stores the average and current value""" 
@@ -168,25 +168,22 @@ Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob
         os.remove("temp.p") 
 
     def prepare_data_loaders(data_path):    
-
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],  
                                          std=[0.229, 0.224, 0.225])
         dataset = torchvision.datasets.ImageNet(
-               data_path, split="train",
-             transforms.Compose([  
-                       transforms.RandomResizedCrop(224),  
-                       transforms.RandomHorizontalFlip(),  
-                       transforms.ToTensor(),  
-                       normalize,  
-                   ]))  
+            data_path, split="train", transform=transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
         dataset_test = torchvision.datasets.ImageNet(
-              data_path, split="val", 
-                  transforms.Compose([  
-                      transforms.Resize(256), 
-                      transforms.CenterCrop(224), 
-                      transforms.ToTensor(),  
-                      normalize,  
-                  ]))
+            data_path, split="val", transform=transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
         train_sampler = torch.utils.data.RandomSampler(dataset) 
         test_sampler = torch.utils.data.SequentialSampler(dataset_test) 
@@ -239,7 +236,7 @@ of the observers for activation and weight. ``qconfig_dict`` is a dictionary wit
 .. code:: python  
   
   qconfig = { 
-      " : qconfig_global,
+      "" : qconfig_global,
       "sub" : qconfig_sub,    
       "sub.fc" : qconfig_fc,  
       "sub.conv": None    
@@ -282,7 +279,7 @@ of the observers for activation and weight. ``qconfig_dict`` is a dictionary wit
       ]   
   }   
   
-Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/master/torch/quantization/qconfig.py>`_ file.  
+Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/master/torch/ao/quantization/qconfig.py>`_ file.
 
 .. code:: python
 
