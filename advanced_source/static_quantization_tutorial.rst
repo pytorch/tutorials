@@ -344,8 +344,8 @@ in this data. These functions mostly come from
         return data_loader, data_loader_test  
 
 
-Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``  
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_. 
+Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the model
+`here <https://download.pytorch.org/models/mobilenet_v2-b0353104.pth>`_. 
 
 .. code:: python
 

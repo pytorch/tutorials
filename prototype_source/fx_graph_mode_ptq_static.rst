@@ -57,7 +57,7 @@ These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <h
 
 To run the code in this tutorial using the entire ImageNet dataset, first download imagenet by following the instructions at here `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file into the 'data_path' folder.
 
-Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L12>`_ and rename it to  
+Download the `torchvision resnet18 model <https://download.pytorch.org/models/resnet18-f37072fd.pth>`_ and rename it to  
 ``data/resnet18_pretrained_float.pth``.   
 
 .. code:: python
