@@ -59,7 +59,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: beginner/introyt.html
    :tags: Getting-Started
 
@@ -362,30 +362,37 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Extending Dispatcher For a New Backend in C++
    :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/custom_function_double_backward_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
    :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
    :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/custom_function_conv_bn_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
+   :header: Forward-mode Automatic Differentiation
+   :card_description: Learn how to use forward-mode automatic differentiation.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/forward_ad_usage.html
+   :tags: Frontend-APIs
 
 .. Model Optimization
 
@@ -746,6 +753,7 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
+   intermediate/forward_ad_usage
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
