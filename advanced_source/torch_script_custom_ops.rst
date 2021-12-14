@@ -1029,5 +1029,5 @@ visible to TorchScript:
 
   >>> import torch
   >>> torch.ops.load_library("warp_perspective.so")
-  >>> print(torch.ops.custom.warp_perspective)
+  >>> print(torch.ops.my_ops.warp_perspective)
   <built-in method custom::warp_perspective of PyCapsule object at 0x7ff51c5b7bd0>
