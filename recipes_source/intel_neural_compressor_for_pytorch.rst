@@ -71,13 +71,13 @@ the yaml configuration file or python APIs:
 
 Intel® Neural Compressor supports some popular dataloaders and evaluation metrics. For
 how to configure them in yaml configuration file, user could refer to `Built-in Datasets
-<https://github.com/intel/neural-compressor/blob/master/docs/dataset.md>`_
+<https://github.com/intel/neural-compressor/blob/master/docs/dataset.md>`_.
 
 If users want to use a self-developed dataloader or evaluation metric, Intel® Neural
 Compressor supports this by the registration of customized dataloader/metric using python code.
 
 For the yaml configuration file format please refer to `yaml template
-<https://github.com/intel/neural-compressor/blob/master/neural_compressor/template/ptq.yaml>`_
+<https://github.com/intel/neural-compressor/blob/master/neural_compressor/template/ptq.yaml>`_.
 
 The code changes that are required for *Intel® Neural Compressor* are highlighted with
 comments in the line above.
