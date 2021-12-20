@@ -59,8 +59,9 @@ plt.ion()   # interactive mode
 #     0805personali01.jpg,27,83,27,98, ... 84,134
 #     1084239450_e76e00b7e7.jpg,70,236,71,257, ... ,128,312
 #
-# Let's quickly read the CSV and get the annotations in an (N, 2) array where N
-# is the number of landmarks.
+# Let's take a single image name and its annotations from the CSV, in this case row index number 65
+# for person-7.jpg just as an example. Read it, store the image name in ``img_name`` and store its
+# annotations in an (L, 2) array ``landmarks`` where L is the number of landmarks in that row.
 #
 
 landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
@@ -402,6 +403,10 @@ def show_landmarks_batch(sample_batched):
 
         plt.title('Batch from dataloader')
 
+# if you are using Windows, uncomment the next line and indent the for loop.
+# you might need to go back and change "num_workers" to 0. 
+
+# if __name__ == '__main__':
 for i_batch, sample_batched in enumerate(dataloader):
     print(i_batch, sample_batched['image'].size(),
           sample_batched['landmarks'].size())
