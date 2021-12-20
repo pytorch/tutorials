@@ -32,7 +32,7 @@ conda create -qyn testenv python=3.7
 conda activate testenv
 
 REQUIREMENTS="$(grep -v '^ *#\|^torch\|^torchaudio\|^torchvision|^torchtext' $PROJECT_DIR/requirements.txt  | grep .)"
-echo $REQUIREMENTS > requirements.txt
+echo -e "${REQUIREMENTS}" > requirements.txt
 pip install -r requirements.txt
 pip install pySoundFile
 # Force uninstall torch & related packages, we'll install them using conda later.
