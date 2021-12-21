@@ -288,7 +288,7 @@ visualize_model(model_ft)
 # ----------------------------------
 #
 # Here, we need to freeze all the network except the final layer. We need
-# to set ``requires_grad == False`` to freeze the parameters so that the
+# to set ``requires_grad = False`` to freeze the parameters so that the
 # gradients are not computed in ``backward()``.
 #
 # You can read more about this in the documentation

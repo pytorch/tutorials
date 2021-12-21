@@ -38,7 +38,7 @@ from torchvision import datasets, transforms
 # continue to use the CPU.
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-print('Using {} device'.format(device))
+print(f'Using {device} device')
 
 ##############################################
 # Define the Class
