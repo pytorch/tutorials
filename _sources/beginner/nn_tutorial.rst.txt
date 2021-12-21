@@ -220,7 +220,7 @@ automatically.
 
 
 
-In the above, the ``@`` stands for the dot product operation. We will call
+In the above, the ``@`` stands for the matrix multiplication operation. We will call
 our function on one batch of data (in this case, 64 images).  This is
 one *forward pass*.  Note that our predictions won't be any better than
 random at this stage, since we start with random weights.
@@ -246,8 +246,8 @@ random at this stage, since we start with random weights.
 
  .. code-block:: none
 
-    tensor([-2.2890, -2.3408, -2.5122, -2.6006, -2.8546, -1.9085, -2.6961, -2.3568,
-            -1.6312, -2.4853], grad_fn=<SelectBackward0>) torch.Size([64, 10])
+    tensor([-2.5339, -1.8602, -2.3822, -2.8491, -2.6216, -2.2473, -2.3602, -1.9517,
+            -1.9702, -2.8046], grad_fn=<SelectBackward0>) torch.Size([64, 10])
 
 
 As you see, the ``preds`` tensor contains not only the tensor values, but also a
@@ -293,7 +293,7 @@ after a backprop pass later.
 
  .. code-block:: none
 
-    tensor(2.3567, grad_fn=<NegBackward0>)
+    tensor(2.3388, grad_fn=<NegBackward0>)
 
 
 Let's also implement a function to calculate the accuracy of our model.
@@ -416,7 +416,7 @@ have increased, and they have.
 
  .. code-block:: none
 
-    tensor(0.0833, grad_fn=<NegBackward0>) tensor(1.)
+    tensor(0.0842, grad_fn=<NegBackward0>) tensor(1.)
 
 
 Using torch.nn.functional
@@ -477,7 +477,7 @@ confirm that our loss and accuracy are the same as before:
 
  .. code-block:: none
 
-    tensor(0.0833, grad_fn=<NllLossBackward0>) tensor(1.)
+    tensor(0.0842, grad_fn=<NllLossBackward0>) tensor(1.)
 
 
 Refactor using nn.Module
@@ -551,7 +551,7 @@ method automatically.
 
  .. code-block:: none
 
-    tensor(2.4573, grad_fn=<NllLossBackward0>)
+    tensor(2.3820, grad_fn=<NllLossBackward0>)
 
 
 Previously for our training loop we had to update the values for each parameter
@@ -623,7 +623,7 @@ Let's double-check that our loss has gone down:
 
  .. code-block:: none
 
-    tensor(0.0819, grad_fn=<NllLossBackward0>)
+    tensor(0.0828, grad_fn=<NllLossBackward0>)
 
 
 Refactor using nn.Linear
@@ -674,7 +674,7 @@ We instantiate our model and calculate the loss in the same way as before:
 
  .. code-block:: none
 
-    tensor(2.3058, grad_fn=<NllLossBackward0>)
+    tensor(2.2493, grad_fn=<NllLossBackward0>)
 
 
 We are still able to use our same ``fit`` method as before.
@@ -697,7 +697,7 @@ We are still able to use our same ``fit`` method as before.
 
  .. code-block:: none
 
-    tensor(0.0808, grad_fn=<NllLossBackward0>)
+    tensor(0.0806, grad_fn=<NllLossBackward0>)
 
 
 Refactor using optim
@@ -772,8 +772,8 @@ can reuse it in the future.
 
  .. code-block:: none
 
-    tensor(2.3357, grad_fn=<NllLossBackward0>)
-    tensor(0.0820, grad_fn=<NllLossBackward0>)
+    tensor(2.2792, grad_fn=<NllLossBackward0>)
+    tensor(0.0817, grad_fn=<NllLossBackward0>)
 
 
 Refactor using Dataset
@@ -858,7 +858,7 @@ Now, we can do these two steps together:
 
  .. code-block:: none
 
-    tensor(0.0826, grad_fn=<NllLossBackward0>)
+    tensor(0.0817, grad_fn=<NllLossBackward0>)
 
 
 Refactor using DataLoader
@@ -922,7 +922,7 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
 
  .. code-block:: none
 
-    tensor(0.0816, grad_fn=<NllLossBackward0>)
+    tensor(0.0817, grad_fn=<NllLossBackward0>)
 
 
 Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
@@ -1003,8 +1003,8 @@ and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
 
  .. code-block:: none
 
-    0 tensor(0.3304)
-    1 tensor(0.2888)
+    0 tensor(0.3276)
+    1 tensor(0.2840)
 
 
 Create fit() and get_data()
@@ -1110,8 +1110,8 @@ model can be run in 3 lines of code:
 
  .. code-block:: none
 
-    0 0.3121142034471035
-    1 0.2991851284384727
+    0 0.41437436702251434
+    1 0.2827952268362045
 
 
 You can use these basic 3 lines of code to train a wide variety of models.
@@ -1181,8 +1181,8 @@ and generally leads to faster training.
 
  .. code-block:: none
 
-    0 0.3566511166095734
-    1 0.23667624116539956
+    0 0.3259566989898682
+    1 0.21914071931242943
 
 
 nn.Sequential
@@ -1253,8 +1253,8 @@ The model created with ``Sequential`` is simply:
 
  .. code-block:: none
 
-    0 0.3572885304808617
-    1 0.313997768497467
+    0 0.32870400804281236
+    1 0.24761798179149627
 
 
 Wrapping DataLoader
@@ -1262,8 +1262,7 @@ Wrapping DataLoader
 
 Our CNN is fairly concise, but it only works with MNIST, because:
  - It assumes the input is a 28\*28 long vector
- - It assumes that the final CNN grid size is 4\*4 (since that's the average
-pooling kernel size we used)
+ - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
 
 Let's get rid of these two assumptions, so our model works with any 2d
 single channel image. First, we can remove the initial Lambda layer by
@@ -1346,8 +1345,8 @@ Let's try it out:
 
  .. code-block:: none
 
-    0 0.3992689729213715
-    1 0.25901956788301467
+    0 0.3566617436885834
+    1 0.26566847608089444
 
 
 Using your GPU
@@ -1446,8 +1445,8 @@ You should find it runs faster now:
 
  .. code-block:: none
 
-    0 0.20081231150627135
-    1 0.22170144469738007
+    0 0.21384867713451386
+    1 0.20457752676010132
 
 
 Closing thoughts
@@ -1486,7 +1485,7 @@ what we've seen:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  27.831 seconds)
+   **Total running time of the script:** ( 0 minutes  28.521 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:
