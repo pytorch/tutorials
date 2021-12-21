@@ -541,6 +541,36 @@ break in various ways when used in other projects or after refactors.</p>
 normalization layers to evaluation mode before running inference.
 Failing to do this will yield inconsistent inference results.</p>
 </div>
+<div class="section" id="export-load-model-in-torchscript-format">
+<h3>Export/Load Model in TorchScript Format<a class="headerlink" href="#export-load-model-in-torchscript-format" title="Permalink to this headline">¶</a></h3>
+<p>One common way to do inference with a trained model is to use
+<a class="reference external" href="https://pytorch.org/docs/stable/jit.html">TorchScript</a>, an intermediate
+representation of a PyTorch model that can be run in Python as well as in a
+high performance environment like C++. TorchScript is actually the recommended model format
+for scaled inference and deployment.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Using the TorchScript format, you will be able to load the exported model and
+run inference without defining the model class.</p>
+</div>
+<p><strong>Export:</strong></p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model_scripted</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="c1"># Export to TorchScript</span>
+<span class="n">model_scripted</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">'model_scripted.pt'</span><span class="p">)</span> <span class="c1"># Save</span>
+</pre></div>
+</div>
+<p><strong>Load:</strong></p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'model_scripted.pt'</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Remember that you must call <code class="docutils literal notranslate"><span class="pre">model.eval()</span></code> to set dropout and batch
+normalization layers to evaluation mode before running inference.
+Failing to do this will yield inconsistent inference results.</p>
+<p>For more information on TorchScript, feel free to visit the dedicated
+<a class="reference external" href="https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html">tutorials</a>.
+You will get familiar with the tracing conversion and learn how to
+run a TorchScript module in a <a class="reference external" href="https://pytorch.org/tutorials/advanced/cpp_export.html">C++ environment</a>.</p>
+</div>
 </div>
 <div class="section" id="saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training">
 <h2>Saving &amp; Loading a General Checkpoint for Inference and/or Resuming Training<a class="headerlink" href="#saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training" title="Permalink to this headline">¶</a></h2>
@@ -810,6 +840,7 @@ load the model any way you want to any device you want.</p>
 <li><a class="reference internal" href="#saving-loading-model-for-inference">Saving &amp; Loading Model for Inference</a><ul>
 <li><a class="reference internal" href="#save-load-state-dict-recommended">Save/Load <code class="docutils literal notranslate"><span class="pre">state_dict</span></code> (Recommended)</a></li>
 <li><a class="reference internal" href="#save-load-entire-model">Save/Load Entire Model</a></li>
+<li><a class="reference internal" href="#export-load-model-in-torchscript-format">Export/Load Model in TorchScript Format</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#saving-loading-a-general-checkpoint-for-inference-and-or-resuming-training">Saving &amp; Loading a General Checkpoint for Inference and/or Resuming Training</a><ul>
