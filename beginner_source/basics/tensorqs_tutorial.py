@@ -110,8 +110,8 @@ print(f"Device tensor is stored on: {tensor.device}")
 # ``.to`` method (after checking for GPU availability). Keep in mind that copying large tensors
 # across devices can be expensive in terms of time and memory!
 
-# We move our tensor to the GPU if available
-if torch.cuda.is_available():
+# We move our tensor to the GPU if available, and if the cuda version is supported
+if torch.cuda.is_available() & (torch.device('cuda').index is not None):
     tensor = tensor.to('cuda')
 
 
