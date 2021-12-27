@@ -44,14 +44,14 @@ Installation
 
 .. code:: bash
 
-  # install stable version from pip
-  pip install neural-compressor
+    # install stable version from pip
+    pip install neural-compressor
 
-  # install nightly version from pip
-  pip install -i https://test.pypi.org/simple/ neural-compressor
+    # install nightly version from pip
+    pip install -i https://test.pypi.org/simple/ neural-compressor
 
-  # install stable version from from conda
-  conda install neural-compressor -c conda-forge -c intel
+    # install stable version from from conda
+    conda install neural-compressor -c conda-forge -c intel
 
 *Supported python versions are 3.6 or 3.7 or 3.8 or 3.9*
 
@@ -133,35 +133,33 @@ Below is an example of how to quantize a simple network on PyTorch
 
     # conf.yaml
     model:
-      name: LeNet
-      framework: pytorch_fx
+        name: LeNet
+        framework: pytorch_fx
 
     evaluation:
-      accuracy:
-        metric:
-          topk: 1
+        accuracy:
+            metric:
+                topk: 1
 
     tuning:
       accuracy_criterion:
         relative: 0.01
 
 .. code-block:: python3
-   :emphasize-lines: 13-21
 
     # main.py
     model.eval()
 
     from torchvision import datasets, transforms
     test_loader = torch.utils.data.DataLoader(
-      datasets.MNIST('./data', train=False, download=True,
-                     transform=transforms.Compose([
-                       transforms.ToTensor(),
+        datasets.MNIST('./data', train=False, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
                        ])),
-      batch_size=1)
+        batch_size=1)
 
     # launch code for Intel® Neural Compressor
-    from neural_compressor.experimental import Quantization, common
-    from neural_compressor.experimental.data.datasets.dummy_dataset import DummyDataset
+    from neural_compressor.experimental import Quantization
     quantizer = Quantization("./conf.yaml")
     quantizer.model = model
     quantizer.calib_dataloader = test_loader
@@ -181,47 +179,45 @@ python code:
 
     # conf.yaml
     model:
-      name: LeNet
-      framework: pytorch_fx
+        name: LeNet
+        framework: pytorch_fx
 
     tuning:
-      accuracy_criterion:
-        relative: 0.01
+        accuracy_criterion:
+            relative: 0.01
 
 .. code-block:: python3
-   :emphasize-lines: 13-33
 
     # main.py
     model.eval()
 
     from torchvision import datasets, transforms
     test_loader = torch.utils.data.DataLoader(
-      datasets.MNIST('./data', train=False, download=True,
-                     transform=transforms.Compose([
-                       transforms.ToTensor(),
+        datasets.MNIST('./data', train=False, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
                        ])),
-      batch_size=1)
+        batch_size=1)
 
     # define a customized metric
     class Top1Metric(object):
-      def __init__(self):
-        self.correct = 0
-      def update(self, output, label):
-        pred = output.argmax(dim=1, keepdim=True)
-        self.correct += pred.eq(label.view_as(pred)).sum().item()
-      def reset(self):
-        self.correct = 0
-      def result(self):
-        return 100. * self.correct / len(test_loader.dataset)
+        def __init__(self):
+            self.correct = 0
+        def update(self, output, label):
+            pred = output.argmax(dim=1, keepdim=True)
+            self.correct += pred.eq(label.view_as(pred)).sum().item()
+        def reset(self):
+            self.correct = 0
+        def result(self):
+            return 100. * self.correct / len(test_loader.dataset)
 
     # launch code for Intel® Neural Compressor
-    from neural_compressor.experimental import Quantization, common
-    from neural_compressor.experimental.data.datasets.dummy_dataset import DummyDataset
+    from neural_compressor.experimental import Quantization
     quantizer = Quantization("./conf.yaml")
     quantizer.model = model
     quantizer.calib_dataloader = test_loader
     quantizer.eval_dataloader = test_loader
-    quantizer.metric = common.Metric(Top1Metric)
+    quantizer.metric = Top1Metric()
     q_model = quantizer()
     q_model.save('./output')
 
@@ -241,61 +237,60 @@ Below is an example of how to do quantization aware training on a simple network
 
     # conf.yaml
     model:
-      name: LeNet
-      framework: pytorch_fx
+        name: LeNet
+        framework: pytorch_fx
 
     quantization:
-      approach: quant_aware_training
+        approach: quant_aware_training
 
     evaluation:
-      accuracy:
-        metric:
-          topk: 1
+        accuracy:
+            metric:
+                topk: 1
 
     tuning:
-      accuracy_criterion:
-        relative: 0.01
+        accuracy_criterion:
+            relative: 0.01
 
 .. code-block:: python3
-   :emphasize-lines: 22-43
 
     # main.py
     model.eval()
 
     from torchvision import datasets, transforms
     train_loader = torch.utils.data.DataLoader(
-      datasets.MNIST('./data', train=True, download=True,
-                     transform=transforms.Compose([
-                         transforms.ToTensor(),
-                         transforms.Normalize((0.1307,), (0.3081,))
-                     ])),
-      batch_size=64, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(
-      datasets.MNIST('./data', train=False, download=True,
-                     transform=transforms.Compose([
-                       transforms.ToTensor(),
+        datasets.MNIST('./data', train=True, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
                        ])),
-      batch_size=1)
+        batch_size=64, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(
+        datasets.MNIST('./data', train=False, download=True,
+                       transform=transforms.Compose([
+                           transforms.ToTensor(),
+                           transforms.Normalize((0.1307,), (0.3081,))
+                       ])),
+        batch_size=1)
 
     import torch.optim as optim
     optimizer = optim.SGD(model.parameters(), lr=0.0001, momentum=0.1)
 
     def training_func(model):
-      model.train()
-      for epoch in range(1, 3):
-        for batch_idx, (data, target) in enumerate(train_loader):
-          optimizer.zero_grad()
-          output = model(data)
-          loss = F.nll_loss(output, target)
-          loss.backward()
-          optimizer.step()
-          print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+        model.train()
+        for epoch in range(1, 3):
+            for batch_idx, (data, target) in enumerate(train_loader):
+                optimizer.zero_grad()
+                output = model(data)
+                loss = F.nll_loss(output, target)
+                loss.backward()
+                optimizer.step()
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                      epoch, batch_idx * len(data), len(train_loader.dataset),
+                      100. * batch_idx / len(train_loader), loss.item()))
 
     # launch code for Intel® Neural Compressor
-    from neural_compressor.experimental import Quantization, common
-    from neural_compressor.experimental.data.datasets.dummy_dataset import DummyDataset
+    from neural_compressor.experimental import Quantization
     quantizer = Quantization("./conf.yaml")
     quantizer.model = model
     quantizer.q_func = training_func
@@ -316,11 +311,10 @@ Below is an example of how to quantize a simple network on PyTorch
 
     # conf.yaml
     model:
-      name: lenet
-      framework: pytorch_fx
+        name: lenet
+        framework: pytorch_fx
 
 .. code-block:: python3
-   :emphasize-lines: 5-12
 
     # main.py
     model.eval()
