@@ -5,7 +5,7 @@ PyTorch: Control Flow + Weight Sharing
 
 To showcase the power of PyTorch dynamic graphs, we will implement a very strange
 model: a third-fifth order polynomial that on each forward pass
-chooses a random number between 3 and 5 and uses that many orders, reusing
+chooses a random number between 4 and 5 and uses that many orders, reusing
 the same weights multiple times to compute the fourth and fifth order.
 """
 import random
