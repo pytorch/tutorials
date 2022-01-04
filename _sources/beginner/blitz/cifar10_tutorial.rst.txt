@@ -146,7 +146,7 @@ Let us show some of the training images, for fun.
     # show images
     imshow(torchvision.utils.make_grid(images))
     # print labels
-    print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
+    print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
 
 
 
@@ -162,7 +162,7 @@ Let us show some of the training images, for fun.
 
  .. code-block:: none
 
-    cat plane  bird  ship
+    cat   plane bird  ship
 
 
 2. Define a Convolutional Neural Network
@@ -255,8 +255,7 @@ network and optimize.
             # print statistics
             running_loss += loss.item()
             if i % 2000 == 1999:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 2000))
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
                 running_loss = 0.0
 
     print('Finished Training')
@@ -325,7 +324,7 @@ Okay, first step. Let us display an image from the test set to get familiar.
 
     # print images
     imshow(torchvision.utils.make_grid(images))
-    print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+    print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
 
 
 
@@ -340,7 +339,7 @@ Okay, first step. Let us display an image from the test set to get familiar.
 
  .. code-block:: none
 
-    GroundTruth:    cat  ship  ship plane
+    GroundTruth:  cat   ship  ship  plane
 
 
 Next, let's load back in our saved model (note: saving and re-loading the model
@@ -383,7 +382,7 @@ So, let's get the index of the highest energy:
 
     _, predicted = torch.max(outputs, 1)
 
-    print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
+    print('Predicted: ', ' '.join(f'{classes[predicted[j]]:5s}'
                                   for j in range(4)))
 
 
@@ -396,7 +395,7 @@ So, let's get the index of the highest energy:
 
  .. code-block:: none
 
-    Predicted:   frog  ship  ship  ship
+    Predicted:  frog  ship  ship  ship
 
 
 The results seem pretty good.
@@ -413,15 +412,14 @@ Let us look at how the network performs on the whole dataset.
     with torch.no_grad():
         for data in testloader:
             images, labels = data
-            # calculate outputs by running images through the network 
+            # calculate outputs by running images through the network
             outputs = net(images)
             # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    print('Accuracy of the network on the 10000 test images: %d %%' % (
-        100 * correct / total))
+    print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
 
 
 
@@ -454,8 +452,8 @@ not perform well:
     # again no gradients needed
     with torch.no_grad():
         for data in testloader:
-            images, labels = data    
-            outputs = net(images)    
+            images, labels = data
+            outputs = net(images)
             _, predictions = torch.max(outputs, 1)
             # collect the correct predictions for each class
             for label, prediction in zip(labels, predictions):
@@ -463,12 +461,11 @@ not perform well:
                     correct_pred[classes[label]] += 1
                 total_pred[classes[label]] += 1
 
-  
+
     # print accuracy for each class
     for classname, correct_count in correct_pred.items():
         accuracy = 100 * float(correct_count) / total_pred[classname]
-        print("Accuracy for class {:5s} is: {:.1f} %".format(classname, 
-                                                       accuracy))
+        print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
 
 
 
@@ -480,16 +477,16 @@ not perform well:
 
  .. code-block:: none
 
-    Accuracy for class plane is: 59.4 %
-    Accuracy for class car   is: 66.7 %
-    Accuracy for class bird  is: 22.7 %
-    Accuracy for class cat   is: 52.7 %
-    Accuracy for class deer  is: 59.1 %
-    Accuracy for class dog   is: 28.9 %
-    Accuracy for class frog  is: 70.8 %
-    Accuracy for class horse is: 57.6 %
-    Accuracy for class ship  is: 67.4 %
-    Accuracy for class truck is: 62.2 %
+    Accuracy for class: plane is 59.4 %
+    Accuracy for class: car   is 66.7 %
+    Accuracy for class: bird  is 22.7 %
+    Accuracy for class: cat   is 52.7 %
+    Accuracy for class: deer  is 59.1 %
+    Accuracy for class: dog   is 28.9 %
+    Accuracy for class: frog  is 70.8 %
+    Accuracy for class: horse is 57.6 %
+    Accuracy for class: ship  is 67.4 %
+    Accuracy for class: truck is 62.2 %
 
 
 Okay, so what next?
@@ -508,7 +505,7 @@ CUDA available:
 .. code-block:: default
 
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Assuming that we are on a CUDA machine, this should print a CUDA device:
 
@@ -591,7 +588,7 @@ Where do I go next?
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 2 minutes  3.221 seconds)
+   **Total running time of the script:** ( 2 minutes  0.889 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_cifar10_tutorial.py:
