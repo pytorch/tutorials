@@ -319,7 +319,7 @@ def weights_init(m):
 # .. figure:: /_static/img/dcgan_generator.png
 #    :alt: dcgan_generator
 #
-# Notice, the how the inputs we set in the input section (*nz*, *ngf*, and
+# Notice, how the inputs we set in the input section (*nz*, *ngf*, and
 # *nc*) influence the generator architecture in code. *nz* is the length
 # of the z input vector, *ngf* relates to the size of the feature maps
 # that are propagated through the generator, and *nc* is the number of
