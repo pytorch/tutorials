@@ -13,7 +13,7 @@ random field.
 
 A recurrent neural network is a network that maintains some kind of
 state. For example, its output could be used as part of the next input,
-so that information can propogate along as the network passes over the
+so that information can propagate along as the network passes over the
 sequence. In the case of an LSTM, for each element in the sequence,
 there is a corresponding *hidden state* :math:`h_t`, which in principle
 can contain information from arbitrary points earlier in the sequence.
