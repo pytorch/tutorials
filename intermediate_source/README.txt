@@ -3,7 +3,7 @@ Intermediate tutorials
 
 1. tensorboard_tutorial.py
 	Classifying Names with a Character-Level RNN
-	https://pytorch.org/tutorials/beginner/tensorboard_tutorial.html
+	https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
 
 2. char_rnn_classification_tutorial.py
 	Classifying Names with a Character-Level RNN
