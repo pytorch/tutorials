@@ -1,0 +1,1231 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Ease-of-use quantization for PyTorch with Intel® Neural Compressor &mdash; PyTorch Tutorials 1.10.1+cu102 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0-beta/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/katex-math.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-117752657-2');
+    </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-orange-arrow">
+                Docs
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/docs/stable/index.html">
+                  <span class="dropdown-title">PyTorch</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/audio/stable/index.html">
+                  <span class="dropdown-title">torchaudio</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/text/stable/index.html">
+                  <span class="dropdown-title">torchtext</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/vision/stable/index.html">
+                  <span class="dropdown-title">torchvision</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/elastic/">
+                  <span class="dropdown-title">TorchElastic</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
+                  <span class="dropdown-title">TorchServe</span>
+                  <p></p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/xla">
+                  <span class="dropdown-title">PyTorch on XLA Devices</span>
+                  <p></p>
+                </a>
+            </div>
+          </li>
+
+          <li>
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a class="resource-option with-down-arrow">
+                Resources
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="nav-dropdown-item" href="https://pytorch.org/features">
+                  <span class="dropdown-title">About</span>
+                  <p>Learn about PyTorch’s features and capabilities</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/#community-module">
+                  <span class="dropdown-title">Community</span>
+                  <p>Join the PyTorch developer community to contribute, learn, and get your questions answered.</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/resources">
+                  <span class="dropdown-title">Developer Resources</span>
+                  <p>Find resources and get questions answered</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://discuss.pytorch.org/" target="_blank">
+                  <span class="dropdown-title">Forums</span>
+                  <p>A place to discuss PyTorch code, issues, install, research</p>
+                </a>
+                <a class="nav-dropdown-item" href="https://pytorch.org/hub">
+                  <span class="dropdown-title">Models (Beta)</span>
+                  <p>Discover, publish, and reuse pre-trained models</p>
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">GitHub</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+                <div class="version">
+                  1.10.1+cu102
+                </div>
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Tutorials" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">PyTorch Recipes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="recipes_index.html">See All Recipes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../prototype/prototype_index.html">See All Prototype Recipes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/intro.html">Learn the Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/quickstart_tutorial.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/tensorqs_tutorial.html">Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/data_tutorial.html">Datasets &amp; DataLoaders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/transforms_tutorial.html">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/buildmodel_tutorial.html">Build the Neural Network</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/autogradqs_tutorial.html">Automatic Differentiation with <code class="docutils literal notranslate"><span class="pre">torch.autograd</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/optimization_tutorial.html">Optimizing Model Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/basics/saveloadrun_tutorial.html">Save and Load the Model</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Introduction to PyTorch on YouTube</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt.html">Introduction to PyTorch - YouTube Series</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/introyt1_tutorial.html">Introduction to PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensors_deeper_tutorial.html">Introduction to PyTorch Tensors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/autogradyt_tutorial.html">The Fundamentals of Autograd</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/modelsyt_tutorial.html">Building Models with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/tensorboardyt_tutorial.html">PyTorch TensorBoard Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/trainingyt.html">Training with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/introyt/captumyt.html">Model Understanding with Captum</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Learning PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deep_learning_60min_blitz.html">Deep Learning with PyTorch: A 60 Minute Blitz</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/pytorch_with_examples.html">Learning PyTorch with Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/nn_tutorial.html">What is <cite>torch.nn</cite> <em>really</em>?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_tutorial.html">Visualizing Models, Data, and Training with TensorBoard</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Image and Video</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/torchvision_tutorial.html">TorchVision Object Detection Finetuning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transfer_learning_tutorial.html">Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/fgsm_tutorial.html">Adversarial Example Generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dcgan_faces_tutorial.html">DCGAN Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/spatial_transformer_tutorial.html">Spatial Transformer Networks Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Audio</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_io_tutorial.html">Audio I/O</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_resampling_tutorial.html">Audio Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_data_augmentation_tutorial.html">Audio Data Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_extractions_tutorial.html">Audio Feature Extractions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_feature_augmentation_tutorial.html">Audio Feature Augmentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/audio_datasets_tutorial.html">Audio Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_recognition_pipeline_tutorial.html">Speech Recognition with Wav2Vec2</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/speech_command_classification_with_torchaudio_tutorial.html">Speech Command Classification with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/text_to_speech_with_torchaudio.html">Text-to-speech with torchaudio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Text</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/text_sentiment_ngrams_tutorial.html">Text classification with the torchtext library</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/translation_transformer.html">Language Translation with nn.Transformer and torchtext</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Reinforcement Learning</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/reinforcement_q_learning.html">Reinforcement Learning (DQN) Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Frontend APIs</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Extending PyTorch</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_double_backward_tutorial.html">Double Backward with Custom Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/custom_function_conv_bn_tutorial.html">Fusing Convolution and Batch Norm using Custom Function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_extension.html">Custom C++ and CUDA Extensions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_ops.html">Extending TorchScript with Custom C++ Operators</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/torch_script_custom_classes.html">Extending TorchScript with Custom C++ Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dispatcher.html">Registering a Dispatched Operator in C++</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/extend_dispatcher.html">Extending dispatcher for a new backend in C++</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Model Optimization</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/profiler.html">Profiling your PyTorch Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/tensorboard_profiler_tutorial.html">PyTorch Profiler With TensorBoard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/hyperparameter_tuning_tutorial.html">Hyperparameter tuning with Ray Tune</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/vt_tutorial.html">Optimizing Vision Transformer Model for Deployment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/parametrizations.html">Parametrizations Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pruning_tutorial.html">Pruning Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/dynamic_quantization_tutorial.html">(beta) Dynamic Quantization on an LSTM Word Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dynamic_quantization_bert_tutorial.html">(beta) Dynamic Quantization on BERT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/quantized_transfer_learning_tutorial.html">(beta) Quantized Transfer Learning for Computer Vision Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/static_quantization_tutorial.html">(beta) Static Quantization with Eager Mode in PyTorch</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_async_execution.html">Implementing Batch RPC Processing Using Asynchronous Executions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/rpc_ddp_tutorial.html">Combining Distributed DataParallel with Distributed RPC Framework</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/pipeline_tutorial.html">Training Transformer models using Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/ddp_pipeline.html">Training Transformer models using Distributed Data Parallel and Pipeline Parallelism</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/generic_join.html">Distributed Training with Uneven Inputs Using the Join Context Manager</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Mobile</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+          
+            Tutorials
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Ease-of-use quantization for PyTorch with Intel® Neural Compressor</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/recipes/intel_neural_compressor_for_pytorch.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+
+          <div class="pytorch-call-to-action-links">
+            <div id="tutorial-type">recipes/intel_neural_compressor_for_pytorch</div>
+
+            <div id="google-colab-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+              <div class="call-to-action-desktop-view">Run in Google Colab</div>
+              <div class="call-to-action-mobile-view">Colab</div>
+            </div>
+            <div id="download-notebook-link">
+              <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
+              <div class="call-to-action-desktop-view">Download Notebook</div>
+              <div class="call-to-action-mobile-view">Notebook</div>
+            </div>
+            <div id="github-view-link">
+              <img class="call-to-action-img" src="../_static/images/pytorch-github.svg"/>
+              <div class="call-to-action-desktop-view">View on GitHub</div>
+              <div class="call-to-action-mobile-view">GitHub</div>
+            </div>
+          </div>
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <div class="section" id="ease-of-use-quantization-for-pytorch-with-intel-neural-compressor">
+<h1>Ease-of-use quantization for PyTorch with Intel® Neural Compressor<a class="headerlink" href="#ease-of-use-quantization-for-pytorch-with-intel-neural-compressor" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Most deep learning applications are using 32-bits of floating-point precision
+for inference. But low precision data types, especially int8, are getting more
+focus due to significant performance boost. One of the essential concerns on
+adopting low precision is how to easily mitigate the possible accuracy loss
+and reach predefined accuracy requirement.</p>
+<p>Intel® Neural Compressor aims to address the aforementioned concern by extending
+PyTorch with accuracy-driven automatic tuning strategies to help user quickly find
+out the best quantized model on Intel hardware, including Intel Deep Learning
+Boost (<a class="reference external" href="https://www.intel.com/content/www/us/en/artificial-intelligence/deep-learning-boost.html">Intel DL Boost</a>)
+and Intel Advanced Matrix Extensions (<a class="reference external" href="https://www.intel.com/content/www/us/en/develop/documentation/cpp-compiler-developer-guide-and-reference/top/compiler-reference/intrinsics/intrinsics-for-amx-instructions/intrinsics-for-amx-tile-instructions.html">Intel AMX</a>).</p>
+<p>Intel® Neural Compressor has been released as an open-source project
+at <a class="reference external" href="https://github.com/intel/neural-compressor">Github</a>.</p>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><strong>Ease-of-use Python API:</strong> Intel® Neural Compressor provides simple frontend
+Python APIs and utilities for users to do neural network compression with few
+line code changes.
+Typically, only 5 to 6 clauses are required to be added to the original code.</li>
+<li><strong>Quantization:</strong> Intel® Neural Compressor supports accuracy-driven automatic
+tuning process on post-training static quantization, post-training dynamic
+quantization, and quantization-aware training on PyTorch fx graph mode and
+eager model.</li>
+</ul>
+<p><em>This tutorial mainly focuses on the quantization part. As for how to use Intel®
+Neural Compressor to do pruning and distillation, please refer to corresponding
+documents in the Intel® Neural Compressor github repo.</em></p>
+</div>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<div class="code bash highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># install stable version from pip</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">neural</span><span class="o">-</span><span class="n">compressor</span>
+
+<span class="c1"># install nightly version from pip</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">i</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">test</span><span class="o">.</span><span class="n">pypi</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">simple</span><span class="o">/</span> <span class="n">neural</span><span class="o">-</span><span class="n">compressor</span>
+
+<span class="c1"># install stable version from from conda</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">neural</span><span class="o">-</span><span class="n">compressor</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">intel</span>
+</pre></div>
+</div>
+<p><em>Supported python versions are 3.6 or 3.7 or 3.8 or 3.9</em></p>
+</div>
+<div class="section" id="usages">
+<h3>Usages<a class="headerlink" href="#usages" title="Permalink to this headline">¶</a></h3>
+<p>Minor code changes are required for users to get started with Intel® Neural Compressor
+quantization API. Both PyTorch fx graph mode and eager mode are supported.</p>
+<p>Intel® Neural Compressor takes a FP32 model and a yaml configuration file as inputs.
+To construct the quantization process, users can either specify the below settings via
+the yaml configuration file or python APIs:</p>
+<ol class="arabic simple">
+<li>Calibration Dataloader (Needed for static quantization)</li>
+<li>Evaluation Dataloader</li>
+<li>Evaluation Metric</li>
+</ol>
+<p>Intel® Neural Compressor supports some popular dataloaders and evaluation metrics. For
+how to configure them in yaml configuration file, user could refer to <a class="reference external" href="https://github.com/intel/neural-compressor/blob/master/docs/dataset.md">Built-in Datasets</a>.</p>
+<p>If users want to use a self-developed dataloader or evaluation metric, Intel® Neural
+Compressor supports this by the registration of customized dataloader/metric using python code.</p>
+<p>For the yaml configuration file format please refer to <a class="reference external" href="https://github.com/intel/neural-compressor/blob/master/neural_compressor/template/ptq.yaml">yaml template</a>.</p>
+<p>The code changes that are required for <em>Intel® Neural Compressor</em> are highlighted with
+comments in the line above.</p>
+<div class="section" id="model">
+<h4>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h4>
+<p>In this tutorial, the LeNet model is used to demonstrate how to deal with <em>Intel® Neural Compressor</em>.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="c1"># LeNet Model definition</span>
+<span class="k">class</span> <span class="nc">Net</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Net</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout2d</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc1_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2_drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">320</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc1_drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;./lenet_mnist_model.pth&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The pretrained model weight <cite>lenet_mnist_model.pth</cite> comes from
+<a class="reference external" href="https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing">here</a>.</p>
+</div>
+<div class="section" id="accuracy-driven-quantization">
+<h4>Accuracy driven quantization<a class="headerlink" href="#accuracy-driven-quantization" title="Permalink to this headline">¶</a></h4>
+<p>Intel® Neural Compressor supports accuracy-driven automatic tuning to generate the optimal
+int8 model which meets a predefined accuracy goal.</p>
+<p>Below is an example of how to quantize a simple network on PyTorch
+<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a> by auto-tuning.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span><span class="w"></span>
+<span class="nt">model</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span><span class="w"></span>
+<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span><span class="w"></span>
+
+<span class="nt">evaluation</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">accuracy</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">metric</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">topk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+
+<span class="nt">tuning</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">accuracy_criterion</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./data&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                   <span class="p">])),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># launch code for Intel® Neural Compressor</span>
+<span class="kn">from</span> <span class="nn">neural_compressor.experimental</span> <span class="kn">import</span> <span class="n">Quantization</span>
+<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">&quot;./conf.yaml&quot;</span><span class="p">)</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
+<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the <cite>conf.yaml</cite> file, the built-in metric <cite>top1</cite> of Intel® Neural Compressor is specified as
+the evaluation method, and <cite>1%</cite> relative accuracy loss is set as the accuracy target for auto-tuning.
+Intel® Neural Compressor will traverse all possible quantization config combinations on per-op level
+to find out the optimal int8 model that reaches the predefined accuracy target.</p>
+<p>Besides those built-in metrics, Intel® Neural Compressor also supports customized metric through
+python code:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span><span class="w"></span>
+<span class="nt">model</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span><span class="w"></span>
+<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span><span class="w"></span>
+
+<span class="nt">tuning</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">accuracy_criterion</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./data&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                   <span class="p">])),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># define a customized metric</span>
+<span class="k">class</span> <span class="nc">Top1Metric</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">label</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mf">100.</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">correct</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+
+<span class="c1"># launch code for Intel® Neural Compressor</span>
+<span class="kn">from</span> <span class="nn">neural_compressor.experimental</span> <span class="kn">import</span> <span class="n">Quantization</span>
+<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">&quot;./conf.yaml&quot;</span><span class="p">)</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">metric</span> <span class="o">=</span> <span class="n">Top1Metric</span><span class="p">()</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
+<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above example, a <cite>class</cite> which contains <cite>update()</cite> and <cite>result()</cite> function is implemented
+to record per mini-batch result and calculate final accuracy at the end.</p>
+</div>
+<div class="section" id="quantization-aware-training">
+<h4>Quantization aware training<a class="headerlink" href="#quantization-aware-training" title="Permalink to this headline">¶</a></h4>
+<p>Besides post-training static quantization and post-training dynamic quantization, Intel® Neural
+Compressor supports quantization-aware training with an accuracy-driven automatic tuning mechanism.</p>
+<p>Below is an example of how to do quantization aware training on a simple network on PyTorch
+<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a>.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span><span class="w"></span>
+<span class="nt">model</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LeNet</span><span class="w"></span>
+<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span><span class="w"></span>
+
+<span class="nt">quantization</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">approach</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quant_aware_training</span><span class="w"></span>
+
+<span class="nt">evaluation</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">accuracy</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">metric</span><span class="p">:</span><span class="w"></span>
+<span class="w">            </span><span class="nt">topk</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w"></span>
+
+<span class="nt">tuning</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">accuracy_criterion</span><span class="p">:</span><span class="w"></span>
+<span class="w">        </span><span class="nt">relative</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.01</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">transforms</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./data&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
+                   <span class="p">])),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./data&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+                       <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">((</span><span class="mf">0.1307</span><span class="p">,),</span> <span class="p">(</span><span class="mf">0.3081</span><span class="p">,))</span>
+                   <span class="p">])),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">training_func</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Train Epoch: </span><span class="si">{}</span><span class="s1"> [</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)]</span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{:.6f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                  <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_idx</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
+                  <span class="mf">100.</span> <span class="o">*</span> <span class="n">batch_idx</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">),</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()))</span>
+
+<span class="c1"># launch code for Intel® Neural Compressor</span>
+<span class="kn">from</span> <span class="nn">neural_compressor.experimental</span> <span class="kn">import</span> <span class="n">Quantization</span>
+<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">&quot;./conf.yaml&quot;</span><span class="p">)</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">q_func</span> <span class="o">=</span> <span class="n">training_func</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">test_loader</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
+<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="performance-only-quantization">
+<h4>Performance only quantization<a class="headerlink" href="#performance-only-quantization" title="Permalink to this headline">¶</a></h4>
+<p>Intel® Neural Compressor supports directly yielding int8 model with dummy dataset for the
+performance benchmarking purpose.</p>
+<p>Below is an example of how to quantize a simple network on PyTorch
+<a class="reference external" href="https://pytorch.org/docs/stable/fx.html">FX graph mode</a> with a dummy dataset.</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># conf.yaml</span><span class="w"></span>
+<span class="nt">model</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lenet</span><span class="w"></span>
+<span class="w">    </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pytorch_fx</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># main.py</span>
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="c1"># launch code for Intel® Neural Compressor</span>
+<span class="kn">from</span> <span class="nn">neural_compressor.experimental</span> <span class="kn">import</span> <span class="n">Quantization</span><span class="p">,</span> <span class="n">common</span>
+<span class="kn">from</span> <span class="nn">neural_compressor.experimental.data.datasets.dummy_dataset</span> <span class="kn">import</span> <span class="n">DummyDataset</span>
+<span class="n">quantizer</span> <span class="o">=</span> <span class="n">Quantization</span><span class="p">(</span><span class="s2">&quot;./conf.yaml&quot;</span><span class="p">)</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+<span class="n">quantizer</span><span class="o">.</span><span class="n">calib_dataloader</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">DummyDataset</span><span class="p">([(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)]))</span>
+<span class="n">q_model</span> <span class="o">=</span> <span class="n">quantizer</span><span class="p">()</span>
+<span class="n">q_model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="quantization-outputs">
+<h3>Quantization outputs<a class="headerlink" href="#quantization-outputs" title="Permalink to this headline">¶</a></h3>
+<p>Users could know how many ops get quantized from log printed by Intel® Neural Compressor
+like below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|********</span><span class="n">Mixed</span> <span class="n">Precision</span> <span class="n">Statistics</span><span class="o">*******|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>        <span class="n">Op</span> <span class="n">Type</span>         <span class="o">|</span> <span class="n">Total</span>  <span class="o">|</span>  <span class="n">INT8</span> <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>  <span class="n">quantize_per_tensor</span>   <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>         <span class="n">Conv2d</span>         <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">max_pool2d</span>       <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>          <span class="n">relu</span>          <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">dequantize</span>       <span class="o">|</span>   <span class="mi">2</span>    <span class="o">|</span>   <span class="mi">2</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>       <span class="n">LinearReLU</span>       <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">|</span>         <span class="n">Linear</span>         <span class="o">|</span>   <span class="mi">1</span>    <span class="o">|</span>   <span class="mi">1</span>   <span class="o">|</span>
+<span class="mi">2021</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">08</span> <span class="mi">14</span><span class="p">:</span><span class="mi">58</span><span class="p">:</span><span class="mi">35</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">+------------------------+--------+-------+</span>
+</pre></div>
+</div>
+<p>The quantized model will be generated under <cite>./output</cite> directory, in which there are two files:
+1. best_configure.yaml
+2. best_model_weights.pt</p>
+<p>The first file contains the quantization configurations of each op, the second file contains
+int8 weights and zero point and scale info of activations.</p>
+</div>
+<div class="section" id="deployment">
+<h3>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h3>
+<p>Users could use the below code to load quantized model and then do inference or performance benchmark.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">neural_compressor.utils.pytorch</span> <span class="kn">import</span> <span class="n">load</span>
+<span class="n">int8_model</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s1">&#39;./output&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="tutorials">
+<h2>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h2>
+<p>Please visit <a class="reference external" href="https://github.com/intel/neural-compressor">Intel® Neural Compressor Github repo</a>
+for more tutorials.</p>
+</div>
+</div>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  
+
+    <hr class="rating-hr hr-top">
+      <div class="rating-container">
+        <div class="rating-prompt">Rate this Tutorial</div>
+        <div class="stars-outer">
+          <i class="far fa-star" title="1 Star" data-behavior="tutorial-rating" data-count="1"></i>
+          <i class="far fa-star" title="2 Stars" data-behavior="tutorial-rating" data-count="2"></i>
+          <i class="far fa-star" title="3 Stars" data-behavior="tutorial-rating" data-count="3"></i>
+          <i class="far fa-star" title="4 Stars" data-behavior="tutorial-rating" data-count="4"></i>
+          <i class="far fa-star" title="5 Stars" data-behavior="tutorial-rating" data-count="5"></i>
+        </div>
+      </div>
+    <hr class="rating-hr hr-bottom"/>
+
+  
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021, PyTorch.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Ease-of-use quantization for PyTorch with Intel® Neural Compressor</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#usages">Usages</a><ul>
+<li><a class="reference internal" href="#model">Model</a></li>
+<li><a class="reference internal" href="#accuracy-driven-quantization">Accuracy driven quantization</a></li>
+<li><a class="reference internal" href="#quantization-aware-training">Quantization aware training</a></li>
+<li><a class="reference internal" href="#performance-only-quantization">Performance only quantization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#quantization-outputs">Quantization outputs</a></li>
+<li><a class="reference internal" href="#deployment">Deployment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tutorials">Tutorials</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+         <script type="text/javascript" src="../_static/jquery.js"></script>
+         <script type="text/javascript" src="../_static/underscore.js"></script>
+         <script type="text/javascript" src="../_static/doctools.js"></script>
+         <script type="text/javascript" src="../_static/clipboard.min.js"></script>
+         <script type="text/javascript" src="../_static/copybutton.js"></script>
+         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.js"></script>
+         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/contrib/auto-render.min.js"></script>
+         <script type="text/javascript" src="../_static/katex_autorenderer.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<script>
+
+  
+//add microsoft link
+
+if(window.location.href.indexOf("/beginner/basics/")!= -1)
+{
+  var url="https://docs.microsoft.com/learn/paths/pytorch-fundamentals/?wt.mc_id=aiml-7486-cxa";
+  switch(window.location.pathname.split("/").pop().replace('.html',''))
+  {
+    case"quickstart_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/9-quickstart?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"tensorqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/2-tensors?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"data_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/3-data?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"transforms_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/4-transforms?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"buildmodel_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/5-model?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"autogradqs_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/6-autograd?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"optimization_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/7-optimization?WT.mc_id=aiml-7486-cxa";
+      break;
+    case"saveloadrun_tutorial":
+      url="https://docs.microsoft.com/learn/modules/intro-machine-learning-pytorch/8-inference?WT.mc_id=aiml-7486-cxa";
+    }
+    
+    $(".pytorch-call-to-action-links").children().first().before("<a href="+url+' data-behavior="call-to-action-event" data-response="Run in Microsoft Learn" target="_blank"><div id="microsoft-learn-link" style="padding-bottom: 0.625rem;border-bottom: 1px solid #f3f4f7;padding-right: 2.5rem;display: -webkit-box;  display: -ms-flexbox; isplay: flex; -webkit-box-align: center;-ms-flex-align: center;align-items: center;"><img class="call-to-action-img" src="../../_static/images/microsoft-logo.svg"/><div class="call-to-action-desktop-view">Run in Microsoft Learn</div><div class="call-to-action-mobile-view">Learn</div></div></a>')
+  }
+
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window,document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '243028289693773');
+  fbq('track', 'PageView');
+
+  $("[data-behavior='call-to-action-event']").on('click', function(){
+    fbq('trackCustom', "Download", {
+      tutorialTitle: $('h1:first').text(),
+      downloadLink: this.href,
+      tutorialLink: window.location.href,
+      downloadTitle: $(this).attr("data-response")
+    });
+    gtag('event', 'click', {
+      'event_category': $(this).attr("data-response"),
+      'event_label': $("h1").first().text(),
+      'tutorial_link': window.location.href
+    });
+   });
+
+   $("[data-behavior='tutorial-rating']").on('click', function(){
+    fbq('trackCustom', "Tutorial Rating", {
+      tutorialLink: window.location.href,
+      tutorialTitle: $('h1:first').text(),
+      rating: $(this).attr("data-count")
+    });
+
+    gtag('event', 'click', {
+      'event_category': 'Tutorial Rating',
+      'event_label': $("h1").first().text(),
+      'value': $(this).attr("data-count")
+    });
+   });
+
+   if (location.pathname == "/") {
+     $(".rating-container").hide();
+     $(".hr-bottom").hide();
+   }
+
+
+</script>
+
+<noscript>
+  <img height="1" width="1"
+  src="https://www.facebook.com/tr?id=243028289693773&ev=PageView
+  &noscript=1"/>
+</noscript>
+
+<script type="text/javascript">
+  var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
+</script>
+
+<img height="1" width="1" style="border-style:none;" alt="" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0"/>
+
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer documentation for PyTorch</p>
+          <a class="with-right-arrow" href="https://pytorch.org/docs/stable/index.html">View Docs</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Tutorials</h2>
+          <p>Get in-depth tutorials for beginners and advanced developers</p>
+          <a class="with-right-arrow" href="https://pytorch.org/tutorials">View Tutorials</a>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="https://pytorch.org/resources">View Resources</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://pytorch.org/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/">PyTorch</a></li>
+            <li><a href="https://pytorch.org/get-started">Get Started</a></li>
+            <li><a href="https://pytorch.org/features">Features</a></li>
+            <li><a href="https://pytorch.org/ecosystem">Ecosystem</a></li>
+            <li><a href="https://pytorch.org/blog/">Blog</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md">Contributing</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="https://pytorch.org/resources">Resources</a></li>
+            <li><a href="https://pytorch.org/tutorials">Tutorials</a></li>
+            <li><a href="https://pytorch.org/docs/stable/index.html">Docs</a></li>
+            <li><a href="https://discuss.pytorch.org" target="_blank">Discuss</a></li>
+            <li><a href="https://github.com/pytorch/pytorch/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://pytorch.org/assets/brand-guidelines/PyTorch-Brand-Guidelines.pdf" target="_blank">Brand Guidelines</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Stay Connected</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="https://www.facebook.com/pytorch" target="_blank" class="facebook"></a>
+            <a href="https://twitter.com/pytorch" target="_blank" class="twitter"></a>
+            <a href="https://www.youtube.com/pytorch" target="_blank" class="youtube"></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../_static/images/pytorch-x.svg">
+  </div>
+</div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://pytorch.org/" aria-label="PyTorch"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://pytorch.org/get-started">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/ecosystem">Ecosystem</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/mobile">Mobile</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/hub">PyTorch Hub</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/blog/">Blog</a>
+          </li>
+
+          <li class="active">
+            <a href="https://pytorch.org/tutorials">Tutorials</a>
+          </li>
+
+          <li class="resources-mobile-menu-title">
+            Docs
+          </li>
+
+          <ul class="resources-mobile-menu-items">
+            <li>
+              <a href="https://pytorch.org/docs/stable/index.html">PyTorch</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/audio/stable/index.html">torchaudio</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/text/stable/index.html">torchtext</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/vision/stable/index.html">torchvision</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/elastic/">TorchElastic</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/serve/">TorchServe</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/xla">PyTorch on XLA Devices</a>
+            </li>
+          </ul>
+
+          <li class="resources-mobile-menu-title">
+            Resources
+          </li>
+
+          <ul class="resources-mobile-menu-items">
+            <li>
+              <a href="https://pytorch.org/resources">Developer Resources</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/features">About</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/hub">Models (Beta)</a>
+            </li>
+
+            <li>
+              <a href="https://pytorch.org/#community-module">Community</a>
+            </li>
+
+            <li>
+              <a href="https://discuss.pytorch.org/">Forums</a>
+            </li>
+          </ul>
+
+          <li>
+            <a href="https://github.com/pytorch/pytorch">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
