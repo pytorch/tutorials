@@ -34,5 +34,8 @@ Prototype Tutorials
 
 9. fx_graph_mode_quant_guide.py
 	   FX Graph Mode Quantization User Guide
-	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html	   
+	   https://pytorch.org/tutorials/prototype/fx_graph_mode_quant_guide.html
+10. tracing_based_selective_build.rst
+           Tracing-based Selective Build Mobile Interpreter in Android and iOS
+           https://pytorch.org/tutorials/prototype/tracing_based_selective_build.html
 
