@@ -1,5 +1,5 @@
 (prototype) Tracing-based Selective Build Mobile Interpreter in Android and iOS
-
+===============================================================================
 
 
 *Author*: Chen Lai <https://github.com/cccclai>, Dhruv Matani <https://github.com/dhruvbird>
@@ -8,6 +8,7 @@
     Tracing-based selective build a prototype feature to minimize library size. Since the traced result relies on the model input and traced environment, if the tracer runs in a different environment than mobile interpreter, the operator list might be different from the actual used operator list and missing operators error might raise.
 
 Introduction
+------------
 
 
 This tutorial introduces a new way to custom build mobile interpreter to further optimize mobile interpreter size. It restricts the set of operators included in the compiled binary to only the set of operators actually needed by target models. It is a technique to reduce the binary size of PyTorch for mobile deployments. Tracing Based Selective Build runs a model with specific representative inputs, and records which operators were called. The build then includes just those operators.
@@ -83,6 +84,7 @@ Following are the processes to use tracing-based selective approach to build a c
 
 
 Android
+-------
 
 Get the Image Segmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
 
@@ -149,6 +151,7 @@ Update `all projects` part in ``ImageSegmentation/build.gradle`` to
 
 
 iOS
+---
 
 Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation
 
