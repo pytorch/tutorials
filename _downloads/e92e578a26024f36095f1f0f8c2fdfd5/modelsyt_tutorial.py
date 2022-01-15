@@ -151,7 +151,7 @@ class LeNet(torch.nn.Module):
 
     def __init__(self):
         super(LeNet, self).__init__()
-        # 1 input image channel (black & white), 6 output channels, 3x3 square convolution
+        # 1 input image channel (black & white), 6 output channels, 5x5 square convolution
         # kernel
         self.conv1 = torch.nn.Conv2d(1, 6, 5)
         self.conv2 = torch.nn.Conv2d(6, 16, 3)
