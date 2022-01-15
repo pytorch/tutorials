@@ -101,7 +101,7 @@ r2 = torch.rand(3, 2)
 # Here’s a small sample of the mathematical operations available:
 # 
 
-r = torch.rand(2, 2) - 0.5 * 2 # values between -1 and 1
+r = (torch.rand(2, 2) - 0.5) * 2 # values between -1 and 1
 print('A random matrix, r:')
 print(r)
 
