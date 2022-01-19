@@ -267,9 +267,9 @@ output = model(input)
 # will restore channels last memory format and benefit from faster
 # kernels.
 #
-# But operatos that does not support channels last does introduce
+# But operators that does not support channels last does introduce
 # overhead by permutation. Optionally, you can investigate and identify
-# operatos in your model that does not support channels last, if you
+# operators in your model that does not support channels last, if you
 # want to improve the performance of converted model.
 #
 # That means you need to verify the list of used operators
