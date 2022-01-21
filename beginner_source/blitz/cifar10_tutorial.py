@@ -93,15 +93,12 @@ classes = ('plane', 'car', 'bird', 'cat',
 import matplotlib.pyplot as plt
 import numpy as np
 
-# functions to show an image
-
-
+# function to show an image
 def imshow(img):
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
-
 
 # get some random training images
 dataiter = iter(trainloader)
@@ -113,33 +110,41 @@ imshow(torchvision.utils.make_grid(images))
 print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
 
 
+
 ########################################################################
 # 2. Define a Convolutional Neural Network
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Copy the neural network from the Neural Networks section before and modify it to
-# take 3-channel images (instead of 1-channel images as it was defined).
+# A simplified version of the model from the "Neural Networks" tutorial.
+# 
+# Differences include:
+# - modified to take 3-channel images (instead of 1-channel images as it was defined);
+# - decreased the kernel size from 5 to 3, which reduces the amount of
+#    parameters by two thirds with only a minimal loss of performance;
+# - added a padding of 1. This, together with the new kernel size, guarantees
+#    that all pixels in the image get the same coverage from the conv layers.
+# - decreased the amount of linear layers from 3 to 1 and greatly increased
+#    the width of the conv layers to 80. This rearranges the parameters of the
+#    model to better accomodate GPUs, which overwhelmingly favor networks 
+#    that are at the same time shallow and wide. Incidentally, for this task,
+#    this configuration yields a much faster convergence, achieving an accuracy
+#    of 69% by the end of the two epochs vs the 54% of the previous model;
 
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class Net(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1 = nn.Conv2d(3, 80, 3, stride=1, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.conv2 = nn.Conv2d(80, 80, 3, stride=1, padding=1)
+        self.fc1 = nn.Linear(80 * 8 * 8, 10)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = torch.flatten(x, 1) # flatten all dimensions except batch
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.fc1(x)
         return x
 
 
@@ -163,6 +168,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 # We simply have to loop over our data iterator, and feed the inputs to the
 # network and optimize.
 
+print("Training started")
 for epoch in range(2):  # loop over the dataset multiple times
 
     running_loss = 0.0
