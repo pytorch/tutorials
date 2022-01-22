@@ -81,9 +81,9 @@ model = NeuralNetwork()
 #  - **Learning Rate** - how much to update models parameters at each batch/epoch. Smaller values yield slow learning speed, while large values may result in unpredictable behavior during training.
 #
 
-learning_rate = 1e-3
-batch_size = 64
 epochs = 5
+batch_size = 64
+learning_rate = 1e-3
 
 
 
