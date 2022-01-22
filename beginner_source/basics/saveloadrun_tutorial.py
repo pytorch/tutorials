@@ -27,14 +27,14 @@ import torchvision.models as models
 # method:
 
 model = models.vgg16(pretrained=True)
-torch.save(model.state_dict(), 'model_weights.pth')
+torch.save(model.state_dict(), "model_weights.pth")
 
 ##########################
 # To load model weights, you need to create an instance of the same model first, and then load the parameters
 # using ``load_state_dict()`` method.
 
 model = models.vgg16() # we do not specify pretrained=True, i.e. do not load default weights
-model.load_state_dict(torch.load('model_weights.pth'))
+model.load_state_dict(torch.load("model_weights.pth"))
 model.eval()
 
 ###########################
@@ -47,12 +47,12 @@ model.eval()
 # defines the structure of a network. We might want to save the structure of this class together with
 # the model, in which case we can pass ``model`` (and not ``model.state_dict()``) to the saving function:
 
-torch.save(model, 'model.pth')
+torch.save(model, "model.pth")
 
 ########################
 # We can then load the model like this:
 
-model = torch.load('model.pth')
+model = torch.load("model.pth")
 
 ########################
 # .. note:: This approach uses Python `pickle <https://docs.python.org/3/library/pickle.html>`_ module when serializing the model, thus it relies on the actual class definition to be available when loading the model.
