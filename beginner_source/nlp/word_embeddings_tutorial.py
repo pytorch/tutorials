@@ -211,7 +211,7 @@ And see thy blood warm when thou feel'st it cold.""".split()
 # Each tuple is ([ word_i-CONTEXT_SIZE, ..., word_i-1 ], target word)
 ngrams = [
     (
-        [test_sentence[i - j - 1] for j in range(CONTEXT_SIZE)],
+        [test_sentence[i - j - 1] for j in reversed(range(CONTEXT_SIZE))],
         test_sentence[i]
     )
     for i in range(CONTEXT_SIZE, len(test_sentence))
