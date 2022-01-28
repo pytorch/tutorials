@@ -269,7 +269,7 @@ model = TinyModel()
 ##########################################################################
 # One thing you might notice is that we never specify
 # ``requires_grad=True`` for the model’s layers. Within a subclass of
-# ``torch.nn.module``, it’s assumed that we want to track gradients on the
+# ``torch.nn.Module``, it’s assumed that we want to track gradients on the
 # layers’ weights for learning.
 # 
 # If we look at the layers of the model, we can examine the values of the
