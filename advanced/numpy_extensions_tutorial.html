@@ -280,6 +280,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../intermediate/process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/dist_pipeline_parallel_tutorial.html">Distributed Pipeline Parallelism Using RPC</a></li>
@@ -411,23 +412,23 @@ correct.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[ 9.3415,  3.4292,  8.5531,  5.7567,  0.8557],
-        [ 6.8030,  7.9089,  7.5589,  3.6148, 19.4911],
-        [ 6.4553,  2.8195,  4.7639,  5.3572,  9.0934],
-        [ 3.1360,  8.7558,  7.5870,  8.2158,  5.5853],
-        [ 9.5665,  8.3659,  1.6039,  4.5132, 14.6327],
-        [ 3.1360, 12.2682, 10.5674, 13.1413,  5.5853],
-        [ 6.4553,  6.7724,  1.0187,  8.5607,  9.0934],
-        [ 6.8030,  3.3659,  2.5556,  1.7149, 19.4911]],
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([[12.5376,  6.6773,  3.3231,  5.5584,  0.2575],
+        [ 5.8153,  9.2426, 14.4798,  8.9445,  2.1834],
+        [ 3.1214,  8.2145,  3.0100,  7.8651, 11.0213],
+        [10.4861, 10.2996,  5.1209,  8.2066,  6.3929],
+        [ 4.1912,  5.5221, 10.6203,  8.8495,  3.3846],
+        [10.4861,  3.9580,  9.3606,  6.8065,  6.3929],
+        [ 3.1214,  7.5239,  6.2216,  5.7791, 11.0213],
+        [ 5.8153,  6.9000,  0.7583,  1.1061,  2.1834]],
        grad_fn=&lt;BadFFTFunctionBackward&gt;)
-tensor([[ 0.4096,  0.0562, -0.1395,  0.0642, -2.1047, -0.8188, -0.1638,  1.3321],
-        [-1.6521,  1.5614,  0.4518, -0.7497,  0.6626,  1.4005,  1.0407,  1.5253],
-        [-0.9847,  1.0394, -0.7789,  0.9054, -1.5484,  0.9887, -0.2668,  1.5582],
-        [ 1.0772,  0.8885,  1.1488,  0.6660,  0.2736,  0.4507,  0.2627, -1.5308],
-        [-1.4905,  0.5071, -0.3291, -0.7910,  0.7934,  0.1239,  1.0017,  0.5977],
-        [ 1.0662, -0.8667,  2.2332,  0.4981,  0.2839, -0.1462, -0.5028,  1.0217],
-        [ 0.6134,  0.7566,  1.3161, -0.7752,  0.0238, -1.0387,  0.1478, -1.1178],
-        [-0.3225, -1.8418,  0.5030, -0.4664,  1.1749, -1.0963,  0.8980, -0.4596]],
+tensor([[-0.8440, -0.5074,  0.4945,  0.3309,  0.0618,  0.0736,  0.5823,  0.8221],
+        [ 0.4126,  1.0925,  1.2339,  1.0749,  1.1563,  0.4460, -0.7155, -1.5381],
+        [-0.3760,  1.5574,  0.6701, -0.7802,  0.4672, -0.7720,  1.2363, -0.7963],
+        [-0.2861, -0.0093, -1.9080,  0.3363,  0.0219,  0.3594, -1.0872,  0.6860],
+        [ 1.1884,  0.2835, -0.7799,  1.7581,  0.3639, -0.6921,  0.0611,  0.4468],
+        [ 0.8603, -1.5042, -0.7607,  0.7153,  0.5639,  1.1087,  1.5079, -1.3632],
+        [-1.3230, -1.5353,  0.9201,  0.2806,  0.4835, -0.7872, -0.2092,  1.4937],
+        [ 0.3889,  0.8872, -0.2551,  0.3377,  0.2435,  1.4182,  2.0238,  0.9167]],
        requires_grad=True)
 </pre></div>
 </div>
@@ -493,39 +494,46 @@ has a filter (kernel) that represents weights.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Filter and bias:  [Parameter containing:
-tensor([[-0.2751, -1.3041, -0.9556],
-        [-0.4408,  0.5098, -1.4016],
-        [ 0.1268,  0.5934, -1.3929]], requires_grad=True), Parameter containing:
-tensor([[0.4728]], requires_grad=True)]
-Output from the convolution:  tensor([[-4.1037,  3.7877,  1.2161,  0.6709, -0.2967, -3.1432,  0.2296,  0.1401],
-        [-5.7382,  1.4805, -2.5804,  2.6437, -0.0888, -2.5131,  8.3105,  0.8379],
-        [-2.8737, -2.9714, -0.7358,  0.2529,  3.8815, -1.7892,  3.6362,  0.6171],
-        [ 1.4536, -0.9556,  2.7625, -2.7682,  2.7987,  2.9835, -0.2663,  4.7320],
-        [ 3.6987, -1.8585,  1.2861,  2.2975,  5.7278,  2.1917,  1.3488,  3.0813],
-        [ 0.9265, -2.7340, -1.8852,  0.9715,  4.5097,  2.0497,  2.9940,  3.5137],
-        [ 0.9631, -2.1630, -1.2386, -0.1298,  0.7053,  1.8823,  2.0782,  2.0840],
-        [-0.0726, -1.9170,  1.9893,  0.6197,  1.1618,  2.8244,  2.6926,  1.5535]],
-       grad_fn=&lt;ScipyConv2dFunctionBackward&gt;)
-Gradient for the input map:  tensor([[-1.3487e-01, -5.8800e-01, -3.3290e-01, -2.3259e-01,  3.1830e-01,
-          1.2380e+00, -1.4366e-01, -1.5078e+00, -6.5877e-01,  6.7297e-02],
-        [-1.0810e-01,  1.3028e+00,  1.4178e+00,  1.3356e+00, -1.1573e+00,
-         -1.4945e-01,  6.2577e-01, -1.6930e+00, -2.9018e+00, -7.2427e-01],
-        [ 1.0839e-01, -1.7925e-01, -3.4463e+00,  2.4407e+00, -6.2187e-01,
-         -9.1366e-02,  2.3537e+00,  7.3081e-01, -7.2891e-01, -7.9045e-01],
-        [-2.6694e-01, -1.0251e+00, -7.3521e-01,  5.3806e-01, -1.3318e+00,
-         -1.3914e+00, -3.6785e+00, -8.9328e-01, -4.0431e-01, -1.1715e+00],
-        [ 6.6610e-01,  2.9403e+00,  1.5494e+00, -2.7990e+00,  2.7336e+00,
-          2.5152e+00,  2.0253e+00, -1.1340e+00,  7.5172e-01, -3.4543e-01],
-        [ 6.7627e-01, -3.0294e+00,  3.6348e+00, -3.4761e+00,  2.3680e+00,
-         -3.4138e-01,  1.3536e+00, -1.6136e-01,  3.1821e+00,  6.1347e-01],
-        [-9.1817e-01, -1.3792e+00, -1.7871e+00, -2.6341e+00,  6.9319e-01,
-          4.5290e-01,  1.2974e+00,  2.3926e+00,  7.3080e-01,  2.5753e+00],
-        [ 2.3213e-02, -3.6468e-01, -2.6584e+00, -4.4484e+00, -4.3920e+00,
-          5.2108e-01, -3.8218e+00,  1.1181e+00,  6.9676e-01,  3.5236e+00],
-        [ 3.8906e-02,  7.4963e-02,  6.5050e-01, -4.0198e+00, -2.2328e+00,
-          1.6616e-01, -5.9708e-01, -1.3382e+00,  5.7383e-01,  1.5372e+00],
-        [-1.3368e-04,  1.0858e-01,  6.9642e-01, -2.4440e-01, -1.4934e+00,
-         -5.0567e-01, -2.7277e-01, -2.5195e+00,  1.3307e+00,  6.2682e-01]])
+tensor([[ 0.6200,  2.4488,  0.1541],
+        [ 1.2621,  2.5610, -2.2108],
+        [ 0.1201, -0.0883,  0.4338]], requires_grad=True), Parameter containing:
+tensor([[-0.2153]], requires_grad=True)]
+Output from the convolution:  tensor([[  5.0884,   2.8942,  -5.7491,  -4.2580,   2.0709,  -5.9126,  -3.9680,
+          10.5909],
+        [  3.6308,  -9.2031,  -0.0427,   6.7864,   3.8306,  -6.9290,   7.6976,
+           3.2185],
+        [  0.2769,  -6.2613,   3.5667,  10.8260,  -3.7140,   2.2522,   3.4696,
+          -1.4515],
+        [  1.0832,  -0.7999,   4.0122,   6.4728,  -1.3742,   2.0054,  -2.7086,
+           3.2299],
+        [ -2.0922,   5.9752,   0.3044,   1.2090,  -7.1393,   5.3786,   2.4958,
+           4.0100],
+        [  4.9682,   8.1791,   2.6458,   0.5925,  -4.4393,   3.4437,  -3.8489,
+           2.3450],
+        [  4.2131,   9.0557,  -4.6802,   5.9150,  -2.6225,   2.1323,  -7.5530,
+          -7.5710],
+        [  1.2847,   4.2432,  -1.6254,  12.8654,  -7.8630,  -3.5859, -12.0130,
+          -1.7688]], grad_fn=&lt;ScipyConv2dFunctionBackward&gt;)
+Gradient for the input map:  tensor([[  0.4982,   1.5239,  -1.7917,  -1.9645,  -4.9521,  -1.2914,  -2.8398,
+          -2.2465,   2.7241,   0.1827],
+        [  0.8901,   1.1519,  -2.1907,  -1.5874,  -3.7255,   0.7874,  -1.1885,
+          -2.2490,   2.5047,  -2.8083],
+        [  0.2808,   1.5707,   0.3697,  -3.3693,   1.6651,  -3.7115,   8.9007,
+          -4.8054,  -2.4611,   3.1557],
+        [  0.0151,  -3.1403,  -7.8723,  -0.8977,  -0.9663,   0.3945,   3.6758,
+          -0.6089,  -4.2608,  -0.0332],
+        [ -1.4169,  -5.0859,  -4.0039,  -1.6905,   0.6310,   3.5812,  -3.8486,
+           5.6499,  -8.6030,   1.5581],
+        [  0.9431,   1.5847,  -6.7248,  -1.2097,   1.7774,  -0.3573,  -1.4490,
+           0.6706, -11.2628,   3.2959],
+        [  1.3352,   3.8167,   2.4368,  -6.2410,  -2.8136,   8.8804,   3.9990,
+          -3.3380,  -8.8268,   3.4489],
+        [ -1.1412,  -1.2433,   7.1886, -10.5313,   0.0132,   6.5476,   2.4634,
+           1.2138,  -7.1144,   3.1653],
+        [ -2.5228,  -4.1056,   5.2325,  -1.1369,  -1.0619,   2.2564,   2.2408,
+           1.4517,  -1.7120,  -0.5968],
+        [ -0.2399,   0.2406,  -0.9306,   0.1708,   0.0283,  -0.2416,   0.2091,
+           0.0857,   0.4257,  -0.0394]])
 </pre></div>
 </div>
 <p><strong>Check the gradients:</strong></p>
@@ -542,7 +550,7 @@ Gradient for the input map:  tensor([[-1.3487e-01, -5.8800e-01, -3.3290e-01, -2.
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Are the gradients correct:  True
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.487 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.484 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-advanced-numpy-extensions-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/f90300e089ec4a4b37bb662251daec65/numpy_extensions_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numpy_extensions_tutorial.py</span></code></a></div>
