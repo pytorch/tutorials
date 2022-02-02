@@ -55,7 +55,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: beginner/basics/intro.html
    :tags: Getting-Started
-   
+
 .. customcarditem::
    :header: Introduction to PyTorch on YouTube
    :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
@@ -120,7 +120,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/DCGAN-Tutorial.png
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
-   
+
 .. customcarditem::
    :header: Spatial Transformer Networks Tutorial
    :card_description: Learn how to augment your network using a visual attention mechanism.
@@ -497,6 +497,13 @@ Welcome to PyTorch Tutorials
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
+   :header: Customize Process Group Backends Using Cpp Extensions
+   :card_description: Extend ProcessGroup with custom collective communication implementations.
+   :image: _static/img/thumbnails/cropped/Customize-Process-Group-Backends-Using-Cpp-Extensions.png
+   :link: intermediate/process_group_cpp_extension_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
    :header: Getting Started with Distributed RPC Framework
    :card_description: Learn how to build distributed training using the torch.distributed.rpc package.
    :image: _static/img/thumbnails/cropped/Getting Started with Distributed-RPC-Framework.png
@@ -646,7 +653,7 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
-   
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -799,6 +806,7 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
    intermediate/dist_pipeline_parallel_tutorial
