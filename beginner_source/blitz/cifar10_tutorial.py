@@ -110,7 +110,7 @@ images, labels = dataiter.next()
 # show images
 imshow(torchvision.utils.make_grid(images))
 # print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
+print(' '.join(f'{classes[labels[j]]:5s}' for j in range(batch_size)))
 
 
 ########################################################################
@@ -182,8 +182,7 @@ for epoch in range(2):  # loop over the dataset multiple times
         # print statistics
         running_loss += loss.item()
         if i % 2000 == 1999:    # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
+            print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
             running_loss = 0.0
 
 print('Finished Training')
@@ -215,7 +214,7 @@ images, labels = dataiter.next()
 
 # print images
 imshow(torchvision.utils.make_grid(images))
-print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+print('GroundTruth: ', ' '.join(f'{classes[labels[j]]:5s}' for j in range(4)))
 
 ########################################################################
 # Next, let's load back in our saved model (note: saving and re-loading the model
@@ -236,7 +235,7 @@ outputs = net(images)
 # So, let's get the index of the highest energy:
 _, predicted = torch.max(outputs, 1)
 
-print('Predicted: ', ' '.join('%5s' % classes[predicted[j]]
+print('Predicted: ', ' '.join(f'{classes[predicted[j]]:5s}'
                               for j in range(4)))
 
 ########################################################################
@@ -250,15 +249,14 @@ total = 0
 with torch.no_grad():
     for data in testloader:
         images, labels = data
-        # calculate outputs by running images through the network 
+        # calculate outputs by running images through the network
         outputs = net(images)
         # the class with the highest energy is what we choose as prediction
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-print('Accuracy of the network on the 10000 test images: %d %%' % (
-    100 * correct / total))
+print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
 
 ########################################################################
 # That looks way better than chance, which is 10% accuracy (randomly picking
@@ -275,8 +273,8 @@ total_pred = {classname: 0 for classname in classes}
 # again no gradients needed
 with torch.no_grad():
     for data in testloader:
-        images, labels = data    
-        outputs = net(images)    
+        images, labels = data
+        outputs = net(images)
         _, predictions = torch.max(outputs, 1)
         # collect the correct predictions for each class
         for label, prediction in zip(labels, predictions):
@@ -284,12 +282,11 @@ with torch.no_grad():
                 correct_pred[classes[label]] += 1
             total_pred[classes[label]] += 1
 
-  
+
 # print accuracy for each class
 for classname, correct_count in correct_pred.items():
     accuracy = 100 * float(correct_count) / total_pred[classname]
-    print("Accuracy for class {:5s} is: {:.1f} %".format(classname, 
-                                                   accuracy))
+    print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
 
 ########################################################################
 # Okay, so what next?
@@ -304,7 +301,7 @@ for classname, correct_count in correct_pred.items():
 # Let's first define our device as the first visible cuda device if we have
 # CUDA available:
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Assuming that we are on a CUDA machine, this should print a CUDA device:
 
