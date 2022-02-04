@@ -109,10 +109,13 @@ print(f"Device tensor is stored on: {tensor.device}")
 # By default, tensors are created on the CPU. We need to explicitly move tensors to the GPU using
 # ``.to`` method (after checking for GPU availability). Keep in mind that copying large tensors
 # across devices can be expensive in terms of time and memory!
-# We move our tensor to the GPU if available, and if the cuda version is supported
-if torch.cuda.is_available() & (torch.device('cuda').index is not None):
+# We move our tensor to the GPU if available
+if torch.cuda.is_available():
+    if torch.device('cuda').index is None:
+        raise RuntimeError("You have cuda installed but this version is too old and not supported by "
+                                         "PyTorch binary. You can hide this device from PyTorch by setting the env "
+                                         "variable CUDA_VISIBLE_DEVICES='' before running this script.")
     tensor = tensor.to('cuda')
-
 
 ######################################################################
 # Try out some of the operations from the list.
