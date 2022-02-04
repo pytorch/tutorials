@@ -218,7 +218,7 @@ print(interp.summary(True))
 #   https://github.com/pytorch/pytorch/issues/51393
 # * BatchNorm2d also takes up significant time. We can continue this
 #   line of thinking and optimize this in the Conv-BN Fusion with FX
-#   tutorial TODO: link
+#   `tutorial <https://pytorch.org/tutorials/intermediate/fx_conv_bn_fuser.html>`_. 
 #
 #
 # Conclusion
