@@ -627,7 +627,7 @@ I'd like to thank the PyTorch developers for doing such a good job on
 their implementation, documentation, and tests. When the code was
 unclear, I could always count on the
 `docs <https://pytorch.org/docs/stable/distributed.html>`__ or the
-`tests <https://github.com/pytorch/pytorch/blob/master/test/test_distributed.py>`__
+`tests <https://github.com/pytorch/pytorch/tree/master/test/distributed>`__
 to find an answer. In particular, I'd like to thank Soumith Chintala,
 Adam Paszke, and Natalia Gimelshein for providing insightful comments
 and answering questions on early drafts.
