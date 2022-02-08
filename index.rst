@@ -353,6 +353,13 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
+   :header: Real Time Inference on Raspberry Pi 4
+   :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
+   :image: _static/img/thumbnails/cropped/realtime_rpi.png
+   :link: intermediate/realtime_rpi.html
+   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+
+.. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
@@ -743,6 +750,7 @@ Additional Resources
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
+   intermediate/realtime_rpi
 
 .. toctree::
    :maxdepth: 2
