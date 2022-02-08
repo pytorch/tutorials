@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Forward-mode Automatic Differentiation (Beta) — PyTorch Tutorials 1.10.1+cu102 documentation</title>
+<title>Real Time Inference on Raspberry Pi 4 (30 fps!) — PyTorch Tutorials 1.10.1+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,8 +16,8 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="../advanced/cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend"/>
-<link href="memory_format_tutorial.html" rel="prev" title="(beta) Channels Last Memory Format in PyTorch"/>
+<link href="fx_conv_bn_fuser.html" rel="next" title="(beta) Building a Convolution/Batch Norm fuser in FX"/>
+<link href="../advanced/super_resolution_with_onnxruntime.html" rel="prev" title="(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -234,12 +234,12 @@
 <li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/super_resolution_with_onnxruntime.html">(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime</a></li>
-<li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
 <ul>
@@ -247,9 +247,9 @@
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="memory_format_tutorial.html">(beta) Channels Last Memory Format in PyTorch</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Forward-mode Automatic Differentiation (Beta)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="forward_ad_usage.html">Forward-mode Automatic Differentiation (Beta)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_frontend.html">Using the PyTorch C++ Frontend</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/torch-script-parallelism.html">Dynamic Parallelism in TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_autograd.html">Autograd in C++ Frontend</a></li>
@@ -313,9 +313,9 @@
           
         </a> &gt;
       </li>
-<li>Forward-mode Automatic Differentiation (Beta)</li>
+<li>Real Time Inference on Raspberry Pi 4 (30 fps!)</li>
 <li class="pytorch-breadcrumbs-aside">
-<a href="../_sources/intermediate/forward_ad_usage.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+<a href="../_sources/intermediate/realtime_rpi.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
 </ul>
 </div>
@@ -327,12 +327,12 @@
 <section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
 <div class="pytorch-content-left">
 <div class="pytorch-call-to-action-links">
-<div id="tutorial-type">intermediate/forward_ad_usage</div>
+<div id="tutorial-type">intermediate/realtime_rpi</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -347,192 +347,224 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Click <a class="reference internal" href="#sphx-glr-download-intermediate-forward-ad-usage-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<div class="section" id="real-time-inference-on-raspberry-pi-4-30-fps">
+<h1>Real Time Inference on Raspberry Pi 4 (30 fps!)<a class="headerlink" href="#real-time-inference-on-raspberry-pi-4-30-fps" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/d4l3k">Tristan Rice</a></p>
+<p>PyTorch has out of the box support for Raspberry Pi 4. This tutorial will guide
+you on how to setup a Raspberry Pi 4 for running PyTorch and run a MobileNet v2
+classification model in real time (30 fps+) on the CPU.</p>
+<p>This was all tested with Raspberry Pi 4 Model B 4GB but should work with the 2GB
+variant as well as on the 3B with reduced performance.</p>
+<img alt="https://user-images.githubusercontent.com/909104/152895495-7e9910c1-2b9f-4299-a788-d7ec43a93424.jpg" src="https://user-images.githubusercontent.com/909104/152895495-7e9910c1-2b9f-4299-a788-d7ec43a93424.jpg"/>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>To follow this tutorial you’ll need a Raspberry Pi 4, a camera for it and all
+the other standard accessories.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.raspberrypi.com/products/raspberry-pi-4-model-b/">Raspberry Pi 4 Model B 2GB+</a></li>
+<li><a class="reference external" href="https://www.raspberrypi.com/products/camera-module-v2/">Raspberry Pi Camera Module</a></li>
+<li>Heat sinks and Fan (optional but recommended)</li>
+<li>5V 3A USB-C Power Supply</li>
+<li>SD card (at least 8gb)</li>
+<li>SD card read/writer</li>
+</ul>
 </div>
-<div class="sphx-glr-example-title section" id="forward-mode-automatic-differentiation-beta">
-<span id="sphx-glr-intermediate-forward-ad-usage-py"></span><h1>Forward-mode Automatic Differentiation (Beta)<a class="headerlink" href="#forward-mode-automatic-differentiation-beta" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial demonstrates how to use forward-mode AD to compute
-directional derivatives (or equivalently, Jacobian-vector products).</p>
-<p>The tutorial below uses some APIs only available in versions &gt;= 1.11
-(or nightly builds).</p>
-<p>Also note that forward-mode AD is currently in beta. The API is
-subject to change and operator coverage is still incomplete.</p>
-<div class="section" id="basic-usage">
-<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this headline">¶</a></h2>
-<p>Unlike reverse-mode AD, forward-mode AD computes gradients eagerly
-alongside the forward pass. We can use forward-mode AD to compute a
-directional derivative by performing the forward pass as before,
-except we first associate our input with another tensor representing
-the direction of the directional derivative (or equivalently, the <code class="docutils literal notranslate"><span class="pre">v</span></code>
-in a Jacobian-vector product). When an input, which we call “primal”, is
-associated with a “direction” tensor, which we call “tangent”, the
-resultant new tensor object is called a “dual tensor” for its connection
-to dual numbers[0].</p>
-<p>As the forward pass is performed, if any input tensors are dual tensors,
-extra computation is performed to propogate this “sensitivity” of the
-function.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.autograd.forward_ad</span> <span class="k">as</span> <span class="nn">fwAD</span>
+<div class="section" id="raspberry-pi-4-setup">
+<h2>Raspberry Pi 4 Setup<a class="headerlink" href="#raspberry-pi-4-setup" title="Permalink to this headline">¶</a></h2>
+<p>PyTorch only provides pip packages for Arm 64bit (aarch64) so you’ll need to install a 64 bit version of the OS on your Raspberry Pi</p>
+<p>You can download the latest arm64 Raspberry Pi OS from <a class="reference external" href="https://downloads.raspberrypi.org/raspios_arm64/images/">https://downloads.raspberrypi.org/raspios_arm64/images/</a> and install it via rpi-imager.</p>
+<p><strong>32-bit Raspberry Pi OS will not work.</strong></p>
+<img alt="https://user-images.githubusercontent.com/909104/152866212-36ce29b1-aba6-4924-8ae6-0a283f1fca14.gif" src="https://user-images.githubusercontent.com/909104/152866212-36ce29b1-aba6-4924-8ae6-0a283f1fca14.gif"/>
+<p>Installation will take at least a few minutes depending on your internet speed and sdcard speed. Once it’s done it should look like:</p>
+<img alt="https://user-images.githubusercontent.com/909104/152867425-c005cff0-5f3f-47f1-922d-e0bbb541cd25.png" src="https://user-images.githubusercontent.com/909104/152867425-c005cff0-5f3f-47f1-922d-e0bbb541cd25.png"/>
+<p>Time to put your sdcard in your Raspberry Pi, connect the camera and boot it up.</p>
+<img alt="https://user-images.githubusercontent.com/909104/152869862-c239c980-b089-4bd5-84eb-0a1e5cf22df2.png" src="https://user-images.githubusercontent.com/909104/152869862-c239c980-b089-4bd5-84eb-0a1e5cf22df2.png"/>
+<p>Once that boots and you complete the initial setup you’ll need to edit the <code class="docutils literal notranslate"><span class="pre">/boot/config.txt</span></code> file to enable the camera.</p>
+<div class="code toml highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># This enables the extended features such as the camera.</span>
+<span class="n">start_x</span><span class="o">=</span><span class="mi">1</span>
 
-<span class="n">primal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="n">tangent</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="c1"># This needs to be at least 128M for the camera processing, if it's bigger you can just leave it as is.</span>
+<span class="n">gpu_mem</span><span class="o">=</span><span class="mi">128</span>
 
-<span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="c1"># You need to commment/remove the existing camera_auto_detect line since this causes issues with OpenCV/V4L2 capture.</span>
+<span class="c1">#camera_auto_detect=1</span>
+</pre></div>
+</div>
+<p>And then reboot. After you reboot the video4linux2 device <code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> should exist.</p>
+</div>
+<div class="section" id="installing-pytorch-and-opencv">
+<h2>Installing PyTorch and OpenCV<a class="headerlink" href="#installing-pytorch-and-opencv" title="Permalink to this headline">¶</a></h2>
+<p>PyTorch and all the other libraries we need have ARM 64-bit/aarch64 variants so you can just install them via pip and have it work like any other Linux system.</p>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install torch torchvision torchaudio
+$ pip install opencv-contrib-python
+$ pip install numpy --upgrade
+</pre></div>
+</div>
+<img alt="https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png" src="https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png"/>
+<p>We can now check that everything installed correctly:</p>
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -c "import torch; print(torch.__version__)"
+1.10.0+cpu
+</pre></div>
+</div>
+<img alt="https://user-images.githubusercontent.com/909104/152874271-d7057c2d-80fd-4761-aed4-df6c8b7aa99f.png" src="https://user-images.githubusercontent.com/909104/152874271-d7057c2d-80fd-4761-aed4-df6c8b7aa99f.png"/>
+</div>
+<div class="section" id="video-capture">
+<h2>Video Capture<a class="headerlink" href="#video-capture" title="Permalink to this headline">¶</a></h2>
+<p>For video capture we’re going to be using OpenCV to stream the video frames
+instead of the more common <code class="docutils literal notranslate"><span class="pre">picamera</span></code>. <cite>picamera</cite> isn’t available on 64-bit
+Raspberry Pi OS and it’s much slower than OpenCV. OpenCV directly accesses the
+<code class="docutils literal notranslate"><span class="pre">/dev/video0</span></code> device to grab frames.</p>
+<p>The model we’re using (MobileNetV2) takes in image sizes of <code class="docutils literal notranslate"><span class="pre">224x224</span></code> so we
+can request that directly from OpenCV at 36fps. We’re targeting 30fps for the
+model but we request a slightly higher framerate than that so there’s always
+enough frames.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 
-<span class="c1"># All forward AD computation must be performed in the context of</span>
-<span class="c1"># a ``dual_level`` context. All dual tensors created in such a context</span>
-<span class="c1"># will have their tangents destroyed upon exit. This is to ensure that</span>
-<span class="c1"># if the output or intermediate results of this computation are reused</span>
-<span class="c1"># in a future forward AD computation, their tangents (which are associated</span>
-<span class="c1"># with this computation) won't be confused with tangents from the later</span>
-<span class="c1"># computation.</span>
-<span class="k">with</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">dual_level</span><span class="p">():</span>
-    <span class="c1"># To create a dual tensor we associate a tensor, which we call the</span>
-    <span class="c1"># primal with another tensor of the same size, which we call the tangent.</span>
-    <span class="c1"># If the layout of the tangent is different from that of the primal,</span>
-    <span class="c1"># The values of the tangent are copied into a new tensor with the same</span>
-    <span class="c1"># metadata as the primal. Otherwise, the tangent itself is used as-is.</span>
-    <span class="c1">#</span>
-    <span class="c1"># It is also important to note that the dual tensor created by</span>
-    <span class="c1"># ``make_dual`` is a view of the primal.</span>
-    <span class="n">dual_input</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">make_dual</span><span class="p">(</span><span class="n">primal</span><span class="p">,</span> <span class="n">tangent</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">dual_input</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span> <span class="ow">is</span> <span class="n">tangent</span>
+<span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_WIDTH</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_HEIGHT</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FPS</span><span class="p">,</span> <span class="mi">36</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>OpenCV returns a <code class="docutils literal notranslate"><span class="pre">numpy</span></code> array in BGR so we need to read and do a bit of
+shuffling to get it into the expected RGB format.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ret</span><span class="p">,</span> <span class="n">image</span> <span class="o">=</span> <span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="c1"># convert opencv output from BGR to RGB</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>NOTE: You can get even more performance by training the model directly with OpenCV’s BGR data format to remove the conversion step.</p>
+</div>
+<div class="section" id="image-preprocessing">
+<h2>Image Preprocessing<a class="headerlink" href="#image-preprocessing" title="Permalink to this headline">¶</a></h2>
+<p>We need to take the frames and transform them into the format the model expects. This is the same processing as you would do on any machine with the standard torchvision transforms.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 
-    <span class="c1"># To demonstrate the case where the copy of the tangent happens,</span>
-    <span class="c1"># we pass in a tangent with a layout different from that of the primal</span>
-    <span class="n">dual_input_alt</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">make_dual</span><span class="p">(</span><span class="n">primal</span><span class="p">,</span> <span class="n">tangent</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">dual_input_alt</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">tangent</span>
-
-    <span class="c1"># Tensors that do not not have an associated tangent are automatically</span>
-    <span class="c1"># considered to have a zero-filled tangent of the same shape.</span>
-    <span class="n">plain_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-    <span class="n">dual_output</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">dual_input</span><span class="p">,</span> <span class="n">plain_tensor</span><span class="p">)</span>
-
-    <span class="c1"># Unpacking the dual returns a namedtuple with ``primal`` and ``tangent``</span>
-    <span class="c1"># as attributes</span>
-    <span class="n">jvp</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">dual_output</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span>
-
-<span class="k">assert</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">dual_output</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="n">preprocess</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]),</span>
+<span class="p">])</span>
+<span class="n">input_tensor</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="n">input_batch</span> <span class="o">=</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># create a mini-batch as expected by the model</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="usage-with-modules">
-<h2>Usage with Modules<a class="headerlink" href="#usage-with-modules" title="Permalink to this headline">¶</a></h2>
-<p>To use <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> with forward AD, replace the parameters of your
-model with dual tensors before performing the forward pass. At the
-time of writing, it is not possible to create dual tensor
-<a href="#id1"><span class="problematic" id="id2">`</span></a>nn.Parameter`s. As a workaround, one must register the dual tensor
-as a non-parameter attribute of the module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
-
-<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()}</span>
-<span class="n">tangents</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-
-<span class="k">with</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">dual_level</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="nb">delattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">make_dual</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">tangents</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span>
-
-    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-    <span class="n">jvp</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span>
+<div class="section" id="mobilenetv2-quantization-and-jit">
+<h2>MobileNetV2: Quantization and JIT<a class="headerlink" href="#mobilenetv2-quantization-and-jit" title="Permalink to this headline">¶</a></h2>
+<p>For optimal performance we want a model that’s quantized and fused. Quantized
+means that it does the computation using int8 which is much more performant than
+the standard float32 math. Fused means that consecutive operations have been
+fused together into a more performant version where possible. Commonly things
+like activations (<code class="docutils literal notranslate"><span class="pre">ReLU</span></code>) can be merged into the layer before (<code class="docutils literal notranslate"><span class="pre">Conv2d</span></code>)
+during inference.</p>
+<p>The aarch64 version of pytorch requires using the <code class="docutils literal notranslate"><span class="pre">qnnpack</span></code> engine.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="s1">'qnnpack'</span>
+</pre></div>
+</div>
+<p>For this example we’ll use a prequantized and fused version of MobileNetV2 that’s provided out of the box by torchvision.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We then want to jit the model to reduce Python overhead and fuse any ops. Jit gives us ~30fps instead of ~20fps without it.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="using-modules-stateless-api-experimental">
-<h2>Using Modules stateless API (experimental)<a class="headerlink" href="#using-modules-stateless-api-experimental" title="Permalink to this headline">¶</a></h2>
-<p>Another way to use <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> with forward AD is to utilize
-the stateless API. NB: At the time of writing the stateless API is still
-experimental and may be subject to change.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch.nn.utils._stateless</span> <span class="kn">import</span> <span class="n">functional_call</span>
+<div class="section" id="putting-it-together">
+<h2>Putting It Together<a class="headerlink" href="#putting-it-together" title="Permalink to this headline">¶</a></h2>
+<p>We can now put all the pieces together and run it:</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 
-<span class="c1"># We need a fresh module because the functional call requires the</span>
-<span class="c1"># the model to have parameters registered.</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">transforms</span>
 
-<span class="n">dual_params</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="k">with</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">dual_level</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="c1"># Using the same ``tangents`` from the above section</span>
-        <span class="n">dual_params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">make_dual</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">tangents</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">functional_call</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dual_params</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
-    <span class="n">jvp2</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
 
-<span class="c1"># Check our results</span>
-<span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">jvp</span><span class="p">,</span> <span class="n">jvp2</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">backends</span><span class="o">.</span><span class="n">quantized</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="s1">'qnnpack'</span>
+
+<span class="n">cap</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">VideoCapture</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CAP_V4L2</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_WIDTH</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FRAME_HEIGHT</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">cap</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">CAP_PROP_FPS</span><span class="p">,</span> <span class="mi">36</span><span class="p">)</span>
+
+<span class="n">preprocess</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]),</span>
+<span class="p">])</span>
+
+<span class="n">net</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># jit model to take it from ~20fps to ~30fps</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">last_logged</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">frame_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="c1"># read frame</span>
+        <span class="n">ret</span><span class="p">,</span> <span class="n">image</span> <span class="o">=</span> <span class="n">cap</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ret</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"failed to read frame"</span><span class="p">)</span>
+
+        <span class="c1"># convert opencv output from BGR to RGB</span>
+        <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+        <span class="n">permuted</span> <span class="o">=</span> <span class="n">image</span>
+
+        <span class="c1"># preprocess</span>
+        <span class="n">input_tensor</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+
+        <span class="c1"># create a mini-batch as expected by the model</span>
+        <span class="n">input_batch</span> <span class="o">=</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># run model</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">input_batch</span><span class="p">)</span>
+        <span class="c1"># do something with output ...</span>
+
+        <span class="c1"># log model performance</span>
+        <span class="n">frame_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">now</span> <span class="o">-</span> <span class="n">last_logged</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">frame_count</span> <span class="o">/</span> <span class="p">(</span><span class="n">now</span><span class="o">-</span><span class="n">last_logged</span><span class="p">)</span><span class="si">}</span><span class="s2"> fps"</span><span class="p">)</span>
+            <span class="n">last_logged</span> <span class="o">=</span> <span class="n">now</span>
+            <span class="n">frame_count</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
+<p>Running it shows that we’re hovering at ~30 fps.</p>
+<img alt="https://user-images.githubusercontent.com/909104/152892609-7d115705-3ec9-4f8d-beed-a51711503a32.png" src="https://user-images.githubusercontent.com/909104/152892609-7d115705-3ec9-4f8d-beed-a51711503a32.png"/>
+<p>This is with all the default settings in Raspberry Pi OS. If you disabled the UI
+and all the other background services that are enabled by default it’s more
+performant and stable.</p>
+<p>If we check <code class="docutils literal notranslate"><span class="pre">htop</span></code> we see that we have almost 100% utilization.</p>
+<img alt="https://user-images.githubusercontent.com/909104/152892630-f094b84b-19ba-48f6-8632-1b954abc59c7.png" src="https://user-images.githubusercontent.com/909104/152892630-f094b84b-19ba-48f6-8632-1b954abc59c7.png"/>
 </div>
-<div class="section" id="custom-autograd-function">
-<h2>Custom autograd Function<a class="headerlink" href="#custom-autograd-function" title="Permalink to this headline">¶</a></h2>
-<p>Custom Functions also support forward-mode AD. To create custom Function
-supporting forward-mode AD, register the <code class="docutils literal notranslate"><span class="pre">jvp()</span></code> static method. It is
-possible, but not mandatory for custom Functions to support both forward
-and backward AD. See the
-<a class="reference external" href="https://pytorch.org/docs/master/notes/extending.html#forward-mode-ad">documentation</a>
-for more information.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Fn</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">foo</span><span class="p">):</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
-        <span class="c1"># Tensors stored in ctx can be used in the subsequent forward grad</span>
-        <span class="c1"># computation.</span>
-        <span class="n">ctx</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">result</span>
-        <span class="k">return</span> <span class="n">result</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">jvp</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gI</span><span class="p">):</span>
-        <span class="n">gO</span> <span class="o">=</span> <span class="n">gI</span> <span class="o">*</span> <span class="n">ctx</span><span class="o">.</span><span class="n">result</span>
-        <span class="c1"># If the tensor stored in ctx will not also be used in the backward pass,</span>
-        <span class="c1"># one can manually free it using ``del``</span>
-        <span class="k">del</span> <span class="n">ctx</span><span class="o">.</span><span class="n">result</span>
-        <span class="k">return</span> <span class="n">gO</span>
-
-<span class="n">fn</span> <span class="o">=</span> <span class="n">Fn</span><span class="o">.</span><span class="n">apply</span>
-
-<span class="n">primal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">tangent</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-
-<span class="k">with</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">dual_level</span><span class="p">():</span>
-    <span class="n">dual_input</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">make_dual</span><span class="p">(</span><span class="n">primal</span><span class="p">,</span> <span class="n">tangent</span><span class="p">)</span>
-    <span class="n">dual_output</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">dual_input</span><span class="p">)</span>
-    <span class="n">jvp</span> <span class="o">=</span> <span class="n">fwAD</span><span class="o">.</span><span class="n">unpack_dual</span><span class="p">(</span><span class="n">dual_output</span><span class="p">)</span><span class="o">.</span><span class="n">tangent</span>
-
-<span class="c1"># It is important to use ``autograd.gradcheck`` to verify that your</span>
-<span class="c1"># custom autograd Function computes the gradients correctly. By default,</span>
-<span class="c1"># gradcheck only checks the backward-mode (reverse-mode) AD gradients. Specify</span>
-<span class="c1"># ``check_forward_ad=True`` to also check forward grads. If you did not</span>
-<span class="c1"># implement the backward formula for your function, you can also tell gradcheck</span>
-<span class="c1"># to skip the tests that require backward-mode AD by specifying</span>
-<span class="c1"># ``check_backward_ad=False``, ``check_undefined_grad=False``, and</span>
-<span class="c1"># ``check_batched_grad=False``.</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">gradcheck</span><span class="p">(</span><span class="n">Fn</span><span class="o">.</span><span class="n">apply</span><span class="p">,</span> <span class="p">(</span><span class="n">primal</span><span class="p">,),</span> <span class="n">check_forward_ad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                         <span class="n">check_backward_ad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_undefined_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                         <span class="n">check_batched_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>[0] <a class="reference external" href="https://en.wikipedia.org/wiki/Dual_number">https://en.wikipedia.org/wiki/Dual_number</a></p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-forward-ad-usage-py">
-<div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../_downloads/67423a4ac4491ab4e7512fd649926bfe/forward_ad_usage.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">forward_ad_usage.py</span></code></a></div>
-<div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../_downloads/15d9cbf666a1c1728dae9d1d9c8d6061/forward_ad_usage.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">forward_ad_usage.ipynb</span></code></a></div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<div class="section" id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<p>You can create your own model or fine tune an existing one. If you fine tune on
+one of the models from
+<a class="reference external" href="https://pytorch.org/vision/stable/models.html#quantized-models">torchvision.models.quantized</a>
+most of the work to fuse and quantize has already been done for you so you can
+directly deploy with good performance on a Raspberry Pi.</p>
+<p>See more:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://pytorch.org/docs/stable/quantization.html">Quantization</a> for more information on how to quantize and fuse your model.</li>
+<li><span class="xref std std-ref">beginner/transfer_learning_tutorial</span> for how to use transfer learning to fine tune a pre-existing model to your dataset.</li>
+</ul>
 </div>
 </div>
 </article>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="../advanced/cpp_frontend.html" rel="next" title="Using the PyTorch C++ Frontend">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="memory_format_tutorial.html" rel="prev" title="(beta) Channels Last Memory Format in PyTorch"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="n" class="btn btn-neutral float-right" href="fx_conv_bn_fuser.html" rel="next" title="(beta) Building a Convolution/Batch Norm fuser in FX">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="../advanced/super_resolution_with_onnxruntime.html" rel="prev" title="(optional) Exporting a Model from PyTorch to ONNX and Running it using ONNX Runtime"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
@@ -545,7 +577,7 @@ for more information.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2021, PyTorch.
@@ -555,18 +587,22 @@ for more information.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Forward-mode Automatic Differentiation (Beta)</a><ul>
-<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
-<li><a class="reference internal" href="#usage-with-modules">Usage with Modules</a></li>
-<li><a class="reference internal" href="#using-modules-stateless-api-experimental">Using Modules stateless API (experimental)</a></li>
-<li><a class="reference internal" href="#custom-autograd-function">Custom autograd Function</a></li>
+<li><a class="reference internal" href="#">Real Time Inference on Raspberry Pi 4 (30 fps!)</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#raspberry-pi-4-setup">Raspberry Pi 4 Setup</a></li>
+<li><a class="reference internal" href="#installing-pytorch-and-opencv">Installing PyTorch and OpenCV</a></li>
+<li><a class="reference internal" href="#video-capture">Video Capture</a></li>
+<li><a class="reference internal" href="#image-preprocessing">Image Preprocessing</a></li>
+<li><a class="reference internal" href="#mobilenetv2-quantization-and-jit">MobileNetV2: Quantization and JIT</a></li>
+<li><a class="reference internal" href="#putting-it-together">Putting It Together</a></li>
+<li><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
 </ul>
@@ -679,12 +715,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -769,8 +805,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -876,5 +912,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</body>
+</img></body>
 </html>
