@@ -1,6 +1,6 @@
 """
-Speech Command Recognition with torchaudio
-******************************************
+Speech Command Classification with torchaudio
+*********************************************
 
 This tutorial will show you how to correctly format an audio dataset and
 then train/test an audio classifier network on the dataset.

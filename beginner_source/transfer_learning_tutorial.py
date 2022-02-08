@@ -39,6 +39,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim import lr_scheduler
+import torch.backends.cudnn as cudnn
 import numpy as np
 import torchvision
 from torchvision import datasets, models, transforms
@@ -47,6 +48,7 @@ import time
 import os
 import copy
 
+cudnn.benchmark = True
 plt.ion()   # interactive mode
 
 ######################################################################
@@ -288,7 +290,7 @@ visualize_model(model_ft)
 # ----------------------------------
 #
 # Here, we need to freeze all the network except the final layer. We need
-# to set ``requires_grad == False`` to freeze the parameters so that the
+# to set ``requires_grad = False`` to freeze the parameters so that the
 # gradients are not computed in ``backward()``.
 #
 # You can read more about this in the documentation

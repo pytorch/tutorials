@@ -57,6 +57,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Introduction to PyTorch on YouTube
+   :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: beginner/introyt.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Learning PyTorch with Examples
    :card_description: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples.
    :image: _static/img/thumbnails/cropped/learning-pytorch-with-examples.png
@@ -113,7 +120,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/DCGAN-Tutorial.png
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
-   
+
 .. customcarditem::
    :header: Spatial Transformer Networks Tutorial
    :card_description: Learn how to augment your network using a visual attention mechanism.
@@ -124,17 +131,73 @@ Welcome to PyTorch Tutorials
 .. Audio
 
 .. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
+   :header: Audio IO
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
+   :link: beginner/audio_io_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Speech Command Recognition
+   :header: Audio Resampling
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_resampling_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Data Augmentation
+   :card_description: Learn to apply data augmentations using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_data_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Extractions
+   :card_description: Learn to extract features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_extractions_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Augmentation
+   :card_description: Learn to augment features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Datasets
+   :card_description: Learn to use torchaudio datasets.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_datasets_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
+   :image: _static/img/thumbnails/cropped/torchaudio-asr.png
+   :link: intermediate/speech_recognition_pipeline_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Speech Command Classification
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio_tutorial.html
+   :link: intermediate/speech_command_classification_with_torchaudio_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Text-to-Speech with torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a text-to-speech application.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/text_to_speech_with_torchaudio.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Forced Alignment with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's Wav2Vec2 pretrained models for aligning text to speech
+   :image: _static/img/thumbnails/cropped/torchaudio-alignment.png
+   :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -290,6 +353,13 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
+   :header: Real Time Inference on Raspberry Pi 4
+   :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
+   :image: _static/img/thumbnails/cropped/realtime_rpi.png
+   :link: intermediate/realtime_rpi.html
+   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+
+.. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
@@ -299,30 +369,37 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Extending Dispatcher For a New Backend in C++
    :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Custom Function Tutorial: Double Backward
    :card_description: Learn how to write a custom autograd Function that supports double backward.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/custom_function_double_backward_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
 
 .. customcarditem::
    :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
    :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: intermediate/custom_function_conv_bn_tutorial.html
    :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
+   :header: Forward-mode Automatic Differentiation
+   :card_description: Learn how to use forward-mode automatic differentiation.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/forward_ad_usage.html
+   :tags: Frontend-APIs
 
 .. Model Optimization
 
@@ -424,6 +501,13 @@ Welcome to PyTorch Tutorials
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
    :link: intermediate/dist_tuto.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Customize Process Group Backends Using Cpp Extensions
+   :card_description: Extend ProcessGroup with custom collective communication implementations.
+   :image: _static/img/thumbnails/cropped/Customize-Process-Group-Backends-Using-Cpp-Extensions.png
+   :link: intermediate/process_group_cpp_extension_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -581,6 +665,21 @@ Additional Resources
    :maxdepth: 2
    :hidden:
    :includehidden:
+   :caption: Introduction to PyTorch on YouTube
+
+   beginner/introyt
+   beginner/introyt/introyt1_tutorial
+   beginner/introyt/tensors_deeper_tutorial
+   beginner/introyt/autogradyt_tutorial
+   beginner/introyt/modelsyt_tutorial
+   beginner/introyt/tensorboardyt_tutorial
+   beginner/introyt/trainingyt
+   beginner/introyt/captumyt
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
    :caption: Learning PyTorch
 
    beginner/deep_learning_60min_blitz
@@ -607,8 +706,16 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio_tutorial
+   beginner/audio_io_tutorial
+   beginner/audio_resampling_tutorial
+   beginner/audio_data_augmentation_tutorial
+   beginner/audio_feature_extractions_tutorial
+   beginner/audio_feature_augmentation_tutorial
+   beginner/audio_datasets_tutorial
+   intermediate/speech_recognition_pipeline_tutorial
+   intermediate/speech_command_classification_with_torchaudio_tutorial
+   intermediate/text_to_speech_with_torchaudio
+   intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -643,6 +750,7 @@ Additional Resources
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
+   intermediate/realtime_rpi
 
 .. toctree::
    :maxdepth: 2
@@ -660,6 +768,7 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
+   intermediate/forward_ad_usage
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
@@ -705,6 +814,7 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
    intermediate/dist_pipeline_parallel_tutorial
