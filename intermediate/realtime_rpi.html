@@ -355,7 +355,7 @@ you on how to setup a Raspberry Pi 4 for running PyTorch and run a MobileNet v2
 classification model in real time (30 fps+) on the CPU.</p>
 <p>This was all tested with Raspberry Pi 4 Model B 4GB but should work with the 2GB
 variant as well as on the 3B with reduced performance.</p>
-<img alt="https://user-images.githubusercontent.com/909104/152895495-7e9910c1-2b9f-4299-a788-d7ec43a93424.jpg" src="https://user-images.githubusercontent.com/909104/152895495-7e9910c1-2b9f-4299-a788-d7ec43a93424.jpg"/>
+<img alt="https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif" src="https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif"/>
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>To follow this tutorial you’ll need a Raspberry Pi 4, a camera for it and all
@@ -402,8 +402,7 @@ $ pip install numpy --upgrade
 </div>
 <img alt="https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png" src="https://user-images.githubusercontent.com/909104/152874260-95a7a8bd-0f9b-438a-9c0b-5b67729e233f.png"/>
 <p>We can now check that everything installed correctly:</p>
-<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span>$ python3 -c "import torch; print(torch.__version__)"
-1.10.0+cpu
+<div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -c "import torch; print(torch.__version__)"
 </pre></div>
 </div>
 <img alt="https://user-images.githubusercontent.com/909104/152874271-d7057c2d-80fd-4761-aed4-df6c8b7aa99f.png" src="https://user-images.githubusercontent.com/909104/152874271-d7057c2d-80fd-4761-aed4-df6c8b7aa99f.png"/>
@@ -434,7 +433,7 @@ shuffling to get it into the expected RGB format.</p>
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
 </pre></div>
 </div>
-<p>NOTE: You can get even more performance by training the model directly with OpenCV’s BGR data format to remove the conversion step.</p>
+<p>This data reading and processing takes about <code class="docutils literal notranslate"><span class="pre">3.5</span> <span class="pre">ms</span></code>.</p>
 </div>
 <div class="section" id="image-preprocessing">
 <h2>Image Preprocessing<a class="headerlink" href="#image-preprocessing" title="Permalink to this headline">¶</a></h2>
@@ -442,13 +441,113 @@ shuffling to get it into the expected RGB format.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 
 <span class="n">preprocess</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="c1"># convert the frame to a CHW torch tensor for training</span>
     <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="c1"># normalize the colors to the range that mobilenet_v2/3 expect</span>
     <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span> <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]),</span>
 <span class="p">])</span>
 <span class="n">input_tensor</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<span class="n">input_batch</span> <span class="o">=</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># create a mini-batch as expected by the model</span>
+<span class="c1"># The model can handle multiple images simultaneously so we need to add an</span>
+<span class="c1"># empty dimension for the batch.</span>
+<span class="c1"># [3, 224, 224] -&gt; [1, 3, 224, 224]</span>
+<span class="n">input_batch</span> <span class="o">=</span> <span class="n">input_tensor</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="model-choices">
+<h2>Model Choices<a class="headerlink" href="#model-choices" title="Permalink to this headline">¶</a></h2>
+<p>There’s a number of models you can choose from to use with different performance
+characteristics. Not all models provide a <code class="docutils literal notranslate"><span class="pre">qnnpack</span></code> pretrained variant so for
+testing purposes you should chose one that does but if you train and quantize
+your own model you can use any of them.</p>
+<p>We’re using <code class="docutils literal notranslate"><span class="pre">mobilenet_v2</span></code> for this tutorial since it has good performance and
+accuracy.</p>
+<p>Raspberry Pi 4 Benchmark Results:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%"/>
+<col width="7%"/>
+<col width="25%"/>
+<col width="25%"/>
+<col width="22%"/>
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Model</th>
+<th class="head">FPS</th>
+<th class="head">Total Time (ms/frame)</th>
+<th class="head">Model Time (ms/frame)</th>
+<th class="head">qnnpack Pretrained</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>mobilenet_v2</td>
+<td>33.7</td>
+<td>29.7</td>
+<td>26.4</td>
+<td>True</td>
+</tr>
+<tr class="row-odd"><td>mobilenet_v3_large</td>
+<td>29.3</td>
+<td>34.1</td>
+<td>30.7</td>
+<td>True</td>
+</tr>
+<tr class="row-even"><td>resnet18</td>
+<td>9.2</td>
+<td>109.0</td>
+<td>100.3</td>
+<td>False</td>
+</tr>
+<tr class="row-odd"><td>resnet50</td>
+<td>4.3</td>
+<td>233.9</td>
+<td>225.2</td>
+<td>False</td>
+</tr>
+<tr class="row-even"><td>resnext101_32x8d</td>
+<td>1.1</td>
+<td>892.5</td>
+<td>885.3</td>
+<td>False</td>
+</tr>
+<tr class="row-odd"><td>inception_v3</td>
+<td>4.9</td>
+<td>204.1</td>
+<td>195.5</td>
+<td>False</td>
+</tr>
+<tr class="row-even"><td>googlenet</td>
+<td>7.4</td>
+<td>135.3</td>
+<td>132.0</td>
+<td>False</td>
+</tr>
+<tr class="row-odd"><td>shufflenet_v2_x0_5</td>
+<td>46.7</td>
+<td>21.4</td>
+<td>18.2</td>
+<td>False</td>
+</tr>
+<tr class="row-even"><td>shufflenet_v2_x1_0</td>
+<td>24.4</td>
+<td>41.0</td>
+<td>37.7</td>
+<td>False</td>
+</tr>
+<tr class="row-odd"><td>shufflenet_v2_x1_5</td>
+<td>16.8</td>
+<td>59.6</td>
+<td>56.3</td>
+<td>False</td>
+</tr>
+<tr class="row-even"><td>shufflenet_v2_x2_0</td>
+<td>11.6</td>
+<td>86.3</td>
+<td>82.7</td>
+<td>False</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="mobilenetv2-quantization-and-jit">
 <h2>MobileNetV2: Quantization and JIT<a class="headerlink" href="#mobilenetv2-quantization-and-jit" title="Permalink to this headline">¶</a></h2>
@@ -470,7 +569,6 @@ during inference.</p>
 </div>
 <p>We then want to jit the model to reduce Python overhead and fuse any ops. Jit gives us ~30fps instead of ~20fps without it.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
-<span class="n">net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -501,7 +599,6 @@ during inference.</p>
 <span class="n">net</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="c1"># jit model to take it from ~20fps to ~30fps</span>
 <span class="n">net</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
-<span class="n">net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
 <span class="n">started</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">last_logged</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -544,6 +641,36 @@ and all the other background services that are enabled by default it’s more
 performant and stable.</p>
 <p>If we check <code class="docutils literal notranslate"><span class="pre">htop</span></code> we see that we have almost 100% utilization.</p>
 <img alt="https://user-images.githubusercontent.com/909104/152892630-f094b84b-19ba-48f6-8632-1b954abc59c7.png" src="https://user-images.githubusercontent.com/909104/152892630-f094b84b-19ba-48f6-8632-1b954abc59c7.png"/>
+<p>To verify that it’s working end to end we can compute the probabilities of the
+classes and
+<a class="reference external" href="https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a">use the ImageNet class labels</a>
+to print the detections.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">top</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)))</span>
+<span class="n">top</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">top</span><span class="p">[:</span><span class="mi">10</span><span class="p">]:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">val</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">% </span><span class="si">{</span><span class="n">classes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mobilenet_v3_large</span></code> running in real time:</p>
+<img alt="https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif" src="https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif"/>
+<p>Detecting an orange:</p>
+<img alt="https://user-images.githubusercontent.com/909104/153092153-d9c08dfe-105b-408a-8e1e-295da8a78c19.jpg" src="https://user-images.githubusercontent.com/909104/153092153-d9c08dfe-105b-408a-8e1e-295da8a78c19.jpg"/>
+<p>Detecting a mug:</p>
+<img alt="https://user-images.githubusercontent.com/909104/153092155-4b90002f-a0f3-4267-8d70-e713e7b4d5a0.jpg" src="https://user-images.githubusercontent.com/909104/153092155-4b90002f-a0f3-4267-8d70-e713e7b4d5a0.jpg"/>
+</div>
+<div class="section" id="troubleshooting-performance">
+<h2>Troubleshooting: Performance<a class="headerlink" href="#troubleshooting-performance" title="Permalink to this headline">¶</a></h2>
+<p>PyTorch by default will use all of the cores available. If you have anything
+running in the background on the Raspberry Pi it may cause contention with the
+model inference causing latency spikes. To alleviate this you can reduce the
+number of threads which will reduce the peak latency at a small performance
+penalty.</p>
+<div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For <code class="docutils literal notranslate"><span class="pre">shufflenet_v2_x1_5</span></code> using <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">threads</span></code> instead of <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">threads</span></code>
+increases best case latency to <code class="docutils literal notranslate"><span class="pre">72</span> <span class="pre">ms</span></code> from <code class="docutils literal notranslate"><span class="pre">60</span> <span class="pre">ms</span></code> but eliminates the
+latency spikes of <code class="docutils literal notranslate"><span class="pre">128</span> <span class="pre">ms</span></code>.</p>
 </div>
 <div class="section" id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
@@ -555,7 +682,8 @@ directly deploy with good performance on a Raspberry Pi.</p>
 <p>See more:</p>
 <ul class="simple">
 <li><a class="reference external" href="https://pytorch.org/docs/stable/quantization.html">Quantization</a> for more information on how to quantize and fuse your model.</li>
-<li><span class="xref std std-ref">beginner/transfer_learning_tutorial</span> for how to use transfer learning to fine tune a pre-existing model to your dataset.</li>
+<li><a class="reference external" href="https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html">Transfer Learning Tutorial</a>
+for how to use transfer learning to fine tune a pre-existing model to your dataset.</li>
 </ul>
 </div>
 </div>
@@ -600,8 +728,10 @@ directly deploy with good performance on a Raspberry Pi.</p>
 <li><a class="reference internal" href="#installing-pytorch-and-opencv">Installing PyTorch and OpenCV</a></li>
 <li><a class="reference internal" href="#video-capture">Video Capture</a></li>
 <li><a class="reference internal" href="#image-preprocessing">Image Preprocessing</a></li>
+<li><a class="reference internal" href="#model-choices">Model Choices</a></li>
 <li><a class="reference internal" href="#mobilenetv2-quantization-and-jit">MobileNetV2: Quantization and JIT</a></li>
 <li><a class="reference internal" href="#putting-it-together">Putting It Together</a></li>
+<li><a class="reference internal" href="#troubleshooting-performance">Troubleshooting: Performance</a></li>
 <li><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
