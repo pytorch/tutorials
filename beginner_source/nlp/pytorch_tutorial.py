@@ -6,10 +6,10 @@ Introduction to PyTorch
 Introduction to Torch's tensor library
 ======================================
 
-All of deep learning is computations on tensors, which are
+All deep learning is computations on tensors, which are
 generalizations of a matrix that can be indexed in more than 2
 dimensions. We will see exactly what this means in-depth later. First,
-let's look what we can do with tensors.
+let's look at what we can do with tensors.
 """
 # Author: Robert Guthrie
 
@@ -100,7 +100,7 @@ print(z)
 
 ######################################################################
 # See `the documentation <https://pytorch.org/docs/torch.html>`__ for a
-# complete list of the massive number of operations available to you. They
+# complete a list of the massive number of operations available to you. They
 # expand beyond just mathematical operations.
 #
 # One helpful operation that we will make use of later is concatenation.
@@ -148,13 +148,13 @@ print(x.view(2, -1))
 # learning programming, because it allows you to not have to write the
 # back propagation gradients yourself. A computation graph is simply a
 # specification of how your data is combined to give you the output. Since
-# the graph totally specifies what parameters were involved with which
+# the graph specifies what parameters were involved with which
 # operations, it contains enough information to compute derivatives. This
 # probably sounds vague, so let's see what is going on using the
 # fundamental flag ``requires_grad``.
 #
-# First, think from a programmers perspective. What is stored in the
-# torch.Tensor objects we were creating above? Obviously the data and the
+# First, think from a programmer's perspective. What is stored in the
+# torch.Tensor objects we were creating above? The data and the
 # shape, and maybe a few other things. But when we added two tensors
 # together, we got an output tensor. All this output tensor knows is its
 # data and shape. It has no idea that it was the sum of two other tensors
@@ -180,12 +180,14 @@ print(z.grad_fn)
 
 ######################################################################
 # So Tensors know what created them. z knows that it wasn't read in from
-# a file, it wasn't the result of a multiplication or exponential or
+# a file, it wasn't the result of multiplication or exponential or
 # whatever. And if you keep following z.grad_fn, you will find yourself at
 # x and y.
 #
 # But how does that help us compute a gradient?
 #
+
+
 
 # Let's sum up all the entries in z
 s = z.sum()
@@ -211,11 +213,11 @@ print(s.grad_fn)
 # And so s contains enough information to determine that the derivative
 # we want is 1!
 #
-# Of course this glosses over the challenge of how to actually compute
+# Of course this glosses over the challenge of how to compute
 # that derivative. The point here is that s is carrying along enough
 # information that it is possible to compute it. In reality, the
 # developers of Pytorch program the sum() and + operations to know how to
-# compute their gradients, and run the back propagation algorithm. An
+# compute their gradients, and run the backpropagation algorithm. An
 # in-depth discussion of that algorithm is beyond the scope of this
 # tutorial.
 #
