@@ -75,7 +75,7 @@ With the total 7 or 8 (depending on if the `script` or `trace` method is called 
 
 * Drag and drop the model file `mobilenetv2_quantized.pt` to your project's assets folder.
 
-That's it! Now you can build your Android app with the PyTorch library and the model ready to use. To actually write code to use the model, refer to the PyTorch Mobile `Android Quickstart with a HelloWorld Example <https://pytorch.org/mobile/android/#quickstart-with-a-helloworld-example>`_ and `Android Hackathon Example <https://github.com/pytorch/workshops/tree/master/PTMobileWalkthruAndroid>`_.
+That's it! Now you can build your Android app with the PyTorch library and the model ready to use. To actually write code to use the model, refer to the PyTorch Mobile `Android Quickstart with a HelloWorld Example <https://pytorch.org/mobile/android/#quickstart-with-a-helloworld-example>`_ and `Android Hackathon Example <https://github.com/pytorch/workshops/tree/main/PTMobileWalkthruAndroid>`_.
 
 Learn More
 -----------------

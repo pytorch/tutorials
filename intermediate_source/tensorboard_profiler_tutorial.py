@@ -395,5 +395,5 @@ prof.stop()
 # Take a look at the following documents to continue your learning,
 # and feel free to open an issue `here <https://github.com/pytorch/kineto/issues>`_.
 #
-# -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/master/tb_plugin>`_
-# -  `torch.profiler API <https://pytorch.org/docs/master/profiler.html>`_
+# -  `Pytorch TensorBoard Profiler github <https://github.com/pytorch/kineto/tree/main/tb_plugin>`_
+# -  `torch.profiler API <https://pytorch.org/docs/main/profiler.html>`_

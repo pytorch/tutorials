@@ -44,7 +44,7 @@ workers in our setup as follows:
 |
 The entire training process is executed as follows:
 
-1) The master creates a `RemoteModule <https://pytorch.org/docs/master/rpc.html#remotemodule>`__
+1) The master creates a `RemoteModule <https://pytorch.org/docs/main/rpc.html#remotemodule>`__
    that holds an embedding table on the Parameter Server.
 2) The master, then kicks off the training loop on the trainers and passes the
    remote module to the trainers.
@@ -52,12 +52,12 @@ The entire training process is executed as follows:
    using the remote module provided by the master and then executes the
    FC layer which is wrapped inside DDP.
 4) The trainer executes the forward pass of the model and uses the loss to
-   execute the backward pass using `Distributed Autograd <https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework>`__.
+   execute the backward pass using `Distributed Autograd <https://pytorch.org/docs/main/rpc.html#distributed-autograd-framework>`__.
 5) As part of the backward pass, the gradients for the FC layer are computed
    first and synced to all trainers via allreduce in DDP.
 6) Next, Distributed Autograd propagates the gradients to the parameter server,
    where the gradients for the embedding table are updated.
-7) Finally, the `Distributed Optimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`__ is used to update all the parameters.
+7) Finally, the `Distributed Optimizer <https://pytorch.org/docs/main/rpc.html#module-torch.distributed.optim>`__ is used to update all the parameters.
 
 
 .. attention::

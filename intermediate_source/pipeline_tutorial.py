@@ -306,14 +306,14 @@ print ('Total parameters in model: {:,}'.format(get_total_params(model)))
 
 
 ######################################################################
-# `CrossEntropyLoss <https://pytorch.org/docs/master/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
+# `CrossEntropyLoss <https://pytorch.org/docs/main/nn.html?highlight=crossentropyloss#torch.nn.CrossEntropyLoss>`__
 # is applied to track the loss and
-# `SGD <https://pytorch.org/docs/master/optim.html?highlight=sgd#torch.optim.SGD>`__
+# `SGD <https://pytorch.org/docs/main/optim.html?highlight=sgd#torch.optim.SGD>`__
 # implements stochastic gradient descent method as the optimizer. The initial
-# learning rate is set to 5.0. `StepLR <https://pytorch.org/docs/master/optim.html?highlight=steplr#torch.optim.lr_scheduler.StepLR>`__ is
+# learning rate is set to 5.0. `StepLR <https://pytorch.org/docs/main/optim.html?highlight=steplr#torch.optim.lr_scheduler.StepLR>`__ is
 # applied to adjust the learn rate through epochs. During the
 # training, we use
-# `nn.utils.clip_grad_norm\_ <https://pytorch.org/docs/master/nn.html?highlight=nn%20utils%20clip_grad_norm#torch.nn.utils.clip_grad_norm_>`__
+# `nn.utils.clip_grad_norm\_ <https://pytorch.org/docs/main/nn.html?highlight=nn%20utils%20clip_grad_norm#torch.nn.utils.clip_grad_norm_>`__
 # function to scale all the gradient together to prevent exploding.
 #
 
