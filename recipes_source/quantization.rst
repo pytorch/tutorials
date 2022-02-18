@@ -123,7 +123,7 @@ To do a quantization aware training, use the following code snippet:
     # quantization aware training goes here
     model_qat = torch.quantization.convert(model_qat.eval(), inplace=False)
 
-For more detailed examples of the quantization aware training, see `here <https://pytorch.org/docs/master/quantization.html#quantization-aware-training>`_ and `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html#quantization-aware-training>`_.
+For more detailed examples of the quantization aware training, see `here <https://pytorch.org/docs/main/quantization.html#quantization-aware-training>`_ and `here <https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html#quantization-aware-training>`_.
 
 A pre-trained quantized model can also be used for quantized aware transfer learning, using the same `quant` and `dequant` calls shown above. See `here <https://pytorch.org/tutorials/intermediate/quantized_transfer_learning_tutorial.html#part-1-training-a-custom-classifier-based-on-a-quantized-feature-extractor>`_ for a complete example.
 

@@ -58,7 +58,7 @@ to enable quantization:
 - Replace ReLU6 with ReLU 
  
 Note: this code is taken from 
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py>`_.  
+`here <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenet.py>`_.  
 
 .. code:: python
 
@@ -69,7 +69,7 @@ Note: this code is taken from
         This function is taken from the original tf repo. 
         It ensures that all layers have a channel number that is divisible by 8 
         It can be seen here:  
-        https://github.com/tensorflow/models/blob/master/research/slim/nets/mobilenet/mobilenet.py  
+        https://github.com/tensorflow/models/blob/main/research/slim/nets/mobilenet/mobilenet.py  
         :param v: 
         :param divisor: 
         :param min_value: 
@@ -220,7 +220,7 @@ Note: this code is taken from
 ------------------- 
  
 We next define several helper functions to help with model evaluation. These mostly come from 
-`here <https://github.com/pytorch/examples/blob/master/imagenet/main.py>`_. 
+`here <https://github.com/pytorch/examples/blob/main/imagenet/main.py>`_. 
 
 .. code:: python
 
@@ -308,7 +308,7 @@ To run the code in this tutorial using the entire ImageNet dataset, first downlo
 
 With the data downloaded, we show functions below that define dataloaders we'll use to read 
 in this data. These functions mostly come from  
-`here <https://github.com/pytorch/vision/blob/master/references/detection/train.py>`_.
+`here <https://github.com/pytorch/vision/blob/main/references/detection/train.py>`_.
 
 
 .. code:: python
@@ -349,7 +349,7 @@ in this data. These functions mostly come from
 
 
 Next, we'll load in the pre-trained MobileNetV2 model. We provide the URL to download the data from in ``torchvision``  
-`here <https://github.com/pytorch/vision/blob/master/torchvision/models/mobilenet.py#L9>`_. 
+`here <https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenet.py#L9>`_. 
 
 .. code:: python
 

@@ -3,7 +3,7 @@
 **Author**: `Jerry Zhang <https://github.com/jerryzh168>`_ 
 
 This tutorial introduces the steps to do post training static quantization in graph mode based on   
-`torch.fx <https://github.com/pytorch/pytorch/blob/master/torch/fx/__init__.py>`_.  
+`torch.fx <https://github.com/pytorch/pytorch/blob/main/torch/fx/__init__.py>`_.  
 The advantage of FX graph mode quantization is that we can perform quantization fully automatically on the model    
 although there might some effort required to make the model compatible with FX Graph Mode Quantizatiion (symbolically traceable with ``torch.fx``), 
 we'll have a separate tutorial to show how to make the part of the model we want to quantize compatibble with FX Graph Mode Quantization.   
@@ -58,7 +58,7 @@ These steps are identitcal to `Static Quantization with Eager Mode in PyTorch <h
 
 To run the code in this tutorial using the entire ImageNet dataset, first download imagenet by following the instructions at here `ImageNet Data <http://www.image-net.org/download>`_. Unzip the downloaded file into the 'data_path' folder.
 
-Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py#L12>`_ and rename it to  
+Download the `torchvision resnet18 model <https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py#L12>`_ and rename it to  
 ``data/resnet18_pretrained_float.pth``.   
 
 .. code:: python
@@ -282,7 +282,7 @@ of the observers for activation and weight. ``qconfig_dict`` is a dictionary wit
       ]   
   }   
   
-Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/master/torch/quantization/qconfig.py>`_ file.  
+Utility functions related to ``qconfig`` can be found in the `qconfig <https://github.com/pytorch/pytorch/blob/main/torch/quantization/qconfig.py>`_ file.  
 
 .. code:: python
 

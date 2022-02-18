@@ -85,7 +85,7 @@ transform = transforms.Compose([
     transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
 ])
 
-img = Image.open(requests.get("https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png", stream=True).raw)
+img = Image.open(requests.get("https://raw.githubusercontent.com/pytorch/ios-demo-app/main/HelloWorld/HelloWorld/HelloWorld/image.png", stream=True).raw)
 img = transform(img)[None,]
 out = model(img)
 clsidx = torch.argmax(out)
@@ -285,5 +285,5 @@ print(df)
 # ~~~~~~~~~~~~~~~~~
 #
 # - `Facebook Data-efficient Image Transformers <https://ai.facebook.com/blog/data-efficient-image-transformers-a-promising-new-technique-for-image-classification>`__
-# - `Vision Transformer with ImageNet and MNIST on iOS <https://github.com/pytorch/ios-demo-app/tree/master/ViT4MNIST>`__
-# - `Vision Transformer with ImageNet and MNIST on Android <https://github.com/pytorch/android-demo-app/tree/master/ViT4MNIST>`__
+# - `Vision Transformer with ImageNet and MNIST on iOS <https://github.com/pytorch/ios-demo-app/tree/main/ViT4MNIST>`__
+# - `Vision Transformer with ImageNet and MNIST on Android <https://github.com/pytorch/android-demo-app/tree/main/ViT4MNIST>`__

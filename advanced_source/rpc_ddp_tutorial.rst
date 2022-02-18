@@ -5,9 +5,9 @@ Combining Distributed DataParallel with Distributed RPC Framework
 
 This tutorial uses a simple example to demonstrate how you can combine
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__ (DDP)
-with the `Distributed RPC framework <https://pytorch.org/docs/master/rpc.html>`__
+with the `Distributed RPC framework <https://pytorch.org/docs/main/rpc.html>`__
 to combine distributed data parallelism with distributed model parallelism to
-train a simple model. Source code of the example can be found `here <https://github.com/pytorch/examples/tree/master/distributed/rpc/ddp_rpc>`__.
+train a simple model. Source code of the example can be found `here <https://github.com/pytorch/examples/tree/main/distributed/rpc/ddp_rpc>`__.
 
 Previous tutorials,
 `Getting Started With Distributed Data Parallel <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`__
@@ -19,10 +19,10 @@ where you might want to combine these two techniques. For example:
 1) If we have a model with a sparse part (large embedding table) and a dense
    part (FC layers), we might want to put the embedding table on a parameter
    server and replicate the FC layer across multiple trainers using `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
-   The `Distributed RPC framework <https://pytorch.org/docs/master/rpc.html>`__
+   The `Distributed RPC framework <https://pytorch.org/docs/main/rpc.html>`__
    can be used to perform embedding lookups on the parameter server.
 2) Enable hybrid parallelism as described in the `PipeDream <https://arxiv.org/abs/1806.03377>`__ paper.
-   We can use the `Distributed RPC framework <https://pytorch.org/docs/master/rpc.html>`__
+   We can use the `Distributed RPC framework <https://pytorch.org/docs/main/rpc.html>`__
    to pipeline stages of the model across multiple workers and replicate each
    stage (if needed) using `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__.
 
@@ -99,7 +99,7 @@ Before we discuss details of the Trainer, let's introduce the ``HybridModel`` th
 the trainer uses. As described below, the ``HybridModel`` is initialized using a
 remote module that holds an embedding table (``remote_emb_module``) on the parameter server and the ``device``
 to use for DDP. The initialization of the model wraps an
-`nn.Linear <https://pytorch.org/docs/master/generated/torch.nn.Linear.html>`__
+`nn.Linear <https://pytorch.org/docs/main/generated/torch.nn.Linear.html>`__
 layer inside DDP to replicate and synchronize this layer across all trainers.
 
 The forward method of the model is pretty straightforward. It performs an
@@ -117,9 +117,9 @@ Next, let's look at the setup on the Trainer. The trainer first creates the
 parameter server and its own rank.
 
 Now, we need to retrieve a list of RRefs to all the parameters that we would
-like to optimize with `DistributedOptimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`__.
+like to optimize with `DistributedOptimizer <https://pytorch.org/docs/main/rpc.html#module-torch.distributed.optim>`__.
 To retrieve the parameters for the embedding table from the parameter server,
-we can call RemoteModule's `remote_parameters <https://pytorch.org/docs/master/rpc.html#torch.distributed.nn.api.remote_module.RemoteModule.remote_parameters>`__,
+we can call RemoteModule's `remote_parameters <https://pytorch.org/docs/main/rpc.html#torch.distributed.nn.api.remote_module.RemoteModule.remote_parameters>`__,
 which basically walks through all the parameters for the embedding table and returns
 a list of RRefs. The trainer calls this method on the parameter server via RPC
 to receive a list of RRefs to the desired parameters. Since the
@@ -144,7 +144,7 @@ Now we're ready to introduce the main training loop that is run on each trainer.
 targets for training. We run the training loop for multiple epochs and for each
 batch:
 
-1) Setup a `Distributed Autograd Context <https://pytorch.org/docs/master/rpc.html#torch.distributed.autograd.context>`__
+1) Setup a `Distributed Autograd Context <https://pytorch.org/docs/main/rpc.html#torch.distributed.autograd.context>`__
    for Distributed Autograd.
 2) Run the forward pass of the model and retrieve its output.
 3) Compute the loss based on our outputs and targets using the loss function.
@@ -157,4 +157,4 @@ batch:
   :end-before: END run_trainer
 .. code:: python
 
-Source code for the entire example can be found `here <https://github.com/pytorch/examples/tree/master/distributed/rpc/ddp_rpc>`__.
+Source code for the entire example can be found `here <https://github.com/pytorch/examples/tree/main/distributed/rpc/ddp_rpc>`__.

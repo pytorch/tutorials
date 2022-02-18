@@ -7,7 +7,7 @@ Implementing a Parameter Server Using Distributed RPC Framework
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
--  `RPC API documents <https://pytorch.org/docs/master/rpc.html>`__
+-  `RPC API documents <https://pytorch.org/docs/main/rpc.html>`__
 
 This tutorial walks through a simple example of implementing a parameter server using PyTorch's `Distributed RPC framework <https://pytorch.org/docs/stable/rpc.html>`_. The parameter server framework is a paradigm in which a set of servers store parameters, such as large embedding tables, and several trainers query the parameter servers in order to retrieve the most up to date parameters. These trainers can run a training loop locally and occasionally synchronize with the parameter server to get the latest parameters. For more reading on the parameter server approach, check out `this paper <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`_.
 
@@ -15,7 +15,7 @@ Using the Distributed RPC Framework, we'll build an example where multiple train
 
 **Note**\ : This tutorial covers the use of the Distributed RPC Framework, which is useful for splitting a model onto multiple machines, or for implementing a parameter-server training strategy where network trainers fetch parameters hosted on a different machine. If instead you are looking for replicating your model across many GPUs, please see the `Distributed Data Parallel tutorial <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`_. There is also another `RPC tutorial <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`_ that covers reinforcement learning and RNN use cases.
 
-Let's start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the `pytorch/examples repo <https://github.com/pytorch/examples/tree/master/mnist>`_.
+Let's start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the `pytorch/examples repo <https://github.com/pytorch/examples/tree/main/mnist>`_.
 
 .. code-block:: python
 

@@ -75,7 +75,7 @@ print(traced_rn18.graph)
 # a module, or a method) and the edges (represented as ``args`` and ``kwargs``
 # on each node) represent the values passed between these call-sites. More
 # information about the Graph representation and the rest of FX's APIs ca
-# be found at the FX documentation https://pytorch.org/docs/master/fx.html.
+# be found at the FX documentation https://pytorch.org/docs/main/fx.html.
 
 
 ######################################################################

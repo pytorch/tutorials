@@ -27,7 +27,7 @@ to first move the Tensor to CPU on the caller, send it via RPC, and then move
 it to the destination device on the callee, which incurs both unnecessary
 synchronizations and D2H and H2D copies. Since v1.8, RPC allows users to
 configure a per-process global device map using the
-`set_device_map <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.TensorPipeRpcBackendOptions.set_device_map>`_
+`set_device_map <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.TensorPipeRpcBackendOptions.set_device_map>`_
 API, specifying how to map local devices to remote devices. More specifically,
 if ``worker0``'s device map has an entry ``"worker1" : {"cuda:0" : "cuda:1"}``,
 all RPC arguments on ``"cuda:0"`` from ``worker0`` will be directly sent to
@@ -52,7 +52,7 @@ The code below shows how to use CUDA RPC. The model contains two linear layers
 and is split into two shards. The two shards are placed on ``worker0`` and
 ``worker1`` respectively, and ``worker0`` serves as the master that drives the
 forward and backward passes. Note that we intentionally skipped
-`DistributedOptimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`_
+`DistributedOptimizer <https://pytorch.org/docs/main/rpc.html#module-torch.distributed.optim>`_
 to highlight the performance improvements when using CUDA RPC. The experiment
 repeats the forward and backward passes 10 times and measures the total
 execution time. It compares using CUDA RPC against manually staging to CPU

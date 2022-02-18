@@ -354,9 +354,9 @@ print(device)
 # -  `Discuss PyTorch on the Forums`_
 # -  `Chat with other users on Slack`_
 #
-# .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/master/imagenet
-# .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/master/dcgan
-# .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/master/word_language_model
+# .. _Train a state-of-the-art ResNet network on imagenet: https://github.com/pytorch/examples/tree/main/imagenet
+# .. _Train a face generator using Generative Adversarial Networks: https://github.com/pytorch/examples/tree/main/dcgan
+# .. _Train a word-level language model using Recurrent LSTM networks: https://github.com/pytorch/examples/tree/main/word_language_model
 # .. _More examples: https://github.com/pytorch/examples
 # .. _More tutorials: https://github.com/pytorch/tutorials
 # .. _Discuss PyTorch on the Forums: https://discuss.pytorch.org/

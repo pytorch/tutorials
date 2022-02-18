@@ -153,7 +153,7 @@ steps should be taken:
    rely on operator schema information in their logi. If your op mutates an input
    in-place or returns a tensor that aliases with one of the inputs it is important to
    ensure that your schema properly reflects this. See
-   `here <https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md>`_
+   `here <https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/README.md>`_
    for more information on how to annotate the schema.
 
 .. _autograd-support:
@@ -238,7 +238,7 @@ functions:
     backends by using the corresponding backend-specific dispatch key - for example,
     ``AutogradCPU`` or ``AutogradCUDA``. To explore these and other dispatch key
     options in more detail, check out the ``PythonDispatcher`` tool provided in
-    `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/master/torch/_python_dispatcher.py>`_.
+    `torch/_python_dispatcher.py <https://github.com/pytorch/pytorch/blob/main/torch/_python_dispatcher.py>`_.
 
 
 Going beyond autograd
@@ -339,7 +339,7 @@ addition doesn't need autocasting and should just fall through.)
 When should an autocast wrapper be registered? Unfortunately, there aren't
 cut-and-dried rules for an op's preferred precision.  You can
 get a sense for some native ops' preferred precisions by looking at the
-`cast lists <https://pytorch.org/docs/master/amp.html#op-specific-behavior>`_.
+`cast lists <https://pytorch.org/docs/main/amp.html#op-specific-behavior>`_.
 General guidance:
 
 * Ops that do reductions should probably execute in ``float32``,

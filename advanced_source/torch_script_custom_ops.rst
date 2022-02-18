@@ -2,7 +2,7 @@ Extending TorchScript with Custom C++ Operators
 ===============================================
 
 The PyTorch 1.0 release introduced a new programming model to PyTorch called
-`TorchScript <https://pytorch.org/docs/master/jit.html>`_. TorchScript is a
+`TorchScript <https://pytorch.org/docs/main/jit.html>`_. TorchScript is a
 subset of the Python programming language which can be parsed, compiled and
 optimized by the TorchScript compiler. Further, compiled TorchScript models have
 the option of being serialized into an on-disk file format, which you can
@@ -408,7 +408,7 @@ easier for the TorchScript compiler to reason about programs. You turn your
 regular PyTorch code into TorchScript by annotating it with
 ``@torch.jit.script`` for free functions and ``@torch.jit.script_method`` for
 methods in a class (which must also derive from ``torch.jit.ScriptModule``). See
-`here <https://pytorch.org/docs/master/jit.html>`_ for more details on
+`here <https://pytorch.org/docs/main/jit.html>`_ for more details on
 TorchScript annotations.
 
 One particular reason to use TorchScript instead of tracing is that tracing is

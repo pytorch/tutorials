@@ -243,7 +243,7 @@ def evaluate(dataloader):
 # `SGD <https://pytorch.org/docs/stable/_modules/torch/optim/sgd.html>`__
 # implements stochastic gradient descent method as the optimizer. The initial
 # learning rate is set to 5.0.
-# `StepLR <https://pytorch.org/docs/master/_modules/torch/optim/lr_scheduler.html#StepLR>`__
+# `StepLR <https://pytorch.org/docs/main/_modules/torch/optim/lr_scheduler.html#StepLR>`__
 # is used here to adjust the learning rate through epochs.
 #
 

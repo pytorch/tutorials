@@ -130,7 +130,7 @@ assert torch.allclose(jvp, jvp2)
 # supporting forward-mode AD, register the ``jvp()`` static method. It is
 # possible, but not mandatory for custom Functions to support both forward
 # and backward AD. See the
-# `documentation <https://pytorch.org/docs/master/notes/extending.html#forward-mode-ad>`_
+# `documentation <https://pytorch.org/docs/main/notes/extending.html#forward-mode-ad>`_
 # for more information.
 
 class Fn(torch.autograd.Function):

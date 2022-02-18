@@ -11,7 +11,7 @@ Building PyTorch with Vulkan backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vulkan backend is not included by default. The main switch to include Vulkan backend is cmake option ``USE_VULKAN``, that can be set by environment variable ``USE_VULKAN``.
 
-To use PyTorch with Vulkan backend, we need to build it from source with additional settings. Checkout the PyTorch source code from GitHub master branch.
+To use PyTorch with Vulkan backend, we need to build it from source with additional settings. Checkout the PyTorch source code from GitHub main branch.
 
 Optional usage of vulkan wrapper
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,7 +59,7 @@ After successful build, open another terminal and verify the version of installe
     import torch
     print(torch.__version__)
 
-At the time of writing of this recipe, the version is 1.8.0a0+41237a4. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.
+At the time of writing of this recipe, the version is 1.8.0a0+41237a4. You might be seeing different numbers depending on when you check out the code from main, but it should be greater than 1.7.0.
 
 
 Android build
@@ -193,7 +193,7 @@ For Android API to run model on Vulkan backend we have to specify this during mo
 In this case, all inputs will be transparently copied from CPU to the Vulkan device, and model will be run on Vulkan device, the output will be copied transparently to CPU.
 
 The example of using Vulkan backend can be found in test application within the PyTorch repository:
-https://github.com/pytorch/pytorch/blob/master/android/test_app/app/src/main/java/org/pytorch/testapp/MainActivity.java#L133
+https://github.com/pytorch/pytorch/blob/main/android/test_app/app/src/main/java/org/pytorch/testapp/MainActivity.java#L133
 
 Building android test app with Vulkan
 -------------------------------------

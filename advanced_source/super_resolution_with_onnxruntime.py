@@ -18,7 +18,7 @@ You can get binary builds of ONNX and ONNX Runtime with
 ``pip install onnx onnxruntime``.
 Note that ONNX Runtime is compatible with Python versions 3.5 to 3.7.
 
-``NOTE``: This tutorial needs PyTorch master branch which can be installed by following
+``NOTE``: This tutorial needs PyTorch main branch which can be installed by following
 the instructions `here <https://github.com/pytorch/pytorch#from-source>`__
 
 """
@@ -46,7 +46,7 @@ import torch.onnx
 # outputs the upscaled Y component in super resolution.
 #
 # `The
-# model <https://github.com/pytorch/examples/blob/master/super_resolution/model.py>`__
+# model <https://github.com/pytorch/examples/blob/main/super_resolution/model.py>`__
 # comes directly from PyTorch's examples without modification:
 #
 
@@ -129,7 +129,7 @@ torch_model.eval()
 # where batch_size can be variable.
 #
 # To learn more details about PyTorch's export interface, check out the
-# `torch.onnx documentation <https://pytorch.org/docs/master/onnx.html>`__.
+# `torch.onnx documentation <https://pytorch.org/docs/main/onnx.html>`__.
 #
 
 # Input to the model
@@ -157,7 +157,7 @@ torch.onnx.export(torch_model,               # model being run
 # the ONNX model with ONNX's API.
 # First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
 # will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
-# For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
+# For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/main/onnx/onnx.proto>`__.).
 # Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 # and confirm that the model has a valid schema.
 # The validity of the ONNX graph is verified by checking the model's
@@ -277,7 +277,7 @@ img_out_y = ort_outs[0]
 # final output image from the output tensor, and save the image.
 # The post-processing steps have been adopted from PyTorch
 # implementation of super-resolution model
-# `here <https://github.com/pytorch/examples/blob/master/super_resolution/super_resolve.py>`__.
+# `here <https://github.com/pytorch/examples/blob/main/super_resolution/super_resolve.py>`__.
 #
 
 img_out_y = Image.fromarray(np.uint8((img_out_y[0] * 255.0).clip(0, 255)[0]), mode='L')

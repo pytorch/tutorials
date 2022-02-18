@@ -245,7 +245,7 @@ Build an extension
 Out-of-tree backend is supported by adding a C++ extension to PyTorch.
 Once you have kernels and registrations ready, you can build a C++ extension by
 writing a ``setup.py`` script that uses ``setuptools`` to compile C++ code.  Here's a simplified example from
-`pytorch/xla repo <https://github.com/pytorch/xla/blob/master/setup.py>`_::
+`pytorch/xla repo <https://github.com/pytorch/xla/blob/main/setup.py>`_::
 
   from setuptools import setup
   from torch.utils.cpp_extension import BuildExtension, CppExtension
@@ -283,8 +283,8 @@ without writing any new kernels as long as the customized operator is composed o
 PyTorch operators (which are already supported by your backend).
 
 For `custom operators extended in C++ <cpp_autograd>`_ they often come with a
-`backend specific C++ kernel implementation e.g. nms kernel in torchvsion <https://github.com/pytorch/vision/blob/master/torchvision/csrc/ops/cuda/nms_kernel.cu>`_
-as well as `a customized Python API e.g. torch.ops.torchvision.nms <https://github.com/pytorch/vision/blob/master/torchvision/csrc/ops/nms.cpp#L18>`_.
+`backend specific C++ kernel implementation e.g. nms kernel in torchvsion <https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/cuda/nms_kernel.cu>`_
+as well as `a customized Python API e.g. torch.ops.torchvision.nms <https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/nms.cpp#L18>`_.
 To support these operators, backend extenders will need to write a C++ kernel for your backend and properly
 register it to the corresponding namespace in the dispatcher similar to supporting PyTorch native operators.
 Alternatively you could also add a customized API in your extension e.g ``torch_xla.core.functions.nms`` for
@@ -303,7 +303,7 @@ in JIT, so the current backend support will focus on the eager frontend for now.
 Testing your backend against native PyTorch backends
 ----------------------------------------------------
 
-PyTorch lets tests run on multiple device types using its `generic device type testing framework <https://github.com/pytorch/pytorch/blob/master/torch/testing/_internal/common_device_type.py>`_.
+PyTorch lets tests run on multiple device types using its `generic device type testing framework <https://github.com/pytorch/pytorch/blob/main/torch/testing/_internal/common_device_type.py>`_.
 You can find details about `how tests use it <https://github.com/pytorch/pytorch/blob/5a8198eb3c594aa18352930fd21f3c25bd7b7100/torch/testing/_internal/common_device_type.py#L23>`_
 and information about `how to add a new device type <https://github.com/pytorch/pytorch/blob/5a8198eb3c594aa18352930fd21f3c25bd7b7100/torch/testing/_internal/common_device_type.py#L369>`_.
 Once added, PyTorch tests using the generic device type testing framework will be run using your device type, too.
@@ -315,7 +315,7 @@ framework allows for considerable customization so that device types can select 
 which dtypes they support, and even which precisions to use when comparing tensors for equality.
 
 An example device type that uses the generic device type testing framework and doesn’t ship with
-PyTorch is XLA.  See `its extension of the generic device type testing framework <https://github.com/pytorch/xla/blob/master/test/pytorch_test_base.py>`_,
+PyTorch is XLA.  See `its extension of the generic device type testing framework <https://github.com/pytorch/xla/blob/main/test/pytorch_test_base.py>`_,
 which contains examples of block listing tests, block listing dtypes, and overriding test precision.
 
 The generic device type testing framework is actively developed. To request a feature please file an

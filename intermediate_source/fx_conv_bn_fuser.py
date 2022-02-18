@@ -83,7 +83,7 @@ print(traced_model.graph)
 # hidden within the sequential as well as the wrapped Module have been inlined
 # into the graph. This is the default level of abstraction, but it can be
 # configured by the pass writer. More information can be found at the FX
-# overview https://pytorch.org/docs/master/fx.html#module-torch.fx
+# overview https://pytorch.org/docs/main/fx.html#module-torch.fx
 
 
 ####################################
@@ -198,7 +198,7 @@ def fuse(model: torch.nn.Module) -> torch.nn.Module:
 # .. note::
 #       We make some simplifications here for demonstration purposes, such as only
 #       matching 2D convolutions. View
-#       https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py
+#       https://github.com/pytorch/pytorch/blob/main/torch/fx/experimental/fuser.py
 #       for a more usable pass.
 
 ######################################################################

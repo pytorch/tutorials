@@ -205,7 +205,7 @@ err.backward()
 
 ########################################################################
 # A full and working MNIST example is located here
-# https://github.com/pytorch/examples/tree/master/mnist
+# https://github.com/pytorch/examples/tree/main/mnist
 #
 # Example 2: Recurrent Net
 # ------------------------
@@ -242,7 +242,7 @@ rnn = RNN(50, 20, 10)
 #
 # A more complete Language Modeling example using LSTMs and Penn Tree-bank
 # is located
-# `here <https://github.com/pytorch/examples/tree/master/word\_language\_model>`_
+# `here <https://github.com/pytorch/examples/tree/main/word\_language\_model>`_
 #
 # PyTorch by default has seamless CuDNN integration for ConvNets and
 # Recurrent Nets

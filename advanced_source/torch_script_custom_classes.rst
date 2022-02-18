@@ -271,7 +271,7 @@ the special ``def_pickle`` method on ``class_``.
 .. note::
   The semantics of ``__getstate__`` and ``__setstate__`` in TorchScript are
   equivalent to that of the Python pickle module. You can
-  `read more <https://github.com/pytorch/pytorch/blob/master/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
+  `read more <https://github.com/pytorch/pytorch/blob/main/torch/csrc/jit/docs/serialization.md#getstate-and-setstate>`_
   about how we use these methods.
 
 Here is an example of the ``def_pickle`` call we can add to the registration of

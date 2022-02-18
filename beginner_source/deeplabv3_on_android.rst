@@ -12,7 +12,7 @@ Semantic image segmentation is a computer vision task that uses semantic labels 
 
 In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on Android, taking you from the beginning of having a model you may want to use on Android to the end of having a complete Android app using the model. We will also cover practical and general tips on how to check if your next favorable pre-trained PyTorch models can run on Android, and how to avoid pitfalls.
 
-.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for Android <https://pytorch.org/mobile/android/>`_ and give the PyTorch Android `HelloWorld <https://github.com/pytorch/android-demo-app/tree/master/HelloWorldApp>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation>`_.
+.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for Android <https://pytorch.org/mobile/android/>`_ and give the PyTorch Android `HelloWorld <https://github.com/pytorch/android-demo-app/tree/main/HelloWorldApp>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/android-demo-app/tree/main/ImageSegmentation>`_.
 
 Learning Objectives
 -------------------
@@ -99,7 +99,7 @@ So if you provide the same image input `deeplab.jpg` of size 400x400 to the mode
 3. Build a new Android app or reuse an example app and load the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, follow Step 3 of the `Model Preparation for Android recipe <../recipes/model_preparation_android.html#add-the-model-and-pytorch-library-on-android>`_ to use our model in an Android Studio project with PyTorch Mobile enabled. Because both DeepLabV3 used in this tutorial and MobileNet v2 used in the PyTorch HelloWorld Android example are computer vision models, you can also get the `HelloWorld example repo <https://github.com/pytorch/android-demo-app/tree/master/HelloWorldApp>`_ to make it easier to modify the code that loads the model and processes the input and output. The main goal in this step and Step 4 is to make sure the model `deeplabv3_scripted.pt` generated in Step 1 can indeed work correctly on Android.
+First, follow Step 3 of the `Model Preparation for Android recipe <../recipes/model_preparation_android.html#add-the-model-and-pytorch-library-on-android>`_ to use our model in an Android Studio project with PyTorch Mobile enabled. Because both DeepLabV3 used in this tutorial and MobileNet v2 used in the PyTorch HelloWorld Android example are computer vision models, you can also get the `HelloWorld example repo <https://github.com/pytorch/android-demo-app/tree/main/HelloWorldApp>`_ to make it easier to modify the code that loads the model and processes the input and output. The main goal in this step and Step 4 is to make sure the model `deeplabv3_scripted.pt` generated in Step 1 can indeed work correctly on Android.
 
 Now let's add `deeplabv3_scripted.pt` and `deeplab.jpg` used in Step 2 to the Android Studio project and modify the `onCreate` method in the `MainActivity` to resemble:
 
@@ -118,7 +118,7 @@ Then set a breakpoint at the line `finish()` and build and run the app. If the a
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the code snippet between `line 50 <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java#L50>`_ and 73 in `MainActivity.java` with the following code:
+After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/main/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the code snippet between `line 50 <https://github.com/pytorch/android-demo-app/blob/main/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java#L50>`_ and 73 in `MainActivity.java` with the following code:
 
 .. code-block:: java
 
@@ -217,7 +217,7 @@ Now when you run the app on an Android emulator or preferably an actual device, 
 Recap
 --------
 
-In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for Android and how to make sure the model can run successfully on Android. Our focus was to help you understand the process of confirming that a model can indeed run on Android. The complete code repo is available `here <https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation>`_.
+In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for Android and how to make sure the model can run successfully on Android. Our focus was to help you understand the process of confirming that a model can indeed run on Android. The complete code repo is available `here <https://github.com/pytorch/android-demo-app/tree/main/ImageSegmentation>`_.
 
 More advanced topics such as quantization and using models via transfer learning or of your own on Android will be covered soon in future demo apps and tutorials.
 

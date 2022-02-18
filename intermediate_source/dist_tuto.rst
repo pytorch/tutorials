@@ -272,7 +272,7 @@ gradients of their model on their batch of data and then average their
 gradients. In order to ensure similar convergence results when changing
 the number of processes, we will first have to partition our dataset.
 (You could also use
-`tnt.dataset.SplitDataset <https://github.com/pytorch/tnt/blob/master/torchnet/dataset/splitdataset.py#L4>`__,
+`tnt.dataset.SplitDataset <https://github.com/pytorch/tnt/blob/main/torchnet/dataset/splitdataset.py#L4>`__,
 instead of the snippet below.)
 
 .. code:: python
@@ -340,7 +340,7 @@ number of replicas in order to maintain the *overall* batch size of 128.
 We can now write our usual forward-backward-optimize training code, and
 add a function call to average the gradients of our models. (The
 following is largely inspired from the official `PyTorch MNIST
-example <https://github.com/pytorch/examples/blob/master/mnist/main.py>`__.)
+example <https://github.com/pytorch/examples/blob/main/mnist/main.py>`__.)
 
 .. code:: python
 
@@ -556,7 +556,7 @@ documentation <https://pytorch.org/docs/stable/distributed.html#initialization>`
 We have been using the environment variable initialization method
 throughout this tutorial. By setting the following four environment
 variables on all machines, all processes will be able to properly
-connect to the master, obtain information about the other processes, and
+connect to the main, obtain information about the other processes, and
 finally handshake with them.
 
 -  ``MASTER_PORT``: A free port on the machine that will host the
@@ -627,7 +627,7 @@ I'd like to thank the PyTorch developers for doing such a good job on
 their implementation, documentation, and tests. When the code was
 unclear, I could always count on the
 `docs <https://pytorch.org/docs/stable/distributed.html>`__ or the
-`tests <https://github.com/pytorch/pytorch/blob/master/test/test_distributed.py>`__
+`tests <https://github.com/pytorch/pytorch/blob/main/test/test_distributed.py>`__
 to find an answer. In particular, I'd like to thank Soumith Chintala,
 Adam Paszke, and Natalia Gimelshein for providing insightful comments
 and answering questions on early drafts.

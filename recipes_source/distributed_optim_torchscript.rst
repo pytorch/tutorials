@@ -20,7 +20,7 @@ Requirements
 What is Distributed Optimizer?
 ------------------------------------
 
-`DistributedOptimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`_ takes a list of remote
+`DistributedOptimizer <https://pytorch.org/docs/main/rpc.html#module-torch.distributed.optim>`_ takes a list of remote
 parameters (RRef) and runs the optimizer locally on the workers where the parameters live, which is commonly used together
 with Distributed RPC/Autograd to do model parallel training. It could use any of the local optimizer algorithms (either
 pre-defined algorithms provided in ``torch.optim`` or custom defined ones) to apply the gradients on each worker.
@@ -194,7 +194,7 @@ pre-defined default ones.
     DistributedOptimizer.functional_optim_map[QHM] = FunctionalQHM
 
 Now you can use the ``QHM`` optimizer as normal in distributed training by passing it to
-`DistributedOptimizer <https://pytorch.org/docs/master/rpc.html#module-torch.distributed.optim>`_
+`DistributedOptimizer <https://pytorch.org/docs/main/rpc.html#module-torch.distributed.optim>`_
 
 
 ::

@@ -17,7 +17,7 @@ Advantages of graph mode quantization are:
 
 For additional details on Graph Mode Quantization please refer to the `Graph Mode Static Quantization Tutorial <https://pytorch.org/tutorials/prototype/graph_mode_static_quantization_tutorial.html>`_.
 
-tl;dr The Graph Mode Dynamic `Quantization API <https://pytorch.org/docs/master/quantization.html#torch-quantization>`_:
+tl;dr The Graph Mode Dynamic `Quantization API <https://pytorch.org/docs/main/quantization.html#torch-quantization>`_:
 
 .. code:: python
 

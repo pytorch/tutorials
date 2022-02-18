@@ -158,7 +158,7 @@ print(my_cell(x, h))
 # have to explicitly define derivatives for all constructs in the
 # language.
 #
-# .. figure:: https://github.com/pytorch/pytorch/raw/master/docs/source/_static/img/dynamic_graph.gif
+# .. figure:: https://github.com/pytorch/pytorch/raw/main/docs/source/_static/img/dynamic_graph.gif
 #    :alt: How autograd works
 #
 #    How autograd works

@@ -174,7 +174,7 @@ For most of the use cases, we do not do model forward only once, repeating it wi
 If we are doing new memory allocation for every module forward - that will be suboptimal.
 Instead of this, we can reuse the same memory that we allocated on the previous step, fill it with new data, and run module forward again on the same tensor object.
 
-You can check how it looks in code in `pytorch android application example <https://github.com/pytorch/android-demo-app/blob/master/PyTorchDemoApp/app/src/main/java/org/pytorch/demo/vision/ImageClassificationActivity.java#L174>`_.
+You can check how it looks in code in `pytorch android application example <https://github.com/pytorch/android-demo-app/blob/main/PyTorchDemoApp/app/src/main/java/org/pytorch/demo/vision/ImageClassificationActivity.java#L174>`_.
 
 ::
 
@@ -248,9 +248,9 @@ Now we are ready to benchmark your model:
 iOS - Benchmarking Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For iOS, we'll be using our `TestApp <https://github.com/pytorch/pytorch/tree/master/ios/TestApp>`_ as the benchmarking tool.
+For iOS, we'll be using our `TestApp <https://github.com/pytorch/pytorch/tree/main/ios/TestApp>`_ as the benchmarking tool.
 
-To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_model.py <https://github.com/pytorch/pytorch/blob/master/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
+To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_model.py <https://github.com/pytorch/pytorch/blob/main/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
 
 ::
 

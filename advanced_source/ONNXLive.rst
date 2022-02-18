@@ -45,7 +45,7 @@ You can also convert models in Linux, however to run the iOS app itself, you wil
 Download (or train) PyTorch style transfer models
 -------------------------------------------------
 
-For this tutorial, we will use the style transfer models that are published with pytorch in https://github.com/pytorch/examples/tree/master/fast_neural_style .
+For this tutorial, we will use the style transfer models that are published with pytorch in https://github.com/pytorch/examples/tree/main/fast_neural_style .
 If you would like to use a different PyTorch or ONNX model, feel free to skip this step.
 
 These models are meant for applying style transfer on still images and really not optimized to be fast enough for video. However if we reduce the resolution low enough, they can also work well on videos.
