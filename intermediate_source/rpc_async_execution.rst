@@ -177,7 +177,7 @@ block on the trainer until the updated model is returned.
                 ).cuda()
 
 We skip the code that launches multiple processes in this tutorial and please
-refer to the `examples <https://github.com/pytorch/examples/tree/main/distributed/rpc>`__
+refer to the `examples <https://github.com/pytorch/examples/tree/master/distributed/rpc>`__
 repo for the full implementation. Note that, it is possible to implement batch
 processing without the
 `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
@@ -457,7 +457,7 @@ point to run one episode.
 The rest of the code is normal processes launching and logging which are
 similar to other RPC tutorials. In this tutorial, all observers passively
 waiting for commands from the agent. Please refer to the
-`examples <https://github.com/pytorch/examples/tree/main/distributed/rpc>`__
+`examples <https://github.com/pytorch/examples/tree/master/distributed/rpc>`__
 repo for the full implementation.
 
 .. code:: python

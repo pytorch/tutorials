@@ -432,6 +432,6 @@ Conclusion
 
 You should now have a good overview of PyTorch's C++ autograd API.
 You can find the code examples displayed in this note `here
-<https://github.com/pytorch/examples/tree/main/cpp/autograd>`_. As always, if you run into any
+<https://github.com/pytorch/examples/tree/master/cpp/autograd>`_. As always, if you run into any
 problems or have questions, you can use our `forum <https://discuss.pytorch.org/>`_
 or `GitHub issues <https://github.com/pytorch/pytorch/issues>`_ to get in touch.

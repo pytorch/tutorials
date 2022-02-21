@@ -130,7 +130,7 @@ urllib.request.install_opener(opener)
 # 
 # -  **pretrained_model** - path to the pretrained MNIST model which was
 #    trained with
-#    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/main/mnist>`__.
+#    `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
 #    For simplicity, download the pretrained model `here <https://drive.google.com/drive/folders/1fn83DF14tWmit0RTKWRhPq5uVXt73e0h?usp=sharing>`__.
 # 
 # -  **use_cuda** - boolean flag to use CUDA if desired and available.
@@ -148,7 +148,7 @@ use_cuda=True
 # ~~~~~~~~~~~~~~~~~~
 # 
 # As mentioned, the model under attack is the same MNIST model from
-# `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/main/mnist>`__.
+# `pytorch/examples/mnist <https://github.com/pytorch/examples/tree/master/mnist>`__.
 # You may train and save your own MNIST model or you can download and use
 # the provided model. The *Net* definition and test dataloader here have
 # been copied from the MNIST example. The purpose of this section is to

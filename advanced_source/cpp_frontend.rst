@@ -672,7 +672,7 @@ kind, but entirely sufficient for this task.
 .. tip::
 
   You can find the full source code presented in this tutorial `in this
-  repository <https://github.com/pytorch/examples/tree/main/cpp/dcgan>`_.
+  repository <https://github.com/pytorch/examples/tree/master/cpp/dcgan>`_.
 
 What was a GAN aGAN?
 ********************
@@ -1301,7 +1301,7 @@ possible, so you can leverage this fact to increase your learning rate.
 .. tip::
 
   You can find the full source code presented in this tutorial `in this
-  repository <https://github.com/pytorch/examples/tree/main/cpp/dcgan>`_.
+  repository <https://github.com/pytorch/examples/tree/master/cpp/dcgan>`_.
 
 As always, if you run into any problems or have questions, you can use our
 `forum <https://discuss.pytorch.org/>`_ or `GitHub issues

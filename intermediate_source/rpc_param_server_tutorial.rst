@@ -15,7 +15,7 @@ Using the Distributed RPC Framework, we'll build an example where multiple train
 
 **Note**\ : This tutorial covers the use of the Distributed RPC Framework, which is useful for splitting a model onto multiple machines, or for implementing a parameter-server training strategy where network trainers fetch parameters hosted on a different machine. If instead you are looking for replicating your model across many GPUs, please see the `Distributed Data Parallel tutorial <https://pytorch.org/tutorials/intermediate/ddp_tutorial.html>`_. There is also another `RPC tutorial <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`_ that covers reinforcement learning and RNN use cases.
 
-Let's start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the `pytorch/examples repo <https://github.com/pytorch/examples/tree/main/mnist>`_.
+Let's start with the familiar: importing our required modules and defining a simple ConvNet that will train on the MNIST dataset. The below network is largely adopted from the network defined in the `pytorch/examples repo <https://github.com/pytorch/examples/tree/master/mnist>`_.
 
 .. code-block:: python
 

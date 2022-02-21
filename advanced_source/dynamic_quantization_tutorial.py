@@ -16,7 +16,7 @@ hit to accuracy.
 In this tutorial, we'll apply the easiest form of quantization -
 `dynamic quantization <https://pytorch.org/docs/stable/quantization.html#torch.quantization.quantize_dynamic>`_ -
 to an LSTM-based next word-prediction model, closely following the
-`word language model <https://github.com/pytorch/examples/tree/main/word_language_model>`_
+`word language model <https://github.com/pytorch/examples/tree/master/word_language_model>`_
 from the PyTorch examples.
 """
 

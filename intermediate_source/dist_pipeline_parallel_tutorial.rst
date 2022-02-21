@@ -23,7 +23,7 @@ pipeline parallelism discussed in
 .. note:: This tutorial requires PyTorch v1.6.0 or above.
 
 .. note:: Full source code of this tutorial can be found at
-    `pytorch/examples <https://github.com/pytorch/examples/tree/main/distributed/rpc/pipeline>`__.
+    `pytorch/examples <https://github.com/pytorch/examples/tree/master/distributed/rpc/pipeline>`__.
 
 Basics
 ------
