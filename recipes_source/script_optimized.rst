@@ -114,7 +114,7 @@ This is another example of using `trace` and `script` - it converts the model tr
     scripted_encoder = torch.jit.script(encoder)
     scripted_decoder = torch.jit.script(decoder)
 
-So is it true that one can simply always use the `script` call and the model is converted to TorchScript? The answer is no, because TorchScript is actually a subset of Python and to make `script` work, the PyTorch model definition must only use the language features of that TorchScript subset of Python. `TorchScript Language Reference <https://pytorch.org/docs/main/jit_language_reference.html#language-reference>`_ covers all the details of what is supported in TorchScript. Below we will describe some of the common errors when using the `script` method.
+So is it true that one can simply always use the `script` call and the model is converted to TorchScript? The answer is no, because TorchScript is actually a subset of Python and to make `script` work, the PyTorch model definition must only use the language features of that TorchScript subset of Python. `TorchScript Language Reference <https://pytorch.org/docs/master/jit_language_reference.html#language-reference>`_ covers all the details of what is supported in TorchScript. Below we will describe some of the common errors when using the `script` method.
 
 
 Fix Common Errors When Using the `script` Method
@@ -161,7 +161,7 @@ and referred to as `self._device` and `self._SOS_token` instead of `device` and 
 3. RuntimeError `all inputs of range must be '...', found Tensor (inferred) in argument`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The error message continues with: `add type definitions for each of the module's forward method arguments. Because all parameters to a TorchScript function are of the `torch.Tensor` type by default, you need to specifically declare the type for each parameter that is not of type 'Tensor'. For a complete list of TorchScript-supported types, see `here <https://pytorch.org/docs/main/jit_language_reference.html#supported-type>`_.
+The error message continues with: `add type definitions for each of the module's forward method arguments. Because all parameters to a TorchScript function are of the `torch.Tensor` type by default, you need to specifically declare the type for each parameter that is not of type 'Tensor'. For a complete list of TorchScript-supported types, see `here <https://pytorch.org/docs/master/jit_language_reference.html#supported-type>`_.
 
 For example, the `GreedySearchDecoder`'s `forward` method signature needs to be changed from:
 

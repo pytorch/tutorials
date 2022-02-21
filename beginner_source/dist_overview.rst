@@ -70,7 +70,7 @@ common development trajectory would be:
    if you would like to further speed up training and are willing to write a
    little more code to set it up.
 4. Use multi-machine `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__
-   and the `launching script <https://github.com/pytorch/examples/blob/main/distributed/ddp/README.md>`__,
+   and the `launching script <https://github.com/pytorch/examples/blob/master/distributed/ddp/README.md>`__,
    if the application needs to scale across machine boundaries.
 5. Use `torch.distributed.elastic <https://pytorch.org/docs/stable/distributed.elastic.html>`__
    to launch distributed training if errors (e.g., out-of-memory) are expected or if
@@ -201,4 +201,4 @@ PyTorch Distributed Developers
 ------------------------------
 
 If you'd like to contribute to PyTorch Distributed, please refer to our
-`Developer Guide <https://github.com/pytorch/pytorch/blob/main/torch/distributed/CONTRIBUTING.md>`_.
+`Developer Guide <https://github.com/pytorch/pytorch/blob/master/torch/distributed/CONTRIBUTING.md>`_.

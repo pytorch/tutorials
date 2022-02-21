@@ -35,7 +35,7 @@ by Jeremy Howard, `fast.ai <https://www.fast.ai>`_. Thanks to Rachel Thomas and 
 # We will use `pathlib <https://docs.python.org/3/library/pathlib.html>`_
 # for dealing with paths (part of the Python 3 standard library), and will
 # download the dataset using
-# `requests <http://docs.python-requests.org/en/main/>`_. We will only
+# `requests <http://docs.python-requests.org/en/master/>`_. We will only
 # import modules when we use them, so you can see exactly what's being
 # used at each point.
 

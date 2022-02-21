@@ -16,7 +16,7 @@ or retured in a JSON trace file.
 
 .. note::
     PyTorch 1.8 introduces the new API that will replace the older profiler API
-    in the future releases. Check the new API at `this page <https://pytorch.org/docs/main/profiler.html>`__.
+    in the future releases. Check the new API at `this page <https://pytorch.org/docs/master/profiler.html>`__.
 
 Head on over to `this
 recipe <https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html>`__

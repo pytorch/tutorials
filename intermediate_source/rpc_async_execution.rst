@@ -8,10 +8,10 @@ Prerequisites:
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
 -  `Getting started with Distributed RPC Framework <rpc_tutorial.html>`__
 -  `Implementing a Parameter Server using Distributed RPC Framework <rpc_param_server_tutorial.html>`__
--  `RPC Asynchronous Execution Decorator <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+-  `RPC Asynchronous Execution Decorator <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 
 This tutorial demonstrates how to build batch-processing RPC applications with
-the `@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+the `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator, which helps to speed up training by reducing the number of blocked
 RPC threads and consolidating CUDA operations on the callee. This shares the
 same idea as `Batch Inference with TorchServe <https://pytorch.org/serve/batch_inference_with_ts.html>`__.
@@ -37,10 +37,10 @@ RPC threads, more hints need to be provided to the RPC system.
 
 Since v1.6.0, PyTorch addresses this problem by introducing two new concepts:
 
-* A `torch.futures.Future <https://pytorch.org/docs/main/futures.html>`__ type
+* A `torch.futures.Future <https://pytorch.org/docs/master/futures.html>`__ type
   that encapsulates an asynchronous execution, which also supports installing
   callback functions.
-* An `@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+* An `@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
   decorator that allows applications to tell the callee that the target function
   will return a future and can pause and yield multiple times during execution.
 
@@ -52,14 +52,14 @@ preparation and communication as callbacks as well, which will be triggered
 when the final result is ready. In this way, the callee no longer needs to block
 one thread and wait until the final return value is ready. Please refer to the
 API doc of
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 for simple examples.
 
 Besides reducing the number of idle threads on the callee, these tools also help
 to make batch RPC processing easier and faster. The following two sections of
 this tutorial demonstrate how to build distributed batch-updating parameter
 server and batch-processing reinforcement learning applications using the
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator.
 
 Batch-Updating Parameter Server
@@ -180,14 +180,14 @@ We skip the code that launches multiple processes in this tutorial and please
 refer to the `examples <https://github.com/pytorch/examples/tree/main/distributed/rpc>`__
 repo for the full implementation. Note that, it is possible to implement batch
 processing without the
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator. However, that would require either blocking more RPC threads on
 the PS or use another round of RPC to fetch updated models, where the latter
 would add both more code complexity and more communication overhead.
 
 This section uses a simple parameter sever training example to show how to
 implement batch RPC applications using the
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 decorator. In the next section, we re-implement the reinforcement learning
 example in the previous
 `Getting started with Distributed RPC Framework <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`__
@@ -200,7 +200,7 @@ Batch-Processing CartPole Solver
 This section uses CartPole-v1 from `OpenAI Gym <https://gym.openai.com/>`__ as
 an example to show the performance impact of batch processing RPC. Please note
 that since the goal is to demonstrate the usage of
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__
 instead of building the best CartPole solver or solving most different RL
 problems, we use very simple policies and reward calculation strategies and
 focus on the multi-observer single-agent batch RPC implementation. We use a
@@ -248,7 +248,7 @@ The constructor of the ``Observer`` adjusts accordingly as well. It also takes a
 ``batch`` argument, which governs which ``Agent`` function it uses to select
 actions. In batch mode, it calls ``select_action_batch`` function on ``Agent``
 which will be presented shortly, and this function will be decorated with
-`@rpc.functions.async_execution <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.functions.async_execution>`__.
+`@rpc.functions.async_execution <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.functions.async_execution>`__.
 
 
 .. code:: python
@@ -517,7 +517,7 @@ that batch processing helped to speed up training.
 Learn More
 ----------
 
--  `Batch-Updating Parameter Server Source Code <https://github.com/pytorch/examples/blob/main/distributed/rpc/batch/parameter_server.py>`__
--  `Batch-Processing CartPole Solver <https://github.com/pytorch/examples/blob/main/distributed/rpc/batch/reinforce.py>`__
--  `Distributed Autograd <https://pytorch.org/docs/main/rpc.html#distributed-autograd-framework>`__
+-  `Batch-Updating Parameter Server Source Code <https://github.com/pytorch/examples/blob/master/distributed/rpc/batch/parameter_server.py>`__
+-  `Batch-Processing CartPole Solver <https://github.com/pytorch/examples/blob/master/distributed/rpc/batch/reinforce.py>`__
+-  `Distributed Autograd <https://pytorch.org/docs/master/rpc.html#distributed-autograd-framework>`__
 -  `Distributed Pipeline Parallelism <dist_pipeline_parallel_tutorial.html>`__

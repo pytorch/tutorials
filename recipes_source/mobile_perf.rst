@@ -250,7 +250,7 @@ iOS - Benchmarking Setup
 
 For iOS, we'll be using our `TestApp <https://github.com/pytorch/pytorch/tree/main/ios/TestApp>`_ as the benchmarking tool.
 
-To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_model.py <https://github.com/pytorch/pytorch/blob/main/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
+To begin with, let's apply the ``optimize_for_mobile`` method to our python script located at `TestApp/benchmark/trace_model.py <https://github.com/pytorch/pytorch/blob/master/ios/TestApp/benchmark/trace_model.py>`_. Simply modify the code as below.
 
 ::
 

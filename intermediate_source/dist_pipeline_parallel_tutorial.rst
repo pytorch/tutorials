@@ -8,14 +8,14 @@ Prerequisites:
 -  `Single-Machine Model Parallel Best Practices <https://pytorch.org/tutorials/intermediate/model_parallel_tutorial.html>`__
 -  `Getting started with Distributed RPC Framework <https://pytorch.org/tutorials/intermediate/rpc_tutorial.html>`__
 -  RRef helper functions:
-   `RRef.rpc_sync() <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.RRef.rpc_sync>`__,
-   `RRef.rpc_async() <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.RRef.rpc_async>`__, and
-   `RRef.remote() <https://pytorch.org/docs/main/rpc.html#torch.distributed.rpc.RRef.remote>`__
+   `RRef.rpc_sync() <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.RRef.rpc_sync>`__,
+   `RRef.rpc_async() <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.RRef.rpc_async>`__, and
+   `RRef.remote() <https://pytorch.org/docs/master/rpc.html#torch.distributed.rpc.RRef.remote>`__
 
 
 
 This tutorial uses a Resnet50 model to demonstrate implementing distributed
-pipeline parallelism with `torch.distributed.rpc <https://pytorch.org/docs/main/rpc.html>`__
+pipeline parallelism with `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`__
 APIs. This can be viewed as the distributed counterpart of the multi-GPU
 pipeline parallelism discussed in
 `Single-Machine Model Parallel Best Practices <model_parallel_tutorial.html>`_.
@@ -30,7 +30,7 @@ Basics
 
 
 The previous tutorial, `Getting Started with Distributed RPC Framework <rpc_tutorial.html>`_
-shows how to use `torch.distributed.rpc <https://pytorch.org/docs/main/rpc.html>`_
+shows how to use `torch.distributed.rpc <https://pytorch.org/docs/master/rpc.html>`_
 to implement distributed model parallelism for an RNN model. That tutorial uses
 one GPU to host the ``EmbeddingTable``, and the provided code works fine.
 However, if a model lives on multiple GPUs, it would require some extra steps to

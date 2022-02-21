@@ -9,7 +9,7 @@ In this recipe, you will learn:
 
  - How to use within this application TorchScript models with custom operators.
 
-The full setup of this app you can find in `PyTorch Android Demo Application Repository <https://github.com/pytorch/android-demo-app/tree/main/NativeApp>`_.
+The full setup of this app you can find in `PyTorch Android Demo Application Repository <https://github.com/pytorch/android-demo-app/tree/master/NativeApp>`_.
 
 
 Setup
@@ -657,7 +657,7 @@ First, we extract its ``const char*`` value and loading the module with ``torch:
 To load TorchScript model for mobile, we need to set these guards, because mobile build doesn't support 
 features like autograd for smaller build size, placed in ``struct JITCallGuard`` in this example.
 It may change in the future. You can track the latest changes keeping an eye on the 
-`source in PyTorch GitHub <https://github.com/pytorch/pytorch/blob/main/android/pytorch_android/src/main/cpp/pytorch_jni_jit.cpp>`_.
+`source in PyTorch GitHub <https://github.com/pytorch/pytorch/blob/master/android/pytorch_android/src/main/cpp/pytorch_jni_jit.cpp>`_.
 
 Implementation of method ``warp_perspective`` and registration of it is entirely the same as
 in `tutorial for desktop build <https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html>`_.
@@ -732,4 +732,4 @@ You should see logs with tag 'PyTorchNativeApp' that prints x, y, and the result
 
 
 
-The full setup of this app you can find in `PyTorch Android Demo Application Repository <https://github.com/pytorch/android-demo-app/tree/main/NativeApp>`_.
+The full setup of this app you can find in `PyTorch Android Demo Application Repository <https://github.com/pytorch/android-demo-app/tree/master/NativeApp>`_.

@@ -104,7 +104,7 @@ Now that the model is ready, we can integrate it to our app. We'll be using the 
 
     pod LibTorch-Lite-Nightly
 
-In this tutorial, we'll be reusing our `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/main/HelloWorld-CoreML>`_ project. Feel free to walk through the code there.
+In this tutorial, we'll be reusing our `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-CoreML>`_ project. Feel free to walk through the code there.
 
 To benchmark the latency, you can simply put the following code before and after the PyTorch ``forward`` function
 

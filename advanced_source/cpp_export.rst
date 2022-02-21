@@ -17,7 +17,7 @@ Step 1: Converting Your PyTorch Model to Torch Script
 -----------------------------------------------------
 
 A PyTorch model's journey from Python to C++ is enabled by `Torch Script
-<https://pytorch.org/docs/main/jit.html>`_, a representation of a PyTorch
+<https://pytorch.org/docs/master/jit.html>`_, a representation of a PyTorch
 model that can be understood, compiled and serialized by the Torch Script
 compiler. If you are starting out from an existing PyTorch model written in the
 vanilla "eager" API, you must first convert your model to Torch Script. In the
@@ -38,7 +38,7 @@ language.
 
   You can find the complete documentation for both of these methods, as well as
   further guidance on which to use, in the official `Torch Script
-  reference <https://pytorch.org/docs/main/jit.html>`_.
+  reference <https://pytorch.org/docs/master/jit.html>`_.
 
 Converting to Torch Script via Tracing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -126,7 +126,7 @@ annotating a PyTorch model, you are ready to serialize it to a file. Later on,
 you'll be able to load the module from this file in C++ and execute it without
 any dependency on Python. Say we want to serialize the ``ResNet18`` model shown
 earlier in the tracing example. To perform this serialization, simply call
-`save <https://pytorch.org/docs/main/jit.html#torch.jit.ScriptModule.save>`_
+`save <https://pytorch.org/docs/master/jit.html#torch.jit.ScriptModule.save>`_
 on the module and pass it a filename::
 
   traced_script_module.save("traced_resnet_model.pt")
@@ -378,7 +378,7 @@ is: this is possible, and well supported! For now, you can explore `this
 for examples, and we will follow up with a tutorial shortly. In the time being,
 the following links may be generally helpful:
 
-- The Torch Script reference: https://pytorch.org/docs/main/jit.html
+- The Torch Script reference: https://pytorch.org/docs/master/jit.html
 - The PyTorch C++ API documentation: https://pytorch.org/cppdocs/
 - The PyTorch Python API documentation: https://pytorch.org/docs/
 

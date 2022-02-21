@@ -185,7 +185,7 @@ sentence pairs on MRPC task.
 
 To fine-tune the pre-trained BERT model (``bert-base-uncased`` model in
 HuggingFace transformers) for the MRPC task, you can follow the command
-in `examples <https://github.com/huggingface/transformers/tree/main/examples#mrpc>`_:
+in `examples <https://github.com/huggingface/transformers/tree/master/examples#mrpc>`_:
 
 .. code:: python
 

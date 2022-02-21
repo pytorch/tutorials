@@ -74,7 +74,7 @@ Use PyTorch iOS library with Metal
 ---------------------
 The PyTorch iOS library with Metal support ``LibTorch-Lite-Nightly`` is available in Cocoapods. You can read the `Using the Nightly PyTorch iOS Libraries in CocoaPods <https://pytorch.org/mobile/ios/#using-the-nightly-pytorch-ios-libraries-in-cocoapods>`_ section from the iOS tutorial for more detail about its usage. 
 
-We also have the `HelloWorld-Metal example <https://github.com/pytorch/ios-demo-app/tree/main/HelloWorld-Metal>`_ that shows how to conect all pieces together.  
+We also have the `HelloWorld-Metal example <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld-Metal>`_ that shows how to conect all pieces together.  
 
 Note that if you run the HelloWorld-Metal example, you may notice that the results are slighly different from the `results <https://pytorch.org/mobile/ios/#install-libtorch-via-cocoapods>`_ we got from the CPU model as shown in the iOS tutorial.
 
@@ -90,7 +90,7 @@ This is because by default Metal uses fp16 rather than fp32 to compute. The prec
 Use LibTorch-Lite Built from Source
 ---------------------
 
-You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app/tree/main/HelloWorld>`_ to demonstrate this process. 
+You can also build a custom LibTorch-Lite from Source and use it to run GPU models on iOS Metal. In this section, we'll be using the `HelloWorld example <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ to demonstrate this process. 
 
 First, make sure you have deleted the **build** folder from the "Model Preparation" step in PyTorch root directory. Then run the command below
 

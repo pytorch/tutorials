@@ -7,7 +7,7 @@ Implementing a Parameter Server Using Distributed RPC Framework
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
--  `RPC API documents <https://pytorch.org/docs/main/rpc.html>`__
+-  `RPC API documents <https://pytorch.org/docs/master/rpc.html>`__
 
 This tutorial walks through a simple example of implementing a parameter server using PyTorch's `Distributed RPC framework <https://pytorch.org/docs/stable/rpc.html>`_. The parameter server framework is a paradigm in which a set of servers store parameters, such as large embedding tables, and several trainers query the parameter servers in order to retrieve the most up to date parameters. These trainers can run a training loop locally and occasionally synchronize with the parameter server to get the latest parameters. For more reading on the parameter server approach, check out `this paper <https://www.cs.cmu.edu/~muli/file/parameter_server_osdi14.pdf>`_.
 

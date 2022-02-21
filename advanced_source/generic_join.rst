@@ -438,7 +438,7 @@ Some key points to highlight:
   which is then forwarded to ``Counter`` 's join hook.
 
 
-.. _Join: https://pytorch.org/docs/main/distributed.algorithms.join.html
+.. _Join: https://pytorch.org/docs/master/distributed.algorithms.join.html
 .. _Getting Started with Distributed Data Parallel: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html
 .. _Getting Started with Distributed Data Parallel - Basic Use Case: https://pytorch.org/tutorials/intermediate/ddp_tutorial.html#basic-use-case
 .. _Shard Optimizer States with ZeroRedundancyOptimizer: https://pytorch.org/tutorials/recipes/zero_redundancy_optimizer.html

@@ -220,7 +220,7 @@ Note: this code is taken from
 ------------------- 
  
 We next define several helper functions to help with model evaluation. These mostly come from 
-`here <https://github.com/pytorch/examples/blob/main/imagenet/main.py>`_. 
+`here <https://github.com/pytorch/examples/blob/master/imagenet/main.py>`_. 
 
 .. code:: python
 

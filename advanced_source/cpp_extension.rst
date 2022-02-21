@@ -11,7 +11,7 @@ you developed as part of your research.
 
 The easiest way of integrating such a custom operation in PyTorch is to write it
 in Python by extending :class:`Function` and :class:`Module` as outlined `here
-<https://pytorch.org/docs/main/notes/extending.html>`_. This gives you the full
+<https://pytorch.org/docs/master/notes/extending.html>`_. This gives you the full
 power of automatic differentiation (spares you from writing derivative
 functions) as well as the usual expressiveness of Python. However, there may be
 times when your operation is better implemented in C++. For example, your code

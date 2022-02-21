@@ -39,7 +39,7 @@ struct OptimizerOptionsMap<torch::optim::SGD> {
  * Learning rate scheduler base.
  *
  * Based on the Python implementation at
- * https://github.com/pytorch/pytorch/blob/main/torch/optim/lr_scheduler.py.
+ * https://github.com/pytorch/pytorch/blob/master/torch/optim/lr_scheduler.py.
  * @tparam TOptimizer Optimizer type
  */
 template<typename TOptimizer>
@@ -85,7 +85,7 @@ class LRScheduler {
  * Step learning rate scheduler.
  *
  * Based on the python implementation at
- * https://github.com/pytorch/pytorch/blob/main/torch/optim/lr_scheduler.py.
+ * https://github.com/pytorch/pytorch/blob/master/torch/optim/lr_scheduler.py.
  * @tparam TOptimizer Optimizer type
  */
 template<typename TOptimizer>

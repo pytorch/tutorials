@@ -34,7 +34,7 @@ import torch.nn.functional as F
 # -------------------
 #
 # Here we define the LSTM model architecture, following the
-# `model <https://github.com/pytorch/examples/blob/main/word_language_model/model.py>`_
+# `model <https://github.com/pytorch/examples/blob/master/word_language_model/model.py>`_
 # from the word language model example.
 
 class LSTMModel(nn.Module):
@@ -77,7 +77,7 @@ class LSTMModel(nn.Module):
 # Next, we load the
 # `Wikitext-2 dataset <https://www.google.com/search?q=wikitext+2+data>`_ into a `Corpus`,
 # again following the
-# `preprocessing <https://github.com/pytorch/examples/blob/main/word_language_model/data.py>`_
+# `preprocessing <https://github.com/pytorch/examples/blob/master/word_language_model/data.py>`_
 # from the word language model example.
 
 class Dictionary(object):
@@ -161,7 +161,7 @@ print(model)
 ######################################################################
 # Now let's generate some text to ensure that the pre-trained model is working
 # properly - similarly to before, we follow
-# `here <https://github.com/pytorch/examples/blob/main/word_language_model/generate.py>`_
+# `here <https://github.com/pytorch/examples/blob/master/word_language_model/generate.py>`_
 
 input_ = torch.randint(ntokens, (1, 1), dtype=torch.long)
 hidden = model.init_hidden(1)

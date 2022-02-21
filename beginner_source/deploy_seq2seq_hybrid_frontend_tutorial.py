@@ -61,7 +61,7 @@ Deploying a Seq2Seq Model with TorchScript
 # with the TorchScript syntax.
 #
 # For all details relating to the supported features, see the `TorchScript
-# language reference <https://pytorch.org/docs/main/jit.html>`__.
+# language reference <https://pytorch.org/docs/master/jit.html>`__.
 # To provide the maximum flexibility, you can also mix tracing and scripting
 # modes together to represent your whole program, and these techniques can
 # be applied incrementally.
@@ -83,7 +83,7 @@ Deploying a Seq2Seq Model with TorchScript
 #    https://github.com/ywk991112/pytorch-chatbot
 #
 # 2) Sean Robertson’s practical-pytorch seq2seq-translation example:
-#    https://github.com/spro/practical-pytorch/tree/main/seq2seq-translation
+#    https://github.com/spro/practical-pytorch/tree/master/seq2seq-translation
 #
 # 3) FloydHub’s Cornell Movie Corpus preprocessing code:
 #    https://github.com/floydhub/textutil-preprocess-cornell-movie-corpus
@@ -526,7 +526,7 @@ class LuongAttnDecoderRNN(nn.Module):
 #       3107 <https://www.python.org/dev/peps/pep-3107/>`__. In addition,
 #       it is possible to declare arguments of different types using
 #       MyPy-style type annotations (see
-#       `doc <https://pytorch.org/docs/main/jit.html#types>`__).
+#       `doc <https://pytorch.org/docs/master/jit.html#types>`__).
 #
 #
 # -  Change initialization of ``decoder_input``

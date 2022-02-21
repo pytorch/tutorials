@@ -567,7 +567,7 @@ mention of ``shared_ptr`` -- a benefit usually reserved for value semantics --
 while retaining reference semantics. To understand how this works, we can take a
 look at a simplified definition of the ``torch::nn::Linear`` module in the core
 library (the full definition is `here
-<https://github.com/pytorch/pytorch/blob/main/torch/csrc/api/include/torch/nn/modules/linear.h>`_):
+<https://github.com/pytorch/pytorch/blob/master/torch/csrc/api/include/torch/nn/modules/linear.h>`_):
 
 .. code-block:: cpp
 
@@ -873,7 +873,7 @@ dataset, the type of the sampler and some other implementation details):
 
 The data loader does come with a lot of options. You can inspect the full set
 `here
-<https://github.com/pytorch/pytorch/blob/main/torch/csrc/api/include/torch/data/dataloader_options.h>`_.
+<https://github.com/pytorch/pytorch/blob/master/torch/csrc/api/include/torch/data/dataloader_options.h>`_.
 For example, to speed up the data loading, we can increase the number of
 workers. The default number is zero, which means the main thread will be used.
 If we set ``workers`` to ``2``, two threads will be spawned that load data

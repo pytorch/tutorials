@@ -6,7 +6,7 @@
 
 This tutorial introduces the steps to do post training dynamic quantization in graph mode based on ``torch.fx``. 
 We have a separate tutorial for `FX Graph Mode Post Training Static Quantization <https://pytorch.org/tutorials/prototype/fx_graph_mode_ptq_static.html>`_,
-comparison between FX Graph Mode Quantization and Eager Mode Quantization can be found in the `quantization docs <https://pytorch.org/docs/main/quantization.html#quantization-api-summary>`_
+comparison between FX Graph Mode Quantization and Eager Mode Quantization can be found in the `quantization docs <https://pytorch.org/docs/master/quantization.html#quantization-api-summary>`_
 
 tldr; The FX Graph Mode API for dynamic quantization looks like the following:
 

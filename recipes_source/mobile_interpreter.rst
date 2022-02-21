@@ -17,7 +17,7 @@ This application will take advantage of the pre-built interpreter libraries avai
 
 Android
 -------------------
-Get the Image Segmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/main/ImageSegmentation
+Get the Image Segmentation demo app in Android: https://github.com/pytorch/android-demo-app/tree/master/ImageSegmentation
 
 1. **Prepare model**: Prepare the mobile interpreter version of model by run the script below to generate the scripted model `deeplabv3_scripted.pt` and `deeplabv3_scripted.ptl`
 
@@ -74,7 +74,7 @@ Get the Image Segmentation demo app in Android: https://github.com/pytorch/andro
 
 iOS
 -------------------
-Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/tree/main/ImageSegmentation
+Get ImageSegmentation demo app in iOS: https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation
 
 1. **Prepare model**: Same as Android.
 

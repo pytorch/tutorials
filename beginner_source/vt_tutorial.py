@@ -285,5 +285,5 @@ print(df)
 # ~~~~~~~~~~~~~~~~~
 #
 # - `Facebook Data-efficient Image Transformers <https://ai.facebook.com/blog/data-efficient-image-transformers-a-promising-new-technique-for-image-classification>`__
-# - `Vision Transformer with ImageNet and MNIST on iOS <https://github.com/pytorch/ios-demo-app/tree/main/ViT4MNIST>`__
-# - `Vision Transformer with ImageNet and MNIST on Android <https://github.com/pytorch/android-demo-app/tree/main/ViT4MNIST>`__
+# - `Vision Transformer with ImageNet and MNIST on iOS <https://github.com/pytorch/ios-demo-app/tree/master/ViT4MNIST>`__
+# - `Vision Transformer with ImageNet and MNIST on Android <https://github.com/pytorch/android-demo-app/tree/master/ViT4MNIST>`__

@@ -12,7 +12,7 @@ Semantic image segmentation is a computer vision task that uses semantic labels 
 
 In this tutorial, we will provide a step-by-step guide on how to prepare and run the PyTorch DeepLabV3 model on iOS, taking you from the beginning of having a model you may want to use on iOS to the end of having a complete iOS app using the model. We will also cover practical and general tips on how to check if your next favorite pre-trained PyTorch models can run on iOS, and how to avoid pitfalls.
 
-.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/main/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/tree/main/ImageSegmentation>`_.
+.. note:: Before going through this tutorial, you should check out `PyTorch Mobile for iOS <https://pytorch.org/mobile/ios/>`_ and give the PyTorch iOS `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ example app a quick try. This tutorial will go beyond the image classification model, usually the first kind of model deployed on mobile. The complete code repo for this tutorial is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 Learning Objectives
 -------------------
@@ -100,7 +100,7 @@ So if you provide the same image input `deeplab.jpg` of size 400x400 to the mode
 3. Build a new iOS app or reuse an example app and load the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, follow Step 3 of the `Model Preparation for iOS recipe <../recipes/model_preparation_ios.html#add-the-model-and-pytorch-library-on-ios>`_ to use our model in an Xcode project with PyTorch Mobile enabled. Because both the DeepLabV3 model used in this tutorial and the MobileNet v2 model used in the PyTorch HelloWorld iOS example are computer vision models, you may choose to start with the `HelloWorld example repo <https://github.com/pytorch/ios-demo-app/tree/main/HelloWorld>`_ as a template to reuse the code that loads the model and processes the input and output.
+First, follow Step 3 of the `Model Preparation for iOS recipe <../recipes/model_preparation_ios.html#add-the-model-and-pytorch-library-on-ios>`_ to use our model in an Xcode project with PyTorch Mobile enabled. Because both the DeepLabV3 model used in this tutorial and the MobileNet v2 model used in the PyTorch HelloWorld iOS example are computer vision models, you may choose to start with the `HelloWorld example repo <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ as a template to reuse the code that loads the model and processes the input and output.
 
 Now let's add `deeplabv3_scripted.pt` and `deeplab.jpg` used in Step 2 to the Xcode project and modify `ViewController.swift` to resemble:
 
@@ -236,7 +236,7 @@ Now when you run the app on an iOS simulator or an actual iOS device, you will s
 Recap
 --------
 
-In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repo is available `here <https://github.com/pytorch/ios-demo-app/tree/main/ImageSegmentation>`_.
+In this tutorial, we described what it takes to convert a pre-trained PyTorch DeepLabV3 model for iOS and how to make sure the model can run successfully on iOS. Our focus was to help you understand the process of confirming that a model can indeed run on iOS. The complete code repo is available `here <https://github.com/pytorch/ios-demo-app/tree/master/ImageSegmentation>`_.
 
 More advanced topics such as quantization and using models via transfer learning or of your own on iOS will be covered soon in future demo apps and tutorials.
 

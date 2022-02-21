@@ -488,7 +488,7 @@ predict('Satoshi')
 
 ######################################################################
 # The final versions of the scripts `in the Practical PyTorch
-# repo <https://github.com/spro/practical-pytorch/tree/main/char-rnn-classification>`__
+# repo <https://github.com/spro/practical-pytorch/tree/master/char-rnn-classification>`__
 # split the above code into a few files:
 #
 # -  ``data.py`` (loads files)

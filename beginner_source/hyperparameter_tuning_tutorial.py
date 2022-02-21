@@ -160,7 +160,7 @@ class Net(nn.Module):
 #         inputs, labels = inputs.to(device), labels.to(device)
 #
 # The code now supports training on CPUs, on a single GPU, and on multiple GPUs. Notably, Ray
-# also supports `fractional GPUs <https://docs.ray.io/en/main/using-ray-with-gpus.html#fractional-gpus>`_
+# also supports `fractional GPUs <https://docs.ray.io/en/master/using-ray-with-gpus.html#fractional-gpus>`_
 # so we can share GPUs among trials, as long as the model still fits on the GPU memory. We'll come back
 # to that later.
 #
@@ -185,7 +185,7 @@ class Net(nn.Module):
 #
 # The checkpoint saving is optional, however, it is necessary if we wanted to use advanced
 # schedulers like
-# `Population Based Training <https://docs.ray.io/en/main/tune/tutorials/tune-advanced-tutorial.html>`_.
+# `Population Based Training <https://docs.ray.io/en/master/tune/tutorials/tune-advanced-tutorial.html>`_.
 # Also, by saving the checkpoint we can later load the trained models and validate them
 # on a test set.
 #
