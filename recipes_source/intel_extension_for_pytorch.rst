@@ -32,7 +32,7 @@ Features
   support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16
   optimization of operators have been massively enabled in Intel® Extension
   for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
-  these optimizations will be landed in PyTorch main through PRs that are
+  these optimizations will be landed in PyTorch master through PRs that are
   being submitted and reviewed.
 - **Graph Optimization:** To optimize performance further with torchscript,
   Intel® Extension for PyTorch* supports fusion of frequently used operator
@@ -322,7 +322,7 @@ once C++ dynamic library of Intel® Extension for PyTorch* is linked.
    set_property(TARGET example-app PROPERTY CXX_STANDARD 14)
 
 **Note:** Since Intel® Extension for PyTorch* is still under development, name of
-the c++ dynamic library in the main branch may defer to
+the c++ dynamic library in the master branch may defer to
 *libintel-ext-pt-cpu.so* shown above. Please check the name out in the
 installation folder. The so file name starts with *libintel-*.
 
