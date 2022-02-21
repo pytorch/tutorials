@@ -177,7 +177,7 @@ of NNAPI. You need to build the NNAPI library from Android source code:
 .. code:: shell
 
     mkdir ~/android-nnapi && cd ~/android-nnapi
-    repo init -u https://android.googlesource.com/platform/manifest -b main
+    repo init -u https://android.googlesource.com/platform/manifest -b master
     repo sync --network-only -j 16
     repo sync -l
     . build/envsetup.sh
