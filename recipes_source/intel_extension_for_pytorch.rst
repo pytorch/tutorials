@@ -31,7 +31,7 @@ Features
   Extensions (Intel® AMX) instruction set with further boosted performance. The
   support of Auto Mixed Precision (AMP) with BFloat16 for CPU and BFloat16
   optimization of operators have been massively enabled in Intel® Extension
-  for PyTorch*, and partially upstreamed to PyTorch main branch. Most of
+  for PyTorch*, and partially upstreamed to PyTorch master branch. Most of
   these optimizations will be landed in PyTorch main through PRs that are
   being submitted and reviewed.
 - **Graph Optimization:** To optimize performance further with torchscript,
