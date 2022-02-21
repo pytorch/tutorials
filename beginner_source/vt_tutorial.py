@@ -85,7 +85,7 @@ transform = transforms.Compose([
     transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
 ])
 
-img = Image.open(requests.get("https://raw.githubusercontent.com/pytorch/ios-demo-app/main/HelloWorld/HelloWorld/HelloWorld/image.png", stream=True).raw)
+img = Image.open(requests.get("https://raw.githubusercontent.com/pytorch/ios-demo-app/master/HelloWorld/HelloWorld/HelloWorld/image.png", stream=True).raw)
 img = transform(img)[None,]
 out = model(img)
 clsidx = torch.argmax(out)

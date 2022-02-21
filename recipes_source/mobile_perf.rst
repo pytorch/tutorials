@@ -174,7 +174,7 @@ For most of the use cases, we do not do model forward only once, repeating it wi
 If we are doing new memory allocation for every module forward - that will be suboptimal.
 Instead of this, we can reuse the same memory that we allocated on the previous step, fill it with new data, and run module forward again on the same tensor object.
 
-You can check how it looks in code in `pytorch android application example <https://github.com/pytorch/android-demo-app/blob/main/PyTorchDemoApp/app/src/main/java/org/pytorch/demo/vision/ImageClassificationActivity.java#L174>`_.
+You can check how it looks in code in `pytorch android application example <https://github.com/pytorch/android-demo-app/blob/master/PyTorchDemoApp/app/src/main/java/org/pytorch/demo/vision/ImageClassificationActivity.java#L174>`_.
 
 ::
 

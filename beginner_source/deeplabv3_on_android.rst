@@ -118,7 +118,7 @@ Then set a breakpoint at the line `finish()` and build and run the app. If the a
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/main/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the code snippet between `line 50 <https://github.com/pytorch/android-demo-app/blob/main/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java#L50>`_ and 73 in `MainActivity.java` with the following code:
+After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `MainActivity.java <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java>`_ file from HelloWorld for input processing. Replace the code snippet between `line 50 <https://github.com/pytorch/android-demo-app/blob/master/HelloWorldApp/app/src/main/java/org/pytorch/helloworld/MainActivity.java#L50>`_ and 73 in `MainActivity.java` with the following code:
 
 .. code-block:: java
 
