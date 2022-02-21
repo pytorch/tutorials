@@ -289,7 +289,7 @@ from torch.distributed.pipeline.sync import Pipe
 # Build the pipeline.
 chunks = 8
 model = Pipe(torch.nn.Sequential(*module_list), chunks = chunks)
-ßß
+
 
 def get_total_params(module: torch.nn.Module):
     total_params = 0
