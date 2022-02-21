@@ -22,7 +22,7 @@ Features
   (NHWC) memory format could further accelerate convolutional neural networks.
   In Intel® Extension for PyTorch*, NHWC memory format has been enabled for
   most key CPU operators, though not all of them have been merged to PyTorch
-  main branch yet. They are expected to be fully landed in PyTorch upstream
+  master branch yet. They are expected to be fully landed in PyTorch upstream
   soon.
 - **Auto Mixed Precision (AMP):** Low precision data type BFloat16 has been
   natively supported on the 3rd Generation Xeon scalable Servers (aka Cooper

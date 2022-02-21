@@ -11,7 +11,7 @@ Building PyTorch with Vulkan backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Vulkan backend is not included by default. The main switch to include Vulkan backend is cmake option ``USE_VULKAN``, that can be set by environment variable ``USE_VULKAN``.
 
-To use PyTorch with Vulkan backend, we need to build it from source with additional settings. Checkout the PyTorch source code from GitHub main branch.
+To use PyTorch with Vulkan backend, we need to build it from source with additional settings. Checkout the PyTorch source code from GitHub master branch.
 
 Optional usage of vulkan wrapper
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -59,7 +59,7 @@ After successful build, open another terminal and verify the version of installe
     import torch
     print(torch.__version__)
 
-At the time of writing of this recipe, the version is 1.8.0a0+41237a4. You might be seeing different numbers depending on when you check out the code from main, but it should be greater than 1.7.0.
+At the time of writing of this recipe, the version is 1.8.0a0+41237a4. You might be seeing different numbers depending on when you check out the code from master, but it should be greater than 1.7.0.
 
 
 Android build
