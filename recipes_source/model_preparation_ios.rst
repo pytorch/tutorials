@@ -84,7 +84,7 @@ To use the mobile-ready model `mobilenetv2_quantized.pt` in an iOS app, either c
 
 * Drag and drop the model file `mobilenetv2_quantized.pt` to the project.
 
-After these steps, you can successfully build and run your Xcode project. To actually write code to use the model, refer to the PyTorch Mobile `iOS Code Walkthrough <https://pytorch.org/mobile/ios/#code-walkthrough>`_ and two complete ready-to-run sample iOS apps `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ and `iOS Hackathon Example <https://github.com/pytorch/workshops/tree/main/PTMobileWalkthruIOS>`_.
+After these steps, you can successfully build and run your Xcode project. To actually write code to use the model, refer to the PyTorch Mobile `iOS Code Walkthrough <https://pytorch.org/mobile/ios/#code-walkthrough>`_ and two complete ready-to-run sample iOS apps `HelloWorld <https://github.com/pytorch/ios-demo-app/tree/master/HelloWorld>`_ and `iOS Hackathon Example <https://github.com/pytorch/workshops/tree/master/PTMobileWalkthruIOS>`_.
 
 
 Learn More
