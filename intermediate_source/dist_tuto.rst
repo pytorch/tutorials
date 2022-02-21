@@ -272,7 +272,7 @@ gradients of their model on their batch of data and then average their
 gradients. In order to ensure similar convergence results when changing
 the number of processes, we will first have to partition our dataset.
 (You could also use
-`tnt.dataset.SplitDataset <https://github.com/pytorch/tnt/blob/main/torchnet/dataset/splitdataset.py#L4>`__,
+`tnt.dataset.SplitDataset <https://github.com/pytorch/tnt/blob/master/torchnet/dataset/splitdataset.py#L4>`__,
 instead of the snippet below.)
 
 .. code:: python
