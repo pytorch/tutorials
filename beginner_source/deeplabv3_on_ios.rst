@@ -88,7 +88,7 @@ Now that we have a scripted PyTorch model, let's test with some example inputs t
     print(input_batch.shape)
     print(output.shape)
 
-Download `deeplab.jpg` from `here <https://github.com/pytorch/ios-demo-app/blob/main/ImageSegmentation/ImageSegmentation/deeplab.jpg>`_ and run the script above to see the shapes of the input and output of the model:
+Download `deeplab.jpg` from `here <https://github.com/pytorch/ios-demo-app/blob/master/ImageSegmentation/ImageSegmentation/deeplab.jpg>`_ and run the script above to see the shapes of the input and output of the model:
 
 ::
 
@@ -129,7 +129,7 @@ Then set a breakpoint at the line `return module` and build and run the app. The
 4. Process the model input and output for model inference
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image, the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `TorchModule.mm <https://github.com/pytorch/ios-demo-app/blob/main/HelloWorld/HelloWorld/HelloWorld/TorchBridge/TorchModule.mm>`_ file from HelloWorld for input processing. Replace the `predictImage` method implementation in `TorchModule.mm` with the following code:
+After the model loads in the previous step, let's verify that it works with expected inputs and can generate expected outputs. As the model input for the DeepLabV3 model is an image, the same as that of the MobileNet v2 in the HelloWorld example, we will reuse some of the code in the `TorchModule.mm <https://github.com/pytorch/ios-demo-app/blob/master/HelloWorld/HelloWorld/HelloWorld/TorchBridge/TorchModule.mm>`_ file from HelloWorld for input processing. Replace the `predictImage` method implementation in `TorchModule.mm` with the following code:
 
 .. code-block:: objective-c
 
