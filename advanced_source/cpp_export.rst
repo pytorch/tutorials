@@ -374,7 +374,7 @@ yourself wanting to extend your ``ScriptModule`` with a custom operator
 implemented in C++ or CUDA, and executing this custom operator inside your
 ``ScriptModule`` loaded in your pure C++ production environment. The good news
 is: this is possible, and well supported! For now, you can explore `this
-<https://github.com/pytorch/pytorch/tree/main/test/custom_operator>`_ folder
+<https://github.com/pytorch/pytorch/tree/master/test/custom_operator>`_ folder
 for examples, and we will follow up with a tutorial shortly. In the time being,
 the following links may be generally helpful:
 
