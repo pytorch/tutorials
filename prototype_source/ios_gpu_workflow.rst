@@ -30,7 +30,7 @@ Also, you can build a custom pytorch binary from source that includes the Metal 
     cd PYTORCH_ROOT
     USE_PYTORCH_METAL_EXPORT=ON python setup.py install --cmake
 
-The command above will build a custom pytorch binary from main. The ``install`` argument simply tells ``setup.py`` to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is ``1.8.0a0+41237a4``. You might be seeing different numbers depending on when you check out the code from main, but it should be greater than 1.7.0.
+The command above will build a custom pytorch binary from master. The ``install`` argument simply tells ``setup.py`` to override the existing PyTorch on your desktop. Once the build finished, open another terminal to check the PyTorch version to see if the installation was successful. As the time of writing of this recipe, the version is ``1.8.0a0+41237a4``. You might be seeing different numbers depending on when you check out the code from main, but it should be greater than 1.7.0.
 
 .. code:: python
 
