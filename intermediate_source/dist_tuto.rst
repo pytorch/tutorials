@@ -556,7 +556,7 @@ documentation <https://pytorch.org/docs/stable/distributed.html#initialization>`
 We have been using the environment variable initialization method
 throughout this tutorial. By setting the following four environment
 variables on all machines, all processes will be able to properly
-connect to the main, obtain information about the other processes, and
+connect to the master, obtain information about the other processes, and
 finally handshake with them.
 
 -  ``MASTER_PORT``: A free port on the machine that will host the
