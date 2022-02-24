@@ -90,8 +90,12 @@
 <span class="dropdown-title">torchvision</span>
 <p></p>
 </a>
-<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/elastic/">
-<span class="dropdown-title">TorchElastic</span>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/torchrec">
+<span class="dropdown-title">TorchRec</span>
+<p></p>
+</a>
+<a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/data">
+<span class="dropdown-title">TorchData</span>
 <p></p>
 </a>
 <a class="doc-dropdown-option nav-dropdown-item" href="https://pytorch.org/serve/">
@@ -532,6 +536,20 @@ into C++. Our primary datatype for all computations will be
 <code class="xref py py-class docutils literal notranslate"><span class="pre">torch::Tensor</span></code>. Its full API can be inspected <a class="reference external" href="https://pytorch.org/cppdocs/api/classat_1_1_tensor.html">here</a>. Notice
 also that we can include <code class="docutils literal notranslate"><span class="pre">&lt;iostream&gt;</span></code> or <em>any other C or C++ header</em> – we have
 the full power of C++11 at our disposal.</p>
+<p>Note that CUDA-11.5 nvcc will hit internal compiler error while parsing torch/extension.h on Windows.
+To workaround the issue, move python binding logic to pure C++ file.
+Example use:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ATen/ATen.h&gt;</span><span class="cp"></span>
+<span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">SigmoidAlphaBlendForwardCuda</span><span class="p">(....)</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Instead of:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;torch/extension.h&gt;</span><span class="cp"></span>
+<span class="n">torch</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">SigmoidAlphaBlendForwardCuda</span><span class="p">(...)</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Currently open issue for nvcc bug <a class="reference external" href="https://github.com/pytorch/pytorch/issues/69460">here</a>.
+Complete workaround code example <a class="reference external" href="https://github.com/facebookresearch/pytorch3d/commit/cb170ac024a949f1f9614ffe6af1c38d972f7d48">here</a>.</p>
 <div class="section" id="forward-pass">
 <h4>Forward Pass<a class="headerlink" href="#forward-pass" title="Permalink to this headline">¶</a></h4>
 <p>Next we can port our entire forward pass to C++:</p>
@@ -1430,8 +1448,8 @@ simpler:</p>
 <span class="n">lltm</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'lltm'</span><span class="p">,</span> <span class="n">sources</span><span class="o">=</span><span class="p">[</span><span class="s1">'lltm_cuda.cpp'</span><span class="p">,</span> <span class="s1">'lltm_cuda_kernel.cu'</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="section" id="id2">
-<h4>Performance Comparison<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id4">
+<h4>Performance Comparison<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <p>Our hope was that parallelizing and fusing the pointwise operations of our code
 with CUDA would improve the performance of our LLTM. Let’s see if that holds
 true. We can run the code I listed earlier to run a benchmark. Our fastest
@@ -1511,7 +1529,7 @@ examples displayed in this note <a class="reference external" href="https://gith
 <li><a class="reference internal" href="#writing-a-mixed-c-cuda-extension">Writing a Mixed C++/CUDA extension</a><ul>
 <li><a class="reference internal" href="#using-accessors">Using accessors</a></li>
 <li><a class="reference internal" href="#integrating-a-c-cuda-operation-with-pytorch">Integrating a C++/CUDA Operation with PyTorch</a><ul>
-<li><a class="reference internal" href="#id2">Performance Comparison</a></li>
+<li><a class="reference internal" href="#id4">Performance Comparison</a></li>
 </ul>
 </li>
 </ul>
