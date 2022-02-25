@@ -1,4 +1,4 @@
-Introduction to Torchrec
+Introduction to TorchRec
 ========================
 
 .. tip::
