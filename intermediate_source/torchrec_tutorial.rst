@@ -1,5 +1,5 @@
 Introduction to Torchrec
-====================================================
+========================
 
 .. tip::
    To get the most of this tutorial, we suggest using this
@@ -14,12 +14,12 @@ entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
 devices, a type of model parallelism. To that end, **torchRec introduces
 its primary API
-called** |DistributedModelParallel|_ **,
+called ** |DistributedModelParallel|_ **,
 or DMP. Like pytorch’s DistributedDataParallel, DMP wraps a model to
-enable distributed training.**
+enable distributed training.
 
-**Installation**
---------------------
+Installation
+------------
 
 Requirements:
 - python >= 3.7
@@ -36,8 +36,8 @@ We highly recommend CUDA when using torchRec. If using CUDA:
     pip3 install torchrec-nightly
 
 
-**Overview**
-------------
+Overview
+--------
 
 This tutorial will cover three pieces of torchRec - the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
 the datastructure |KeyedJaggedTensor|_.
