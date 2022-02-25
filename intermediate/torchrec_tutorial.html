@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Introduction to Torchrec — PyTorch Tutorials 1.10.1+cu102 documentation</title>
+<title>Introduction to TorchRec — PyTorch Tutorials 1.10.1+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,6 +16,7 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
+<link href="../beginner/deeplabv3_on_android.html" rel="prev" title="Image Segmentation DeepLabV3 on Android"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -300,6 +301,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_ios.html">Image Segmentation DeepLabV3 on iOS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
 </ul>
+<p class="caption"><span class="caption-text">Recommendation Systems</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to TorchRec</a></li>
+</ul>
 </div>
 </div>
 </nav>
@@ -315,7 +320,7 @@
           
         </a> &gt;
       </li>
-<li>Introduction to Torchrec</li>
+<li>Introduction to TorchRec</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/intermediate/torchrec_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -350,7 +355,7 @@
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
 <div class="section" id="introduction-to-torchrec">
-<h1>Introduction to Torchrec<a class="headerlink" href="#introduction-to-torchrec" title="Permalink to this headline">¶</a></h1>
+<h1>Introduction to TorchRec<a class="headerlink" href="#introduction-to-torchrec" title="Permalink to this headline">¶</a></h1>
 <div class="admonition tip">
 <p class="first admonition-title">Tip</p>
 <p class="last">To get the most of this tutorial, we suggest using this
@@ -363,27 +368,27 @@ AI’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">Dee
 model</a>, or DLRM. As the number of
 entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
-devices, a type of model parallelism. To that end, <strong>torchRec introduces
+devices, a type of model parallelism. To that end, TorchRec introduces
 its primary API
-called</strong> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> <strong>,
-or DMP. Like pytorch’s DistributedDataParallel, DMP wraps a model to
-enable distributed training.</strong></p>
+called <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> ,
+or DMP. Like PyTorch’s DistributedDataParallel, DMP wraps a model to
+enable distributed training.</p>
 <div class="section" id="installation">
-<h2><strong>Installation</strong><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Requirements:
 - python &gt;= 3.7</p>
-<p>We highly recommend CUDA when using torchRec. If using CUDA:
+<p>We highly recommend CUDA when using TorchRec. If using CUDA:
 - cuda &gt;= 11.0</p>
 <div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pytorch with cudatoolkit 11.3</span>
 <span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">11.3</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">nightly</span> <span class="o">-</span><span class="n">y</span>
-<span class="c1"># install torchrec</span>
+<span class="c1"># install TorchTec</span>
 <span class="n">pip3</span> <span class="n">install</span> <span class="n">torchrec</span><span class="o">-</span><span class="n">nightly</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="overview">
-<h2><strong>Overview</strong><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>This tutorial will cover three pieces of torchRec - the <code class="docutils literal notranslate"><span class="pre">nn.module</span></code> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a>, the <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> API, and
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>This tutorial will cover three pieces of TorchRec - the <code class="docutils literal notranslate"><span class="pre">nn.module</span></code> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a>, the <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> API, and
 the datastructure <a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a>.</p>
 <div class="section" id="distributed-setup">
 <h3>Distributed Setup<a class="headerlink" href="#distributed-setup" title="Permalink to this headline">¶</a></h3>
@@ -412,7 +417,7 @@ GPU.</p>
 </div>
 <div class="section" id="from-embeddingbag-to-embeddingbagcollection">
 <h3>From EmbeddingBag to EmbeddingBagCollection<a class="headerlink" href="#from-embeddingbag-to-embeddingbagcollection" title="Permalink to this headline">¶</a></h3>
-<p>Pytorch represents embeddings through <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.Embedding</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.EmbeddingBag</span></code></a>.
+<p>PyTorch represents embeddings through <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.Embedding</span></code></a> and <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html"><code class="docutils literal notranslate"><span class="pre">torch.nn.EmbeddingBag</span></code></a>.
 EmbeddingBag is a pooled version of Embedding.</p>
 <p>TorchRec extends these modules by creating collections of embeddings. We
 will use <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a> to represent a group of EmbeddingBags.</p>
@@ -453,7 +458,7 @@ embedding table(s) (i.e, the EmbeddingBagCollection)</li>
 embedding table on the appropriate device(s).</li>
 </ol>
 <p>In this toy example, since we have two EmbeddingTables and one GPU,
-torchRec will place both on the single GPU.</p>
+TorchRec will place both on the single GPU.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">DistributedModelParallel</span><span class="p">(</span><span class="n">ebc</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">plan</span><span class="p">)</span>
@@ -485,7 +490,7 @@ cumulative sum of the number of values to pool per example.</p>
 <h3>Representing minibatches with KeyedJaggedTensor<a class="headerlink" href="#representing-minibatches-with-keyedjaggedtensor" title="Permalink to this headline">¶</a></h3>
 <p>We need an efficient representation of multiple examples of an arbitrary
 number of entity IDs per feature per example. In order to enable this
-“jagged” representation, we use the torchRec datastructure
+“jagged” representation, we use the TorchRec datastructure
 <a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a> (KJT).</p>
 <p>Let’s take a look at <strong>how to lookup a collection of two embedding
 bags</strong>, “product” and “user”. Assume the minibatch is made up of three
@@ -537,6 +542,9 @@ dataset, using Meta’s <a class="reference external" href="https://arxiv.org/ab
 </article>
 </div>
 <footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="p" class="btn btn-neutral" href="../beginner/deeplabv3_on_android.html" rel="prev" title="Image Segmentation DeepLabV3 on Android"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -565,9 +573,9 @@ dataset, using Meta’s <a class="reference external" href="https://arxiv.org/ab
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Introduction to Torchrec</a><ul>
-<li><a class="reference internal" href="#installation"><strong>Installation</strong></a></li>
-<li><a class="reference internal" href="#overview"><strong>Overview</strong></a><ul>
+<li><a class="reference internal" href="#">Introduction to TorchRec</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#distributed-setup">Distributed Setup</a></li>
 <li><a class="reference internal" href="#from-embeddingbag-to-embeddingbagcollection">From EmbeddingBag to EmbeddingBagCollection</a></li>
 <li><a class="reference internal" href="#distributedmodelparallel">DistributedModelParallel</a></li>
@@ -689,8 +697,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
