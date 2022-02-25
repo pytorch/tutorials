@@ -2,8 +2,8 @@ Introduction to Torchrec
 ====================================================
 
 .. tip::
-   To get the most of this tutorial, we suggest using this 
-   `Colab Version <https://colab.research.google.com/github/pytorch/torchrec/blob/main/Torchrec_Introduction.ipynb>`__. 
+   To get the most of this tutorial, we suggest using this
+   `Colab Version <https://colab.research.google.com/github/pytorch/torchrec/blob/main/Torchrec_Introduction.ipynb>`__.
    This will allow you to experiment with the information presented below.
 
 Frequently, when building recommendation systems, we want to represent
@@ -14,7 +14,7 @@ entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
 devices, a type of model parallelism. To that end, **torchRec introduces
 its primary API
-called**\ ```DistributedModelParallel`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__\ **,
+called** |DistributedModelParallel|_ **,
 or DMP. Like pytorch’s DistributedDataParallel, DMP wraps a model to
 enable distributed training.**
 
@@ -28,21 +28,19 @@ We highly recommend CUDA when using torchRec. If using CUDA:
 - cuda >= 11.0
 
 
-.. code:: python
+.. code:: shell
 
-    install pytorch with cudatoolkit 11.3
+    # install pytorch with cudatoolkit 11.3
     conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
-    install torchrec
+    # install torchrec
     pip3 install torchrec-nightly
 
 
 **Overview**
 ------------
 
-This tutorial will cover three pieces of torchRec - the ``nn.module``
-```EmbeddingBagCollection`` <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__, the
-```DistributedModelParallel`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__ API, and
-the datastructure ```KeyedJaggedTensor`` <https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor>`__.
+This tutorial will cover three pieces of torchRec - the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
+the datastructure |KeyedJaggedTensor|_.
 
 
 Distributed Setup
@@ -77,16 +75,11 @@ GPU.
 From EmbeddingBag to EmbeddingBagCollection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pytorch represents embeddings through
-```torch.nn.Embedding`` <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__
-and
-```torch.nn.EmbeddingBag`` <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__.
+Pytorch represents embeddings through |torch.nn.Embedding|_ and |torch.nn.EmbeddingBag|_.
 EmbeddingBag is a pooled version of Embedding.
 
 TorchRec extends these modules by creating collections of embeddings. We
-will use
-```EmbeddingBagCollection`` <https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection>`__
-to represent a group of EmbeddingBags.
+will use |EmbeddingBagCollection|_ to represent a group of EmbeddingBags.
 
 Here, we create an EmbeddingBagCollection (EBC) with two embedding bags.
 Each table, ``product_table`` and ``user_table``, is represented by 64
@@ -119,9 +112,7 @@ on device “meta”. This will tell EBC to not allocate memory yet.
 DistributedModelParallel
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, we’re ready to wrap our model with
-```DistributedModelParallel`` <https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel>`__
-(DMP). Instantiating DMP will:
+Now, we’re ready to wrap our model with |DistributedModelParallel|_ (DMP). Instantiating DMP will:
 
 1. Decide how to shard the model. DMP will collect the available
    ‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
@@ -142,10 +133,7 @@ torchRec will place both on the single GPU.
 Query vanilla nn.EmbeddingBag with input and offsets
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We query
-```nn.Embedding`` <https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html>`__
-and
-```nn.EmbeddingBag`` <https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html>`__
+We query |nn.Embedding|_ and |nn.EmbeddingBag|_
 with ``input`` and ``offsets``. Input is a 1-D tensor containing the
 lookup values. Offsets is a 1-D tensor where the sequence is a
 cumulative sum of the number of values to pool per example.
@@ -174,8 +162,7 @@ Representing minibatches with KeyedJaggedTensor
 We need an efficient representation of multiple examples of an arbitrary
 number of entity IDs per feature per example. In order to enable this
 “jagged” representation, we use the torchRec datastructure
-```KeyedJaggedTensor`` <https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor>`__
-(KJT).
+|KeyedJaggedTensor|_ (KJT).
 
 Let’s take a look at **how to lookup a collection of two embedding
 bags**, “product” and “user”. Assume the minibatch is made up of three
@@ -235,3 +222,17 @@ example, which includes multinode training on the criteo terabyte
 dataset, using Meta’s `DLRM <https://arxiv.org/abs/1906.00091>`__.
 
 
+.. |DistributedModelParallel| replace:: ``DistributedModelParallel``
+.. _DistributedModelParallel: https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel
+.. |EmbeddingBagCollection| replace:: ``EmbeddingBagCollection``
+.. _EmbeddingBagCollection: https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection
+.. |KeyedJaggedTensor| replace:: ``KeyedJaggedTensor``
+.. _KeyedJaggedTensor: https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor
+.. |torch.nn.Embedding| replace:: ``torch.nn.Embedding``
+.. _torch.nn.Embedding: https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
+.. |torch.nn.EmbeddingBag| replace:: ``torch.nn.EmbeddingBag``
+.. _torch.nn.EmbeddingBag: https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html
+.. |nn.Embedding| replace:: ``nn.Embedding``
+.. _nn.Embedding: https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
+.. |nn.EmbeddingBag| replace:: ``nn.EmbeddingBag``
+.. _nn.EmbeddingBag: https://pytorch.org/docs/stable/generated/torch.nn.EmbeddingBag.html
