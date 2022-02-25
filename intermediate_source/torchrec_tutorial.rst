@@ -12,10 +12,10 @@ AI’s `Deep learning recommendation
 model <https://arxiv.org/abs/1906.00091>`__, or DLRM. As the number of
 entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
-devices, a type of model parallelism. To that end, **torchRec introduces
+devices, a type of model parallelism. To that end, TorchRec introduces
 its primary API
-called ** |DistributedModelParallel|_ **,
-or DMP. Like pytorch’s DistributedDataParallel, DMP wraps a model to
+called |DistributedModelParallel|_ ,
+or DMP. Like PyTorch’s DistributedDataParallel, DMP wraps a model to
 enable distributed training.
 
 Installation
@@ -24,7 +24,7 @@ Installation
 Requirements:
 - python >= 3.7
 
-We highly recommend CUDA when using torchRec. If using CUDA:
+We highly recommend CUDA when using TorchRec. If using CUDA:
 - cuda >= 11.0
 
 
@@ -32,14 +32,14 @@ We highly recommend CUDA when using torchRec. If using CUDA:
 
     # install pytorch with cudatoolkit 11.3
     conda install pytorch cudatoolkit=11.3 -c pytorch-nightly -y
-    # install torchrec
+    # install TorchTec
     pip3 install torchrec-nightly
 
 
 Overview
 --------
 
-This tutorial will cover three pieces of torchRec - the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
+This tutorial will cover three pieces of TorchRec - the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
 the datastructure |KeyedJaggedTensor|_.
 
 
@@ -75,7 +75,7 @@ GPU.
 From EmbeddingBag to EmbeddingBagCollection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Pytorch represents embeddings through |torch.nn.Embedding|_ and |torch.nn.EmbeddingBag|_.
+PyTorch represents embeddings through |torch.nn.Embedding|_ and |torch.nn.EmbeddingBag|_.
 EmbeddingBag is a pooled version of Embedding.
 
 TorchRec extends these modules by creating collections of embeddings. We
@@ -121,7 +121,7 @@ Now, we’re ready to wrap our model with |DistributedModelParallel|_ (DMP). Ins
    embedding table on the appropriate device(s).
 
 In this toy example, since we have two EmbeddingTables and one GPU,
-torchRec will place both on the single GPU.
+TorchRec will place both on the single GPU.
 
 .. code:: python
 
@@ -161,7 +161,7 @@ Representing minibatches with KeyedJaggedTensor
 
 We need an efficient representation of multiple examples of an arbitrary
 number of entity IDs per feature per example. In order to enable this
-“jagged” representation, we use the torchRec datastructure
+“jagged” representation, we use the TorchRec datastructure
 |KeyedJaggedTensor|_ (KJT).
 
 Let’s take a look at **how to lookup a collection of two embedding
