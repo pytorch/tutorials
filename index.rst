@@ -575,6 +575,15 @@ Welcome to PyTorch Tutorials
    :link: beginner/deeplabv3_on_android.html
    :tags: Mobile
 
+.. Recommendation Systems
+
+.. customcarditem::
+   :header: Introduction to TorchRec
+   :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: intermediate/torchrec_tutorial.html
+   :tags: TorchRec,Recommender
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -832,3 +841,11 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Recommendation Systems
+
+   intermediate/torchrec_tutorial
