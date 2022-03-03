@@ -64,8 +64,8 @@ loss = torch.nn.functional.binary_cross_entropy_with_logits(z, y)
 # documentation <https://pytorch.org/docs/stable/autograd.html#function>`__.
 #
 
-print('Gradient function for z =', z.grad_fn)
-print('Gradient function for loss =', loss.grad_fn)
+print(f"Gradient function for z = {z.grad_fn}")
+print(f"Gradient function for loss = {loss.grad_fn}")
 
 ######################################################################
 # Computing Gradients
@@ -206,12 +206,12 @@ print(z_det.requires_grad)
 inp = torch.eye(5, requires_grad=True)
 out = (inp+1).pow(2)
 out.backward(torch.ones_like(inp), retain_graph=True)
-print("First call\n", inp.grad)
+print(f"First call\n{inp.grad}")
 out.backward(torch.ones_like(inp), retain_graph=True)
-print("\nSecond call\n", inp.grad)
+print(f"\nSecond call\n{inp.grad}")
 inp.grad.zero_()
 out.backward(torch.ones_like(inp), retain_graph=True)
-print("\nCall after zeroing gradients\n", inp.grad)
+print(f"\nCall after zeroing gradients\n{inp.grad}")
 
 
 ######################################################################
