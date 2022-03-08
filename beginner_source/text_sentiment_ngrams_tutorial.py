@@ -18,28 +18,28 @@ In this tutorial, we will show how to use the torchtext library to build the dat
 
 import torch
 from torchtext.datasets import AG_NEWS
-train_iter = AG_NEWS(split='train')
-
-
+train_iter = iter(AG_NEWS(split='train'))
+(4, 'Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded by a chemistry researcher at the University of Louisville won a grant to develop a method of producing better peptides, which are short chains of amino acids, the building blocks of proteins.')
 ######################################################################
 # ::
 #
 #     next(train_iter)
-#     >>> (3, "Wall St. Bears Claw Back Into the Black (Reuters) Reuters - 
-#     Short-sellers, Wall Street's dwindling\\band of ultra-cynics, are seeing green 
-#     again.")
-# 
+#     >>> (3, "Fears for T N pension after talks Unions representing workers at Turner
+#     Newall say they are 'disappointed' after talks with stricken parent firm Federal
+#     Mogul.")
+#
 #     next(train_iter)
-#     >>> (3, 'Carlyle Looks Toward Commercial Aerospace (Reuters) Reuters - Private 
-#     investment firm Carlyle Group,\\which has a reputation for making well-timed 
-#     and occasionally\\controversial plays in the defense industry, has quietly 
-#     placed\\its bets on another part of the market.')
-# 
+#     >>> (4, "The Race is On: Second Private Team Sets Launch Date for Human
+#     Spaceflight (SPACE.com) SPACE.com - TORONTO, Canada -- A second\\team of
+#     rocketeers competing for the  #36;10 million Ansari X Prize, a contest
+#     for\\privately funded suborbital space flight, has officially announced
+#     the first\\launch date for its manned rocket.")
+#
 #     next(train_iter)
-#     >>> (3, "Oil and Economy Cloud Stocks' Outlook (Reuters) Reuters - Soaring 
-#     crude prices plus worries\\about the economy and the outlook for earnings are 
-#     expected to\\hang over the stock market next week during the depth of 
-#     the\\summer doldrums.")
+#     >>> (4, 'Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded
+#     by a chemistry researcher at the University of Louisville won a grant to develop
+#     a method of producing better peptides, which are short chains of amino acids, the
+#     building blocks of proteins.')
 #
 
 
@@ -73,7 +73,7 @@ vocab.set_default_index(vocab["<unk>"])
 # ::
 #
 #     vocab(['here', 'is', 'an', 'example'])
-#     >>> [475, 21, 30, 5286]
+#     >>> [475, 21, 30, 5297]
 #
 # Prepare the text processing pipeline with the tokenizer and vocabulary. The text and label pipelines will be used to process the raw data strings from the dataset iterators.
 
@@ -87,7 +87,7 @@ label_pipeline = lambda x: int(x) - 1
 # ::
 #
 #     text_pipeline('here is the an example')
-#     >>> [475, 21, 2, 30, 5286]
+#     >>> [475, 21, 2, 30, 5297]
 #     label_pipeline('10')
 #     >>> 9
 #
@@ -95,7 +95,7 @@ label_pipeline = lambda x: int(x) - 1
 
 
 ######################################################################
-# Generate data batch and iterator 
+# Generate data batch and iterator
 # --------------------------------
 #
 # `torch.utils.data.DataLoader <https://pytorch.org/docs/stable/data.html?highlight=dataloader#torch.utils.data.DataLoader>`__
@@ -120,7 +120,7 @@ def collate_batch(batch):
     label_list = torch.tensor(label_list, dtype=torch.int64)
     offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
     text_list = torch.cat(text_list)
-    return label_list.to(device), text_list.to(device), offsets.to(device)    
+    return label_list.to(device), text_list.to(device), offsets.to(device)
 
 train_iter = AG_NEWS(split='train')
 dataloader = DataLoader(train_iter, batch_size=8, shuffle=False, collate_fn=collate_batch)
@@ -254,7 +254,7 @@ from torchtext.data.functional import to_map_style_dataset
 EPOCHS = 10 # epoch
 LR = 5  # learning rate
 BATCH_SIZE = 64 # batch size for training
-  
+
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1.0, gamma=0.1)
@@ -341,4 +341,3 @@ ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
 model = model.to("cpu")
 
 print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
-
