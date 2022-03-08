@@ -19,7 +19,7 @@ In this tutorial, we will show how to use the torchtext library to build the dat
 import torch
 from torchtext.datasets import AG_NEWS
 train_iter = iter(AG_NEWS(split='train'))
-(4, 'Ky. Company Wins Grant to Study Peptides (AP) AP - A company founded by a chemistry researcher at the University of Louisville won a grant to develop a method of producing better peptides, which are short chains of amino acids, the building blocks of proteins.')
+
 ######################################################################
 # ::
 #
