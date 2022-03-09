@@ -518,7 +518,7 @@ duration::
       (new_h.sum() + new_C.sum()).backward()
       backward += time.time() - start
 
-  print('Forward: {:.3f} us | Backward {:.3f} us'.format(forward * 1e6/1e5, backward * 1e6/1e5))
+  print('Forward: {:.3f} s | Backward {:.3f} s'.format(forward, backward))
 
 If we run this code with the original LLTM we wrote in pure Python at the start
 of this post, we get the following numbers (on my machine)::
