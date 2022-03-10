@@ -31,7 +31,7 @@ The process of speech recognition looks like the following.
 Torchaudio provides easy access to the pre-trained weights and
 associated information, such as the expected sample rate and class
 labels. They are bundled together and available under
-``torchaudio.pipelines`` module.
+:py:func:`torchaudio.pipelines` module.
 
 
 Preparation
@@ -48,29 +48,29 @@ First we import the necessary packages, and fetch data that we work on.
 
     import os
 
-    import torch
-    import torchaudio
-    import requests
+    import IPython
     import matplotlib
     import matplotlib.pyplot as plt
-    import IPython
+    import requests
+    import torch
+    import torchaudio
 
-    matplotlib.rcParams['figure.figsize'] = [16.0, 4.8]
+    matplotlib.rcParams["figure.figsize"] = [16.0, 4.8]
 
     torch.random.manual_seed(0)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     print(torch.__version__)
     print(torchaudio.__version__)
     print(device)
 
-    SPEECH_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+    SPEECH_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"  # noqa: E501
     SPEECH_FILE = "_assets/speech.wav"
 
     if not os.path.exists(SPEECH_FILE):
-      os.makedirs('_assets', exist_ok=True)
-      with open(SPEECH_FILE, 'wb') as file:
-        file.write(requests.get(SPEECH_URL).content)
+        os.makedirs("_assets", exist_ok=True)
+        with open(SPEECH_FILE, "wb") as file:
+            file.write(requests.get(SPEECH_URL).content)
 
 
 
@@ -208,7 +208,7 @@ we can use :py:func:`torchaudio.functional.resample` for resampling.
     waveform = waveform.to(device)
 
     if sample_rate != bundle.sample_rate:
-      waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
+        waveform = torchaudio.functional.resample(waveform, sample_rate, bundle.sample_rate)
 
 
 
@@ -233,7 +233,7 @@ The next step is to extract acoustic features from the audio.
 
 
     with torch.inference_mode():
-      features, _ = model.extract_features(waveform)
+        features, _ = model.extract_features(waveform)
 
 
 
@@ -252,10 +252,10 @@ a transformer layer.
 
     fig, ax = plt.subplots(len(features), 1, figsize=(16, 4.3 * len(features)))
     for i, feats in enumerate(features):
-      ax[i].imshow(feats[0].cpu())
-      ax[i].set_title(f"Feature from transformer layer {i+1}")
-      ax[i].set_xlabel("Feature dimension")
-      ax[i].set_ylabel("Frame (time-axis)")
+        ax[i].imshow(feats[0].cpu())
+        ax[i].set_title(f"Feature from transformer layer {i+1}")
+        ax[i].set_xlabel("Feature dimension")
+        ax[i].set_ylabel("Frame (time-axis)")
     plt.tight_layout()
     plt.show()
 
@@ -284,7 +284,7 @@ classification in one step.
 
 
     with torch.inference_mode():
-      emission, _ = model(waveform)
+        emission, _ = model(waveform)
 
 
 
@@ -330,11 +330,6 @@ Let’s visualize this.
 We can see that there are strong indications to certain labels across
 the time line.
 
-Note that the class 1 to 3, (``<pad>``, ``</s>`` and ``<unk>``) have
-mostly huge negative values, this is an artifact from the original
-``fairseq`` implementation where these labels are added by default but
-not used during the training.
-
 
 Generating transcripts
 ----------------------
@@ -369,24 +364,25 @@ We start by defining greedy decoding algorithm.
 .. code-block:: default
 
 
+
     class GreedyCTCDecoder(torch.nn.Module):
-      def __init__(self, labels, ignore):
-        super().__init__()
-        self.labels = labels
-        self.ignore = ignore
+        def __init__(self, labels, blank=0):
+            super().__init__()
+            self.labels = labels
+            self.blank = blank
 
-      def forward(self, emission: torch.Tensor) -> str:
-        """Given a sequence emission over labels, get the best path string
-        Args:
-          emission (Tensor): Logit tensors. Shape `[num_seq, num_label]`.
+        def forward(self, emission: torch.Tensor) -> str:
+            """Given a sequence emission over labels, get the best path string
+            Args:
+              emission (Tensor): Logit tensors. Shape `[num_seq, num_label]`.
 
-        Returns:
-          str: The resulting transcript
-        """
-        indices = torch.argmax(emission, dim=-1)  # [num_seq,]
-        indices = torch.unique_consecutive(indices, dim=-1)
-        indices = [i for i in indices if i not in self.ignore]
-        return ''.join([self.labels[i] for i in indices])
+            Returns:
+              str: The resulting transcript
+            """
+            indices = torch.argmax(emission, dim=-1)  # [num_seq,]
+            indices = torch.unique_consecutive(indices, dim=-1)
+            indices = [i for i in indices if i != self.blank]
+            return "".join([self.labels[i] for i in indices])
 
 
 
@@ -402,10 +398,7 @@ Now create the decoder object and decode the transcript.
 .. code-block:: default
 
 
-    decoder = GreedyCTCDecoder(
-        labels=bundle.get_labels(),
-        ignore=(0, 1, 2, 3),
-    )
+    decoder = GreedyCTCDecoder(labels=bundle.get_labels())
     transcript = decoder(emission[0])
 
 
@@ -445,10 +438,6 @@ The detail of CTC loss is explained
 special token which represents a repetition of the previous symbol. In
 decoding, these are simply ignored.
 
-Secondly, as is explained in the feature extraction section, the
-Wav2Vec2 model originated from ``fairseq`` has labels that are not used.
-These also have to be ignored.
-
 
 Conclusion
 ----------
@@ -466,7 +455,7 @@ a model and getting the emission is as short as two lines.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  15.467 seconds)
+   **Total running time of the script:** ( 0 minutes  14.412 seconds)
 
 
 .. _sphx_glr_download_intermediate_speech_recognition_pipeline_tutorial.py:
