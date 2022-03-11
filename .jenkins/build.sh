@@ -34,7 +34,7 @@ pip install -r $DIR/../requirements.txt
 
 # Temp install for torch
 pip uninstall -y torch torchvision torchaudio torchtext
-pip3 install -y torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+pip3 install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
