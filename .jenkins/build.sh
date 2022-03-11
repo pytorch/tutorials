@@ -17,13 +17,14 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
+export PATH=/opt/conda/bin:$PATH
+
 # Create and activate Python environment
 export CONDA_ALWAYS_YES="true"
 conda create -n conda-env python=3.9
 conda activate conda-env
 unset CONDA_ALWAYS_YES 
 
-export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
 
