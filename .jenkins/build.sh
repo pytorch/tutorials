@@ -17,6 +17,12 @@ sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
+sudo apt update
+sudo apt install -y software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install -y python3.9
+
 export PATH=/opt/conda/bin:$PATH
 rm -rf src
 pip install -r $DIR/../requirements.txt
