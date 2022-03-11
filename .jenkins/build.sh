@@ -22,6 +22,7 @@ export PATH=/opt/conda/bin:$PATH
 # Create and activate Python environment
 export CONDA_ALWAYS_YES="true"
 conda create -n conda-env python=3.9
+conda init bash
 conda activate conda-env
 unset CONDA_ALWAYS_YES 
 
