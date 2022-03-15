@@ -524,6 +524,74 @@ for more information.</p>
                          <span class="n">check_batched_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="functional-api-beta">
+<h2>Functional API (beta)<a class="headerlink" href="#functional-api-beta" title="Permalink to this headline">¶</a></h2>
+<p>We also offer a higher-level functional API in functorch
+for computing Jacobian-vector products that you may find simpler to use
+depending on your use case.</p>
+<p>The benefit of the functional API is that there isn’t a need to understand
+or use the lower-level dual tensor API and that you can compose it with
+other <a class="reference external" href="https://pytorch.org/functorch/stable/notebooks/jacobians_hessians.html">functorch transforms (like vmap)</a>;
+the downside is that it offers you less control.</p>
+<p>Note that the remainder of this tutorial will require functorch
+(<a class="reference external" href="https://github.com/pytorch/functorch">https://github.com/pytorch/functorch</a>) to run. Please find installation
+instructions at the specified link.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">functorch</span> <span class="k">as</span> <span class="nn">ft</span>
+
+<span class="n">primal0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">tangent0</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">primal1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">tangent1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mi">2</span>
+
+<span class="c1"># Here is a basic example to compute the JVP of the above function.</span>
+<span class="c1"># The jvp(func, primals, tangents) returns func(*primals) as well as the</span>
+<span class="c1"># computed jvp. Each primal must be associated with a tangent of the same shape.</span>
+<span class="n">primal_out</span><span class="p">,</span> <span class="n">tangent_out</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="p">(</span><span class="n">primal0</span><span class="p">,</span> <span class="n">primal1</span><span class="p">),</span> <span class="p">(</span><span class="n">tangent0</span><span class="p">,</span> <span class="n">tangent1</span><span class="p">))</span>
+
+<span class="c1"># functorch.jvp requires every primal to be associated with a tangent.</span>
+<span class="c1"># If we only want to associate certain inputs to `fn` with tangents,</span>
+<span class="c1"># then we'll need to create a new function that captures inputs without tangents:</span>
+<span class="n">primal</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">tangent</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="n">new_fn</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+<span class="n">primal_out</span><span class="p">,</span> <span class="n">tangent_out</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">new_fn</span><span class="p">,</span> <span class="p">(</span><span class="n">primal</span><span class="p">,),</span> <span class="p">(</span><span class="n">tangent</span><span class="p">,))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-the-functional-api-with-modules">
+<h2>Using the functional API with Modules<a class="headerlink" href="#using-the-functional-api-with-modules" title="Permalink to this headline">¶</a></h2>
+<p>To use <code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> with functorch.jvp to compute Jacobian-vector products
+with respect to the model parameters, we need to reformulate the
+<code class="docutils literal notranslate"><span class="pre">nn.Module</span></code> as a function that accepts both the model parameters and inputs
+to the module.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">tangents</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()])</span>
+
+<span class="c1"># Given a torch.nn.Module, ft.make_functional_with_buffers extracts the state</span>
+<span class="c1"># (params and buffers) and returns a functional version of the model that</span>
+<span class="c1"># can be invoked like a function.</span>
+<span class="c1"># That is, the returned ``func`` can be invoked like</span>
+<span class="c1"># ``func(params, buffers, input)``.</span>
+<span class="c1"># ft.make_functional_with_buffers is analogous to the nn.Modules stateless API</span>
+<span class="c1"># that you saw previously and we're working on consolidating the two.</span>
+<span class="n">func</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">buffers</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">make_functional_with_buffers</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># Because jvp requires every input to be associated with a tangent, we need to</span>
+<span class="c1"># create a new function that, when given the parameters, produces the output</span>
+<span class="k">def</span> <span class="nf">func_params_only</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">buffers</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+
+<span class="n">model_output</span><span class="p">,</span> <span class="n">jvp_out</span> <span class="o">=</span> <span class="n">ft</span><span class="o">.</span><span class="n">jvp</span><span class="p">(</span><span class="n">func_params_only</span><span class="p">,</span> <span class="p">(</span><span class="n">params</span><span class="p">,),</span> <span class="p">(</span><span class="n">tangents</span><span class="p">,))</span>
+</pre></div>
+</div>
 <p>[0] <a class="reference external" href="https://en.wikipedia.org/wiki/Dual_number">https://en.wikipedia.org/wiki/Dual_number</a></p>
 <p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-forward-ad-usage-py">
@@ -575,6 +643,8 @@ for more information.</p>
 <li><a class="reference internal" href="#usage-with-modules">Usage with Modules</a></li>
 <li><a class="reference internal" href="#using-modules-stateless-api-experimental">Using Modules stateless API (experimental)</a></li>
 <li><a class="reference internal" href="#custom-autograd-function">Custom autograd Function</a></li>
+<li><a class="reference internal" href="#functional-api-beta">Functional API (beta)</a></li>
+<li><a class="reference internal" href="#using-the-functional-api-with-modules">Using the functional API with Modules</a></li>
 </ul>
 </li>
 </ul>
