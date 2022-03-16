@@ -4,7 +4,9 @@ Getting Started with Fully Sharded Data Parallel(FSDP)
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__,`Shen Li <https://mrshenli.github.io/>`__
 
 
-Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. It also comes with considerable engineering complexity to handle the training of these very large models. `Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
+Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. 
+It also comes with considerable engineering complexity to handle the training of these very large models.
+`Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
 
 In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
 `GPT 3 models up to 1T parameters <GPT 3 models up to 1T parameters>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
@@ -176,6 +178,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 2.4 Define a distributed train function that wraps the model in FSDP
 
+**Note: to save the FSDP model, we need to save the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies at the moment.**
+
 .. code-block:: python
 
     def fsdp_main(rank, world_size, args):
@@ -233,6 +237,9 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             print(f"{model}")
 
         if args.save_model:
+            # use a barrier to make sure training is done on all ranks
+            dist_barrier()
+            # state_dict for FSDP model is only available on Nightlies for now
             States = model.state_dict()
         if rank == 0:
             torch.save(states, "mnist_cnn.pt")
@@ -280,8 +287,7 @@ We have recorded cuda events to measure the time of FSDP model specifics. The CU
 .. code-block:: 
     python FSDP_mnist.py
 
-    CUDA event elapsed time: 110.85290625sec
-    CUDA event on training loop 40.67462890625sec
+    CUDA event elapsed time on training loop 40.67462890625sec
 
 Wrapping the model with FSDP, the model will look as follows, we can see the model has been wrapped in one FSDP unit.
 Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will discuss the differences. 
@@ -370,8 +376,7 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
 .. code-block:: 
     python FSDP_mnist.py
 
-    CUDA event elapsed time:114.2476875sec
-    CUDA event on training loop 48.602609375sec
+    CUDA event elapsed time on training loop 41.89130859375sec
 
 Following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler. 
 It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.
@@ -414,8 +419,8 @@ For large model training on fast network clusters with FSDP internal optimizatio
 .. code-block:: 
     python DDP_mnist.py
 
-    CUDA event elapsed time: 108.4860078125sec
-    CUDA event on training loop 39.77766015625sec
+    CUDA event elapsed time on training loop 39.77766015625sec
+
 Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch profiler. 
 
 .. figure:: /_static/img/distributed/DDP_memory.gif
@@ -430,3 +435,5 @@ Considering the toy example and tiny MNIST model we defined here, we can observe
 In DDP each process holds a replica of the model, so the memory footprint is higher compared to FSDP that shards the model parameter, optimizer states and gradients over DDP ranks.
 The peak memory usage using FSDP with auto_wrap policy is the lowest followed by FSDP and DDP. 
 
+Also, looking at timings, considering the small model and running the training on a single machine, FSDP with/out auto_wrap policy performed almost as fast as DDP.
+This example does not represent most of the real applications, for detailed analysis and comparison between DDP and FSDP please refer to this `blog post  <https://pytorch.medium.com/6c8da2be180d>`__ .
