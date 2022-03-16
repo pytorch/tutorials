@@ -178,7 +178,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 2.4 Define a distributed train function that wraps the model in FSDP
 
-**Note: to save the FSDP model, we need to save the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.**
+**Note: to save the FSDP model, we need to call the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.**
 
 .. code-block:: python
 
@@ -376,8 +376,6 @@ It can be observed that the peak memory usage on each device is smaller compared
 
    FSDP Peak Memory Usage using Auto_wrap policy
 
-Compared with FSDP without setting the auto_wrap_ploicy where all the layers were placed in one FSDP unit, we can see the impact of communication overhead in CUDA event timing, as it took a bit longer in this case.
-
 *CPU Off-loading*: In case the model is very large that even with FSDP wouldn't fit into gpus, then CPU offload can be helpful here. 
 
 Currently, only parameter and gradient CPU offload is supported. It can be enabled via passing in cpu_offload=CPUOffload(offload_params=True).
@@ -401,8 +399,6 @@ Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving th
     model = Net().to(rank)
     model = DDP(model)
 
-Running the DDP, the CUDA events have taken slightly less time than the FSDP due to less communication overhead. But this is the result for small models on slow network clusters. 
-For large model training on fast network clusters with FSDP internal optimizations, the communication overhead could be mitigated significantly.
 
 .. code-block:: 
     python DDP_mnist.py
