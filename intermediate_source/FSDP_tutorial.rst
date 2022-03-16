@@ -1,7 +1,7 @@
 Getting Started with Fully Sharded Data Parallel(FSDP)
 =====================================================
 
-**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/HamidShojanazeri>`__,`Shen Li <https://mrshenli.github.io/>`__
+**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__,`Shen Li <https://mrshenli.github.io/>`__
 
 
 Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. It also comes with considerable engineering complexity to handle the training of these very large models. `Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
