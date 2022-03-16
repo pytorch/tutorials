@@ -178,7 +178,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 2.4 Define a distributed train function that wraps the model in FSDP
 
-**Note: to save the FSDP model, we need to save the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies at the moment.**
+**Note: to save the FSDP model, we need to save the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.**
 
 .. code-block:: python
 
