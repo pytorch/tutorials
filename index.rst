@@ -562,7 +562,7 @@ Welcome to PyTorch Tutorials
 .. customcarditem::
    :header: Getting Started with Fully Sharded Data Parallel(FSDP)
    :card_description: Learn how to train models with Fully Sharded Data Parallel package.
-   :image: _static/img/thumbnails/cropped/Getting Started with Distributed-RPC-Framework.png
+   :image: _static/img/thumbnails/cropped/Getting Started with FSDP.png
    :link: intermediate/FSDP_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
