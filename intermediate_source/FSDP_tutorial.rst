@@ -332,7 +332,7 @@ Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning
 
 .. code-block:: python
     my_auto_wrap_policy = functools.partial(
-            default_auto_wrap_policy, min_num_params=100
+            default_auto_wrap_policy, min_num_params=20000
         )
     torch.cuda.set_device(rank)
     model = Net().to(rank)
@@ -347,16 +347,8 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
     FullyShardedDataParallel(
   (_fsdp_wrapped_module): FlattenParamsWrapper(
     (_fpw_module): Net(
-      (conv1): FullyShardedDataParallel(
-        (_fsdp_wrapped_module): FlattenParamsWrapper(
-          (_fpw_module): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1))
-        )
-      )
-      (conv2): FullyShardedDataParallel(
-        (_fsdp_wrapped_module): FlattenParamsWrapper(
-          (_fpw_module): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1))
-        )
-      )
+      (conv1): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1))
+      (conv2): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1))
       (dropout1): Dropout(p=0.25, inplace=False)
       (dropout2): Dropout(p=0.5, inplace=False)
       (fc1): FullyShardedDataParallel(
@@ -364,14 +356,10 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
           (_fpw_module): Linear(in_features=9216, out_features=128, bias=True)
         )
       )
-      (fc2): FullyShardedDataParallel(
-        (_fsdp_wrapped_module): FlattenParamsWrapper(
-          (_fpw_module): Linear(in_features=128, out_features=10, bias=True)
-        )
-      )
+      (fc2): Linear(in_features=128, out_features=10, bias=True)
     )
   )
-)
+
 
 .. code-block:: 
     python FSDP_mnist.py
