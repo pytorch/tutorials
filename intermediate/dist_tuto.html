@@ -364,7 +364,7 @@
 </ul>
 <p>In this short tutorial, we will be going over the distributed package
 of PyTorch. We’ll see how to set up the distributed setting, use the
-different communication strategies, and go over some the internals of
+different communication strategies, and go over some of the internals of
 the package.</p>
 <div class="section" id="setup">
 <h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
@@ -483,7 +483,7 @@ return a <code class="docutils literal notranslate"><span class="pre">Work</span
     <span class="nb">print</span><span class="p">(</span><span class="s1">'Rank '</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="s1">' has data '</span><span class="p">,</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
-<p>When using immediates we have to be careful about with our usage of the sent and received tensors.
+<p>When using immediates we have to be careful about how we use the sent and received tensors.
 Since we do not know when the data will be communicated to the other process,
 we should not modify the sent tensor nor access the received tensor before <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code> has completed.
 In other words,</p>
@@ -494,7 +494,7 @@ In other words,</p>
 <p>However, after <code class="docutils literal notranslate"><span class="pre">req.wait()</span></code>
 has been executed we are guaranteed that the communication took place,
 and that the value stored in <code class="docutils literal notranslate"><span class="pre">tensor[0]</span></code> is 1.0.</p>
-<p>Point-to-point communication is useful when we want a fine-grained
+<p>Point-to-point communication is useful when we want more fine-grained
 control over the communication of our processes. They can be used to
 implement fancy algorithms, such as the one used in <a class="reference external" href="https://github.com/baidu-research/baidu-allreduce">Baidu’s
 DeepSpeech</a> or
@@ -549,8 +549,8 @@ experiments</a>.(c.f.
 communication patterns across all processes in a <strong>group</strong>. A group is a
 subset of all our processes. To create a group, we can pass a list of
 ranks to <code class="docutils literal notranslate"><span class="pre">dist.new_group(group)</span></code>. By default, collectives are executed
-on the all processes, also known as the <strong>world</strong>. For example, in order
-to obtain the sum of all tensors at all processes, we can use the
+on all processes, also known as the <strong>world</strong>. For example, in order
+to obtain the sum of all tensors on all processes, we can use the
 <code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code> collective.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">""" All-Reduce example."""</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
@@ -577,7 +577,7 @@ of 6 collectives currently implemented in PyTorch.</p>
 <ul class="simple">
 <li><code class="docutils literal notranslate"><span class="pre">dist.broadcast(tensor,</span> <span class="pre">src,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code> from
 <code class="docutils literal notranslate"><span class="pre">src</span></code> to all other processes.</li>
-<li><code class="docutils literal notranslate"><span class="pre">dist.reduce(tensor,</span> <span class="pre">dst,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Applies <code class="docutils literal notranslate"><span class="pre">op</span></code> to all
+<li><code class="docutils literal notranslate"><span class="pre">dist.reduce(tensor,</span> <span class="pre">dst,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Applies <code class="docutils literal notranslate"><span class="pre">op</span></code> to every
 <code class="docutils literal notranslate"><span class="pre">tensor</span></code> and stores the result in <code class="docutils literal notranslate"><span class="pre">dst</span></code>.</li>
 <li><code class="docutils literal notranslate"><span class="pre">dist.all_reduce(tensor,</span> <span class="pre">op,</span> <span class="pre">group)</span></code>: Same as reduce, but the
 result is stored in all processes.</li>
@@ -588,7 +588,7 @@ result is stored in all processes.</li>
 from all processes in <code class="docutils literal notranslate"><span class="pre">dst</span></code>.</li>
 <li><code class="docutils literal notranslate"><span class="pre">dist.all_gather(tensor_list,</span> <span class="pre">tensor,</span> <span class="pre">group)</span></code>: Copies <code class="docutils literal notranslate"><span class="pre">tensor</span></code>
 from all processes to <code class="docutils literal notranslate"><span class="pre">tensor_list</span></code>, on all processes.</li>
-<li><code class="docutils literal notranslate"><span class="pre">dist.barrier(group)</span></code>: block all processes in <cite>group</cite> until each one has entered this function.</li>
+<li><code class="docutils literal notranslate"><span class="pre">dist.barrier(group)</span></code>: Blocks all processes in <cite>group</cite> until each one has entered this function.</li>
 </ul>
 </div>
 <div class="section" id="distributed-training">
@@ -676,7 +676,7 @@ of 60000 / 2 = 30000 samples. We also divide the batch size by the
 number of replicas in order to maintain the <em>overall</em> batch size of 128.</p>
 <p>We can now write our usual forward-backward-optimize training code, and
 add a function call to average the gradients of our models. (The
-following is largely inspired from the official <a class="reference external" href="https://github.com/pytorch/examples/blob/master/mnist/main.py">PyTorch MNIST
+following is largely inspired by the official <a class="reference external" href="https://github.com/pytorch/examples/blob/master/mnist/main.py">PyTorch MNIST
 example</a>.)</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">""" Distributed Synchronous SGD Example """</span>
 <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
@@ -722,7 +722,7 @@ optimized</a>.</p>
 <div class="section" id="our-own-ring-allreduce">
 <h3>Our Own Ring-Allreduce<a class="headerlink" href="#our-own-ring-allreduce" title="Permalink to this headline">¶</a></h3>
 <p>As an additional challenge, imagine that we wanted to implement
-DeepSpeech’s efficient ring allreduce. This is fairly easily implemented
+DeepSpeech’s efficient ring allreduce. This is fairly easy to implement
 using point-to-point collectives.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">""" Implementation of a ring-reduce with addition. """</span>
 <span class="k">def</span> <span class="nf">allreduce</span><span class="p">(</span><span class="n">send</span><span class="p">,</span> <span class="n">recv</span><span class="p">):</span>
@@ -754,7 +754,7 @@ using point-to-point collectives.</p>
 slightly different signature than the ones in PyTorch. It takes a
 <code class="docutils literal notranslate"><span class="pre">recv</span></code> tensor and will store the sum of all <code class="docutils literal notranslate"><span class="pre">send</span></code> tensors in it. As
 an exercise left to the reader, there is still one difference between
-our version and the one in DeepSpeech: their implementation divide the
+our version and the one in DeepSpeech: their implementation divides the
 gradient tensor into <em>chunks</em>, so as to optimally utilize the
 communication bandwidth. (Hint:
 <a class="reference external" href="https://pytorch.org/docs/stable/torch.html#torch.chunk">torch.chunk</a>)</p>
@@ -768,7 +768,7 @@ divided into two subsections:</p>
 <ol class="arabic simple">
 <li>Communication Backends: where we learn how to use MPI and Gloo for
 GPU-GPU communication.</li>
-<li>Initialization Methods: where we understand how to best setup the
+<li>Initialization Methods: where we understand how to best set up the
 initial coordination phase in <code class="docutils literal notranslate"><span class="pre">dist.init_process_group()</span></code>.</li>
 </ol>
 <div class="section" id="communication-backends">
@@ -790,7 +790,7 @@ implementation of the collective operations for CUDA tensors is not as
 optimized as the ones provided by the NCCL backend.</p>
 <p>As you have surely noticed, our
 distributed SGD example does not work if you put <code class="docutils literal notranslate"><span class="pre">model</span></code> on the GPU.
-In order to use multiple GPUs, let us also do the following
+In order to use multiple GPUs, let us also make the following
 modifications:</p>
 <ol class="arabic simple">
 <li>Use <code class="docutils literal notranslate"><span class="pre">device</span> <span class="pre">=</span> <span class="pre">torch.device("cuda:{}".format(rank))</span></code></li>
@@ -814,7 +814,7 @@ large computer clusters. <a class="reference external" href="https://developer.n
 <a class="reference external" href="https://www.open-mpi.org/">implementations</a> are also able to take
 advantage of CUDA IPC and GPU Direct technologies in order to avoid
 memory copies through the CPU.</p>
-<p>Unfortunately, PyTorch’s binaries can not include an MPI implementation
+<p>Unfortunately, PyTorch’s binaries cannot include an MPI implementation
 and we’ll have to recompile it by hand. Fortunately, this process is
 fairly simple given that upon compilation, PyTorch will look <em>by itself</em>
 for an available MPI implementation. The following steps install the MPI
