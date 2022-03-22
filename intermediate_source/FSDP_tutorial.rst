@@ -28,14 +28,17 @@ FSDP GPU memory footprint would be smaller than DDP across all workers. This mak
 At high level FDSP works as follow:
 
 *In constructor*
-Shard model parameters and each rank only keeps its own shard
+
+* Shard model parameters and each rank only keeps its own shard
 
 *In forward path*
+
 * Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run forward computation
 * Discard parameter shards it has just collected
 
 *In backward path*
+
 * Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run backward computation
 * Run reduce_scatter to sync gradients
