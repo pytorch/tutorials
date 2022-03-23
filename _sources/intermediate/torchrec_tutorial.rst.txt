@@ -5,6 +5,14 @@ Introduction to TorchRec
    To get the most of this tutorial, we suggest using this
    `Colab Version <https://colab.research.google.com/github/pytorch/torchrec/blob/main/Torchrec_Introduction.ipynb>`__.
    This will allow you to experiment with the information presented below.
+   
+Follow along with the video below or on `youtube <https://www.youtube.com/watch?v=cjgj41dvSeQ>`__.
+
+.. raw:: html
+
+   <div style="margin-top:10px; margin-bottom:10px;">
+     <iframe width="560" height="315" src="https://www.youtube.com/embed/cjgj41dvSeQ" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+   </div>
 
 Frequently, when building recommendation systems, we want to represent
 entities like products or pages with embeddings. For example, see Meta
@@ -14,18 +22,16 @@ entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
 devices, a type of model parallelism. To that end, TorchRec introduces
 its primary API
-called |DistributedModelParallel|_ ,
+called |DistributedModelParallel|_,
 or DMP. Like PyTorch’s DistributedDataParallel, DMP wraps a model to
 enable distributed training.
 
 Installation
 ------------
 
-Requirements:
-- python >= 3.7
+Requirements: python >= 3.7
 
-We highly recommend CUDA when using TorchRec. If using CUDA:
-- cuda >= 11.0
+We highly recommend CUDA when using TorchRec. If using CUDA: cuda >= 11.0
 
 
 .. code:: shell
@@ -39,7 +45,7 @@ We highly recommend CUDA when using TorchRec. If using CUDA:
 Overview
 --------
 
-This tutorial will cover three pieces of TorchRec - the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
+This tutorial will cover three pieces of TorchRec: the ``nn.module`` |EmbeddingBagCollection|_, the |DistributedModelParallel|_ API, and
 the datastructure |KeyedJaggedTensor|_.
 
 
@@ -48,7 +54,7 @@ Distributed Setup
 
 We setup our environment with torch.distributed. For more info on
 distributed, see this
-`tutorial <https://pytorch.org/tutorials/beginner/dist_overview.html>`__
+`tutorial <https://pytorch.org/tutorials/beginner/dist_overview.html>`__.
 
 Here, we use one rank (the colab process) corresponding to our 1 colab
 GPU.
@@ -82,7 +88,7 @@ TorchRec extends these modules by creating collections of embeddings. We
 will use |EmbeddingBagCollection|_ to represent a group of EmbeddingBags.
 
 Here, we create an EmbeddingBagCollection (EBC) with two embedding bags.
-Each table, ``product_table`` and ``user_table``, is represented by 64
+Each table, ``product_table`` and ``user_table``, is represented by a 64
 dimension embedding of size 4096. Note how we initially allocate the EBC
 on device “meta”. This will tell EBC to not allocate memory yet.
 
@@ -116,7 +122,7 @@ Now, we’re ready to wrap our model with |DistributedModelParallel|_ (DMP). Ins
 
 1. Decide how to shard the model. DMP will collect the available
    ‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
-   embedding table(s) (i.e, the EmbeddingBagCollection)
+   embedding table(s) (i.e., the EmbeddingBagCollection).
 2. Actually shard the model. This includes allocating memory for each
    embedding table on the appropriate device(s).
 
@@ -138,7 +144,7 @@ with ``input`` and ``offsets``. Input is a 1-D tensor containing the
 lookup values. Offsets is a 1-D tensor where the sequence is a
 cumulative sum of the number of values to pool per example.
 
-Let’s look at an example, recreating the product EmbeddingBag above
+Let’s look at an example, recreating the product EmbeddingBag above:
 
 ::
 
@@ -164,8 +170,8 @@ number of entity IDs per feature per example. In order to enable this
 “jagged” representation, we use the TorchRec datastructure
 |KeyedJaggedTensor|_ (KJT).
 
-Let’s take a look at **how to lookup a collection of two embedding
-bags**, “product” and “user”. Assume the minibatch is made up of three
+Let’s take a look at how to lookup a collection of two embedding
+bags, “product” and “user”. Assume the minibatch is made up of three
 examples for three users. The first of which has two product IDs, the
 second with none, and the third with one product ID.
 
@@ -193,8 +199,8 @@ The query should be:
 
 
 Note that the KJT batch size is
-``batch_size = len(lengths)//len(keys)``. **In the above example,
-batch_size is 3.**
+``batch_size = len(lengths)//len(keys)``. In the above example,
+batch_size is 3.
 
 
 

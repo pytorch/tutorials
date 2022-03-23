@@ -362,7 +362,10 @@
 <a class="reference external" href="https://colab.research.google.com/github/pytorch/torchrec/blob/main/Torchrec_Introduction.ipynb">Colab Version</a>.
 This will allow you to experiment with the information presented below.</p>
 </div>
-<p>Frequently, when building recommendation systems, we want to represent
+<p>Follow along with the video below or on <a class="reference external" href="https://www.youtube.com/watch?v=cjgj41dvSeQ">youtube</a>.</p>
+<div style="margin-top:10px; margin-bottom:10px;">
+<iframe allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/cjgj41dvSeQ" width="560"></iframe>
+</div><p>Frequently, when building recommendation systems, we want to represent
 entities like products or pages with embeddings. For example, see Meta
 AI’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">Deep learning recommendation
 model</a>, or DLRM. As the number of
@@ -370,15 +373,13 @@ entities grow, the size of the embedding tables can exceed a single
 GPU’s memory. A common practice is to shard the embedding table across
 devices, a type of model parallelism. To that end, TorchRec introduces
 its primary API
-called <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> ,
+called <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a>,
 or DMP. Like PyTorch’s DistributedDataParallel, DMP wraps a model to
 enable distributed training.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>Requirements:
-- python &gt;= 3.7</p>
-<p>We highly recommend CUDA when using TorchRec. If using CUDA:
-- cuda &gt;= 11.0</p>
+<p>Requirements: python &gt;= 3.7</p>
+<p>We highly recommend CUDA when using TorchRec. If using CUDA: cuda &gt;= 11.0</p>
 <div class="code shell highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pytorch with cudatoolkit 11.3</span>
 <span class="n">conda</span> <span class="n">install</span> <span class="n">pytorch</span> <span class="n">cudatoolkit</span><span class="o">=</span><span class="mf">11.3</span> <span class="o">-</span><span class="n">c</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">nightly</span> <span class="o">-</span><span class="n">y</span>
 <span class="c1"># install TorchTec</span>
@@ -388,13 +389,13 @@ enable distributed training.</p>
 </div>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>This tutorial will cover three pieces of TorchRec - the <code class="docutils literal notranslate"><span class="pre">nn.module</span></code> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a>, the <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> API, and
+<p>This tutorial will cover three pieces of TorchRec: the <code class="docutils literal notranslate"><span class="pre">nn.module</span></code> <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a>, the <a class="reference external" href="https://pytorch.org/torchrec/torchrec.distributed.html#torchrec.distributed.model_parallel.DistributedModelParallel"><code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code></a> API, and
 the datastructure <a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a>.</p>
 <div class="section" id="distributed-setup">
 <h3>Distributed Setup<a class="headerlink" href="#distributed-setup" title="Permalink to this headline">¶</a></h3>
 <p>We setup our environment with torch.distributed. For more info on
 distributed, see this
-<a class="reference external" href="https://pytorch.org/tutorials/beginner/dist_overview.html">tutorial</a></p>
+<a class="reference external" href="https://pytorch.org/tutorials/beginner/dist_overview.html">tutorial</a>.</p>
 <p>Here, we use one rank (the colab process) corresponding to our 1 colab
 GPU.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -422,7 +423,7 @@ EmbeddingBag is a pooled version of Embedding.</p>
 <p>TorchRec extends these modules by creating collections of embeddings. We
 will use <a class="reference external" href="https://pytorch.org/torchrec/torchrec.modules.html#torchrec.modules.embedding_modules.EmbeddingBagCollection"><code class="docutils literal notranslate"><span class="pre">EmbeddingBagCollection</span></code></a> to represent a group of EmbeddingBags.</p>
 <p>Here, we create an EmbeddingBagCollection (EBC) with two embedding bags.
-Each table, <code class="docutils literal notranslate"><span class="pre">product_table</span></code> and <code class="docutils literal notranslate"><span class="pre">user_table</span></code>, is represented by 64
+Each table, <code class="docutils literal notranslate"><span class="pre">product_table</span></code> and <code class="docutils literal notranslate"><span class="pre">user_table</span></code>, is represented by a 64
 dimension embedding of size 4096. Note how we initially allocate the EBC
 on device “meta”. This will tell EBC to not allocate memory yet.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ebc</span> <span class="o">=</span> <span class="n">torchrec</span><span class="o">.</span><span class="n">EmbeddingBagCollection</span><span class="p">(</span>
@@ -453,7 +454,7 @@ on device “meta”. This will tell EBC to not allocate memory yet.</p>
 <ol class="arabic simple">
 <li>Decide how to shard the model. DMP will collect the available
 ‘sharders’ and come up with a ‘plan’ of the optimal way to shard the
-embedding table(s) (i.e, the EmbeddingBagCollection)</li>
+embedding table(s) (i.e., the EmbeddingBagCollection).</li>
 <li>Actually shard the model. This includes allocating memory for each
 embedding table on the appropriate device(s).</li>
 </ol>
@@ -471,7 +472,7 @@ TorchRec will place both on the single GPU.</p>
 with <code class="docutils literal notranslate"><span class="pre">input</span></code> and <code class="docutils literal notranslate"><span class="pre">offsets</span></code>. Input is a 1-D tensor containing the
 lookup values. Offsets is a 1-D tensor where the sequence is a
 cumulative sum of the number of values to pool per example.</p>
-<p>Let’s look at an example, recreating the product EmbeddingBag above</p>
+<p>Let’s look at an example, recreating the product EmbeddingBag above:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|------------|</span>
 <span class="o">|</span> <span class="n">product</span> <span class="n">ID</span> <span class="o">|</span>
 <span class="o">|------------|</span>
@@ -492,8 +493,8 @@ cumulative sum of the number of values to pool per example.</p>
 number of entity IDs per feature per example. In order to enable this
 “jagged” representation, we use the TorchRec datastructure
 <a class="reference external" href="https://pytorch.org/torchrec/torchrec.sparse.html#torchrec.sparse.jagged_tensor.JaggedTensor"><code class="docutils literal notranslate"><span class="pre">KeyedJaggedTensor</span></code></a> (KJT).</p>
-<p>Let’s take a look at <strong>how to lookup a collection of two embedding
-bags</strong>, “product” and “user”. Assume the minibatch is made up of three
+<p>Let’s take a look at how to lookup a collection of two embedding
+bags, “product” and “user”. Assume the minibatch is made up of three
 examples for three users. The first of which has two product IDs, the
 second with none, and the third with one product ID.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|------------|------------|</span>
@@ -516,8 +517,8 @@ second with none, and the third with one product ID.</p>
 </pre></div>
 </div>
 <p>Note that the KJT batch size is
-<code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">len(lengths)//len(keys)</span></code>. <strong>In the above example,
-batch_size is 3.</strong></p>
+<code class="docutils literal notranslate"><span class="pre">batch_size</span> <span class="pre">=</span> <span class="pre">len(lengths)//len(keys)</span></code>. In the above example,
+batch_size is 3.</p>
 </div>
 <div class="section" id="putting-it-all-together-querying-our-distributed-model-with-a-kjt-minibatch">
 <h3>Putting it all together, querying our distributed model with a KJT minibatch<a class="headerlink" href="#putting-it-all-together-querying-our-distributed-model-with-a-kjt-minibatch" title="Permalink to this headline">¶</a></h3>
