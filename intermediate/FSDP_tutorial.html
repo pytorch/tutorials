@@ -360,7 +360,7 @@
 It also comes with considerable engineering complexity to handle the training of these very large models.
 <a class="reference external" href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/">Pytorch FSDP</a>, released in PyTorch 1.11 makes this easier.</p>
 <p>In this tutorial, we show how to use <a class="reference external" href="https://pytorch.org/docs/1.11/fsdp.html">FSDP APIs</a>, for simple MNIST models that can be extended to other larger models such as <a class="reference external" href="https://huggingface.co/blog/zero-deepspeed-fairscale">HuggingFace BERT models</a>,
-<a class="reference external" href="https://pytorch.medium.com/pytorch-data-parallel-best-practices-on-google-cloud-6c8da2be180d">GPT 3 models up to 1T parameters</a> . The sample DDP MNIST code has been borrowed from <a class="reference external" href="https://github.com/yqhu/mnist_examples">here</a>.</p>
+<a class="reference external" href="https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff">GPT 3 models up to 1T parameters</a> . The sample DDP MNIST code has been borrowed from <a class="reference external" href="https://github.com/yqhu/mnist_examples">here</a>.</p>
 <div class="section" id="how-fsdp-works">
 <h2>How FSDP works<a class="headerlink" href="#how-fsdp-works" title="Permalink to this headline">¶</a></h2>
 <p>In <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html">DistributedDataParallel</a>, (DDP) training, each process/ worker owns a replica of the model and processes a batch of data, finally it uses all-reduce to sum up gradients over different workers. In DDP the model weights and optimizer states are replicated across all workers. FSDP is a type of data parallelism that shards model parameters, optimizer states and gradients across DDP ranks.</p>
@@ -370,23 +370,32 @@ It also comes with considerable engineering complexity to handle the training of
 <p class="caption"><span class="caption-text">FSDP Workflow</span></p>
 </div>
 <p>At high level FDSP works as follow:</p>
-<p><em>In constructor</em>
-Shard model parameters and each rank only keeps its own shard</p>
-<p><em>In forward path</em>
-Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
-Run forward computation
-Discard parameter shards it has just collected</p>
-<p><em>In backward path</em>
-Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
-Run backward computation
-Run reduce_scatter to sync gradients
-Discard parameters.</p>
+<p><em>In constructor</em></p>
+<ul class="simple">
+<li>Shard model parameters and each rank only keeps its own shard</li>
+</ul>
+<p><em>In forward path</em></p>
+<ul class="simple">
+<li>Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
+<li>Run forward computation</li>
+<li>Discard parameter shards it has just collected</li>
+</ul>
+<p><em>In backward path</em></p>
+<ul class="simple">
+<li>Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
+<li>Run backward computation</li>
+<li>Run reduce_scatter to sync gradients</li>
+<li>Discard parameters.</li>
+</ul>
 </div>
 <div class="section" id="how-to-use-fsdp">
 <h2>How to use FSDP<a class="headerlink" href="#how-to-use-fsdp" title="Permalink to this headline">¶</a></h2>
 <p>Here we use a toy model to run training on MNIST dataset for demonstration purposes. Similarly the APIs and logic can be applied to larger models for training.</p>
 <p><em>Setup</em></p>
 <p>1.1 Install Pytorch along with Torchvision</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
+</pre></div>
+</div>
 <p>We add the following code snippets to a python script “FSDP_mnist.py”.</p>
 <p>1.2  Import necessary packages</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Based on: https://github.com/pytorch/examples/blob/master/mnist/main.py</span>
@@ -459,7 +468,49 @@ Discard parameters.</p>
 </pre></div>
 </div>
 <p>2.2 define a train function</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">train_loader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="n">ddp_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sampler</span><span class="p">:</span>
+        <span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">dist</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'Train Epoch: </span><span class="si">{}</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{:.6f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+</pre></div>
+</div>
 <p>2.3 Define a validation function</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">correct</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ddp_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">'sum'</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># sum up batch loss</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># get the index of the max log-probability</span>
+            <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">dist</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">test_loss</span> <span class="o">=</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'Test set: Average loss: </span><span class="si">{:.4f}</span><span class="s1">, Accuracy: </span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.2f}</span><span class="s1">%)</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">test_loss</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="mf">100.</span> <span class="o">*</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</div>
 <p>2.4 Define a distributed train function that wraps the model in FSDP</p>
 <p><strong>Note: to save the FSDP model, we need to call the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fsdp_main</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
@@ -559,8 +610,27 @@ Discard parameters.</p>
 </pre></div>
 </div>
 <p>We have recorded cuda events to measure the time of FSDP model specifics. The CUDA event time was 110.85 seconds.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python FSDP_mnist.py
+
+CUDA event elapsed <span class="nb">time</span> on training loop <span class="m">40</span>.67462890625sec
+</pre></div>
+</div>
 <p>Wrapping the model with FSDP, the model will look as follows, we can see the model has been wrapped in one FSDP unit.
 Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will discuss the differences.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>   FullyShardedDataParallel<span class="o">(</span>
+   <span class="o">(</span>_fsdp_wrapped_module<span class="o">)</span>: FlattenParamsWrapper<span class="o">(</span>
+       <span class="o">(</span>_fpw_module<span class="o">)</span>: Net<span class="o">(</span>
+       <span class="o">(</span>conv1<span class="o">)</span>: Conv2d<span class="o">(</span><span class="m">1</span>, <span class="m">32</span>, <span class="nv">kernel_size</span><span class="o">=(</span><span class="m">3</span>, <span class="m">3</span><span class="o">)</span>, <span class="nv">stride</span><span class="o">=(</span><span class="m">1</span>, <span class="m">1</span><span class="o">))</span>
+       <span class="o">(</span>conv2<span class="o">)</span>: Conv2d<span class="o">(</span><span class="m">32</span>, <span class="m">64</span>, <span class="nv">kernel_size</span><span class="o">=(</span><span class="m">3</span>, <span class="m">3</span><span class="o">)</span>, <span class="nv">stride</span><span class="o">=(</span><span class="m">1</span>, <span class="m">1</span><span class="o">))</span>
+       <span class="o">(</span>dropout1<span class="o">)</span>: Dropout<span class="o">(</span><span class="nv">p</span><span class="o">=</span><span class="m">0</span>.25, <span class="nv">inplace</span><span class="o">=</span>False<span class="o">)</span>
+       <span class="o">(</span>dropout2<span class="o">)</span>: Dropout<span class="o">(</span><span class="nv">p</span><span class="o">=</span><span class="m">0</span>.5, <span class="nv">inplace</span><span class="o">=</span>False<span class="o">)</span>
+       <span class="o">(</span>fc1<span class="o">)</span>: Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">9216</span>, <span class="nv">out_features</span><span class="o">=</span><span class="m">128</span>, <span class="nv">bias</span><span class="o">=</span>True<span class="o">)</span>
+       <span class="o">(</span>fc2<span class="o">)</span>: Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">128</span>, <span class="nv">out_features</span><span class="o">=</span><span class="m">10</span>, <span class="nv">bias</span><span class="o">=</span>True<span class="o">)</span>
+       <span class="o">)</span>
+   <span class="o">)</span>
+<span class="o">)</span>
+</pre></div>
+</div>
 <p>Following is the peak memory usage from FSDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler.</p>
 <div class="figure align-center" id="id2">
 <a class="reference internal image-reference" href="../_images/FSDP_memory.gif"><img alt="FSDP peak memory" src="../_images/FSDP_memory.gif" style="width: 100%;"/></a>
@@ -576,7 +646,39 @@ Then, in the forward, the 1st FSDP unit will allgather parameters for the first 
 <p>To do so in 2.4 we define the auto_wrap_policy and pass it to FSDP wrapper, in the following example, my_auto_wrap_policy defines that a layer could be wrapped or sharded by FSDP if the number of parameters in this layer is larger than 100.
 If the number of parameters in this layer is smaller than 100, it will be wrapped with other small layers together by FSDP.
 Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_auto_wrap_policy</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+        <span class="n">default_auto_wrap_policy</span><span class="p">,</span> <span class="n">min_num_params</span><span class="o">=</span><span class="mi">20000</span>
+    <span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">fsdp_auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Applying the FSDP_auto_wrap_policy, the model would be as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>  FullyShardedDataParallel<span class="o">(</span>
+<span class="o">(</span>_fsdp_wrapped_module<span class="o">)</span>: FlattenParamsWrapper<span class="o">(</span>
+  <span class="o">(</span>_fpw_module<span class="o">)</span>: Net<span class="o">(</span>
+    <span class="o">(</span>conv1<span class="o">)</span>: Conv2d<span class="o">(</span><span class="m">1</span>, <span class="m">32</span>, <span class="nv">kernel_size</span><span class="o">=(</span><span class="m">3</span>, <span class="m">3</span><span class="o">)</span>, <span class="nv">stride</span><span class="o">=(</span><span class="m">1</span>, <span class="m">1</span><span class="o">))</span>
+    <span class="o">(</span>conv2<span class="o">)</span>: Conv2d<span class="o">(</span><span class="m">32</span>, <span class="m">64</span>, <span class="nv">kernel_size</span><span class="o">=(</span><span class="m">3</span>, <span class="m">3</span><span class="o">)</span>, <span class="nv">stride</span><span class="o">=(</span><span class="m">1</span>, <span class="m">1</span><span class="o">))</span>
+    <span class="o">(</span>dropout1<span class="o">)</span>: Dropout<span class="o">(</span><span class="nv">p</span><span class="o">=</span><span class="m">0</span>.25, <span class="nv">inplace</span><span class="o">=</span>False<span class="o">)</span>
+    <span class="o">(</span>dropout2<span class="o">)</span>: Dropout<span class="o">(</span><span class="nv">p</span><span class="o">=</span><span class="m">0</span>.5, <span class="nv">inplace</span><span class="o">=</span>False<span class="o">)</span>
+    <span class="o">(</span>fc1<span class="o">)</span>: FullyShardedDataParallel<span class="o">(</span>
+      <span class="o">(</span>_fsdp_wrapped_module<span class="o">)</span>: FlattenParamsWrapper<span class="o">(</span>
+        <span class="o">(</span>_fpw_module<span class="o">)</span>: Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">9216</span>, <span class="nv">out_features</span><span class="o">=</span><span class="m">128</span>, <span class="nv">bias</span><span class="o">=</span>True<span class="o">)</span>
+      <span class="o">)</span>
+    <span class="o">)</span>
+    <span class="o">(</span>fc2<span class="o">)</span>: Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">128</span>, <span class="nv">out_features</span><span class="o">=</span><span class="m">10</span>, <span class="nv">bias</span><span class="o">=</span>True<span class="o">)</span>
+  <span class="o">)</span>
+<span class="o">)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python FSDP_mnist.py
+
+CUDA event elapsed <span class="nb">time</span> on training loop <span class="m">41</span>.89130859375sec
+</pre></div>
+</div>
 <p>Following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler.
 It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.</p>
 <div class="figure align-center" id="id3">
@@ -588,7 +690,21 @@ It can be observed that the peak memory usage on each device is smaller compared
 <p>Note that this currently implicitly enables gradient offloading to CPU in order for params and grads to be on the same device to work with the optimizer. This API is subject to change. Default is None in which case there will be no offloading.</p>
 <p>Using this feature may slow down the training considerably, due to frequent copying of tensors from host to device, but it could help improve memory efficiency and train larger scale models.</p>
 <p>In 2.4 we just add it to the FSDP wrapper</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">fsdp_auto_wrap_policy</span><span class="o">=</span><span class="n">my_auto_wrap_policy</span><span class="p">,</span>
+    <span class="n">cpu_offload</span><span class="o">=</span><span class="n">CPUOffload</span><span class="p">(</span><span class="n">offload_params</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
 <p>Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving the changes in “DDP_mnist.py”.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Net</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python DDP_mnist.py
+
+CUDA event elapsed <span class="nb">time</span> on training loop <span class="m">39</span>.77766015625sec
+</pre></div>
+</div>
 <p>Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch profiler.</p>
 <div class="figure align-center" id="id4">
 <a class="reference internal image-reference" href="../_images/DDP_memory.gif"><img alt="FSDP peak memory" src="../_images/DDP_memory.gif" style="width: 100%;"/></a>
