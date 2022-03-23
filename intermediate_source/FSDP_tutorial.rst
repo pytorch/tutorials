@@ -9,7 +9,7 @@ It also comes with considerable engineering complexity to handle the training of
 `Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
 
 In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for simple MNIST models that can be extended to other larger models such as `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
-`GPT 3 models up to 1T parameters <https://pytorch.medium.com/pytorch-data-parallel-best-practices-on-google-cloud-6c8da2be180d>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
+`GPT 3 models up to 1T parameters <https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ . The sample DDP MNIST code has been borrowed from `here <https://github.com/yqhu/mnist_examples>`__. 
 
 
 How FSDP works
@@ -28,18 +28,21 @@ FSDP GPU memory footprint would be smaller than DDP across all workers. This mak
 At high level FDSP works as follow:
 
 *In constructor*
-Shard model parameters and each rank only keeps its own shard
+
+* Shard model parameters and each rank only keeps its own shard
 
 *In forward path*
-Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
-Run forward computation
-Discard parameter shards it has just collected
+
+* Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run forward computation
+* Discard parameter shards it has just collected
 
 *In backward path*
-Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
-Run backward computation
-Run reduce_scatter to sync gradients
-Discard parameters. 
+
+* Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run backward computation
+* Run reduce_scatter to sync gradients
+* Discard parameters. 
 
 How to use FSDP
 --------------
@@ -49,7 +52,8 @@ Here we use a toy model to run training on MNIST dataset for demonstration purpo
 
 1.1 Install Pytorch along with Torchvision
 
-.. code-block:: 
+.. code-block:: bash 
+
     pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
 
 We add the following code snippets to a python script “FSDP_mnist.py”.
@@ -133,6 +137,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 2.2 define a train function 
 
 .. code-block:: python
+
     def train(args, model, rank, world_size, train_loader, optimizer, epoch, sampler=None):
         model.train()
         ddp_loss = torch.zeros(2).to(rank)
@@ -155,6 +160,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 2.3 Define a validation function 
 
 .. code-block:: python
+
     def test(model, rank, world_size, test_loader):
         model.eval()
         correct = 0
@@ -284,7 +290,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 We have recorded cuda events to measure the time of FSDP model specifics. The CUDA event time was 110.85 seconds.
 
-.. code-block:: 
+.. code-block:: bash
+
     python FSDP_mnist.py
 
     CUDA event elapsed time on training loop 40.67462890625sec
@@ -292,7 +299,8 @@ We have recorded cuda events to measure the time of FSDP model specifics. The CU
 Wrapping the model with FSDP, the model will look as follows, we can see the model has been wrapped in one FSDP unit.
 Alternatively, we will look at adding the fsdp_auto_wrap_policy next and will discuss the differences. 
 
-.. code-block::
+.. code-block:: bash
+
     FullyShardedDataParallel(
     (_fsdp_wrapped_module): FlattenParamsWrapper(
         (_fpw_module): Net(
@@ -331,6 +339,7 @@ If the number of parameters in this layer is smaller than 100, it will be wrappe
 Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.
 
 .. code-block:: python
+
     my_auto_wrap_policy = functools.partial(
             default_auto_wrap_policy, min_num_params=20000
         )
@@ -342,7 +351,7 @@ Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning
 
 Applying the FSDP_auto_wrap_policy, the model would be as follows:
 
-.. code-block::
+.. code-block:: bash
 
     FullyShardedDataParallel(
   (_fsdp_wrapped_module): FlattenParamsWrapper(
@@ -361,7 +370,8 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
   )
 
 
-.. code-block:: 
+.. code-block:: bash
+
     python FSDP_mnist.py
 
     CUDA event elapsed time on training loop 41.89130859375sec
@@ -388,6 +398,7 @@ In 2.4 we just add it to the FSDP wrapper
 
 
 .. code-block:: python
+
     model = FSDP(model,
         fsdp_auto_wrap_policy=my_auto_wrap_policy,
         cpu_offload=CPUOffload(offload_params=True))
@@ -396,11 +407,13 @@ In 2.4 we just add it to the FSDP wrapper
 Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving the changes in “DDP_mnist.py”.
 
 .. code-block:: python
+
     model = Net().to(rank)
     model = DDP(model)
 
 
-.. code-block:: 
+.. code-block:: bash
+
     python DDP_mnist.py
 
     CUDA event elapsed time on training loop 39.77766015625sec
