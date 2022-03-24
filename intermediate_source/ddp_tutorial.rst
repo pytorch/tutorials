@@ -63,7 +63,7 @@ consider using ``DistributedDataParallel`` over ``DataParallel``:
 Basic Use Case
 --------------
 
-To create DDP modules, first set up process groups properly. More details can
+To create a DDP module, you must first set up process groups properly. More details can
 be found in
 `Writing Distributed Applications with PyTorch <https://pytorch.org/tutorials/intermediate/dist_tuto.html>`__.
 
@@ -102,10 +102,10 @@ be found in
     def cleanup():
         dist.destroy_process_group()
 
-Now, let's create a toy module, wrap it with DDP, and feed it with some dummy
+Now, let's create a toy module, wrap it with DDP, and feed it some dummy
 input data. Please note, as DDP broadcasts model states from rank 0 process to
-all other processes in the DDP constructor, you don't need to worry about
-different DDP processes start from different model parameter initial values.
+all other processes in the DDP constructor, you do not need to worry about
+different DDP processes starting from different initial model parameter values.
 
 .. code:: python
 
@@ -147,7 +147,7 @@ different DDP processes start from different model parameter initial values.
                  join=True)
 
 As you can see, DDP wraps lower-level distributed communication details and
-provides a clean API as if it is a local model. Gradient synchronization
+provides a clean API as if it were a local model. Gradient synchronization
 communications take place during the backward pass and overlap with the
 backward computation. When the ``backward()`` returns, ``param.grad`` already
 contains the synchronized gradient tensor. For basic use cases, DDP only
@@ -161,10 +161,10 @@ In DDP, the constructor, the forward pass, and the backward pass are
 distributed synchronization points. Different processes are expected to launch
 the same number of synchronizations and reach these synchronization points in
 the same order and enter each synchronization point at roughly the same time.
-Otherwise, fast processes might arrive early and timeout on waiting for
-stragglers. Hence, users are responsible for balancing workloads distributions
+Otherwise, fast processes might arrive early and timeout while waiting for
+stragglers. Hence, users are responsible for balancing workload distributions
 across processes. Sometimes, skewed processing speeds are inevitable due to,
-e.g., network delays, resource contentions, unpredictable workload spikes. To
+e.g., network delays, resource contentions, or unpredictable workload spikes. To
 avoid timeouts in these situations, make sure that you pass a sufficiently
 large ``timeout`` value when calling
 `init_process_group <https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group>`__.
@@ -179,10 +179,10 @@ for more details. When using DDP, one optimization is to save the model in
 only one process and then load it to all processes, reducing write overhead.
 This is correct because all processes start from the same parameters and
 gradients are synchronized in backward passes, and hence optimizers should keep
-setting parameters to the same values. If you use this optimization, make sure all
-processes do not start loading before the saving is finished. Besides, when
+setting parameters to the same values. If you use this optimization, make sure no process starts 
+loading before the saving is finished. Additionally, when
 loading the module, you need to provide an appropriate ``map_location``
-argument to prevent a process to step into others' devices. If ``map_location``
+argument to prevent a process from stepping into others' devices. If ``map_location``
 is missing, ``torch.load`` will first load the module to CPU and then copy each
 parameter to where it was saved, which would result in all processes on the
 same machine using the same set of devices. For more advanced failure recovery
@@ -197,8 +197,6 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         model = ToyModel().to(rank)
         ddp_model = DDP(model, device_ids=[rank])
 
-        loss_fn = nn.MSELoss()
-        optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
 
         CHECKPOINT_PATH = tempfile.gettempdir() + "/model.checkpoint"
         if rank == 0:
@@ -215,10 +213,13 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
         ddp_model.load_state_dict(
             torch.load(CHECKPOINT_PATH, map_location=map_location))
 
+        loss_fn = nn.MSELoss()
+        optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
+        
         optimizer.zero_grad()
         outputs = ddp_model(torch.randn(20, 10))
         labels = torch.randn(20, 5).to(rank)
-        loss_fn = nn.MSELoss()
+
         loss_fn(outputs, labels).backward()
         optimizer.step()
 
@@ -231,7 +232,7 @@ and elasticity support, please refer to `TorchElastic <https://pytorch.org/elast
 
         cleanup()
 
-Combine DDP with Model Parallelism
+Combining DDP with Model Parallelism
 ----------------------------------
 
 DDP also works with multi-GPU models. DDP wrapping multi-GPU models is especially
