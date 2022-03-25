@@ -113,10 +113,6 @@ def image_loader(image_name):
 style_img = image_loader("./data/images/neural-style/picasso.jpg")
 content_img = image_loader("./data/images/neural-style/dancing.jpg")
 
-# assert style_img.size() == content_img.size(), \
-#     "we need to import style and content images of the same size"
-
-
 ######################################################################
 # Now, let's create a function that displays an image by reconverting a 
 # copy of it to PIL format and displaying the copy using 
