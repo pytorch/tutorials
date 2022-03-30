@@ -47,6 +47,10 @@ The majority of time in deep learning training or inference is spent on millions
 
 Returning to the original topic, most GEMM operators benefit from using non-hyperthreading, because the majority of time in deep learning training or inference is spent on millions of repeated operations of GEMM running on fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores. With hyperthreading is enabled OpenMP threads will contend for the same GEMM execution units.
 
+.. figure:: /_static/img/torchserve-ipex-images/1.png
+   :width: 100%
+   :align: center
+   
 And if 2 logical threads run GEMM at the same time, they will be sharing the same core resources causing front end bound, such that the overhead from this front end bound is greater than the gain from running both logical threads at the same time. 
 
 Therefore we generally recommend avoiding using logical cores for deep learning workloads to achieve good performance. The launch script by default uses physical cores only; however, users can easily experiment with logical vs. physical cores by simply toggling the ``--use_logical_core`` launch script knob.
@@ -79,12 +83,32 @@ Environment variable ``OMP_NUM_THREADS`` is used to set the number of threads fo
 
 (1) Both OpenMP threads trying to utilize the same GEMM execution units shared by hyperthreading cores (0, 56)
 
+
+.. figure:: /_static/img/torchserve-ipex-images/2.png
+   :width: 100%
+   :align: center
+
+
+.. figure:: /_static/img/torchserve-ipex-images/3.png
+   :width: 100%
+   :align: center
+
 We notice that the `Spin Time <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/reference/cpu-metrics-reference/spin-time.html>`_ is flagged, and `Imbalance or Serial Spinning <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/reference/cpu-metrics-reference/spin-time/imbalance-or-serial-spinning-1.html>`_ contributed to the majority of it - 4.980 seconds out of the 8.982 seconds total. The Imbalance or Serial Spinning when using logical cores is due to insufficient concurrency of working threads as each logical thread contends for the same core resources. 
 
 The Top Hotspots section of the execution summary indicates that ``__kmp_fork_barrier`` took 4.589 seconds of CPU time - during 9.33% of the CPU execution time, threads were just spinning at this barrier due to thread synchronization.  
 
 (2) Each OpenMP thread utilizing GEMM execution units in respective physical cores (0,1) 
 
+
+.. figure:: /_static/img/torchserve-ipex-images/4.png
+   :width: 100%
+   :align: center
+ 
+
+.. figure:: /_static/img/torchserve-ipex-images/5.png
+   :width: 100%
+   :align: center
+   
 We first note that the execution time dropped from 32 seconds to 23 seconds by avoiding logical cores. While there's still some non-negligible Imbalance or Serial Spinning, we note relative improvement from 4.980 seconds to 3.887 seconds. 
 
 By not using logical threads (instead, using 1 thread per physical core), we avoid logical threads contending for the same core resources. The Top Hotspots section also indicates relative improvement of kmp_fork_barrier time from 4.589 seconds to 3.530 seconds. 
@@ -94,9 +118,25 @@ Local memory access is always faster than remote memory access
 
 We generally recommend binding a process to a local socket such that the process does not migrate across sockets. Generally the goal of doing so is to utilize high speed cache on local memory and to avoid remote memory access which can be ~2x slower. 
 
+
+.. figure:: /_static/img/torchserve-ipex-images/6.png
+   :width: 100%
+   :align: center
+Figure 1. Two-socket configuration 
+
 Figure 1. shows a typical two-socket configuration. Notice that each socket has its own local memory. Sockets are connected to each other via Intel Ultra Path Interconnect (UPI) which allows each socket to access the local memory of another socket called remote memory. Local memory access is always faster than remote memory access. 
 
+.. figure:: /_static/img/torchserve-ipex-images/7.png
+   :width: 100%
+   :align: center
+Figure 2.1. CPU information 
+
 Users can get their CPU information by running ``lscpu`` command on their Linux machine. Figure 2.1. shows an example of ``lscpu``  execution on Intel(R) Xeon(R) Platinum 8180 CPUs. Notice that there are 28 cores per socket, and 2 threads per core (i.e., hyperthreading is enabled). In other words, there are 28 logical cores in addition to 28 physical cores, giving a total of 56 cores per socket. And there are 2 sockets, giving a total of 112 cores (Thread(s) per core x Core(s) per socket x Socket(s) ). 
+
+.. figure:: /_static/img/torchserve-ipex-images/8.png
+   :width: 100%
+   :align: center
+Figure 2.2. CPU information 
 
 The 2 sockets are mapped to 2 NUMA nodes (NUMA node 0, NUMA node 1) respectively.  Physical cores are indexed prior to logical cores. As shown in Figure 2.2., the first 28 physical cores (0-27) and the first 28 logical cores (56-83) on the first socket are on NUMA node 0. And the second 28 physical cores (28-55) and the second 28 logical cores (84-111) on the second socket are on NUMA node 1. Cores on the same socket share local memory and last level cache (LLC) which is much faster than cross-socket communication via Intel UPI. 
 
@@ -108,7 +148,18 @@ We'll reuse the ResNet50 example above.
 
 As we did not pin threads to processor cores of a specific socket, the operating system periodically schedules threads on processor cores located in different sockets. We can visualize this by running ``htop`` command on Linux as shown below:
 
+.. figure:: /_static/img/torchserve-ipex-images/9.gif
+   :width: 100%
+   :align: center
+Figure 3. CPU usage of non NUMA-aware application. 1 main worker thread was launched, then it launched a physical core number (56) of threads on all cores, including logical cores. 
+
 (Aside: If the number of threads is not set by `torch.set_num_threads <https://pytorch.org/docs/stable/generated/torch.set_num_threads.html>`_, the default number of threads is the number of physical cores in a hyperthreading enabled system. This can be verified by `torch.get_num_threads <https://pytorch.org/docs/stable/generated/torch.get_num_threads.html>`_. Hence we see above about half of the cores busy running the example script.)
+
+.. figure:: /_static/img/torchserve-ipex-images/10.png
+   :width: 100%
+   :align: center
+Figure 4. Non-Uniform Memory Access Analysis graph 
+
 
 Figure 4. compares local vs. remote memory access over time. We verify usage of remote memory which could result in sub-optimal performance. 
 
@@ -118,7 +169,17 @@ Pinning threads to cores on the same socket helps maintain locality of memory ac
 
 Let's visualize the CPU usage now.
 
+.. figure:: /_static/img/torchserve-ipex-images/11.gif
+   :width: 100%
+   :align: center
+Figure 5. CPU usage of NUMA-aware application 
+
 1 main worker thread was launched, then it launched threads on all physical cores on the first numa node. 
+
+.. figure:: /_static/img/torchserve-ipex-images/12.png
+   :width: 100%
+   :align: center
+Figure 6. Non-Uniform Memory Access Analysis graph 
 
 As shown in Figure 6., now almost all memory accesses are local accesses. 
 
@@ -150,23 +211,52 @@ The `base_handler <https://github.com/pytorch/serve/blob/master/ts/torch_handler
 
 1. CPU usage 
 
+.. figure:: /_static/img/torchserve-ipex-images/13.png
+   :width: 100%
+   :align: center
+
 4 main worker threads were launched, then each launched a physical core number (56) of threads on all cores, including logical cores.
 
 2. Core Bound stalls
 
+.. figure:: /_static/img/torchserve-ipex-images/14.png
+   :width: 100%
+   :align: center
+
 We observe a very high Core Bound stall of 88.4%, decreasing pipeline efficiency. Core Bound stalls indicate sub-optimal use of available execution units in the CPU. For example, several GEMM instructions in a row competing for fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores could cause Core Bound stalls. And as described in the previous section, use of logical cores can amplify this problem.
 
+
+.. figure:: /_static/img/torchserve-ipex-images/15.png
+   :width: 100%
+   :align: center
+   
+.. figure:: /_static/img/torchserve-ipex-images/16.png
+   :width: 100%
+   :align: center
+   
 An empty pipeline slot not filled with micro-ops (uOps) is attributed to a stall. For example, without core pinning CPU usage may not effectively be on compute but on other operations like thread scheduling from Linux kernel. We see above that `__sched_yield` contributed to the majority of the Spin Time.  
 
 3. Thread Migration
 
 Without core pinning, scheduler may migrate thread executing on a core to a different core. Thread migration can disassociate the thread from data that has already been fetched into the caches resulting in longer data access latencies. This problem is exacerbated in NUMA systems when thread migrates across sockets. Data that has been fetched to high speed cache on local memory now becomes remote memory, which is much slower.  
 
+.. figure:: /_static/img/torchserve-ipex-images/17.png
+   :width: 100%
+   :align: center
+
 Generally the total number of threads should be less than or equal to the total number of threads supported by the core. In the above example, we notice a large number of threads executing on core_51 instead of the expected 2 threads (since hyperthreading is enabled in Intel(R) Xeon(R) Platinum 8180 CPUs) . This indicates thread migration. 
+
+.. figure:: /_static/img/torchserve-ipex-images/18.png
+   :width: 100%
+   :align: center
 
 Additionally, notice that thread (TID:97097) was executing on a large number of CPU cores, indicating CPU migration. For example, this thread was executing on cpu_81, then migrated to cpu_14, then migrated to cpu_5, and so on. Furthermore, note that this thread migrated cross socket back and forth many times, resulting in very inefficient memory access. For example, this thread executed on cpu_70 (NUMA node 0), then migrated to cpu_100 (NUMA node 1), then migrated to cpu_24 (NUMA node 0). 
 
 4. Non Uniform Memory Access Analysis
+
+.. figure:: /_static/img/torchserve-ipex-images/19.png
+   :width: 100%
+   :align: center
 
 Compare local vs. remote memory access over time. We observe that about half, 51.09%, of the memory accesses were remote accesses, indicating sub-optimal NUMA configuration. 
 
@@ -183,17 +273,41 @@ As before without core pinning, these threads are not affinitized to specific CP
 
 1. CPU usage
 
+.. figure:: /_static/img/torchserve-ipex-images/20.gif
+   :width: 100%
+   :align: center
+   
 4 main worker threads were launched, then each launched a `num_physical_cores/num_workers number` (14) of threads on all cores, including logical cores.  
 
 2. Core Bound stalls
 
+.. figure:: /_static/img/torchserve-ipex-images/21.png
+   :width: 100%
+   :align: center
+   
 Although the percentage of Core Bound stalls has decreased from 88.4% to 73.5%, the Core Bound is still very high.
+
+.. figure:: /_static/img/torchserve-ipex-images/22.png
+   :width: 100%
+   :align: center
+
+.. figure:: /_static/img/torchserve-ipex-images/23.png
+   :width: 100%
+   :align: center
 
 3. Thread Migration
 
+.. figure:: /_static/img/torchserve-ipex-images/24.png
+   :width: 100%
+   :align: center
+   
 Similar as before, without core pinning thread (TID:94290) was executing on a large number of CPU cores, indicating CPU migration. We notice again cross-socket thread migration, resulting in very inefficient memory access. For example, this thread executed on cpu_78 (NUMA node 0), then migrated to cpu_108 (NUMA node 1). 
 
 4. Non Uniform Memory Access Analysis
+
+.. figure:: /_static/img/torchserve-ipex-images/25.png
+   :width: 100%
+   :align: center
 
 Although an improvement from the original 51.09%, still 40.45% of memory access is remote, indicating sub-optimal NUMA configuration. 
 
@@ -203,18 +317,44 @@ Launcher will internally equally distribute physical cores to workers, and bind 
 
 1. CPU usage
 
+.. figure:: /_static/img/torchserve-ipex-images/26.gif
+   :width: 100%
+   :align: center
+   
 4 main worker threads were launched, then each launched a `num_physical_cores/num_workers number` number (14) of threads affinitized to the assigned physical cores.
 
 2. Core Bound stalls
 
+.. figure:: /_static/img/torchserve-ipex-images/27.png
+   :width: 100%
+   :align: center
+   
 Core Bound stalls has decreased significantly from the original 88.4% to 46.2% - almost a 2x improvement. 
+
+.. figure:: /_static/img/torchserve-ipex-images/29.png
+   :width: 100%
+   :align: center
+
+.. figure:: /_static/img/torchserve-ipex-images/28.png
+   :width: 100%
+   :align: center
 
 We verify that with core binding, most CPU time is effectively used on compute - Spin Time of 0.256s.  
 
+3. Thread Migration
+
+.. figure:: /_static/img/torchserve-ipex-images/30.png
+   :width: 100%
+   :align: center
+   
 We verify that `OMP Primary Thread #0` was bound to assigned physical cores (42-55), and did not migrate cross-socket. 
 
 4. Non Uniform Memory Access Analysis
 
+.. figure:: /_static/img/torchserve-ipex-images/31.png
+   :width: 100%
+   :align: center
+   
 Now almost all, 89.52%, memory accesses are local accesses. 
 
 Conclusion
