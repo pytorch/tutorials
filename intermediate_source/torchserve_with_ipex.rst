@@ -47,8 +47,8 @@ The majority of time in deep learning training or inference is spent on millions
 
 Returning to the original topic, most GEMM operators benefit from using non-hyperthreading, because the majority of time in deep learning training or inference is spent on millions of repeated operations of GEMM running on fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores. With hyperthreading is enabled OpenMP threads will contend for the same GEMM execution units.
 
-.. figure:: /_static/img/torchserve-ipex-images/1.png
-   :width: 60%
+.. figure:: /_static/img/torchserve-ipex-images/1_.png
+   :width: 70%
    :align: center
    
 And if 2 logical threads run GEMM at the same time, they will be sharing the same core resources causing front end bound, such that the overhead from this front end bound is greater than the gain from running both logical threads at the same time. 
