@@ -79,6 +79,8 @@ We'll use the following example of feeding ResNet50 dummy tensor:
     end = time.time()
     print('Inference took {:.2f} ms in average'.format((end-start)/100*1000))
 
+Throughout the blog, we'll run all exercises on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. The CPU information is shown in Figure 2.1.
+
 Environment variable ``OMP_NUM_THREADS`` is used to set the number of threads for parallel region. We'll compare ``OMP_NUM_THREADS=2`` with (1) use of logical cores and (2) use of physical cores only. 
 
 (1) Both OpenMP threads trying to utilize the same GEMM execution units shared by hyperthreading cores (0, 56)
@@ -131,7 +133,7 @@ Figure 1. shows a typical two-socket configuration. Notice that each socket has 
    :align: center
 Figure 2.1. CPU information 
 
-Users can get their CPU information by running ``lscpu`` command on their Linux machine. Figure 2.1. shows an example of ``lscpu``  execution on Intel(R) Xeon(R) Platinum 8180 CPUs. Notice that there are 28 cores per socket, and 2 threads per core (i.e., hyperthreading is enabled). In other words, there are 28 logical cores in addition to 28 physical cores, giving a total of 56 cores per socket. And there are 2 sockets, giving a total of 112 cores (Thread(s) per core x Core(s) per socket x Socket(s) ). 
+Users can get their CPU information by running ``lscpu`` command on their Linux machine. Figure 2.1. shows an example of ``lscpu``  execution on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. Notice that there are 28 cores per socket, and 2 threads per core (i.e., hyperthreading is enabled). In other words, there are 28 logical cores in addition to 28 physical cores, giving a total of 56 cores per socket. And there are 2 sockets, giving a total of 112 cores (Thread(s) per core x Core(s) per socket x Socket(s) ). 
 
 .. figure:: /_static/img/torchserve-ipex-images/8.png
    :width: 100%
