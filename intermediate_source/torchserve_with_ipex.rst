@@ -238,7 +238,7 @@ We observe a very high Core Bound stall of 88.4%, decreasing pipeline efficiency
    :width: 100%
    :align: center
    
-An empty pipeline slot not filled with micro-ops (uOps) is attributed to a stall. For example, without core pinning CPU usage may not effectively be on compute but on other operations like thread scheduling from Linux kernel. We see above that `__sched_yield` contributed to the majority of the Spin Time.  
+An empty pipeline slot not filled with micro-ops (uOps) is attributed to a stall. For example, without core pinning CPU usage may not effectively be on compute but on other operations like thread scheduling from Linux kernel. We see above that ``__sched_yield`` contributed to the majority of the Spin Time.  
 
 3. Thread Migration
 
