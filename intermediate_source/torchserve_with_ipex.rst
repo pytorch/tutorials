@@ -381,7 +381,7 @@ For interested readers, please check out the following documents:
 - `Maximize Performance of Intel® Software Optimization for PyTorch* on CPU <https://www.intel.com/content/www/us/en/developer/articles/technical/how-to-get-better-performance-on-pytorchcaffe2-with-intel-acceleration.html>`_
 - `Performance Tuning Guide <https://intel.github.io/intel-extension-for-pytorch/tutorials/performance_tuning/tuning_guide.html>`_
 - `Launch Script Usage Guide <https://intel.github.io/intel-extension-for-pytorch/tutorials/performance_tuning/launch_script.html>`_
-- `Top-down Microarchitecture Analysis Method <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html#top-down-microarchitecture-analysis-method_GUID-9727C56E-E42E-4B51-9116-12F0AB2124B1>`_
+- `Top-down Microarchitecture Analysis Method <https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top/methodologies/top-down-microarchitecture-analysis-method.html>`_
 - `Configuring oneDNN for Benchmarking <https://oneapi-src.github.io/oneDNN/dev_guide_performance_settings.html#benchmarking-settings>`_
 - `Intel® VTune™ Profiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/vtune-profiler.html#gs.tcbgpa>`_
 - `Intel® VTune™ Profiler User Guide <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top.html>`_
