@@ -169,7 +169,7 @@ Figure 4. compares local vs. remote memory access over time. We verify usage of 
 
 :strong:`Set thread affinity to reduce remote memory access and cross-socket (UPI) traffic`
 
-Pinning threads to cores on the same socket helps maintain locality of memory access. In this example, we'll pin to the physical cores on the first NUMA node (0-27). Later in this blog, we'll introduce the launch script that eases the process of experimenting with CPU configuration. Users can easily experiment with NUMA nodes configuration by simply toggling the `--node_id` launch script knob. 
+Pinning threads to cores on the same socket helps maintain locality of memory access. In this example, we'll pin to the physical cores on the first NUMA node (0-27). Later in this blog, we'll introduce the launch script that eases the process of experimenting with CPU configuration. Users can easily experiment with NUMA nodes configuration by simply toggling the ``--node_id`` launch script knob. 
 
 Let's visualize the CPU usage now.
 
