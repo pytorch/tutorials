@@ -24,9 +24,9 @@ TL;DR
 |                                   | - Thread migration                                                                                                                                                                             |                                                                                                 |
 +-----------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------+
 
-*GEMM* run on fused-multiply-add (FMA) or dot-product (DP) execution units which will be bottlenecked and cause delays in thread waiting/*spinning at synchronization* barrier when *hyperthreading* is enabled - because using logical cores causes insufficient concurrency for all working threads as each logical thread *contends for the same core resources*. Instead, if we use 1 thread per physical core, we avoid this contention. So we generally recommend *avoiding logical cores* by setting CPU *thread affinity* to physical cores via *core pinning*.  
+*GEMM (General Matrix Multiply)* run on fused-multiply-add (FMA) or dot-product (DP) execution units which will be bottlenecked and cause delays in thread waiting/*spinning at synchronization* barrier when *hyperthreading* is enabled - because using logical cores causes insufficient concurrency for all working threads as each logical thread *contends for the same core resources*. Instead, if we use 1 thread per physical core, we avoid this contention. So we generally recommend *avoiding logical cores* by setting CPU *thread affinity* to physical cores via *core pinning*.  
 
-Multi-socket systems have *Non-Uniform Memory Access (NUMA)* which is a shared memory architecture that describes the placement of main memory modules with respect to processors. But if a process is not NUMA-aware, slow remote memory is frequently accessed when *threads migrate* cross socket via *Intel Ultra Path Interconnect (UPI)* during run time. We address this problem by setting CPU thread affinity to a specific socket via *core pinning*.  
+Multi-socket systems have *Non-Uniform Memory Access (NUMA)* which is a shared memory architecture that describes the placement of main memory modules with respect to processors. But if a process is not NUMA-aware, slow *remote memory* is frequently accessed when *threads migrate* cross socket via *Intel Ultra Path Interconnect (UPI)* during run time. We address this problem by setting CPU *thread affinity* to a specific socket via *core pinning*.  
 
 Knowing these principles in mind, proper CPU runtime configuration can significantly boost out-of-box performance. 
 
@@ -39,7 +39,7 @@ We’ll explain all of these ideas :strong:`visually` from :strong:`first princi
 Avoid logical cores for deep learning 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Avoiding logical cores for deep learning workloads generally improves performance. To understand this, let us take a step back to GEMM (General Matrix Multiply). 
+Avoiding logical cores for deep learning workloads generally improves performance. To understand this, let us take a step back to GEMM. 
 
 :strong:`Optimizing GEMM optimizes deep learning`
 
