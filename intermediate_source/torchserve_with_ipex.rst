@@ -85,6 +85,7 @@ Environment variable ``OMP_NUM_THREADS`` is used to set the number of threads fo
 
 (1) Both OpenMP threads trying to utilize the same GEMM execution units shared by hyperthreading cores (0, 56)
 
+We can visualize this by running ``htop`` command on Linux as shown below.
 
 .. figure:: /_static/img/torchserve-ipex-images/2.png
    :width: 100%
@@ -148,7 +149,7 @@ Now that we understand NUMA, cross-socket (UPI) traffic, local vs. remote memory
 
 We'll reuse the ResNet50 example above. 
 
-As we did not pin threads to processor cores of a specific socket, the operating system periodically schedules threads on processor cores located in different sockets. We can visualize this by running ``htop`` command on Linux as shown below:
+As we did not pin threads to processor cores of a specific socket, the operating system periodically schedules threads on processor cores located in different sockets. 
 
 .. figure:: /_static/img/torchserve-ipex-images/9.gif 
    :width: 100%
