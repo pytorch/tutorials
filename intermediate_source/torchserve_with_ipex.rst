@@ -148,9 +148,10 @@ We'll reuse the ResNet50 example above.
 
 As we did not pin threads to processor cores of a specific socket, the operating system periodically schedules threads on processor cores located in different sockets. We can visualize this by running ``htop`` command on Linux as shown below:
 
-.. figure:: /_static/img/torchserve-ipex-images/9.gif
+.. figure:: /_static/img/torchserve-ipex-images/9.gif 
    :width: 100%
    :align: center
+
 Figure 3. CPU usage of non NUMA-aware application. 1 main worker thread was launched, then it launched a physical core number (56) of threads on all cores, including logical cores. 
 
 (Aside: If the number of threads is not set by `torch.set_num_threads <https://pytorch.org/docs/stable/generated/torch.set_num_threads.html>`_, the default number of threads is the number of physical cores in a hyperthreading enabled system. This can be verified by `torch.get_num_threads <https://pytorch.org/docs/stable/generated/torch.get_num_threads.html>`_. Hence we see above about half of the cores busy running the example script.)
@@ -169,7 +170,7 @@ Pinning threads to cores on the same socket helps maintain locality of memory ac
 
 Let's visualize the CPU usage now.
 
-.. figure:: /_static/img/torchserve-ipex-images/11.gif
+.. figure:: /_static/img/torchserve-ipex-images/11.gif 
    :width: 100%
    :align: center
 Figure 5. CPU usage of NUMA-aware application 
@@ -273,7 +274,7 @@ As before without core pinning, these threads are not affinitized to specific CP
 
 1. CPU usage
 
-.. figure:: /_static/img/torchserve-ipex-images/20.gif
+.. figure:: /_static/img/torchserve-ipex-images/20.gif 
    :width: 100%
    :align: center
    
@@ -317,7 +318,7 @@ Launcher will internally equally distribute physical cores to workers, and bind 
 
 1. CPU usage
 
-.. figure:: /_static/img/torchserve-ipex-images/26.gif
+.. figure:: /_static/img/torchserve-ipex-images/26.gif 
    :width: 100%
    :align: center
    
@@ -331,11 +332,11 @@ Launcher will internally equally distribute physical cores to workers, and bind 
    
 Core Bound stalls has decreased significantly from the original 88.4% to 46.2% - almost a 2x improvement. 
 
-.. figure:: /_static/img/torchserve-ipex-images/29.png
+.. figure:: /_static/img/torchserve-ipex-images/28.png
    :width: 100%
    :align: center
-
-.. figure:: /_static/img/torchserve-ipex-images/28.png
+   
+.. figure:: /_static/img/torchserve-ipex-images/29.png
    :width: 100%
    :align: center
 
