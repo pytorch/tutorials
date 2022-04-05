@@ -5,7 +5,7 @@ Neural Transfer Using PyTorch
 
 **Author**: `Alexis Jacq <https://alexis-jacq.github.io>`_
  
-**Edited by**: `Winston Herring <https://github.com/winston6>`_ and `Chen Henry Wu <https://github.com/ChenWu98>`_
+**Edited by**: `Winston Herring <https://github.com/winston6>`_
 
 Introduction
 ------------
@@ -112,6 +112,7 @@ def image_loader(image_name):
 
 style_img = image_loader("./data/images/neural-style/picasso.jpg")
 content_img = image_loader("./data/images/neural-style/dancing.jpg")
+
 
 ######################################################################
 # Now, let's create a function that displays an image by reconverting a 
