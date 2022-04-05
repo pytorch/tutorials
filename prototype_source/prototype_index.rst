@@ -90,13 +90,29 @@ Prototype features are not available as part of binary distributions like PyPI o
    :image: ../_static/img/thumbnails/cropped/android.png
    :link: ../prototype/vulkan_workflow.html
    :tags: Mobile
+   
+.. customcarditem::
+   :header: Tracing-based Selective Build Mobile Interpreter in Android and iOS
+   :card_description: Learn how to optimize the mobile interpreter size with a tracing-based selective build.
+   :image: ../_static/img/thumbnails/cropped/mobile.png
+   :link: ../prototype/tracing_based_selective_build.html
+   :tags: Mobile
+   
+.. customcarditem::
+   :header: Convert Mobilenetv2 to Core ML
+   :card_description: Learn how to prepare a computer vision model to use the PyTorch Core ML mobile backend.
+   :image: ../_static/img/thumbnails/cropped/ios.png
+   :link: ../prototype/ios_coreml_workflow.html
+   :tags: Mobile
+   
+.. Modules
 
 .. customcarditem::
-   :header: Lite Interpreter Workflow in Android and iOS
-   :card_description: Learn how to use the lite interpreter on iOS and Andriod devices.
-   :image: ../_static/img/thumbnails/cropped/mobile.png
-   :link: ../prototype/lite_interpreter.html
-   :tags: Mobile
+   :header: Skipping Module Parameter Initialization in PyTorch 1.10
+   :card_description: Describes skipping parameter initialization during module construction in PyTorch 1.10, avoiding wasted computation.
+   :image: ../_static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: ../prototype/skip_param_init.html
+   :tags: Modules
 
 .. TorchScript
 
@@ -140,8 +156,9 @@ Prototype features are not available as part of binary distributions like PyPI o
    prototype/graph_mode_dynamic_bert_tutorial.html
    prototype/ios_gpu_workflow.html
    prototype/nnapi_mobilenetv2.html
+   prototype/tracing_based_selective_build.html
+   prototype/ios_coreml_workflow.html
    prototype/numeric_suite_tutorial.html
    prototype/torchscript_freezing.html
    prototype/vmap_recipe.html
    prototype/vulkan_workflow.html
-   prototype/lite_interpreter.html

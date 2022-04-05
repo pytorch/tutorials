@@ -24,7 +24,7 @@ functions to be familiar with:
    `Saving & Loading Model Across
    Devices <#saving-loading-model-across-devices>`__).
 
-3) `torch.nn.Module.load_state_dict <https://pytorch.org/docs/stable/nn.html?highlight=load_state_dict#torch.nn.Module.load_state_dict>`__:
+3) `torch.nn.Module.load_state_dict <https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=load_state_dict#torch.nn.Module.load_state_dict>`__:
    Loads a model’s parameter dictionary using a deserialized
    *state_dict*. For more information on *state_dict*, see `What is a
    state_dict? <#what-is-a-state-dict>`__.
@@ -183,6 +183,14 @@ functions to be familiar with:
 #    ``load_state_dict()`` function. For example, you CANNOT load using
 #    ``model.load_state_dict(PATH)``.
 #
+# .. Note ::
+#    
+#    If you only plan to keep the best performing model (according to the 
+#    acquired validation loss), don't forget that ``best_model_state = model.state_dict()``
+#    returns a reference to the state and not its copy! You must serialize 
+#    ``best_model_state`` or use ``best_model_state = deepcopy(model.state_dict())`` otherwise
+#    your best ``best_model_state`` will keep getting updated by the subsequent training 
+#    iterations. As a result, the final model state will be the state of the overfitted model. 
 #
 # Save/Load Entire Model
 # ^^^^^^^^^^^^^^^^^^^^^^
@@ -219,6 +227,42 @@ functions to be familiar with:
 # normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
 #
+# Export/Load Model in TorchScript Format
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# One common way to do inference with a trained model is to use
+# `TorchScript <https://pytorch.org/docs/stable/jit.html>`__, an intermediate
+# representation of a PyTorch model that can be run in Python as well as in a
+# high performance environment like C++. TorchScript is actually the recommended model format
+# for scaled inference and deployment.
+#
+# .. note::
+#    Using the TorchScript format, you will be able to load the exported model and
+#    run inference without defining the model class.
+#
+# **Export:**
+#
+# .. code:: python
+#
+#    model_scripted = torch.jit.script(model) # Export to TorchScript
+#    model_scripted.save('model_scripted.pt') # Save
+#
+# **Load:**
+#
+# .. code:: python
+#
+#    model = torch.jit.load('model_scripted.pt')
+#    model.eval()
+#
+# Remember that you must call ``model.eval()`` to set dropout and batch
+# normalization layers to evaluation mode before running inference.
+# Failing to do this will yield inconsistent inference results.
+#
+# For more information on TorchScript, feel free to visit the dedicated
+# `tutorials <https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html>`__.
+# You will get familiar with the tracing conversion and learn how to
+# run a TorchScript module in a `C++ environment <https://pytorch.org/tutorials/advanced/cpp_export.html>`__.
+
 
 
 ######################################################################

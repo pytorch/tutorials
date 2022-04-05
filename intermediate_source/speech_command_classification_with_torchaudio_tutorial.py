@@ -1,6 +1,6 @@
 """
-Speech Command Recognition with torchaudio
-******************************************
+Speech Command Classification with torchaudio
+*********************************************
 
 This tutorial will show you how to correctly format an audio dataset and
 then train/test an audio classifier network on the dataset.
@@ -16,26 +16,25 @@ by following the instructions on the website.
 
 """
 
-# Uncomment the following line to run in Google Colab
+# Uncomment the line corresponding to your "runtime type" to run in Google Colab
 
 # CPU:
-# !pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
+# !pip install pydub torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # GPU:
-# !pip install torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
-
-# For interactive demo at the end:
-# !pip install pydub
+# !pip install pydub torch==1.7.0+cu101 torchvision==0.8.1+cu101 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torchaudio
+import sys
 
 import matplotlib.pyplot as plt
 import IPython.display as ipd
-from tqdm.notebook import tqdm
+
+from tqdm import tqdm
 
 
 ######################################################################
@@ -80,7 +79,7 @@ class SubsetSC(SPEECHCOMMANDS):
         def load_list(filename):
             filepath = os.path.join(self._path, filename)
             with open(filepath) as fileobj:
-                return [os.path.join(self._path, line.strip()) for line in fileobj]
+                return [os.path.normpath(os.path.join(self._path, line.strip())) for line in fileobj]
 
         if subset == "validation":
             self._walker = load_list("validation_list.txt")
@@ -482,39 +481,40 @@ else:
 # will record one second of audio and try to classify it.
 #
 
-from google.colab import output as colab_output
-from base64 import b64decode
-from io import BytesIO
-from pydub import AudioSegment
-
-
-RECORD = """
-const sleep  = time => new Promise(resolve => setTimeout(resolve, time))
-const b2text = blob => new Promise(resolve => {
-  const reader = new FileReader()
-  reader.onloadend = e => resolve(e.srcElement.result)
-  reader.readAsDataURL(blob)
-})
-var record = time => new Promise(async resolve => {
-  stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-  recorder = new MediaRecorder(stream)
-  chunks = []
-  recorder.ondataavailable = e => chunks.push(e.data)
-  recorder.start()
-  await sleep(time)
-  recorder.onstop = async ()=>{
-    blob = new Blob(chunks)
-    text = await b2text(blob)
-    resolve(text)
-  }
-  recorder.stop()
-})
-"""
-
 
 def record(seconds=1):
-    display(ipd.Javascript(RECORD))
+
+    from google.colab import output as colab_output
+    from base64 import b64decode
+    from io import BytesIO
+    from pydub import AudioSegment
+
+    RECORD = (
+        b"const sleep  = time => new Promise(resolve => setTimeout(resolve, time))\n"
+        b"const b2text = blob => new Promise(resolve => {\n"
+        b"  const reader = new FileReader()\n"
+        b"  reader.onloadend = e => resolve(e.srcElement.result)\n"
+        b"  reader.readAsDataURL(blob)\n"
+        b"})\n"
+        b"var record = time => new Promise(async resolve => {\n"
+        b"  stream = await navigator.mediaDevices.getUserMedia({ audio: true })\n"
+        b"  recorder = new MediaRecorder(stream)\n"
+        b"  chunks = []\n"
+        b"  recorder.ondataavailable = e => chunks.push(e.data)\n"
+        b"  recorder.start()\n"
+        b"  await sleep(time)\n"
+        b"  recorder.onstop = async ()=>{\n"
+        b"    blob = new Blob(chunks)\n"
+        b"    text = await b2text(blob)\n"
+        b"    resolve(text)\n"
+        b"  }\n"
+        b"  recorder.stop()\n"
+        b"})"
+    )
+    RECORD = RECORD.decode("ascii")
+
     print(f"Recording started for {seconds} seconds.")
+    display(ipd.Javascript(RECORD))
     s = colab_output.eval_js("record(%d)" % (seconds * 1000))
     print("Recording ended.")
     b = b64decode(s.split(",")[1])
@@ -525,9 +525,11 @@ def record(seconds=1):
     return torchaudio.load(filename)
 
 
-waveform, sample_rate = record()
-print(f"Predicted: {predict(waveform)}.")
-ipd.Audio(waveform.numpy(), rate=sample_rate)
+# Detect whether notebook runs in google colab
+if "google.colab" in sys.modules:
+    waveform, sample_rate = record()
+    print(f"Predicted: {predict(waveform)}.")
+    ipd.Audio(waveform.numpy(), rate=sample_rate)
 
 
 ######################################################################

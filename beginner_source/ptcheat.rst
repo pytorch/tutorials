@@ -10,7 +10,7 @@ General
 .. code-block:: python
 
     import torch                                        # root package
-    from torch.utils.data import Dataset, Dataloader    # dataset representation and loading
+    from torch.utils.data import Dataset, DataLoader    # dataset representation and loading
 
 Neural Network API
 ------------------
@@ -73,7 +73,7 @@ Vision
     import torchvision.transforms as transforms              # composable transforms
 
 See
-`torchvision <https://pytorch.org/docs/stable/torchvision/index.html>`__
+`torchvision <https://pytorch.org/vision/stable/index.html>`__
 
 Distributed Training
 --------------------
@@ -237,7 +237,7 @@ Learning rate scheduling
 .. code-block:: python
 
     scheduler = optim.X(optimizer,...)      # create lr scheduler
-    scheduler.step()                        # update lr at start of epoch
+    scheduler.step()                        # update lr after optimizer updates weights
     optim.lr_scheduler.X                    # where X is LambdaLR, MultiplicativeLR,
                                             # StepLR, MultiStepLR, ExponentialLR,
                                             # CosineAnnealingLR, ReduceLROnPlateau, CyclicLR,

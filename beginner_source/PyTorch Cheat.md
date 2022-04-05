@@ -50,7 +50,7 @@ See [onnx](https://pytorch.org/docs/stable/onnx.html)
 from torchvision import datasets, models, transforms     # vision datasets, architectures & transforms
 import torchvision.transforms as transforms              # composable transforms
 ```
-See [torchvision](https://pytorch.org/docs/stable/torchvision/index.html)
+See [torchvision](https://pytorch.org/vision/stable/index.html)
 
 ### Distributed Training
 

@@ -185,7 +185,7 @@ Paste the following into a file called ``app.py``:
 
    app = Flask(__name__)
    model = models.densenet121(pretrained=True)               # Trained on 1000 classes from ImageNet
-   model.eval()                                              # Turns off autograd and 
+   model.eval()                                              # Turns off autograd 
 
 
 
@@ -280,5 +280,5 @@ Important Resources
 .. _pytorch.org: https://pytorch.org
 .. _Flask site: https://flask.palletsprojects.com/en/1.1.x/
 .. _Quick Start guide: https://flask.palletsprojects.com/en/1.1.x/quickstart/
-.. _torchvision.models: https://pytorch.org/docs/stable/torchvision/models.html
+.. _torchvision.models: https://pytorch.org/vision/stable/models.html
 .. _the Flask site: https://flask.palletsprojects.com/en/1.1.x/installation/

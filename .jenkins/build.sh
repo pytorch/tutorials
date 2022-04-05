@@ -12,6 +12,8 @@ export LANG=C.UTF-8
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
+# Update root certificates by installing new libgnutls30
+sudo apt-get update || sudo apt-get install libgnutls30
 sudo apt-get update
 sudo apt-get install -y --no-install-recommends unzip p7zip-full sox libsox-dev libsox-fmt-all rsync
 
@@ -26,7 +28,9 @@ pip install -r $DIR/../requirements.txt
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
 # pip uninstall -y torch torchvision torchaudio torchtext
-# pip install -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
+# pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
+# pip uninstall -y torch torchvision torchaudio torchtext
+# pip install -f https://download.pytorch.org/whl/test/cu111/torch_test.html torch torchvision torchaudio torchtext
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
@@ -37,10 +41,11 @@ python -m spacy download de
 
 # PyTorch Theme
 rm -rf src
-pip install -e git+git://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
-pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==8.1.0
+pip install -e git+https://github.com/pytorch/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+pip install sphinx-gallery==0.3.1 tqdm matplotlib ipython pillow==9.0.1
 
-aws configure set default.s3.multipart_threshold 5120MB
+awsv2 -i
+awsv2 configure set default.s3.multipart_threshold 5120MB
 
 # Decide whether to parallelize tutorial builds, based on $JOB_BASE_NAME
 export NUM_WORKERS=20
@@ -48,12 +53,18 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 1: Remove runnable code from tutorials that are not supposed to be run
   python $DIR/remove_runnable_code.py beginner_source/aws_distributed_training_tutorial.py beginner_source/aws_distributed_training_tutorial.py || true
   # python $DIR/remove_runnable_code.py advanced_source/ddp_pipeline_tutorial.py advanced_source/ddp_pipeline_tutorial.py || true
-  # Temp remove for mnist download issue. 
-  python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
-  python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
+  # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
+  # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
+  # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
+  # Temp remove for 1.10 release. 
+  # python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
 
   # TODO: Fix bugs in these tutorials to make them runnable again
   # python $DIR/remove_runnable_code.py beginner_source/audio_classifier_tutorial.py beginner_source/audio_classifier_tutorial.py || true
+
+  # Remove runnable code from tensorboard_profiler_tutorial.py as it frequently crashes, see https://github.com/pytorch/pytorch/issues/74139
+  python $DIR/remove_runnable_code.py intermediate_source/tensorboard_profiler_tutorial.py intermediate_source/tensorboard_profiler_tutorial.py || true
+
 
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
@@ -159,7 +170,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
 
   # Step 6: Copy generated files to S3, tag with commit ID
   7z a worker_${WORKER_ID}.7z docs
-  aws s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
+  awsv2 s3 cp worker_${WORKER_ID}.7z s3://${BUCKET_NAME}/${COMMIT_ID}/worker_${WORKER_ID}.7z --acl public-read
 elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 1: Generate no-plot HTML pages for all tutorials
   make html-noplot
@@ -168,7 +179,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 2: Wait for all workers to finish
   set +e
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
-    until aws s3api head-object --bucket ${BUCKET_NAME} --key ${COMMIT_ID}/worker_$worker_id.7z
+    until awsv2 s3api head-object --bucket ${BUCKET_NAME} --key ${COMMIT_ID}/worker_$worker_id.7z
     do
       echo "Waiting for worker $worker_id to finish..."
       sleep 5
@@ -179,7 +190,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
   # Step 3: Download generated with-plot HTML files and static files from S3, merge into one folder
   mkdir -p docs_with_plot/docs
   for ((worker_id=0;worker_id<NUM_WORKERS;worker_id++)); do
-    aws s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
+    awsv2 s3 cp s3://${BUCKET_NAME}/${COMMIT_ID}/worker_$worker_id.7z worker_$worker_id.7z
     7z x worker_$worker_id.7z -oworker_$worker_id
     yes | cp -R worker_$worker_id/docs/* docs_with_plot/docs
   done
@@ -192,7 +203,7 @@ elif [[ "${JOB_BASE_NAME}" == *manager ]]; then
 
   # Step 6: Copy generated HTML files and static files to S3
   7z a manager.7z docs
-  aws s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
+  awsv2 s3 cp manager.7z s3://${BUCKET_NAME}/${COMMIT_ID}/manager.7z --acl public-read
 
   # Step 7: push new HTML files and static files to gh-pages
   if [[ "$COMMIT_SOURCE" == master ]]; then

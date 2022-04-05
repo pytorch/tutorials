@@ -103,6 +103,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :tags: Basics
 
 .. customcarditem::
+   :header: PyTorch Benchmark (quick start)
+   :card_description: Learn how to measure snippet run times and collect instructions.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/recipes/timer_quick_start.html
+   :tags: Basics
+
+.. customcarditem::
    :header: PyTorch Profiler
    :card_description: Learn how to use PyTorch's profiler to measure operators time and memory consumption
    :image: ../_static/img/thumbnails/cropped/profiler.png
@@ -201,6 +208,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
   :tags: Mobile
 
 .. customcarditem::
+   :header: Mobile Interpreter Workflow in Android and iOS
+   :card_description: Learn how to use the mobile interpreter on iOS and Andriod devices.
+   :image: ../_static/img/thumbnails/cropped/mobile.png
+   :link: ../recipes/mobile_interpreter.html
+   :tags: Mobile
+
+.. customcarditem::
    :header: Profiling PyTorch RPC-Based Workloads
    :card_description: How to use the PyTorch profiler to profile RPC-based workloads.
    :image: ../_static/img/thumbnails/cropped/profile.png
@@ -225,6 +239,24 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :link: ../recipes/recipes/tuning_guide.html
    :tags: Model-Optimization
 
+.. Intel(R) Extension for PyTorch*
+
+.. customcarditem::
+   :header: Intel® Extension for PyTorch*
+   :card_description: Introduction of Intel® Extension for PyTorch*
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/intel_extension_for_pytorch.html
+   :tags: Model-Optimization
+
+.. Intel(R) Neural Compressor for PyTorch*
+
+.. customcarditem::
+   :header: Intel® Neural Compressor for PyTorch
+   :card_description: Ease-of-use quantization for PyTorch with Intel® Neural Compressor.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/intel_neural_compressor_for_pytorch.html
+   :tags: Quantization,Model-Optimization
+
 .. Distributed Training
 
 .. customcarditem::
@@ -240,6 +272,13 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    :image: ../_static/img/thumbnails/cropped/profiler.png
    :link: ../recipes/cuda_rpc.html
    :tags: Distributed-Training
+
+.. customcarditem::
+   :header: Distributed Optimizer with TorchScript support
+   :card_description: How to enable TorchScript support for Distributed Optimizer.
+   :image: ../_static/img/thumbnails/cropped/profiler.png
+   :link: ../recipes/distributed_optim_torchscript.html
+   :tags: Distributed-Training,TorchScript
 
 .. End of tutorial card section
 
@@ -274,8 +313,11 @@ Recipes are bite-sized, actionable examples of how to use specific PyTorch featu
    /recipes/recipes/dynamic_quantization
    /recipes/recipes/amp_recipe
    /recipes/recipes/tuning_guide
+   /recipes/recipes/intel_extension_for_pytorch
    /recipes/torchscript_inference
    /recipes/deployment_with_flask
    /recipes/distributed_rpc_profiling
    /recipes/zero_redundancy_optimizer
    /recipes/cuda_rpc
+   /recipes/distributed_optim_torchscript
+   /recipes/mobile_interpreter

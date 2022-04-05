@@ -2,6 +2,9 @@
 Optimizing Vision Transformer Model for Deployment
 ===========================
 
+`Jeff Tang <https://github.com/jeffxtang>`_,
+`Geeta Chauhan <https://github.com/gchauhan/>`_
+
 Vision Transformer models apply the cutting-edge attention-based
 transformer models, introduced in Natural Language Processing to achieve
 all kinds of the state of the art (SOTA) results, to Computer Vision
@@ -50,17 +53,16 @@ to the model along the steps.
 # Follow the README at the DeiT repo for detailed information on how to
 # classify images using DeiT, or for a quick test, first install the
 # required packages:
-#
-# ::
-#
-#    pip install torch torchvision
-#    pip install timm
-#    pip install pandas
-#    pip install requests 
-#
-# then run the script below:
-#
 
+# pip install torch torchvision timm pandas requests
+
+#######################################################
+# To run in Google Colab, uncomment the following line:
+
+# !pip install timm pandas requests
+
+#############################
+# then run the script below:
 
 from PIL import Image
 import torch

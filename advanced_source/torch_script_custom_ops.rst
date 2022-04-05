@@ -579,13 +579,13 @@ custom operator, that loads and executes a serialized TorchScript model:
     }
 
     // Deserialize the ScriptModule from a file using torch::jit::load().
-    std::shared_ptr<torch::jit::script::Module> module = torch::jit::load(argv[1]);
+    torch::jit::script::Module module = torch::jit::load(argv[1]);
 
     std::vector<torch::jit::IValue> inputs;
     inputs.push_back(torch::randn({4, 8}));
     inputs.push_back(torch::randn({8, 5}));
 
-    torch::Tensor output = module->forward(std::move(inputs)).toTensor();
+    torch::Tensor output = module.forward(std::move(inputs)).toTensor();
 
     std::cout << output << std::endl;
   }
@@ -605,7 +605,7 @@ Along with a small ``CMakeLists.txt`` file:
 
 At this point, we should be able to build the application:
 
-.. code-block::
+.. code-block:: shell
 
   $ mkdir build
   $ cd build
@@ -645,7 +645,7 @@ At this point, we should be able to build the application:
 
 And run it without passing a model just yet:
 
-.. code-block::
+.. code-block:: shell
 
   $ ./example_app
   usage: example_app <path-to-exported-script-module>
@@ -672,7 +672,7 @@ The last line will serialize the script function into a file called
 "example.pt". If we then pass this serialized model to our C++ application, we
 can run it straight away:
 
-.. code-block::
+.. code-block:: shell
 
   $ ./example_app example.pt
   terminate called after throwing an instance of 'torch::jit::script::ErrorReport'
@@ -1029,5 +1029,5 @@ visible to TorchScript:
 
   >>> import torch
   >>> torch.ops.load_library("warp_perspective.so")
-  >>> print(torch.ops.custom.warp_perspective)
+  >>> print(torch.ops.my_ops.warp_perspective)
   <built-in method custom::warp_perspective of PyCapsule object at 0x7ff51c5b7bd0>

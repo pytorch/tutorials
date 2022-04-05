@@ -4,7 +4,7 @@ Writing Custom Datasets, DataLoaders and Transforms
 ===================================================
 **Author**: `Sasank Chilamkurthy <https://chsasank.github.io>`_
 
-A lot of effort in solving any machine learning problem goes in to
+A lot of effort in solving any machine learning problem goes into
 preparing the data. PyTorch provides many tools to make data loading
 easy and hopefully, to make your code more readable. In this tutorial,
 we will see how to load and preprocess/augment data from a non trivial
@@ -59,8 +59,9 @@ plt.ion()   # interactive mode
 #     0805personali01.jpg,27,83,27,98, ... 84,134
 #     1084239450_e76e00b7e7.jpg,70,236,71,257, ... ,128,312
 #
-# Let's quickly read the CSV and get the annotations in an (N, 2) array where N
-# is the number of landmarks.
+# Let's take a single image name and its annotations from the CSV, in this case row index number 65
+# for person-7.jpg just as an example. Read it, store the image name in ``img_name`` and store its
+# annotations in an (L, 2) array ``landmarks`` where L is the number of landmarks in that row.
 #
 
 landmarks_frame = pd.read_csv('data/faces/face_landmarks.csv')
@@ -104,7 +105,7 @@ plt.show()
 #
 # -  ``__len__`` so that ``len(dataset)`` returns the size of the dataset.
 # -  ``__getitem__`` to support the indexing such that ``dataset[i]`` can
-#    be used to get :math:`i`\ th sample
+#    be used to get :math:`i`\ th sample.
 #
 # Let's create a dataset class for our face landmarks dataset. We will
 # read the csv in ``__init__`` but leave the reading of images to
@@ -186,7 +187,7 @@ for i in range(len(face_dataset)):
 #
 # One issue we can see from the above is that the samples are not of the
 # same size. Most neural networks expect the images of a fixed size.
-# Therefore, we will need to write some prepocessing code.
+# Therefore, we will need to write some preprocessing code.
 # Let's create three transforms:
 #
 # -  ``Rescale``: to scale the image
@@ -286,11 +287,17 @@ class ToTensor(object):
 
         # swap color axis because
         # numpy image: H x W x C
-        # torch image: C X H X W
+        # torch image: C x H x W
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
                 'landmarks': torch.from_numpy(landmarks)}
-
+    
+######################################################################
+# .. note::
+#     In the example above, `RandomCrop` uses an external library's random number generator 
+#     (in this case, Numpy's `np.random.int`). This can result in unexpected behavior with `DataLoader` 
+#     (see https://pytorch.org/docs/stable/notes/faq.html#my-data-loader-workers-return-identical-random-numbers). 
+#     In practice, it is safer to stick to PyTorch's random number generator, e.g. by using `torch.randint` instead.
 
 ######################################################################
 # Compose transforms
@@ -334,7 +341,7 @@ plt.show()
 #
 # -  An image is read from the file on the fly
 # -  Transforms are applied on the read image
-# -  Since one of the transforms is random, data is augmentated on
+# -  Since one of the transforms is random, data is augmented on
 #    sampling
 #
 # We can iterate over the created dataset with a ``for i in range``
@@ -396,6 +403,10 @@ def show_landmarks_batch(sample_batched):
 
         plt.title('Batch from dataloader')
 
+# if you are using Windows, uncomment the next line and indent the for loop.
+# you might need to go back and change "num_workers" to 0. 
+
+# if __name__ == '__main__':
 for i_batch, sample_batched in enumerate(dataloader):
     print(i_batch, sample_batched['image'].size(),
           sample_batched['landmarks'].size())
