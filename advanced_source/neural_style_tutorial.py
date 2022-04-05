@@ -113,9 +113,6 @@ def image_loader(image_name):
 style_img = image_loader("./data/images/neural-style/picasso.jpg")
 content_img = image_loader("./data/images/neural-style/dancing.jpg")
 
-assert style_img.size() == content_img.size(), \
-    "we need to import style and content images of the same size"
-
 
 ######################################################################
 # Now, let's create a function that displays an image by reconverting a 
@@ -180,7 +177,8 @@ class ContentLoss(nn.Module):
         self.target = target.detach()
 
     def forward(self, input):
-        self.loss = F.mse_loss(input, self.target)
+        if input.shape[-2:] == self.target.shape[-2:]:
+            self.loss = F.mse_loss(input, self.target)
         return input
 
 ######################################################################
@@ -243,7 +241,8 @@ class StyleLoss(nn.Module):
 
     def forward(self, input):
         G = gram_matrix(input)
-        self.loss = F.mse_loss(G, self.target)
+        if G.shape[-1] == self.target.shape[-1]:
+            self.loss = F.mse_loss(G, self.target)
         return input
 
 
@@ -302,7 +301,7 @@ class Normalization(nn.Module):
 # 
 
 # desired depth layers to compute style/content losses :
-content_layers_default = ['conv_4']
+content_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 style_layers_default = ['conv_1', 'conv_2', 'conv_3', 'conv_4', 'conv_5']
 
 def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
