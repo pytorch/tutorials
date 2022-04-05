@@ -32,11 +32,16 @@ of backprop, check out this `video from
 
 
 Usage in PyTorch
-~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 Let's take a look at a single training step.
 For this example, we load a pretrained resnet18 model from ``torchvision``.
 We create a random data tensor to represent a single image with 3 channels, and height & width of 64,
-and its corresponding ``label`` initialized to some random values.
+and its corresponding ``label`` initialized to some random values. Label in pretrained models has
+shape (1,1000).
+
+.. note::
+    This tutorial work only on CPU and will not work on GPU (even if tensor are moved to CUDA).
+
 """
 import torch, torchvision
 model = torchvision.models.resnet18(pretrained=True)
@@ -61,7 +66,7 @@ loss = (prediction - labels).sum()
 loss.backward() # backward pass
 
 ############################################################
-# Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and momentum of 0.9.
+# Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and `momentum <https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d>`__ of 0.9.
 # We register all the parameters of the model in the optimizer.
 #
 

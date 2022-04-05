@@ -220,9 +220,6 @@ f=print_size_of_model(float_lstm,"fp32")
 q=print_size_of_model(quantized_lstm,"int8")
 print("{0:.2f} times smaller".format(f/q))
 
-# note that this value is wrong in PyTorch 1.4 due to https://github.com/pytorch/pytorch/issues/31468
-# this will be fixed in 1.5 with https://github.com/pytorch/pytorch/pull/31540
-
 
 ######################################################################
 # 4. Look at Latency
@@ -302,5 +299,5 @@ print('mean absolute value of the difference between the output tensors is {0:.5
 #
 # Blogs
 # ~~~~~~~~~~~~~~
-# ` Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
+# `Introduction to Quantization on PyTorch <https://pytorch.org/blog/introduction-to-quantization-on-pytorch/>`_
 #

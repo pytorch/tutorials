@@ -206,6 +206,27 @@ into C++. Our primary datatype for all computations will be
 also that we can include ``<iostream>`` or *any other C or C++ header* -- we have
 the full power of C++11 at our disposal.
 
+Note that CUDA-11.5 nvcc will hit internal compiler error while parsing torch/extension.h on Windows.
+To workaround the issue, move python binding logic to pure C++ file.
+Example use:
+
+.. code-block:: cpp
+
+  #include <ATen/ATen.h>
+  at::Tensor SigmoidAlphaBlendForwardCuda(....)
+
+Instead of:
+
+.. code-block:: cpp
+
+  #include <torch/extension.h>
+  torch::Tensor SigmoidAlphaBlendForwardCuda(...)
+
+Currently open issue for nvcc bug `here
+<https://github.com/pytorch/pytorch/issues/69460>`_.
+Complete workaround code example `here
+<https://github.com/facebookresearch/pytorch3d/commit/cb170ac024a949f1f9614ffe6af1c38d972f7d48>`_. 
+
 Forward Pass
 ************
 
@@ -441,7 +462,7 @@ class citizens of PyTorch::
       @staticmethod
       def backward(ctx, grad_h, grad_cell):
           outputs = lltm_cpp.backward(
-              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_variables)
+              grad_h.contiguous(), grad_cell.contiguous(), *ctx.saved_tensors)
           d_old_h, d_input, d_weights, d_bias, d_old_cell = outputs
           return d_input, d_weights, d_bias, d_old_h, d_old_cell
 
@@ -497,7 +518,7 @@ duration::
       (new_h.sum() + new_C.sum()).backward()
       backward += time.time() - start
 
-  print('Forward: {:.3f} us | Backward {:.3f} us'.format(forward * 1e6/1e5, backward * 1e6/1e5))
+  print('Forward: {:.3f} s | Backward {:.3f} s'.format(forward, backward))
 
 If we run this code with the original LLTM we wrote in pure Python at the start
 of this post, we get the following numbers (on my machine)::
@@ -667,7 +688,7 @@ We'll start with the C++ file, which we'll call ``lltm_cuda.cpp``, for example:
 
   // C++ interface
 
-  #define CHECK_CUDA(x) TORCH_CHECK(x.type().is_cuda(), #x " must be a CUDA tensor")
+  #define CHECK_CUDA(x) TORCH_CHECK(x.device().is_cuda(), #x " must be a CUDA tensor")
   #define CHECK_CONTIGUOUS(x) TORCH_CHECK(x.is_contiguous(), #x " must be contiguous")
   #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 

@@ -85,7 +85,6 @@ x_train, y_train, x_valid, y_valid = map(
     torch.tensor, (x_train, y_train, x_valid, y_valid)
 )
 n, c = x_train.shape
-x_train, x_train.shape, y_train.min(), y_train.max()
 print(x_train, y_train)
 print(x_train.shape)
 print(y_train.min(), y_train.max())
@@ -135,8 +134,8 @@ def log_softmax(x):
 def model(xb):
     return log_softmax(xb @ weights + bias)
 
-###############################################################################
-# In the above, the ``@`` stands for the dot product operation. We will call
+######################################################################################
+# In the above, the ``@`` stands for the matrix multiplication operation. We will call
 # our function on one batch of data (in this case, 64 images).  This is
 # one *forward pass*.  Note that our predictions won't be any better than
 # random at this stage, since we start with random weights.
@@ -754,8 +753,7 @@ fit(epochs, model, loss_func, opt, train_dl, valid_dl)
 #
 # Our CNN is fairly concise, but it only works with MNIST, because:
 #  - It assumes the input is a 28\*28 long vector
-#  - It assumes that the final CNN grid size is 4\*4 (since that's the average
-# pooling kernel size we used)
+#  - It assumes that the final CNN grid size is 4\*4 (since that's the average pooling kernel size we used)
 #
 # Let's get rid of these two assumptions, so our model works with any 2d
 # single channel image. First, we can remove the initial Lambda layer by

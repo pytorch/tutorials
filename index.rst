@@ -2,18 +2,13 @@ Welcome to PyTorch Tutorials
 ============================
 .. raw:: html
 
-    <p>Share your thoughts. Take our short <a href=https://forms.gle/ekTZY4uSJaw5Vr849 target="_blank">PyTorch Tutorials reader survey</a>. </p>
-
-
-.. raw:: html
-
     <div class="tutorials-callout-container">
         <div class="row">
 
 .. Add callout items below this line
 
 .. customcalloutitem::
-   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide. 
+   :description: Familiarize yourself with PyTorch concepts and modules. Learn how to load data, build deep neural networks, train and save your models in this quickstart guide.
    :header: Learn the Basics
    :button_link:  beginner/basics/intro.html
    :button_text: Get started with PyTorch
@@ -62,6 +57,13 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
+   :header: Introduction to PyTorch on YouTube
+   :card_description: An introduction to building a complete ML workflow with PyTorch. Follows the PyTorch Beginner Series on YouTube.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: beginner/introyt.html
+   :tags: Getting-Started
+
+.. customcarditem::
    :header: Learning PyTorch with Examples
    :card_description: This tutorial introduces the fundamental concepts of PyTorch through self-contained examples.
    :image: _static/img/thumbnails/cropped/learning-pytorch-with-examples.png
@@ -76,11 +78,11 @@ Welcome to PyTorch Tutorials
    :tags: Getting-Started
 
 .. customcarditem::
-   :header: Visualizing Models, Data, and Training with Tensorboard
+   :header: Visualizing Models, Data, and Training with TensorBoard
    :card_description: Learn to use TensorBoard to visualize data and model training.
    :image: _static/img/thumbnails/cropped/visualizing-with-tensorboard.png
    :link: intermediate/tensorboard_tutorial.html
-   :tags: Interpretability,Getting-Started,Tensorboard
+   :tags: Interpretability,Getting-Started,TensorBoard
 
 .. Image/Video
 
@@ -97,7 +99,7 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/Transfer-Learning-for-Computer-Vision-Tutorial.png
    :link: beginner/transfer_learning_tutorial.html
    :tags: Image/Video
-   
+
 .. customcarditem::
    :header: Optimizing Vision Transformer Model
    :card_description: Apply cutting-edge, attention-based transformer models to computer vision tasks.
@@ -119,20 +121,83 @@ Welcome to PyTorch Tutorials
    :link: beginner/dcgan_faces_tutorial.html
    :tags: Image/Video
 
+.. customcarditem::
+   :header: Spatial Transformer Networks Tutorial
+   :card_description: Learn how to augment your network using a visual attention mechanism.
+   :image: _static/img/stn/Five.gif
+   :link: intermediate/spatial_transformer_tutorial.html
+   :tags: Image/Video
+
 .. Audio
 
 .. customcarditem::
-   :header: torchaudio Tutorial
-   :card_description: Learn to load and preprocess data from a simple dataset with PyTorch's torchaudio library.
+   :header: Audio IO
+   :card_description: Learn to load data with torchaudio.
    :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
-   :link: beginner/audio_preprocessing_tutorial.html
+   :link: beginner/audio_io_tutorial.html
    :tags: Audio
 
 .. customcarditem::
-   :header: Speech Command Recognition
+   :header: Audio Resampling
+   :card_description: Learn to resample audio waveforms using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_resampling_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Data Augmentation
+   :card_description: Learn to apply data augmentations using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_data_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Extractions
+   :card_description: Learn to extract features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_extractions_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Feature Augmentation
+   :card_description: Learn to augment features using torchaudio.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_feature_augmentation_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Audio Datasets
+   :card_description: Learn to use torchaudio datasets.
+   :image: _static/img/thumbnails/cropped/torchaudio-Tutorial.png
+   :link: beginner/audio_datasets_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Automatic Speech Recognition with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a speech recognition application.
+   :image: _static/img/thumbnails/cropped/torchaudio-asr.png
+   :link: intermediate/speech_recognition_pipeline_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Speech Command Classification
    :card_description: Learn how to correctly format an audio dataset and then train/test an audio classifier network on the dataset.
    :image: _static/img/thumbnails/cropped/torchaudio-speech.png
-   :link: intermediate/speech_command_recognition_with_torchaudio.html
+   :link: intermediate/speech_command_classification_with_torchaudio_tutorial.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Text-to-Speech with torchaudio
+   :card_description: Learn how to use torchaudio's pretrained models for building a text-to-speech application.
+   :image: _static/img/thumbnails/cropped/torchaudio-speech.png
+   :link: intermediate/text_to_speech_with_torchaudio.html
+   :tags: Audio
+
+.. customcarditem::
+   :header: Forced Alignment with Wav2Vec2 in torchaudio
+   :card_description: Learn how to use torchaudio's Wav2Vec2 pretrained models for aligning text to speech
+   :image: _static/img/thumbnails/cropped/torchaudio-alignment.png
+   :link: intermediate/forced_alignment_with_torchaudio_tutorial.html
    :tags: Audio
 
 .. Text
@@ -167,7 +232,7 @@ Welcome to PyTorch Tutorials
 
 .. customcarditem::
    :header: Text Classification with Torchtext
-   :card_description: This is the third and final tutorial on doing “NLP From Scratch”, where we write our own classes and functions to preprocess the data to do our NLP modeling tasks.
+   :card_description: Learn how to build the dataset and classify text using torchtext library.
    :image: _static/img/thumbnails/cropped/Text-Classification-with-TorchText.png
    :link: beginner/text_sentiment_ngrams_tutorial.html
    :tags: Text
@@ -288,26 +353,53 @@ Welcome to PyTorch Tutorials
    :tags: Frontend-APIs,TorchScript,C++
 
 .. customcarditem::
+   :header: Real Time Inference on Raspberry Pi 4
+   :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
+   :image: _static/img/thumbnails/cropped/realtime_rpi.png
+   :link: intermediate/realtime_rpi.html
+   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+
+.. customcarditem::
    :header: Autograd in C++ Frontend
    :card_description: The autograd package helps build flexible and dynamic nerural netorks. In this tutorial, exploreseveral examples of doing autograd in PyTorch C++ frontend
    :image: _static/img/thumbnails/cropped/Autograd-in-Cpp-Frontend.png
    :link: advanced/cpp_autograd.html
    :tags: Frontend-APIs,C++
-   
+
 .. customcarditem::
    :header: Registering a Dispatched Operator in C++
    :card_description: The dispatcher is an internal component of PyTorch which is responsible for figuring out what code should actually get run when you call a function like torch::add.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
 .. customcarditem::
    :header: Extending Dispatcher For a New Backend in C++
    :card_description: Learn how to extend the dispatcher to add a new device living outside of the pytorch/pytorch repo and maintain it to keep in sync with native PyTorch devices.
-   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.PNG
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
    :link: advanced/extend_dispatcher.html
    :tags: Extending-PyTorch,Frontend-APIs,C++
 
+.. customcarditem::
+   :header: Custom Function Tutorial: Double Backward
+   :card_description: Learn how to write a custom autograd Function that supports double backward.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/custom_function_double_backward_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
+   :header: Custom Function Tutorial: Fusing Convolution and Batch Norm
+   :card_description: Learn how to create a custom autograd Function that fuses batch norm into a convolution to improve memory usage.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/custom_function_conv_bn_tutorial.html
+   :tags: Extending-PyTorch,Frontend-APIs
+
+.. customcarditem::
+   :header: Forward-mode Automatic Differentiation
+   :card_description: Learn how to use forward-mode automatic differentiation.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/forward_ad_usage.html
+   :tags: Frontend-APIs
 
 .. Model Optimization
 
@@ -319,11 +411,11 @@ Welcome to PyTorch Tutorials
    :tags: Model-Optimization,Best-Practice,Profiling
 
 .. customcarditem::
-   :header: Performance Profiling in Tensorboard
-   :card_description: Learn how to use tensorboard plugin to profile and analyze your model's performance.
+   :header: Performance Profiling in TensorBoard
+   :card_description: Learn how to use the TensorBoard plugin to profile and analyze your model's performance.
    :image: _static/img/thumbnails/cropped/profiler.png
    :link: intermediate/tensorboard_profiler_tutorial.html
-   :tags: Model-Optimization,Best-Practice,Profiling
+   :tags: Model-Optimization,Best-Practice,Profiling,TensorBoard
 
 .. customcarditem::
    :header: Hyperparameter Tuning Tutorial
@@ -331,6 +423,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/ray-tune.png
    :link: beginner/hyperparameter_tuning_tutorial.html
    :tags: Model-Optimization,Best-Practice
+
+ .. customcarditem::
+    :header: Optimizing Vision Transformer Model
+    :card_description: Learn how to use Facebook Data-efficient Image Transformers DeiT and script and optimize it for mobile.
+    :image: _static/img/thumbnails/cropped/mobile.png
+    :link: beginner/vt_tutorial.html
+    :tags: Model-Optimization,Best-Practice,Mobile
 
 .. customcarditem::
    :header: Parametrizations Tutorial
@@ -359,13 +458,20 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/experimental-Dynamic-Quantization-on-BERT.png
    :link: intermediate/dynamic_quantization_bert_tutorial.html
    :tags: Text,Quantization,Model-Optimization
-   
+
 .. customcarditem::
    :header: (beta) Quantized Transfer Learning for Computer Vision Tutorial
    :card_description: Extends the Transfer Learning for Computer Vision Tutorial using a quantized model.
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: intermediate/quantized_transfer_learning_tutorial.html
    :tags: Image/Video,Quantization,Model-Optimization
+
+.. customcarditem::
+   :header: (beta) Static Quantization with Eager Mode in PyTorch
+   :card_description: This tutorial shows how to do post-training static quantization.
+   :image: _static/img/thumbnails/cropped/60-min-blitz.png
+   :link: advanced/static_quantization_tutorial.html
+   :tags: Quantization
 
 .. Parallel-and-Distributed-Training
 
@@ -395,6 +501,13 @@ Welcome to PyTorch Tutorials
    :card_description: Set up the distributed package of PyTorch, use the different communication strategies, and go over some the internals of the package.
    :image: _static/img/thumbnails/cropped/Writing-Distributed-Applications-with-PyTorch.png
    :link: intermediate/dist_tuto.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Customize Process Group Backends Using Cpp Extensions
+   :card_description: Extend ProcessGroup with custom collective communication implementations.
+   :image: _static/img/thumbnails/cropped/Customize-Process-Group-Backends-Using-Cpp-Extensions.png
+   :link: intermediate/process_group_cpp_extension_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. customcarditem::
@@ -446,6 +559,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting Started with FSDP.png
+   :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -461,6 +581,15 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/android.png
    :link: beginner/deeplabv3_on_android.html
    :tags: Mobile
+
+.. Recommendation Systems
+
+.. customcarditem::
+   :header: Introduction to TorchRec
+   :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: intermediate/torchrec_tutorial.html
+   :tags: TorchRec,Recommender
 
 .. End of tutorial card section
 
@@ -497,7 +626,7 @@ Additional Resources
    :header: PyTorch Cheat Sheet
    :description: Quick overview to essential PyTorch elements.
    :button_link: beginner/ptcheat.html
-   :button_text: Download
+   :button_text: Open
 
 .. customcalloutitem::
    :header: Tutorials on GitHub
@@ -509,7 +638,7 @@ Additional Resources
    :header: Run Tutorials on Google Colab
    :description: Learn how to copy tutorial data into Google Drive so that you can run tutorials on Google Colab.
    :button_link: beginner/colab.html
-   :button_text: Download
+   :button_text: Open
 
 .. End of callout section
 
@@ -547,7 +676,22 @@ Additional Resources
    beginner/basics/autogradqs_tutorial
    beginner/basics/optimization_tutorial
    beginner/basics/saveloadrun_tutorial
-   
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :includehidden:
+   :caption: Introduction to PyTorch on YouTube
+
+   beginner/introyt
+   beginner/introyt/introyt1_tutorial
+   beginner/introyt/tensors_deeper_tutorial
+   beginner/introyt/autogradyt_tutorial
+   beginner/introyt/modelsyt_tutorial
+   beginner/introyt/tensorboardyt_tutorial
+   beginner/introyt/trainingyt
+   beginner/introyt/captumyt
+
 .. toctree::
    :maxdepth: 2
    :hidden:
@@ -569,6 +713,7 @@ Additional Resources
    beginner/transfer_learning_tutorial
    beginner/fgsm_tutorial
    beginner/dcgan_faces_tutorial
+   intermediate/spatial_transformer_tutorial
    beginner/vt_tutorial
 
 .. toctree::
@@ -577,9 +722,16 @@ Additional Resources
    :hidden:
    :caption: Audio
 
-   beginner/audio_preprocessing_tutorial
-   intermediate/speech_command_recognition_with_torchaudio
-
+   beginner/audio_io_tutorial
+   beginner/audio_resampling_tutorial
+   beginner/audio_data_augmentation_tutorial
+   beginner/audio_feature_extractions_tutorial
+   beginner/audio_feature_augmentation_tutorial
+   beginner/audio_datasets_tutorial
+   intermediate/speech_recognition_pipeline_tutorial
+   intermediate/speech_command_classification_with_torchaudio_tutorial
+   intermediate/text_to_speech_with_torchaudio
+   intermediate/forced_alignment_with_torchaudio_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -614,13 +766,14 @@ Additional Resources
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
    advanced/super_resolution_with_onnxruntime
+   intermediate/realtime_rpi
 
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
    :caption: Code Transforms with FX
-   
+
    intermediate/fx_conv_bn_fuser
    intermediate/fx_profiling_tutorial
 
@@ -631,16 +784,19 @@ Additional Resources
    :caption: Frontend APIs
 
    intermediate/memory_format_tutorial
+   intermediate/forward_ad_usage
    advanced/cpp_frontend
    advanced/torch-script-parallelism
    advanced/cpp_autograd
-   
+
 .. toctree::
    :maxdepth: 2
    :includehidden:
    :hidden:
    :caption: Extending PyTorch
 
+   intermediate/custom_function_double_backward_tutorial
+   intermediate/custom_function_conv_bn_tutorial
    advanced/cpp_extension
    advanced/torch_script_custom_ops
    advanced/torch_script_custom_classes
@@ -656,11 +812,13 @@ Additional Resources
    beginner/profiler
    intermediate/tensorboard_profiler_tutorial
    beginner/hyperparameter_tuning_tutorial
+   beginner/vt_tutorial
    intermediate/parametrizations
    intermediate/pruning_tutorial
    advanced/dynamic_quantization_tutorial
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
+   advanced/static_quantization_tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -672,6 +830,8 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
+   intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
    intermediate/dist_pipeline_parallel_tutorial
@@ -679,6 +839,7 @@ Additional Resources
    advanced/rpc_ddp_tutorial
    intermediate/pipeline_tutorial
    advanced/ddp_pipeline
+   advanced/generic_join
 
 .. toctree::
    :maxdepth: 2
@@ -688,3 +849,11 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Recommendation Systems
+
+   intermediate/torchrec_tutorial

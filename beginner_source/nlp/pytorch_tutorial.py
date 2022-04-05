@@ -9,7 +9,7 @@ Introduction to Torch's tensor library
 All of deep learning is computations on tensors, which are
 generalizations of a matrix that can be indexed in more than 2
 dimensions. We will see exactly what this means in-depth later. First,
-lets look what we can do with tensors.
+let's look what we can do with tensors.
 """
 # Author: Robert Guthrie
 
@@ -52,7 +52,7 @@ print(T)
 # A note on terminology:
 # when I say "tensor" in this tutorial, it refers
 # to any torch.Tensor object. Matrices and vectors are special cases of
-# torch.Tensors, where their dimension is 1 and 2 respectively. When I am
+# torch.Tensors, where their dimension is 2 and 1 respectively. When I am
 # talking about 3D tensors, I will explicitly use the term "3D tensor".
 #
 
@@ -162,7 +162,7 @@ print(x.view(2, -1))
 # other operation, etc.)
 #
 # If ``requires_grad=True``, the Tensor object keeps track of how it was
-# created. Lets see it in action.
+# created. Let's see it in action.
 #
 
 # Tensor factory methods have a ``requires_grad`` flag
@@ -187,7 +187,7 @@ print(z.grad_fn)
 # But how does that help us compute a gradient?
 #
 
-# Lets sum up all the entries in z
+# Let's sum up all the entries in z
 s = z.sum()
 print(s)
 print(s.grad_fn)
@@ -222,7 +222,7 @@ print(s.grad_fn)
 
 
 ######################################################################
-# Lets have Pytorch compute the gradient, and see that we were right:
+# Let's have Pytorch compute the gradient, and see that we were right:
 # (note if you run this block multiple times, the gradient will increment.
 # That is because Pytorch *accumulates* the gradient into the .grad
 # property, since for many models this is very convenient.)

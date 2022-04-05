@@ -56,7 +56,7 @@ Conditional Random Field for named-entity recognition. The LSTM tagger
 above is typically sufficient for part-of-speech tagging, but a sequence
 model like the CRF is really essential for strong performance on NER.
 Familiarity with CRF's is assumed. Although this name sounds scary, all
-the model is is a CRF but where an LSTM provides the features. This is
+the model is a CRF but where an LSTM provides the features. This is
 an advanced model though, far more complicated than any earlier model in
 this tutorial. If you want to skip it, that is fine. To see if you're
 ready, see if you can:
