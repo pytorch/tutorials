@@ -9,7 +9,7 @@ classification model in real time (30 fps+) on the CPU.
 This was all tested with Raspberry Pi 4 Model B 4GB but should work with the 2GB
 variant as well as on the 3B with reduced performance.
 
-.. image:: https://user-images.githubusercontent.com/909104/152895495-7e9910c1-2b9f-4299-a788-d7ec43a93424.jpg
+.. image:: https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif
 
 Prerequisites
 ~~~~~~~~~~~~~~~~
@@ -78,8 +78,7 @@ We can now check that everything installed correctly:
 
 .. code:: shell
 
-  $ python3 -c "import torch; print(torch.__version__)"
-  1.10.0+cpu
+  $ python -c "import torch; print(torch.__version__)"
 
 .. image:: https://user-images.githubusercontent.com/909104/152874271-d7057c2d-80fd-4761-aed4-df6c8b7aa99f.png
 
@@ -116,7 +115,7 @@ shuffling to get it into the expected RGB format.
     # convert opencv output from BGR to RGB
     image = image[:, :, [2, 1, 0]]
 
-NOTE: You can get even more performance by training the model directly with OpenCV's BGR data format to remove the conversion step.
+This data reading and processing takes about ``3.5 ms``.
 
 Image Preprocessing
 ~~~~~~~~~~~~~~~~~~~~
@@ -128,11 +127,55 @@ We need to take the frames and transform them into the format the model expects.
     from torchvision import transforms
 
     preprocess = transforms.Compose([
+        # convert the frame to a CHW torch tensor for training
         transforms.ToTensor(),
+        # normalize the colors to the range that mobilenet_v2/3 expect
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     input_tensor = preprocess(image)
-    input_batch = input_tensor.unsqueeze(0) # create a mini-batch as expected by the model
+    # The model can handle multiple images simultaneously so we need to add an
+    # empty dimension for the batch.
+    # [3, 224, 224] -> [1, 3, 224, 224]
+    input_batch = input_tensor.unsqueeze(0)
+
+Model Choices
+~~~~~~~~~~~~~~~
+
+There's a number of models you can choose from to use with different performance
+characteristics. Not all models provide a ``qnnpack`` pretrained variant so for
+testing purposes you should chose one that does but if you train and quantize
+your own model you can use any of them.
+
+We're using ``mobilenet_v2`` for this tutorial since it has good performance and
+accuracy.
+
+Raspberry Pi 4 Benchmark Results:
+
++--------------------+------+-----------------------+-----------------------+--------------------+
+| Model              | FPS  | Total Time (ms/frame) | Model Time (ms/frame) | qnnpack Pretrained |
++====================+======+=======================+=======================+====================+
+| mobilenet_v2       | 33.7 |                  29.7 |                  26.4 | True               |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| mobilenet_v3_large | 29.3 |                  34.1 |                  30.7 | True               |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| resnet18           |  9.2 |                 109.0 |                 100.3 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| resnet50           |  4.3 |                 233.9 |                 225.2 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| resnext101_32x8d   |  1.1 |                 892.5 |                 885.3 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| inception_v3       |  4.9 |                 204.1 |                 195.5 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| googlenet          |  7.4 |                 135.3 |                 132.0 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| shufflenet_v2_x0_5 | 46.7 |                  21.4 |                  18.2 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| shufflenet_v2_x1_0 | 24.4 |                  41.0 |                  37.7 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| shufflenet_v2_x1_5 | 16.8 |                  59.6 |                  56.3 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
+| shufflenet_v2_x2_0 | 11.6 |                  86.3 |                  82.7 | False              |
++--------------------+------+-----------------------+-----------------------+--------------------+
 
 MobileNetV2: Quantization and JIT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,7 +206,6 @@ We then want to jit the model to reduce Python overhead and fuse any ops. Jit gi
 .. code:: python
 
     net = torch.jit.script(net)
-    net.eval()
 
 Putting It Together
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,7 +238,6 @@ We can now put all the pieces together and run it:
     net = models.quantization.mobilenet_v2(pretrained=True, quantize=True)
     # jit model to take it from ~20fps to ~30fps
     net = torch.jit.script(net)
-    net.eval()
 
     started = time.time()
     last_logged = time.time()
@@ -243,6 +284,50 @@ If we check ``htop`` we see that we have almost 100% utilization.
 
 .. image:: https://user-images.githubusercontent.com/909104/152892630-f094b84b-19ba-48f6-8632-1b954abc59c7.png
 
+To verify that it's working end to end we can compute the probabilities of the
+classes and
+`use the ImageNet class labels <https://gist.github.com/yrevar/942d3a0ac09ec9e5eb3a>`_
+to print the detections.
+
+.. code:: python
+
+    top = list(enumerate(output[0].softmax(dim=0)))
+    top.sort(key=lambda x: x[1], reverse=True)
+    for idx, val in top[:10]:
+        print(f"{val.item()*100:.2f}% {classes[idx]}")
+
+``mobilenet_v3_large`` running in real time:
+
+.. image:: https://user-images.githubusercontent.com/909104/153093710-bc736b6f-69d9-4a50-a3e8-9f2b2c9e04fd.gif
+
+
+Detecting an orange:
+
+.. image:: https://user-images.githubusercontent.com/909104/153092153-d9c08dfe-105b-408a-8e1e-295da8a78c19.jpg
+
+
+Detecting a mug:
+
+.. image:: https://user-images.githubusercontent.com/909104/153092155-4b90002f-a0f3-4267-8d70-e713e7b4d5a0.jpg
+
+
+Troubleshooting: Performance
+~~~~~~~~~~~~~~~~~
+
+PyTorch by default will use all of the cores available. If you have anything
+running in the background on the Raspberry Pi it may cause contention with the
+model inference causing latency spikes. To alleviate this you can reduce the
+number of threads which will reduce the peak latency at a small performance
+penalty.
+
+.. code:: python
+
+  torch.set_num_threads(2)
+
+For ``shufflenet_v2_x1_5`` using ``2 threads`` instead of ``4 threads``
+increases best case latency to ``72 ms`` from ``60 ms`` but eliminates the
+latency spikes of ``128 ms``.
+
 Next Steps
 ~~~~~~~~~~~~~
 
@@ -256,4 +341,5 @@ directly deploy with good performance on a Raspberry Pi.
 See more:
 
 * `Quantization <https://pytorch.org/docs/stable/quantization.html>`_ for more information on how to quantize and fuse your model.
-* :ref:`beginner/transfer_learning_tutorial` for how to use transfer learning to fine tune a pre-existing model to your dataset.
+* `Transfer Learning Tutorial <https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html>`_
+  for how to use transfer learning to fine tune a pre-existing model to your dataset.

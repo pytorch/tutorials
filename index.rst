@@ -559,6 +559,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting Started with FSDP.png
+   :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -574,6 +581,15 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/android.png
    :link: beginner/deeplabv3_on_android.html
    :tags: Mobile
+
+.. Recommendation Systems
+
+.. customcarditem::
+   :header: Introduction to TorchRec
+   :card_description: TorchRec is a PyTorch domain library built to provide common sparsity & parallelism primitives needed for large-scale recommender systems.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: intermediate/torchrec_tutorial.html
+   :tags: TorchRec,Recommender
 
 .. End of tutorial card section
 
@@ -814,6 +830,7 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
@@ -832,3 +849,11 @@ Additional Resources
 
    beginner/deeplabv3_on_ios
    beginner/deeplabv3_on_android
+   
+.. toctree::
+   :maxdepth: 2
+   :includehidden:
+   :hidden:
+   :caption: Recommendation Systems
+
+   intermediate/torchrec_tutorial

@@ -265,7 +265,7 @@ play_audio(waveform, sample_rate)
 # Mel Filter Bank
 # ---------------
 #
-# ``torchaudio.functional.create_fb_matrix`` generates the filter bank
+# ``torchaudio.functional.melscale_fbanks`` generates the filter bank
 # for converting frequency bins to mel-scale bins.
 #
 # Since this function does not require input audio/features, there is no
@@ -277,7 +277,7 @@ n_fft = 256
 n_mels = 64
 sample_rate = 6000
 
-mel_filters = F.create_fb_matrix(
+mel_filters = F.melscale_fbanks(
     int(n_fft // 2 + 1),
     n_mels=n_mels,
     f_min=0.,
