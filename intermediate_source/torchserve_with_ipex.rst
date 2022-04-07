@@ -134,7 +134,7 @@ Figure 1. shows a typical two-socket configuration. Notice that each socket has 
    :align: center
 Figure 2.1. CPU information 
 
-Users can get their CPU information by running ``lscpu`` command on their Linux machine. Figure 2.1. shows an example of ``lscpu``  execution on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. Notice that there are 28 cores per socket, and 2 threads per core (i.e., hyperthreading is enabled). In other words, there are 28 logical cores in addition to 28 physical cores, giving a total of 56 cores per socket. And there are 2 sockets, giving a total of 112 cores (Thread(s) per core x Core(s) per socket x Socket(s) ). 
+Users can get their CPU information by running ``lscpu`` command on their Linux machine. Figure 2.1. shows an example of ``lscpu``  execution on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. Notice that there are 28 cores per socket, and 2 threads per core (i.e., hyperthreading is enabled). In other words, there are 28 logical cores in addition to 28 physical cores, giving a total of 56 cores per socket. And there are 2 sockets, giving a total of 112 cores (``Thread(s) per core`` x ``Core(s) per socket`` x ``Socket(s)``). 
 
 .. figure:: /_static/img/torchserve-ipex-images/8.png
    :width: 100%
