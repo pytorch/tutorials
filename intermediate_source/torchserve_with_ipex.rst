@@ -206,7 +206,7 @@ We'll compare the following three configurations:
 
 (3) core pinning via the launch script 
 
-After this exercise, we'll have verified that we prefer local memory access and avoiding logical cores via core pinning with a real TorchServe use case. 
+After this exercise, we'll have verified that we prefer avoiding logical cores and prefer local memory access via core pinning with a real TorchServe use case. 
 
 1. Default TorchServe setting (no core pinning) 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
