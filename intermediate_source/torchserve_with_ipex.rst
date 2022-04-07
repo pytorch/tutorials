@@ -227,7 +227,7 @@ The `base_handler <https://github.com/pytorch/serve/blob/master/ts/torch_handler
    :width: 80%
    :align: center
 
-We observe a very high Core Bound stall of 88.4%, decreasing pipeline efficiency. Core Bound stalls indicate sub-optimal use of available execution units in the CPU. For example, several GEMM instructions in a row competing for fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores could cause Core Bound stalls. And as described in the previous section, use of logical cores can amplify this problem.
+We observe a very high Core Bound stall of 88.4%, decreasing pipeline efficiency. Core Bound stalls indicate sub-optimal use of available execution units in the CPU. For example, several GEMM instructions in a row competing for fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores could cause Core Bound stalls. And as described in the previous section, use of logical cores amplifies this problem.
 
 
 .. figure:: /_static/img/torchserve-ipex-images/15.png
