@@ -96,7 +96,7 @@ We can visualize this by running ``htop`` command on Linux as shown below.
    :width: 100%
    :align: center
 
-We notice that the `Spin Time <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/reference/cpu-metrics-reference/spin-time.html>`_ is flagged, and `Imbalance or Serial Spinning <https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/reference/cpu-metrics-reference/spin-time/imbalance-or-serial-spinning-1.html>`_ contributed to the majority of it - 4.980 seconds out of the 8.982 seconds total. The Imbalance or Serial Spinning when using logical cores is due to insufficient concurrency of working threads as each logical thread contends for the same core resources. 
+We notice that the Spin Time is flagged, and Imbalance or Serial Spinning contributed to the majority of it - 4.980 seconds out of the 8.982 seconds total. The Imbalance or Serial Spinning when using logical cores is due to insufficient concurrency of working threads as each logical thread contends for the same core resources. 
 
 The Top Hotspots section of the execution summary indicates that ``__kmp_fork_barrier`` took 4.589 seconds of CPU time - during 9.33% of the CPU execution time, threads were just spinning at this barrier due to thread synchronization.  
 
