@@ -114,7 +114,7 @@ The Top Hotspots section of the execution summary indicates that ``__kmp_fork_ba
    
 We first note that the execution time dropped from 32 seconds to 23 seconds by avoiding logical cores. While there's still some non-negligible Imbalance or Serial Spinning, we note relative improvement from 4.980 seconds to 3.887 seconds. 
 
-By not using logical threads (instead, using 1 thread per physical core), we avoid logical threads contending for the same core resources. The Top Hotspots section also indicates relative improvement of kmp_fork_barrier time from 4.589 seconds to 3.530 seconds. 
+By not using logical threads (instead, using 1 thread per physical core), we avoid logical threads contending for the same core resources. The Top Hotspots section also indicates relative improvement of ``__kmp_fork_barrier`` time from 4.589 seconds to 3.530 seconds. 
 
 Local memory access is always faster than remote memory access 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
