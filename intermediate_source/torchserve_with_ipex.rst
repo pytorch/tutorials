@@ -325,7 +325,7 @@ Launcher will internally equally distribute physical cores to workers, and bind 
    :width: 100%
    :align: center
    
-4 main worker threads were launched, then each launched a `num_physical_cores/num_workers number` number (14) of threads affinitized to the assigned physical cores.
+4 main worker threads were launched, then each launched a ``num_physical_cores/num_workers`` number (14) of threads affinitized to the assigned physical cores.
 
 2. Core Bound stalls
 
