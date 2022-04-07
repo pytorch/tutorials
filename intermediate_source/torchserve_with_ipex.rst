@@ -45,7 +45,7 @@ Avoiding logical cores for deep learning workloads generally improves performanc
 
 The majority of time in deep learning training or inference is spent on millions of repeated operations of GEMM which is at the core of fully connected layers. Fully connected layers have been used for decades since multi-layer perceptrons (MLP) `proved to be a universal approximator of any continuous function <https://en.wikipedia.org/wiki/Universal_approximation_theorem>`_. Any MLP can be entirely represented as GEMM. And even a convolution can be represented as a GEMM by using a `Toepliz matrix <https://en.wikipedia.org/wiki/Toeplitz_matrix>`_. 
 
-Returning to the original topic, most GEMM operators benefit from using non-hyperthreading, because the majority of time in deep learning training or inference is spent on millions of repeated operations of GEMM running on fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores. With hyperthreading is enabled OpenMP threads will contend for the same GEMM execution units.
+Returning to the original topic, most GEMM operators benefit from using non-hyperthreading, because the majority of time in deep learning training or inference is spent on millions of repeated operations of GEMM running on fused-multiply-add (FMA) or dot-product (DP) execution units shared by hyperthreading cores. With hyperthreading enabled, OpenMP threads will contend for the same GEMM execution units.
 
 .. figure:: /_static/img/torchserve-ipex-images/1_.png
    :width: 70%
