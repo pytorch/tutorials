@@ -79,7 +79,7 @@ We'll use the following example of feeding ResNet50 dummy tensor:
     end = time.time()
     print('Inference took {:.2f} ms in average'.format((end-start)/100*1000))
 
-Throughout the blog, we'll run all exercises on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. The CPU information is shown in Figure 2.1.
+Throughout the blog, we'll use `Intel® VTune™ Profiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/vtune-profiler.html#gs.v4egjg>`_ to profile and verify optimizations. And we'll run all exercises on a machine with two Intel(R) Xeon(R) Platinum 8180M CPUs. The CPU information is shown in Figure 2.1. 
 
 Environment variable ``OMP_NUM_THREADS`` is used to set the number of threads for parallel region. We'll compare ``OMP_NUM_THREADS=2`` with (1) use of logical cores and (2) use of physical cores only. 
 
@@ -143,7 +143,7 @@ Figure 2.2. CPU information
 
 The 2 sockets are mapped to 2 NUMA nodes (NUMA node 0, NUMA node 1) respectively.  Physical cores are indexed prior to logical cores. As shown in Figure 2.2., the first 28 physical cores (0-27) and the first 28 logical cores (56-83) on the first socket are on NUMA node 0. And the second 28 physical cores (28-55) and the second 28 logical cores (84-111) on the second socket are on NUMA node 1. Cores on the same socket share local memory and last level cache (LLC) which is much faster than cross-socket communication via Intel UPI. 
 
-Now that we understand NUMA, cross-socket (UPI) traffic, local vs. remote memory access in multi-processor systems, let's profile and verify our understanding. We'll use `Intel® VTune™ Profiler <https://www.intel.com/content/www/us/en/developer/tools/oneapi/vtune-profiler.html#gs.v4egjg>`_ for this exercise. 
+Now that we understand NUMA, cross-socket (UPI) traffic, local vs. remote memory access in multi-processor systems, let's profile and verify our understanding. 
 
 :strong:`Exercise`
 
