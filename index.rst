@@ -1,5 +1,14 @@
 Welcome to PyTorch Tutorials
 ============================
+
+What's new in PyTorch tutorials?
+
+* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html>`__
+* `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__
+* `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html>`__
+* `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html>`__ (added functorch API capabilities)
+* `Real Time Inference on Raspberry Pi 4 (30 fps!) <https://pytorch.org/tutorials/intermediate/realtime_rpi.html>`__
+
 .. raw:: html
 
     <div class="tutorials-callout-container">
