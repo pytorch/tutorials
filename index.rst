@@ -357,7 +357,7 @@ Welcome to PyTorch Tutorials
    :card_description: This tutorial covers how to run quantized and fused models on a Raspberry Pi 4 at 30 fps.
    :image: _static/img/thumbnails/cropped/realtime_rpi.png
    :link: intermediate/realtime_rpi.html
-   :tags: TorchScript,Model Optimization,Image/Video,Quantization
+   :tags: TorchScript,Model-Optimization,Image/Video,Quantization
 
 .. customcarditem::
    :header: Autograd in C++ Frontend
@@ -472,6 +472,13 @@ Welcome to PyTorch Tutorials
    :image: _static/img/thumbnails/cropped/60-min-blitz.png
    :link: advanced/static_quantization_tutorial.html
    :tags: Quantization
+   
+.. customcarditem::
+   :header: Grokking PyTorch Intel CPU Performance from First Principles
+   :card_description: A case study on the TorchServe inference framework optimized with Intel® Extension for PyTorch.
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/torchserve_with_ipex
+   :tags: Model-Optimization,Production
 
 .. Parallel-and-Distributed-Training
 
@@ -819,6 +826,7 @@ Additional Resources
    intermediate/dynamic_quantization_bert_tutorial
    intermediate/quantized_transfer_learning_tutorial
    advanced/static_quantization_tutorial
+   intermediate/torchserve_with_ipex
 
 .. toctree::
    :maxdepth: 2
