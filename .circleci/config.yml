@@ -74,6 +74,10 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
 
         sudo pip -q install awscli==1.16.35
 
+         if [ -n "${CUDA_VERSION}" ]; then
+           nvidia-smi
+         fi
+
         # This IAM user only allows read-write access to ECR
         export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_ECR_READ_ONLY}
         export AWS_SECRET_ACCESS_KEY=${CIRCLECI_AWS_SECRET_KEY_FOR_ECR_READ_ONLY}
@@ -100,7 +104,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
         docker pull ${DOCKER_IMAGE} >/dev/null
         if [ -n "${CUDA_VERSION}" ]; then
-          export id=$(docker run --runtime=nvidia -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
+          export id=$(docker run --gpus all -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         else
           export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         fi
