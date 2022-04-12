@@ -1,5 +1,14 @@
 Welcome to PyTorch Tutorials
 ============================
+
+What's new in PyTorch tutorials?
+
+* `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
+* `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
+* `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=whats_new_tutorials&utm_medium=cpp_ext>`__
+* `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html?utm_source=whats_new_tutorials&utm_medium=forward_ad>`__ (added functorch API capabilities)
+* `Real Time Inference on Raspberry Pi 4 (30 fps!) <https://pytorch.org/tutorials/intermediate/realtime_rpi.html?utm_source=whats_new_tutorials&utm_medium=rpi>`__
+
 .. raw:: html
 
     <div class="tutorials-callout-container">
@@ -559,6 +568,13 @@ Welcome to PyTorch Tutorials
    :link: advanced/ddp_pipeline.html
    :tags: Parallel-and-Distributed-Training
 
+.. customcarditem::
+   :header: Getting Started with Fully Sharded Data Parallel(FSDP)
+   :card_description: Learn how to train models with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting Started with FSDP.png
+   :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
 .. Mobile
 
 .. customcarditem::
@@ -823,6 +839,7 @@ Additional Resources
    intermediate/model_parallel_tutorial
    intermediate/ddp_tutorial
    intermediate/dist_tuto
+   intermediate/FSDP_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
