@@ -2,6 +2,9 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+.. note::
+   View the source code for this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/dist_tuto.rst>`__.
+
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__

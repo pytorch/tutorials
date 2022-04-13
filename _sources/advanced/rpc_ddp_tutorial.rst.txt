@@ -2,6 +2,8 @@ Combining Distributed DataParallel with Distributed RPC Framework
 =================================================================
 **Authors**: `Pritam Damania <https://github.com/pritamdamania87>`_ and `Yi Wang <https://github.com/SciPioneer>`_
 
+.. note::
+   View the source code for this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/advanced_source/rpc_ddp_tutorial.rst>`__.
 
 This tutorial uses a simple example to demonstrate how you can combine
 `DistributedDataParallel <https://pytorch.org/docs/stable/nn.html#torch.nn.parallel.DistributedDataParallel>`__ (DDP)
