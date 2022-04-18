@@ -5,6 +5,7 @@ What's new in PyTorch tutorials?
 
 * `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
+* `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
 * `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=whats_new_tutorials&utm_medium=cpp_ext>`__
 * `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html?utm_source=whats_new_tutorials&utm_medium=forward_ad>`__ (added functorch API capabilities)
 * `Real Time Inference on Raspberry Pi 4 (30 fps!) <https://pytorch.org/tutorials/intermediate/realtime_rpi.html?utm_source=whats_new_tutorials&utm_medium=rpi>`__
