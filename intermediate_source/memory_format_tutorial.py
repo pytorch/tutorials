@@ -24,7 +24,7 @@ For example, 10x3x16x16 batch in Channels last format will have strides equal to
 """
 
 ######################################################################
-# Channels last memory format is implemented for 4D NCWH Tensors only.
+# Channels last memory format is implemented for 4D NCHW Tensors only.
 #
 
 ######################################################################
