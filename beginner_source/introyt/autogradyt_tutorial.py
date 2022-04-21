@@ -395,7 +395,7 @@ print(c3)
 
 
 ##########################################################################
-# ``torch.no_grad()`` can also be used as a function or method dectorator:
+# ``torch.no_grad()`` can also be used as a function or method decorator:
 # 
 
 def add_tensors1(x, y):
