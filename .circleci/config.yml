@@ -61,7 +61,7 @@ setup_linux_system_environment: &setup_linux_system_environment
 
 pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
   machine:
-    image: ubuntu-1604:201903-01
+    image: ubuntu-2004-cuda-11.4:202110-01
   steps:
   - checkout
   - run:
@@ -72,45 +72,14 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
       command: |
         set -e
 
-        # Set up NVIDIA docker repo
-        curl -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-        echo "deb https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 /" | sudo tee -a /etc/apt/sources.list.d/nvidia-docker.list
-        echo "deb https://nvidia.github.io/nvidia-container-runtime/ubuntu16.04/amd64 /" | sudo tee -a /etc/apt/sources.list.d/nvidia-docker.list
-        echo "deb https://nvidia.github.io/nvidia-docker/ubuntu16.04/amd64 /" | sudo tee -a /etc/apt/sources.list.d/nvidia-docker.list
-
         sudo apt-get -y update
-        sudo apt-get -y remove linux-image-generic linux-headers-generic linux-generic docker-ce
-        # WARNING: Docker version is hardcoded here; you must update the
-        # version number below for docker-ce and nvidia-docker2 to get newer
-        # versions of Docker.  We hardcode these numbers because we kept
-        # getting broken CI when Docker would update their docker version,
-        # and nvidia-docker2 would be out of date for a day until they
-        # released a newer version of their package.
-        #
-        # How to figure out what the correct versions of these packages are?
-        # My preferred method is to start a Docker instance of the correct
-        # Ubuntu version (e.g., docker run -it ubuntu:16.04) and then ask
-        # apt what the packages you need are.  Note that the CircleCI image
-        # comes with Docker.
-        sudo apt-get -y install \
-          linux-headers-$(uname -r) \
-          linux-image-generic \
-          moreutils \
-          docker-ce=5:18.09.4~3-0~ubuntu-xenial \
-          nvidia-container-runtime=2.0.0+docker18.09.4-1 \
-          nvidia-docker2=2.0.3+docker18.09.4-1 \
-          expect-dev
+        sudo apt-get -y install expect-dev moreutils
 
-        sudo pkill -SIGHUP dockerd
+        sudo pip3 -q install awscli==1.16.35
 
-        sudo pip -q install awscli==1.16.35
-
-        if [ -n "${CUDA_VERSION}" ]; then
-          DRIVER_FN="NVIDIA-Linux-x86_64-460.39.run"
-          wget "https://s3.amazonaws.com/ossci-linux/nvidia_driver/$DRIVER_FN"
-          sudo /bin/bash "$DRIVER_FN" -s --no-drm || (sudo cat /var/log/nvidia-installer.log && false)
-          nvidia-smi
-        fi
+         if [ -n "${CUDA_VERSION}" ]; then
+           nvidia-smi
+         fi
 
         # This IAM user only allows read-write access to ECR
         export AWS_ACCESS_KEY_ID=${CIRCLECI_AWS_ACCESS_KEY_FOR_ECR_READ_ONLY}
@@ -122,7 +91,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
       command: |
         set -e
 
-        export pyTorchDockerImageTag=27360e99acec34d1c78f70ba15ac2c28ed96c182
+        export pyTorchDockerImageTag=c3998772049b8a8ba52cedfa525c9feda04cb2c7
         echo "PyTorchDockerImageTag: "${pyTorchDockerImageTag}
 
         cat >/home/circleci/project/ci_build_script.sh \<<EOL
@@ -138,7 +107,7 @@ pytorch_tutorial_build_defaults: &pytorch_tutorial_build_defaults
         echo "DOCKER_IMAGE: "${DOCKER_IMAGE}
         docker pull ${DOCKER_IMAGE} >/dev/null
         if [ -n "${CUDA_VERSION}" ]; then
-          export id=$(docker run --runtime=nvidia -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
+          export id=$(docker run --gpus all -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         else
           export id=$(docker run -t -d -w /var/lib/jenkins ${DOCKER_IMAGE})
         fi
@@ -242,6 +211,7 @@ jobs:
 
   pytorch_tutorial_pr_build_worker_9:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.small.multi
 
   pytorch_tutorial_pr_build_worker_10:
     <<: *pytorch_tutorial_build_worker_defaults
@@ -251,6 +221,7 @@ jobs:
 
   pytorch_tutorial_pr_build_worker_12:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.small.multi
 
   pytorch_tutorial_pr_build_worker_13:
     <<: *pytorch_tutorial_build_worker_defaults
@@ -258,6 +229,7 @@ jobs:
 
   pytorch_tutorial_pr_build_worker_14:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.medium
 
   pytorch_tutorial_pr_build_worker_15:
     <<: *pytorch_tutorial_build_worker_defaults
@@ -308,6 +280,7 @@ jobs:
 
   pytorch_tutorial_main_build_worker_9:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.small.multi
 
   pytorch_tutorial_main_build_worker_10:
     <<: *pytorch_tutorial_build_worker_defaults
@@ -317,6 +290,7 @@ jobs:
 
   pytorch_tutorial_main_build_worker_12:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.small.multi
 
   pytorch_tutorial_main_build_worker_13:
     <<: *pytorch_tutorial_build_worker_defaults
@@ -324,6 +298,7 @@ jobs:
 
   pytorch_tutorial_main_build_worker_14:
     <<: *pytorch_tutorial_build_worker_defaults
+    resource_class: gpu.nvidia.medium
 
   pytorch_tutorial_main_build_worker_15:
     <<: *pytorch_tutorial_build_worker_defaults

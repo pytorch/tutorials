@@ -395,7 +395,7 @@ print(c3)
 
 
 ##########################################################################
-# ``torch.no_grad()`` can also be used as a function or method dectorator:
+# ``torch.no_grad()`` can also be used as a function or method decorator:
 # 
 
 def add_tensors1(x, y):
@@ -649,7 +649,7 @@ torch.autograd.functional.vjp(do_some_doubling, inputs, v=my_gradients)
 # multiplication as ``vjp()`` with the operands reversed. The ``vhp()``
 # and ``hvp()`` methods do the same for a vector-Hessian product.
 # 
-# For more information, including preformance notes on the `docs for the
+# For more information, including performance notes on the `docs for the
 # functional
 # API <https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api>`__
 # 
