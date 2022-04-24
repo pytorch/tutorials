@@ -233,7 +233,6 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
 
     for epoch in range(10):  # loop over the dataset multiple times
         running_loss = 0.0
-        epoch_steps = 0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -250,10 +249,9 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
 
             # print statistics
             running_loss += loss.item()
-            epoch_steps += 1
             if i % 2000 == 1999:  # print every 2000 mini-batches
                 print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1,
-                                                running_loss / epoch_steps))
+                                                running_loss / 2000))
                 running_loss = 0.0
 
         # Validation loss
