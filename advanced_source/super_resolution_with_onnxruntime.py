@@ -157,7 +157,7 @@ torch.onnx.export(torch_model,               # model being run
 # the ONNX model with ONNX's API.
 # First, ``onnx.load("super_resolution.onnx")`` will load the saved model and
 # will output a onnx.ModelProto structure (a top-level file/container format for bundling a ML model.
-# For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/master/onnx/onnx.proto>`__.).
+# For more information `onnx.proto documentation <https://github.com/onnx/onnx/blob/main/onnx/onnx.proto>`__.).
 # Then, ``onnx.checker.check_model(onnx_model)`` will verify the model's structure
 # and confirm that the model has a valid schema.
 # The validity of the ONNX graph is verified by checking the model's

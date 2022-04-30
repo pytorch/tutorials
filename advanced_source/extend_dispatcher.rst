@@ -283,8 +283,8 @@ without writing any new kernels as long as the customized operator is composed o
 PyTorch operators (which are already supported by your backend).
 
 For `custom operators extended in C++ <cpp_autograd>`_ they often come with a
-`backend specific C++ kernel implementation e.g. nms kernel in torchvsion <https://github.com/pytorch/vision/blob/master/torchvision/csrc/ops/cuda/nms_kernel.cu>`_
-as well as `a customized Python API e.g. torch.ops.torchvision.nms <https://github.com/pytorch/vision/blob/master/torchvision/csrc/ops/nms.cpp#L18>`_.
+`backend specific C++ kernel implementation e.g. nms kernel in torchvsion <https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/cuda/nms_kernel.cu>`_
+as well as `a customized Python API e.g. torch.ops.torchvision.nms <https://github.com/pytorch/vision/blob/main/torchvision/csrc/ops/nms.cpp#L18>`_.
 To support these operators, backend extenders will need to write a C++ kernel for your backend and properly
 register it to the corresponding namespace in the dispatcher similar to supporting PyTorch native operators.
 Alternatively you could also add a customized API in your extension e.g ``torch_xla.core.functions.nms`` for

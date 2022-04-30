@@ -10,15 +10,15 @@ Prototype Tutorials
 	   
 3. graph_mode_dynamic_bert_tutorial.rst
 	   Graph Mode Dynamic Quantization on BERT
-	   https://github.com/pytorch/tutorials/blob/master/prototype_source/graph_mode_dynamic_bert_tutorial.rst
+	   https://github.com/pytorch/tutorials/blob/main/prototype_source/graph_mode_dynamic_bert_tutorial.rst
 
 4. numeric_suite_tutorial.py
 	   PyTorch Numeric Suite Tutorial
-	   https://github.com/pytorch/tutorials/blob/master/prototype_source/numeric_suite_tutorial.py
+	   https://github.com/pytorch/tutorials/blob/main/prototype_source/numeric_suite_tutorial.py
 
 5. torchscript_freezing.py
 	   Model Freezing in TorchScript
-	   https://github.com/pytorch/tutorials/blob/master/prototype_source/torchscript_freezing.py
+	   https://github.com/pytorch/tutorials/blob/main/prototype_source/torchscript_freezing.py
 
 6. vulkan_workflow.rst
      Vulkan Backend User Workflow
