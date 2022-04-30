@@ -72,12 +72,10 @@ import torchaudio
 #
 # ``torchaudio.datasets.YESNO`` creates a dataset for YesNo.
 torchaudio.datasets.YESNO(
-     root,
+     root='./',
      url='http://www.openslr.org/resources/1/waves_yesno.tar.gz',
      folder_in_archive='waves_yesno',
-     download=False,
-     transform=None,
-     target_transform=None)
+     download=True)
 
 ###########################################################################
 # Each item in the dataset is a tuple of the form: (waveform, sample_rate,
