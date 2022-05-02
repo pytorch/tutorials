@@ -42,32 +42,31 @@ available.
 ######################################################################
 # Steps
 # -----
-# 
+#
 # 1. Import all necessary libraries for loading our data
 # 2. Define and intialize the neural network
-# 3. Initialize the optimizer
-# 4. Save and load the model via ``state_dict``
-# 5. Save and load the entire model
-# 
+# 3. Save and load the model via ``state_dict``
+# 4. Save and load the entire model
+#
 # 1. Import necessary libraries for loading our data
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # For this recipe, we will use ``torch`` and its subsidiaries ``torch.nn``
-# and ``torch.optim``.
-# 
+# and ``torch.nn.functional``.
+#
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
+import torch.nn.functional as F
 
 
 ######################################################################
 # 2. Define and intialize the neural network
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # For sake of example, we will create a neural network for training
 # images. To learn more see the Defining a Neural Network recipe.
-# 
+#
 
 class Net(nn.Module):
     def __init__(self):
@@ -93,21 +92,11 @@ print(net)
 
 
 ######################################################################
-# 3. Initialize the optimizer
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
-# We will use SGD with momentum.
-# 
-
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-
-######################################################################
-# 4. Save and load the model via ``state_dict``
+# 3. Save and load the model via ``state_dict``
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Let’s save and load our model using just ``state_dict``.
-# 
+#
 
 # Specify a path
 PATH = "state_dict_model.pt"
@@ -124,22 +113,22 @@ model.eval()
 ######################################################################
 # A common PyTorch convention is to save models using either a ``.pt`` or
 # ``.pth`` file extension.
-# 
+#
 # Notice that the ``load_state_dict()`` function takes a dictionary
 # object, NOT a path to a saved object. This means that you must
 # deserialize the saved state_dict before you pass it to the
 # ``load_state_dict()`` function. For example, you CANNOT load using
 # ``model.load_state_dict(PATH)``.
-# 
+#
 # Remember too, that you must call ``model.eval()`` to set dropout and
 # batch normalization layers to evaluation mode before running inference.
 # Failing to do this will yield inconsistent inference results.
-# 
+#
 # 5. Save and load entire model
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# 
+#
 # Now let’s try the same thing with the entire model.
-# 
+#
 
 # Specify a path
 PATH = "entire_model.pt"
@@ -155,14 +144,14 @@ model.eval()
 ######################################################################
 # Again here, remember that you must call model.eval() to set dropout and
 # batch normalization layers to evaluation mode before running inference.
-# 
+#
 # Congratulations! You have successfully saved and load models for
 # inference in PyTorch.
-# 
+#
 # Learn More
 # ----------
-# 
+#
 # Take a look at these other recipes to continue your learning:
-# 
+#
 # - `Saving and loading a general checkpoint in PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html>`__
 # - `Saving and loading multiple models in one file using PyTorch <https://pytorch.org/tutorials/recipes/recipes/saving_multiple_models_in_one_file.html>`__
