@@ -180,19 +180,15 @@ class RNN(nn.Module):
 # Preparing for Training
 # ----------------------
 #
-# First of all, helper functions to get random pairs of (category, line):
+# First of all, a helper function to get random pairs of (category, line):
 #
 
 import random
 
-# Random item from a list
-def randomChoice(l):
-    return l[random.randint(0, len(l) - 1)]
-
 # Get a random category and random line from that category
 def randomTrainingPair():
-    category = randomChoice(all_categories)
-    line = randomChoice(category_lines[category])
+    category = random.choice(all_categories)
+    line = random.choice(category_lines[category])
     return category, line
 
 
