@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 
+# regenrates config.yml based on config.yml.in
+
 from copy import deepcopy
-from curses import window
 import os.path
 
 import jinja2
 import yaml
 from jinja2 import select_autoescape
 
+WORKFLOWS_JOBS_PR = {"filters": {"branches": {"ignore": ["master"]}}}
 
-PYTHON_VERSIONS = ["3.7", "3.8", "3.9", "3.10"]
-
-RC_PATTERN = r"/v[0-9]+(\.[0-9]+)*-rc[0-9]+/"
+WORKFLOWS_JOBS_MASTER = {
+    "context": "org-member",
+    "filters": {"branches": {"only": ["master"]}},
+}
 
 
 def indent(indentation, data_list):
@@ -40,13 +43,7 @@ def jobs(pr_or_master, num_workers=20, indentation=2):
 
 def workflows_jobs(pr_or_master, indentation=6, num_workers=20):
     w = []
-    d = {
-        "filters": {
-            "branches": {"ignore" if pr_or_master == "pr" else "only": ["master"]}
-        }
-    }
-    if pr_or_master == "master":
-        d["context"] = "org-member"
+    d = deepcopy(WORKFLOWS_JOBS_PR if pr_or_master == "pr" else WORKFLOWS_JOBS_MASTER)
 
     for i in range(num_workers):
         w.append({f"pytorch_tutorial_{pr_or_master}_build_worker_{i}": deepcopy(d)})
@@ -72,11 +69,11 @@ def windows_jobs(indentation=2, num_workers=4):
 
 def windows_workflows_jobs(indentation=6, num_workers=4):
     w = []
-    d = {"filters": {"branches": {"ignore": ["master"]}}}
+    d = WORKFLOWS_JOBS_PR
     for i in range(num_workers):
         w.append({f"pytorch_tutorial_windows_pr_build_worker_{i}": deepcopy(d)})
-    d = {"context": "org-member", "filters": {"branches": {"only": ["master"]}}}
 
+    d = WORKFLOWS_JOBS_MASTER
     for i in range(num_workers):
         w.append({f"pytorch_tutorial_windows_master_build_worker_{i}": deepcopy(d)})
 
