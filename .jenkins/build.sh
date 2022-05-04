@@ -69,57 +69,9 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
-  count=0
   FILES_TO_RUN=()
-  for filename in $(find beginner_source/ -name '*.py' -not -path '*/data/*'); do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename $filename
-    else
-      echo "Keeping "$filename
-      FILES_TO_RUN+=($(basename $filename .py))
-    fi
-    count=$((count+1))
-  done
-  for filename in $(find intermediate_source/ -name '*.py' -not -path '*/data/*'); do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename $filename
-    else
-      echo "Keeping "$filename
-      FILES_TO_RUN+=($(basename $filename .py))
-    fi
-    count=$((count+1))
-  done
-  for filename in $(find advanced_source/ -name '*.py' -not -path '*/data/*'); do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename $filename
-    else
-      echo "Keeping "$filename
-      FILES_TO_RUN+=($(basename $filename .py))
-    fi
-    count=$((count+1))
-   done
-   for filename in $(find recipes_source/ -name '*.py' -not -path '*/data/*'); do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename $filename
-    else
-      echo "Keeping "$filename
-      FILES_TO_RUN+=($(basename $filename .py))
-    fi
-    count=$((count+1))
-   done
-   for filename in $(find prototype_source/ -name '*.py' -not -path '*/data/*'); do
-    if [ $(($count % $NUM_WORKERS)) != $WORKER_ID ]; then
-      echo "Removing runnable code from "$filename
-      python $DIR/remove_runnable_code.py $filename $filename
-    else
-      echo "Keeping "$filename
-      FILES_TO_RUN+=($(basename $filename .py))
-    fi
-    count=$((count+1))
+  for filename in $(python .jenkins/get_files_to_run.py); do
+      FILES_TO_RUN+=($filename)
   done
   echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
 
