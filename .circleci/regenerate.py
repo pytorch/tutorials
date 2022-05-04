@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from copy import deepcopy
+from curses import window
 import os.path
 
 import jinja2
@@ -32,21 +33,54 @@ def jobs(pr_or_master, num_workers=20, indentation=2):
             d["resource_class"] = "gpu.nvidia.small.multi"
         if i in needs_gpu_nvidia_medium:
             d["resource_class"] = "gpu.nvidia.medium"
-        w[f"pytorch_tutorial_{pr_or_master}_build_worker_{i:02d}"] = d
+        w[f"pytorch_tutorial_{pr_or_master}_build_worker_{i}"] = d
 
     return indent(indentation, w).replace("'", "")
 
 
-def workflows_jobs(pr_or_master, indentation=6):
+def workflows_jobs(pr_or_master, indentation=6, num_workers=20):
     w = []
-    d = {"filters": {"branches": {"ignore" if pr_or_master == "pr" else "only": ["master"]}}}
+    d = {
+        "filters": {
+            "branches": {"ignore" if pr_or_master == "pr" else "only": ["master"]}
+        }
+    }
     if pr_or_master == "master":
         d["context"] = "org-member"
 
-    for i in range(20):
-        w.append({f"pytorch_tutorial_{pr_or_master}_build_worker_{i:02d}": deepcopy(d)})
+    for i in range(num_workers):
+        w.append({f"pytorch_tutorial_{pr_or_master}_build_worker_{i}": deepcopy(d)})
+
+    d["requires"] = [
+        f"pytorch_tutorial_{pr_or_master}_build_worker_{i}" for i in range(num_workers)
+    ]
     w.append({f"pytorch_tutorial_{pr_or_master}_build_manager": deepcopy(d)})
     return indent(indentation, w)
+
+
+def windows_jobs(indentation=2, num_workers=4):
+    w = {}
+    for i in range(num_workers):
+        w[f"pytorch_tutorial_windows_pr_build_worker_{i}"] = {
+            "<<": "*pytorch_windows_build_worker"
+        }
+        w[f"pytorch_tutorial_windows_master_build_worker_{i}"] = {
+            "<<": "*pytorch_windows_build_worker"
+        }
+    return indent(indentation, w).replace("'", "")
+
+
+def windows_workflows_jobs(indentation=6, num_workers=4):
+    w = []
+    d = {"filters": {"branches": {"ignore": ["master"]}}}
+    for i in range(num_workers):
+        w.append({f"pytorch_tutorial_windows_pr_build_worker_{i}": deepcopy(d)})
+    d = {"context": "org-member", "filters": {"branches": {"only": ["master"]}}}
+
+    for i in range(num_workers):
+        w.append({f"pytorch_tutorial_windows_master_build_worker_{i}": deepcopy(d)})
+
+    return ("\n#").join(indent(indentation, w).splitlines())
 
 
 if __name__ == "__main__":
@@ -61,6 +95,9 @@ if __name__ == "__main__":
     with open(os.path.join(d, "config.yml"), "w") as f:
         f.write(
             env.get_template("config.yml.in").render(
-                jobs=jobs, workflows_jobs=workflows_jobs
+                jobs=jobs,
+                workflows_jobs=workflows_jobs,
+                windows_jobs=windows_jobs,
+                windows_workflows_jobs=windows_workflows_jobs,
             )
         )
