@@ -24,7 +24,9 @@ def calculate_shards(all_files, num_shards=20):
     sharded_files = [(0.0, []) for _ in range(num_shards)]
 
     def get_duration(file):
-        return metadata.get(file, {}).get("duration", 1)
+        # tutorials not listed in the metadata.json file usually take
+        # <3min to run, so we'll default to 1min if it's not listed
+        return metadata.get(file, {}).get("duration", 60)
 
     def add_to_shard(i, filename):
         shard_time, shard_jobs = sharded_files[i]
@@ -38,6 +40,8 @@ def calculate_shards(all_files, num_shards=20):
         filter(lambda x: "needs" in metadata.get(x, {}), all_files)
     )
     for filename in needs_gpu_nvidia_small_multi:
+        # currently, the only job that uses gpu.nvidia.small.multi is the 0th worker,
+        # so we'll add all the jobs that need this machine to the 0th worker
         add_to_shard(0, filename)
 
     all_other_files = list(
