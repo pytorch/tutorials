@@ -23,15 +23,34 @@ def calculate_shards(all_files, num_shards=20):
     metadata = json.load(open(".jenkins/metadata.json"))
     sharded_files = [(0.0, []) for _ in range(num_shards)]
 
-    sorted_files = sorted(all_files, key=lambda x: metadata.get(x, {}).get("duration", 1), reverse=True)
-    for filename in sorted_files:
-        min_shard_index = sorted(range(num_shards), key=lambda i: sharded_files[i][0])[0]
-        curr_shard_time, curr_shard_jobs = sharded_files[min_shard_index]
-        curr_shard_jobs.append(filename)
-        sharded_files[min_shard_index] = (
-            curr_shard_time + metadata.get(filename, {}).get("duration", 1),
-            curr_shard_jobs,
+    def get_duration(file):
+        return metadata.get(file, {}).get("duration", 1)
+
+    def add_to_shard(i, filename):
+        shard_time, shard_jobs = sharded_files[i]
+        shard_jobs.append(filename)
+        sharded_files[i] = (
+            shard_time + get_duration(filename),
+            shard_jobs,
         )
+
+    needs_gpu_nvidia_small_multi = list(
+        filter(lambda x: "needs" in metadata.get(x, {}), all_files)
+    )
+    for filename in needs_gpu_nvidia_small_multi:
+        add_to_shard(0, filename)
+
+    all_other_files = list(
+        filter(lambda x: x not in needs_gpu_nvidia_small_multi, all_files)
+    )
+
+    sorted_files = sorted(all_other_files, key=get_duration, reverse=True,)
+
+    for filename in sorted_files:
+        min_shard_index = sorted(range(num_shards), key=lambda i: sharded_files[i][0])[
+            0
+        ]
+        add_to_shard(min_shard_index, filename)
     return list(map(lambda x: x[1], sharded_files))
 
 

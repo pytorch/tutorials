@@ -25,7 +25,7 @@ def indent(indentation, data_list):
 
 def jobs(pr_or_master, num_workers=20, indentation=2):
     jobs = {}
-    needs_gpu_nvidia_small_multi = []
+    needs_gpu_nvidia_small_multi = [0]
     needs_gpu_nvidia_medium = []
     jobs[f"pytorch_tutorial_{pr_or_master}_build_manager"] = {
         "<<": "*pytorch_tutorial_build_manager_defaults"
