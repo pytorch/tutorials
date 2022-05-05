@@ -21,9 +21,9 @@ def get_all_files(encoding="utf-8") -> List[str]:
 
 def calculate_shards(all_files, num_shards=20):
     metadata = json.load(open(".jenkins/metadata.json"))
-    sorted_files = sorted(all_files, key=lambda x: metadata.get(x, {}).get("duration", 1), reverse=True)
-
     sharded_files = [(0.0, []) for _ in range(num_shards)]
+
+    sorted_files = sorted(all_files, key=lambda x: metadata.get(x, {}).get("duration", 1), reverse=True)
     for filename in sorted_files:
         min_shard_index = sorted(range(num_shards), key=lambda i: sharded_files[i][0])[0]
         curr_shard_time, curr_shard_jobs = sharded_files[min_shard_index]
