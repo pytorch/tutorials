@@ -231,7 +231,7 @@ def inputTensor(line):
 
 # LongTensor of second letter to end (EOS) for target
 def targetTensor(line):
-    letter_indexes = [all_letters.find(line[li]) for li in range(1, len(line))]
+    letter_indexes = [all_letters.find(c) for c in line[1:]]
     letter_indexes.append(n_letters - 1) # EOS
     return torch.LongTensor(letter_indexes)
 
