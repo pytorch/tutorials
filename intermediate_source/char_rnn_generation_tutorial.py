@@ -225,8 +225,7 @@ def categoryTensor(category):
 # One-hot matrix of first to last letters (not including EOS) for input
 def inputTensor(line):
     tensor = torch.zeros(len(line), 1, n_letters)
-    for li in range(len(line)):
-        letter = line[li]
+    for li, letter in enumerate(line):
         tensor[li][0][all_letters.find(letter)] = 1
     return tensor
 
