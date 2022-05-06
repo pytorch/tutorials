@@ -28,6 +28,9 @@ def calculate_shards(all_files, num_shards=20):
         # <3min to run, so we'll default to 1min if it's not listed
         return metadata.get(file, {}).get("duration", 60)
 
+    def get_needs_machine(file):
+        return metadata.get(file, {}).get("needs", None)
+
     def add_to_shard(i, filename):
         shard_time, shard_jobs = sharded_files[i]
         shard_jobs.append(filename)
@@ -37,7 +40,7 @@ def calculate_shards(all_files, num_shards=20):
         )
 
     needs_gpu_nvidia_small_multi = list(
-        filter(lambda x: "needs" in metadata.get(x, {}), all_files)
+        filter(lambda x: get_needs_machine(x) == "gpu.nvidia.small.multi", all_files,)
     )
     for filename in needs_gpu_nvidia_small_multi:
         # currently, the only job that uses gpu.nvidia.small.multi is the 0th worker,
@@ -72,7 +75,7 @@ def main():
     files_to_run = calculate_shards(all_files, num_shards=num_shards)[shard_num]
     remove_other_files(all_files, files_to_run)
     stripped_file_names = list(map(lambda x: Path(x).stem, files_to_run))
-    print(" ".join(stripped_file_names))
+    print("\n".join(stripped_file_names))
 
 
 if __name__ == "__main__":

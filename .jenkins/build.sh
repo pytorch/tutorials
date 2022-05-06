@@ -24,7 +24,7 @@ pip install -r $DIR/../requirements.txt
 # export PATH=/opt/conda/bin:$PATH
 # pip install sphinx==1.8.2 pandas
 
-#Install PyTorch Nightly for test. 
+#Install PyTorch Nightly for test.
 # Nightly - pip install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu102/torch_nightly.html
 # RC Link
 # pip uninstall -y torch torchvision torchaudio torchtext
@@ -56,7 +56,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Temp remove for mnist download issue. (Re-enabled for 1.8.1)
   # python $DIR/remove_runnable_code.py beginner_source/fgsm_tutorial.py beginner_source/fgsm_tutorial.py || true
   # python $DIR/remove_runnable_code.py intermediate_source/spatial_transformer_tutorial.py intermediate_source/spatial_transformer_tutorial.py || true
-  # Temp remove for 1.10 release. 
+  # Temp remove for 1.10 release.
   # python $DIR/remove_runnable_code.py advanced_source/neural_style_tutorial.py advanced_source/neural_style_tutorial.py || true
 
   # TODO: Fix bugs in these tutorials to make them runnable again
@@ -69,11 +69,8 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # Step 2: Keep certain tutorials based on file count, and remove runnable code in all other tutorials
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
-  FILES_TO_RUN=()
-  for filename in $(python .jenkins/get_files_to_run.py); do
-      FILES_TO_RUN+=($filename)
-  done
-  echo "FILES_TO_RUN: " ${FILES_TO_RUN[@]}
+  FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
+  echo "FILES_TO_RUN: " ${FILES_TO_RUN]}
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
@@ -82,37 +79,37 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # then we remove them
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.html'); do
     file_basename=$(basename $filename .html)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
   for filename in $(find docs/beginner docs/intermediate docs/advanced docs/recipes docs/prototype -name '*.rst'); do
     file_basename=$(basename $filename .rst)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.py'); do
     file_basename=$(basename $filename .py)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
   for filename in $(find docs/_downloads -name '*.ipynb'); do
     file_basename=$(basename $filename .ipynb)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
   for filename in $(find docs/_sources/beginner docs/_sources/intermediate docs/_sources/advanced docs/_sources/recipes -name '*.rst.txt'); do
     file_basename=$(basename $filename .rst.txt)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
   for filename in $(find docs/.doctrees/beginner docs/.doctrees/intermediate docs/.doctrees/advanced docs/.doctrees/recipes docs/.doctrees/prototype -name '*.doctree'); do
     file_basename=$(basename $filename .doctree)
-    if [[ ! " ${FILES_TO_RUN[@]} " =~ " ${file_basename} " ]]; then
+    if [[ ! " ${FILES_TO_RUN} " =~ " ${file_basename} " ]]; then
       rm $filename
     fi
   done
