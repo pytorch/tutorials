@@ -733,6 +733,6 @@ plt.show()
 # -  Check out some other cool GAN projects
 #    `here <https://github.com/nashory/gans-awesome-applications>`__
 # -  Create GANs that generate
-#    `music <https://deepmind.com/blog/wavenet-generative-model-raw-audio/>`__
+#    `music <https://www.deepmind.com/blog/wavenet-a-generative-model-for-raw-audio/>`__
 # 
 
