@@ -70,7 +70,7 @@ if [[ "${JOB_BASE_NAME}" == *worker_* ]]; then
   # IMPORTANT NOTE: We assume that each tutorial has a UNIQUE filename.
   export WORKER_ID=$(echo "${JOB_BASE_NAME}" | tr -dc '0-9')
   FILES_TO_RUN=$(python .jenkins/get_files_to_run.py)
-  echo "FILES_TO_RUN: " ${FILES_TO_RUN]}
+  echo "FILES_TO_RUN: " ${FILES_TO_RUN}
 
   # Step 3: Run `make docs` to generate HTML files and static files for these tutorials
   make docs
