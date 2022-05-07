@@ -117,11 +117,6 @@ single valued torch tensor.
     traced_fn = torch.jit.trace(fn, torch.rand(()))
 
 
-
-
-
-
-
 Part 2 - Scripting a pure python function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -147,11 +142,6 @@ the ``@torch.jit.script`` decorator.
 
 
 
-
-
-
-
-
 Part 3 - Tracing a nn.Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -170,11 +160,6 @@ Module is constructed. Thus, the class definition is not changed at all.
         def forward(self, x):
             x = x.type(torch.float32)
             return torch.floor(torch.sqrt(x) / 5.)
-
-
-
-
-
 
 
 
@@ -201,11 +186,6 @@ decorator to the forward function.
             if int(torch.fmod(x, 2.0)) == 0.0:
                 r = x / 2.0
             return r
-
-
-
-
-
 
 
 
@@ -270,11 +250,6 @@ modules and functions as expected.
 
 
 
-
-
-
-
-
 Running the Model
 ~~~~~~~~~~~~~~~~~
 
@@ -292,69 +267,6 @@ printed during the construction of the Net.
     n = Net()
     print(n(torch.tensor([5]))) # 190.
 
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    traced_fn graph graph(%x : Float(requires_grad=0, device=cpu)):
-      %1 : Long(requires_grad=0, device=cpu) = prim::Constant[value={2}]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:105:0
-      %2 : Float(requires_grad=0, device=cpu) = aten::mul(%x, %1) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:105:0
-      %3 : Float(requires_grad=0, device=cpu) = aten::abs(%2) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:105:0
-      return (%3)
-
-    script_fn graph graph(%x.1 : Tensor):
-      %13 : bool = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:127:4
-      %4 : NoneType = prim::Constant()
-      %3 : int = prim::Constant[value=4]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:126:30
-      %1 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:126:20
-      %2 : int[] = prim::ListConstruct(%1)
-      %z.1 : Tensor = aten::ones(%2, %3, %4, %4, %4) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:126:8
-      %10 : int = aten::Int(%x.1) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:127:19
-      %z : Tensor = prim::Loop(%10, %13, %z.1) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:127:4
-        block0(%i.1 : int, %z.11 : Tensor):
-          %17 : int = aten::add(%i.1, %1) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:128:17
-          %z.5 : Tensor = aten::mul(%z.11, %17) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:128:12
-          -> (%13, %z.5)
-      return (%z)
-
-    TracedModule graph graph(%self : __torch__.TracedModule,
-          %x.1 : Float(requires_grad=0, device=cpu)):
-      %4 : Device = prim::Constant[value="cpu"]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:145:0
-      %5 : int = prim::Constant[value=6]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:145:0
-      %6 : bool = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:145:0
-      %7 : bool = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:145:0
-      %8 : NoneType = prim::Constant()
-      %x : Float(requires_grad=0, device=cpu) = aten::to(%x.1, %4, %5, %6, %7, %8) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:145:0
-      %10 : Float(requires_grad=0, device=cpu) = aten::sqrt(%x) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:146:0
-      %11 : Double(requires_grad=0, device=cpu) = prim::Constant[value={5}]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:146:0
-      %12 : Float(requires_grad=0, device=cpu) = aten::div(%10, %11) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:146:0
-      %13 : Float(requires_grad=0, device=cpu) = aten::floor(%12) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:146:0
-      return (%13)
-
-    ScriptModule graph graph(%self : __torch__.ScriptModule,
-          %x.1 : Tensor):
-      %5 : float = prim::Constant[value=2.]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:29
-      %9 : float = prim::Constant[value=0.]() # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:38
-      %r.1 : Tensor = aten::neg(%x.1) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:165:12
-      %6 : Tensor = aten::fmod(%x.1, %5) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:15
-      %8 : int = aten::Int(%6) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:11
-      %10 : bool = aten::eq(%8, %9) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:11
-      %r : Tensor = prim::If(%10) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:166:8
-        block0():
-          %r.3 : Tensor = aten::div(%x.1, %5) # /var/lib/jenkins/workspace/beginner_source/hybrid_frontend/learning_hybrid_frontend_through_example_tutorial.py:167:16
-          -> (%r.3)
-        block1():
-          -> (%r.1)
-      return (%r)
-
-    tensor([190.])
 
 
 Tracing the Top-Level Model
@@ -378,29 +290,6 @@ Also, check out the graph that is created.
 
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    tensor([190.])
-    n_traced graph graph(%self : __torch__.Net,
-          %x.1 : Long(1, strides=[1], requires_grad=0, device=cpu)):
-      %script_module : __torch__.ScriptModule = prim::GetAttr[name="script_module"](%self)
-      %traced_module : __torch__.TracedModule = prim::GetAttr[name="traced_module"](%self)
-      %10 : Function = prim::Constant[name="fn"]()
-      %x : Tensor = prim::CallFunction(%10, %x.1)
-      %12 : Function = prim::Constant[name="script_fn"]()
-      %13 : Tensor = prim::CallFunction(%12, %x)
-      %14 : Tensor = prim::CallMethod[name="forward"](%traced_module, %13)
-      %15 : Tensor = prim::CallMethod[name="forward"](%script_module, %14)
-      return (%15)
-
-
 Hopefully, this document can serve as an introduction to the hybrid
 frontend as well as a syntax reference guide for more experienced users.
 Also, there are a few things to keep in mind when using the hybrid
@@ -415,7 +304,7 @@ However, such a model may not be exported to ONNX.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.476 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_beginner_hybrid_frontend_learning_hybrid_frontend_through_example_tutorial.py:

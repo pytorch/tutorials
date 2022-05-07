@@ -33,11 +33,6 @@ for demonstration purposes.
     rn18.eval()
 
 
-
-
-
-
-
 Now that we have our model, we want to inspect deeper into its
 performance. That is, for the following invocation, which parts
 of the model are taking the longest?
@@ -47,11 +42,6 @@ of the model are taking the longest?
 
     input = torch.randn(5, 3, 224, 224)
     output = rn18(input)
-
-
-
-
-
 
 
 A common way of answering that question is to go through the program
@@ -77,11 +67,6 @@ of these later in the code).
     from torch.fx import Interpreter
 
 
-
-
-
-
-
 .. note::
     ``tabulate`` is an external library that is not a dependency of PyTorch.
     We will be using it to more easily visualize performance data. Please
@@ -99,89 +84,6 @@ and examine.
 
     traced_rn18 = torch.fx.symbolic_trace(rn18)
     print(traced_rn18.graph)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    graph():
-        %x : torch.Tensor [#users=1] = placeholder[target=x]
-        %conv1 : [#users=1] = call_module[target=conv1](args = (%x,), kwargs = {})
-        %bn1 : [#users=1] = call_module[target=bn1](args = (%conv1,), kwargs = {})
-        %relu : [#users=1] = call_module[target=relu](args = (%bn1,), kwargs = {})
-        %maxpool : [#users=2] = call_module[target=maxpool](args = (%relu,), kwargs = {})
-        %layer1_0_conv1 : [#users=1] = call_module[target=layer1.0.conv1](args = (%maxpool,), kwargs = {})
-        %layer1_0_bn1 : [#users=1] = call_module[target=layer1.0.bn1](args = (%layer1_0_conv1,), kwargs = {})
-        %layer1_0_relu : [#users=1] = call_module[target=layer1.0.relu](args = (%layer1_0_bn1,), kwargs = {})
-        %layer1_0_conv2 : [#users=1] = call_module[target=layer1.0.conv2](args = (%layer1_0_relu,), kwargs = {})
-        %layer1_0_bn2 : [#users=1] = call_module[target=layer1.0.bn2](args = (%layer1_0_conv2,), kwargs = {})
-        %add : [#users=1] = call_function[target=operator.add](args = (%layer1_0_bn2, %maxpool), kwargs = {})
-        %layer1_0_relu_1 : [#users=2] = call_module[target=layer1.0.relu](args = (%add,), kwargs = {})
-        %layer1_1_conv1 : [#users=1] = call_module[target=layer1.1.conv1](args = (%layer1_0_relu_1,), kwargs = {})
-        %layer1_1_bn1 : [#users=1] = call_module[target=layer1.1.bn1](args = (%layer1_1_conv1,), kwargs = {})
-        %layer1_1_relu : [#users=1] = call_module[target=layer1.1.relu](args = (%layer1_1_bn1,), kwargs = {})
-        %layer1_1_conv2 : [#users=1] = call_module[target=layer1.1.conv2](args = (%layer1_1_relu,), kwargs = {})
-        %layer1_1_bn2 : [#users=1] = call_module[target=layer1.1.bn2](args = (%layer1_1_conv2,), kwargs = {})
-        %add_1 : [#users=1] = call_function[target=operator.add](args = (%layer1_1_bn2, %layer1_0_relu_1), kwargs = {})
-        %layer1_1_relu_1 : [#users=2] = call_module[target=layer1.1.relu](args = (%add_1,), kwargs = {})
-        %layer2_0_conv1 : [#users=1] = call_module[target=layer2.0.conv1](args = (%layer1_1_relu_1,), kwargs = {})
-        %layer2_0_bn1 : [#users=1] = call_module[target=layer2.0.bn1](args = (%layer2_0_conv1,), kwargs = {})
-        %layer2_0_relu : [#users=1] = call_module[target=layer2.0.relu](args = (%layer2_0_bn1,), kwargs = {})
-        %layer2_0_conv2 : [#users=1] = call_module[target=layer2.0.conv2](args = (%layer2_0_relu,), kwargs = {})
-        %layer2_0_bn2 : [#users=1] = call_module[target=layer2.0.bn2](args = (%layer2_0_conv2,), kwargs = {})
-        %layer2_0_downsample_0 : [#users=1] = call_module[target=layer2.0.downsample.0](args = (%layer1_1_relu_1,), kwargs = {})
-        %layer2_0_downsample_1 : [#users=1] = call_module[target=layer2.0.downsample.1](args = (%layer2_0_downsample_0,), kwargs = {})
-        %add_2 : [#users=1] = call_function[target=operator.add](args = (%layer2_0_bn2, %layer2_0_downsample_1), kwargs = {})
-        %layer2_0_relu_1 : [#users=2] = call_module[target=layer2.0.relu](args = (%add_2,), kwargs = {})
-        %layer2_1_conv1 : [#users=1] = call_module[target=layer2.1.conv1](args = (%layer2_0_relu_1,), kwargs = {})
-        %layer2_1_bn1 : [#users=1] = call_module[target=layer2.1.bn1](args = (%layer2_1_conv1,), kwargs = {})
-        %layer2_1_relu : [#users=1] = call_module[target=layer2.1.relu](args = (%layer2_1_bn1,), kwargs = {})
-        %layer2_1_conv2 : [#users=1] = call_module[target=layer2.1.conv2](args = (%layer2_1_relu,), kwargs = {})
-        %layer2_1_bn2 : [#users=1] = call_module[target=layer2.1.bn2](args = (%layer2_1_conv2,), kwargs = {})
-        %add_3 : [#users=1] = call_function[target=operator.add](args = (%layer2_1_bn2, %layer2_0_relu_1), kwargs = {})
-        %layer2_1_relu_1 : [#users=2] = call_module[target=layer2.1.relu](args = (%add_3,), kwargs = {})
-        %layer3_0_conv1 : [#users=1] = call_module[target=layer3.0.conv1](args = (%layer2_1_relu_1,), kwargs = {})
-        %layer3_0_bn1 : [#users=1] = call_module[target=layer3.0.bn1](args = (%layer3_0_conv1,), kwargs = {})
-        %layer3_0_relu : [#users=1] = call_module[target=layer3.0.relu](args = (%layer3_0_bn1,), kwargs = {})
-        %layer3_0_conv2 : [#users=1] = call_module[target=layer3.0.conv2](args = (%layer3_0_relu,), kwargs = {})
-        %layer3_0_bn2 : [#users=1] = call_module[target=layer3.0.bn2](args = (%layer3_0_conv2,), kwargs = {})
-        %layer3_0_downsample_0 : [#users=1] = call_module[target=layer3.0.downsample.0](args = (%layer2_1_relu_1,), kwargs = {})
-        %layer3_0_downsample_1 : [#users=1] = call_module[target=layer3.0.downsample.1](args = (%layer3_0_downsample_0,), kwargs = {})
-        %add_4 : [#users=1] = call_function[target=operator.add](args = (%layer3_0_bn2, %layer3_0_downsample_1), kwargs = {})
-        %layer3_0_relu_1 : [#users=2] = call_module[target=layer3.0.relu](args = (%add_4,), kwargs = {})
-        %layer3_1_conv1 : [#users=1] = call_module[target=layer3.1.conv1](args = (%layer3_0_relu_1,), kwargs = {})
-        %layer3_1_bn1 : [#users=1] = call_module[target=layer3.1.bn1](args = (%layer3_1_conv1,), kwargs = {})
-        %layer3_1_relu : [#users=1] = call_module[target=layer3.1.relu](args = (%layer3_1_bn1,), kwargs = {})
-        %layer3_1_conv2 : [#users=1] = call_module[target=layer3.1.conv2](args = (%layer3_1_relu,), kwargs = {})
-        %layer3_1_bn2 : [#users=1] = call_module[target=layer3.1.bn2](args = (%layer3_1_conv2,), kwargs = {})
-        %add_5 : [#users=1] = call_function[target=operator.add](args = (%layer3_1_bn2, %layer3_0_relu_1), kwargs = {})
-        %layer3_1_relu_1 : [#users=2] = call_module[target=layer3.1.relu](args = (%add_5,), kwargs = {})
-        %layer4_0_conv1 : [#users=1] = call_module[target=layer4.0.conv1](args = (%layer3_1_relu_1,), kwargs = {})
-        %layer4_0_bn1 : [#users=1] = call_module[target=layer4.0.bn1](args = (%layer4_0_conv1,), kwargs = {})
-        %layer4_0_relu : [#users=1] = call_module[target=layer4.0.relu](args = (%layer4_0_bn1,), kwargs = {})
-        %layer4_0_conv2 : [#users=1] = call_module[target=layer4.0.conv2](args = (%layer4_0_relu,), kwargs = {})
-        %layer4_0_bn2 : [#users=1] = call_module[target=layer4.0.bn2](args = (%layer4_0_conv2,), kwargs = {})
-        %layer4_0_downsample_0 : [#users=1] = call_module[target=layer4.0.downsample.0](args = (%layer3_1_relu_1,), kwargs = {})
-        %layer4_0_downsample_1 : [#users=1] = call_module[target=layer4.0.downsample.1](args = (%layer4_0_downsample_0,), kwargs = {})
-        %add_6 : [#users=1] = call_function[target=operator.add](args = (%layer4_0_bn2, %layer4_0_downsample_1), kwargs = {})
-        %layer4_0_relu_1 : [#users=2] = call_module[target=layer4.0.relu](args = (%add_6,), kwargs = {})
-        %layer4_1_conv1 : [#users=1] = call_module[target=layer4.1.conv1](args = (%layer4_0_relu_1,), kwargs = {})
-        %layer4_1_bn1 : [#users=1] = call_module[target=layer4.1.bn1](args = (%layer4_1_conv1,), kwargs = {})
-        %layer4_1_relu : [#users=1] = call_module[target=layer4.1.relu](args = (%layer4_1_bn1,), kwargs = {})
-        %layer4_1_conv2 : [#users=1] = call_module[target=layer4.1.conv2](args = (%layer4_1_relu,), kwargs = {})
-        %layer4_1_bn2 : [#users=1] = call_module[target=layer4.1.bn2](args = (%layer4_1_conv2,), kwargs = {})
-        %add_7 : [#users=1] = call_function[target=operator.add](args = (%layer4_1_bn2, %layer4_0_relu_1), kwargs = {})
-        %layer4_1_relu_1 : [#users=1] = call_module[target=layer4.1.relu](args = (%add_7,), kwargs = {})
-        %avgpool : [#users=1] = call_module[target=avgpool](args = (%layer4_1_relu_1,), kwargs = {})
-        %flatten : [#users=1] = call_function[target=torch.flatten](args = (%avgpool, 1), kwargs = {})
-        %fc : [#users=1] = call_module[target=fc](args = (%flatten,), kwargs = {})
-        return fc
 
 
 This gives us a Graph representation of the ResNet18 model. A Graph
@@ -311,11 +213,6 @@ Let's define our ``ProfilingInterpreter`` class:
             return tabulate.tabulate(node_summaries, headers=headers)
 
 
-
-
-
-
-
 .. note::
       We use Python's ``time.time`` function to pull wall clock
       timestamps and compare them. This is not the most accurate
@@ -335,90 +232,6 @@ characteristics of our ResNet18 model;
     interp = ProfilingInterpreter(rn18)
     interp.run(input)
     print(interp.summary(True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Op type        Op                       Average runtime (s)    Pct total runtime
-    -------------  ---------------------  ---------------------  -------------------
-    call_module    maxpool                          0.0212634            10.7299
-    call_module    conv1                            0.0171187             8.63844
-    call_module    layer4_0_conv2                   0.0135684             6.84689
-    call_module    layer1_0_conv1                   0.0114381             5.77191
-    call_module    layer1_1_conv1                   0.0110326             5.56727
-    call_module    layer1_0_conv2                   0.0103409             5.21824
-    call_module    layer2_1_conv2                   0.0103259             5.21066
-    call_module    layer1_1_conv2                   0.0101326             5.11309
-    call_module    layer4_1_conv2                   0.00936937            4.72798
-    call_module    layer4_1_conv1                   0.00909901            4.59154
-    call_module    layer3_1_conv1                   0.00852394            4.30135
-    call_module    layer3_1_conv2                   0.00837398            4.22568
-    call_module    layer2_1_conv1                   0.00803232            4.05327
-    call_module    layer3_0_conv2                   0.00789142            3.98217
-    call_module    layer2_0_conv2                   0.00652766            3.29399
-    call_module    layer4_0_conv1                   0.00614882            3.10282
-    call_module    layer2_0_conv1                   0.00562453            2.83825
-    call_module    layer3_0_conv1                   0.00496745            2.50668
-    call_function  add                              0.00313973            1.58437
-    call_module    layer2_0_downsample_0            0.00286627            1.44638
-    call_function  add_1                            0.00139332            0.703097
-    call_module    bn1                              0.00123882            0.625135
-    call_function  add_3                            0.000813484           0.410501
-    call_module    layer3_0_downsample_0            0.000773668           0.390409
-    call_module    layer4_0_downsample_0            0.000694275           0.350345
-    call_module    relu                             0.000626802           0.316297
-    call_module    layer1_0_bn2                     0.000417948           0.210905
-    call_module    layer1_0_bn1                     0.00033164            0.167352
-    call_module    layer1_1_bn1                     0.000309229           0.156043
-    call_module    layer1_1_bn2                     0.000299692           0.151231
-    call_module    layer2_1_bn2                     0.000243902           0.123078
-    call_module    fc                               0.000241995           0.122116
-    call_module    layer1_0_relu_1                  0.000233889           0.118025
-    call_module    layer2_1_bn1                     0.000214338           0.108159
-    call_module    layer2_0_downsample_1            0.000201941           0.101903
-    call_module    layer2_0_bn1                     0.000200272           0.101061
-    call_module    layer1_1_relu_1                  0.000178814           0.0902332
-    call_module    layer3_1_bn2                     0.000176907           0.0892707
-    call_module    layer1_0_relu                    0.000171423           0.0865035
-    call_function  add_2                            0.000169754           0.0856613
-    call_module    layer2_0_bn2                     0.000166893           0.0842176
-    call_module    layer1_1_relu                    0.000160933           0.0812098
-    call_module    layer3_1_bn1                     0.00013876            0.0700209
-    call_module    layer3_0_downsample_1            0.000136375           0.0688178
-    call_module    layer3_0_bn1                     0.000130177           0.0656897
-    call_module    layer4_0_bn2                     0.000127792           0.0644866
-    call_module    layer3_0_bn2                     0.000127077           0.0641257
-    call_module    layer4_1_bn1                     0.00012517            0.0631632
-    call_module    avgpool                          0.000122786           0.0619601
-    call_module    layer4_0_bn1                     0.000116348           0.0587117
-    call_module    layer2_1_relu_1                  0.00011611            0.0585914
-    call_module    layer4_1_bn2                     0.000115871           0.0584711
-    call_module    layer4_0_downsample_1            0.000115633           0.0583508
-    call_function  add_5                            0.000113726           0.0573883
-    call_module    layer2_1_relu                    0.00010705            0.0540196
-    call_module    layer2_0_relu_1                  0.000103474           0.0522149
-    call_function  add_4                            9.48906e-05           0.0478837
-    call_module    layer2_0_relu                    9.10759e-05           0.0459588
-    call_module    layer3_0_relu_1                  7.05719e-05           0.035612
-    call_module    layer3_1_relu_1                  7.05719e-05           0.035612
-    call_module    layer3_1_relu                    6.79493e-05           0.0342886
-    call_module    layer4_0_relu                    6.60419e-05           0.0333261
-    call_module    layer3_0_relu                    6.29425e-05           0.0317621
-    call_function  add_6                            6.19888e-05           0.0312808
-    call_module    layer4_0_relu_1                  5.67436e-05           0.028634
-    call_function  add_7                            5.53131e-05           0.0279121
-    call_module    layer4_1_relu_1                  5.17368e-05           0.0261075
-    call_module    layer4_1_relu                    5.03063e-05           0.0253856
-    call_function  flatten                          2.69413e-05           0.0135951
-    output         output                           1.43051e-05           0.00721865
-    placeholder    x                                1.12057e-05           0.00565461
 
 
 There are two things we should call out here:
@@ -447,7 +260,7 @@ you might have.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.713 seconds)
+   **Total running time of the script:** ( 0 minutes  0.000 seconds)
 
 
 .. _sphx_glr_download_intermediate_fx_profiling_tutorial.py:
