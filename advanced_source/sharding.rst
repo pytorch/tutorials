@@ -45,7 +45,7 @@ so we copy over the libraries which were installed in /usr/local/lib/.
     !sudo cp /usr/local/lib/lib* /usr/lib/
 
 **Restart your runtime at this point for the newly installed packages
-to be seen.\ ** Run the step below immediately after restarting so that
+to be seen.** Run the step below immediately after restarting so that
 python knows where to look for packages. **\ Always run this step after
 restarting the runtime.\*\*
 
