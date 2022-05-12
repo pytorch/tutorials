@@ -180,19 +180,15 @@ class RNN(nn.Module):
 # Preparing for Training
 # ----------------------
 #
-# First of all, helper functions to get random pairs of (category, line):
+# First of all, a helper function to get random pairs of (category, line):
 #
 
 import random
 
-# Random item from a list
-def randomChoice(l):
-    return l[random.randint(0, len(l) - 1)]
-
 # Get a random category and random line from that category
 def randomTrainingPair():
-    category = randomChoice(all_categories)
-    line = randomChoice(category_lines[category])
+    category = random.choice(all_categories)
+    line = random.choice(category_lines[category])
     return category, line
 
 
@@ -229,14 +225,13 @@ def categoryTensor(category):
 # One-hot matrix of first to last letters (not including EOS) for input
 def inputTensor(line):
     tensor = torch.zeros(len(line), 1, n_letters)
-    for li in range(len(line)):
-        letter = line[li]
+    for li, letter in enumerate(line):
         tensor[li][0][all_letters.find(letter)] = 1
     return tensor
 
 # LongTensor of second letter to end (EOS) for target
 def targetTensor(line):
-    letter_indexes = [all_letters.find(line[li]) for li in range(1, len(line))]
+    letter_indexes = [all_letters.find(c) for c in line[1:]]
     letter_indexes.append(n_letters - 1) # EOS
     return torch.LongTensor(letter_indexes)
 
