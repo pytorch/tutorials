@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Installation — PyTorch Tutorials 1.11.0+cu102 documentation</title>
+<title>Exploring TorchRec sharding — PyTorch Tutorials 1.11.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,6 +16,7 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
+<link href="../intermediate/torchrec_tutorial.html" rel="prev" title="Introduction to TorchRec"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -307,8 +308,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../beginner/deeplabv3_on_android.html">Image Segmentation DeepLabV3 on Android</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Recommendation Systems</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/torchrec_tutorial.html">Introduction to TorchRec</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Exploring TorchRec sharding</a></li>
 </ul>
 </div>
 </div>
@@ -325,7 +327,7 @@
           
         </a> &gt;
       </li>
-<li><strong>Installation</strong></li>
+<li>Exploring TorchRec sharding</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/advanced/sharding.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -359,8 +361,14 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
+<div class="section" id="exploring-torchrec-sharding">
+<h1>Exploring TorchRec sharding<a class="headerlink" href="#exploring-torchrec-sharding" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial will mainly cover the sharding schemes of embedding tables
+via <code class="docutils literal notranslate"><span class="pre">EmbeddingPlanner</span></code> and <code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code> API and
+explore the benefits of different sharding schemes for the embedding
+tables by explicitly configuring them.</p>
 <div class="section" id="installation">
-<h1><strong>Installation</strong><a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>Requirements: - python &gt;= 3.7</p>
 <p>We highly recommend CUDA when using torchRec. If using CUDA: - cuda &gt;=
 11.0</p>
@@ -396,19 +404,13 @@ so we copy over the libraries which were installed in /usr/local/lib/.
 </div>
 <p><strong>Restart your runtime at this point for the newly installed packages
 to be seen.</strong> Run the step below immediately after restarting so that
-python knows where to look for packages. <a href="#id1"><span class="problematic" id="id2">**</span></a>Always run this step after
-restarting the runtime.**</p>
+python knows where to look for packages. <strong>Always run this step after
+restarting the runtime.</strong></p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
 <span class="n">sys</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="s1">''</span><span class="p">,</span> <span class="s1">'/env/python'</span><span class="p">,</span> <span class="s1">'/usr/local/lib/python37.zip'</span><span class="p">,</span> <span class="s1">'/usr/local/lib/python3.7'</span><span class="p">,</span> <span class="s1">'/usr/local/lib/python3.7/lib-dynload'</span><span class="p">,</span> <span class="s1">'/usr/local/lib/python3.7/site-packages'</span><span class="p">,</span> <span class="s1">'./.local/lib/python3.7/site-packages'</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="overview">
-<h1><strong>Overview</strong><a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<p>This tutorial will mainly cover the sharding schemes of embedding tables
-via <code class="docutils literal notranslate"><span class="pre">EmbeddingPlanner</span></code> and <code class="docutils literal notranslate"><span class="pre">DistributedModelParallel</span></code> API and
-explore the benefits of different sharding schemes for the embedding
-tables by explicitly configuring them.</p>
 <div class="section" id="distributed-setup">
 <h2>Distributed Setup<a class="headerlink" href="#distributed-setup" title="Permalink to this headline">¶</a></h2>
 <p>Due to the notebook enviroment, we cannot run
@@ -558,9 +560,8 @@ embedding table placement using planner and generate sharded model using
     <span class="k">return</span> <span class="n">sharded_model</span>
 </pre></div>
 </div>
-</div>
 <div class="section" id="multiprocessing-execution">
-<h2>Multiprocessing Execution<a class="headerlink" href="#multiprocessing-execution" title="Permalink to this headline">¶</a></h2>
+<h3>Multiprocessing Execution<a class="headerlink" href="#multiprocessing-execution" title="Permalink to this headline">¶</a></h3>
 <p>Now let’s execute the code in multi-processes representing multiple GPU
 ranks.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">multiprocess</span>
@@ -592,7 +593,7 @@ ranks.</p>
 </div>
 </div>
 <div class="section" id="table-wise-sharding">
-<h2>Table Wise Sharding<a class="headerlink" href="#table-wise-sharding" title="Permalink to this headline">¶</a></h2>
+<h3>Table Wise Sharding<a class="headerlink" href="#table-wise-sharding" title="Permalink to this headline">¶</a></h3>
 <p>Now let’s execute the code in two processes for 2 GPUs. We can see in
 the plan print that how our tables are sharded across GPUs. Each node
 will have one large table and one small which shows our planner tries
@@ -608,7 +609,7 @@ balancing over the devices.</p>
 </div>
 </div>
 <div class="section" id="explore-other-sharding-modes">
-<h2>Explore other sharding modes<a class="headerlink" href="#explore-other-sharding-modes" title="Permalink to this headline">¶</a></h2>
+<h3>Explore other sharding modes<a class="headerlink" href="#explore-other-sharding-modes" title="Permalink to this headline">¶</a></h3>
 <p>We have initially explored what table-wise sharding would look like and
 how it balances the tables placement. Now we explore sharding modes with
 finer focus on load balance: row-wise. Row-wise is specifically
@@ -650,9 +651,13 @@ to train models with <code class="docutils literal notranslate"><span class="pre
 </div>
 </div>
 </div>
+</div>
 </article>
 </div>
 <footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="p" class="btn btn-neutral" href="../intermediate/torchrec_tutorial.html" rel="prev" title="Introduction to TorchRec"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -681,14 +686,16 @@ to train models with <code class="docutils literal notranslate"><span class="pre
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#"><strong>Installation</strong></a></li>
-<li><a class="reference internal" href="#overview"><strong>Overview</strong></a><ul>
+<li><a class="reference internal" href="#">Exploring TorchRec sharding</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
 <li><a class="reference internal" href="#distributed-setup">Distributed Setup</a></li>
 <li><a class="reference internal" href="#constructing-our-embedding-model">Constructing our embedding model</a></li>
-<li><a class="reference internal" href="#distributedmodelparallel-in-multiprocessing">DistributedModelParallel in multiprocessing</a></li>
+<li><a class="reference internal" href="#distributedmodelparallel-in-multiprocessing">DistributedModelParallel in multiprocessing</a><ul>
 <li><a class="reference internal" href="#multiprocessing-execution">Multiprocessing Execution</a></li>
 <li><a class="reference internal" href="#table-wise-sharding">Table Wise Sharding</a></li>
 <li><a class="reference internal" href="#explore-other-sharding-modes">Explore other sharding modes</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -801,8 +808,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
