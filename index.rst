@@ -608,6 +608,14 @@ What's new in PyTorch tutorials?
    :link: intermediate/torchrec_tutorial.html
    :tags: TorchRec,Recommender
 
+.. customcarditem::
+   :header: Exploring TorchRec sharding
+   :card_description: This tutorial covers the sharding schemes of embedding tables by using <code>EmbeddingPlanner</code> and <code>DistributedModelParallel</code> API.
+   :image: _static/img/thumbnails/torchrec.png
+   :link: advanced/sharding.html
+   :tags: TorchRec,Recommender
+
+
 .. End of tutorial card section
 
 .. raw:: html
@@ -875,3 +883,4 @@ Additional Resources
    :caption: Recommendation Systems
 
    intermediate/torchrec_tutorial
+   advanced/sharding
