@@ -1,5 +1,13 @@
-**Installation**
-----------------
+Exploring TorchRec sharding
+===========================
+
+This tutorial will mainly cover the sharding schemes of embedding tables
+via ``EmbeddingPlanner`` and ``DistributedModelParallel`` API and
+explore the benefits of different sharding schemes for the embedding
+tables by explicitly configuring them.
+
+Installation
+------------
 
 Requirements: - python >= 3.7
 
@@ -46,24 +54,17 @@ so we copy over the libraries which were installed in /usr/local/lib/.
 
 **Restart your runtime at this point for the newly installed packages
 to be seen.** Run the step below immediately after restarting so that
-python knows where to look for packages. **\ Always run this step after
-restarting the runtime.\*\*
+python knows where to look for packages. **Always run this step after
+restarting the runtime.**
 
 .. code:: python
 
     import sys
     sys.path = ['', '/env/python', '/usr/local/lib/python37.zip', '/usr/local/lib/python3.7', '/usr/local/lib/python3.7/lib-dynload', '/usr/local/lib/python3.7/site-packages', './.local/lib/python3.7/site-packages']
 
-**Overview**
-------------
-
-This tutorial will mainly cover the sharding schemes of embedding tables
-via ``EmbeddingPlanner`` and ``DistributedModelParallel`` API and
-explore the benefits of different sharding schemes for the embedding
-tables by explicitly configuring them.
 
 Distributed Setup
-~~~~~~~~~~~~~~~~~
+-----------------
 
 Due to the notebook enviroment, we cannot run
 `SPMD <https://en.wikipedia.org/wiki/SPMD>`_ program here but we
@@ -78,12 +79,12 @@ communication backend can work.
     import os
     import torch
     import torchrec
-    
+
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "29500"
 
 Constructing our embedding model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 Here we use TorchRec offering of
 `EmbeddingBagCollection <https://github.com/facebookresearch/torchrec/blob/main/torchrec/modules/embedding_modules.py#L59>`_
@@ -115,7 +116,7 @@ EBC to not allocate memory yet.
     from torchrec.distributed.embedding_types import EmbeddingComputeKernel
     from torchrec.distributed.types import ShardingType
     from typing import Dict
-    
+
     large_table_cnt = 2
     small_table_cnt = 2
     large_tables=[
@@ -136,7 +137,7 @@ EBC to not allocate memory yet.
         pooling=torchrec.PoolingType.SUM,
       ) for i in range(small_table_cnt)
     ]
-    
+
     def gen_constraints(sharding_type: ShardingType = ShardingType.TABLE_WISE) -> Dict[str, ParameterConstraints]:
       large_table_constraints = {
         "large_table_" + str(i): ParameterConstraints(
@@ -159,7 +160,7 @@ EBC to not allocate memory yet.
     )
 
 DistributedModelParallel in multiprocessing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------------
 
 Now, we have a single process execution function for mimicking one
 rank's work during `SPMD <https://en.wikipedia.org/wiki/SPMD>`_
@@ -187,7 +188,7 @@ embedding table placement using planner and generate sharded model using
         from torchrec.distributed.planner import EmbeddingShardingPlanner, Topology
         from torchrec.distributed.types import ModuleSharder, ShardingEnv
         from typing import cast
-    
+
         def init_distributed_single_host(
             rank: int,
             world_size: int,
@@ -198,7 +199,7 @@ embedding table placement using planner and generate sharded model using
             os.environ["WORLD_SIZE"] = f"{world_size}"
             dist.init_process_group(rank=rank, world_size=world_size, backend=backend)
             return dist.group.WORLD
-    
+
         if backend == "nccl":
             device = torch.device(f"cuda:{rank}")
             torch.cuda.set_device(device)
