@@ -357,6 +357,7 @@ trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
 
 import matplotlib.pyplot as plt
 import numpy as np
+from multiprocessing import freeze_support
 
 classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
@@ -365,16 +366,21 @@ def imshow(img):
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
 
+def load_dataset():
+    # get some random training images
+    dataiter = iter(trainloader)
+    images, labels = dataiter.next()
 
-# get some random training images
-dataiter = iter(trainloader)
-images, labels = dataiter.next()
+    # show images
+    imshow(torchvision.utils.make_grid(images))
+    # print labels
+    print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
-# show images
-imshow(torchvision.utils.make_grid(images))
-# print labels
-print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
+if __name__ == "__main__":
+    freeze_support()
+    load_dataset()
 
 
 ########################################################################
@@ -434,6 +440,7 @@ classes = ('plane', 'car', 'bird', 'cat',
 
 import matplotlib.pyplot as plt
 import numpy as np
+from multiprocessing import freeze_support
 
 # functions to show an image
 
