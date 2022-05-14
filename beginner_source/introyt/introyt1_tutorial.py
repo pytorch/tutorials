@@ -368,7 +368,7 @@ def imshow(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-def load_dataset():
+def main():
     # get some random training images
     dataiter = iter(trainloader)
     images, labels = dataiter.next()
@@ -380,7 +380,7 @@ def load_dataset():
 
 if __name__ == "__main__":
     freeze_support()
-    load_dataset()
+    main()
 
 
 ########################################################################
@@ -451,7 +451,7 @@ def imshow(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-def load_dataset():
+def main():
     # get some random training images
     dataiter = iter(trainloader)
     images, labels = dataiter.next()
@@ -461,9 +461,12 @@ def load_dataset():
     # print labels
     print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
+    # class Net(nn.Module):
+    #     ...
+
 if __name__ == "__main__":
     freeze_support()
-    load_dataset()
+    main()
 
 ##########################################################################
 # This is the model we’ll train. If it looks familiar, that’s because it’s
