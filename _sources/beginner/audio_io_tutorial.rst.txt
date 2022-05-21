@@ -26,6 +26,19 @@ Audio I/O
     print(torchaudio.__version__)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    1.11.0+cu102
+    0.11.0+cu102
+
+
 Preparing data and utility functions (skip this section)
 --------------------------------------------------------
 
@@ -179,6 +192,11 @@ Preparing data and utility functions (skip this section)
       print(f" - {torchaudio.info(path)}")
 
 
+
+
+
+
+
 Quering audio metadata
 ----------------------
 
@@ -192,6 +210,18 @@ a path-like object or file-like object.
 
     metadata = torchaudio.info(SAMPLE_WAV_PATH)
     print(metadata)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=2, bits_per_sample=16, encoding=PCM_S)
 
 
 Where
@@ -244,6 +274,19 @@ Where
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    AudioMetaData(sample_rate=44100, num_frames=110559, num_channels=2, bits_per_sample=0, encoding=MP3)
+    AudioMetaData(sample_rate=8000, num_frames=0, num_channels=1, bits_per_sample=0, encoding=GSM)
+
+
 Querying file-like object
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -258,6 +301,19 @@ Querying file-like object
     with requests.get(SAMPLE_WAV_URL, stream=True) as response:
       metadata = torchaudio.info(response.raw)
     print(metadata)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Source: https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.wav
+    AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=2, bits_per_sample=16, encoding=PCM_S)
 
 
 **Note** When passing a file-like object, ``info`` does not read
@@ -281,6 +337,20 @@ The following example illustrates this.
 
       print(f"Fetched {response.raw.tell()} bytes.")
     print(metadata)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Source: https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.mp3
+    Fetched 8192 bytes.
+    AudioMetaData(sample_rate=44100, num_frames=0, num_channels=2, bits_per_sample=0, encoding=MP3)
 
 
 Loading audio data into Tensor
@@ -313,6 +383,41 @@ documentation <https://pytorch.org/audio>`__.
 
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_io_tutorial_001.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_io_tutorial_002.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Sample Rate: 16000
+    Shape: (1, 54400)
+    Dtype: torch.float32
+     - Max:      0.668
+     - Min:     -1.000
+     - Mean:     0.000
+     - Std Dev:  0.122
+
+    tensor([[0.0183, 0.0180, 0.0180,  ..., 0.0018, 0.0019, 0.0032]])
+
+    <IPython.lib.display.Audio object>
+
+
 Loading from file-like object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -342,6 +447,29 @@ The following examples illustrate this.
     response = client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
     waveform, sample_rate = torchaudio.load(response['Body'])
     plot_specgram(waveform, sample_rate, title="From S3")
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_io_tutorial_003.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_io_tutorial_004.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_io_tutorial_005.png
+            :class: sphx-glr-multi-img
+
 
 
 
@@ -393,6 +521,22 @@ The following example illustrates this.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Fetching all the data...
+     - Fetched 108844 bytes
+    Fetching until the requested frames are available...
+     - Fetched 65580 bytes
+    Checking the resulting waveform ... matched!
+
+
 Saving audio to file
 --------------------
 
@@ -441,6 +585,37 @@ resulting file size but also precision.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Sample Rate: 44100
+    Shape: (1, 109368)
+    Dtype: torch.float32
+     - Max:      0.508
+     - Min:     -0.449
+     - Mean:    -0.000
+     - Std Dev:  0.122
+
+    tensor([[0.0027, 0.0063, 0.0092,  ..., 0.0032, 0.0047, 0.0052]])
+
+    ----------
+    Source: save_example_default.wav
+    ----------
+     - File size: 437530 bytes
+     - AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=1, bits_per_sample=32, encoding=PCM_F)
+    ----------
+    Source: save_example_PCM_S16.wav
+    ----------
+     - File size: 218780 bytes
+     - AudioMetaData(sample_rate=44100, num_frames=109368, num_channels=1, bits_per_sample=16, encoding=PCM_S)
+
+
 ``torchaudio.save`` can also handle other formats. To name a few:
 
 
@@ -467,6 +642,52 @@ resulting file size but also precision.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ----------
+    Source: save_example.mp3
+    ----------
+     - File size: 2664 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=21312, num_channels=1, bits_per_sample=0, encoding=MP3)
+    ----------
+    Source: save_example.flac
+    ----------
+     - File size: 47315 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=24, encoding=FLAC)
+    ----------
+    Source: save_example.vorbis
+    ----------
+     - File size: 9967 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=0, encoding=VORBIS)
+    ----------
+    Source: save_example.sph
+    ----------
+     - File size: 80384 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=32, encoding=PCM_S)
+    ----------
+    Source: save_example.amb
+    ----------
+     - File size: 79418 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=32, encoding=PCM_F)
+    ----------
+    Source: save_example.amr-nb
+    ----------
+     - File size: 1618 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=19840, num_channels=1, bits_per_sample=0, encoding=AMR_NB)
+    ----------
+    Source: save_example.gsm
+    ----------
+     - File size: 4092 bytes
+     - AudioMetaData(sample_rate=8000, num_frames=0, num_channels=1, bits_per_sample=0, encoding=GSM)
+
+
 Saving to file-like object
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -491,9 +712,21 @@ required.
 
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    b'RIFF\x12\xad\x06\x00WAVEfmt '
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  5.888 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_io_tutorial.py:

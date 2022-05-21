@@ -27,6 +27,19 @@ Audio Data Augmentation
     print(torchaudio.__version__)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    1.11.0+cu102
+    0.11.0+cu102
+
+
 Preparing data and utility functions (skip this section)
 --------------------------------------------------------
 
@@ -181,6 +194,11 @@ Preparing data and utility functions (skip this section)
 
 
 
+
+
+
+
+
 Applying effects and filtering
 ------------------------------
 
@@ -243,6 +261,56 @@ argument ``format`` to specify the format of the audio source.
     print_stats(waveform2, sample_rate=sample_rate2, src="Effects Applied")
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_001.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_002.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ----------
+    Source: Original
+    ----------
+    Sample Rate: 16000
+    Shape: (1, 39680)
+    Dtype: torch.float32
+     - Max:      0.507
+     - Min:     -0.448
+     - Mean:    -0.000
+     - Std Dev:  0.122
+
+    tensor([[ 0.0007,  0.0076,  0.0122,  ..., -0.0049, -0.0025,  0.0020]])
+
+    ----------
+    Source: Effects Applied
+    ----------
+    Sample Rate: 16000
+    Shape: (2, 49600)
+    Dtype: torch.float32
+     - Max:      0.091
+     - Min:     -0.091
+     - Mean:    -0.000
+     - Std Dev:  0.021
+
+    tensor([[0.0000, 0.0000, 0.0000,  ..., 0.0069, 0.0058, 0.0045],
+            [0.0000, 0.0000, 0.0000,  ..., 0.0085, 0.0085, 0.0085]])
+
+
 Note that the number of frames and number of channels are different from
 those of the original after the effects are applied. Let’s listen to the
 audio. Doesn’t it sound more dramatic?
@@ -257,6 +325,32 @@ audio. Doesn’t it sound more dramatic?
     plot_specgram(waveform2, sample_rate2, title="Effects Applied", xlim=(0, 3.04))
     play_audio(waveform2, sample_rate2)
 
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_003.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_004.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
 
 
 Simulating room reverberation
@@ -289,6 +383,31 @@ and clap your hands.
     play_audio(rir_raw, sample_rate)
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_005.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_006.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+
+
 First, we need to clean up the RIR. We extract the main impulse, normalize
 the signal power, then flip along the time axis.
 
@@ -303,6 +422,28 @@ the signal power, then flip along the time axis.
 
     print_stats(rir)
     plot_waveform(rir, sample_rate, title="Room Impulse Response", ylim=None)
+
+
+
+
+.. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_007.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape: (1, 2320)
+    Dtype: torch.float32
+     - Max:      0.395
+     - Min:     -0.286
+     - Mean:    -0.000
+     - Std Dev:  0.021
+
+    tensor([[-0.0052, -0.0076, -0.0071,  ...,  0.0184,  0.0173,  0.0070]])
 
 
 Then, we convolve the speech signal with the RIR filter.
@@ -326,6 +467,42 @@ Then, we convolve the speech signal with the RIR filter.
     plot_specgram(augmented, sample_rate, title="RIR Applied")
     play_audio(augmented, sample_rate)
 
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_008.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_009.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_010.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_011.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
 
 
 Adding background noise
@@ -368,6 +545,64 @@ intensity of noise is changing the Signal-to-Noise Ratio (SNR).
       play_audio(noisy_speech, sample_rate)
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_012.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_013.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_014.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_015.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_016.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_017.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_018.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_019.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+
+
 Applying codec to Tensor object
 -------------------------------
 
@@ -396,6 +631,50 @@ Applying codec to Tensor object
       augmented = F.apply_codec(waveform, sample_rate, **param)
       plot_specgram(augmented, sample_rate, title=title)
       play_audio(augmented, sample_rate)
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_020.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_021.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_022.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_023.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_024.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
 
 
 Simulating a phone recoding
@@ -459,9 +738,53 @@ in the background.
     play_audio(speech, sample_rate)
 
 
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_025.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_026.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_027.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_028.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_data_augmentation_tutorial_029.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  12.181 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_data_augmentation_tutorial.py:

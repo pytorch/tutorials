@@ -61,6 +61,18 @@ Here we construct a tensor with names:
     print(imgs.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'C', 'H', 'W')
+
+
 Unlike in
 `the original named tensors blogpost <http://nlp.seas.harvard.edu/NamedTensor>`_,
 named dimensions are ordered: ``tensor.names[i]`` is the name of the ``i`` th
@@ -81,6 +93,19 @@ There are two ways to rename a ``Tensor``'s dimensions:
     print(imgs.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('batch', 'channel', 'width', 'height')
+    ('batch', 'C', 'W', 'H')
+
+
 The preferred way to remove names is to call ``tensor.rename(None)``:
 
 
@@ -89,6 +114,18 @@ The preferred way to remove names is to call ``tensor.rename(None)``:
 
     imgs = imgs.rename(None)
     print(imgs.names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (None, None, None, None)
 
 
 Unnamed tensors (tensors with no named dimensions) still work as
@@ -103,6 +140,21 @@ normal and do not have names in their ``repr``.
     print(unnamed.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[[-0.2045,  0.1872,  0.5691]],
+
+            [[-0.1271,  0.5205, -0.1493]]])
+    (None, None, None)
+
+
 Named tensors do not require that all dimensions be named.
 
 
@@ -111,6 +163,18 @@ Named tensors do not require that all dimensions be named.
 
     imgs = torch.randn(3, 1, 1, 2, names=('N', None, None, None))
     print(imgs.names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', None, None, None)
 
 
 Because named tensors can coexist with unnamed tensors, we need a nice way to
@@ -153,6 +217,20 @@ following constraints:
     catch_error(lambda: named_imgs.refine_names('N', 'C', 'H', 'width'))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'C', 'H', 'W')
+    (None, None, 'H', 'W')
+    refine_names: cannot coerce Tensor['N', 'C', 'H', 'W'] to Tensor['N', 'C', 'H', 'width'] because 'W' is different from 'width' at index 3
+
+
 Most simple operations propagate names. The ultimate goal for named tensors
 is for all operations to propagate names in a reasonable, intuitive manner.
 Support for many common operations has been added at the time of the 1.3
@@ -163,6 +241,18 @@ release; here, for example, is ``.abs()``:
 
 
     print(named_imgs.abs().names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'C', 'H', 'W')
 
 
 Accessors and Reduction
@@ -182,6 +272,19 @@ advanced) has not been implemented yet but is on the roadmap. Using the
 
     img0 = named_imgs.select('N', 0)  # get one image
     print(img0.names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'H', 'W')
+    ('C', 'H', 'W')
 
 
 Name inference
@@ -207,6 +310,11 @@ broadcasting.
     z = torch.randn(3, names=('Z',))
 
 
+
+
+
+
+
 **Check names**: first, we will check whether the names of these two tensors
 *match*. Two names match if and only if they are equal (string equality) or
 at least one is ``None`` (``None`` is essentially a special wildcard name).
@@ -219,6 +327,18 @@ The only one of these three that will error, therefore, is ``x + z``:
     catch_error(lambda: x + z)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Error when attempting to broadcast dims ['X'] and dims ['Z']: dim 'X' and dim 'Z' are at the same position from the right but do not match.
+
+
 **Propagate names**: *unify* the two names by returning the most refined name
 of the two. With ``x + y``,  ``X`` is more refined than ``None``.
 
@@ -227,6 +347,18 @@ of the two. With ``x + y``,  ``X`` is more refined than ``None``.
 
 
     print((x + y).names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('X',)
 
 
 Most name inference rules are straightforward but some of them can have
@@ -251,6 +383,18 @@ operations that broadcast. In the below example, we apply a
     imgs = torch.randn(2, 2, 2, 2, names=('N', 'C', 'H', 'W'))
     per_batch_scale = torch.rand(2, names=('N',))
     catch_error(lambda: imgs * per_batch_scale)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Error when attempting to broadcast dims ['N', 'C', 'H', 'W'] and dims ['N']: dim 'W' and dim 'N' are at the same position from the right but do not match.
 
 
 Without ``names``, the ``per_batch_scale`` tensor is aligned with the last
@@ -280,6 +424,18 @@ and the second dim of ``B``. (other matmul functions, such as
     print(new_state.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('batch', 'out')
+
+
 As you can see, matrix multiply does not check if the contracted dimensions
 have the same name.
 
@@ -306,6 +462,11 @@ we'd do the following:
     assert not torch.allclose(correct_result, incorrect_result)
 
 
+
+
+
+
+
 We can make these operations safer (and easily agnostic to the number of
 dimensions) by using names. We provide a new ``tensor.align_as(other)``
 operation that permutes the dimensions of tensor to match the order specified
@@ -322,6 +483,11 @@ in ``other.names``, adding one-sized dimensions where appropriate
     named_result = imgs * per_batch_scale.align_as(imgs)
     # note: named tensors do not yet work with allclose
     assert torch.allclose(named_result.rename(None), correct_result)
+
+
+
+
+
 
 
 New behavior: Flattening and unflattening dimensions by names
@@ -352,6 +518,19 @@ but we do not yet do that.
 
     imgs = imgs.unflatten('features', (('C', 2), ('H', 2), ('W', 2)))
     print(imgs.names)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'features')
+    ('N', 'C', 'H', 'W')
 
 
 Autograd support
@@ -386,6 +565,19 @@ autograd.
     assert torch.allclose(weight.grad, correct_grad)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([-1.6654, -1.4043,  1.0727])
+    tensor([-1.6654, -1.4043,  1.0727])
+
+
 Other supported (and unsupported) features
 ------------------------------------------
 
@@ -412,6 +604,18 @@ currently supported:
 
 
     catch_error(lambda: fn(imgs_named))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    NYI: Named tensors are currently unsupported in TorchScript. As a  workaround please drop names via `tensor = tensor.rename(None)`.
 
 
 As a workaround, please drop names via ``tensor = tensor.rename(None)``
@@ -517,6 +721,11 @@ these after the code block.
             return self.out_lin(attentioned).refine_names(..., 'T', 'D')
 
 
+
+
+
+
+
 **(I) Refining the input tensor dims**
 
 
@@ -526,6 +735,11 @@ these after the code block.
     def forward(self, query, key=None, value=None, mask=None):
         # (I)
         query = query.refine_names(..., 'T', 'D')
+
+
+
+
+
 
 
 The ``query = query.refine_names(..., 'T', 'D')`` serves as enforcable documentation
@@ -544,6 +758,11 @@ mismatch errors later down the line.
         tensor = tensor.refine_names(..., 'T', 'D')
         return (tensor.unflatten('D', [('H', n_heads), ('D_head', dim_per_head)])
                       .align_to(..., 'H', 'T', 'D_head'))
+
+
+
+
+
 
 
 The first thing to note is how the code clearly states the input and
@@ -573,6 +792,11 @@ operations:
         return tensor
 
 
+
+
+
+
+
 Our named tensor variant uses ops that, though more verbose, have more
 semantic meaning than ``view`` and ``transpose`` and includes enforcable
 documentation in the form of names.
@@ -587,6 +811,11 @@ documentation in the form of names.
         # (III)
         attn_mask = (mask == 0).align_as(dot_prod)
         dot_prod.masked_fill_(attn_mask, -float(1e20))
+
+
+
+
+
 
 
 ``mask`` usually has dims ``[N, T]`` (in the case of self attention) or
@@ -612,6 +841,11 @@ using ``align_as`` and stop worrying about where to ``unsqueeze`` dims.
         )
 
 
+
+
+
+
+
 Here, as in (II), ``align_to`` and ``flatten`` are more semantically
 meaningful than ``view`` and ``transpose`` (despite being more verbose).
 
@@ -631,6 +865,18 @@ Running the example
     print(output.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('N', 'T', 'D')
+
+
 The above works as expected. Furthermore, note that in the code we
 did not mention the name of the batch dimension at all. In fact,
 our ``MultiHeadAttention`` module is agnostic to the existence of batch
@@ -646,6 +892,18 @@ dimensions.
     print(output.names)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ('T', 'D')
+
+
 Conclusion
 ----------
 
@@ -656,7 +914,7 @@ know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  0.568 seconds)
 
 
 .. _sphx_glr_download_intermediate_named_tensor_tutorial.py:

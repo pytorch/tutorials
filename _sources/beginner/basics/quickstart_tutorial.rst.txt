@@ -38,6 +38,11 @@ the ``Dataset``.
     from torchvision.transforms import ToTensor
 
 
+
+
+
+
+
 PyTorch offers domain-specific libraries such as `TorchText <https://pytorch.org/text/stable/index.html>`_,
 `TorchVision <https://pytorch.org/vision/stable/index.html>`_, and `TorchAudio <https://pytorch.org/audio/stable/index.html>`_,
 all of which include datasets. For this tutorial, we  will be using a TorchVision dataset.
@@ -68,6 +73,32 @@ use the FashionMNIST dataset. Every TorchVision ``Dataset`` includes two argumen
     )
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-images-idx3-ubyte.gz to data/FashionMNIST/raw/train-images-idx3-ubyte.gz
+    Extracting data/FashionMNIST/raw/train-images-idx3-ubyte.gz to data/FashionMNIST/raw
+
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw/train-labels-idx1-ubyte.gz
+    Extracting data/FashionMNIST/raw/train-labels-idx1-ubyte.gz to data/FashionMNIST/raw
+
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz
+    Extracting data/FashionMNIST/raw/t10k-images-idx3-ubyte.gz to data/FashionMNIST/raw
+
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz
+    Downloading http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz
+    Extracting data/FashionMNIST/raw/t10k-labels-idx1-ubyte.gz to data/FashionMNIST/raw
+
+
 We pass the ``Dataset`` as an argument to ``DataLoader``. This wraps an iterable over our dataset, and supports
 automatic batching, sampling, shuffling and multiprocess data loading. Here we define a batch size of 64, i.e. each element
 in the dataloader iterable will return a batch of 64 features and labels.
@@ -86,6 +117,19 @@ in the dataloader iterable will return a batch of 64 features and labels.
         print(f"Shape of X [N, C, H, W]: {X.shape}")
         print(f"Shape of y: {y.shape} {y.dtype}")
         break
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of X [N, C, H, W]: torch.Size([64, 1, 28, 28])
+    Shape of y: torch.Size([64]) torch.int64
 
 
 Read more about `loading data in PyTorch <data_tutorial.html>`_.
@@ -131,6 +175,28 @@ operations in the neural network, we move it to the GPU if available.
     print(model)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Using cuda device
+    NeuralNetwork(
+      (flatten): Flatten(start_dim=1, end_dim=-1)
+      (linear_relu_stack): Sequential(
+        (0): Linear(in_features=784, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=512, bias=True)
+        (3): ReLU()
+        (4): Linear(in_features=512, out_features=10, bias=True)
+      )
+    )
+
+
 Read more about `building neural networks in PyTorch <buildmodel_tutorial.html>`_.
 
 
@@ -148,6 +214,11 @@ and an `optimizer <https://pytorch.org/docs/stable/optim.html>`_.
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+
+
+
+
+
 
 
 
@@ -178,6 +249,11 @@ backpropagates the prediction error to adjust the model's parameters.
                 print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 
+
+
+
+
+
 We also check the model's performance against the test dataset to ensure it is learning.
 
 
@@ -200,6 +276,11 @@ We also check the model's performance against the test dataset to ensure it is l
         print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 
+
+
+
+
+
 The training process is conducted over several iterations (*epochs*). During each epoch, the model learns
 parameters to make better predictions. We print the model's accuracy and loss at each epoch; we'd like to see the
 accuracy increase and the loss decrease with every epoch.
@@ -214,6 +295,93 @@ accuracy increase and the loss decrease with every epoch.
         train(train_dataloader, model, loss_fn, optimizer)
         test(test_dataloader, model, loss_fn)
     print("Done!")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Epoch 1
+    -------------------------------
+    loss: 2.318896  [    0/60000]
+    loss: 2.296323  [ 6400/60000]
+    loss: 2.282191  [12800/60000]
+    loss: 2.266229  [19200/60000]
+    loss: 2.240382  [25600/60000]
+    loss: 2.223996  [32000/60000]
+    loss: 2.217706  [38400/60000]
+    loss: 2.189226  [44800/60000]
+    loss: 2.188885  [51200/60000]
+    loss: 2.149921  [57600/60000]
+    Test Error: 
+     Accuracy: 50.9%, Avg loss: 2.144846 
+
+    Epoch 2
+    -------------------------------
+    loss: 2.157737  [    0/60000]
+    loss: 2.139874  [ 6400/60000]
+    loss: 2.086895  [12800/60000]
+    loss: 2.102452  [19200/60000]
+    loss: 2.032456  [25600/60000]
+    loss: 1.989326  [32000/60000]
+    loss: 2.000348  [38400/60000]
+    loss: 1.923173  [44800/60000]
+    loss: 1.933089  [51200/60000]
+    loss: 1.856163  [57600/60000]
+    Test Error: 
+     Accuracy: 56.1%, Avg loss: 1.854599 
+
+    Epoch 3
+    -------------------------------
+    loss: 1.887857  [    0/60000]
+    loss: 1.848902  [ 6400/60000]
+    loss: 1.737393  [12800/60000]
+    loss: 1.784041  [19200/60000]
+    loss: 1.660347  [25600/60000]
+    loss: 1.625522  [32000/60000]
+    loss: 1.632871  [38400/60000]
+    loss: 1.538446  [44800/60000]
+    loss: 1.572597  [51200/60000]
+    loss: 1.465583  [57600/60000]
+    Test Error: 
+     Accuracy: 60.4%, Avg loss: 1.488209 
+
+    Epoch 4
+    -------------------------------
+    loss: 1.553459  [    0/60000]
+    loss: 1.514429  [ 6400/60000]
+    loss: 1.373041  [12800/60000]
+    loss: 1.451998  [19200/60000]
+    loss: 1.327300  [25600/60000]
+    loss: 1.326947  [32000/60000]
+    loss: 1.330442  [38400/60000]
+    loss: 1.259276  [44800/60000]
+    loss: 1.306234  [51200/60000]
+    loss: 1.203914  [57600/60000]
+    Test Error: 
+     Accuracy: 62.7%, Avg loss: 1.234131 
+
+    Epoch 5
+    -------------------------------
+    loss: 1.309773  [    0/60000]
+    loss: 1.285668  [ 6400/60000]
+    loss: 1.128635  [12800/60000]
+    loss: 1.241259  [19200/60000]
+    loss: 1.112525  [25600/60000]
+    loss: 1.134208  [32000/60000]
+    loss: 1.149063  [38400/60000]
+    loss: 1.089067  [44800/60000]
+    loss: 1.141416  [51200/60000]
+    loss: 1.052735  [57600/60000]
+    Test Error: 
+     Accuracy: 64.3%, Avg loss: 1.076716 
+
+    Done!
 
 
 Read more about `Training your model <optimization_tutorial.html>`_.
@@ -236,6 +404,18 @@ A common way to save a model is to serialize the internal state dictionary (cont
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Saved PyTorch Model State to model.pth
+
+
 Loading Models
 ----------------------------
 
@@ -248,6 +428,11 @@ the state dictionary into it.
 
     model = NeuralNetwork()
     model.load_state_dict(torch.load("model.pth"))
+
+
+
+
+
 
 
 This model can now be used to make predictions.
@@ -278,13 +463,25 @@ This model can now be used to make predictions.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Predicted: "Ankle boot", Actual: "Ankle boot"
+
+
 Read more about `Saving & Loading your model <saveloadrun_tutorial.html>`_.
 
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  51.038 seconds)
 
 
 .. _sphx_glr_download_beginner_basics_quickstart_tutorial.py:

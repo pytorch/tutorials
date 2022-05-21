@@ -80,6 +80,11 @@ custom functions so we can validate their correctness individually
             return convolution_backward(grad_out, X, weight)
 
 
+
+
+
+
+
 When testing with gradcheck, it is important to use double precision
 
 
@@ -88,6 +93,11 @@ When testing with gradcheck, it is important to use double precision
     weight = torch.rand(5, 3, 3, 3, requires_grad=True, dtype=torch.double)
     X = torch.rand(10, 3, 7, 7, requires_grad=True, dtype=torch.double)
     torch.autograd.gradcheck(Conv2D.apply, (X, weight))
+
+
+
+
+
 
 
 Backward Formula Implementation for Batch Norm
@@ -165,6 +175,11 @@ we implement and test only the training mode case.
             return batch_norm_backward(grad_out, X, ctx.sum, ctx.sqrt_var, ctx.N, ctx.eps)
 
 
+
+
+
+
+
 Testing with gradcheck
 
 
@@ -172,6 +187,11 @@ Testing with gradcheck
 
     a = torch.rand(1, 2, 3, 4, requires_grad=True, dtype=torch.double)
     torch.autograd.gradcheck(BatchNorm.apply, (a,), fast_mode=False)
+
+
+
+
+
 
 
 Fusing Convolution and BatchNorm
@@ -225,6 +245,11 @@ exact code as the examples above.
             return grad_X, grad_input, None, None, None, None, None
 
 
+
+
+
+
+
 The next step is to wrap our functional variant in a stateful
 `nn.Module`
 
@@ -256,6 +281,11 @@ The next step is to wrap our functional variant in a stateful
             nn.init.kaiming_uniform_(self.conv_weight, a=math.sqrt(5))
 
 
+
+
+
+
+
 Use gradcheck to validate the correctness of our backward formula
 
 
@@ -264,6 +294,11 @@ Use gradcheck to validate the correctness of our backward formula
     weight = torch.rand(5, 3, 3, 3, requires_grad=True, dtype=torch.double)
     X = torch.rand(2, 3, 4, 4, requires_grad=True, dtype=torch.double)
     torch.autograd.gradcheck(FusedConvBN2DFunction.apply, (X, weight))
+
+
+
+
+
 
 
 Testing out our new Layer
@@ -384,6 +419,11 @@ https://github.com/pytorch/examples/tree/master/mnist
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
 
+
+
+
+
+
 A Comparison of Memory Usage
 -------------------------------------------------------------------
 If cuda is enabled, print out memory usage for both `fused=True` and `fused=False`
@@ -434,9 +474,62 @@ allocate one fewer buffer per fused conv-bn pair.
 
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352059
+    Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.320500
+    Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.263867
+    Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.919997
+    Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.649006
+    Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.818971
+    Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.518931
+    Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.660003
+    Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.615571
+    Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.641139
+    Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.247784
+    Train Epoch: 0 [45056/60000 (73%)]      Loss: 1.089144
+    Train Epoch: 0 [49152/60000 (80%)]      Loss: 1.148825
+    Train Epoch: 0 [53248/60000 (87%)]      Loss: 0.937577
+    Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.830027
+
+    Test set: Average loss: 0.4158, Accuracy: 8631/10000 (86%)
+
+    Train Epoch: 0 [0/60000 (0%)]   Loss: 2.352356
+    Train Epoch: 0 [4096/60000 (7%)]        Loss: 7.323086
+    Train Epoch: 0 [8192/60000 (13%)]       Loss: 4.011076
+    Train Epoch: 0 [12288/60000 (20%)]      Loss: 2.066446
+    Train Epoch: 0 [16384/60000 (27%)]      Loss: 2.217045
+    Train Epoch: 0 [20480/60000 (33%)]      Loss: 1.890097
+    Train Epoch: 0 [24576/60000 (40%)]      Loss: 1.640162
+    Train Epoch: 0 [28672/60000 (47%)]      Loss: 1.428924
+    Train Epoch: 0 [32768/60000 (53%)]      Loss: 1.320320
+    Train Epoch: 0 [36864/60000 (60%)]      Loss: 1.869034
+    Train Epoch: 0 [40960/60000 (67%)]      Loss: 1.063929
+    Train Epoch: 0 [45056/60000 (73%)]      Loss: 0.879017
+    Train Epoch: 0 [49152/60000 (80%)]      Loss: 0.839018
+    Train Epoch: 0 [53248/60000 (87%)]      Loss: 1.017617
+    Train Epoch: 0 [57344/60000 (93%)]      Loss: 0.785071
+
+    Test set: Average loss: 0.3683, Accuracy: 9137/10000 (91%)
+
+    CuDNN version: 7605
+
+    Peak memory allocated:
+    fused: 2.29GB, unfused: 1.48GB
+    Memory allocated at end of forward pass:
+    fused: 0.58GB, unfused: 0.95GB
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  27.331 seconds)
 
 
 .. _sphx_glr_download_intermediate_custom_function_conv_bn_tutorial.py:

@@ -39,6 +39,11 @@ In the following sections, we'll build a neural network to classify images in th
 
 
 
+
+
+
+
+
 Get Device for Training
 -----------------------
 We want to be able to train our model on a hardware accelerator like the GPU,
@@ -52,6 +57,18 @@ continue to use the CPU.
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Using cuda device
 
 
 Define the Class
@@ -82,6 +99,11 @@ the operations on input data in the ``forward`` method.
             return logits
 
 
+
+
+
+
+
 We create an instance of ``NeuralNetwork``, and move it to the ``device``, and print
 its structure.
 
@@ -92,6 +114,27 @@ its structure.
     model = NeuralNetwork().to(device)
     print(model)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    NeuralNetwork(
+      (flatten): Flatten(start_dim=1, end_dim=-1)
+      (linear_relu_stack): Sequential(
+        (0): Linear(in_features=784, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=512, bias=True)
+        (3): ReLU()
+        (4): Linear(in_features=512, out_features=10, bias=True)
+      )
+    )
 
 
 To use the model, we pass it the input data. This executes the model's ``forward``,
@@ -113,6 +156,18 @@ We get the prediction probabilities by passing it through an instance of the ``n
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Predicted class: tensor([1], device='cuda:0')
+
+
 --------------
 
 
@@ -131,6 +186,18 @@ we pass it through the network.
     print(input_image.size())
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torch.Size([3, 28, 28])
+
+
 nn.Flatten
 ^^^^^^^^^^^^^^^^^^^^^^
 We initialize the `nn.Flatten  <https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html>`_
@@ -146,6 +213,18 @@ the minibatch dimension (at dim=0) is maintained).
     print(flat_image.size())
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torch.Size([3, 784])
+
+
 nn.Linear
 ^^^^^^^^^^^^^^^^^^^^^^
 The `linear layer <https://pytorch.org/docs/stable/generated/torch.nn.Linear.html>`_
@@ -159,6 +238,18 @@ is a module that applies a linear transformation on the input using its stored w
     hidden1 = layer1(flat_image)
     print(hidden1.size())
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torch.Size([3, 20])
 
 
 nn.ReLU
@@ -181,6 +272,37 @@ linear layers, but there's other activations to introduce non-linearity in your 
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Before ReLU: tensor([[-0.0025, -0.0815,  0.1088,  0.0248,  0.5178,  0.2869,  0.6763, -0.4647,
+              0.8231,  0.3062, -0.1185, -0.1367,  0.0954,  0.5211, -0.2231,  0.1746,
+             -0.4334, -0.7024, -0.4584,  0.3816],
+            [-0.2757,  0.1342,  0.0542, -0.2128,  0.4777,  0.3544,  0.4872, -0.6134,
+              0.4736,  0.5048, -0.3297, -0.3374,  0.2874,  0.2953, -0.1149,  0.4095,
+             -0.0942, -0.2691, -0.5447,  0.0892],
+            [-0.1591, -0.1400, -0.1304,  0.0880,  0.7683,  0.1011,  0.5359, -0.8239,
+              0.1610,  0.5371, -0.1739, -0.2636,  0.0324,  0.4617,  0.0264,  0.3756,
+             -0.4268, -0.1039, -0.6682,  0.2419]], grad_fn=<AddmmBackward0>)
+
+
+    After ReLU: tensor([[0.0000, 0.0000, 0.1088, 0.0248, 0.5178, 0.2869, 0.6763, 0.0000, 0.8231,
+             0.3062, 0.0000, 0.0000, 0.0954, 0.5211, 0.0000, 0.1746, 0.0000, 0.0000,
+             0.0000, 0.3816],
+            [0.0000, 0.1342, 0.0542, 0.0000, 0.4777, 0.3544, 0.4872, 0.0000, 0.4736,
+             0.5048, 0.0000, 0.0000, 0.2874, 0.2953, 0.0000, 0.4095, 0.0000, 0.0000,
+             0.0000, 0.0892],
+            [0.0000, 0.0000, 0.0000, 0.0880, 0.7683, 0.1011, 0.5359, 0.0000, 0.1610,
+             0.5371, 0.0000, 0.0000, 0.0324, 0.4617, 0.0264, 0.3756, 0.0000, 0.0000,
+             0.0000, 0.2419]], grad_fn=<ReluBackward0>)
+
+
 nn.Sequential
 ^^^^^^^^^^^^^^^^^^^^^^
 `nn.Sequential <https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html>`_ is an ordered
@@ -201,6 +323,11 @@ sequential containers to put together a quick network like ``seq_modules``.
     logits = seq_modules(input_image)
 
 
+
+
+
+
+
 nn.Softmax
 ^^^^^^^^^^^^^^^^^^^^^^
 The last linear layer of the neural network returns `logits` - raw values in [-\infty, \infty] - which are passed to the
@@ -214,6 +341,11 @@ which the values must sum to 1.
 
     softmax = nn.Softmax(dim=1)
     pred_probab = softmax(logits)
+
+
+
+
+
 
 
 
@@ -238,6 +370,46 @@ In this example, we iterate over each parameter, and print its size and a previe
         print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Model structure: NeuralNetwork(
+      (flatten): Flatten(start_dim=1, end_dim=-1)
+      (linear_relu_stack): Sequential(
+        (0): Linear(in_features=784, out_features=512, bias=True)
+        (1): ReLU()
+        (2): Linear(in_features=512, out_features=512, bias=True)
+        (3): ReLU()
+        (4): Linear(in_features=512, out_features=10, bias=True)
+      )
+    )
+
+
+    Layer: linear_relu_stack.0.weight | Size: torch.Size([512, 784]) | Values : tensor([[-0.0292, -0.0207, -0.0352,  ...,  0.0055, -0.0290,  0.0281],
+            [ 0.0021,  0.0070,  0.0090,  ..., -0.0092,  0.0058,  0.0123]],
+           device='cuda:0', grad_fn=<SliceBackward0>) 
+
+    Layer: linear_relu_stack.0.bias | Size: torch.Size([512]) | Values : tensor([-0.0272, -0.0174], device='cuda:0', grad_fn=<SliceBackward0>) 
+
+    Layer: linear_relu_stack.2.weight | Size: torch.Size([512, 512]) | Values : tensor([[ 0.0288, -0.0432,  0.0316,  ...,  0.0020,  0.0268, -0.0136],
+            [-0.0389,  0.0314,  0.0274,  ..., -0.0144,  0.0150,  0.0373]],
+           device='cuda:0', grad_fn=<SliceBackward0>) 
+
+    Layer: linear_relu_stack.2.bias | Size: torch.Size([512]) | Values : tensor([-0.0323, -0.0183], device='cuda:0', grad_fn=<SliceBackward0>) 
+
+    Layer: linear_relu_stack.4.weight | Size: torch.Size([10, 512]) | Values : tensor([[ 0.0131, -0.0424,  0.0084,  ..., -0.0243,  0.0364, -0.0323],
+            [-0.0094, -0.0072, -0.0123,  ...,  0.0096,  0.0063,  0.0071]],
+           device='cuda:0', grad_fn=<SliceBackward0>) 
+
+    Layer: linear_relu_stack.4.bias | Size: torch.Size([10]) | Values : tensor([-0.0280, -0.0009], device='cuda:0', grad_fn=<SliceBackward0>)
+
+
 --------------
 
 
@@ -248,7 +420,7 @@ Further Reading
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  6.124 seconds)
 
 
 .. _sphx_glr_download_beginner_basics_buildmodel_tutorial.py:

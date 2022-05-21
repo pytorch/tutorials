@@ -64,6 +64,11 @@ used at each point.
             (PATH / FILENAME).open("wb").write(content)
 
 
+
+
+
+
+
 This dataset is in numpy array format, and has been stored using pickle,
 a python-specific format for serializing data.
 
@@ -76,6 +81,11 @@ a python-specific format for serializing data.
 
     with gzip.open((PATH / FILENAME).as_posix(), "rb") as f:
             ((x_train, y_train), (x_valid, y_valid), _) = pickle.load(f, encoding="latin-1")
+
+
+
+
+
 
 
 Each image is 28 x 28, and is being stored as a flattened row of length
@@ -91,6 +101,21 @@ first.
 
     pyplot.imshow(x_train[0].reshape((28, 28)), cmap="gray")
     print(x_train.shape)
+
+
+
+
+.. image:: /beginner/images/sphx_glr_nn_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (50000, 784)
 
 
 PyTorch uses ``torch.tensor``, rather than numpy arrays, so we need to
@@ -109,6 +134,26 @@ convert our data.
     print(x_train, y_train)
     print(x_train.shape)
     print(y_train.min(), y_train.max())
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[0., 0., 0.,  ..., 0., 0., 0.],
+            [0., 0., 0.,  ..., 0., 0., 0.],
+            [0., 0., 0.,  ..., 0., 0., 0.],
+            ...,
+            [0., 0., 0.,  ..., 0., 0., 0.],
+            [0., 0., 0.,  ..., 0., 0., 0.],
+            [0., 0., 0.,  ..., 0., 0., 0.]]) tensor([5, 0, 4,  ..., 8, 4, 8])
+    torch.Size([50000, 784])
+    tensor(0) tensor(9)
 
 
 Neural net from scratch (no torch.nn)
@@ -143,6 +188,11 @@ PyTorch signifies that the operation is performed in-place.)
     bias = torch.zeros(10, requires_grad=True)
 
 
+
+
+
+
+
 Thanks to PyTorch's ability to calculate gradients automatically, we can
 use any standard Python function (or callable object) as a model! So
 let's just write a plain matrix multiplication and broadcasted addition
@@ -164,6 +214,11 @@ automatically.
         return log_softmax(xb @ weights + bias)
 
 
+
+
+
+
+
 In the above, the ``@`` stands for the matrix multiplication operation. We will call
 our function on one batch of data (in this case, 64 images).  This is
 one *forward pass*.  Note that our predictions won't be any better than
@@ -179,6 +234,19 @@ random at this stage, since we start with random weights.
     preds = model(xb)  # predictions
     preds[0], preds.shape
     print(preds[0], preds.shape)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([-2.6016, -2.6017, -2.4811, -1.5550, -2.5451, -2.5455, -2.1570, -2.2412,
+            -2.4545, -2.3855], grad_fn=<SelectBackward0>) torch.Size([64, 10])
 
 
 As you see, the ``preds`` tensor contains not only the tensor values, but also a
@@ -198,6 +266,11 @@ Let's implement negative log-likelihood to use as the loss function
     loss_func = nll
 
 
+
+
+
+
+
 Let's check our loss with our random model, so we can see if we improve
 after a backprop pass later.
 
@@ -208,6 +281,18 @@ after a backprop pass later.
     yb = y_train[0:bs]
     print(loss_func(preds, yb))
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(2.3415, grad_fn=<NegBackward0>)
 
 
 Let's also implement a function to calculate the accuracy of our model.
@@ -223,6 +308,11 @@ target value, then the prediction was correct.
         return (preds == yb).float().mean()
 
 
+
+
+
+
+
 Let's check the accuracy of our random model, so we can see if our
 accuracy improves as our loss improves.
 
@@ -231,6 +321,18 @@ accuracy improves as our loss improves.
 
 
     print(accuracy(preds, yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.1094)
 
 
 We can now run a training loop.  For each iteration, we will:
@@ -285,6 +387,11 @@ already stored, rather than replacing them).
                 bias.grad.zero_()
 
 
+
+
+
+
+
 That's it: we've created and trained a minimal neural network (in this case, a
 logistic regression, since we have no hidden layers) entirely from scratch!
 
@@ -297,6 +404,18 @@ have increased, and they have.
 
 
     print(loss_func(model(xb), yb), accuracy(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0826, grad_fn=<NegBackward0>) tensor(1.)
 
 
 Using torch.nn.functional
@@ -333,6 +452,11 @@ the two. So we can even remove the activation function from our model.
         return xb @ weights + bias
 
 
+
+
+
+
+
 Note that we no longer call ``log_softmax`` in the ``model`` function. Let's
 confirm that our loss and accuracy are the same as before:
 
@@ -341,6 +465,18 @@ confirm that our loss and accuracy are the same as before:
 
 
     print(loss_func(model(xb), yb), accuracy(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0826, grad_fn=<NllLossBackward0>) tensor(1.)
 
 
 Refactor using nn.Module
@@ -373,6 +509,11 @@ which we will be using.
             return xb @ self.weights + self.bias
 
 
+
+
+
+
+
 Since we're now using an object instead of just using a function, we
 first have to instantiate our model:
 
@@ -381,6 +522,11 @@ first have to instantiate our model:
 
 
     model = Mnist_Logistic()
+
+
+
+
+
 
 
 Now we can calculate the loss in the same way as before. Note that
@@ -393,6 +539,18 @@ method automatically.
 
 
     print(loss_func(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(2.4878, grad_fn=<NllLossBackward0>)
 
 
 Previously for our training loop we had to update the values for each parameter
@@ -441,6 +599,11 @@ again later.
     fit()
 
 
+
+
+
+
+
 Let's double-check that our loss has gone down:
 
 
@@ -448,6 +611,18 @@ Let's double-check that our loss has gone down:
 
 
     print(loss_func(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0814, grad_fn=<NllLossBackward0>)
 
 
 Refactor using nn.Linear
@@ -474,6 +649,11 @@ faster too.
             return self.lin(xb)
 
 
+
+
+
+
+
 We instantiate our model and calculate the loss in the same way as before:
 
 
@@ -482,6 +662,18 @@ We instantiate our model and calculate the loss in the same way as before:
 
     model = Mnist_Logistic()
     print(loss_func(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(2.3375, grad_fn=<NllLossBackward0>)
 
 
 We are still able to use our same ``fit`` method as before.
@@ -493,6 +685,18 @@ We are still able to use our same ``fit`` method as before.
     fit()
 
     print(loss_func(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0809, grad_fn=<NllLossBackward0>)
 
 
 Refactor using optim
@@ -521,6 +725,11 @@ computing the gradient for the next minibatch.)
 
 
     from torch import optim
+
+
+
+
+
 
 
 We'll define a little function to create our model and optimizer so we
@@ -553,6 +762,19 @@ can reuse it in the future.
     print(loss_func(model(xb), yb))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(2.3819, grad_fn=<NllLossBackward0>)
+    tensor(0.0809, grad_fn=<NllLossBackward0>)
+
+
 Refactor using Dataset
 ------------------------------
 
@@ -576,6 +798,11 @@ independent and dependent variables in the same line as we train.
     from torch.utils.data import TensorDataset
 
 
+
+
+
+
+
 Both ``x_train`` and ``y_train`` can be combined in a single ``TensorDataset``,
 which will be easier to iterate over and slice.
 
@@ -584,6 +811,11 @@ which will be easier to iterate over and slice.
 
 
     train_ds = TensorDataset(x_train, y_train)
+
+
+
+
+
 
 
 Previously, we had to iterate through minibatches of x and y values separately:
@@ -616,6 +848,18 @@ Now, we can do these two steps together:
     print(loss_func(model(xb), yb))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0808, grad_fn=<NllLossBackward0>)
+
+
 Refactor using DataLoader
 ------------------------------
 
@@ -632,6 +876,11 @@ the DataLoader gives us each minibatch automatically.
 
     train_ds = TensorDataset(x_train, y_train)
     train_dl = DataLoader(train_ds, batch_size=bs)
+
+
+
+
+
 
 
 Previously, our loop iterated over batches (xb, yb) like this:
@@ -661,6 +910,18 @@ Now, our loop is much cleaner, as (xb, yb) are loaded automatically from the dat
             opt.zero_grad()
 
     print(loss_func(model(xb), yb))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(0.0831, grad_fn=<NllLossBackward0>)
 
 
 Thanks to Pytorch's ``nn.Module``, ``nn.Parameter``, ``Dataset``, and ``DataLoader``,
@@ -698,6 +959,11 @@ size and compute the loss more quickly.
     valid_dl = DataLoader(valid_ds, batch_size=bs * 2)
 
 
+
+
+
+
+
 We will calculate and print the validation loss at the end of each epoch.
 
 (Note that we always call ``model.train()`` before training, and ``model.eval()``
@@ -725,6 +991,19 @@ and ``nn.Dropout`` to ensure appropriate behaviour for these different phases.)
             valid_loss = sum(loss_func(model(xb), yb) for xb, yb in valid_dl)
 
         print(epoch, valid_loss / len(valid_dl))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 tensor(0.3041)
+    1 tensor(0.2760)
 
 
 Create fit() and get_data()
@@ -755,6 +1034,11 @@ method doesn't perform backprop.
         return loss.item(), len(xb)
 
 
+
+
+
+
+
 ``fit`` runs the necessary operations to train our model and compute the
 training and validation losses for each epoch.
 
@@ -780,6 +1064,11 @@ training and validation losses for each epoch.
             print(epoch, val_loss)
 
 
+
+
+
+
+
 ``get_data`` returns dataloaders for the training and validation sets.
 
 
@@ -794,6 +1083,11 @@ training and validation losses for each epoch.
         )
 
 
+
+
+
+
+
 Now, our whole process of obtaining the data loaders and fitting the
 model can be run in 3 lines of code:
 
@@ -804,6 +1098,19 @@ model can be run in 3 lines of code:
     train_dl, valid_dl = get_data(train_ds, valid_ds, bs)
     model, opt = get_model()
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 0.35338440935611726
+    1 0.2959580027103424
 
 
 You can use these basic 3 lines of code to train a wide variety of models.
@@ -845,6 +1152,11 @@ average pooling.  (Note that ``view`` is PyTorch's version of numpy's
     lr = 0.1
 
 
+
+
+
+
+
 `Momentum <https://cs231n.github.io/neural-networks-3/#sgd>`_ is a variation on
 stochastic gradient descent that takes previous updates into account as well
 and generally leads to faster training.
@@ -857,6 +1169,19 @@ and generally leads to faster training.
     opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 0.3792793762683868
+    1 0.23248483279943466
 
 
 nn.Sequential
@@ -890,6 +1215,11 @@ will create a layer that we can then use when defining a network with
         return x.view(-1, 1, 28, 28)
 
 
+
+
+
+
+
 The model created with ``Sequential`` is simply:
 
 
@@ -911,6 +1241,19 @@ The model created with ``Sequential`` is simply:
     opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 0.3542112174987793
+    1 0.23947373085021972
 
 
 Wrapping DataLoader
@@ -950,6 +1293,11 @@ moving the data preprocessing into a generator:
     valid_dl = WrappedDataLoader(valid_dl, preprocess)
 
 
+
+
+
+
+
 Next, we can replace ``nn.AvgPool2d`` with ``nn.AdaptiveAvgPool2d``, which
 allows us to define the size of the *output* tensor we want, rather than
 the *input* tensor we have. As a result, our model will work with any
@@ -973,6 +1321,11 @@ size input.
     opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
 
+
+
+
+
+
 Let's try it out:
 
 
@@ -980,6 +1333,19 @@ Let's try it out:
 
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 0.36006275150775907
+    1 0.2770780975818634
 
 
 Using your GPU
@@ -997,6 +1363,18 @@ Pytorch:
     print(torch.cuda.is_available())
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
+
+
 And then create a device object for it:
 
 
@@ -1005,6 +1383,11 @@ And then create a device object for it:
 
     dev = torch.device(
         "cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+
+
+
+
 
 
 Let's update ``preprocess`` to move batches to the GPU:
@@ -1023,6 +1406,11 @@ Let's update ``preprocess`` to move batches to the GPU:
     valid_dl = WrappedDataLoader(valid_dl, preprocess)
 
 
+
+
+
+
+
 Finally, we can move our model to the GPU.
 
 
@@ -1033,6 +1421,11 @@ Finally, we can move our model to the GPU.
     opt = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
 
 
+
+
+
+
+
 You should find it runs faster now:
 
 
@@ -1040,6 +1433,19 @@ You should find it runs faster now:
 
 
     fit(epochs, model, loss_func, opt, train_dl, valid_dl)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    0 0.20080257769823073
+    1 0.23047664524316788
 
 
 Closing thoughts
@@ -1078,7 +1484,7 @@ what we've seen:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  31.332 seconds)
 
 
 .. _sphx_glr_download_beginner_nn_tutorial.py:

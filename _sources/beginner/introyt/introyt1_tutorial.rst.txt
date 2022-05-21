@@ -39,6 +39,11 @@ First, we’ll import pytorch.
     import torch
 
 
+
+
+
+
+
 Let’s see a few basic tensor manipulations. First, just a few of the
 ways to create tensors:
 
@@ -51,6 +56,23 @@ ways to create tensors:
     print(z)
     print(z.dtype)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.],
+            [0., 0., 0.]])
+    torch.float32
 
 
 Above, we create a 5x3 matrix filled with zeros, and query its datatype
@@ -68,6 +90,22 @@ default:
     i = torch.ones((5, 3), dtype=torch.int16)
     print(i)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1]], dtype=torch.int16)
 
 
 You can see that when we do change the default, the tensor helpfully
@@ -97,6 +135,28 @@ specific seed for the PRNG for reproducibility of results:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    A random tensor:
+    tensor([[0.3126, 0.3791],
+            [0.3087, 0.0736]])
+
+    A different random tensor:
+    tensor([[0.4216, 0.0691],
+            [0.2332, 0.4047]])
+
+    Should match r1:
+    tensor([[0.3126, 0.3791],
+            [0.3087, 0.0736]])
+
+
 PyTorch tensors perform arithmetic operations intuitively. Tensors of
 similar shapes may be added, multiplied, etc. Operations with scalars
 are distributed over the tensor:
@@ -121,6 +181,24 @@ are distributed over the tensor:
     # uncomment this line to get a runtime error
     # r3 = r1 + r2
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[1., 1., 1.],
+            [1., 1., 1.]])
+    tensor([[2., 2., 2.],
+            [2., 2., 2.]])
+    tensor([[3., 3., 3.],
+            [3., 3., 3.]])
+    torch.Size([2, 3])
 
 
 Here’s a small sample of the mathematical operations available:
@@ -156,6 +234,45 @@ Here’s a small sample of the mathematical operations available:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    A random matrix, r:
+    tensor([[ 0.9956, -0.2232],
+            [ 0.3858, -0.6593]])
+
+    Absolute value of r:
+    tensor([[0.9956, 0.2232],
+            [0.3858, 0.6593]])
+
+    Inverse sine of r:
+    tensor([[ 1.4775, -0.2251],
+            [ 0.3961, -0.7199]])
+
+    Determinant of r:
+    tensor(-0.5703)
+
+    Singular value decomposition of r:
+    torch.return_types.svd(
+    U=tensor([[-0.8353, -0.5497],
+            [-0.5497,  0.8353]]),
+    S=tensor([1.1793, 0.4836]),
+    V=tensor([[-0.8851, -0.4654],
+            [ 0.4654, -0.8851]]))
+
+    Average and standard deviation of r:
+    (tensor(0.7217), tensor(0.1247))
+
+    Maximum value of r:
+    tensor(0.9956)
+
+
 There’s a good deal more to know about the power of PyTorch tensors,
 including how to set them up for parallel computations on GPU - we’ll be
 going into more depth in another video.
@@ -175,6 +292,11 @@ Let’s talk about how we can express models in PyTorch
     import torch                     # for all things PyTorch
     import torch.nn as nn            # for torch.nn.Module, the parent object for PyTorch models
     import torch.nn.functional as F  # for the activation function
+
+
+
+
+
 
 
 
@@ -242,6 +364,11 @@ How do we express this simple neural network in code?
 
 
 
+
+
+
+
+
 Looking over this code, you should be able to spot some structural
 similarities with the diagram above.
 
@@ -279,6 +406,32 @@ Let’s instantiate this object and run a sample input through it.
     print(output)
     print(output.shape)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    LeNet(
+      (conv1): Conv2d(1, 6, kernel_size=(3, 3), stride=(1, 1))
+      (conv2): Conv2d(6, 16, kernel_size=(3, 3), stride=(1, 1))
+      (fc1): Linear(in_features=576, out_features=120, bias=True)
+      (fc2): Linear(in_features=120, out_features=84, bias=True)
+      (fc3): Linear(in_features=84, out_features=10, bias=True)
+    )
+
+    Image batch shape:
+    torch.Size([1, 1, 32, 32])
+
+    Raw output:
+    tensor([[ 0.0639, -0.0646, -0.0593, -0.0054, -0.0212, -0.0529, -0.1144,  0.0339,
+              0.0838,  0.0405]], grad_fn=<AddmmBackward0>)
+    torch.Size([1, 10])
 
 
 There are a few important things happening above:
@@ -337,6 +490,11 @@ PyTorch tensor.
 
 
 
+
+
+
+
+
 Here, we specify two transformations for our input:
 
 -  ``transforms.ToTensor()`` converts images loaded by Pillow into 
@@ -362,6 +520,19 @@ automobile, ship, truck):
     trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
                                             download=True, transform=transform)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Downloading https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz to ./data/cifar-10-python.tar.gz
+    Extracting ./data/cifar-10-python.tar.gz to ./data
 
 
 .. note::
@@ -393,6 +564,11 @@ Once your dataset is ready, you can give it to the ``DataLoader``:
 
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=4,
                                               shuffle=True, num_workers=2)
+
+
+
+
+
 
 
 
@@ -435,6 +611,21 @@ It’s good practice to visualize the batches your ``DataLoader`` serves:
 
 
 
+
+
+.. image:: /beginner/introyt/images/sphx_glr_introyt1_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ship truck   cat  bird
+
+
 Running the above cell should show you a strip of four images, and the
 correct label for each.
 
@@ -466,6 +657,11 @@ Let’s put all the pieces together, and train a model:
 
 
 
+
+
+
+
+
 First, we’ll need training and test datasets. If you haven’t already,
 run the cell below to make sure the dataset is downloaded. (It may take
 a minute.)
@@ -492,6 +688,19 @@ a minute.)
     classes = ('plane', 'car', 'bird', 'cat',
                'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Files already downloaded and verified
+    Files already downloaded and verified
 
 
 We’ll run our check on the output from ``DataLoader``:
@@ -522,6 +731,21 @@ We’ll run our check on the output from ``DataLoader``:
     # print labels
     print(' '.join('%5s' % classes[labels[j]] for j in range(4)))
 
+
+
+
+
+.. image:: /beginner/introyt/images/sphx_glr_introyt1_tutorial_002.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    bird plane horse   car
 
 
 This is the model we’ll train. If it looks familiar, that’s because it’s
@@ -557,6 +781,11 @@ a variant of LeNet - discussed earlier in this video - adapted for
 
 
 
+
+
+
+
+
 The last ingredients we need are a loss function and an optimizer:
 
 
@@ -566,6 +795,11 @@ The last ingredients we need are a loss function and an optimizer:
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+
+
+
+
+
 
 
 
@@ -613,6 +847,30 @@ run this cell, as it will likely take a few minutes to execute:
 
     print('Finished Training')
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [1,  2000] loss: 2.174
+    [1,  4000] loss: 1.810
+    [1,  6000] loss: 1.674
+    [1,  8000] loss: 1.601
+    [1, 10000] loss: 1.540
+    [1, 12000] loss: 1.473
+    [2,  2000] loss: 1.397
+    [2,  4000] loss: 1.363
+    [2,  6000] loss: 1.340
+    [2,  8000] loss: 1.323
+    [2, 10000] loss: 1.294
+    [2, 12000] loss: 1.269
+    Finished Training
 
 
 Here, we are doing only **2 training epochs** (line 1) - that is, two
@@ -691,6 +949,18 @@ data it hasn’t trained on:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Accuracy of the network on the 10000 test images: 55 %
+
+
 If you followed along, you should see that the model is roughly 50%
 accurate at this point. That’s not exactly state-of-the-art, but it’s
 far better than the 10% accuracy we’d expect from a random output. This
@@ -700,7 +970,7 @@ demonstrates that some general learning did happen in the model.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 1 minutes  57.989 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_introyt1_tutorial.py:

@@ -57,6 +57,11 @@ shape (1,1000).
     labels = torch.rand(1, 1000)
 
 
+
+
+
+
+
 Next, we run the input data through the model through each of its layers to make a prediction.
 This is the **forward pass**.
 
@@ -66,6 +71,11 @@ This is the **forward pass**.
 
 
     prediction = model(data) # forward pass
+
+
+
+
+
 
 
 We use the model's prediction and the corresponding label to calculate the error (``loss``).
@@ -82,6 +92,11 @@ Autograd then calculates and stores the gradients for each model parameter in th
     loss.backward() # backward pass
 
 
+
+
+
+
+
 Next, we load an optimizer, in this case SGD with a learning rate of 0.01 and `momentum <https://towardsdatascience.com/stochastic-gradient-descent-with-momentum-a84097641a5d>`__ of 0.9.
 We register all the parameters of the model in the optimizer.
 
@@ -93,6 +108,11 @@ We register all the parameters of the model in the optimizer.
     optim = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
 
 
+
+
+
+
+
 Finally, we call ``.step()`` to initiate gradient descent. The optimizer adjusts each parameter by its gradient stored in ``.grad``.
 
 
@@ -101,6 +121,11 @@ Finally, we call ``.step()`` to initiate gradient descent. The optimizer adjusts
 
 
     optim.step() #gradient descent
+
+
+
+
+
 
 
 At this point, you have everything you need to train your neural network.
@@ -126,6 +151,11 @@ Let's take a look at how ``autograd`` collects gradients. We create two tensors 
     b = torch.tensor([6., 4.], requires_grad=True)
 
 
+
+
+
+
+
 We create another tensor ``Q`` from ``a`` and ``b``.
 
 .. math::
@@ -136,6 +166,11 @@ We create another tensor ``Q`` from ``a`` and ``b``.
 
 
     Q = 3*a**3 - b**2
+
+
+
+
+
 
 
 
@@ -171,6 +206,11 @@ Equivalently, we can also aggregate Q into a scalar and call backward implicitly
 
 
 
+
+
+
+
+
 Gradients are now deposited in ``a.grad`` and ``b.grad``
 
 
@@ -181,6 +221,19 @@ Gradients are now deposited in ``a.grad`` and ``b.grad``
     print(9*a**2 == a.grad)
     print(-2*b == b.grad)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([True, True])
+    tensor([True, True])
 
 
 Optional Reading - Vector Calculus using ``autograd``
@@ -308,6 +361,19 @@ single input tensor has ``requires_grad=True``.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Does `a` require gradients? : False
+    Does `b` require gradients?: True
+
+
 In a NN, parameters that don't compute gradients are usually called **frozen parameters**.
 It is useful to "freeze" part of your model if you know in advance that you won't need the gradients of those parameters
 (this offers some performance benefits by reducing autograd computations).
@@ -331,6 +397,11 @@ Let's walk through a small example to demonstrate this. As before, we load a pre
         param.requires_grad = False
 
 
+
+
+
+
+
 Let's say we want to finetune the model on a new dataset with 10 labels.
 In resnet, the classifier is the last linear layer ``model.fc``.
 We can simply replace it with a new linear layer (unfrozen by default)
@@ -343,6 +414,11 @@ that acts as our classifier.
     model.fc = nn.Linear(512, 10)
 
 
+
+
+
+
+
 Now all parameters in the model, except the parameters of ``model.fc``, are frozen.
 The only parameters that compute gradients are the weights and bias of ``model.fc``.
 
@@ -352,6 +428,11 @@ The only parameters that compute gradients are the weights and bias of ``model.f
 
     # Optimize only the classifier
     optimizer = optim.SGD(model.parameters(), lr=1e-2, momentum=0.9)
+
+
+
+
+
 
 
 Notice although we register all the parameters in the optimizer,
@@ -374,7 +455,7 @@ Further readings:
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  1.165 seconds)
 
 
 .. _sphx_glr_download_beginner_blitz_autograd_tutorial.py:

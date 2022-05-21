@@ -129,6 +129,11 @@ to let us graph our results:
 
 
 
+
+
+
+
+
 Next, we’ll create an input tensor full of evenly spaced values on the
 interval :math:`[0, 2{\pi}]`, and specify ``requires_grad=True``. (Like
 most functions that create tensors, ``torch.linspace()`` accepts an
@@ -146,6 +151,21 @@ history of the computation in the output tensors of that computation.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([0.0000, 0.2618, 0.5236, 0.7854, 1.0472, 1.3090, 1.5708, 1.8326, 2.0944,
+            2.3562, 2.6180, 2.8798, 3.1416, 3.4034, 3.6652, 3.9270, 4.1888, 4.4506,
+            4.7124, 4.9742, 5.2360, 5.4978, 5.7596, 6.0214, 6.2832],
+           requires_grad=True)
+
+
 Next, we’ll perform a computation, and plot its output in terms of its
 inputs:
 
@@ -159,6 +179,14 @@ inputs:
 
 
 
+
+
+.. image:: /beginner/introyt/images/sphx_glr_autogradyt_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+
+
 Let’s have a closer look at the tensor ``b``. When we print it, we see
 an indicator that it is tracking its computation history:
 
@@ -169,6 +197,23 @@ an indicator that it is tracking its computation history:
 
     print(b)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 0.0000e+00,  2.5882e-01,  5.0000e-01,  7.0711e-01,  8.6603e-01,
+             9.6593e-01,  1.0000e+00,  9.6593e-01,  8.6603e-01,  7.0711e-01,
+             5.0000e-01,  2.5882e-01, -8.7423e-08, -2.5882e-01, -5.0000e-01,
+            -7.0711e-01, -8.6603e-01, -9.6593e-01, -1.0000e+00, -9.6593e-01,
+            -8.6603e-01, -7.0711e-01, -5.0000e-01, -2.5882e-01,  1.7485e-07],
+           grad_fn=<SinBackward0>)
 
 
 This ``grad_fn`` gives us a hint that when we execute the
@@ -190,6 +235,29 @@ Let’s perform some more computations:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 0.0000e+00,  5.1764e-01,  1.0000e+00,  1.4142e+00,  1.7321e+00,
+             1.9319e+00,  2.0000e+00,  1.9319e+00,  1.7321e+00,  1.4142e+00,
+             1.0000e+00,  5.1764e-01, -1.7485e-07, -5.1764e-01, -1.0000e+00,
+            -1.4142e+00, -1.7321e+00, -1.9319e+00, -2.0000e+00, -1.9319e+00,
+            -1.7321e+00, -1.4142e+00, -1.0000e+00, -5.1764e-01,  3.4969e-07],
+           grad_fn=<MulBackward0>)
+    tensor([ 1.0000e+00,  1.5176e+00,  2.0000e+00,  2.4142e+00,  2.7321e+00,
+             2.9319e+00,  3.0000e+00,  2.9319e+00,  2.7321e+00,  2.4142e+00,
+             2.0000e+00,  1.5176e+00,  1.0000e+00,  4.8236e-01, -3.5763e-07,
+            -4.1421e-01, -7.3205e-01, -9.3185e-01, -1.0000e+00, -9.3185e-01,
+            -7.3205e-01, -4.1421e-01,  4.7684e-07,  4.8236e-01,  1.0000e+00],
+           grad_fn=<AddBackward0>)
+
+
 Finally, let’s compute a single-element output. When you call
 ``.backward()`` on a tensor with no arguments, it expects the calling
 tensor to contain only a single element, as is the case when computing a
@@ -203,6 +271,18 @@ loss function.
     out = d.sum()
     print(out)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(25., grad_fn=<SumBackward0>)
 
 
 Each ``grad_fn`` stored with our tensors allows you to walk the
@@ -232,6 +312,32 @@ to the function with no history of its own.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    d:
+    <AddBackward0 object at 0x7f7ccd6a5450>
+    ((<MulBackward0 object at 0x7f7ccd6a5e90>, 0), (None, 0))
+    ((<SinBackward0 object at 0x7f7ccd6a5e90>, 0), (None, 0))
+    ((<AccumulateGrad object at 0x7f7ccd6a53d0>, 0),)
+    ()
+
+    c:
+    <MulBackward0 object at 0x7f7ccd6a5050>
+
+    b:
+    <SinBackward0 object at 0x7f7ccd6a5e90>
+
+    a:
+    None
+
+
 With all this machinery in place, how do we get derivatives out? You
 call the ``backward()`` method on the output, and check the input’s
 ``grad`` property to inspect the gradients:
@@ -245,6 +351,25 @@ call the ``backward()`` method on the output, and check the input’s
     print(a.grad)
     plt.plot(a.detach(), a.grad.detach())
 
+
+
+
+
+.. image:: /beginner/introyt/images/sphx_glr_autogradyt_tutorial_002.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 2.0000e+00,  1.9319e+00,  1.7321e+00,  1.4142e+00,  1.0000e+00,
+             5.1764e-01, -8.7423e-08, -5.1764e-01, -1.0000e+00, -1.4142e+00,
+            -1.7321e+00, -1.9319e+00, -2.0000e+00, -1.9319e+00, -1.7321e+00,
+            -1.4142e+00, -1.0000e+00, -5.1764e-01,  2.3850e-08,  5.1764e-01,
+             1.0000e+00,  1.4142e+00,  1.7321e+00,  1.9319e+00,  2.0000e+00])
 
 
 Recall the computation steps we took to get here:
@@ -307,6 +432,11 @@ few constants, our model, and some stand-ins for inputs and outputs:
 
 
 
+
+
+
+
+
 One thing you might notice is that we never specify
 ``requires_grad=True`` for the model’s layers. Within a subclass of
 ``torch.nn.Module``, it’s assumed that we want to track gradients on the
@@ -323,6 +453,20 @@ weights, and verify that no gradients have been computed yet:
     print(model.layer2.weight[0][0:10]) # just a small slice
     print(model.layer2.weight.grad)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 0.0275, -0.0187,  0.0476, -0.0797, -0.0988,  0.0733,  0.0332, -0.0958,
+            -0.0282,  0.0002], grad_fn=<SliceBackward0>)
+    None
 
 
 Let’s see how this changes when we run through one training batch. For a
@@ -344,6 +488,18 @@ basic stochastic gradient descent optimizer.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor(204.8087, grad_fn=<SumBackward0>)
+
+
 Now, let’s call ``loss.backward()`` and see what happens:
 
 
@@ -355,6 +511,21 @@ Now, let’s call ``loss.backward()`` and see what happens:
     print(model.layer2.weight[0][0:10])
     print(model.layer2.weight.grad[0][0:10])
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 0.0275, -0.0187,  0.0476, -0.0797, -0.0988,  0.0733,  0.0332, -0.0958,
+            -0.0282,  0.0002], grad_fn=<SliceBackward0>)
+    tensor([-0.1045,  2.8904, -1.2863, 11.8458, -2.5837,  2.6117, -0.5880,  1.7499,
+            -5.5513,  5.5207])
 
 
 We can see that the gradients have been computed for each learning
@@ -371,6 +542,21 @@ based on the computed gradients.
     print(model.layer2.weight[0][0:10])
     print(model.layer2.weight.grad[0][0:10])
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 0.0276, -0.0216,  0.0489, -0.0915, -0.0962,  0.0707,  0.0338, -0.0975,
+            -0.0227, -0.0053], grad_fn=<SliceBackward0>)
+    tensor([-0.1045,  2.8904, -1.2863, 11.8458, -2.5837,  2.6117, -0.5880,  1.7499,
+            -5.5513,  5.5207])
 
 
 You should see that ``layer2``\ ’s weights have changed.
@@ -398,6 +584,22 @@ learning weights will accumulate:
 
     print(model.layer2.weight.grad[0][0:10])
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([-0.1045,  2.8904, -1.2863, 11.8458, -2.5837,  2.6117, -0.5880,  1.7499,
+            -5.5513,  5.5207])
+    tensor([  8.2600,   4.3510, -21.2948,  78.9756,  -9.4315,  -8.9328,  -9.1238,
+             23.5930, -30.5888,  40.5758])
+    tensor([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 
 
 After running the cell above, you should see that after running
@@ -433,6 +635,23 @@ directly:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[1., 1., 1.],
+            [1., 1., 1.]], requires_grad=True)
+    tensor([[2., 2., 2.],
+            [2., 2., 2.]], grad_fn=<MulBackward0>)
+    tensor([[2., 2., 2.],
+            [2., 2., 2.]])
+
+
 In the cell above, we see that ``b1`` has a ``grad_fn`` (i.e., a traced
 computation history), which is what we expect, since it was derived from
 a tensor, ``a``, that had autograd turned on. When we turn off autograd
@@ -463,6 +682,23 @@ the ``torch.no_grad()``:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[5., 5., 5.],
+            [5., 5., 5.]], grad_fn=<AddBackward0>)
+    tensor([[5., 5., 5.],
+            [5., 5., 5.]])
+    tensor([[6., 6., 6.],
+            [6., 6., 6.]], grad_fn=<MulBackward0>)
+
+
 ``torch.no_grad()`` can also be used as a function or method decorator:
 
 
@@ -489,6 +725,21 @@ the ``torch.no_grad()``:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([[5., 5., 5.],
+            [5., 5., 5.]], grad_fn=<AddBackward0>)
+    tensor([[5., 5., 5.],
+            [5., 5., 5.]])
+
+
 There’s a corresponding context manager, ``torch.enable_grad()``, for
 turning autograd on when it isn’t already. It may also be used as a
 decorator.
@@ -509,6 +760,19 @@ from the computation history:
     print(x)
     print(y)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([0.1841, 0.4918, 0.6568, 0.3976, 0.7032], requires_grad=True)
+    tensor([0.1841, 0.4918, 0.6568, 0.3976, 0.7032])
 
 
 We did this above when we wanted to graph some of our tensors. This is
@@ -567,6 +831,30 @@ example usage:
         
     print(prf.key_averages().table(sort_by='self_cpu_time_total'))
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                           Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+    ---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                cudaEventCreate        99.65%        5.889s        99.65%        5.889s       1.472ms       0.000us         0.00%       0.000us       0.000us          4000  
+                      aten::div         0.15%       9.077ms        99.81%        5.898s       5.898ms       7.815ms        50.53%       7.815ms       7.815us          1000  
+                      aten::mul         0.12%       6.861ms         0.14%       8.226ms       8.226us       7.651ms        49.47%       7.651ms       7.651us          1000  
+                cudaEventRecord         0.07%       4.121ms         0.07%       4.121ms       1.030us       0.000us         0.00%       0.000us       0.000us          4000  
+        cudaGetDeviceProperties         0.01%     340.000us         0.01%     340.000us     170.000us       0.000us         0.00%       0.000us       0.000us             2  
+          cudaDeviceSynchronize         0.00%      21.000us         0.00%      21.000us      21.000us       0.000us         0.00%       0.000us       0.000us             1  
+             cudaGetDeviceCount         0.00%       1.000us         0.00%       1.000us       0.500us       0.000us         0.00%       0.000us       0.000us             2  
+    ---------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+    Self CPU time total: 5.909s
+    Self CUDA time total: 15.466ms
 
 
 The profiler can also label individual sub-blocks of code, break out the
@@ -655,6 +943,18 @@ precedes it. Let’s try a specific example with a small vector:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([ 871.0950, -166.0917, -476.6985], grad_fn=<MulBackward0>)
+
+
 If we tried to call ``y.backward()`` now, we’d get a runtime error and a
 message that gradients can only be *implicitly* computed for scalar
 outputs. For a multi-dimensional output, autograd expects us to provide
@@ -671,6 +971,18 @@ Jacobian:
 
     print(x.grad)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([5.1200e+01, 5.1200e+02, 5.1200e-02])
 
 
 (Note that the output gradients are all related to powers of two - which
@@ -703,6 +1015,18 @@ single-element inputs:
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (tensor([0.5750]), tensor([0.6264]))
+
+
 If you look closely, the first output should equal :math:`2e^x` (since
 the derivative of :math:`e^x` is :math:`e^x`), and the second value
 should be 3.
@@ -718,6 +1042,18 @@ You can, of course, do this with higher-order tensors:
     print(inputs)
     torch.autograd.functional.jacobian(exp_adder, inputs)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (tensor([0.1017, 0.8892, 0.3660]), tensor([0.5603, 0.3514, 0.3332]))
 
 
 The ``torch.autograd.functional.hessian()`` method works identically
@@ -744,6 +1080,11 @@ product, if you provide the vector:
 
 
 
+
+
+
+
+
 The ``torch.autograd.functional.jvp()`` method performs the same matrix
 multiplication as ``vjp()`` with the operands reversed. The ``vhp()``
 and ``hvp()`` methods do the same for a vector-Hessian product.
@@ -756,7 +1097,7 @@ API <https://pytorch.org/docs/stable/autograd.html#functional-higher-level-api>`
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  7.118 seconds)
 
 
 .. _sphx_glr_download_beginner_introyt_autogradyt_tutorial.py:

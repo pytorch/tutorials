@@ -342,10 +342,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">beginner/deploy_seq2seq_hybrid_frontend_tutorial</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</img></div>
+</div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -1054,6 +1054,11 @@ evaluation (which is the same as we normally do in eager mode).</p>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Models built and ready to go!'</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Building encoder and decoder ...
+Models built and ready to go!
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="convert-model-to-torchscript">
@@ -1122,6 +1127,47 @@ graph, we just need to print the <cite>scripted_searcher</cite> graph</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">'scripted_searcher graph:</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">scripted_searcher</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>scripted_searcher graph:
+ graph(%self : __torch__.GreedySearchDecoder,
+      %input_seq.1 : Tensor,
+      %input_length.1 : Tensor,
+      %max_length.1 : int):
+  %53 : bool = prim::Constant[value=0]()
+  %42 : bool = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
+  %18 : int = prim::Constant[value=4]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:68
+  %17 : Device = prim::Constant[value="cpu"]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:48
+  %14 : NoneType = prim::Constant()
+  %12 : int = prim::Constant[value=2]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:41
+  %16 : int = prim::Constant[value=1]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:35
+  %26 : int = prim::Constant[value=0]() # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:34
+  %encoder : __torch__.EncoderRNN = prim::GetAttr[name="encoder"](%self)
+  %7 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%encoder, %input_seq.1, %input_length.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:557:42
+  %encoder_outputs.1 : Tensor, %encoder_hidden.1 : Tensor = prim::TupleUnpack(%7)
+  %decoder_hidden.1 : Tensor = aten::slice(%encoder_hidden.1, %26, %14, %12, %16) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:559:25
+  %20 : int[] = prim::ListConstruct(%16, %16)
+  %23 : Tensor = aten::ones(%20, %18, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
+  %decoder_input.1 : Tensor = aten::mul(%23, %16) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:561:24
+  %27 : int[] = prim::ListConstruct(%26)
+  %all_tokens.1 : Tensor = aten::zeros(%27, %18, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:563:21
+  %33 : int[] = prim::ListConstruct(%26)
+  %all_scores.1 : Tensor = aten::zeros(%33, %14, %14, %17, %14) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:564:21
+  %all_tokens : Tensor, %all_scores : Tensor, %decoder_hidden : Tensor, %decoder_input : Tensor = prim::Loop(%max_length.1, %42, %all_tokens.1, %all_scores.1, %decoder_hidden.1, %decoder_input.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:566:8
+    block0(%43 : int, %all_tokens.11 : Tensor, %all_scores.11 : Tensor, %decoder_hidden.9 : Tensor, %decoder_input.17 : Tensor):
+      %decoder : __torch__.LuongAttnDecoderRNN = prim::GetAttr[name="decoder"](%self)
+      %48 : (Tensor, Tensor) = prim::CallMethod[name="forward"](%decoder, %decoder_input.17, %decoder_hidden.9, %encoder_outputs.1) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:568:45
+      %decoder_output.1 : Tensor, %decoder_hidden.5 : Tensor = prim::TupleUnpack(%48)
+      %decoder_scores.1 : Tensor, %decoder_input.5 : Tensor = aten::max(%decoder_output.1, %16, %53) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:570:44
+      %61 : Tensor[] = prim::ListConstruct(%all_tokens.11, %decoder_input.5)
+      %all_tokens.5 : Tensor = aten::cat(%61, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:572:25
+      %67 : Tensor[] = prim::ListConstruct(%all_scores.11, %decoder_scores.1)
+      %all_scores.5 : Tensor = aten::cat(%67, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:573:25
+      %decoder_input.13 : Tensor = aten::unsqueeze(%decoder_input.5, %26) # /var/lib/jenkins/workspace/beginner_source/deploy_seq2seq_hybrid_frontend_tutorial.py:575:28
+      -&gt; (%42, %all_tokens.5, %all_scores.5, %decoder_hidden.5, %decoder_input.13)
+  %75 : (Tensor, Tensor) = prim::TupleConstruct(%all_tokens, %all_scores)
+  return (%75)
+</pre></div>
+</div>
 </div>
 <div class="section" id="run-evaluation">
 <h2>Run Evaluation<a class="headerlink" href="#run-evaluation" title="Permalink to this headline">¶</a></h2>
@@ -1145,6 +1191,19 @@ give it a spin.</p>
 <span class="c1">#evaluateInput(traced_encoder, traced_decoder, scripted_searcher, voc)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>&gt; hello
+Bot: hello .
+&gt; what's up?
+Bot: i m going to get my car .
+&gt; who are you?
+Bot: i m the owner .
+&gt; where am I?
+Bot: in the house .
+&gt; where are you from?
+Bot: south america .
+</pre></div>
+</div>
 </div>
 <div class="section" id="save-model">
 <h2>Save Model<a class="headerlink" href="#save-model" title="Permalink to this headline">¶</a></h2>
@@ -1157,7 +1216,7 @@ of torch.save(model, PATH).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">scripted_searcher</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">"scripted_chatbot.pth"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  1.731 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-deploy-seq2seq-hybrid-frontend-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6dce8206a711b28b2b916bfd7de16bbc/deploy_seq2seq_hybrid_frontend_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_seq2seq_hybrid_frontend_tutorial.py</span></code></a></div>
@@ -1181,7 +1240,7 @@ of torch.save(model, PATH).</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom">
+<hr class="rating-hr hr-bottom"/>
 <div role="contentinfo">
 <p>
         © Copyright 2022, PyTorch.
@@ -1191,7 +1250,7 @@ of torch.save(model, PATH).</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</hr></footer>
+</footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">

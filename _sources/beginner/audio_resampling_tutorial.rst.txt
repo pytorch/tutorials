@@ -28,6 +28,19 @@ Here, we will walk through resampling audio waveforms using ``torchaudio``.
     print(torchaudio.__version__)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    1.11.0+cu102
+    0.11.0+cu102
+
+
 Preparing data and utility functions (skip this section)
 --------------------------------------------------------
 
@@ -184,6 +197,11 @@ Preparing data and utility functions (skip this section)
         return elapsed / iters
 
 
+
+
+
+
+
 To resample an audio waveform from one freqeuncy to another, you can use
 ``transforms.Resample`` or ``functional.resample``.
 ``transforms.Resample`` precomputes and caches the kernel used for
@@ -232,6 +250,32 @@ plotted waveform, and color intensity the amplitude.
 
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_001.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_002.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <IPython.lib.display.Audio object>
+    <IPython.lib.display.Audio object>
+
+
 Controling resampling quality with parameters
 ---------------------------------------------
 
@@ -263,6 +307,24 @@ expensive.
 
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_003.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_004.png
+            :class: sphx-glr-multi-img
+
+
+
+
 Rolloff
 ~~~~~~~
 
@@ -291,6 +353,24 @@ some of the higher frequencies.
 
 
 
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_005.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_006.png
+            :class: sphx-glr-multi-img
+
+
+
+
 Window function
 ~~~~~~~~~~~~~~~
 
@@ -315,6 +395,24 @@ filter and width of impulse. This can be controlled using the
 
     resampled_waveform = F.resample(waveform, sample_rate, resample_rate, resampling_method="kaiser_window")
     plot_sweep(resampled_waveform, resample_rate, title="Kaiser Window Default")
+
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_007.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_008.png
+            :class: sphx-glr-multi-img
+
 
 
 
@@ -371,6 +469,42 @@ that of librosa (resampy)’s kaiser window resampling, with some noise
     mse = torch.square(resampled_waveform - librosa_resampled_waveform).mean().item()
     print("torchaudio and librosa kaiser fast MSE:", mse)
 
+
+
+
+
+.. rst-class:: sphx-glr-horizontal
+
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_009.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_010.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_011.png
+            :class: sphx-glr-multi-img
+
+    *
+
+      .. image:: /beginner/images/sphx_glr_audio_resampling_tutorial_012.png
+            :class: sphx-glr-multi-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torchaudio and librosa kaiser best MSE: 2.080690115365992e-06
+    torchaudio and librosa kaiser fast MSE: 2.5200744248601027e-05
 
 
 Performance Benchmarking
@@ -477,9 +611,44 @@ To elaborate on the results:
       display(df.round(2))
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    downsample (48 -> 44.1 kHz) time (ms)                      
+                                                  librosa functional transforms
+    sinc (width 64)                                   NaN      15.08       0.68
+    sinc (width 16)                                   NaN      13.44       0.47
+    kaiser_best                                     52.06      25.58       0.84
+    kaiser_fast                                      7.95      19.57       0.55
+                    downsample (16 -> 8 kHz) time (ms)                      
+                                               librosa functional transforms
+    sinc (width 64)                                NaN       6.04       2.23
+    sinc (width 16)                                NaN       0.85       0.68
+    kaiser_best                                   8.96       2.66       2.36
+    kaiser_fast                                   3.33       1.12       0.82
+                    upsample (44.1 -> 48 kHz) time (ms)                      
+                                                librosa functional transforms
+    sinc (width 64)                                 NaN      15.08       0.70
+    sinc (width 16)                                 NaN      14.33       0.51
+    kaiser_best                                   24.52      21.70       0.78
+    kaiser_fast                                    7.31      20.05       0.53
+                    upsample (8 -> 16 kHz) time (ms)                      
+                                             librosa functional transforms
+    sinc (width 64)                              NaN       1.22       0.72
+    sinc (width 16)                              NaN       0.56       0.29
+    kaiser_best                                10.51       1.35       0.96
+    kaiser_fast                                 4.05       0.85       0.37
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  8.151 seconds)
 
 
 .. _sphx_glr_download_beginner_audio_resampling_tutorial.py:

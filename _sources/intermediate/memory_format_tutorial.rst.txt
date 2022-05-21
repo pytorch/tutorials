@@ -49,6 +49,18 @@ Classic PyTorch contiguous tensor
     print(x.stride())  # Ouputs: (3072, 1024, 32, 1)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1024, 32, 1)
+
+
 Conversion operator
 
 
@@ -57,6 +69,19 @@ Conversion operator
     x = x.to(memory_format=torch.channels_last)
     print(x.shape)  # Outputs: (10, 3, 32, 32) as dimensions order preserved
     print(x.stride())  # Outputs: (3072, 1, 96, 3)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    torch.Size([10, 3, 32, 32])
+    (3072, 1, 96, 3)
 
 
 Back to contiguous
@@ -68,6 +93,18 @@ Back to contiguous
     print(x.stride())  # Outputs: (3072, 1024, 32, 1)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1024, 32, 1)
+
+
 Alternative option
 
 
@@ -77,12 +114,36 @@ Alternative option
     print(x.stride())  # Ouputs: (3072, 1, 96, 3)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
+
+
 Format checks
 
 
 .. code-block:: default
 
     print(x.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
 
 
 There are minor difference between the two APIs ``to`` and
@@ -112,6 +173,19 @@ format
     print(special_x.is_contiguous(memory_format=torch.contiguous_format))  # Ouputs: True
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
+    True
+
+
 Same thing applies to explicit permutation API ``permute``. In
 special case where ambiguity could occur, ``permute`` does not
 guarantee to produce a stride that properly carry the intended
@@ -132,6 +206,18 @@ Create as channels last
     print(x.stride())  # Ouputs: (3072, 1, 96, 3)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
+
+
 ``clone`` preserves memory format
 
 
@@ -139,6 +225,18 @@ Create as channels last
 
     y = x.clone()
     print(y.stride())  # Ouputs: (3072, 1, 96, 3)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
 
 
 ``to``, ``cuda``, ``float`` ... preserves memory format
@@ -151,6 +249,18 @@ Create as channels last
         print(y.stride())  # Ouputs: (3072, 1, 96, 3)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
+
+
 ``empty_like``, ``*_like`` operators preserves memory format
 
 
@@ -160,6 +270,18 @@ Create as channels last
     print(y.stride())  # Ouputs: (3072, 1, 96, 3)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
+
+
 Pointwise operators preserves memory format
 
 
@@ -167,6 +289,18 @@ Pointwise operators preserves memory format
 
     z = x + y
     print(z.stride())  # Ouputs: (3072, 1, 96, 3)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    (3072, 1, 96, 3)
 
 
 Conv, Batchnorm modules using cudnn backends support channels last
@@ -189,6 +323,18 @@ be in channels last memroy format.
 
         out = model(input)
         print(out.is_contiguous(memory_format=torch.channels_last))  # Ouputs: True
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
 
 
 When input tensor reaches a operator without channels last support,
@@ -247,6 +393,11 @@ https://github.com/NVIDIA/apex.
     # Epoch: [0][80/125] Time 0.260 (0.335) Speed 770.324 (597.659) Loss 2.2505953312 (1.0879) Prec@1 50.500 (52.938) Prec@5 100.000 (100.000)
 
 
+
+
+
+
+
 Passing ``--channels-last true`` allows running a model in Channels last format with observed 22% perf gain.
 
 ``python main_amp.py -a resnet50 --b 200 --workers 16 --opt-level O2 --channels-last true ./data``
@@ -292,6 +443,11 @@ Passing ``--channels-last true`` allows running a model in Channels last format 
     # Epoch: [0][80/125] Time 0.198 (0.269) Speed 1011.827 (743.883) Loss 2.8196096420 (2.4011) Prec@1 47.500 (50.938) Prec@5 100.000 (100.000)
 
 
+
+
+
+
+
 The following list of models has the full support of Channels last and showing 8%-35% perf gains on Volta devices:
 ``alexnet``, ``mnasnet0_5``, ``mnasnet0_75``, ``mnasnet1_0``, ``mnasnet1_3``, ``mobilenet_v2``, ``resnet101``, ``resnet152``, ``resnet18``, ``resnet34``, ``resnet50``, ``resnext50_32x4d``, ``shufflenet_v2_x0_5``, ``shufflenet_v2_x1_0``, ``shufflenet_v2_x1_5``, ``shufflenet_v2_x2_0``, ``squeezenet1_0``, ``squeezenet1_1``, ``vgg11``, ``vgg11_bn``, ``vgg13``, ``vgg13_bn``, ``vgg16``, ``vgg16_bn``, ``vgg19``, ``vgg19_bn``, ``wide_resnet101_2``, ``wide_resnet50_2``
 
@@ -315,6 +471,11 @@ correctly.
     # Need to be done for every input
     input = input.to(memory_format=torch.channels_last)  # Replace with your input
     output = model(input)
+
+
+
+
+
 
 
 However, not all operators fully converted to support channels last
@@ -421,6 +582,29 @@ operator doesn't match the memory format of the input.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Callable
+    __name__
+    List
+    __name__
+    Optional
+    '_SpecialForm' object has no attribute '__name__'
+    Tuple
+    __name__
+    Set
+    __name__
+    Union
+    '_SpecialForm' object has no attribute '__name__'
+
+
 If you found an operator that doesn't support channels last tensors
 and you want to contribute, feel free to use following developers
 guide https://github.com/pytorch/pytorch/wiki/Writing-memory-format-aware-operators.
@@ -437,6 +621,11 @@ Code below is to recover the attributes of torch.
             setattr(m, k, v)
 
 
+
+
+
+
+
 Work to do
 ----------
 There are still many things to do, such as:
@@ -451,7 +640,7 @@ know by creating `an issue <https://github.com/pytorch/pytorch/issues>`_.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  6.340 seconds)
 
 
 .. _sphx_glr_download_intermediate_memory_format_tutorial.py:

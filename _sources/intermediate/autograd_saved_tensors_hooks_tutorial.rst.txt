@@ -60,6 +60,11 @@ we know the gradients of :math:`y` with respect to :math:`a` and
     y = a * b
 
 
+
+
+
+
+
 Using a torchviz, we can visualize the computation graph
 
  .. figure:: https://user-images.githubusercontent.com/8019486/130124513-72e016a3-c36f-42b9-88e2-53baf3e016c5.png
@@ -87,6 +92,19 @@ debugging purposes) by looking for attributes of the ``grad_fn`` of
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([-0.2969, -0.3681,  0.4823,  1.5132, -0.8618], requires_grad=True)
+    tensor([1., 1., 1., 1., 1.], requires_grad=True)
+
+
 As the computation graph grows in depth, it will store more *saved
 tensors*. Meanwhile, those tensors would have gone out of scope if not
 for the graph.
@@ -101,6 +119,11 @@ for the graph.
 
     x = torch.randn(5, requires_grad=True)
     y = f(f(f(x)))
+
+
+
+
+
 
 
 .. figure:: https://user-images.githubusercontent.com/8019486/130124570-f1074098-1bb3-459e-bf5a-03bf6f65b403.png
@@ -136,6 +159,19 @@ respectively ``a`` and ``b``.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
+    True
+
+
 However, that may not always be the case.
 
 
@@ -148,6 +184,19 @@ However, that may not always be the case.
     print(y.grad_fn._saved_result.equal(y))  # True
     print(y.grad_fn._saved_result is y)      # False
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    True
+    False
 
 
 Under the hood, PyTorch has **packed** and **unpacked** the tensor
@@ -187,6 +236,21 @@ unpacked.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Packing tensor([1., 1., 1., 1., 1.], requires_grad=True)
+    Packing tensor([2., 2., 2., 2., 2.], grad_fn=<MulBackward0>)
+    Unpacking tensor([1., 1., 1., 1., 1.], requires_grad=True)
+    Unpacking tensor([2., 2., 2., 2., 2.], grad_fn=<MulBackward0>)
+
+
 The ``pack_hook`` function will be called everytime an operation saves
 a tensor for backward.
 The output of ``pack_hook`` is then stored in the computation graph
@@ -206,6 +270,11 @@ In general, you want ``unpack_hook(pack_hook(t))`` to be equal to
         y = torch.pow(x, 2)
     y.sum().backward()
     assert(x.grad.equal(2 * x))
+
+
+
+
+
 
 
 
@@ -248,6 +317,11 @@ probably don’t ever want to do it.
     assert(x.grad.equal(2 * x))
 
 
+
+
+
+
+
 **Returning a tuple**
 
 
@@ -274,6 +348,11 @@ probably don’t ever want to do it.
     assert(torch.allclose(x.grad, 2 * x))
 
 
+
+
+
+
+
 **Returning a str**
 
 
@@ -288,6 +367,11 @@ probably don’t ever want to do it.
         y = x * x
     y.sum().backward()
     assert(torch.all(x.grad - 2 * x <= 1e-4))
+
+
+
+
+
 
 
 
@@ -330,6 +414,11 @@ Hooks provide a very simple way to implement that.
 
 
 
+
+
+
+
+
 In fact, PyTorch provides an API to conveniently use those hooks (as
 well as the ability to use pinned memory).
 
@@ -354,6 +443,11 @@ well as the ability to use pinned memory).
     model = Model()
     loss = model(x).sum()
     loss.backward()
+
+
+
+
+
 
 
 
@@ -393,6 +487,11 @@ module and saves its tensors to CPU.
 
 
 
+
+
+
+
+
 Saving tensors to disk
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -420,6 +519,11 @@ A naive version would look like this.
 
     def unpack_hook(name):
         return torch.load(name)
+
+
+
+
+
 
 
 
@@ -452,6 +556,11 @@ seems.
 
 
 
+
+
+
+
+
 The reason the above code doesn’t work is that ``unpack_hook`` can be
 called multiple times. If we delete the file during unpacking the first
 time, it will not be available when the saved tensor is accessed a
@@ -472,6 +581,19 @@ second time, which will raise an error.
     except:
         print("Double access failed!")
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    tensor([1., 1., 1., 1., 1.], requires_grad=True)
+    Double access failed!
 
 
 To fix this, we can write a version of those hooks that takes advantage
@@ -497,6 +619,11 @@ when it is no longer needed.
 
     def unpack_hook(temp_file):
         return torch.load(temp_file.name)
+
+
+
+
+
 
 
 
@@ -539,6 +666,11 @@ This can then be used in your model, in the following way:
 
 
 
+
+
+
+
+
 In this last example, we also demonstrate how to filter which tensors
 should be saved (here, those whose number of elements is greater than
 1000) and how to combine this feature with ``nn.DataParallel``.
@@ -552,7 +684,7 @@ tradeoff memory for compute.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 0 minutes  0.088 seconds)
 
 
 .. _sphx_glr_download_intermediate_autograd_saved_tensors_hooks_tutorial.py:

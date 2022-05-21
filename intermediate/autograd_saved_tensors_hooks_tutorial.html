@@ -342,10 +342,10 @@
 <div class="pytorch-call-to-action-links">
 <div id="tutorial-type">intermediate/autograd_saved_tensors_hooks_tutorial</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</img></div>
+</div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -425,6 +425,11 @@ debugging purposes) by looking for attributes of the <code class="docutils liter
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">_saved_other</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([-0.2969, -0.3681,  0.4823,  1.5132, -0.8618], requires_grad=True)
+tensor([1., 1., 1., 1., 1.], requires_grad=True)
+</pre></div>
+</div>
 <p>As the computation graph grows in depth, it will store more <em>saved
 tensors</em>. Meanwhile, those tensors would have gone out of scope if not
 for the graph.</p>
@@ -457,11 +462,21 @@ respectively <code class="docutils literal notranslate"><span class="pre">a</spa
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">_saved_other</span> <span class="ow">is</span> <span class="n">b</span><span class="p">)</span>  <span class="c1"># True</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
+True
+</pre></div>
+</div>
 <p>However, that may not always be the case.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">_saved_result</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>  <span class="c1"># True</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad_fn</span><span class="o">.</span><span class="n">_saved_result</span> <span class="ow">is</span> <span class="n">y</span><span class="p">)</span>      <span class="c1"># False</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>True
+False
 </pre></div>
 </div>
 <p>Under the hood, PyTorch has <strong>packed</strong> and <strong>unpacked</strong> the tensor
@@ -489,6 +504,13 @@ unpacked.</p>
     <span class="n">y</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
 
 <span class="n">y</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Packing tensor([1., 1., 1., 1., 1.], requires_grad=True)
+Packing tensor([2., 2., 2., 2., 2.], grad_fn=&lt;MulBackward0&gt;)
+Unpacking tensor([1., 1., 1., 1., 1.], requires_grad=True)
+Unpacking tensor([2., 2., 2., 2., 2.], grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">pack_hook</span></code> function will be called everytime an operation saves
@@ -698,6 +720,11 @@ second time, which will raise an error.</p>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Double access failed!"</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensor([1., 1., 1., 1., 1.], requires_grad=True)
+Double access failed!
+</pre></div>
+</div>
 <p>To fix this, we can write a version of those hooks that takes advantage
 of the fact that PyTorch automatically releases (deletes) the saved data
 when it is no longer needed.</p>
@@ -754,7 +781,7 @@ should be saved (here, those whose number of elements is greater than
 <p>If you’ve made it this far, congratulations! You now know how to use
 saved tensor hooks and how they can be useful in a few scenarios to
 tradeoff memory for compute.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.088 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-autograd-saved-tensors-hooks-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/ae37f691dd70ed5f0d8d22810e41ecaa/autograd_saved_tensors_hooks_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">autograd_saved_tensors_hooks_tutorial.py</span></code></a></div>
@@ -779,7 +806,7 @@ tradeoff memory for compute.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom">
+<hr class="rating-hr hr-bottom"/>
 <div role="contentinfo">
 <p>
         © Copyright 2022, PyTorch.
@@ -789,7 +816,7 @@ tradeoff memory for compute.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</hr></footer>
+</footer>
 </div>
 </div>
 <div class="pytorch-content-right" id="pytorch-content-right">

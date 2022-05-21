@@ -534,6 +534,16 @@ floating point weights and values being a dictionary of floating point and quant
 <span class="nb">print</span><span class="p">(</span><span class="n">wt_compare_dict</span><span class="p">[</span><span class="s1">&#39;conv1.weight&#39;</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>keys of wt_compare_dict:
+dict_keys([&#39;conv1.weight&#39;, &#39;layer1.0.conv1.weight&#39;, &#39;layer1.0.conv2.weight&#39;, &#39;layer1.1.conv1.weight&#39;, &#39;layer1.1.conv2.weight&#39;, &#39;layer2.0.conv1.weight&#39;, &#39;layer2.0.conv2.weight&#39;, &#39;layer2.0.downsample.0.weight&#39;, &#39;layer2.1.conv1.weight&#39;, &#39;layer2.1.conv2.weight&#39;, &#39;layer3.0.conv1.weight&#39;, &#39;layer3.0.conv2.weight&#39;, &#39;layer3.0.downsample.0.weight&#39;, &#39;layer3.1.conv1.weight&#39;, &#39;layer3.1.conv2.weight&#39;, &#39;layer4.0.conv1.weight&#39;, &#39;layer4.0.conv2.weight&#39;, &#39;layer4.0.downsample.0.weight&#39;, &#39;layer4.1.conv1.weight&#39;, &#39;layer4.1.conv2.weight&#39;, &#39;fc._packed_params._packed_params&#39;])
+
+keys of wt_compare_dict entry for conv1&#39;s weight:
+dict_keys([&#39;float&#39;, &#39;quantized&#39;])
+torch.Size([64, 3, 7, 7])
+torch.Size([64, 3, 7, 7])
+</pre></div>
+</div>
 <p>Once get <code class="docutils literal notranslate"><span class="pre">wt_compare_dict</span></code>, users can process this dictionary in whatever way they want. Here as an example we compute the quantization error of the weights of float and quantized models as following.
 Compute the Signal-to-Quantization-Noise Ratio (SQNR) of the quantized tensor <code class="docutils literal notranslate"><span class="pre">y</span></code>. The SQNR reflects the
 relationship between the maximum nominal signal strength and the quantization error introduced in the
@@ -545,6 +555,30 @@ quantization. Higher SQNR corresponds to lower quantization error.</p>
 
 <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">wt_compare_dict</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">wt_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">],</span> <span class="n">wt_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dequantize</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.weight tensor(31.6638)
+layer1.0.conv1.weight tensor(30.6450)
+layer1.0.conv2.weight tensor(31.1528)
+layer1.1.conv1.weight tensor(32.1438)
+layer1.1.conv2.weight tensor(31.2477)
+layer2.0.conv1.weight tensor(30.9890)
+layer2.0.conv2.weight tensor(28.8233)
+layer2.0.downsample.0.weight tensor(31.5558)
+layer2.1.conv1.weight tensor(30.7668)
+layer2.1.conv2.weight tensor(28.4515)
+layer3.0.conv1.weight tensor(30.9246)
+layer3.0.conv2.weight tensor(26.6839)
+layer3.0.downsample.0.weight tensor(28.7825)
+layer3.1.conv1.weight tensor(28.9705)
+layer3.1.conv2.weight tensor(25.6781)
+layer4.0.conv1.weight tensor(26.8492)
+layer4.0.conv2.weight tensor(25.8381)
+layer4.0.downsample.0.weight tensor(28.6355)
+layer4.1.conv1.weight tensor(26.8749)
+layer4.1.conv2.weight tensor(28.4311)
+fc._packed_params._packed_params tensor(32.6504)
 </pre></div>
 </div>
 <p>As another example <code class="docutils literal notranslate"><span class="pre">wt_compare_dict</span></code> can also be used to plot the histogram of the weights of floating point and quantized models.</p>
@@ -561,6 +595,7 @@ quantization. Higher SQNR corresponds to lower quantization error.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+<img alt="../_images/sphx_glr_numeric_suite_tutorial_001.png" class="sphx-glr-single-img" src="../_images/sphx_glr_numeric_suite_tutorial_001.png" />
 </div>
 <div class="section" id="compare-float-point-and-quantized-models-at-corresponding-locations">
 <h3>2. Compare float point and quantized models at corresponding locations<a class="headerlink" href="#compare-float-point-and-quantized-models-at-corresponding-locations" title="Permalink to this headline">¶</a></h3>
@@ -585,9 +620,52 @@ quantization. Higher SQNR corresponds to lower quantization error.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">act_compare_dict</span><span class="p">[</span><span class="s1">&#39;conv1.stats&#39;</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>keys of act_compare_dict:
+dict_keys([&#39;conv1.stats&#39;, &#39;layer1.0.conv1.stats&#39;, &#39;layer1.0.conv2.stats&#39;, &#39;layer1.0.add_relu.stats&#39;, &#39;layer1.1.conv1.stats&#39;, &#39;layer1.1.conv2.stats&#39;, &#39;layer1.1.add_relu.stats&#39;, &#39;layer2.0.conv1.stats&#39;, &#39;layer2.0.conv2.stats&#39;, &#39;layer2.0.downsample.0.stats&#39;, &#39;layer2.0.add_relu.stats&#39;, &#39;layer2.1.conv1.stats&#39;, &#39;layer2.1.conv2.stats&#39;, &#39;layer2.1.add_relu.stats&#39;, &#39;layer3.0.conv1.stats&#39;, &#39;layer3.0.conv2.stats&#39;, &#39;layer3.0.downsample.0.stats&#39;, &#39;layer3.0.add_relu.stats&#39;, &#39;layer3.1.conv1.stats&#39;, &#39;layer3.1.conv2.stats&#39;, &#39;layer3.1.add_relu.stats&#39;, &#39;layer4.0.conv1.stats&#39;, &#39;layer4.0.conv2.stats&#39;, &#39;layer4.0.downsample.0.stats&#39;, &#39;layer4.0.add_relu.stats&#39;, &#39;layer4.1.conv1.stats&#39;, &#39;layer4.1.conv2.stats&#39;, &#39;layer4.1.add_relu.stats&#39;, &#39;fc.stats&#39;, &#39;quant.stats&#39;])
+
+keys of act_compare_dict entry for conv1&#39;s output:
+dict_keys([&#39;float&#39;, &#39;quantized&#39;])
+torch.Size([2, 64, 5, 5])
+torch.Size([2, 64, 5, 5])
+</pre></div>
+</div>
 <p>This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">act_compare_dict</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dequantize</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv1.stats tensor(37.3289, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.conv1.stats tensor(29.9597, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.conv2.stats tensor(29.1562, grad_fn=&lt;MulBackward0&gt;)
+layer1.0.add_relu.stats tensor(32.7249, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.conv1.stats tensor(30.5633, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.conv2.stats tensor(27.0574, grad_fn=&lt;MulBackward0&gt;)
+layer1.1.add_relu.stats tensor(30.5905, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.conv1.stats tensor(27.5274, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.conv2.stats tensor(26.9976, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.downsample.0.stats tensor(22.2973, grad_fn=&lt;MulBackward0&gt;)
+layer2.0.add_relu.stats tensor(25.7631, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.conv1.stats tensor(25.6128, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.conv2.stats tensor(24.3606, grad_fn=&lt;MulBackward0&gt;)
+layer2.1.add_relu.stats tensor(26.0720, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.conv1.stats tensor(26.7589, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.conv2.stats tensor(26.4670, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.downsample.0.stats tensor(25.1387, grad_fn=&lt;MulBackward0&gt;)
+layer3.0.add_relu.stats tensor(24.7629, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.conv1.stats tensor(30.4966, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.conv2.stats tensor(25.8749, grad_fn=&lt;MulBackward0&gt;)
+layer3.1.add_relu.stats tensor(25.0628, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.conv1.stats tensor(26.9522, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.conv2.stats tensor(26.6743, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.downsample.0.stats tensor(21.7929, grad_fn=&lt;MulBackward0&gt;)
+layer4.0.add_relu.stats tensor(20.1022, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.conv1.stats tensor(25.5793, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.conv2.stats tensor(17.7417, grad_fn=&lt;MulBackward0&gt;)
+layer4.1.add_relu.stats tensor(17.2650, grad_fn=&lt;MulBackward0&gt;)
+fc.stats tensor(19.0818, grad_fn=&lt;MulBackward0&gt;)
+quant.stats tensor(47.9546)
 </pre></div>
 </div>
 <p>If we want to do the comparison for more than one input data, we can do the following.
@@ -674,9 +752,30 @@ is <code class="docutils literal notranslate"><span class="pre">DEFAULT_NUMERIC_
 <span class="nb">print</span><span class="p">(</span><span class="n">ob_dict</span><span class="p">[</span><span class="s1">&#39;layer1.0.stats&#39;</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>keys of ob_dict:
+dict_keys([&#39;layer1.0.stats&#39;, &#39;layer1.1.stats&#39;, &#39;layer2.0.stats&#39;, &#39;layer2.1.stats&#39;, &#39;layer3.0.stats&#39;, &#39;layer3.1.stats&#39;, &#39;layer4.0.stats&#39;, &#39;layer4.1.stats&#39;])
+
+keys of ob_dict entry for layer1.0&#39;s output:
+dict_keys([&#39;float&#39;, &#39;quantized&#39;])
+torch.Size([64, 3, 3])
+torch.Size([64, 3, 3])
+</pre></div>
+</div>
 <p>This dict can be then used to compare and compute the module level quantization error.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ob_dict</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dequantize</span><span class="p">()))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>layer1.0.stats tensor(32.8587)
+layer1.1.stats tensor(33.7115)
+layer2.0.stats tensor(29.5114)
+layer2.1.stats tensor(31.9807)
+layer3.0.stats tensor(27.8726)
+layer3.1.stats tensor(31.8307)
+layer4.0.stats tensor(25.0827)
+layer4.1.stats tensor(23.4155)
 </pre></div>
 </div>
 <p>If we want to do the comparison for more than one input data, we can do the following.</p>
@@ -784,6 +883,16 @@ is <code class="docutils literal notranslate"><span class="pre">DEFAULT_NUMERIC_
         <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">wt_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">],</span> <span class="n">wt_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>encoder.weight tensor(inf)
+rnn._all_weight_values.0.param tensor(48.1414)
+rnn._all_weight_values.1.param tensor(48.1302)
+rnn._all_weight_values.2.param tensor(48.1443)
+rnn._all_weight_values.3.param tensor(48.1461)
+rnn._all_weight_values.4.param tensor(48.1320)
+decoder._packed_params._packed_params tensor(48.0918)
+</pre></div>
+</div>
 <p>The Inf value in <code class="docutils literal notranslate"><span class="pre">encoder.weight</span></code> entry above is because encoder module is not quantized and the weights are the same in both floating point and quantized models.</p>
 </div>
 <div class="section" id="id3">
@@ -796,9 +905,19 @@ is <code class="docutils literal notranslate"><span class="pre">DEFAULT_NUMERIC_
 <span class="nb">print</span><span class="p">(</span><span class="n">act_compare_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>dict_keys([&#39;encoder.stats&#39;, &#39;rnn.stats&#39;, &#39;decoder.stats&#39;])
+</pre></div>
+</div>
 <p>This dict can be used to compare and compute the quantization error of the activations of float and quantized models as following. The LSTM module in this model has two outputs, in this example we compute the error of the first output.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">act_compare_dict</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">act_compare_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>encoder.stats tensor(inf, grad_fn=&lt;MulBackward0&gt;)
+rnn.stats tensor(54.8414, grad_fn=&lt;MulBackward0&gt;)
+decoder.stats tensor(38.1571, grad_fn=&lt;MulBackward0&gt;)
 </pre></div>
 </div>
 </div>
@@ -825,9 +944,18 @@ is <code class="docutils literal notranslate"><span class="pre">DEFAULT_NUMERIC_
 <span class="nb">print</span><span class="p">(</span><span class="n">ob_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>dict_keys([&#39;rnn.stats&#39;, &#39;decoder.stats&#39;])
+</pre></div>
+</div>
 <p>This dict can be then used to compare and compute the module level quantization error.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ob_dict</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">compute_error</span><span class="p">(</span><span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;float&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">ob_dict</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;quantized&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>rnn.stats tensor(55.0628)
+decoder.stats tensor(47.0820)
 </pre></div>
 </div>
 <p>SQNR of 40 dB is high and this is a situation where we have very good numerical alignment between the floating point and quantized model.</p>
@@ -841,7 +969,7 @@ is <code class="docutils literal notranslate"><span class="pre">DEFAULT_NUMERIC_
 <div class="section" id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
 <p>[1] <a class="reference external" href="https://pytorch.org/tutorials/advanced/dynamic_quantization_tutorial.html">DYNAMIC QUANTIZATION ON AN LSTM WORD LANGUAGE MODEL</a>.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  3.815 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-prototype-numeric-suite-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/6cee5795596ef4149bb97c1b87999a3d/numeric_suite_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">numeric_suite_tutorial.py</span></code></a></div>

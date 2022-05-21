@@ -94,6 +94,11 @@ representing the original Transformer module.
 
 
 
+
+
+
+
+
 ``PositionalEncoding`` module injects some information about the
 relative or absolute position of the tokens in the sequence. The
 positional encodings have the same dimension as the embeddings so that
@@ -122,6 +127,11 @@ different frequencies.
         def forward(self, x):
             x = x + self.pe[:x.size(0), :]
             return self.dropout(x)
+
+
+
+
+
 
 
 
@@ -200,6 +210,11 @@ efficient batch processing.
 
 
 
+
+
+
+
+
 Functions to generate input and target sequence
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -228,6 +243,11 @@ with the ``S`` dimension in the Transformer model. The batch dimension
         target = source[i+1:i+1+seq_len].view(-1)
         # Need batch dimension first for pipeline parallelism.
         return data.t(), target
+
+
+
+
+
 
 
 Model scale and Pipe initialization
@@ -318,6 +338,18 @@ transformer layers on the other GPU.
     print ('Total parameters in model: {:,}'.format(get_total_params(model)))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Total parameters in model: 1,444,261,998
+
+
 Run the model
 -------------
 
@@ -397,6 +429,11 @@ function to scale all the gradient together to prevent exploding.
         return total_loss / (len(data_source) - 1)
 
 
+
+
+
+
+
 Loop over epochs. Save the model if the validation loss is the best
 we've seen so far. Adjust the learning rate after each epoch.
 
@@ -426,6 +463,38 @@ we've seen so far. Adjust the learning rate after each epoch.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    | epoch   1 |    10/   50 batches | lr 5.00 | ms/batch 2076.77 | loss 42.42 | ppl 2643481578321326080.00
+    | epoch   1 |    20/   50 batches | lr 5.00 | ms/batch 1946.63 | loss 40.71 | ppl 477031585382597120.00
+    | epoch   1 |    30/   50 batches | lr 5.00 | ms/batch 1878.99 | loss 50.14 | ppl 5935905560963364945920.00
+    | epoch   1 |    40/   50 batches | lr 5.00 | ms/batch 1823.42 | loss 39.87 | ppl 205663375582660352.00
+    -----------------------------------------------------------------------------------------
+    | end of epoch   1 | time: 104.14s | valid loss  1.36 | valid ppl     3.90
+    -----------------------------------------------------------------------------------------
+    | epoch   2 |    10/   50 batches | lr 4.51 | ms/batch 2065.27 | loss 44.47 | ppl 20644068907234541568.00
+    | epoch   2 |    20/   50 batches | lr 4.51 | ms/batch 1876.19 | loss 30.38 | ppl 15699791390332.86
+    | epoch   2 |    30/   50 batches | lr 4.51 | ms/batch 1861.95 | loss 33.15 | ppl 248388404903669.75
+    | epoch   2 |    40/   50 batches | lr 4.51 | ms/batch 1848.31 | loss 21.38 | ppl 1937760229.42
+    -----------------------------------------------------------------------------------------
+    | end of epoch   2 | time: 103.60s | valid loss  0.41 | valid ppl     1.51
+    -----------------------------------------------------------------------------------------
+    | epoch   3 |    10/   50 batches | lr 4.29 | ms/batch 2048.36 | loss 12.60 | ppl 295079.69
+    | epoch   3 |    20/   50 batches | lr 4.29 | ms/batch 1869.26 | loss 11.22 | ppl 74971.74
+    | epoch   3 |    30/   50 batches | lr 4.29 | ms/batch 1867.69 | loss 11.09 | ppl 65200.66
+    | epoch   3 |    40/   50 batches | lr 4.29 | ms/batch 1866.80 | loss  9.92 | ppl 20427.42
+    -----------------------------------------------------------------------------------------
+    | end of epoch   3 | time: 103.76s | valid loss  0.24 | valid ppl     1.27
+    -----------------------------------------------------------------------------------------
+
+
 Evaluate the model with the test dataset
 -------------------------------------
 
@@ -443,9 +512,23 @@ Apply the best model to check the result with the test dataset.
     print('=' * 89)
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    =========================================================================================
+    | End of training | test loss  0.21 | test ppl     1.24
+    =========================================================================================
+
+
+
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 5 minutes  43.123 seconds)
 
 
 .. _sphx_glr_download_intermediate_pipeline_tutorial.py:

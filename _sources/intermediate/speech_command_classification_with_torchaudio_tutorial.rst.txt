@@ -47,6 +47,11 @@ by following the instructions on the website.
 
 
 
+
+
+
+
+
 Let’s check if a CUDA GPU is available and select our device. Running
 the network on a GPU will greatly decrease the training/testing runtime.
 
@@ -58,6 +63,18 @@ the network on a GPU will greatly decrease the training/testing runtime.
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    cuda
 
 
 Importing the Dataset
@@ -116,6 +133,11 @@ standard training, validation, testing subsets.
 
 
 
+
+
+
+
+
 A data point in the SPEECHCOMMANDS dataset is a tuple made of a waveform
 (the audio signal), the sample rate, the utterance (label), the ID of
 the speaker, the number of the utterance.
@@ -132,6 +154,22 @@ the speaker, the number of the utterance.
 
 
 
+
+
+.. image:: /intermediate/images/sphx_glr_speech_command_classification_with_torchaudio_tutorial_001.png
+    :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Shape of waveform: torch.Size([1, 16000])
+    Sample rate of waveform: 16000
+
+
 Let’s find the list of labels available in the dataset.
 
 
@@ -141,6 +179,11 @@ Let’s find the list of labels available in the dataset.
 
     labels = sorted(list(set(datapoint[2] for datapoint in train_set)))
     labels
+
+
+
+
+
 
 
 
@@ -160,6 +203,11 @@ files are people saying “marvin”.
 
 
 
+
+
+
+
+
 The last file is someone saying “visual”.
 
 
@@ -169,6 +217,11 @@ The last file is someone saying “visual”.
 
     waveform_last, *_ = train_set[-1]
     ipd.Audio(waveform_last.numpy(), rate=sample_rate)
+
+
+
+
+
 
 
 
@@ -198,6 +251,11 @@ single channel for audio, this is not needed here.
 
 
 
+
+
+
+
+
 We are encoding each word using its index in the list of labels.
 
 
@@ -223,6 +281,18 @@ We are encoding each word using its index in the list of labels.
 
     print(word_start, "-->", index, "-->", word_recovered)
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    yes --> tensor(33) --> yes
 
 
 To turn a list of data point made of audio recordings and utterances
@@ -293,6 +363,11 @@ encoding.
         num_workers=num_workers,
         pin_memory=pin_memory,
     )
+
+
+
+
+
 
 
 
@@ -367,6 +442,33 @@ processing applications that often use receptive fields ranging from
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    M5(
+      (conv1): Conv1d(1, 32, kernel_size=(80,), stride=(16,))
+      (bn1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (pool1): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
+      (conv2): Conv1d(32, 32, kernel_size=(3,), stride=(1,))
+      (bn2): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (pool2): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
+      (conv3): Conv1d(32, 64, kernel_size=(3,), stride=(1,))
+      (bn3): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (pool3): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
+      (conv4): Conv1d(64, 64, kernel_size=(3,), stride=(1,))
+      (bn4): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (pool4): MaxPool1d(kernel_size=4, stride=4, padding=0, dilation=1, ceil_mode=False)
+      (fc1): Linear(in_features=64, out_features=35, bias=True)
+    )
+    Number of parameters: 26915
+
+
 We will use the same optimization technique used in the paper, an Adam
 optimizer with weight decay set to 0.0001. At first, we will train with
 a learning rate of 0.01, but we will use a ``scheduler`` to decrease it
@@ -379,6 +481,11 @@ to 0.001 during training after 20 epochs.
 
     optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0.0001)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)  # reduce the learning after 20 epochs by a factor of 10
+
+
+
+
+
 
 
 
@@ -423,6 +530,11 @@ varies during the training.
             pbar.update(pbar_update)
             # record loss
             losses.append(loss.item())
+
+
+
+
+
 
 
 
@@ -471,6 +583,11 @@ training so this step is crucial for getting correct results.
 
 
 
+
+
+
+
+
 Finally, we can train and test the network. We will train the network
 for ten epochs then reduce the learn rate and train for ten more epochs.
 The network will be tested after each epoch to see how the accuracy
@@ -501,6 +618,56 @@ varies during the training.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Train Epoch: 1 [0/84843 (0%)]   Loss: 3.769756
+    Train Epoch: 1 [5120/84843 (6%)]        Loss: 3.132526
+    Train Epoch: 1 [10240/84843 (12%)]      Loss: 2.643831
+    Train Epoch: 1 [15360/84843 (18%)]      Loss: 2.187897
+    Train Epoch: 1 [20480/84843 (24%)]      Loss: 2.099383
+    Train Epoch: 1 [25600/84843 (30%)]      Loss: 2.059855
+    Train Epoch: 1 [30720/84843 (36%)]      Loss: 1.793582
+    Train Epoch: 1 [35840/84843 (42%)]      Loss: 1.683897
+    Train Epoch: 1 [40960/84843 (48%)]      Loss: 1.573645
+    Train Epoch: 1 [46080/84843 (54%)]      Loss: 1.479854
+    Train Epoch: 1 [51200/84843 (60%)]      Loss: 1.350227
+    Train Epoch: 1 [56320/84843 (66%)]      Loss: 1.479365
+    Train Epoch: 1 [61440/84843 (72%)]      Loss: 1.265259
+    Train Epoch: 1 [66560/84843 (78%)]      Loss: 1.381580
+    Train Epoch: 1 [71680/84843 (84%)]      Loss: 1.119719
+    Train Epoch: 1 [76800/84843 (90%)]      Loss: 1.284688
+    Train Epoch: 1 [81920/84843 (96%)]      Loss: 1.287578
+
+    Test Epoch: 1   Accuracy: 7135/11005 (65%)
+
+    Train Epoch: 2 [0/84843 (0%)]   Loss: 1.074580
+    Train Epoch: 2 [5120/84843 (6%)]        Loss: 0.988930
+    Train Epoch: 2 [10240/84843 (12%)]      Loss: 1.003840
+    Train Epoch: 2 [15360/84843 (18%)]      Loss: 1.033970
+    Train Epoch: 2 [20480/84843 (24%)]      Loss: 1.050733
+    Train Epoch: 2 [25600/84843 (30%)]      Loss: 1.022397
+    Train Epoch: 2 [30720/84843 (36%)]      Loss: 1.092635
+    Train Epoch: 2 [35840/84843 (42%)]      Loss: 1.003001
+    Train Epoch: 2 [40960/84843 (48%)]      Loss: 1.005749
+    Train Epoch: 2 [46080/84843 (54%)]      Loss: 0.936013
+    Train Epoch: 2 [51200/84843 (60%)]      Loss: 0.735584
+    Train Epoch: 2 [56320/84843 (66%)]      Loss: 0.977799
+    Train Epoch: 2 [61440/84843 (72%)]      Loss: 0.812683
+    Train Epoch: 2 [66560/84843 (78%)]      Loss: 0.846366
+    Train Epoch: 2 [71680/84843 (84%)]      Loss: 0.834822
+    Train Epoch: 2 [76800/84843 (90%)]      Loss: 1.092398
+    Train Epoch: 2 [81920/84843 (96%)]      Loss: 0.906465
+
+    Test Epoch: 2   Accuracy: 8045/11005 (73%)
+
+
 The network should be more than 65% accurate on the test set after 2
 epochs, and 85% after 21 epochs. Let’s look at the last words in the
 train set, and see how the model did on it.
@@ -528,6 +695,18 @@ train set, and see how the model did on it.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Expected: zero. Predicted: zero.
+
+
 Let’s find an example that isn’t classified correctly, if there is one.
 
 
@@ -547,6 +726,18 @@ Let’s find an example that isn’t classified correctly, if there is one.
         ipd.Audio(waveform.numpy(), rate=sample_rate)
         print(f"Data point #{i}. Expected: {utterance}. Predicted: {output}.")
 
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Data point #1. Expected: right. Predicted: seven.
 
 
 Feel free to try with one of your own recordings of one of the labels!
@@ -610,6 +801,11 @@ will record one second of audio and try to classify it.
 
 
 
+
+
+
+
+
 Conclusion
 ----------
 
@@ -624,7 +820,7 @@ available in torchaudio as ``torchaudio.transforms.MFCC``.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.000 seconds)
+   **Total running time of the script:** ( 3 minutes  3.777 seconds)
 
 
 .. _sphx_glr_download_intermediate_speech_command_classification_with_torchaudio_tutorial.py:
