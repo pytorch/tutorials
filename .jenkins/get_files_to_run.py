@@ -75,7 +75,7 @@ def main():
     files_to_run = calculate_shards(all_files, num_shards=num_shards)[shard_num]
     remove_other_files(all_files, files_to_run)
     stripped_file_names = list(map(lambda x: Path(x).stem, files_to_run))
-    print("\n".join(stripped_file_names))
+    print(" ".join(stripped_file_names))
 
 
 if __name__ == "__main__":
