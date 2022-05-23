@@ -151,7 +151,7 @@ if torch.backends.cudnn.version() >= 7603:
 ######################################################################
 # Performance Gains
 # --------------------------------------------------------------------
-# Channels last memory format optimizations are available on both CPU and GPU.
+# Channels last memory format optimizations are available on both GPU and CPU.
 # On GPU, the most significant performance gains are observed on NVidia's
 # hardware with Tensor Cores support running on reduced precision
 # (``torch.float16``).
