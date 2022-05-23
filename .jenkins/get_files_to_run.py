@@ -1,5 +1,4 @@
 from typing import List
-from subprocess import run
 import json
 import os
 from pathlib import Path
@@ -7,23 +6,16 @@ from remove_runnable_code import remove_runnable_code
 
 
 # Calculate repo base dir
-REPO_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_BASE_DIR = Path(__file__).absolute().parent.parent
 
-def get_all_files(encoding="utf-8") -> List[str]:
-    sources = [
-        "beginner_source",
-        "intermediate_source",
-        "advanced_source",
-        "recipes_source",
-        "prototype_source",
-    ]
-    cmd = ["find"] + sources + ["-name", "*.py", "-not", "-path", "*/data/*"]
 
-    return run(cmd, capture_output=True, cwd=REPO_BASE_DIR).stdout.decode(encoding).splitlines()
+def get_all_files() -> List[str]:
+    sources = [x.relative_to(REPO_BASE_DIR) for x in REPO_BASE_DIR.glob("*_source/**/*.py") if 'data' not in x.parts]
+    return [str(x) for x in sources]
 
 
 def calculate_shards(all_files, num_shards=20):
-    with open(os.path.join(REPO_BASE_DIR, ".jenkins", "metadata.json")) as fp:
+    with (REPO_BASE_DIR / ".jenkins" / "metadata.json").open() as fp:
         metadata = json.load(fp)
     sharded_files = [(0.0, []) for _ in range(num_shards)]
 
