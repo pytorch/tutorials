@@ -1,26 +1,22 @@
 from typing import List
-from subprocess import run
 import json
 import os
 from pathlib import Path
 from remove_runnable_code import remove_runnable_code
 
 
-def get_all_files(encoding="utf-8") -> List[str]:
-    sources = [
-        "beginner_source",
-        "intermediate_source",
-        "advanced_source",
-        "recipes_source",
-        "prototype_source",
-    ]
-    cmd = ["find"] + sources + ["-name", "*.py", "-not", "-path", "*/data/*"]
+# Calculate repo base dir
+REPO_BASE_DIR = Path(__file__).absolute().parent.parent
 
-    return run(cmd, capture_output=True).stdout.decode(encoding).splitlines()
+
+def get_all_files() -> List[str]:
+    sources = [x.relative_to(REPO_BASE_DIR) for x in REPO_BASE_DIR.glob("*_source/**/*.py") if 'data' not in x.parts]
+    return [str(x) for x in sources]
 
 
 def calculate_shards(all_files, num_shards=20):
-    metadata = json.load(open(".jenkins/metadata.json"))
+    with (REPO_BASE_DIR / ".jenkins" / "metadata.json").open() as fp:
+        metadata = json.load(fp)
     sharded_files = [(0.0, []) for _ in range(num_shards)]
 
     def get_duration(file):
@@ -47,9 +43,7 @@ def calculate_shards(all_files, num_shards=20):
         # so we'll add all the jobs that need this machine to the 0th worker
         add_to_shard(0, filename)
 
-    all_other_files = list(
-        filter(lambda x: x not in needs_gpu_nvidia_small_multi, all_files)
-    )
+    all_other_files = [x for x in all_files if x not in needs_gpu_nvidia_small_multi]
 
     sorted_files = sorted(all_other_files, key=get_duration, reverse=True,)
 
@@ -58,24 +52,24 @@ def calculate_shards(all_files, num_shards=20):
             0
         ]
         add_to_shard(min_shard_index, filename)
-    return list(map(lambda x: x[1], sharded_files))
+    return [x[1] for x in sharded_files]
 
 
-def remove_other_files(all_files, files_to_run):
+def remove_other_files(all_files, files_to_run) -> None:
     for file in all_files:
         if file not in files_to_run:
             remove_runnable_code(file, file)
 
 
-def main():
+def main() -> None:
     num_shards = int(os.environ.get("NUM_WORKERS", 20))
     shard_num = int(os.environ.get("WORKER_ID", 0))
 
     all_files = get_all_files()
     files_to_run = calculate_shards(all_files, num_shards=num_shards)[shard_num]
     remove_other_files(all_files, files_to_run)
-    stripped_file_names = list(map(lambda x: Path(x).stem, files_to_run))
-    print("\n".join(stripped_file_names))
+    stripped_file_names = [Path(x).stem for x in files_to_run]
+    print(" ".join(stripped_file_names))
 
 
 if __name__ == "__main__":
