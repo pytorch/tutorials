@@ -389,13 +389,13 @@ It also comes with considerable engineering complexity to handle the training of
 </ul>
 <p><em>In forward path</em></p>
 <ul class="simple">
-<li>Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
+<li>Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
 <li>Run forward computation</li>
 <li>Discard parameter shards it has just collected</li>
 </ul>
 <p><em>In backward path</em></p>
 <ul class="simple">
-<li>Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
+<li>Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
 <li>Run backward computation</li>
 <li>Run reduce_scatter to sync gradients</li>
 <li>Discard parameters.</li>
@@ -496,7 +496,7 @@ It also comes with considerable engineering complexity to handle the training of
         <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="n">dist</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">'Train Epoch: </span><span class="si">{}</span><span class="s1"> </span><span class="se">\t</span><span class="s1">Loss: </span><span class="si">{:.6f}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 </pre></div>
@@ -515,7 +515,7 @@ It also comes with considerable engineering complexity to handle the training of
             <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pred</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">view_as</span><span class="p">(</span><span class="n">pred</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="n">dist</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">ddp_loss</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">test_loss</span> <span class="o">=</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">ddp_loss</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
