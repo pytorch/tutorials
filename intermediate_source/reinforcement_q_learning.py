@@ -13,7 +13,7 @@ on the CartPole-v0 task from the `OpenAI Gym <https://gym.openai.com/>`__.
 The agent has to decide between two actions - moving the cart left or
 right - so that the pole attached to it stays upright. You can find an
 official leaderboard with various algorithms and visualizations at the
-`Gym website <https://gym.openai.com/envs/CartPole-v0>`__.
+`Gym website <https://www.gymlibrary.ml/environments/classic_control/cart_pole>`__.
 
 .. figure:: /_static/img/cartpole.gif
    :alt: cartpole
