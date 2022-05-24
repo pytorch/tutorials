@@ -423,7 +423,7 @@ for more generic distributed training support.</li>
 </div>
 <div class="section" id="basic-use-case">
 <h2>Basic Use Case<a class="headerlink" href="#basic-use-case" title="Permalink to this headline">¶</a></h2>
-<p>To create DDP modules, first set up process groups properly. More details can
+<p>To create a DDP module, you must first set up process groups properly. More details can
 be found in
 <a class="reference external" href="https://pytorch.org/tutorials/intermediate/dist_tuto.html">Writing Distributed Applications with PyTorch</a>.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -460,10 +460,10 @@ be found in
     <span class="n">dist</span><span class="o">.</span><span class="n">destroy_process_group</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Now, let’s create a toy module, wrap it with DDP, and feed it with some dummy
+<p>Now, let’s create a toy module, wrap it with DDP, and feed it some dummy
 input data. Please note, as DDP broadcasts model states from rank 0 process to
-all other processes in the DDP constructor, you don’t need to worry about
-different DDP processes start from different model parameter initial values.</p>
+all other processes in the DDP constructor, you do not need to worry about
+different DDP processes starting from different initial model parameter values.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ToyModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">ToyModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -503,7 +503,7 @@ different DDP processes start from different model parameter initial values.</p>
 </pre></div>
 </div>
 <p>As you can see, DDP wraps lower-level distributed communication details and
-provides a clean API as if it is a local model. Gradient synchronization
+provides a clean API as if it were a local model. Gradient synchronization
 communications take place during the backward pass and overlap with the
 backward computation. When the <code class="docutils literal notranslate"><span class="pre">backward()</span></code> returns, <code class="docutils literal notranslate"><span class="pre">param.grad</span></code> already
 contains the synchronized gradient tensor. For basic use cases, DDP only
@@ -516,10 +516,10 @@ advanced use cases, some caveats require caution.</p>
 distributed synchronization points. Different processes are expected to launch
 the same number of synchronizations and reach these synchronization points in
 the same order and enter each synchronization point at roughly the same time.
-Otherwise, fast processes might arrive early and timeout on waiting for
-stragglers. Hence, users are responsible for balancing workloads distributions
+Otherwise, fast processes might arrive early and timeout while waiting for
+stragglers. Hence, users are responsible for balancing workload distributions
 across processes. Sometimes, skewed processing speeds are inevitable due to,
-e.g., network delays, resource contentions, unpredictable workload spikes. To
+e.g., network delays, resource contentions, or unpredictable workload spikes. To
 avoid timeouts in these situations, make sure that you pass a sufficiently
 large <code class="docutils literal notranslate"><span class="pre">timeout</span></code> value when calling
 <a class="reference external" href="https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group">init_process_group</a>.</p>
@@ -533,10 +533,10 @@ for more details. When using DDP, one optimization is to save the model in
 only one process and then load it to all processes, reducing write overhead.
 This is correct because all processes start from the same parameters and
 gradients are synchronized in backward passes, and hence optimizers should keep
-setting parameters to the same values. If you use this optimization, make sure all
-processes do not start loading before the saving is finished. Besides, when
+setting parameters to the same values. If you use this optimization, make sure no process starts
+loading before the saving is finished. Additionally, when
 loading the module, you need to provide an appropriate <code class="docutils literal notranslate"><span class="pre">map_location</span></code>
-argument to prevent a process to step into others’ devices. If <code class="docutils literal notranslate"><span class="pre">map_location</span></code>
+argument to prevent a process from stepping into others’ devices. If <code class="docutils literal notranslate"><span class="pre">map_location</span></code>
 is missing, <code class="docutils literal notranslate"><span class="pre">torch.load</span></code> will first load the module to CPU and then copy each
 parameter to where it was saved, which would result in all processes on the
 same machine using the same set of devices. For more advanced failure recovery
@@ -548,8 +548,6 @@ and elasticity support, please refer to <a class="reference external" href="http
     <span class="n">model</span> <span class="o">=</span> <span class="n">ToyModel</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
     <span class="n">ddp_model</span> <span class="o">=</span> <span class="n">DDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="p">[</span><span class="n">rank</span><span class="p">])</span>
 
-    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
 
     <span class="n">CHECKPOINT_PATH</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"/model.checkpoint"</span>
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -566,10 +564,13 @@ and elasticity support, please refer to <a class="reference external" href="http
     <span class="n">ddp_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">CHECKPOINT_PATH</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">map_location</span><span class="p">))</span>
 
+    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">ddp_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">outputs</span> <span class="o">=</span> <span class="n">ddp_model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
     <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">rank</span><span class="p">)</span>
-    <span class="n">loss_fn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+
     <span class="n">loss_fn</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
@@ -584,8 +585,8 @@ and elasticity support, please refer to <a class="reference external" href="http
 </pre></div>
 </div>
 </div>
-<div class="section" id="combine-ddp-with-model-parallelism">
-<h2>Combine DDP with Model Parallelism<a class="headerlink" href="#combine-ddp-with-model-parallelism" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="combining-ddp-with-model-parallelism">
+<h2>Combining DDP with Model Parallelism<a class="headerlink" href="#combining-ddp-with-model-parallelism" title="Permalink to this headline">¶</a></h2>
 <p>DDP also works with multi-GPU models. DDP wrapping multi-GPU models is especially
 helpful when training large models with a huge amount of data.</p>
 <div class="code python highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ToyMpModel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -681,7 +682,7 @@ either the application or the model <code class="docutils literal notranslate"><
 <li><a class="reference internal" href="#basic-use-case">Basic Use Case</a></li>
 <li><a class="reference internal" href="#skewed-processing-speeds">Skewed Processing Speeds</a></li>
 <li><a class="reference internal" href="#save-and-load-checkpoints">Save and Load Checkpoints</a></li>
-<li><a class="reference internal" href="#combine-ddp-with-model-parallelism">Combine DDP with Model Parallelism</a></li>
+<li><a class="reference internal" href="#combining-ddp-with-model-parallelism">Combining DDP with Model Parallelism</a></li>
 </ul>
 </li>
 </ul>
