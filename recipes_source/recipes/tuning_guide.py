@@ -241,16 +241,23 @@ def fused_gelu(x):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
 # Currently, it's supported as an experimental feature for Float32 data-type.
+# oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
 # A model should be JIT-traced using an example input.
-# oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input. Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
-# The code-snippets below are for resnet50, but it can very well be extended to custom models as well.
+# Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
+# The example code-snippets below are for resnet50, but they can very well be extended to use oneDNN Graph with custom models as well.
 
-# Only this extra line of code is required to use the oneDNN Graph API
+# Only this extra line of code is required to use oneDNN Graph
 torch.jit.enable_onednn_fusion(True)
-# sample input should be of the sams shape as expected inputs
+
+###############################################################################
+# Using the oneDNN Graph API requires just one extra line of code.
+# As an aside, torch.jit.optimize_for_inference should not be called if oneDNN Graph is to be used.
+# This might change in the future.
+
+# sample input should be of the same shape as expected inputs
 sample_input = [torch.rand(32, 3, 224, 224)]
 # Using resnet50 from TorchVision in this example for illustrative purposes,
-# but this example code can be used on custom models as well.
+# but the line below can indeed be modified to use custom models as well.
 model = getattr(torchvision.models, "resnet50")().eval()
 # Tracing the model with example input
 traced_model = torch.jit.trace(model, sample_input)
