@@ -237,6 +237,37 @@ def fused_gelu(x):
 # export LD_PRELOAD=<jemalloc.so/tcmalloc.so>:$LD_PRELOAD
 
 ###############################################################################
+# Use oneDNN Graph with TorchScript for inference
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
+# Currently, it's supported as an experimental feature for Float32 data-type.
+# A model should be JIT-traced using an example input.
+# oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input. Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
+# The code-snippets below are for resnet50, but it can very well be extended to custom models as well.
+
+# Only this extra line of code is required to use the oneDNN Graph API
+torch.jit.enable_onednn_fusion(True)
+# sample input should be of the sams shape as expected inputs
+sample_input = [torch.rand(32, 3, 224, 224)]
+# Using resnet50 from TorchVision in this example for illustrative purposes,
+# but this example code can be used on custom models as well.
+model = getattr(torchvision.models, "resnet50")().eval()
+# Tracing the model with example input
+traced_model = torch.jit.trace(model, sample_input)
+# Invoking torch.jit.freeze
+traced_model = torch.jit.freeze(traced_model)
+
+###############################################################################
+# Once a model is JIT-traced with a sample input, it can then be used for inference after a couple of warm-up runs.
+
+with torch.no_grad():
+    # a couple of warmup runs
+    traced_model(*sample_input)
+    traced_model(*sample_input)
+    # speedup would be observed after warmup runs
+    traced_model(*sample_input)
+
+###############################################################################
 # Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. `Torch-ccl <https://github.com/intel/torch-ccl>`_, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.
