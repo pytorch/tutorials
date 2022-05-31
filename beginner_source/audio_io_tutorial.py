@@ -166,7 +166,7 @@ def inspect_file(path):
   print(f" - {torchaudio.info(path)}")
 
 ######################################################################
-# Quering audio metadata
+# Querying audio metadata
 # ----------------------
 #
 # Function ``torchaudio.info`` fetches audio metadata. You can provide
