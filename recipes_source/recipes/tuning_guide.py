@@ -251,8 +251,7 @@ torch.jit.enable_onednn_fusion(True)
 
 ###############################################################################
 # Using the oneDNN Graph API requires just one extra line of code.
-# As an aside, ``torch.jit.optimize_for_inference`` should not be called if oneDNN Graph is to be used.
-# This might change in the future.
+# If you are using oneDNN Graph, please avoid calling ``torch.jit.optimize_for_inference``.
 
 # sample input should be of the same shape as expected inputs
 sample_input = [torch.rand(32, 3, 224, 224)]
