@@ -681,6 +681,41 @@ Use environment variable LD_PRELOAD to take advantage of one of them.</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="use-onednn-graph-with-torchscript-for-inference">
+<h3>Use oneDNN Graph with TorchScript for inference<a class="headerlink" href="#use-onednn-graph-with-torchscript-for-inference" title="Permalink to this headline">¶</a></h3>
+<p>oneDNN Graph can significantly boost inference performance. It fuses some compute-intensive operations such as convolution, matmul with their neighbor operations.
+Currently, it’s supported as an experimental feature for Float32 data-type.
+oneDNN Graph receives the model’s graph and identifies candidates for operator-fusion with respect to the shape of the example input.
+A model should be JIT-traced using an example input.
+Speed-up would then be observed after a couple of warm-up iterations for inputs with the same shape as the example input.
+The example code-snippets below are for resnet50, but they can very well be extended to use oneDNN Graph with custom models as well.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Only this extra line of code is required to use oneDNN Graph</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">enable_onednn_fusion</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using the oneDNN Graph API requires just one extra line of code.
+If you are using oneDNN Graph, please avoid calling <code class="docutils literal notranslate"><span class="pre">torch.jit.optimize_for_inference</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># sample input should be of the same shape as expected inputs</span>
+<span class="n">sample_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)]</span>
+<span class="c1"># Using resnet50 from TorchVision in this example for illustrative purposes,</span>
+<span class="c1"># but the line below can indeed be modified to use custom models as well.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torchvision</span><span class="o">.</span><span class="n">models</span><span class="p">,</span> <span class="s2">&quot;resnet50&quot;</span><span class="p">)()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+<span class="c1"># Tracing the model with example input</span>
+<span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">sample_input</span><span class="p">)</span>
+<span class="c1"># Invoking torch.jit.freeze</span>
+<span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">freeze</span><span class="p">(</span><span class="n">traced_model</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once a model is JIT-traced with a sample input, it can then be used for inference after a couple of warm-up runs.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="c1"># a couple of warmup runs</span>
+    <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
+    <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
+    <span class="c1"># speedup would be observed after warmup runs</span>
+    <span class="n">traced_model</span><span class="p">(</span><span class="o">*</span><span class="n">sample_input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">
 <h3>Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality<a class="headerlink" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality" title="Permalink to this headline">¶</a></h3>
 <p>For small scale models or memory-bound models, such as DLRM, training on CPU is also a good choice. On a machine with multiple sockets, distributed training brings a high-efficient hardware resource usage to accelerate the training process. <a class="reference external" href="https://github.com/intel/torch-ccl">Torch-ccl</a>, optimized with Intel(R) oneCCL (collective commnications library) for efficient distributed deep learning training implementing such collectives like allreduce, allgather, alltoall, implements PyTorch C10D ProcessGroup API and can be dynamically loaded as external ProcessGroup. Upon optimizations implemented in PyTorch DDP moduel, torhc-ccl accelerates communication operations. Beside the optimizations made to communication kernels, torch-ccl also features simultaneous computation-communication functionality.</p>
@@ -944,6 +979,7 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <li><a class="reference internal" href="#utilize-openmp">Utilize OpenMP</a></li>
 <li><a class="reference internal" href="#intel-openmp-runtime-library-libiomp">Intel OpenMP Runtime Library (libiomp)</a></li>
 <li><a class="reference internal" href="#switch-memory-allocator">Switch Memory allocator</a></li>
+<li><a class="reference internal" href="#use-onednn-graph-with-torchscript-for-inference">Use oneDNN Graph with TorchScript for inference</a></li>
 <li><a class="reference internal" href="#train-a-model-on-cpu-with-pytorch-distributeddataparallel-ddp-functionality">Train a model on CPU with PyTorch DistributedDataParallel(DDP) functionality</a></li>
 </ul>
 </li>
