@@ -145,7 +145,7 @@ print(t1)
 y1 = tensor @ tensor.T
 y2 = tensor.matmul(tensor.T)
 
-y3 = torch.rand_like(tensor)
+y3 = torch.rand_like(y1)
 torch.matmul(tensor, tensor.T, out=y3)
 
 
