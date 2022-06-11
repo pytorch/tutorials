@@ -121,7 +121,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 2.1  Setup the HuggingFace T5 model. 
 
 .. code-block:: python
-    
+
     def setup_model(model_name):
         model = T5ForConditionalGeneration.from_pretrained(model_name)
         tokenizer =  T5Tokenizer.from_pretrained(model_name)
@@ -189,7 +189,6 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 
 2.4 Define a distributed train function that wraps the model in FSDP
 
-**Note: to save the FSDP model, we need to call the state_dict on each rank then on Rank 0 save the overall states. This is only available in Pytorch nightlies, current Pytorch release is 1.11 at the moment.**
 
 .. code-block:: python
 
@@ -370,15 +369,6 @@ To run the the training with torchrun:
     torchrun --nnodes 1 --nproc_per_node 4  T5_training.py
 
 
-*Applying fsdp_auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
-The way it works is that, suppose your model contains 100 Linear layers. If you do FSDP(model), there will only be one FSDP unit which wraps the entire model. 
-In that case, the allgather would collect the full parameters for all 100 linear layers, and hence won't save CUDA memory for parameter sharding.
-Also, there is only one blocking allgather call for the all 100 linear layers, there will not be communication and computation overlapping between layers. 
-
-To avoid that, you can pass in an fsdp_auto_wrap_policy, which will seal the current FSDP unit and start a new one automatically when the specified condition is met (e.g., size limit).
-In that way you will have multiple FSDP units, and only one FSDP unit needs to collect full parameters at a time. E.g., suppose you have 5 FSDP units, and each wraps 20 linear layers.
-Then, in the forward, the 1st FSDP unit will allgather parameters for the first 20 linear layers, do computation, discard the parameters and then move on to the next 20 linear layers. So, at any point in time, each rank only materializes parameters/grads for 20 linear layers instead of 100.
-
 Transformer Wrapping Policy
 --------------
 As discussed in the `previous tuotiral <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easier to put different model, optimizer and gradinet shards on different FSDP units.
@@ -391,6 +381,7 @@ If the number of parameters in this layer is smaller than 100, it will be wrappe
 Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.
 
 .. code-block:: python
+
     t5_auto_wrap_policy = functools.partial(
             transformer_auto_wrap_policy,
             transformer_layer_cls={
@@ -432,6 +423,7 @@ Mixed Percision
 --------------
 FSDP supports training with mixed percision in with FP32, FP16 and BFloat16. As you might know, currently BFloat16 is only available on Ampre GPUs, so you need to make sure about its availbilty before you use it, otherwise it can result in slow downs.
 To check if BFloat16 is ready you can use the following :
+
 .. code-block:: python
     
     bf16_ready = (
@@ -442,9 +434,10 @@ To check if BFloat16 is ready you can use the following :
         and nccl.version() >= (2, 10)
     )
 
-One of the advantages of mixed percision in FSDP is that it provided granular control over different communications for parameters, gradients and buffers as follows:
+One of the advantages of mixed percision in FSDP is providing granular control over different communications for parameters, gradients and buffers as follows:
 
 .. code-block:: python
+
     fpSixteen = MixedPrecision(
         param_dtype=torch.float16,
         # Gradient communication precision.
@@ -490,7 +483,9 @@ Checkpoint Saving Streamed on CPU
 --------------
 To save the model checkpoints at the end of the training, if your model is large (e.g 3B and above), 
 define the saving policy to offload to cpu, capture the state_dcit on each rank, then on rank 0, save the aggreagted states.
+
 .. code-block:: python
+
     save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
     with FSDP.state_dict_type(
                 model, StateDictType.FULL_STATE_DICT, save_policy
