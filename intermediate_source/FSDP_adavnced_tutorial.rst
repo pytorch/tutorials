@@ -1,4 +1,4 @@
-Getting Started with Fully Sharded Data Parallel(FSDP)
+Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 =====================================================
 
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
@@ -6,15 +6,25 @@ Getting Started with Fully Sharded Data Parallel(FSDP)
 .. note::
    View the source code for this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/FSDP_tutorial.rst>`__.
 
-Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. 
-It also comes with considerable engineering complexity to handle the training of these very large models.
-`Pytorch FSDP <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__, released in PyTorch 1.11 makes this easier.
+This is an advanced Fully Sharded Data Parallel tutorial and the follow up on the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__ .
+In this tutorial, we are going to intorduce more advanced features of FSDP as it has been resealed with Pytorch 1.12. We are going to fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization. 
+Wikihow is the dataset being used in this tutorial and for simplicty we will perfrom the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
 
-In this tutorial, we show how to use `FSDP APIs <https://pytorch.org/docs/1.11/fsdp.html>`__, for fine-tuning HuggingFace T5 model `HuggingFace BERT models <https://huggingface.co/blog/zero-deepspeed-fairscale>`__, 
-`GPT 3 models up to 1T parameters <https://pytorch.medium.com/training-a-1-trillion-parameter-model-with-pytorch-fully-sharded-data-parallel-on-aws-3ac13aa96cff>`__ . This is follow up on the  `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__. 
+FSDP is production ready pakcage that aims to make the large scale distributed training easier by reducing the memory footprint on each GPU. This enable training larger models with less compute.  
+Also it can lead to affording larger batch sizes during the training and ideally positvely impact the training speed and cost. 
+Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
-How FSDP works
+FSDP Features in this Tutorial
+--------------
+* Transfromer Auto Wrap Policy
+* Mixed Percision
+* Activation Checkpointing
+* Checkpoint Saving Streamed on CPU
+
+
+
+Recap on How FSDP works
 --------------
 In `DistributedDataParallel <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`__, (DDP) training, each process/ worker owns a replica of the model and processes a batch of data, finally it uses all-reduce to sum up gradients over different workers. In DDP the model weights and optimizer states are replicated across all workers. FSDP is a type of data parallelism that shards model parameters, optimizer states and gradients across DDP ranks. 
 
@@ -46,21 +56,28 @@ At high level FDSP works as follow:
 * Run reduce_scatter to sync gradients
 * Discard parameters. 
 
-How to use FSDP
+Fine-tuning HF T5
 --------------
-Here we use a toy model to run training on MNIST dataset for demonstration purposes. Similarly the APIs and logic can be applied to larger models for training. 
+HF T5 pretrained models are availbe in 4 different sizes, ranging from small with 60 M parameters to 11 B parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
+The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models.
+
 
 *Setup*
 
-1.1 Install Pytorch along with Torchvision
+1.1 Install Pytorch 1.12 
 
 .. code-block:: bash 
 
     pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
 
-We add the following code snippets to a python script “FSDP_mnist.py”.
+1.2 Dataset Setup
 
-1.2  Import necessary packages
+Please create a "data" folder, download the WikiHow dataset from `wikihowAll.csv <https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358>`__  and `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__ and place them in the "data" folder. 
+We will use the wikihow dataset from summarization_dataset `wikihowAll.csv <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
+
+Next, we add the following code snippets to a python script “T5_training.py”, the source code for this tutorial is availbe in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
+
+1.3  Import necessary packages
 
 .. code-block:: python
 
@@ -86,9 +103,9 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         BackwardPrefetch,
     )
     from torch.distributed.fsdp.wrap import (
-        default_auto_wrap_policy,
-        enable_wrap,
-        wrap,
+    transformer_auto_wrap_policy,
+    enable_wrap,
+    wrap,
     )
     from torch.utils.data import DataLoader
     from pathlib import Path
@@ -99,7 +116,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
     from transformers.models.t5.modeling_t5 import T5Block
     from typing import Type
 
-1.3 Distributed training setup. As we mentioned FSDP is a type of data parallelism which requires a distributed training environment, so here we use two helper functions to initialize the processes for distributed training and clean up.
+1.4 Distributed training setup. As we mentioned FSDP is a type of data parallelism which requires a distributed training environment, so here we use two helper functions to initialize the processes for distributed training and clean up.
+In this tutrial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , it will set the worker RANK and WORLD_SIZE automatically for us.
 
 .. code-block:: python
 
@@ -142,21 +160,25 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             fsdp_loss[0] += loss.item()
             fsdp_loss[1] += len(batch)
 
-        dist.reduce(fsdp_loss, 0, op=dist.ReduceOp.SUM)
+        dist.all_reduce(fsdp_loss, op=dist.ReduceOp.SUM)
+        train_accuracy = fsdp_loss[0] / fsdp_loss[1]
         if rank == 0:
-            print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, fsdp_loss[0] / fsdp_loss[1]))
+        print(
+                f"Train Epoch: \t{epoch}, Loss: \t{train_accuracy:.4f}"
+            )
+        return train_accuracy
 
 2.3 Define a validation function 
 
 .. code-block:: python
 
-    def test(model, rank, world_size, test_loader):
+    def validation(model, rank, world_size, val_loader):
         model.eval()
         correct = 0
         local_rank = int(os.environ['LOCAL_RANK'])
         fsdp_loss = torch.zeros(3).to(local_rank)
         with torch.no_grad():
-            for batch in test_loader:
+            for batch in val_loader:
                 for key in batch.keys():
                     batch[key] = batch[key].to(local_rank)
                 output = model(input_ids=batch["source_ids"],attention_mask=batch["source_mask"],labels=batch["target_ids"])
@@ -166,12 +188,12 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
                 fsdp_loss[1] += pred.eq(batch["target_ids"].view_as(pred)).sum().item()
                 fsdp_loss[2] += len(batch)
 
-        dist.reduce(fsdp_loss, 0, op=dist.ReduceOp.SUM)
+        dist.all_reduce(fsdp_loss, op=dist.ReduceOp.SUM)
+
         if rank == 0:
-        test_loss = fsdp_loss[0] / fsdp_loss[2]
-        print('Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(
-            test_loss, int(fsdp_loss[1]), int(fsdp_loss[2]),
-            100. * fsdp_loss[1] / fsdp_loss[2]))
+            val_loss = fsdp_loss[0] / fsdp_loss[2]
+            print(f"Validation Loss: {val_loss:.4f}")
+        return val_loss
 
 
 2.4 Define a distributed train function that wraps the model in FSDP
@@ -180,12 +202,15 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 .. code-block:: python
 
+    
     def fsdp_main(args):
 
         model, tokenizer = setup_model("t5-large")
+
         local_rank = int(os.environ['LOCAL_RANK'])
         rank = int(os.environ['RANK'])
         world_size = int(os.environ['WORLD_SIZE'])
+
 
         dataset = load_dataset('wikihow', 'all', data_dir='data/')
         print(dataset.keys())
@@ -211,10 +236,16 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         test_kwargs.update(cuda_kwargs)
 
         train_loader = torch.utils.data.DataLoader(train_dataset,**train_kwargs)
-        test_loader = torch.utils.data.DataLoader(val_dataset, **test_kwargs)
-        my_auto_wrap_policy = functools.partial(
-                auto_wrap_policy_transformer, min_num_params=20000, transformer_layer_cls=T5Block
-            )
+        val_loader = torch.utils.data.DataLoader(val_dataset, **test_kwargs)
+        
+        t5_auto_wrap_policy = functools.partial(
+            transformer_auto_wrap_policy,
+            transformer_layer_cls={
+                T5Block,
+            },
+        )
+
+        sharding_strategy: ShardingStrategy = ShardingStrategy.FULL_SHARD
         torch.cuda.set_device(local_rank)
     
     
@@ -224,17 +255,60 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
         init_start_event.record()
 
     
-        model = FSDP(model, fsdp_auto_wrap_policy=my_auto_wrap_policy).to(local_rank)
+        model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen,
+            sharding_strategy=sharding_strategy,
+            device_id=torch.cuda.current_device())
 
         print(model)
         optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
         scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+        best_val_loss = float("inf")
+        curr_val_loss = float("inf")
+        file_save_name = "800M-whole-model-"
+
+        if rank == 0:
+            time_of_run = get_date_of_run()
+            dur = []
+            train_acc_tracking = []
+            val_acc_tracking = []
+            training_start_time = time.time()
+
+        if rank == 0 and args.track_memory:
+            fn = "memory_tracking.txt"
+            mem_alloc_tracker = []
+            mem_reserved_tracker = []
 
         for epoch in range(1, args.epochs + 1):
-            train(args, model, rank, world_size, train_loader, optimizer, epoch, sampler=sampler1)
-            test(model, rank, world_size, test_loader)
+            t0 = time.time()
+            train_accuracy = train(args, model, rank, world_size, train_loader, optimizer, epoch, sampler=sampler1)
+            if args.run_validation:
+                curr_val_loss = validation(model, rank, world_size, val_loader)
             scheduler.step()
+            
+            if rank == 0:
+
+                print(f"--> epoch {epoch} completed...entering save and stats zone")
+
+                dur.append(time.time() - t0)
+                train_acc_tracking.append(train_accuracy.item())
+
+                if args.run_validation:
+                    val_acc_tracking.append(curr_val_loss.item())
+
+                if args.track_memory:
+                    mem_alloc_tracker.append(
+                        format_metrics_to_gb(torch.cuda.memory_allocated())
+                    )
+                    mem_reserved_tracker.append(
+                        format_metrics_to_gb(torch.cuda.memory_reserved())
+                    )
+            if rank == 0 and curr_val_loss < best_val_loss:
+
+                best_val_loss = curr_val_loss
+                print(f"-->>>> New Val Loss Record: {best_val_loss}")
 
         init_end_event.record()
 
@@ -242,9 +316,26 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             print(f"Cuda event elapsed time: {init_start_event.elapsed_time(init_end_event) / 1000}sec")
             print(f"{model}")
 
-        if args.save_model:
-            states = model.state_dict()
-            dist.barrier()
+        if args.save_model and curr_val_loss < best_val_loss:
+
+            # save
+            if rank == 0:
+                print(f"--> entering save model state...")
+            save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+            with FSDP.state_dict_type(
+                model, StateDictType.FULL_STATE_DICT, save_policy
+            ):
+                cpu_state = model.state_dict()
+            print(f"saving process: rank {rank}  done w state_dict")
+
+            if rank == 0:
+                print(f"--> saving model ...")
+                currEpoch = (
+                    "-" + str(epoch) + "-" + str(round(curr_val_loss.item(), 4)) + ".pt"
+                )
+                save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
+
+                torch.save(cpu_state, save_name)
         if rank == 0:
             torch.save(states, "T5_checkpoint.pt")
         
@@ -259,7 +350,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
     
     if __name__ == '__main__':
         # Training settings
-        parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+        parser = argparse.ArgumentParser(description='FSDP T5 training')
         parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                             help='input batch size for training (default: 64)')
         parser.add_argument('--test-batch-size', type=int, default=4, metavar='N',
@@ -284,7 +375,8 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
 
 
 To run the the training with torchrun:
-
+.. code-block:: bash 
+    torchrun --nnodes 1 --nproc_per_node 4  T5_training.py
 
 
 *Applying fsdp_auto_wrap_policy* in FSDP otherwise, FSDP will put the entire model in one FSDP unit, which will reduce computation efficiency and memory efficiency. 
@@ -296,31 +388,31 @@ To avoid that, you can pass in an fsdp_auto_wrap_policy, which will seal the cur
 In that way you will have multiple FSDP units, and only one FSDP unit needs to collect full parameters at a time. E.g., suppose you have 5 FSDP units, and each wraps 20 linear layers.
 Then, in the forward, the 1st FSDP unit will allgather parameters for the first 20 linear layers, do computation, discard the parameters and then move on to the next 20 linear layers. So, at any point in time, each rank only materializes parameters/grads for 20 linear layers instead of 100.
 
+Transformer Wrapping Policy
+--------------
+As discussed in the `previous tuotiral <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easier to put different model, optimizer and gradinet shards on different FSDP units.
+However, for some of the architecutres such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
+In this case, we need to place the embedding table in the outer FSDP unit that could be accessed from both encoder and decoder. In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
+
 
 To do so in 2.4 we define the auto_wrap_policy and pass it to FSDP wrapper, in the following example, my_auto_wrap_policy defines that a layer could be wrapped or sharded by FSDP if the number of parameters in this layer is larger than 100.
 If the number of parameters in this layer is smaller than 100, it will be wrapped with other small layers together by FSDP. 
 Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.
 
 .. code-block:: python
-    def auto_wrap_policy_transformer(module: nn.Module, recurse: bool, unwrapped_params: int, transformer_layer_cls: Type[nn.Module], min_num_params: int = int(1e8),) -> bool:
-        is_large = unwrapped_params >= min_num_params
-        if recurse:
-    # always recurse
-            return True
-        else:
-        # if not recursing, decide whether we should wrap for the leaf node or reminder
-        return is_large and isinstance(module, transformer_layer_cls)
-
-    my_auto_wrap_policy = functools.partial(
-            default_auto_wrap_policy, min_num_params=20000
+    t5_auto_wrap_policy = functools.partial(
+            transformer_auto_wrap_policy,
+            transformer_layer_cls={
+                T5Block,
+            },
         )
     torch.cuda.set_device(rank)
     model = Net().to(rank)
 
     model = FSDP(model,
-        fsdp_auto_wrap_policy=my_auto_wrap_policy)
+        fsdp_auto_wrap_policy=t5_auto_wrap_policy)
 
-Applying the FSDP_auto_wrap_policy, the model would be as follows:
+Applying the t5_auto_wrap_policy, the model would be as follows:
 #TODO update with new wrapped units
 
 .. code-block:: bash
@@ -342,67 +434,77 @@ Applying the FSDP_auto_wrap_policy, the model would be as follows:
   )
 
 
-.. code-block:: bash
 
-    python FSDP_mnist.py
 
-    CUDA event elapsed time on training loop 41.89130859375sec
 
-Following is the peak memory usage from FSDP with auto_wrap policy of MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch Profiler. 
-It can be observed that the peak memory usage on each device is smaller compared to FSDP without auto wrap policy applied, from ~75 MB to 66 MB.
+Mixed Percision
+--------------
+FSDP supports training with mixed percision in with FP32, FP16 and BFloat16. As you might know, currently BFloat16 is only available on Ampre GPUs, so you need to make sure about its availbilty before you use it, otherwise it can result in slow downs.
+To check if BFloat16 is ready you can use the following :
+.. code-block:: python
+    
+    bf16_ready = (
+        torch.version.cuda
+        and torch.cuda.is_bf16_supported() 
+        and LooseVersion(torch.version.cuda) >= "11.0"
+        and dist.is_nccl_available()
+        and nccl.version() >= (2, 10)
+    )
 
-.. figure:: /_static/img/distributed/FSDP_autowrap.gif
-   :width: 100%
-   :align: center
-   :alt: FSDP peak memory
+One of the advantages of mixed percision in FSDP is that it provided granular control over different communications for parameters, gradients and buffers as follows:
 
-   FSDP Peak Memory Usage using Auto_wrap policy
+.. code-block:: python
+    fpSixteen = MixedPrecision(
+        param_dtype=torch.float16,
+        # Gradient communication precision.
+        reduce_dtype=torch.float16,
+        # Buffer precision.
+        buffer_dtype=torch.float16,
+    )
 
-*CPU Off-loading*: In case the model is very large that even with FSDP wouldn't fit into gpus, then CPU offload can be helpful here. 
+    bfSixteen = MixedPrecision(
+        param_dtype=torch.bfloat16,
+        # Gradient communication precision.
+        reduce_dtype=torch.bfloat16,
+        # Buffer precision.
+        buffer_dtype=torch.bfloat16,
+    )
 
-Currently, only parameter and gradient CPU offload is supported. It can be enabled via passing in cpu_offload=CPUOffload(offload_params=True).
+    fp32_policy = MixedPrecision(
+        param_dtype=torch.float32,
+        # Gradient communication precision.
+        reduce_dtype=torch.float32,
+        # Buffer precision.
+        buffer_dtype=torch.float32,
+    )
 
-Note that this currently implicitly enables gradient offloading to CPU in order for params and grads to be on the same device to work with the optimizer. This API is subject to change. Default is None in which case there will be no offloading.
-
-Using this feature may slow down the training considerably, due to frequent copying of tensors from host to device, but it could help improve memory efficiency and train larger scale models. 
 
 In 2.4 we just add it to the FSDP wrapper
 
 
 .. code-block:: python
 
-    model = FSDP(model,
-        fsdp_auto_wrap_policy=my_auto_wrap_policy,
-        cpu_offload=CPUOffload(offload_params=True))
+     model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen)
+
+In our experiments, we have observed up to 4x speed up using BFloat16 for training.
+#TODO add the graph and elaborate more on the experiments.
+
+Activation Checkpointing
+--------------
 
 
-Compare it with DDP, if in 2.4 we just normally wrap the model in ddp, saving the changes in “DDP_mnist.py”.
-
+Checkpoint Saving Streamed on CPU
+--------------
+To save the model checkpoints at the end of the training, if your model is large (e.g 3B and above), 
+define the saving policy to offload to cpu, capture the state_dcit on each rank, then on rank 0, save the aggreagted states.
 .. code-block:: python
-
-    model = Net().to(rank)
-    model = DDP(model)
-
-
-.. code-block:: bash
-
-    python DDP_mnist.py
-
-    CUDA event elapsed time on training loop 39.77766015625sec
-
-Following is the peak memory usage from DDP MNIST training on g4dn.12.xlarge AWS EC2 instance with 4 gpus captured from Pytorch profiler. 
-
-.. figure:: /_static/img/distributed/DDP_memory.gif
-   :width: 100%
-   :align: center
-   :alt: FSDP peak memory
-
-   DDP Peak Memory Usage using Auto_wrap policy
-
-
-Considering the toy example and tiny MNIST model we defined here, we can observe the difference between peak memory usage of DDP and FSDP. 
-In DDP each process holds a replica of the model, so the memory footprint is higher compared to FSDP that shards the model parameter, optimizer states and gradients over DDP ranks.
-The peak memory usage using FSDP with auto_wrap policy is the lowest followed by FSDP and DDP. 
-
-Also, looking at timings, considering the small model and running the training on a single machine, FSDP with/out auto_wrap policy performed almost as fast as DDP.
-This example does not represent most of the real applications, for detailed analysis and comparison between DDP and FSDP please refer to this `blog post  <https://pytorch.medium.com/6c8da2be180d>`__ .
+    save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
+    with FSDP.state_dict_type(
+                model, StateDictType.FULL_STATE_DICT, save_policy
+            ):
+                cpu_state = model.state_dict()
+    if rank == 0:
+     save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
+     torch.save(cpu_state, save_name)
