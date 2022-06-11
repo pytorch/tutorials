@@ -367,7 +367,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 To run the the training with torchrun:
 
 .. code-block:: bash 
-    
+
     torchrun --nnodes 1 --nproc_per_node 4  T5_training.py
 
 
@@ -377,10 +377,8 @@ As discussed in the `previous tuotiral <https://pytorch.org/tutorials/intermedia
 However, for some of the architecutres such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
 In this case, we need to place the embedding table in the outer FSDP unit that could be accessed from both encoder and decoder. In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
 
+It can be deinfed as follows.
 
-To do so in 2.4 we define the auto_wrap_policy and pass it to FSDP wrapper, in the following example, my_auto_wrap_policy defines that a layer could be wrapped or sharded by FSDP if the number of parameters in this layer is larger than 100.
-If the number of parameters in this layer is smaller than 100, it will be wrapped with other small layers together by FSDP. 
-Finding an optimal auto wrap policy is challenging, PyTorch will add auto tuning for this config in the future. Without an auto tuning tool, it is good to profile your workflow using different auto wrap policies experimentally and find the optimal one.
 
 .. code-block:: python
 
