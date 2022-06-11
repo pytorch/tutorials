@@ -15,7 +15,7 @@ Also it can lead to affording larger batch sizes during the training and ideally
 Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
-FSDP Features in this Tutorial
+FSDP Features in This Tutorial
 --------------
 * Transfromer Auto Wrap Policy
 * Mixed Percision
@@ -24,7 +24,7 @@ FSDP Features in this Tutorial
 
 
 
-Recap on How FSDP works
+Recap on How FSDP Works
 --------------
 
 At high level FDSP works as follow:
@@ -121,6 +121,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 2.1  Setup the HuggingFace T5 model. 
 
 .. code-block:: python
+    
     def setup_model(model_name):
         model = T5ForConditionalGeneration.from_pretrained(model_name)
         tokenizer =  T5Tokenizer.from_pretrained(model_name)
