@@ -365,7 +365,9 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 
 
 To run the the training with torchrun:
+
 .. code-block:: bash 
+    
     torchrun --nnodes 1 --nproc_per_node 4  T5_training.py
 
 
