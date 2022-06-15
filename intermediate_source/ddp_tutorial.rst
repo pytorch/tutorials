@@ -298,7 +298,7 @@ either the application or the model ``forward()`` method.
 Initialize DDP with PyTorch Elastic/torch.distributed.run
 ----------------------------------
 
-We can leverage PyTorch Elastic to simply the DDP code and initialize the job more easily.
+We can leverage PyTorch Elastic to simplify the DDP code and initialize the job more easily.
 Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
 
 .. code:: python
