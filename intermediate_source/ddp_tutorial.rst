@@ -294,3 +294,65 @@ either the application or the model ``forward()`` method.
         run_demo(demo_basic, world_size)
         run_demo(demo_checkpoint, world_size)
         run_demo(demo_model_parallel, world_size)
+
+Initialize DDP with PyTorch Elastic/torch.distributed.run
+----------------------------------
+
+We can leverage PyTorch Elastic to simply the DDP code and initialize the job more easily.
+Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
+
+.. code:: python
+
+    import torch
+    import torch.distributed as dist
+    import torch.nn as nn
+    import torch.optim as optim
+
+    from torch.nn.parallel import DistributedDataParallel as DDP
+
+    class ToyModel(nn.Module):
+        def __init__(self):
+            super(ToyModel, self).__init__()
+            self.net1 = nn.Linear(10, 10)
+            self.relu = nn.ReLU()
+            self.net2 = nn.Linear(10, 5)
+
+        def forward(self, x):
+            return self.net2(self.relu(self.net1(x)))
+
+
+    def demo_basic():
+        dist.init_process_group("nccl")
+        rank = dist.get_rank()
+        print(f"Start running basic DDP example on rank {rank}.")
+   
+        # create model and move it to GPU with id rank
+        device_id = rank % torch.cuda.device_count()
+        model = ToyModel().to(device_id)
+        ddp_model = DDP(model, device_ids=[device_id])
+
+        loss_fn = nn.MSELoss()
+        optimizer = optim.SGD(ddp_model.parameters(), lr=0.001)
+
+        optimizer.zero_grad()
+        outputs = ddp_model(torch.randn(20, 10))
+        labels = torch.randn(20, 5).to(device_id)
+        loss_fn(outputs, labels).backward()
+        optimizer.step()
+        
+    if __name__ == "__main__":
+        demo_basic()
+
+We then create a script which contains the elastic command to run the python file
+created above. Let's call it ``torch_run_script.sh``.
+
+.. code:: shell
+    #!/bin/bash
+    
+    export MASTER_ADDR=$(scontrol show hostname ${SLURM_NODELIST} | head -n 1)
+    torchrun --nnodes=2 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=$MASTER_ADDR:29400 elastic_ddp.py
+
+Here we run the DDP script on two hosts and each host we run with 8 processes, aka, we 
+are running it on 16 GPUs.
+
+For more information about Elastic run, one can check this `document <https://pytorch.org/docs/stable/elastic/run.html>`__ to learn more.
