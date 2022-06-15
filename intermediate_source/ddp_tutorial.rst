@@ -343,16 +343,13 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
     if __name__ == "__main__":
         demo_basic()
 
-We then create a script which contains the elastic command to run the python file
-created above. Let's call it ``torch_run_script.sh``.
+One can then run a torch elastic command on all nodes to initialize DDP job created above:
 
-.. code:: shell
-    #!/bin/bash
-    
-    export MASTER_ADDR=$(scontrol show hostname ${SLURM_NODELIST} | head -n 1)
+.. code:: python
+
     torchrun --nnodes=2 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=$MASTER_ADDR:29400 elastic_ddp.py
 
 Here we run the DDP script on two hosts and each host we run with 8 processes, aka, we 
 are running it on 16 GPUs.
 
-For more information about Elastic run, one can check this `document <https://pytorch.org/docs/stable/elastic/run.html>`__ to learn more.
+For more information about Elastic run, one can check this `quick start document <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ to learn more.
