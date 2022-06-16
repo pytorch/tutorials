@@ -23,7 +23,7 @@ def indent(indentation, data_list):
     )
 
 
-def jobs(pr_or_master, num_workers=20, indentation=2):
+def jobs(pr_or_master, num_workers=10, indentation=2):
     jobs = {}
 
     # all tutorials that need gpu.nvidia.small.multi machines will be routed
@@ -41,7 +41,7 @@ def jobs(pr_or_master, num_workers=20, indentation=2):
     return indent(indentation, jobs).replace("'", "")
 
 
-def workflows_jobs(pr_or_master, indentation=6, num_workers=20):
+def workflows_jobs(pr_or_master, indentation=6, num_workers=10):
     jobs = []
     job_info = deepcopy(
         WORKFLOWS_JOBS_PR if pr_or_master == "pr" else WORKFLOWS_JOBS_MASTER
