@@ -295,7 +295,7 @@ either the application or the model ``forward()`` method.
         run_demo(demo_checkpoint, world_size)
         run_demo(demo_model_parallel, world_size)
 
-Initialize DDP with PyTorch Elastic/torch.distributed.run
+Initialize DDP with torch.distributed.run/torchrun
 ----------------------------------
 
 We can leverage PyTorch Elastic to simplify the DDP code and initialize the job more easily.
@@ -343,13 +343,31 @@ Let's still use the Toymodel example and create a file named ``elastic_ddp.py``.
     if __name__ == "__main__":
         demo_basic()
 
-One can then run a torch elastic command on all nodes to initialize DDP job created above:
+One can then run a `torch elastic/torchrun<https://pytorch.org/docs/stable/elastic/quickstart.html>`__ command 
+on all nodes to initialize the DDP job created above:
 
-.. code:: python
+.. code:: bash
 
     torchrun --nnodes=2 --nproc_per_node=8 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=$MASTER_ADDR:29400 elastic_ddp.py
 
-Here we run the DDP script on two hosts and each host we run with 8 processes, aka, we 
-are running it on 16 GPUs.
+We are running the DDP script on two hosts, and each host we run with 8 processes, aka, we 
+are running it on 16 GPUs. Note that ``$MASTER_ADDR`` must be the same across all nodes.
 
-For more information about Elastic run, one can check this `quick start document <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ to learn more.
+Here torchrun will launch 8 process and invoke ``elastic_ddp.py`` 
+on each process on the node it is launched on, but user also needs to apply cluster 
+management tools like slurm to actually run this command on 2 nodes.
+
+For example, on a SLURM enabled cluster, we can write a script to run the command above
+and set ``MASTER_ADDR`` as:
+
+.. code:: bash
+
+    export MASTER_ADDR=$(scontrol show hostname ${SLURM_NODELIST} | head -n 1)
+
+
+Then we can just run this script using the SLURM command: ``srun --nodes=2 ./torchrun_script.sh``.
+Of course, this is just an example; you can choose your own cluster scheduling tools
+to initiate the torchrun job.
+
+For more information about Elastic run, one can check this 
+`quick start document <https://pytorch.org/docs/stable/elastic/quickstart.html>`__ to learn more.
