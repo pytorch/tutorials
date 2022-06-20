@@ -1,13 +1,12 @@
 Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 =====================================================
 
-**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
+**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__,`Less Wright <https://github.com/lessw2020>`__ `Yanli Zhao <https://github.com/zhaojuanmao>`__
 
-.. note::
-   View the source code for this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/FSDP_tutorial.rst>`__.
 
-This is an advanced Fully Sharded Data Parallel tutorial and the follow up on the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__ .
-In this tutorial, we are going to intorduce more advanced features of FSDP as it has been resealed with Pytorch 1.12. We are going to fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization. 
+In this tutorial on Fully Sharded Data Parallel tutorial which is a follow up on the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__,
+we are going to intorduce more advanced features of FSDP as it has been resealed with Pytorch 1.12. In this tutorial, we are going use fine-tunining of a HuggingFace (HF) T5 model with FSDP for text summarization as the running example. 
+
 Wikihow is the dataset being used in this tutorial and for simplicty we will perfrom the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
 
 FSDP is production ready pakcage that aims to make the large scale distributed training easier by reducing the memory footprint on each GPU. This enable training larger models with less compute.  
