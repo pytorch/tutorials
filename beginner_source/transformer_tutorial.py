@@ -297,9 +297,9 @@ def train(model: nn.Module) -> None:
     num_batches = len(train_data) // bptt
     for batch, i in enumerate(range(0, train_data.size(0) - 1, bptt)):
         data, targets = get_batch(train_data, i)
-        batch_size = data.size(0)
-        if batch_size != bptt:  # only on last batch
-            src_mask = src_mask[:batch_size, :batch_size]
+        seq_len = data.size(0)
+        if seq_len != bptt:  # only on last batch
+            src_mask = src_mask[:seq_len, :seq_len]
         output = model(data, src_mask)
         loss = criterion(output.view(-1, ntokens), targets)
 
@@ -327,12 +327,12 @@ def evaluate(model: nn.Module, eval_data: Tensor) -> float:
     with torch.no_grad():
         for i in range(0, eval_data.size(0) - 1, bptt):
             data, targets = get_batch(eval_data, i)
-            batch_size = data.size(0)
-            if batch_size != bptt:
-                src_mask = src_mask[:batch_size, :batch_size]
+            seq_len = data.size(0)
+            if seq_len != bptt:
+                src_mask = src_mask[:seq_len, :seq_len]
             output = model(data, src_mask)
             output_flat = output.view(-1, ntokens)
-            total_loss += batch_size * criterion(output_flat, targets).item()
+            total_loss += seq_len * criterion(output_flat, targets).item()
     return total_loss / (len(eval_data) - 1)
 
 ######################################################################
