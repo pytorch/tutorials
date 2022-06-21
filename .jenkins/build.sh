@@ -33,6 +33,7 @@ pip install -r $DIR/../requirements.txt
 # Test enabled for PyTorch 1.12 RC Below
 pip uninstall -y torch torchvision torchaudio torchtext
 pip install --extra-index-url https://download.pytorch.org/whl/test/cu113 torch torchvision torchaudio torchtext
+pip install --extra-index-url https://download.pytorch.org/whl/test torchdata
 
 # For Tensorboard. Until 1.14 moves to the release channel.
 pip install tb-nightly
