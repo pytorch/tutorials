@@ -31,7 +31,7 @@ pip install -r $DIR/../requirements.txt
 # pip install --pre --upgrade -f https://download.pytorch.org/whl/test/cu102/torch_test.html torch torchvision torchaudio torchtext
 
 # Test enabled for PyTorch 1.12 RC Below
-pip uninstall -y torch torchvision torchaudio torchtext
+pip uninstall -y torch torchvision torchaudio torchtext torchdata
 pip install --extra-index-url https://download.pytorch.org/whl/test/cu113 torch torchvision torchaudio torchtext
 pip install --extra-index-url https://download.pytorch.org/whl/test torchdata
 
