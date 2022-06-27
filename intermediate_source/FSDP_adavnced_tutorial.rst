@@ -15,7 +15,7 @@ FSDP is a production ready pakcage with focus on  ease of use, performance and l
 
 FSDP Features in This Tutorial
 --------------
-* Transfromer Auto Wrap Policy
+* Transfromer Auto Wrap Policy:ref:`transformer_wrapping_policy`.
 * Mixed Percision
 * Activation Checkpointing
 * Sharding Starategy
@@ -371,7 +371,7 @@ To run the the training with torchrun:
 
     torchrun --nnodes 1 --nproc_per_node 4  T5_training.py
 
-
+.. _transformer_wrapping_policy:
 Transformer Wrapping Policy
 --------------
 As discussed in the `previous tuotiral <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easier to put different model, optimizer and gradinet shards on different FSDP units.
