@@ -15,7 +15,7 @@ FSDP is a production ready pakcage with focus on  ease of use, performance and l
 
 FSDP Features in This Tutorial
 --------------
-* :Transfromer Auto Wrap Policy:`transformer_wrapping_policy`
+* Transfromer Auto Wrap Policy
 * Mixed Percision
 * Intializing FSDP Model on Device
 * Activation Checkpointing
@@ -590,3 +590,7 @@ setting the FullStateDictConfig to to stream the model states to cpu,and using F
     if rank == 0:
      save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
      torch.save(cpu_state, save_name)
+
+In this tutorial, we have introduced the new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. Using proper wrapping policy along with mixed percision, activation checkpointing and backward prefetch should bring speed up for your trianing jobs. Also, features such as intializing model on device and checkpoint saving streamed on CPU should help to avoid OOM error in dealing with large models. 
+
+We are actively working to add new features to FSDP in next releases, please feel free to contact us by opening tickets on  `PyTorch Github repository <https://github.com/pytorch/pytorch>`__, if you have any feature request or running into any issues.
