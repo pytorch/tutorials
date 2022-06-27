@@ -15,7 +15,7 @@ FSDP is a production ready pakcage with focus on  ease of use, performance and l
 
 FSDP Features in This Tutorial
 --------------
-* Transfromer Auto Wrap Policy:ref:`transformer_wrapping_policy`.
+* Transfromer Auto Wrap Policy :ref:`transformer_wrapping_policy`.
 * Mixed Percision
 * Activation Checkpointing
 * Sharding Starategy
