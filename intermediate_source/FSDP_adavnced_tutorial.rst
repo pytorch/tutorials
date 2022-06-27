@@ -15,8 +15,9 @@ FSDP is a production ready pakcage with focus on  ease of use, performance and l
 
 FSDP Features in This Tutorial
 --------------
-* Transfromer Auto Wrap Policy :ref:`transformer_wrapping_policy`.
+* :Transfromer Auto Wrap Policy:`transformer_wrapping_policy`
 * Mixed Percision
+* Intializing FSDP Model on Device
 * Activation Checkpointing
 * Sharding Starategy
 * Backward Preftech
@@ -477,7 +478,7 @@ In 2.4 we just add it to the FSDP wrapper
 In our experiments, we have observed up to 4x speed up using BFloat16 for training.
 
 
-Initializing on Device
+Intializing FSDP Model on Device
 --------------
 There are multiple ways to initialize your model in FSDP:
 
