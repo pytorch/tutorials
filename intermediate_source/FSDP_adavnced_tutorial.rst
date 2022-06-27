@@ -511,7 +511,7 @@ Activation Checkpointing
 --------------
 Activation checkpointing, is a technique to reduce the memory usage during training by clearing activations of certain layers and recomputing them during a backward pass. Using activation checkpointing, we could save up to .. memory in the running example and increase the batch size to .., this could increase the throughput and result in x speedups. Note: this feature is only available in PyTorch nightlies at this point.
 
-We will need to import respective packages.
+We will need to import respective packages and in 2.4 add it to the FSDP wrapper.
 
 .. code-block:: python
    
@@ -545,7 +545,7 @@ We will need to import respective packages.
     
 Sharding Starategy
 --------------
-FSDP sharding strategy by default is set to Zero3, where model parameters, gradinets and optimizer states get sharded over DDP ranks. In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the wrapper as follows:
+FSDP sharding strategy by default is set to Zero3, where model parameters, gradinets and optimizer states get sharded over DDP ranks. In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the FSDP wrapper in 2.4 as follows:
 
 .. code-block:: python
 
@@ -561,7 +561,7 @@ This will reduce the communication in FSDP with the trade off a higher memory fo
 
 Backward Preftech
 --------------
-The other feature added to the FSDP in PyTorch 1.12 release. This can speedup the training in trade of with higher memory consumption. It can be in the wrapper as follows:
+The other feature added to the FSDP in PyTorch 1.12 release. This can speedup the training in trade of with higher memory consumption. It can be in the FSDP wrapper in 2.4 as follows:
 
 .. code-block:: python
 
@@ -579,6 +579,8 @@ Checkpoint Saving Streamed on CPU
 --------------
 To save the model checkpoints at the end of the training, if your model is larger than to fit into one gpu (e.g 3B and above), 
 setting the FullStateDictConfig to to stream the model states to cpu,and using FSDP.state_dict_type context manager as shown below would help to avoid OOM errors. This, will stream model state dicts to CPU on each rank where on rank0 all the states dicts will be aggregated to build the full model state dict.
+
+This can be added in 2.4 to the FSDP wrapper:
 
 .. code-block:: python
 
