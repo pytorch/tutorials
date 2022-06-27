@@ -6,29 +6,32 @@ Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 
 This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the Pytorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
 
-In this tutorial, we fine-tune of a HuggingFace (HF) T5 model with FSDP for text summarization as the running example. 
+In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as the working example. 
 
-The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
+The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on multi-node cluster, please stay tuned for that on the Pytorch medium channel.
 
-FSDP is a production ready pakcage with focus on  ease of use, performance and long term support. One of the main values of FSDP is reducing the memory footprint on each GPU. This enable training larger models with less compute. This would also help to fit larger batch sizes during the training and ideally positvely impact the training speed and cost. Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
+FSDP is a production ready package with focus on  ease of use, performance and long term support. 
+One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with less required compute. 
+This would also help to fit larger batch sizes during the training and ideally, positively impact the training speed and cost. 
+You can read more about PyTorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
 FSDP Features in This Tutorial
 --------------
-* Transfromer Auto Wrap Policy
-* Mixed Percision
-* Intializing FSDP Model on Device
+* Transformer Auto Wrap Policy
+* Mixed Precision
+* Initializing FSDP Model on Device
 * Activation Checkpointing
-* Sharding Starategy
-* Backward Preftech
-* Checkpoint Saving Streamed on CPU
+* Sharding Strategy
+* Backward Prefetch
+* Model Checkpoint Saving via Streaming to CPU
 
 
 
 Recap on How FSDP Works
 --------------
 
-At high level FDSP works as follow:
+At a high level FDSP works as follow:
 
 *In constructor*
 
