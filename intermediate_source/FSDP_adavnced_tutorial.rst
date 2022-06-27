@@ -18,6 +18,8 @@ FSDP Features in This Tutorial
 * Transfromer Auto Wrap Policy
 * Mixed Percision
 * Activation Checkpointing
+* Sharding Starategy
+* Backward Preftech
 * Checkpoint Saving Streamed on CPU
 
 
@@ -542,7 +544,7 @@ We will need to import respective packages.
     
 Sharding Starategy
 --------------
-In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the wrapper as follows:
+FSDP sharding strategy by default is set to Zero3, where model parameters, gradinets and optimizer states get sharded over DDP ranks. In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the wrapper as follows:
 
 .. code-block:: python
 
@@ -556,7 +558,7 @@ In case you are interested to have Zero2 sharding strategy, where only model par
 
 This will reduce the communication in FSDP with the trade off a higher memory footprint. 
 
-Pre_Fetch Backward
+Backward Preftech
 --------------
 The other feature added to the FSDP in PyTorch 1.12 release. This can speedup the training in trade of with higher memory consumption. It can be in the wrapper as follows:
 
