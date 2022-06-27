@@ -10,7 +10,7 @@ In this tutorial, we fine-tune of a HuggingFace (HF) T5 model with FSDP for text
 
 The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
 
-FSDP is production ready pakcage with focus on  ease of use, performance and long term support. One of the main values of FSDP is reducing the memory footprint on each GPU. This enable training larger models with less compute. This would also help to fit larger batch sizes during the training and ideally positvely impact the training speed and cost. Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
+FSDP is a production ready pakcage with focus on  ease of use, performance and long term support. One of the main values of FSDP is reducing the memory footprint on each GPU. This enable training larger models with less compute. This would also help to fit larger batch sizes during the training and ideally positvely impact the training speed and cost. Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
 FSDP Features in This Tutorial
