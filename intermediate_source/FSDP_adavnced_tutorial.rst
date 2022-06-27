@@ -1,17 +1,16 @@
 Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 =====================================================
 
-**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__,`Less Wright <https://github.com/lessw2020>`__ `Yanli Zhao <https://github.com/zhaojuanmao>`__
+**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Less Wright <https://github.com/lessw2020>`__,  `Yanli Zhao <https://github.com/zhaojuanmao>`__
 
 
-In this tutorial on Fully Sharded Data Parallel tutorial which is a follow up on the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__,
-we are going to intorduce more advanced features of FSDP as it has been resealed with Pytorch 1.12. In this tutorial, we are going use fine-tunining of a HuggingFace (HF) T5 model with FSDP for text summarization as the running example. 
+This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the Pytorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
 
-Wikihow is the dataset being used in this tutorial and for simplicty we will perfrom the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
+In this tutorial, we fine-tune of a HuggingFace (HF) T5 model with FSDP for text summarization as the running example. 
 
-FSDP is production ready pakcage that aims to make the large scale distributed training easier by reducing the memory footprint on each GPU. This enable training larger models with less compute.  
-Also it can lead to affording larger batch sizes during the training and ideally positvely impact the training speed and cost. 
-Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
+The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on cluster, please stay tuned for that Pytorch medium channel.
+
+FSDP is production ready pakcage with focus on  ease of use, performance and long term support. One of the main values of FSDP is reducing the memory footprint on each GPU. This enable training larger models with less compute. This would also help to fit larger batch sizes during the training and ideally positvely impact the training speed and cost. Please read more Pytorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
 FSDP Features in This Tutorial
@@ -48,7 +47,7 @@ At high level FDSP works as follow:
 Fine-tuning HF T5
 --------------
 HF T5 pretrained models are availbe in 4 different sizes, ranging from small with 60 M parameters to 11 B parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
-The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models.
+The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in ,  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/blob/FSDP_example>`__.
 
 
 *Setup*
@@ -62,7 +61,7 @@ The main focus of this tutorial is to highligh different available features in F
 1.2 Dataset Setup
 
 Please create a "data" folder, download the WikiHow dataset from `wikihowAll.csv <https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358>`__  and `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__ and place them in the "data" folder. 
-We will use the wikihow dataset from summarization_dataset `wikihowAll.csv <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
+We will use the wikihow dataset from  `summarization_dataset <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
 
 Next, we add the following code snippets to a python script “T5_training.py”, the source code for this tutorial is availbe in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
 
@@ -76,8 +75,6 @@ Next, we add the following code snippets to a python script “T5_training.py”
     import torch.nn as nn
     import torch.nn.functional as F
     import torch.optim as optim
-    from transformers import AutoModelForSeq2SeqLM, DataCollatorForSeq2Seq, Seq2SeqTrainingArguments, Seq2SeqTrainer, AutoModelForSequenceClassification, AutoModelForCausalLM
-    from transformers import AutoTokenizer, GPT2TokenizerFast
     from transformers import T5Tokenizer, T5ForConditionalGeneration
     import functools
     from torch.optim.lr_scheduler import StepLR
@@ -98,10 +95,7 @@ Next, we add the following code snippets to a python script “T5_training.py”
     )
     from torch.utils.data import DataLoader
     from pathlib import Path
-    from nlp import load_metric
-    from nlp import load_dataset
     from summerization_dataset import *
-    from sklearn.model_selection import train_test_split
     from transformers.models.t5.modeling_t5 import T5Block
     from typing import Type
 
@@ -256,7 +250,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
         scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
         best_val_loss = float("inf")
         curr_val_loss = float("inf")
-        file_save_name = "800M-whole-model-"
+        file_save_name = "3B-model-"
 
         if rank == 0:
             time_of_run = get_date_of_run()
@@ -338,29 +332,35 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
 
     
     if __name__ == '__main__':
-        # Training settings
-        parser = argparse.ArgumentParser(description='FSDP T5 training')
-        parser.add_argument('--batch-size', type=int, default=4, metavar='N',
-                            help='input batch size for training (default: 64)')
-        parser.add_argument('--test-batch-size', type=int, default=4, metavar='N',
-                            help='input batch size for testing (default: 1000)')
-        parser.add_argument('--epochs', type=int, default=1, metavar='N',
-                            help='number of epochs to train (default: 14)')
-        parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
-                            help='learning rate (default: 1.0)')
-        parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
-                            help='Learning rate step gamma (default: 0.7)')
-        parser.add_argument('--no-cuda', action='store_true', default=False,
-                            help='disables CUDA training')
-        parser.add_argument('--seed', type=int, default=1, metavar='S',
-                            help='random seed (default: 1)')
-        parser.add_argument('--save-model', action='store_true', default=False,
-                            help='For Saving the current Model')
-        args = parser.parse_args()
+    # Training settings
+    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser.add_argument('--batch-size', type=int, default=4, metavar='N',
+                        help='input batch size for training (default: 64)')
+    parser.add_argument('--test-batch-size', type=int, default=4, metavar='N',
+                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--epochs', type=int, default=1, metavar='N',
+                        help='number of epochs to train (default: 14)')
+    parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
+                        help='learning rate (default: 1.0)')
+    parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
+                        help='Learning rate step gamma (default: 0.7)')
+    parser.add_argument('--no-cuda', action='store_true', default=False,
+                        help='disables CUDA training')
+    parser.add_argument('--seed', type=int, default=1, metavar='S',
+                        help='random seed (default: 1)')
+    parser.add_argument('--track_memory', action='store_true', default=False,
+                        help='track the gpy memory')
+    parser.add_argument('--run_validation', action='store_true', default=False,
+                        help='running the validation')
+    parser.add_argument('--activation_checkpointing', action='store_true', default=False,
+                        help='Checkpoint activations')
+    parser.add_argument('--save-model', action='store_true', default=False,
+                        help='For Saving the current Model')
+    args = parser.parse_args()
 
-        torch.manual_seed(args.seed)
-        
-        fsdp_main(args)
+    torch.manual_seed(args.seed)
+    
+    fsdp_main(args)
 
 
 To run the the training with torchrun:
@@ -387,8 +387,8 @@ It can be deinfed as follows.
                 T5Block,
             },
         )
-    torch.cuda.set_device(rank)
-    model = Net().to(rank)
+    torch.cuda.set_device(local_rank)
+  
 
     model = FSDP(model,
         fsdp_auto_wrap_policy=t5_auto_wrap_policy)
@@ -420,7 +420,8 @@ Applying the t5_auto_wrap_policy, the model would be as follows:
 
 Mixed Percision
 --------------
-FSDP supports training with mixed percision in with FP32, FP16 and BFloat16. As you might know, currently BFloat16 is only available on Ampre GPUs, so you need to make sure about its availbilty before you use it, otherwise it can result in slow downs.
+FSDP supports training with mixed percision with FP32, FP16 and BFloat16. Currently BFloat16 is only available on Ampre GPUs, so you need to make sure about its availbilty before you use it, otherwise it can result in slow downs.
+
 To check if BFloat16 is ready you can use the following :
 
 .. code-block:: python
@@ -472,16 +473,109 @@ In 2.4 we just add it to the FSDP wrapper
             mixed_precision=bfSixteen)
 
 In our experiments, we have observed up to 4x speed up using BFloat16 for training.
-#TODO add the graph and elaborate more on the experiments.
 
+
+Initializing on Device
+--------------
+There are multiple ways to initialize your model in FSDP:
+
+Intialize the model on CPU then move it to device, this method would be slower compared to intializing the model directly on the device. 
+
+In 2.4 we just add it to the FSDP wrapper
+
+.. code-block:: python
+
+    torch.cuda.set_device(local_rank)
+    
+     model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen)
+     model.to(local_rank)
+
+This feature is available in PyTorch 1.12, that you could directly intialize model (FSDP units) on each device. This will speed up the model intialization.
+
+.. code-block:: python
+
+    torch.cuda.set_device(local_rank)
+
+     model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen,
+            device_id=torch.cuda.current_device())
+     
+     
 Activation Checkpointing
 --------------
+Activation checkpointing, is a technique to reduce the memory usage during training by clearing activations of certain layers and recomputing them during a backward pass. Using activation checkpointing, we could save up to .. memory in the running example and increase the batch size to .., this could increase the throughput and result in x speedups. Note: this feature is only available in PyTorch nightlies at this point.
 
+We will need to import respective packages.
+
+.. code-block:: python
+   
+   from transformers.models.t5.modeling_t5 import T5Block
+   
+   from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
+    checkpoint_wrapper,
+    CheckpointImpl,
+    apply_activation_checkpointing_wrapper)
+    
+    
+    non_reentrant_wrapper = partial(
+        checkpoint_wrapper,
+        offload_to_cpu=False,
+        checkpoint_impl=CheckpointImpl.NO_REENTRANT,
+    )
+
+    check_fn = lambda submodule: isinstance(submodule, T5Block)
+    
+    model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen,
+            device_id=torch.cuda.current_device())
+            
+    if args.activation_checkpointing:        
+        apply_activation_checkpointing_wrapper(
+            model, checkpoint_wrapper_fn=non_reentrant_wrapper, check_fn=check_fn
+        )
+    
+#TODO make sure it works
+    
+Sharding Starategy
+--------------
+In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the wrapper as follows:
+
+.. code-block:: python
+
+    torch.cuda.set_device(local_rank)
+
+     model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen,
+            device_id=torch.cuda.current_device(),
+            sharding_strategy=ShardingStrategy.SHARD_GRAD_OP # FULL_SHARD)
+
+This will reduce the communication in FSDP with the trade off a higher memory footprint. 
+
+Pre_Fetch Backward
+--------------
+The other feature added to the FSDP in PyTorch 1.12 release. This can speedup the training in trade of with higher memory consumption. It can be in the wrapper as follows:
+
+.. code-block:: python
+
+    torch.cuda.set_device(local_rank)
+
+     model = FSDP(model,
+            auto_wrap_policy=t5_auto_wrap_policy,
+            mixed_precision=bfSixteen,
+            device_id=torch.cuda.current_device(),
+            backward_prefetch = BackwardPrefetch.BACKWARD_PRE)
+            
+It has two settings, BACKWARD_PRE and BACKWARD_POST, (Add what each one does). Using BACKWARD_PRE, in the running HF T5 example, we could observer 2-10% speedup in training. 
 
 Checkpoint Saving Streamed on CPU
 --------------
-To save the model checkpoints at the end of the training, if your model is large (e.g 3B and above), 
-define the saving policy to offload to cpu, capture the state_dcit on each rank, then on rank 0, save the aggreagted states.
+To save the model checkpoints at the end of the training, if your model is larger than to fit into one gpu (e.g 3B and above), 
+setting the FullStateDictConfig to to stream the model states to cpu,and using FSDP.state_dict_type context manager as shown below would help to avoid OOM errors. This, will stream model state dicts to CPU on each rank where on rank0 all the states dicts will be aggregated to build the full model state dict.
 
 .. code-block:: python
 
