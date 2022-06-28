@@ -21,7 +21,6 @@ FSDP Features in This Tutorial
 * Transformer Auto Wrap Policy
 * Mixed Precision
 * Initializing FSDP Model on Device
-* Activation Checkpointing
 * Sharding Strategy
 * Backward Prefetch
 * Model Checkpoint Saving via Streaming to CPU
@@ -399,29 +398,7 @@ It can be deinfed as follows.
     model = FSDP(model,
         fsdp_auto_wrap_policy=t5_auto_wrap_policy)
 
-Applying the t5_auto_wrap_policy, the model would be as follows:
-#TODO update with new wrapped units
-
-.. code-block:: bash
-
-    FullyShardedDataParallel(
-  (_fsdp_wrapped_module): FlattenParamsWrapper(
-    (_fpw_module): Net(
-      (conv1): Conv2d(1, 32, kernel_size=(3, 3), stride=(1, 1))
-      (conv2): Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1))
-      (dropout1): Dropout(p=0.25, inplace=False)
-      (dropout2): Dropout(p=0.5, inplace=False)
-      (fc1): FullyShardedDataParallel(
-        (_fsdp_wrapped_module): FlattenParamsWrapper(
-          (_fpw_module): Linear(in_features=9216, out_features=128, bias=True)
-        )
-      )
-      (fc2): Linear(in_features=128, out_features=10, bias=True)
-    )
-  )
-
-
-
+To see the wrapped model, you can easily print the model and visually inspect the sharding and FSDP units as well.
 
 
 Mixed Percision
@@ -509,42 +486,7 @@ This feature is available in PyTorch 1.12, that you could directly intialize mod
             mixed_precision=bfSixteen,
             device_id=torch.cuda.current_device())
      
-     
-Activation Checkpointing
---------------
-Activation checkpointing, is a technique to reduce the memory usage during training by clearing activations of certain layers and recomputing them during a backward pass. Using activation checkpointing, we could save up to .. memory in the running example and increase the batch size to .., this could increase the throughput and result in x speedups. Note: this feature is only available in PyTorch nightlies at this point.
 
-We will need to import respective packages and in 2.4 add it to the FSDP wrapper.
-
-.. code-block:: python
-   
-   from transformers.models.t5.modeling_t5 import T5Block
-   
-   from torch.distributed.algorithms._checkpoint.checkpoint_wrapper import (
-    checkpoint_wrapper,
-    CheckpointImpl,
-    apply_activation_checkpointing_wrapper)
-    
-    
-    non_reentrant_wrapper = partial(
-        checkpoint_wrapper,
-        offload_to_cpu=False,
-        checkpoint_impl=CheckpointImpl.NO_REENTRANT,
-    )
-
-    check_fn = lambda submodule: isinstance(submodule, T5Block)
-    
-    model = FSDP(model,
-            auto_wrap_policy=t5_auto_wrap_policy,
-            mixed_precision=bfSixteen,
-            device_id=torch.cuda.current_device())
-            
-    if args.activation_checkpointing:        
-        apply_activation_checkpointing_wrapper(
-            model, checkpoint_wrapper_fn=non_reentrant_wrapper, check_fn=check_fn
-        )
-    
-#TODO make sure it works
     
 Sharding Starategy
 --------------
