@@ -52,7 +52,7 @@ At a high level FDSP works as follow:
 Fine-tuning HF T5
 --------------
 HF T5 pretrained models are available in 4 different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
-The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in ,  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/blob/FSDP_example>`__.
+The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/blob/FSDP_example>`__.
 
 
 *Setup*
@@ -68,7 +68,7 @@ The main focus of this tutorial is to highligh different available features in F
 Please create a "data" folder, download the WikiHow dataset from `wikihowAll.csv <https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358>`__  and `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__ and place them in the "data" folder. 
 We will use the wikihow dataset from  `summarization_dataset <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
 
-Next, we add the following code snippets to a python script “T5_training.py”, the source code for this tutorial is availbe in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
+Next, we add the following code snippets to a python script “T5_training.py”.  Note - The fulll source code for this tutorial is available in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
 
 1.3  Import necessary packages
 
@@ -104,8 +104,9 @@ Next, we add the following code snippets to a python script “T5_training.py”
     from transformers.models.t5.modeling_t5 import T5Block
     from typing import Type
 
-1.4 Distributed training setup. As we mentioned FSDP is a type of data parallelism which requires a distributed training environment, so here we use two helper functions to initialize the processes for distributed training and clean up.
-In this tutrial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , it will set the worker RANK and WORLD_SIZE automatically for us.
+1.4 Distributed training setup. 
+As we mentioned FSDP uses both data and model parallelism, which requires a distributed training environment.  Here we use two helper functions to initialize the processes for distributed training and clean up.
+In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , it will set the worker RANK and WORLD_SIZE automatically for us.
 
 .. code-block:: python
 
@@ -293,10 +294,6 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
                     mem_reserved_tracker.append(
                         format_metrics_to_gb(torch.cuda.memory_reserved())
                     )
-            if rank == 0 and curr_val_loss < best_val_loss:
-
-                best_val_loss = curr_val_loss
-                print(f"-->>>> New Val Loss Record: {best_val_loss}")
 
         init_end_event.record()
 
@@ -324,8 +321,11 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
                 save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
 
                 torch.save(cpu_state, save_name)
-        if rank == 0:
-            torch.save(states, "T5_checkpoint.pt")
+        if curr_val_loss < best_val_loss:
+
+                best_val_loss = curr_val_loss
+                if rank==0:
+                    print(f"-->>>> New Val Loss Record: {best_val_loss}")
         
         cleanup()
 
@@ -338,7 +338,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
     
     if __name__ == '__main__':
     # Training settings
-    parser = argparse.ArgumentParser(description='PyTorch MNIST Example')
+    parser = argparse.ArgumentParser(description='PyTorch T5 FSDP Example')
     parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=4, metavar='N',
@@ -368,7 +368,7 @@ In this tutrial, we are going to use torch elastic, using `torchrun <https://pyt
     fsdp_main(args)
 
 
-To run the the training with torchrun:
+To run the the training using torchrun:
 
 .. code-block:: bash 
 
@@ -377,11 +377,12 @@ To run the the training with torchrun:
 .. _transformer_wrapping_policy:
 Transformer Wrapping Policy
 --------------
-As discussed in the `previous tuotiral <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easier to put different model, optimizer and gradinet shards on different FSDP units.
-However, for some of the architecutres such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
-In this case, we need to place the embedding table in the outer FSDP unit that could be accessed from both encoder and decoder. In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
+As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given modeln and put the model, optimizer and gradient shards into distinct FSDP units.
 
-It can be deinfed as follows.
+For some architectures such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
+In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
+
+It can be created as follows, where the T5Block represents the T5 transformer layer class (holding MHSA and FFN).  
 
 
 .. code-block:: python
@@ -401,9 +402,9 @@ It can be deinfed as follows.
 To see the wrapped model, you can easily print the model and visually inspect the sharding and FSDP units as well.
 
 
-Mixed Percision
+Mixed Precision
 --------------
-FSDP supports training with mixed percision with FP32, FP16 and BFloat16. Currently BFloat16 is only available on Ampre GPUs, so you need to make sure about its availbilty before you use it, otherwise it can result in slow downs.
+FSDP supports training with mixed precision any combination of FP16 and BFloat16 and FP32. Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.
 
 To check if BFloat16 is ready you can use the following :
 
