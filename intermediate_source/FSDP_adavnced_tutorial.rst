@@ -6,13 +6,13 @@ Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 
 This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the Pytorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
 
-In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as the working example. 
+In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization task as a working example. 
 
 The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on multi-node cluster, please stay tuned for that on the Pytorch medium channel.
 
 FSDP is a production ready package with focus on  ease of use, performance and long term support. 
-One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with less required compute. 
-This would also help to fit larger batch sizes during the training and ideally, positively impact the training speed and cost. 
+One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently. 
+This reduced memory pressure helps to fit larger batch sizes during training, and ideally, positively impact the training speed and cost. 
 You can read more about PyTorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
@@ -36,22 +36,22 @@ At a high level FDSP works as follow:
 
 * Shard model parameters and each rank only keeps its own shard
 
-*In forward path*
+*In forward pass*
 
-* Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run all_gather to collect all shards from all ranks to recover the full parameter for this FSDP unit
 * Run forward computation
-* Discard parameter shards it has just collected
+* Discard non-owned parameter shards it has just collected to free memory
 
-*In backward path*
+*In backward pass*
 
 * Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run backward computation
 * Run reduce_scatter to sync gradients
-* Discard parameters. 
+* Discard non-owned parameters to free memory. 
 
 Fine-tuning HF T5
 --------------
-HF T5 pretrained models are availbe in 4 different sizes, ranging from small with 60 M parameters to 11 B parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
+HF T5 pretrained models are available in 4 different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
 The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in ,  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/blob/FSDP_example>`__.
 
 
