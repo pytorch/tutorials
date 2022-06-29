@@ -1,0 +1,307 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_prototype_fx_numeric_suite_tutorial.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_prototype_fx_numeric_suite_tutorial.py:
+
+
+PyTorch FX Numeric Suite Core APIs Tutorial
+===========================================
+
+Introduction
+------------
+
+Quantization is good when it works, but it is difficult to know what is wrong
+when it does not satisfy the accuracy we expect. Debugging the accuracy issue
+of quantization is not easy and time-consuming.
+
+One important step of debugging is to measure the statistics of the float model
+and its corresponding quantized model to know where they differ most.
+We built a suite of numeric tools called PyTorch FX Numeric Suite Core APIs in
+PyTorch quantization to enable the measurement of the statistics between
+quantized module and float module to support quantization debugging efforts.
+Even for the quantized model with good accuracy, PyTorch FX Numeric Suite Core
+APIs can still be used as the profiling tool to better understand the
+quantization error within the model and provide the guidance for further
+optimization.
+
+PyTorch FX Numeric Suite Core APIs currently supports models quantized through
+both static quantization and dynamic quantization with unified APIs.
+
+In this tutorial we will use MobileNetV2 as an example to show how to use
+PyTorch FX Numeric Suite Core APIs to measure the statistics between static
+quantized model and float model.
+
+Setup
+^^^^^
+We’ll start by doing the necessary imports:
+
+.. code-block:: default
+
+
+    # Imports and util functions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    # a simple line graph
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Then we load the pretrained float MobileNetV2 model, and quantize it.
+
+
+.. code-block:: default
+
+
+
+    # create float model
+
+
+
+    # create quantized model
+
+
+
+
+
+
+
+
+
+
+
+
+    # Note: quantization APIs are inplace, so we save a copy of the float model for
+    # later comparison to the quantized model. This is done throughout the
+    # tutorial.
+
+
+
+
+    # Note: there is a long standing issue that we cannot copy.deepcopy a
+    # quantized model. Since quantization APIs are inplace and we need to use
+    # different copies of the quantized model throughout this tutorial, we call
+    # `convert_fx` on a copy, so we have access to the original `prepared_model`
+    # later. This is done throughout the tutorial.
+
+
+
+
+
+
+
+
+
+1. Compare the weights of float and quantized models
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The first analysis we can do is comparing the weights of the fp32 model and
+the int8 model by calculating the SQNR between each pair of weights.
+
+The `extract_weights` API can be used to extract weights from linear,
+convolution and LSTM layers. It works for dynamic quantization as well as
+PTQ/QAT.
+
+
+.. code-block:: default
+
+
+    # Note: when comparing weights in models with Conv-BN for PTQ, we need to
+    # compare weights after Conv-BN fusion for a proper comparison.  Because of
+    # this, we use `prepared_model` instead of `float_model` when comparing
+    # weights.
+
+    # Extract conv and linear weights from corresponding parts of two models, and
+    # save them in `wt_compare_dict`.
+
+
+
+
+
+
+
+    # calculate SQNR between each pair of weights
+
+
+
+
+
+
+
+
+    # massage the data into a format easy to graph and print
+
+
+
+
+
+
+
+
+
+
+    # plot the SQNR between fp32 and int8 weights for each layer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Also print out the SQNR, so we can inspect the layer name and type:
+
+2. Compare activations API
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+The second tool allows for comparison of activations between float and
+quantized models at corresponding locations for the same input.
+
+.. figure:: /_static/img/compare_output.png
+
+The `add_loggers`/`extract_logger_info` API can be used to to extract
+activations from any layer with a `torch.Tensor` return type. It works for
+dynamic quantization as well as PTQ/QAT.
+
+
+.. code-block:: default
+
+
+    # Compare unshadowed activations
+
+    # Create a new copy of the quantized model, because we cannot `copy.deepcopy`
+    # a quantized model.
+
+
+
+
+
+
+
+
+
+
+    # feed data through network to capture intermediate activations
+
+
+
+    # extract intermediate activations
+
+
+
+
+
+
+
+    # add SQNR comparison
+
+
+
+
+
+
+
+
+    # massage the data into a format easy to graph and print
+
+
+
+
+
+
+
+
+
+    # plot the SQNR between fp32 and int8 activations for each layer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Also print out the SQNR, so we can inspect the layer name and type:
+
+
+.. code-block:: default
+
+
+
+
+
+
+    # %%%%%%RUNNABLE_CODE_REMOVED%%%%%%
+
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 0 minutes  0.061 seconds)
+
+
+.. _sphx_glr_download_prototype_fx_numeric_suite_tutorial.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: fx_numeric_suite_tutorial.py <fx_numeric_suite_tutorial.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: fx_numeric_suite_tutorial.ipynb <fx_numeric_suite_tutorial.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.readthedocs.io>`_
