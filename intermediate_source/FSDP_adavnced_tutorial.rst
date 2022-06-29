@@ -377,7 +377,7 @@ To run the the training using torchrun:
 .. _transformer_wrapping_policy:
 Transformer Wrapping Policy
 --------------
-As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given modeln and put the model, optimizer and gradient shards into distinct FSDP units.
+As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.
 
 For some architectures such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
 In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
@@ -406,7 +406,7 @@ Mixed Precision
 --------------
 FSDP supports training with mixed precision any combination of FP16 and BFloat16 and FP32. Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.
 
-To check if BFloat16 is ready you can use the following :
+To check if BFloat16 is natively supported, you can use the following :
 
 .. code-block:: python
     
@@ -418,7 +418,7 @@ To check if BFloat16 is ready you can use the following :
         and nccl.version() >= (2, 10)
     )
 
-One of the advantages of mixed percision in FSDP is providing granular control over different communications for parameters, gradients and buffers as follows:
+One of the advantages of mixed percision in FSDP is providing granular control over different precision levels for parameters, gradients and buffers as follows:
 
 .. code-block:: python
 
@@ -447,7 +447,7 @@ One of the advantages of mixed percision in FSDP is providing granular control o
     )
 
 
-In 2.4 we just add it to the FSDP wrapper
+In 2.4 we just add the relevant mixed precision policy to the FSDP wrapper:
 
 
 .. code-block:: python
@@ -456,27 +456,14 @@ In 2.4 we just add it to the FSDP wrapper
             auto_wrap_policy=t5_auto_wrap_policy,
             mixed_precision=bfSixteen)
 
-In our experiments, we have observed up to 4x speed up using BFloat16 for training.
+In our experiments, we have observed up to 4x speed up by using BFloat16 for training.
 
 
 Intializing FSDP Model on Device
 --------------
-There are multiple ways to initialize your model in FSDP:
+While there are multiple ways to initialize your model in FSDP, with 1.12 we have an optimal method for initializing most models by streaming the model layers onto the GPU to avoid any OOM issues, while at the same time leveraging the speed of the GPU to initialize many times faster vs on CPU:
 
-Intialize the model on CPU then move it to device, this method would be slower compared to intializing the model directly on the device. 
 
-In 2.4 we just add it to the FSDP wrapper
-
-.. code-block:: python
-
-    torch.cuda.set_device(local_rank)
-    
-     model = FSDP(model,
-            auto_wrap_policy=t5_auto_wrap_policy,
-            mixed_precision=bfSixteen)
-     model.to(local_rank)
-
-This feature is available in PyTorch 1.12, that you could directly intialize model (FSDP units) on each device. This will speed up the model intialization.
 
 .. code-block:: python
 
@@ -489,9 +476,9 @@ This feature is available in PyTorch 1.12, that you could directly intialize mod
      
 
     
-Sharding Starategy
+Sharding Strategy
 --------------
-FSDP sharding strategy by default is set to Zero3, where model parameters, gradinets and optimizer states get sharded over DDP ranks. In case you are interested to have Zero2 sharding strategy, where only model parameters and gradinets are sharded, FSDP support this feature by passing the Sharding strategy by setting it to  "ShardingStrategy.SHARD_GRAD_OP" instead of "ShardingStrategy.FULL_SHARD" to the FSDP wrapper in 2.4 as follows:
+FSDP sharding strategy by default is set to fully shard the model parameters, gradients and optimizer states get sharded across all ranks. (also termed Zero3 sharding). In case you are interested to have Zero2 sharding strategy, where only optimizer states and gradients are sharded, FSDP support this feature by passing the Sharding strategy by using  "ShardingStrategy.SHARD_GRAD_OP", instead of "ShardingStrategy.FULL_SHARD" to the FSDP initialization  as follows:
 
 .. code-block:: python
 
@@ -503,11 +490,11 @@ FSDP sharding strategy by default is set to Zero3, where model parameters, gradi
             device_id=torch.cuda.current_device(),
             sharding_strategy=ShardingStrategy.SHARD_GRAD_OP # FULL_SHARD)
 
-This will reduce the communication in FSDP with the trade off a higher memory footprint. 
+This will reduce the communication overhead in FSDP since model paramaters are duplicated rather than communicated, with the trade off of a higher memory footprint. 
 
-Backward Preftech
+Backward Prefetch
 --------------
-The other feature added to the FSDP in PyTorch 1.12 release. This can speedup the training in trade of with higher memory consumption. It can be in the FSDP wrapper in 2.4 as follows:
+Backward prefetch setting controls the timing of when the next FSDP unit's parameters should be requested.  By setting it to BACKWARD_PRE, the next FSDP's unit params can begin to be requested and arrive sooner, which can speedup the training speed in exchange for slightly higher memory consumption. It can be utilized in the FSDP wrapper in 2.4 as follows:
 
 .. code-block:: python
 
@@ -519,14 +506,14 @@ The other feature added to the FSDP in PyTorch 1.12 release. This can speedup th
             device_id=torch.cuda.current_device(),
             backward_prefetch = BackwardPrefetch.BACKWARD_PRE)
             
-It has two settings, BACKWARD_PRE and BACKWARD_POST, (Add what each one does). Using BACKWARD_PRE, in the running HF T5 example, we could observer 2-10% speedup in training. 
+It has two settings, BACKWARD_PRE and BACKWARD_POST, where BACKWARD_POST is the default.  BACKWARD_POST means that the next FSDP unit's params will not be requested until the current FSDP unit processing is complete, this minimizing memory overhead.  In some cases, using BACKWARD_PRE can increase model training speed from 2-10%, with the higher speedups noted for larger models. 
 
-Checkpoint Saving Streamed on CPU
+Model Checkpoint Saving, by streaming to the Rank0 CPU
 --------------
-To save the model checkpoints at the end of the training, if your model is larger than to fit into one gpu (e.g 3B and above), 
-setting the FullStateDictConfig to to stream the model states to cpu,and using FSDP.state_dict_type context manager as shown below would help to avoid OOM errors. This, will stream model state dicts to CPU on each rank where on rank0 all the states dicts will be aggregated to build the full model state dict.
+To save the model checkpoints during or at the end of the training, 1.12 offers the ability to save model checkpoints by having all ranks (GPU's) send their owned params to the rank0 GPU, which then streams these arriving shards to it's CPU for full model assembly.  This avoids potential OOM for models that are larger than a single GPU memory.   
+The full model state dict is then assembled in CPU memory and can be saved to disk. 
 
-This can be added in 2.4 to the FSDP wrapper:
+This feature can be run as follows:
 
 .. code-block:: python
 
@@ -539,6 +526,8 @@ This can be added in 2.4 to the FSDP wrapper:
      save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
      torch.save(cpu_state, save_name)
 
-In this tutorial, we have introduced the new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. Using proper wrapping policy along with mixed percision, activation checkpointing and backward prefetch should bring speed up for your trianing jobs. Also, features such as intializing model on device and checkpoint saving streamed on CPU should help to avoid OOM error in dealing with large models. 
+Summary:
+In this tutorial, we have introduced many new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. 
+Using the proper wrapping policy especially for transformer models, along with mixed precision and backward prefetch should speed up your training runs. Also, features such as initializing the model on device, and checkpoint saving via streaming to CPU should help to avoid OOM error in dealing with large models. 
 
-We are actively working to add new features to FSDP in next releases, please feel free to contact us by opening tickets on  `PyTorch Github repository <https://github.com/pytorch/pytorch>`__, if you have any feature request or running into any issues.
+We are actively working to add new features to FSDP for the next release.  If you have feedback, feature requests, questions or are encountering issues using FSDP, please feel free to contact us by opening an issue at  `PyTorch Github repository <https://github.com/pytorch/pytorch>`__.
