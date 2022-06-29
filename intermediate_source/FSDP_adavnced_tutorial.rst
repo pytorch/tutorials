@@ -494,7 +494,7 @@ This will reduce the communication overhead in FSDP since model paramaters are d
 
 Backward Prefetch
 --------------
-Backward prefetch setting controls the timing of when the next FSDP unit's parameters should be requested.  By setting it to BACKWARD_PRE, the next FSDP's unit params can begin to be requested and arrive sooner, which can speedup the training speed in exchange for slightly higher memory consumption. It can be utilized in the FSDP wrapper in 2.4 as follows:
+Backward prefetch setting controls the timing of when the next FSDP unit's parameters should be requested.  By setting it to BACKWARD_PRE, the next FSDP's unit params can begin to be requested and arrive sooner before the computation of the current unit starts. This overlaps the all_gather communication and gradinet computation and can speedup the training speed in exchange for slightly higher memory consumption. It can be utilized in the FSDP wrapper in 2.4 as follows:
 
 .. code-block:: python
 
