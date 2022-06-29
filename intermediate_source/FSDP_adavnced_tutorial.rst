@@ -6,9 +6,9 @@ Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 
 This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the Pytorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
 
-In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization task as a working example. 
+In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as a working example. 
 
-The example uses Wikihow and for simplicty, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on multi-node cluster, please stay tuned for that on the Pytorch medium channel.
+The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on multi-node cluster, please stay tuned for that on the Pytorch medium channel.
 
 FSDP is a production ready package with focus on  ease of use, performance and long term support. 
 One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently. 
@@ -527,6 +527,7 @@ This feature can be run as follows:
      torch.save(cpu_state, save_name)
 
 Summary:
+--------------
 In this tutorial, we have introduced many new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. 
 Using the proper wrapping policy especially for transformer models, along with mixed precision and backward prefetch should speed up your training runs. Also, features such as initializing the model on device, and checkpoint saving via streaming to CPU should help to avoid OOM error in dealing with large models. 
 
