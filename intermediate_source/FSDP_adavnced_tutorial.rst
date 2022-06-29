@@ -52,7 +52,7 @@ At a high level FDSP works as follow:
 Fine-tuning HF T5
 --------------
 HF T5 pretrained models are available in 4 different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
-The main focus of this tutorial is to highligh different available features in FSDP that would be helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/>`__.
+The main focus of this tutorial is to highlight different available features in FSDP that are helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/>`__.
 
 
 *Setup*
@@ -68,7 +68,7 @@ The main focus of this tutorial is to highligh different available features in F
 Please create a "data" folder, download the WikiHow dataset from `wikihowAll.csv <https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358>`__  and `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__ and place them in the "data" folder. 
 We will use the wikihow dataset from  `summarization_dataset <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
 
-Next, we add the following code snippets to a python script “T5_training.py”.  Note - The fulll source code for this tutorial is available in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
+Next, we add the following code snippets to a python script “T5_training.py”.  Note - The full source code for this tutorial is available in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
 
 1.3  Import necessary packages
 
@@ -105,8 +105,8 @@ Next, we add the following code snippets to a python script “T5_training.py”
     from typing import Type
 
 1.4 Distributed training setup. 
-As we mentioned FSDP uses both data and model parallelism, which requires a distributed training environment.  Here we use two helper functions to initialize the processes for distributed training and clean up.
-In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , it will set the worker RANK and WORLD_SIZE automatically for us.
+As we mentioned, FSDP uses both data and model parallelism, which requires a distributed training environment.  Here we use two helper functions to initialize the processes for distributed training,  and then to clean up after training completion.
+In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , which will set the worker RANK and WORLD_SIZE automatically for us.
 
 .. code-block:: python
 
