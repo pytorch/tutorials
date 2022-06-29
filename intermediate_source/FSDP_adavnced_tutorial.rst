@@ -4,7 +4,7 @@ Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Less Wright <https://github.com/lessw2020>`__,  `Yanli Zhao <https://github.com/zhaojuanmao>`__,  `Rohan Varma <https://github.com/rohan-varma/>`__
 
 
-This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the Pytorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
+This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the PyTorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
 
 In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as a working example. 
 
