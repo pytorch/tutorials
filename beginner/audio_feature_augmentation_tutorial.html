@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Audio Feature Augmentation — PyTorch Tutorials 1.11.0+cu102 documentation</title>
+<title>Audio Feature Augmentation — PyTorch Tutorials 1.12.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -160,7 +160,7 @@
 <div aria-label="main navigation" class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation">
 <div class="pytorch-left-menu-search">
 <div class="version">
-                  1.11.0+cu102
+                  1.12.0+cu102
                 </div>
 <div role="search">
 <form action="../search.html" class="wy-form" id="rtd-search-form" method="get">
@@ -381,88 +381,95 @@
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.11.0+cu102
-0.11.0+cu102
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.12.0+cu102
+0.12.0+cu102
 </pre></div>
 </div>
 <div class="section" id="preparing-data-and-utility-functions-skip-this-section">
 <h2>Preparing data and utility functions (skip this section)<a class="headerlink" href="#preparing-data-and-utility-functions-skip-this-section" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#@title Prepare data and utility functions. {display-mode: "form"}</span>
-<span class="c1">#@markdown</span>
-<span class="c1">#@markdown You do not need to look into this cell.</span>
-<span class="c1">#@markdown Just execute once and you are good to go.</span>
-<span class="c1">#@markdown</span>
-<span class="c1">#@markdown In this tutorial, we will use a speech data from [VOiCES dataset](https://iqtlabs.github.io/voices/), which is licensed under Creative Commos BY 4.0.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># @title Prepare data and utility functions. {display-mode: "form"}</span>
+<span class="c1"># @markdown</span>
+<span class="c1"># @markdown You do not need to look into this cell.</span>
+<span class="c1"># @markdown Just execute once and you are good to go.</span>
+<span class="c1"># @markdown</span>
+<span class="c1"># @markdown In this tutorial, we will use a speech data from [VOiCES dataset](https://iqtlabs.github.io/voices/),</span>
+<span class="c1"># @markdown which is licensed under Creative Commos BY 4.0.</span>
 
-<span class="c1">#-------------------------------------------------------------------------------</span>
+<span class="c1"># -------------------------------------------------------------------------------</span>
 <span class="c1"># Preparation of data and helper functions.</span>
-<span class="c1">#-------------------------------------------------------------------------------</span>
+<span class="c1"># -------------------------------------------------------------------------------</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="kn">import</span> <span class="nn">librosa</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 
 
-<span class="n">_SAMPLE_DIR</span> <span class="o">=</span> <span class="s2">"_sample_data"</span>
+<span class="n">_SAMPLE_DIR</span> <span class="o">=</span> <span class="s2">"_assets"</span>
 
-<span class="n">SAMPLE_WAV_SPEECH_URL</span> <span class="o">=</span> <span class="s2">"https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"</span>
+<span class="n">SAMPLE_WAV_SPEECH_URL</span> <span class="o">=</span> <span class="s2">"https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"</span>  <span class="c1"># noqa: E501</span>
 <span class="n">SAMPLE_WAV_SPEECH_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_SAMPLE_DIR</span><span class="p">,</span> <span class="s2">"speech.wav"</span><span class="p">)</span>
 
 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">_SAMPLE_DIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+
 <span class="k">def</span> <span class="nf">_fetch_data</span><span class="p">():</span>
-  <span class="n">uri</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="n">SAMPLE_WAV_SPEECH_URL</span><span class="p">,</span> <span class="n">SAMPLE_WAV_SPEECH_PATH</span><span class="p">),</span>
-  <span class="p">]</span>
-  <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">uri</span><span class="p">:</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
-      <span class="n">file_</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+    <span class="n">uri</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">(</span><span class="n">SAMPLE_WAV_SPEECH_URL</span><span class="p">,</span> <span class="n">SAMPLE_WAV_SPEECH_PATH</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">url</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">uri</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_</span><span class="p">:</span>
+            <span class="n">file_</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+
 
 <span class="n">_fetch_data</span><span class="p">()</span>
 
+
 <span class="k">def</span> <span class="nf">_get_sample</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">resample</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">effects</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">[</span><span class="s2">"remix"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">]</span>
-  <span class="p">]</span>
-  <span class="k">if</span> <span class="n">resample</span><span class="p">:</span>
-    <span class="n">effects</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span>
-      <span class="p">[</span><span class="s2">"lowpass"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">resample</span> <span class="o">//</span> <span class="mi">2</span><span class="si">}</span><span class="s2">"</span><span class="p">],</span>
-      <span class="p">[</span><span class="s2">"rate"</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">resample</span><span class="si">}</span><span class="s1">'</span><span class="p">],</span>
-    <span class="p">])</span>
-  <span class="k">return</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">sox_effects</span><span class="o">.</span><span class="n">apply_effects_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">effects</span><span class="o">=</span><span class="n">effects</span><span class="p">)</span>
+    <span class="n">effects</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">"remix"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">resample</span><span class="p">:</span>
+        <span class="n">effects</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">[</span><span class="s2">"lowpass"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">resample</span> <span class="o">//</span> <span class="mi">2</span><span class="si">}</span><span class="s2">"</span><span class="p">],</span>
+                <span class="p">[</span><span class="s2">"rate"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">resample</span><span class="si">}</span><span class="s2">"</span><span class="p">],</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">torchaudio</span><span class="o">.</span><span class="n">sox_effects</span><span class="o">.</span><span class="n">apply_effects_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">effects</span><span class="o">=</span><span class="n">effects</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">get_speech_sample</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">resample</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="k">return</span> <span class="n">_get_sample</span><span class="p">(</span><span class="n">SAMPLE_WAV_SPEECH_PATH</span><span class="p">,</span> <span class="n">resample</span><span class="o">=</span><span class="n">resample</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_get_sample</span><span class="p">(</span><span class="n">SAMPLE_WAV_SPEECH_PATH</span><span class="p">,</span> <span class="n">resample</span><span class="o">=</span><span class="n">resample</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">get_spectrogram</span><span class="p">(</span>
-    <span class="n">n_fft</span> <span class="o">=</span> <span class="mi">400</span><span class="p">,</span>
-    <span class="n">win_len</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">hop_len</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">power</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    <span class="n">n_fft</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+    <span class="n">win_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">hop_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">power</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
 <span class="p">):</span>
-  <span class="n">waveform</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_speech_sample</span><span class="p">()</span>
-  <span class="n">spectrogram</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Spectrogram</span><span class="p">(</span>
-      <span class="n">n_fft</span><span class="o">=</span><span class="n">n_fft</span><span class="p">,</span>
-      <span class="n">win_length</span><span class="o">=</span><span class="n">win_len</span><span class="p">,</span>
-      <span class="n">hop_length</span><span class="o">=</span><span class="n">hop_len</span><span class="p">,</span>
-      <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-      <span class="n">pad_mode</span><span class="o">=</span><span class="s2">"reflect"</span><span class="p">,</span>
-      <span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span>
-  <span class="p">)</span>
-  <span class="k">return</span> <span class="n">spectrogram</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
+    <span class="n">waveform</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_speech_sample</span><span class="p">()</span>
+    <span class="n">spectrogram</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Spectrogram</span><span class="p">(</span>
+        <span class="n">n_fft</span><span class="o">=</span><span class="n">n_fft</span><span class="p">,</span>
+        <span class="n">win_length</span><span class="o">=</span><span class="n">win_len</span><span class="p">,</span>
+        <span class="n">hop_length</span><span class="o">=</span><span class="n">hop_len</span><span class="p">,</span>
+        <span class="n">center</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">pad_mode</span><span class="o">=</span><span class="s2">"reflect"</span><span class="p">,</span>
+        <span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">spectrogram</span><span class="p">(</span><span class="n">waveform</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">plot_spectrogram</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">'freq_bin'</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-  <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-  <span class="n">axs</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span> <span class="ow">or</span> <span class="s1">'Spectrogram (db)'</span><span class="p">)</span>
-  <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
-  <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">'frame'</span><span class="p">)</span>
-  <span class="n">im</span> <span class="o">=</span> <span class="n">axs</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">librosa</span><span class="o">.</span><span class="n">power_to_db</span><span class="p">(</span><span class="n">spec</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">'lower'</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">xmax</span><span class="p">:</span>
-    <span class="n">axs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="p">))</span>
-  <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">)</span>
-  <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">plot_spectrogram</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">"freq_bin"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">axs</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span> <span class="ow">or</span> <span class="s2">"Spectrogram (db)"</span><span class="p">)</span>
+    <span class="n">axs</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">axs</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"frame"</span><span class="p">)</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">axs</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">librosa</span><span class="o">.</span><span class="n">power_to_db</span><span class="p">(</span><span class="n">spec</span><span class="p">),</span> <span class="n">origin</span><span class="o">=</span><span class="s2">"lower"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xmax</span><span class="p">:</span>
+        <span class="n">axs</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">xmax</span><span class="p">))</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -470,22 +477,24 @@
 <h2>SpecAugment<a class="headerlink" href="#specaugment" title="Permalink to this headline">¶</a></h2>
 <p><a class="reference external" href="https://ai.googleblog.com/2019/04/specaugment-new-data-augmentation.html">SpecAugment</a>
 is a popular spectrogram augmentation technique.</p>
-<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> implements <code class="docutils literal notranslate"><span class="pre">TimeStretch</span></code>, <code class="docutils literal notranslate"><span class="pre">TimeMasking</span></code> and
-<code class="docutils literal notranslate"><span class="pre">FrequencyMasking</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">torchaudio</span></code> implements <code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.transforms.TimeStretch()</span></code>,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.transforms.TimeMasking()</span></code> and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">torchaudio.transforms.FrequencyMasking()</span></code>.</p>
+</div>
 <div class="section" id="timestretch">
-<h3>TimeStretch<a class="headerlink" href="#timestretch" title="Permalink to this headline">¶</a></h3>
+<h2>TimeStretch<a class="headerlink" href="#timestretch" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spec</span> <span class="o">=</span> <span class="n">get_spectrogram</span><span class="p">(</span><span class="n">power</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">stretch</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">TimeStretch</span><span class="p">()</span>
 
 <span class="n">rate</span> <span class="o">=</span> <span class="mf">1.2</span>
 <span class="n">spec_</span> <span class="o">=</span> <span class="n">stretch</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
-<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec_</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Stretched x</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">'equal'</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
+<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec_</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Stretched x</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">"equal"</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
 
-<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Original"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">'equal'</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
+<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Original"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">"equal"</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
 
 <span class="n">rate</span> <span class="o">=</span> <span class="mf">0.9</span>
 <span class="n">spec_</span> <span class="o">=</span> <span class="n">stretch</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">rate</span><span class="p">)</span>
-<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec_</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Stretched x</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">'equal'</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
+<span class="n">plot_spectrogram</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spec_</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Stretched x</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">"equal"</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">304</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="sphx-glr-horizontal">
@@ -498,7 +507,7 @@ is a popular spectrogram augmentation technique.</p>
 </ul>
 </div>
 <div class="section" id="timemasking">
-<h3>TimeMasking<a class="headerlink" href="#timemasking" title="Permalink to this headline">¶</a></h3>
+<h2>TimeMasking<a class="headerlink" href="#timemasking" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 
 <span class="n">spec</span> <span class="o">=</span> <span class="n">get_spectrogram</span><span class="p">()</span>
@@ -518,7 +527,7 @@ is a popular spectrogram augmentation technique.</p>
 </ul>
 </div>
 <div class="section" id="frequencymasking">
-<h3>FrequencyMasking<a class="headerlink" href="#frequencymasking" title="Permalink to this headline">¶</a></h3>
+<h2>FrequencyMasking<a class="headerlink" href="#frequencymasking" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 
 <span class="n">spec</span> <span class="o">=</span> <span class="n">get_spectrogram</span><span class="p">()</span>
@@ -536,7 +545,7 @@ is a popular spectrogram augmentation technique.</p>
 <li><img alt="../_images/sphx_glr_audio_feature_augmentation_tutorial_007.png" class="sphx-glr-multi-img first" src="../_images/sphx_glr_audio_feature_augmentation_tutorial_007.png"/>
 </li>
 </ul>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.304 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  4.502 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-beginner-audio-feature-augmentation-tutorial-py">
 <div class="sphx-glr-download docutils container">
 <a class="reference download internal" download="" href="../_downloads/4c19b7342433b967f6757612ea71f81e/audio_feature_augmentation_tutorial.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">audio_feature_augmentation_tutorial.py</span></code></a></div>
@@ -544,7 +553,6 @@ is a popular spectrogram augmentation technique.</p>
 <a class="reference download internal" download="" href="../_downloads/2a758a687ede824c78a8286754d27754/audio_feature_augmentation_tutorial.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">audio_feature_augmentation_tutorial.ipynb</span></code></a></div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
 </div>
 </div>
 </article>
@@ -591,12 +599,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <ul>
 <li><a class="reference internal" href="#">Audio Feature Augmentation</a><ul>
 <li><a class="reference internal" href="#preparing-data-and-utility-functions-skip-this-section">Preparing data and utility functions (skip this section)</a></li>
-<li><a class="reference internal" href="#specaugment">SpecAugment</a><ul>
+<li><a class="reference internal" href="#specaugment">SpecAugment</a></li>
 <li><a class="reference internal" href="#timestretch">TimeStretch</a></li>
 <li><a class="reference internal" href="#timemasking">TimeMasking</a></li>
 <li><a class="reference internal" href="#frequencymasking">FrequencyMasking</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
