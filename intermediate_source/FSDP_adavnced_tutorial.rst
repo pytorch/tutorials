@@ -10,7 +10,7 @@ In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text su
 
 The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on a multi-node cluster, please stay tuned for that on the PyTorch medium channel.
 
-FSDP is a production ready package with focus on  ease of use, performance and long term support. 
+FSDP is a production ready package with focus on ease of use, performance, and long-term support. 
 One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently. 
 This reduced memory pressure helps to fit larger batch sizes during training, and ideally, positively impact the training speed and cost. 
 You can read more about PyTorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
