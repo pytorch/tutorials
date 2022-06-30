@@ -44,7 +44,7 @@ At a high level FDSP works as follow:
 
 *In backward pass*
 
-* Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run `all_gather` to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run backward computation
 * Run reduce_scatter to sync gradients
 * Discard non-owned parameters to free memory. 
