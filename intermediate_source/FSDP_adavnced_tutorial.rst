@@ -376,7 +376,7 @@ To run the the training using torchrun:
 
 .. _transformer_wrapping_policy:
 Transformer Wrapping Policy
---------------
+---------------------------
 As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.
 
 For some architectures such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
@@ -460,7 +460,7 @@ In our experiments, we have observed up to 4x speed up by using BFloat16 for tra
 
 
 Intializing FSDP Model on Device
---------------
+--------------------------------
 While there are multiple ways to initialize your model in FSDP, with 1.12 we have an optimal method for initializing most models by streaming the model layers onto the GPU to avoid any OOM issues, while at the same time leveraging the speed of the GPU to initialize many times faster vs on CPU:
 
 
@@ -477,7 +477,7 @@ While there are multiple ways to initialize your model in FSDP, with 1.12 we hav
 
     
 Sharding Strategy
---------------
+-----------------
 FSDP sharding strategy by default is set to fully shard the model parameters, gradients and optimizer states get sharded across all ranks. (also termed Zero3 sharding). In case you are interested to have Zero2 sharding strategy, where only optimizer states and gradients are sharded, FSDP support this feature by passing the Sharding strategy by using  "ShardingStrategy.SHARD_GRAD_OP", instead of "ShardingStrategy.FULL_SHARD" to the FSDP initialization  as follows:
 
 .. code-block:: python
@@ -493,7 +493,7 @@ FSDP sharding strategy by default is set to fully shard the model parameters, gr
 This will reduce the communication overhead in FSDP since model paramaters are duplicated rather than communicated, with the trade off of a higher memory footprint. 
 
 Backward Prefetch
---------------
+-----------------
 The backward prefetch setting controls the timing of when the next FSDP unit's parameters should be requested.  By setting it to `BACKWARD_PRE`, the next FSDP's unit params can begin to be requested and arrive sooner before the computation of the current unit starts. This overlaps the `all_gather` communication and gradient computation which can increase the training speed in exchange for slightly higher memory consumption. It can be utilized in the FSDP wrapper in 2.4 as follows:
 
 .. code-block:: python
@@ -509,7 +509,7 @@ The backward prefetch setting controls the timing of when the next FSDP unit's p
 `backward_prefetch` has two modes, `BACKWARD_PRE` and `BACKWARD_POST`, where `BACKWARD_POST` is the default.  `BACKWARD_POST` means that the next FSDP unit's params will not be requested until the current FSDP unit processing is complete, this minimizing memory overhead.  In some cases, using `BACKWARD_PRE` can increase model training speed up to 2-10%, with even higher speed improvements noted for larger models. 
 
 Model Checkpoint Saving, by streaming to the Rank0 CPU
---------------
+------------------------------------------------------
 To save the model checkpoints during or at the end of the training, 1.12 offers the ability to save model checkpoints by having all ranks (GPU's) send their owned params to the rank0 GPU, which then streams these arriving shards to it's CPU for full model assembly.  This avoids potential OOM for models that are larger than a single GPU memory.   
 The full model state dict is then assembled in CPU memory and can be saved to disk. 
 
@@ -527,7 +527,7 @@ This feature can be run as follows:
      torch.save(cpu_state, save_name)
 
 Summary
---------------
+-------
 In this tutorial, we have introduced many new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. 
 Using the proper wrapping policy especially for transformer models, along with mixed precision and backward prefetch should speed up your training runs. Also, features such as initializing the model on device, and checkpoint saving via streaming to CPU should help to avoid OOM error in dealing with large models. 
 
