@@ -8,7 +8,7 @@ This tutorial introduces more advanced features of Fully Sharded Data Parallel (
 
 In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as a working example. 
 
-The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on multi-node cluster, please stay tuned for that on the Pytorch medium channel.
+The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on a multi-node cluster, please stay tuned for that on the PyTorch medium channel.
 
 FSDP is a production ready package with focus on  ease of use, performance and long term support. 
 One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently. 
