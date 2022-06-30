@@ -506,7 +506,7 @@ The backward prefetch setting controls the timing of when the next FSDP unit's p
             device_id=torch.cuda.current_device(),
             backward_prefetch = BackwardPrefetch.BACKWARD_PRE)
             
-It has two settings, BACKWARD_PRE and BACKWARD_POST, where BACKWARD_POST is the default.  BACKWARD_POST means that the next FSDP unit's params will not be requested until the current FSDP unit processing is complete, this minimizing memory overhead.  In some cases, using BACKWARD_PRE can increase model training speed from 2-10%, with the higher speedups noted for larger models. 
+`backward_prefetch` has two modes, `BACKWARD_PRE` and `BACKWARD_POST`, where `BACKWARD_POST` is the default.  `BACKWARD_POST` means that the next FSDP unit's params will not be requested until the current FSDP unit processing is complete, this minimizing memory overhead.  In some cases, using `BACKWARD_PRE` can increase model training speed up to 2-10%, with even higher speed improvements noted for larger models. 
 
 Model Checkpoint Saving, by streaming to the Rank0 CPU
 --------------
