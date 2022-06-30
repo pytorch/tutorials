@@ -526,7 +526,7 @@ This feature can be run as follows:
      save_name = file_save_name + "-" + time_of_run + "-" + currEpoch
      torch.save(cpu_state, save_name)
 
-Summary:
+Summary
 --------------
 In this tutorial, we have introduced many new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example. 
 Using the proper wrapping policy especially for transformer models, along with mixed precision and backward prefetch should speed up your training runs. Also, features such as initializing the model on device, and checkpoint saving via streaming to CPU should help to avoid OOM error in dealing with large models. 
