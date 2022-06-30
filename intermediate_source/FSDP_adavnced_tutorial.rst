@@ -38,7 +38,7 @@ At a high level FDSP works as follow:
 
 *In forward pass*
 
-* Run all_gather to collect all shards from all ranks to recover the full parameter for this FSDP unit
+* Run `all_gather` to collect all shards from all ranks to recover the full parameter for this FSDP unit
 * Run forward computation
 * Discard non-owned parameter shards it has just collected to free memory
 
