@@ -12,8 +12,8 @@ Getting started with nvFuser
 Introduction
 ------------
 
-This tutorial shows how to trace PyTorch programs using TorchScript, FuncTorch,
-and TorchDynamo, and then execute them with nvFuser.
+This tutorial shows how to trace PyTorch programs using TorchScript as well as FuncTorch,
+and then execute them with nvFuser.
 
 Importing Packages and Selecting a Device
 -----------------------------------------
