@@ -209,7 +209,7 @@ for _ in range(SHAPE_COUNT):
     input2 = inputs2[0]
     grad_output = grad_outputs[0]
     # Run model, forward and backward
-    output = composite_definition(input1, input2, weight, bias1, bias2, normalization_axis=2, dropout_prob=0.1)
+    output = scripted_composite_definition(input1, input2, weight, bias1, bias2, normalization_axis=2, dropout_prob=0.1)
     output.backward(grad_output)
 
 # Profile manually as our helper function expects static inputs
@@ -224,7 +224,7 @@ for i in range(iteration_count):
     parameters = [input1, input2, weight, bias1, bias2]
  
     # Run model, forward and backward
-    output = composite_definition(input1, input2, weight, bias1, bias2, normalization_axis=2, dropout_prob=0.1)
+    output = scripted_composite_definition(input1, input2, weight, bias1, bias2, normalization_axis=2, dropout_prob=0.1)
     output.backward(grad_output)
     # delete gradiens to avoid profiling the gradient accumulation
     for p in parameters:
