@@ -8,11 +8,11 @@ This tutorial introduces more advanced features of Fully Sharded Data Parallel (
 
 In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as a working example. 
 
-The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8, A100 GPUs. We will soon have a blog post on large scale FSDP training on a multi-node cluster, please stay tuned for that on the PyTorch medium channel.
+The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8 A100 GPUs. We will soon have a blog post on large scale FSDP training on a multi-node cluster, please stay tuned for that on the PyTorch medium channel.
 
 FSDP is a production ready package with focus on ease of use, performance, and long-term support. 
 One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently. 
-This reduced memory pressure helps to fit larger batch sizes during training, and ideally, positively impact the training speed and cost. 
+This reduced memory pressure can be leveraged to either train larger models or increase batch size, potentially helping overall training throughput. 
 You can read more about PyTorch FSDP `here <https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/>`__.
 
 
@@ -105,7 +105,7 @@ Next, we add the following code snippets to a python script “T5_training.py”
     from typing import Type
 
 1.4 Distributed training setup. 
-As we mentioned, FSDP uses both data and model parallelism, which requires a distributed training environment.  Here we use two helper functions to initialize the processes for distributed training,  and then to clean up after training completion.
+Here we use two helper functions to initialize the processes for distributed training,  and then to clean up after training completion.
 In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , which will set the worker RANK and WORLD_SIZE automatically for us.
 
 .. code-block:: python
@@ -245,10 +245,10 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
 
     
         model = FSDP(model,
-            auto_wrap_policy=t5_auto_wrap_policy,
-            mixed_precision=bfSixteen,
-            sharding_strategy=sharding_strategy,
-            device_id=torch.cuda.current_device())
+            auto_wrap_policy=t5_auto_wrap_policy,#specifies the auto_wrap policy
+            mixed_precision=bfSixteen,#specifies the mixed percision policy
+            sharding_strategy=sharding_strategy,#specifies the sharding strategy,Fully sharded (Zero3) or Gradinet and Optimizer states (Zero2)
+            device_id=torch.cuda.current_device()#set the model intialization to stream layers on GPU to avoid OOM)
 
         print(model)
         optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
@@ -461,7 +461,7 @@ In our experiments, we have observed up to 4x speed up by using BFloat16 for tra
 
 Intializing FSDP Model on Device
 --------------------------------
-While there are multiple ways to initialize your model in FSDP, with 1.12 we have an optimal method for initializing most models by streaming the model layers onto the GPU to avoid any OOM issues, while at the same time leveraging the speed of the GPU to initialize many times faster vs on CPU:
+While there are multiple ways to initialize your model in FSDP, with 1.12 we have an optimal method for initializing most models by streaming the model layers onto the GPU to avoid any OOM issues, while at the same time leveraging the speed of the GPU to initialize many times faster vs on CPU, device_id moves the model from CPU to GPU:
 
 
 
