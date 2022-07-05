@@ -118,7 +118,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
     def cleanup():
         dist.destroy_process_group()
 
-2.1  Setup the HuggingFace T5 model. 
+2.1  Set up the HuggingFace T5 model:
 
 .. code-block:: python
 
