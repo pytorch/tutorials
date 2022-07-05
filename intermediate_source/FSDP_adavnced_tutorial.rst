@@ -187,7 +187,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
         return val_loss
 
 
-2.4 Define a distributed train function that wraps the model in FSDP
+2.4 Define a distributed train function that wraps the model in FSDP:
 
 
 .. code-block:: python
