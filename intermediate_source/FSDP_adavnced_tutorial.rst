@@ -69,7 +69,7 @@ The main focus of this tutorial is to highlight different available features in 
 Please create a `data` folder, download the WikiHow dataset from `wikihowAll.csv <https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358>`__  and `wikihowSep.cs <https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag>`__, and place them in the `data` folder. 
 We will use the wikihow dataset from  `summarization_dataset <https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py>`__.
 
-Next, we add the following code snippets to a python script “T5_training.py”.  Note - The full source code for this tutorial is available in `Pytorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
+Next, we add the following code snippets to a Python script “T5_training.py”.  Note - The full source code for this tutorial is available in `PyTorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
 
 1.3  Import necessary packages
 
