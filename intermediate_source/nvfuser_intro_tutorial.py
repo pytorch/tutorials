@@ -60,7 +60,7 @@ print(collect_env.get_pretty_env_info())
 # specifically look at the Bias-Dropout-Add-LayerNorm section of this
 # Transformer Block.
 #
-# .. figure:: nvfuser_figures/nvfuser_transformer_block.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_transformer_block.png
 #
 # First, let’s define the forward pass for this section of our network.
 # For when we’ll use TorchScript on this function, we decorate the
@@ -136,8 +136,6 @@ parameters = [input1, input2, weight, bias1, bias2]
 #
 
 # Utility to profile the workload
-
-
 def profile_workload(forward_func, grad_output, iteration_count=100):
     # Perform warm-up iterations
     for _ in range(3):
@@ -190,7 +188,8 @@ profile_workload(func, grad_output, iteration_count=100)
 # five GPUs ranging from consumer to enterprise grade. Our baseline
 # geometric mean (geomean) performance across these GPUs is 850
 # iterations per second, plotted in the figure below.
-# .. figure:: nvfuser_figures/nvfuser_tutorial_0.png
+#
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_0.png
 # As we run different variations of this script with nvFuser we will
 # continue to add the results to this figure for the same GPUs.
 #
@@ -234,7 +233,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # as the dropout function is the only function in this example that
 # depends on random number generation.
 # 
-# .. figure:: nvfuser_figures/nvfuser_tutorial_1.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_1.png
 #
 # Our geomean performance with nvFuser is 1,394 images per second
 # which is a geomean of 1.64x faster than eager mode. We did not
@@ -286,7 +285,7 @@ for _ in range(SHAPE_COUNT):
 ######################################################################
 # No changes from before are required for running with TorchScript, we
 # simply reuse the previous definition that we wrapped in
-# `torch.jit.script``.
+# `torch.jit.script`.
 #
 # We’ll start as usual by performing some warm-up iterations, however
 # we won’t show nvFuser all of the input sizes, we’ll only show one
@@ -357,14 +356,14 @@ print("Average iterations per second: {:.2f}".format(iters_per_second))
 # this CPU overhead cannot be fully hidden by the asynchronous nature
 # of GPU execution.
 #
-# .. figure:: nvfuser_figures/nvfuser_tutorial_2.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_2.png
 #
 # .. note:: Today, nvFuser in TorchScript is the only exposure of
-# nvFuser that allows for dynamic shape changes, although we will
-# expand this capability to other systems in the future. For more
-# insight into how dynamic shapes are implemented in nvFuser, you can
-# view this presentation from GTC 2021:
-# https://www.nvidia.com/en-us/on-demand/session/gtcspring21-s31952/
+#           nvFuser that allows for dynamic shape changes, although we will
+#           expand this capability to other systems in the future. For more
+#           insight into how dynamic shapes are implemented in nvFuser, you can
+#           view this presentation from GTC 2021:
+#           https://www.nvidia.com/en-us/on-demand/session/gtcspring21-s31952/
 #
 
 ######################################################################
@@ -426,7 +425,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # decreases – mostly due to the cost of accessing memory to save
 # intermediate results.
 #
-# .. figure:: nvfuser_figures/nvfuser_tutorial_3.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_3.png
 #
 # The geomean iterations per second is 260 iterations per second,
 # 3.26x slower than the composite definition in eager mode and 5.35x
@@ -456,7 +455,7 @@ func = functools.partial(
 profile_workload(func, grad_output, iteration_count=100)
 
 ######################################################################
-# .. figure:: nvfuser_figures/nvfuser_tutorial_4.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_4.png
 #
 # However, the performance is still slower than the original eager
 # mode performance of the composite definition. TorchScript works well
@@ -471,7 +470,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # It’s possible to optimize away many of these unnecessary memory
 # accesses, but it requires building a connected forward and backward
 # graph which isn’t possible with TorchScript. The
-# `memory_efficient_fusion`` pass in FuncTorch, however, is such an
+# `memory_efficient_fusion` pass in FuncTorch, however, is such an
 # optimization pass. To use this pass we have to redefine our
 # function to pull the constants inside (for now it’s easiest to make
 # non-tensor constants literals in the function definition):
@@ -524,7 +523,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # without nvFuser, and is still faster than the composite definition
 # without nvFuser.
 #
-# .. figure:: nvfuser_figures/nvfuser_tutorial_5.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_5.png
 #
 # .. note:: FuncTorch’s memory efficient pass is still actively in development
 #           and future versions are expected to achieve performance closer
@@ -625,7 +624,7 @@ func = functools.partial(memory_efficient_rms_norm,
 profile_workload(func, grad_output, iteration_count=100)
 
 ######################################################################
-# .. figure:: nvfuser_figures/nvfuser_tutorial_6.png
+# .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_6.png
 #
 # Since RMSNorm is simpler than LayerNorm the performance of our new
 # transformer block is a little higher than the primitive definition
@@ -633,7 +632,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # iterations per second). With TorchScript the iterations per second
 # increases by 2.68x and 3.36x to 952 iterations per second and 1,191
 # iterations per second with TorchScript and FuncTorch’s memory
-# efficient optimization pass respectively. The performance of this
+# efficient optimization pass, respectively. The performance of this
 # new operation nearly matches the performance of the composite Layer
 # Norm definition with TorchScript.
 #
@@ -645,4 +644,4 @@ profile_workload(func, grad_output, iteration_count=100)
 # it’s able to analyze users’ programs to provide performance as fast as a
 # highly hand tuned implementation, regardless of how the operations are
 # defined. nvFuser still cannot support every operation in PyTorch,
-# however it’s capabilities will continue to grow ove
+# however its capabilities will continue to grow over time.
