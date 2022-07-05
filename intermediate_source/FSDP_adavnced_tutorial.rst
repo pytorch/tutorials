@@ -510,8 +510,11 @@ The backward prefetch setting controls the timing of when the next FSDP unit's p
 
 Model Checkpoint Saving, by streaming to the Rank0 CPU
 ------------------------------------------------------
-To save the model checkpoints during or at the end of the training, PyTorch 1.12 or later offers the ability to save model checkpoints by having all ranks (GPU's) send their owned params to the rank0 GPU, which then streams these arriving shards to it's CPU for full model assembly.  This avoids potential OOM for models that are larger than a single GPU memory.   
-The full model state dict is then assembled in CPU memory and can be saved to disk. 
+To save model checkpoints using FULL_STATE_DICT saving which saves model in the same fashion as a local model, PyTorch 1.12 offers a few utilities to support the saving of larger models.
+
+First, a FullStateDictConfig can be specified, allowing the state_dict to be populated on rank 0 only and offloaded to the CPU.
+
+When using this configuration, FSDP will allgather model parameters, offloading them to the CPU one by one, only on rank 0. When the state_dict is finally saved, it will only be populated on rank 0 and contain CPU tensors. This avoids potential OOM for models that are larger than a single GPU memory and allows users to checkpoint models whose size is roughly the available CPU RAM on the user's machine.
 
 This feature can be run as follows:
 
