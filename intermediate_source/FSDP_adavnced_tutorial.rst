@@ -71,7 +71,7 @@ We will use the wikihow dataset from  `summarization_dataset <https://github.com
 
 Next, we add the following code snippets to a Python script “T5_training.py”.  Note - The full source code for this tutorial is available in `PyTorch examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP>`__ 
 
-1.3  Import necessary packages
+1.3  Import necessary packages:
 
 .. code-block:: python
 
