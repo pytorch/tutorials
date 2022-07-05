@@ -250,7 +250,8 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
             mixed_precision=bfSixteen, # specifies the mixed percision policy
             sharding_strategy=sharding_strategy, # specifies the sharding strategy
             device_id=torch.cuda.current_device()) # set the model intialization to stream layers on GPU to avoid OOM
-
+            
+        # Model wrapping can be observed simply via print()
         print(model)
         optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
@@ -307,6 +308,8 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
             # save
             if rank == 0:
                 print(f"--> entering save model state...")
+ 
+            # FullStateDictConfig can be specified, allowing the state_dict to be populated on rank 0 only and offloaded to the CPU.
             save_policy = FullStateDictConfig(offload_to_cpu=True, rank0_only=True)
             with FSDP.state_dict_type(
                 model, StateDictType.FULL_STATE_DICT, save_policy
@@ -381,7 +384,7 @@ Transformer Wrapping Policy
 As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.
 
 For some architectures such as Transformer encoder-decoders, some parts of the model such as embedding table is being shared with both encoder and decoder.
-In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
+In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In PyTorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
 
 It can be created as follows, where the T5Block represents the T5 transformer layer class (holding MHSA and FFN).  
 
