@@ -107,7 +107,7 @@ Next, we add the following code snippets to a Python script “T5_training.py”
 
 1.4 Distributed training setup. 
 Here we use two helper functions to initialize the processes for distributed training,  and then to clean up after training completion.
-In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , which will set the worker RANK and WORLD_SIZE automatically for us.
+In this tutorial, we are going to use torch elastic, using `torchrun <https://pytorch.org/docs/stable/elastic/run.html>`__ , which will set the worker `RANK` and `WORLD_SIZE` automatically.
 
 .. code-block:: python
 
