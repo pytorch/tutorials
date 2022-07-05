@@ -460,7 +460,7 @@ In 2.4 we just add the relevant mixed precision policy to the FSDP wrapper:
             auto_wrap_policy=t5_auto_wrap_policy,
             mixed_precision=bfSixteen)
 
-In our experiments, we have observed up to 4x speed up by using BFloat16 for training.
+In our experiments, we have observed up to 4x speed up by using BFloat16 for training and memory reduction of approximately 30% in some experiments that can be used for batch size increases.
 
 
 Intializing FSDP Model on Device
