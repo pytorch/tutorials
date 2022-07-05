@@ -159,7 +159,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
             )
         return train_accuracy
 
-2.3 Define a validation function 
+2.3 Define a validation function:
 
 .. code-block:: python
 
