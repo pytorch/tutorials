@@ -46,8 +46,9 @@ At a high level FDSP works as follow:
 
 * Run `all_gather` to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run backward computation
-* Run reduce_scatter to sync gradients
 * Discard non-owned parameters to free memory. 
+* Run reduce_scatter to sync gradients
+
 
 Fine-tuning HF T5
 --------------
@@ -490,7 +491,9 @@ FSDP sharding strategy by default is set to fully shard the model parameters, gr
             device_id=torch.cuda.current_device(),
             sharding_strategy=ShardingStrategy.SHARD_GRAD_OP # FULL_SHARD)
 
-This will reduce the communication overhead in FSDP since model paramaters are duplicated rather than communicated, with the trade off of a higher memory footprint. 
+This will reduce the communication overhead in FSDP, in this case, it holds full parameters after forward and through the backwards pass. 
+
+This saves an all_gather during backwards so there is less communication at the cost of a higher memory footprint. Note that full model params are freed at the end of backwards and all_gather will happen on the next forward pass.
 
 Backward Prefetch
 -----------------
