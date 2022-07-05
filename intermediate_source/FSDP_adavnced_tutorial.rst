@@ -378,9 +378,9 @@ To run the the training using torchrun:
 .. _transformer_wrapping_policy:
 Transformer Wrapping Policy
 ---------------------------
-As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, fsdp_auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.
+As discussed in the `previous tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__, auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.
 
-For some architectures such as Transformer encoder-decoders, some part of the model such as embedding table is being shared with both encoder and decoder.
+For some architectures such as Transformer encoder-decoders, some parts of the model such as embedding table is being shared with both encoder and decoder.
 In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In Pytorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.
 
 It can be created as follows, where the T5Block represents the T5 transformer layer class (holding MHSA and FFN).  
