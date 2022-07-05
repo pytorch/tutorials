@@ -422,7 +422,7 @@ To check if BFloat16 is natively supported, you can use the following :
         and nccl.version() >= (2, 10)
     )
 
-One of the advantages of mixed percision in FSDP is providing granular control over different precision levels for parameters, gradients and buffers as follows:
+One of the advantages of mixed percision in FSDP is providing granular control over different precision levels for parameters, gradients, and buffers as follows:
 
 .. code-block:: python
 
