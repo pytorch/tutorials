@@ -17,7 +17,7 @@ You can read more about PyTorch FSDP `here <https://pytorch.org/blog/introducing
 
 
 FSDP Features in This Tutorial
---------------
+------------------------------
 * Transformer Auto Wrap Policy
 * Mixed Precision
 * Initializing FSDP Model on Device
@@ -28,7 +28,7 @@ FSDP Features in This Tutorial
 
 
 Recap on How FSDP Works
---------------
+-----------------------
 
 At a high level FDSP works as follow:
 
@@ -51,7 +51,7 @@ At a high level FDSP works as follow:
 
 
 Fine-tuning HF T5
---------------
+-----------------
 HF T5 pre-trained models are available in four different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the fine-tuning of a T5 3B with FSDP for text summarization using WikiHow dataset.
 The main focus of this tutorial is to highlight different available features in FSDP that are helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/>`__.
 
@@ -407,7 +407,7 @@ To see the wrapped model, you can easily print the model and visually inspect th
 
 
 Mixed Precision
---------------
+---------------
 FSDP supports training with mixed precision any combination of FP16 and BFloat16 and FP32. Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.
 
 To check if BFloat16 is natively supported, you can use the following :
