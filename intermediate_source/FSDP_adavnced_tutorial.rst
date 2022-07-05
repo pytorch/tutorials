@@ -246,10 +246,10 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
 
     
         model = FSDP(model,
-            auto_wrap_policy=t5_auto_wrap_policy,#specifies the auto_wrap policy
-            mixed_precision=bfSixteen,#specifies the mixed percision policy
-            sharding_strategy=sharding_strategy,#specifies the sharding strategy,Fully sharded (Zero3) or Gradinet and Optimizer states (Zero2)
-            device_id=torch.cuda.current_device()#set the model intialization to stream layers on GPU to avoid OOM)
+            auto_wrap_policy=t5_auto_wrap_policy, # specifies the auto_wrap policy
+            mixed_precision=bfSixteen, # specifies the mixed percision policy
+            sharding_strategy=sharding_strategy, # specifies the sharding strategy
+            device_id=torch.cuda.current_device()) # set the model intialization to stream layers on GPU to avoid OOM
 
         print(model)
         optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
