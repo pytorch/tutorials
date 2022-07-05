@@ -335,7 +335,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
 
 
 
-2.5 Finally parsing the arguments and setting the main function
+2.5 Parse the arguments and set the main function:
 
 .. code-block:: python
 
