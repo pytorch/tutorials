@@ -129,7 +129,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
 
     
 
-2.2 define a train function 
+2.2 Define a train function:
 
 .. code-block:: python
 
