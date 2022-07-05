@@ -52,7 +52,7 @@ At a high level FDSP works as follow:
 
 Fine-tuning HF T5
 --------------
-HF T5 pretrained models are available in 4 different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the finetuing of a T5 3B with FSDP for text summarization using WikiHow dataset.
+HF T5 pre-trained models are available in four different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the fine-tuning of a T5 3B with FSDP for text summarization using WikiHow dataset.
 The main focus of this tutorial is to highlight different available features in FSDP that are helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  `Pytorch Examples <https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/>`__.
 
 
