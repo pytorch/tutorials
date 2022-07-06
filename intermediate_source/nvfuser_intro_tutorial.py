@@ -4,8 +4,8 @@ Getting Started - Accelerate Your Scripts with nvFuser
 ****************************
 
 **Authors**: `Christian Sarofeen <https://github.com/csarofeen>`_
-`Kevin Stephano <https://github.com/kevinstephano>`_
 `Piotr Bialecki <https://github.com/ptrblck>`_
+`Kevin Stephano <https://github.com/kevinstephano>`_
 `Jie Jiang <https://github.com/jjsjann123>`_
 `Masaki Kozuki <https://github.com/crcrpar>`_
 `Neal Vaidya`
@@ -33,19 +33,32 @@ you would need to install the `1.12.0` PyTorch release as well as
 Additionally, a GPU is required.
 """
 
-from functorch.compile import memory_efficient_fusion
-from torch.utils import collect_env
-import torch.nn.functional as F
 import torch
+import torch.nn.functional as F
+import functorch
+from functorch.compile import memory_efficient_fusion
 from copy import deepcopy
 from typing import List
 import time
 import functools
 import random
+
 random.seed(42)
 
+if torch.__version__ < (1, 12, 0):
+    raise RuntimeError(
+        "PyTorch >= 1.12.0 required, but your environment uses torch=={}".format(
+            torch.__version__
+        )
+    )
 
-print(collect_env.get_pretty_env_info())
+major, minor, _ = functorch.__version__.split(".")
+if int(major) == 0 and int(minor) < 2:
+    raise RuntimeError(
+        "FuncTorch >= 0.2.0 required, but your environment uses functorch=={}".format(
+            functorch.__version__
+        )
+    )
 
 ######################################################################
 # The Transformer Block
@@ -55,7 +68,7 @@ print(collect_env.get_pretty_env_info())
 # provides acceleration of pointwise, reduction, and normalization
 # operations. These simple operations are the backbone of large
 # networks, so improving the speed of these operations can improve
-# overall network training speed. Future releases nvFuser will
+# overall network training speed. Future releases of nvFuser will
 # improve the performance of Linear Layers, but for now we will
 # specifically look at the Bias-Dropout-Add-LayerNorm section of this
 # Transformer Block.
@@ -84,8 +97,10 @@ def composite_definition(
     dropout_out = F.dropout(bias1_out, dropout_prob, training=True)
     norm_input = dropout_out + input2
     norm_output = F.layer_norm(
-        norm_input, (input1.size(normalization_axis),), weight, bias2)
+        norm_input, (input1.size(normalization_axis),), weight, bias2
+    )
     return norm_output
+
 
 ######################################################################
 # Setup and Performance Metrics
@@ -102,8 +117,7 @@ device = "cuda"
 dtype = torch.float32
 
 # Create sample inputs
-input1 = torch.randn(*input_size, device=device,
-                     dtype=dtype, requires_grad=True)
+input1 = torch.randn(*input_size, device=device, dtype=dtype, requires_grad=True)
 input2 = torch.rand_like(input1).requires_grad_()
 
 # Precompute a grad output tensor, for this example it's the same size
@@ -111,12 +125,9 @@ input2 = torch.rand_like(input1).requires_grad_()
 grad_output = torch.rand_like(input1)
 
 # Randomly initialize the model parameters
-weight = torch.nn.Parameter(torch.randn(
-    input_size[2], dtype=dtype, device=device))
-bias1 = torch.nn.Parameter(torch.randn(
-    input_size[2], dtype=dtype, device=device))
-bias2 = torch.nn.Parameter(torch.randn(
-    input_size[2], dtype=dtype, device=device))
+weight = torch.nn.Parameter(torch.randn(input_size[2], dtype=dtype, device=device))
+bias1 = torch.nn.Parameter(torch.randn(input_size[2], dtype=dtype, device=device))
+bias2 = torch.nn.Parameter(torch.randn(input_size[2], dtype=dtype, device=device))
 
 parameters = [input1, input2, weight, bias1, bias2]
 
@@ -136,7 +147,7 @@ parameters = [input1, input2, weight, bias1, bias2]
 #
 
 # Utility to profile the workload
-def profile_workload(forward_func, grad_output, iteration_count=100):
+def profile_workload(forward_func, grad_output, iteration_count=100, label=""):
     # Perform warm-up iterations
     for _ in range(3):
         # Run model, forward and backward
@@ -151,7 +162,7 @@ def profile_workload(forward_func, grad_output, iteration_count=100):
     start = time.perf_counter()
     for _ in range(iteration_count):
         # Run model, forward and backward
-        output = func()
+        output = forward_func()
         output.backward(grad_output)
         # delete gradiens to avoid profiling the gradient accumulation
         for p in parameters:
@@ -161,7 +172,10 @@ def profile_workload(forward_func, grad_output, iteration_count=100):
     torch.cuda.synchronize()
     stop = time.perf_counter()
     iters_per_second = iteration_count / (stop - start)
+    if label:
+        print(label)
     print("Average iterations per second: {:.2f}".format(iters_per_second))
+
 
 ######################################################################
 # We can now measure a baseline performance of PyTorch’s eager mode
@@ -179,8 +193,11 @@ func = functools.partial(
     bias1,
     bias2,
     normalization_axis=2,
-    dropout_prob=0.1)
-profile_workload(func, grad_output, iteration_count=100)
+    dropout_prob=0.1,
+)
+profile_workload(
+    func, grad_output, iteration_count=100, label="Eager Mode - Composite definition"
+)
 
 ######################################################################
 # It’s important for PyTorch and nvFuser to work well across diverse
@@ -216,8 +233,11 @@ func = functools.partial(
     bias1,
     bias2,
     normalization_axis=2,
-    dropout_prob=0.1)
-profile_workload(func, grad_output, iteration_count=100)
+    dropout_prob=0.1,
+)
+profile_workload(
+    func, grad_output, iteration_count=100, label="TorchScript - Composite definition"
+)
 
 ######################################################################
 # Before we get to the results, it is important to mention here that
@@ -232,7 +252,7 @@ profile_workload(func, grad_output, iteration_count=100)
 # `dropout_out = F.dropout(bias1_out, dropout_prob, training=False)`
 # as the dropout function is the only function in this example that
 # depends on random number generation.
-# 
+#
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_1.png
 #
 # Our geomean performance with nvFuser is 1,394 images per second
@@ -276,8 +296,7 @@ grad_outputs: List[torch.Tensor] = []
 for _ in range(SHAPE_COUNT):
     dynamic_sizes[0] = input_size[0] + random.randrange(-2, 3)
     dynamic_sizes[1] = input_size[1] + random.randrange(-2, 3)
-    input = torch.randn(*dynamic_sizes, device=device,
-                        dtype=dtype, requires_grad=True)
+    input = torch.randn(*dynamic_sizes, device=device, dtype=dtype, requires_grad=True)
     inputs1.append(input)
     inputs2.append(torch.rand_like(input))
     grad_outputs.append(torch.rand_like(input))
@@ -305,7 +324,8 @@ for _ in range(3):
         bias1,
         bias2,
         normalization_axis=2,
-        dropout_prob=0.1)
+        dropout_prob=0.1,
+    )
     output.backward(dynamic_grad_output)
 
 ######################################################################
@@ -332,7 +352,8 @@ for i in range(iteration_count):
         bias1,
         bias2,
         normalization_axis=2,
-        dropout_prob=0.1)
+        dropout_prob=0.1,
+    )
     output.backward(dynamic_grad_output)
     # Delete the gradients to avoid profiling the gradient accumulation
     for p in dynamic_parameters:
@@ -342,6 +363,7 @@ for i in range(iteration_count):
 torch.cuda.synchronize()
 stop = time.perf_counter()
 iters_per_second = iteration_count / (stop - start)
+print("TorchScript - Random Sizes")
 print("Average iterations per second: {:.2f}".format(iters_per_second))
 
 ######################################################################
@@ -397,7 +419,7 @@ def primitive_definition(
     dropout_out = F.dropout(bias1_out, dropout_prob, training=True)
     norm_input = dropout_out + input2
     mean = norm_input.mean(normalization_axis, keepdim=keepdim)
-    diff = (norm_input - mean)
+    diff = norm_input - mean
     diff_sq = diff * diff
     var = diff_sq.mean(normalization_axis, keepdim=keepdim)
     pre_shift_scale_norm_output = (norm_input - mean) / torch.sqrt(var + 1e-12)
@@ -415,8 +437,11 @@ func = functools.partial(
     bias2,
     normalization_axis=2,
     dropout_prob=0.1,
-    keepdim=True)
-profile_workload(func, grad_output, iteration_count=100)
+    keepdim=True,
+)
+profile_workload(
+    func, grad_output, iteration_count=100, label="Eager Mode - Primitive Definition"
+)
 
 ######################################################################
 # While the above is mathematically equivalent to our previous
@@ -451,8 +476,11 @@ func = functools.partial(
     bias2,
     normalization_axis=2,
     dropout_prob=0.1,
-    keepdim=True)
-profile_workload(func, grad_output, iteration_count=100)
+    keepdim=True,
+)
+profile_workload(
+    func, grad_output, iteration_count=100, label="TorchScript - Primitive definition"
+)
 
 ######################################################################
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_4.png
@@ -488,12 +516,13 @@ def primitive_definition_for_memory_efficient_fusion(
     dropout_out = F.dropout(bias1_out, 0.1, training=True)
     norm_input = dropout_out + input2
     mean = norm_input.mean(2, keepdim=True)
-    diff = (norm_input - mean)
+    diff = norm_input - mean
     diff_sq = diff * diff
     var = diff_sq.mean(2, keepdim=True)
     pre_shift_scale_norm_output = (norm_input - mean) / torch.sqrt(var + 1e-12)
     norm_output = weight * pre_shift_scale_norm_output + bias2
     return norm_output
+
 
 ######################################################################
 # Now, instead of passing our function to TorchScript we will pass it
@@ -504,17 +533,19 @@ def primitive_definition_for_memory_efficient_fusion(
 # Optimize the model with FuncTorch tracing and the memory efficiency
 # optimization pass
 memory_efficient_primitive_definition = memory_efficient_fusion(
-    primitive_definition_for_memory_efficient_fusion)
+    primitive_definition_for_memory_efficient_fusion
+)
 
 # Profile memory efficient primitive definition
 func = functools.partial(
-    memory_efficient_primitive_definition,
-    input1,
-    input2,
-    weight,
-    bias1,
-    bias2)
-profile_workload(func, grad_output, iteration_count=100)
+    memory_efficient_primitive_definition, input1, input2, weight, bias1, bias2
+)
+profile_workload(
+    func,
+    grad_output,
+    iteration_count=100,
+    label="FuncTorch - Primitive definition",
+)
 
 ######################################################################
 # This recovers even more speed, but it’s still not as fast as
@@ -541,7 +572,8 @@ profile_workload(func, grad_output, iteration_count=100)
 # settling for poor performance. For example, let's replace LayerNorm
 # in our example with RMSNorm. Even though RMSNorm is a bit simpler
 # than LayerNorm, it doesn’t have an existing compound operation in
-# PyTorch. As before we’ll define our new transformer block with
+# PyTorch. See https://doi.org/10.48550/arXiv.1910.07467 for more information about RMSNorm.
+# As before we’ll define our new transformer block with
 # primitive PyTorch operations.
 #
 
@@ -577,8 +609,9 @@ func = functools.partial(
     bias1,
     normalization_axis=2,
     dropout_prob=0.1,
-    keepdim=True)
-profile_workload(func, grad_output=grad_output)
+    keepdim=True,
+)
+profile_workload(func, grad_output, iteration_count=100, label="Eager Mode - RMS Norm")
 
 ######################################################################
 # With nvFuser through TorchScript.
@@ -594,8 +627,9 @@ func = functools.partial(
     bias1,
     normalization_axis=2,
     dropout_prob=0.1,
-    keepdim=True)
-profile_workload(func, grad_output, iteration_count=100)
+    keepdim=True,
+)
+profile_workload(func, grad_output, iteration_count=100, label="TorchScript - RMS Norm")
 
 ######################################################################
 # With nvFuser through Functorch.
@@ -603,10 +637,8 @@ profile_workload(func, grad_output, iteration_count=100)
 
 
 def with_rms_norm_for_memory_efficient_fusion(
-        input1: torch.Tensor,
-        input2: torch.Tensor,
-        weight: torch.Tensor,
-        bias: torch.Tensor) -> torch.Tensor:
+    input1: torch.Tensor, input2: torch.Tensor, weight: torch.Tensor, bias: torch.Tensor
+) -> torch.Tensor:
     bias_out = input1 + bias
     dropout_out = torch.nn.functional.dropout(bias_out, 0.1)
     norm_input = dropout_out + input2
@@ -618,10 +650,10 @@ def with_rms_norm_for_memory_efficient_fusion(
 
 # Profile memory efficient rms_norm
 memory_efficient_rms_norm = memory_efficient_fusion(
-    with_rms_norm_for_memory_efficient_fusion)
-func = functools.partial(memory_efficient_rms_norm,
-                         input1, input2, weight, bias1)
-profile_workload(func, grad_output, iteration_count=100)
+    with_rms_norm_for_memory_efficient_fusion
+)
+func = functools.partial(memory_efficient_rms_norm, input1, input2, weight, bias1)
+profile_workload(func, grad_output, iteration_count=100, label="FuncTorch - RMS Norm")
 
 ######################################################################
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_6.png
