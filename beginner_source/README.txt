@@ -22,5 +22,9 @@ Beginner Tutorials
 	https://pytorch.org/tutorials/beginner/deep_learning_nlp_tutorial.html
 
 6. transformer_translation.py
-	Language Translation with Transformers
+	Language Translation with nn.Transformer and Torchtext
+	https://pytorch.org/tutorials/beginner/translation_transformer.html
+
+7. transformer_tutorial.py
+	Language Modeling with nn.Transformer and Torchtext
 	https://pytorch.org/tutorials/beginner/transformer_tutorial.html
