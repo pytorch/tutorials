@@ -145,6 +145,7 @@ In this tutorial, we are going to use torch elastic, using `torchrun <https://py
         return model, tokenizer
 
 We also, add couple of helper functions here for date and formatting memory metrics.
+
 .. code-block:: python
 
     def get_date_of_run():
@@ -302,7 +303,8 @@ We also, add couple of helper functions here for date and formatting memory metr
             mp_policy = bfSixteen
         else:
             mp_policy = None # defaults to fp32
-
+            
+        # model is on CPU before input to FSDP
         model = FSDP(model,
             auto_wrap_policy=t5_auto_wrap_policy,
             mixed_precision=mp_policy,
@@ -501,6 +503,14 @@ One of the advantages of mixed percision in FSDP is providing granular control o
         buffer_dtype=torch.float32,
     )
 
+Note that if a certain type (parameter, reduce, buffer) is not specified, they will not be casted at all.
+
+This flexibility allows users fine grained control, such as only setting gradient communication to happen in reduced precision, and all parameters / buffer computation to be done in full precision. This is potentially useful in cases where intra-node communication is the main bottleneck and parameters / buffers must be in full precision to avoid accuracy issues. This can be done with the following policy:
+
+.. code-block:: bash
+
+    grad_bf16 = MixedPrecision(reduce_dtype=torch.bfloat16)
+    
 
 In 2.4 we just add the relevant mixed precision policy to the FSDP wrapper:
 
@@ -516,9 +526,7 @@ In our experiments, we have observed up to 4x speed up by using BFloat16 for tra
 
 Intializing FSDP Model on Device
 --------------------------------
-While there are multiple ways to initialize your model in FSDP, with 1.12 we have an optimal method for initializing most models by streaming the model layers onto the GPU to avoid any OOM issues, while at the same time leveraging the speed of the GPU to initialize many times faster vs on CPU, device_id moves the model from CPU to GPU:
-
-
+In 1.12, FSDP supports a `device_id` argument meant to initialize input CPU module on the device given by `device_id`. This is useful when the entire model does not fit on a single GPU, but fits in a host's CPU memory. When `device_id` is specified, FSDP will move the model to the specified device on a per-FSDP unit basis, avoiding GPU OOM issues while initializing several times faster than CPU-based initialization:
 
 .. code-block:: python
 
