@@ -1,7 +1,7 @@
 Advanced Fully Sharded Data Parallel(FSDP) Tutorial
 =====================================================
 
-**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Less Wright <https://github.com/lessw2020>`__,  `Yanli Zhao <https://github.com/zhaojuanmao>`__,  `Rohan Varma <https://github.com/rohan-varma/>`__
+**Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Less Wright <https://github.com/lessw2020>`__, `Rohan Varma <https://github.com/rohan-varma/>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__
 
 
 This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the PyTorch 1.12 release. To get familiar with FSDP, please refer to the `FSDP getting started tutorial <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html>`__.
@@ -459,7 +459,7 @@ To see the wrapped model, you can easily print the model and visually inspect th
 
 Mixed Precision
 ---------------
-FSDP supports training with mixed precision any combination of FP16 and BFloat16 and FP32. Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.
+FSDP supports flexible mixed precision training allowing for arbitrary reduced precision types (such as fp16 or bfloat16). Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.
 
 To check if BFloat16 is natively supported, you can use the following :
 
