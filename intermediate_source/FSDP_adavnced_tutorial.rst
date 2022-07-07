@@ -101,7 +101,6 @@ Next, we add the following code snippets to a Python script “T5_training.py”
 
     from torch.distributed.fsdp import (
         FullyShardedDataParallel as FSDP,
-        CPUOffload,
         MixedPrecision,
         BackwardPrefetch,
         ShardingStrategy,
