@@ -29,7 +29,9 @@ Importing Packages and Selecting a Device
 -----------------------------------------
 In order to run this tutorial and see the benefits of using nvfuser,
 you would need to install the `1.12.0` PyTorch release as well as
-`functorch` `0.2` or newer version of them.
+`functorch` `0.2` or newer version of them. `functorch` also needs
+`networkx` for its smart recomputation heuristics which you can
+install via `pip install networkx`.
 Additionally, a GPU is required.
 """
 
