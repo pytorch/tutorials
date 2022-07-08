@@ -493,8 +493,8 @@ What's new in PyTorch tutorials?
 .. customcarditem::
    :header: Introduction to nvFuser
    :card_description: An introduction to nvFuser
-   :image: _static/img/thumbnails/cropped/60-min-blitz.png
-   :link: intermediate/nvfuser_intro_tutorial
+   :image: _static/img/thumbnails/cropped/generic-pytorch-logo.png
+   :link: intermediate/nvfuser_intro_tutorial.html
    :tags: Model-Optimization
 
 .. Parallel-and-Distributed-Training
