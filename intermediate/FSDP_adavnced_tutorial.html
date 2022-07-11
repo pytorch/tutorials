@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Advanced Fully Sharded Data Parallel(FSDP) Tutorial — PyTorch Tutorials 1.12.0+cu102 documentation</title>
+<title>Advanced Model Training with Fully Sharded Data Parallel (FSDP) — PyTorch Tutorials 1.12.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,6 +16,8 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
+<link href="process_group_cpp_extension_tutorial.html" rel="next" title="Customize Process Group Backends Using Cpp Extensions"/>
+<link href="FSDP_tutorial.html" rel="prev" title="Getting Started with Fully Sharded Data Parallel(FSDP)"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -285,12 +287,13 @@
 <li class="toctree-l1"><a class="reference internal" href="torchserve_with_ipex.html">Grokking PyTorch Intel CPU performance from first principles</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Parallel and Distributed Training</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../beginner/dist_overview.html">PyTorch Distributed Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model_parallel_tutorial.html">Single-Machine Model Parallel Best Practices</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ddp_tutorial.html">Getting Started with Distributed Data Parallel</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dist_tuto.html">Writing Distributed Applications with PyTorch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="FSDP_tutorial.html">Getting Started with Fully Sharded Data Parallel(FSDP)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="process_group_cpp_extension_tutorial.html">Customize Process Group Backends Using Cpp Extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_tutorial.html">Getting Started with Distributed RPC Framework</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rpc_param_server_tutorial.html">Implementing a Parameter Server Using Distributed RPC Framework</a></li>
@@ -326,7 +329,7 @@
           
         </a> &gt;
       </li>
-<li>Advanced Fully Sharded Data Parallel(FSDP) Tutorial</li>
+<li>Advanced Model Training with Fully Sharded Data Parallel (FSDP)</li>
 <li class="pytorch-breadcrumbs-aside">
 <a href="../_sources/intermediate/FSDP_adavnced_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
@@ -360,16 +363,27 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="section" id="advanced-fully-sharded-data-parallel-fsdp-tutorial">
-<h1>Advanced Fully Sharded Data Parallel(FSDP) Tutorial<a class="headerlink" href="#advanced-fully-sharded-data-parallel-fsdp-tutorial" title="Permalink to this headline">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/HamidShojanazeri">Hamid Shojanazeri</a>, <a class="reference external" href="https://github.com/lessw2020">Less Wright</a>, <a class="reference external" href="https://github.com/rohan-varma/">Rohan Varma</a>, <a class="reference external" href="https://github.com/zhaojuanmao">Yanli Zhao</a></p>
-<p>This tutorial introduces more advanced features of Fully Sharded Data Parallel (FSDP) as part of the PyTorch 1.12 release. To get familiar with FSDP, please refer to the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">FSDP getting started tutorial</a>.</p>
-<p>In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text summarization as a working example.</p>
-<p>The example uses Wikihow and for simplicity, we will showcase the training on a single node, P4dn instance with 8 A100 GPUs. We will soon have a blog post on large scale FSDP training on a multi-node cluster, please stay tuned for that on the PyTorch medium channel.</p>
-<p>FSDP is a production ready package with focus on ease of use, performance, and long-term support.
-One of the main benefits of FSDP is reducing the memory footprint on each GPU. This enables training of larger models with lower total memory vs DDP, and leverages the overlap of computation and communication to train models efficiently.
-This reduced memory pressure can be leveraged to either train larger models or increase batch size, potentially helping overall training throughput.
-You can read more about PyTorch FSDP <a class="reference external" href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/">here</a>.</p>
+<div class="section" id="advanced-model-training-with-fully-sharded-data-parallel-fsdp">
+<h1>Advanced Model Training with Fully Sharded Data Parallel (FSDP)<a class="headerlink" href="#advanced-model-training-with-fully-sharded-data-parallel-fsdp" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/HamidShojanazeri">Hamid Shojanazeri</a>, <a class="reference external" href="https://github.com/lessw2020">Less
+Wright</a>, <a class="reference external" href="https://github.com/rohan-varma/">Rohan Varma</a>, <a class="reference external" href="https://github.com/zhaojuanmao">Yanli Zhao</a></p>
+<p>This tutorial introduces more advanced features of Fully Sharded Data Parallel
+(FSDP) as part of the PyTorch 1.12 release. To get familiar with FSDP, please
+refer to the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">FSDP getting started tutorial</a>.</p>
+<p>In this tutorial, we fine-tune a HuggingFace (HF) T5 model with FSDP for text
+summarization as a working example.</p>
+<p>The example uses Wikihow and for simplicity, we will showcase the training on a
+single node, P4dn instance with 8 A100 GPUs. We will soon have a blog post on
+large scale FSDP training on a multi-node cluster, please stay tuned for that on
+the PyTorch medium channel.</p>
+<p>FSDP is a production ready package with focus on ease of use, performance, and
+long-term support.  One of the main benefits of FSDP is reducing the memory
+footprint on each GPU. This enables training of larger models with lower total
+memory vs DDP, and leverages the overlap of computation and communication to
+train models efficiently.
+This reduced memory pressure can be leveraged to either train larger models or
+increase batch size, potentially helping overall training throughput.  You can
+read more about PyTorch FSDP <a class="reference external" href="https://pytorch.org/blog/introducing-pytorch-fully-sharded-data-parallel-api/">here</a>.</p>
 <div class="section" id="fsdp-features-in-this-tutorial">
 <h2>FSDP Features in This Tutorial<a class="headerlink" href="#fsdp-features-in-this-tutorial" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -390,82 +404,98 @@ You can read more about PyTorch FSDP <a class="reference external" href="https:/
 </ul>
 <p><em>In forward pass</em></p>
 <ul class="simple">
-<li>Run <cite>all_gather</cite> to collect all shards from all ranks to recover the full parameter for this FSDP unit</li>
-<li>Run forward computation</li>
+<li>Run <cite>all_gather</cite> to collect all shards from all ranks to recover the full
+parameter for this FSDP unit Run forward computation</li>
 <li>Discard non-owned parameter shards it has just collected to free memory</li>
 </ul>
 <p><em>In backward pass</em></p>
 <ul class="simple">
-<li>Run <cite>all_gather</cite> to collect all shards from all ranks to recover the full parameter in this FSDP unit</li>
-<li>Run backward computation</li>
+<li>Run <cite>all_gather</cite> to collect all shards from all ranks to recover the full
+parameter in this FSDP unit Run backward computation</li>
 <li>Discard non-owned parameters to free memory.</li>
 <li>Run reduce_scatter to sync gradients</li>
 </ul>
 </div>
 <div class="section" id="fine-tuning-hf-t5">
 <h2>Fine-tuning HF T5<a class="headerlink" href="#fine-tuning-hf-t5" title="Permalink to this headline">¶</a></h2>
-<p>HF T5 pre-trained models are available in four different sizes, ranging from small with 60 Million parameters to XXL with 11 Billion parameters. In this tutorial, we demonstrate the fine-tuning of a T5 3B with FSDP for text summarization using WikiHow dataset.
-The main focus of this tutorial is to highlight different available features in FSDP that are helpful for training large scale model above 3B parameters. Also, we cover specific features for Transformer based models. The code for this tutorial is available in  <a class="reference external" href="https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/">Pytorch Examples</a>.</p>
+<p>HF T5 pre-trained models are available in four different sizes, ranging from
+small with 60 Million parameters to XXL with 11 Billion parameters. In this
+tutorial, we demonstrate the fine-tuning of a T5 3B with FSDP for text
+summarization using WikiHow dataset.  The main focus of this tutorial is to
+highlight different available features in FSDP that are helpful for training
+large scale model above 3B parameters. Also, we cover specific features for
+Transformer based models. The code for this tutorial is available in  <a class="reference external" href="https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP/">Pytorch
+Examples</a>.</p>
 <p><em>Setup</em></p>
 <p>1.1 Install PyTorch Nightlies</p>
-<p>We will install PyTorch nightlies, as some of the features such as activation checkpointing is available in nightlies and will be added in next PyTorch release after 1.12.</p>
+<p>We will install PyTorch nightlies, as some of the features such as activation
+checkpointing is available in nightlies and will be added in next PyTorch
+release after 1.12.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install --pre torch torchvision torchaudio -f https://download.pytorch.org/whl/nightly/cu113/torch_nightly.html
 </pre></div>
 </div>
 <p>1.2 Dataset Setup</p>
-<p>Please create a <cite>data</cite> folder, download the WikiHow dataset from <a class="reference external" href="https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358">wikihowAll.csv</a>  and <a class="reference external" href="https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag">wikihowSep.cs</a>, and place them in the <cite>data</cite> folder.
-We will use the wikihow dataset from  <a class="reference external" href="https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py">summarization_dataset</a>.</p>
-<p>Next, we add the following code snippets to a Python script “T5_training.py”.  Note - The full source code for this tutorial is available in <a class="reference external" href="https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP">PyTorch examples</a>.</p>
+<p>Please create a <cite>data</cite> folder, download the WikiHow dataset from <a class="reference external" href="https://ucsb.app.box.com/s/ap23l8gafpezf4tq3wapr6u8241zz358">wikihowAll.csv</a>  and
+<a class="reference external" href="https://ucsb.app.box.com/s/7yq601ijl1lzvlfu4rjdbbxforzd2oag">wikihowSep.cs</a>,
+and place them in the <cite>data</cite> folder.  We will use the wikihow dataset from
+<a class="reference external" href="https://github.com/HamidShojanazeri/examples/blob/FSDP_example/FSDP/summarization_dataset.py">summarization_dataset</a>.</p>
+<p>Next, we add the following code snippets to a Python script “T5_training.py”.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The full source code for this tutorial is available in <a class="reference external" href="https://github.com/HamidShojanazeri/examples/tree/FSDP_example/FSDP">PyTorch examples</a>.</p>
+</div>
 <p>1.3  Import necessary packages:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
- <span class="kn">import</span> <span class="nn">argparse</span>
- <span class="kn">import</span> <span class="nn">torch</span>
- <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
- <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
- <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
- <span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">GPT2TokenizerFast</span>
- <span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">T5Tokenizer</span><span class="p">,</span> <span class="n">T5ForConditionalGeneration</span>
- <span class="kn">import</span> <span class="nn">functools</span>
- <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">StepLR</span>
- <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
- <span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
- <span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
- <span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
- <span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
- <span class="kn">from</span> <span class="nn">transformers.models.t5.modeling_t5</span> <span class="kn">import</span> <span class="n">T5Block</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">GPT2TokenizerFast</span>
+<span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">T5Tokenizer</span><span class="p">,</span> <span class="n">T5ForConditionalGeneration</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">StepLR</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.distributed</span> <span class="k">as</span> <span class="nn">dist</span>
+<span class="kn">import</span> <span class="nn">torch.multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parallel</span> <span class="kn">import</span> <span class="n">DistributedDataParallel</span> <span class="k">as</span> <span class="n">DDP</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data.distributed</span> <span class="kn">import</span> <span class="n">DistributedSampler</span>
+<span class="kn">from</span> <span class="nn">transformers.models.t5.modeling_t5</span> <span class="kn">import</span> <span class="n">T5Block</span>
 
- <span class="kn">from</span> <span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span> <span class="kn">import</span> <span class="p">(</span>
-  <span class="n">checkpoint_wrapper</span><span class="p">,</span>
-  <span class="n">CheckpointImpl</span><span class="p">,</span>
-  <span class="n">apply_activation_checkpointing_wrapper</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.algorithms._checkpoint.checkpoint_wrapper</span> <span class="kn">import</span> <span class="p">(</span>
+ <span class="n">checkpoint_wrapper</span><span class="p">,</span>
+ <span class="n">CheckpointImpl</span><span class="p">,</span>
+ <span class="n">apply_activation_checkpointing_wrapper</span><span class="p">)</span>
 
- <span class="kn">from</span> <span class="nn">torch.distributed.fsdp</span> <span class="kn">import</span> <span class="p">(</span>
-     <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span><span class="p">,</span>
-     <span class="n">MixedPrecision</span><span class="p">,</span>
-     <span class="n">BackwardPrefetch</span><span class="p">,</span>
-     <span class="n">ShardingStrategy</span><span class="p">,</span>
-     <span class="n">FullStateDictConfig</span><span class="p">,</span>
-     <span class="n">StateDictType</span><span class="p">,</span>
- <span class="p">)</span>
- <span class="kn">from</span> <span class="nn">torch.distributed.fsdp.wrap</span> <span class="kn">import</span> <span class="p">(</span>
-     <span class="n">transformer_auto_wrap_policy</span><span class="p">,</span>
-     <span class="n">enable_wrap</span><span class="p">,</span>
-     <span class="n">wrap</span><span class="p">,</span>
- <span class="p">)</span>
- <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
- <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
- <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
- <span class="kn">from</span> <span class="nn">summarization_dataset</span> <span class="kn">import</span> <span class="o">*</span>
- <span class="kn">from</span> <span class="nn">transformers.models.t5.modeling_t5</span> <span class="kn">import</span> <span class="n">T5Block</span>
- <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
- <span class="kn">import</span> <span class="nn">time</span>
- <span class="kn">import</span> <span class="nn">tqdm</span>
- <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.fsdp</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FullyShardedDataParallel</span> <span class="k">as</span> <span class="n">FSDP</span><span class="p">,</span>
+    <span class="n">MixedPrecision</span><span class="p">,</span>
+    <span class="n">BackwardPrefetch</span><span class="p">,</span>
+    <span class="n">ShardingStrategy</span><span class="p">,</span>
+    <span class="n">FullStateDictConfig</span><span class="p">,</span>
+    <span class="n">StateDictType</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">torch.distributed.fsdp.wrap</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">transformer_auto_wrap_policy</span><span class="p">,</span>
+    <span class="n">enable_wrap</span><span class="p">,</span>
+    <span class="n">wrap</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">summarization_dataset</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">transformers.models.t5.modeling_t5</span> <span class="kn">import</span> <span class="n">T5Block</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">tqdm</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 </pre></div>
 </div>
 <p>1.4 Distributed training setup.
-Here we use two helper functions to initialize the processes for distributed training,  and then to clean up after training completion.
-In this tutorial, we are going to use torch elastic, using <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a> , which will set the worker <cite>RANK</cite> and <cite>WORLD_SIZE</cite> automatically.</p>
+Here we use two helper functions to initialize the processes for distributed
+training,  and then to clean up after training completion.  In this tutorial, we
+are going to use torch elastic, using <a class="reference external" href="https://pytorch.org/docs/stable/elastic/run.html">torchrun</a> , which will set the
+worker <cite>RANK</cite> and <cite>WORLD_SIZE</cite> automatically.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">setup</span><span class="p">():</span>
     <span class="c1"># initialize the process group</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">)</span>
@@ -481,7 +511,8 @@ In this tutorial, we are going to use torch elastic, using <a class="reference e
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span>
 </pre></div>
 </div>
-<p>We also, add couple of helper functions here for date and formatting memory metrics.</p>
+<p>We also, add couple of helper functions here for date and formatting memory
+metrics.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_date_of_run</span><span class="p">():</span>
     <span class="sd">"""create date and time for file save uniqueness</span>
 <span class="sd">    example: 2022-05-07-08:31:12_PM'</span>
@@ -750,12 +781,21 @@ In this tutorial, we are going to use torch elastic, using <a class="reference e
 </pre></div>
 </div>
 </div>
-<div class="section" id="id1">
-<h2>Transformer Wrapping Policy<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>As discussed in the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">previous tutorial</a>, auto_wrap_policy is one of the FSDP features that make it easy to automatically shard a given model and put the model, optimizer and gradient shards into distinct FSDP units.</p>
-<p>For some architectures such as Transformer encoder-decoders, some parts of the model such as embedding table is being shared with both encoder and decoder.
-In this case, we need to place the embedding table in the outer FSDP unit so that it could be accessed from both encoder and decoder.  In addition, by registering the layer class for a transformer, the sharding plan can be made much more communication efficient.  In PyTorch 1.12, FSDP added this support and now we have a wrapping policy for transfomers.</p>
-<p>It can be created as follows, where the T5Block represents the T5 transformer layer class (holding MHSA and FFN).</p>
+<div class="section" id="transformer-wrapping-policy">
+<span id="id1"></span><h2>Transformer Wrapping Policy<a class="headerlink" href="#transformer-wrapping-policy" title="Permalink to this headline">¶</a></h2>
+<p>As discussed in the <a class="reference external" href="https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html">previous tutorial</a>,
+auto_wrap_policy is one of the FSDP features that make it easy to automatically
+shard a given model and put the model, optimizer and gradient shards into
+distinct FSDP units.</p>
+<p>For some architectures such as Transformer encoder-decoders, some parts of the
+model such as embedding table is being shared with both encoder and decoder.  In
+this case, we need to place the embedding table in the outer FSDP unit so that
+it could be accessed from both encoder and decoder.  In addition, by registering
+the layer class for a transformer, the sharding plan can be made much more
+communication efficient.  In PyTorch 1.12, FSDP added this support and now we
+have a wrapping policy for transfomers.</p>
+<p>It can be created as follows, where the T5Block represents the T5 transformer
+layer class (holding MHSA and FFN).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">t5_auto_wrap_policy</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
         <span class="n">transformer_auto_wrap_policy</span><span class="p">,</span>
         <span class="n">transformer_layer_cls</span><span class="o">=</span><span class="p">{</span>
@@ -769,11 +809,16 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
     <span class="n">fsdp_auto_wrap_policy</span><span class="o">=</span><span class="n">t5_auto_wrap_policy</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>To see the wrapped model, you can easily print the model and visually inspect the sharding and FSDP units as well.</p>
+<p>To see the wrapped model, you can easily print the model and visually inspect
+the sharding and FSDP units as well.</p>
 </div>
 <div class="section" id="mixed-precision">
 <h2>Mixed Precision<a class="headerlink" href="#mixed-precision" title="Permalink to this headline">¶</a></h2>
-<p>FSDP supports flexible mixed precision training allowing for arbitrary reduced precision types (such as fp16 or bfloat16). Currently BFloat16 is only available on Ampere GPUs, so you need to confirm native support before you use it. On V100s for example, BFloat16 can still be run but due to it running non-natively, it can result in significant slowdowns.</p>
+<p>FSDP supports flexible mixed precision training allowing for arbitrary reduced
+precision types (such as fp16 or bfloat16). Currently BFloat16 is only available
+on Ampere GPUs, so you need to confirm native support before you use it. On
+V100s for example, BFloat16 can still be run but due to it running non-natively,
+it can result in significant slowdowns.</p>
 <p>To check if BFloat16 is natively supported, you can use the following :</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bf16_ready</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">cuda</span>
@@ -784,7 +829,9 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>One of the advantages of mixed percision in FSDP is providing granular control over different precision levels for parameters, gradients, and buffers as follows:</p>
+<p>One of the advantages of mixed percision in FSDP is providing granular control
+over different precision levels for parameters, gradients, and buffers as
+follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fpSixteen</span> <span class="o">=</span> <span class="n">MixedPrecision</span><span class="p">(</span>
     <span class="n">param_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span>
     <span class="c1"># Gradient communication precision.</span>
@@ -810,8 +857,14 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Note that if a certain type (parameter, reduce, buffer) is not specified, they will not be casted at all.</p>
-<p>This flexibility allows users fine grained control, such as only setting gradient communication to happen in reduced precision, and all parameters / buffer computation to be done in full precision. This is potentially useful in cases where intra-node communication is the main bottleneck and parameters / buffers must be in full precision to avoid accuracy issues. This can be done with the following policy:</p>
+<p>Note that if a certain type (parameter, reduce, buffer) is not specified, they
+will not be casted at all.</p>
+<p>This flexibility allows users fine grained control, such as only setting
+gradient communication to happen in reduced precision, and all parameters /
+buffer computation to be done in full precision. This is potentially useful in
+cases where intra-node communication is the main bottleneck and parameters /
+buffers must be in full precision to avoid accuracy issues. This can be done
+with the following policy:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">grad_bf16</span> <span class="o">=</span> MixedPrecision<span class="o">(</span><span class="nv">reduce_dtype</span><span class="o">=</span>torch.bfloat16<span class="o">)</span>
 </pre></div>
 </div>
@@ -821,11 +874,18 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
        <span class="n">mixed_precision</span><span class="o">=</span><span class="n">bfSixteen</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In our experiments, we have observed up to 4x speed up by using BFloat16 for training and memory reduction of approximately 30% in some experiments that can be used for batch size increases.</p>
+<p>In our experiments, we have observed up to 4x speed up by using BFloat16 for
+training and memory reduction of approximately 30% in some experiments that can
+be used for batch size increases.</p>
 </div>
 <div class="section" id="intializing-fsdp-model-on-device">
 <h2>Intializing FSDP Model on Device<a class="headerlink" href="#intializing-fsdp-model-on-device" title="Permalink to this headline">¶</a></h2>
-<p>In 1.12, FSDP supports a <cite>device_id</cite> argument meant to initialize input CPU module on the device given by <cite>device_id</cite>. This is useful when the entire model does not fit on a single GPU, but fits in a host’s CPU memory. When <cite>device_id</cite> is specified, FSDP will move the model to the specified device on a per-FSDP unit basis, avoiding GPU OOM issues while initializing several times faster than CPU-based initialization:</p>
+<p>In 1.12, FSDP supports a <cite>device_id</cite> argument meant to initialize input CPU
+module on the device given by <cite>device_id</cite>. This is useful when the entire model
+does not fit on a single GPU, but fits in a host’s CPU memory. When <cite>device_id</cite>
+is specified, FSDP will move the model to the specified device on a per-FSDP
+unit basis, avoiding GPU OOM issues while initializing several times faster than
+CPU-based initialization:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
 
  <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
@@ -837,22 +897,36 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
 </div>
 <div class="section" id="sharding-strategy">
 <h2>Sharding Strategy<a class="headerlink" href="#sharding-strategy" title="Permalink to this headline">¶</a></h2>
-<p>FSDP sharding strategy by default is set to fully shard the model parameters, gradients and optimizer states get sharded across all ranks. (also termed Zero3 sharding). In case you are interested to have Zero2 sharding strategy, where only optimizer states and gradients are sharded, FSDP support this feature by passing the Sharding strategy by using  “ShardingStrategy.SHARD_GRAD_OP”, instead of “ShardingStrategy.FULL_SHARD” to the FSDP initialization  as follows:</p>
+<p>FSDP sharding strategy by default is set to fully shard the model parameters,
+gradients and optimizer states get sharded across all ranks. (also termed Zero3
+sharding). In case you are interested to have the Zero2 sharding strategy, where
+only optimizer states and gradients are sharded, FSDP support this feature by
+passing the Sharding strategy by using  “ShardingStrategy.SHARD_GRAD_OP”,
+instead of “ShardingStrategy.FULL_SHARD” to the FSDP initialization  as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
 
  <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
         <span class="n">auto_wrap_policy</span><span class="o">=</span><span class="n">t5_auto_wrap_policy</span><span class="p">,</span>
         <span class="n">mixed_precision</span><span class="o">=</span><span class="n">bfSixteen</span><span class="p">,</span>
         <span class="n">device_id</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">(),</span>
-        <span class="n">sharding_strategy</span><span class="o">=</span><span class="n">ShardingStrategy</span><span class="o">.</span><span class="n">SHARD_GRAD_OP</span> <span class="c1"># FULL_SHARD)</span>
+        <span class="n">sharding_strategy</span><span class="o">=</span><span class="n">ShardingStrategy</span><span class="o">.</span><span class="n">SHARD_GRAD_OP</span> <span class="c1"># ZERO2)</span>
 </pre></div>
 </div>
-<p>This will reduce the communication overhead in FSDP, in this case, it holds full parameters after forward and through the backwards pass.</p>
-<p>This saves an all_gather during backwards so there is less communication at the cost of a higher memory footprint. Note that full model params are freed at the end of backwards and all_gather will happen on the next forward pass.</p>
+<p>This will reduce the communication overhead in FSDP, in this case, it holds full
+parameters after forward and through the backwards pass.</p>
+<p>This saves an all_gather during backwards so there is less communication at the
+cost of a higher memory footprint. Note that full model params are freed at the
+end of backwards and all_gather will happen on the next forward pass.</p>
 </div>
 <div class="section" id="backward-prefetch">
 <h2>Backward Prefetch<a class="headerlink" href="#backward-prefetch" title="Permalink to this headline">¶</a></h2>
-<p>The backward prefetch setting controls the timing of when the next FSDP unit’s parameters should be requested.  By setting it to <cite>BACKWARD_PRE</cite>, the next FSDP’s unit params can begin to be requested and arrive sooner before the computation of the current unit starts. This overlaps the <cite>all_gather</cite> communication and gradient computation which can increase the training speed in exchange for slightly higher memory consumption. It can be utilized in the FSDP wrapper in 2.4 as follows:</p>
+<p>The backward prefetch setting controls the timing of when the next FSDP unit’s
+parameters should be requested.  By setting it to <cite>BACKWARD_PRE</cite>, the next
+FSDP’s unit params can begin to be requested and arrive sooner before the
+computation of the current unit starts. This overlaps the <cite>all_gather</cite>
+communication and gradient computation which can increase the training speed in
+exchange for slightly higher memory consumption. It can be utilized in the FSDP
+wrapper in 2.4 as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="n">local_rank</span><span class="p">)</span>
 
  <span class="n">model</span> <span class="o">=</span> <span class="n">FSDP</span><span class="p">(</span><span class="n">model</span><span class="p">,</span>
@@ -862,13 +936,25 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
         <span class="n">backward_prefetch</span> <span class="o">=</span> <span class="n">BackwardPrefetch</span><span class="o">.</span><span class="n">BACKWARD_PRE</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><cite>backward_prefetch</cite> has two modes, <cite>BACKWARD_PRE</cite> and <cite>BACKWARD_POST</cite>.  <cite>BACKWARD_POST</cite> means that the next FSDP unit’s params will not be requested until the current FSDP unit processing is complete, thus minimizing memory overhead.  In some cases, using <cite>BACKWARD_PRE</cite> can increase model training speed up to 2-10%, with even higher speed improvements noted for larger models.</p>
+<p><cite>backward_prefetch</cite> has two modes, <cite>BACKWARD_PRE</cite> and <cite>BACKWARD_POST</cite>.
+<cite>BACKWARD_POST</cite> means that the next FSDP unit’s params will not be requested
+until the current FSDP unit processing is complete, thus minimizing memory
+overhead.  In some cases, using <cite>BACKWARD_PRE</cite> can increase model training speed
+up to 2-10%, with even higher speed improvements noted for larger models.</p>
 </div>
 <div class="section" id="model-checkpoint-saving-by-streaming-to-the-rank0-cpu">
 <h2>Model Checkpoint Saving, by streaming to the Rank0 CPU<a class="headerlink" href="#model-checkpoint-saving-by-streaming-to-the-rank0-cpu" title="Permalink to this headline">¶</a></h2>
-<p>To save model checkpoints using FULL_STATE_DICT saving which saves model in the same fashion as a local model, PyTorch 1.12 offers a few utilities to support the saving of larger models.</p>
-<p>First, a FullStateDictConfig can be specified, allowing the state_dict to be populated on rank 0 only and offloaded to the CPU.</p>
-<p>When using this configuration, FSDP will allgather model parameters, offloading them to the CPU one by one, only on rank 0. When the state_dict is finally saved, it will only be populated on rank 0 and contain CPU tensors. This avoids potential OOM for models that are larger than a single GPU memory and allows users to checkpoint models whose size is roughly the available CPU RAM on the user’s machine.</p>
+<p>To save model checkpoints using FULL_STATE_DICT saving which saves model in the
+same fashion as a local model, PyTorch 1.12 offers a few utilities to support
+the saving of larger models.</p>
+<p>First, a FullStateDictConfig can be specified, allowing the state_dict to be
+populated on rank 0 only and offloaded to the CPU.</p>
+<p>When using this configuration, FSDP will allgather model parameters, offloading
+them to the CPU one by one, only on rank 0. When the state_dict is finally
+saved, it will only be populated on rank 0 and contain CPU tensors. This avoids
+potential OOM for models that are larger than a single GPU memory and allows
+users to checkpoint models whose size is roughly the available CPU RAM on the
+user’s machine.</p>
 <p>This feature can be run as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">save_policy</span> <span class="o">=</span> <span class="n">FullStateDictConfig</span><span class="p">(</span><span class="n">offload_to_cpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rank0_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">FSDP</span><span class="o">.</span><span class="n">state_dict_type</span><span class="p">(</span>
@@ -883,14 +969,25 @@ In this case, we need to place the embedding table in the outer FSDP unit so tha
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
-<p>In this tutorial, we have introduced many new features for FSDP available in Pytorch 1.12 and used HF T5 as the running example.
-Using the proper wrapping policy especially for transformer models, along with mixed precision and backward prefetch should speed up your training runs. Also, features such as initializing the model on device, and checkpoint saving via streaming to CPU should help to avoid OOM error in dealing with large models.</p>
-<p>We are actively working to add new features to FSDP for the next release.  If you have feedback, feature requests, questions or are encountering issues using FSDP, please feel free to contact us by opening an issue at  <a class="reference external" href="https://github.com/pytorch/pytorch">PyTorch Github repository</a>.</p>
+<p>In this tutorial, we have introduced many new features for FSDP available in
+Pytorch 1.12 and used HF T5 as the running example.  Using the proper wrapping
+policy especially for transformer models, along with mixed precision and
+backward prefetch should speed up your training runs. Also, features such as
+initializing the model on device, and checkpoint saving via streaming to CPU
+should help to avoid OOM error in dealing with large models.</p>
+<p>We are actively working to add new features to FSDP for the next release. If
+you have feedback, feature requests, questions or are encountering issues
+using FSDP, please feel free to contact us by opening an issue in the
+<a class="reference external" href="https://github.com/pytorch/pytorch">PyTorch Github repository</a>.</p>
 </div>
 </div>
 </article>
 </div>
 <footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="process_group_cpp_extension_tutorial.html" rel="next" title="Customize Process Group Backends Using Cpp Extensions">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="FSDP_tutorial.html" rel="prev" title="Getting Started with Fully Sharded Data Parallel(FSDP)"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -926,11 +1023,11 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">Advanced Fully Sharded Data Parallel(FSDP) Tutorial</a><ul>
+<li><a class="reference internal" href="#">Advanced Model Training with Fully Sharded Data Parallel (FSDP)</a><ul>
 <li><a class="reference internal" href="#fsdp-features-in-this-tutorial">FSDP Features in This Tutorial</a></li>
 <li><a class="reference internal" href="#recap-on-how-fsdp-works">Recap on How FSDP Works</a></li>
 <li><a class="reference internal" href="#fine-tuning-hf-t5">Fine-tuning HF T5</a></li>
-<li><a class="reference internal" href="#id1">Transformer Wrapping Policy</a></li>
+<li><a class="reference internal" href="#transformer-wrapping-policy">Transformer Wrapping Policy</a></li>
 <li><a class="reference internal" href="#mixed-precision">Mixed Precision</a></li>
 <li><a class="reference internal" href="#intializing-fsdp-model-on-device">Intializing FSDP Model on Device</a></li>
 <li><a class="reference internal" href="#sharding-strategy">Sharding Strategy</a></li>
@@ -1049,12 +1146,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -1226,5 +1323,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</body>
+</img></body>
 </html>
