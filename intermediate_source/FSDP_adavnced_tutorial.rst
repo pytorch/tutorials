@@ -611,7 +611,7 @@ Sharding Strategy
 -----------------
 FSDP sharding strategy by default is set to fully shard the model parameters,
 gradients and optimizer states get sharded across all ranks. (also termed Zero3
-sharding). In case you are interested to have Zero2 sharding strategy, where
+sharding). In case you are interested to have the Zero2 sharding strategy, where
 only optimizer states and gradients are sharded, FSDP support this feature by
 passing the Sharding strategy by using  "ShardingStrategy.SHARD_GRAD_OP",
 instead of "ShardingStrategy.FULL_SHARD" to the FSDP initialization  as follows:
@@ -624,7 +624,7 @@ instead of "ShardingStrategy.FULL_SHARD" to the FSDP initialization  as follows:
             auto_wrap_policy=t5_auto_wrap_policy,
             mixed_precision=bfSixteen,
             device_id=torch.cuda.current_device(),
-            sharding_strategy=ShardingStrategy.SHARD_GRAD_OP # FULL_SHARD)
+            sharding_strategy=ShardingStrategy.SHARD_GRAD_OP # ZERO2)
 
 This will reduce the communication overhead in FSDP, in this case, it holds full
 parameters after forward and through the backwards pass. 
