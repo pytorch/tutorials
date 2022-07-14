@@ -127,10 +127,9 @@ Finally, we set the benchmark iteration count:
 
 We run the model on CPU, and collect profile information:  
 * The first run uses traditional ("slow path") execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using model.eval()
-  and disables gradient collection with torch.no_grad().
+* The second run enables BT fastpath execution by putting the model in inference mode using model.eval() and disables gradient collection with torch.no_grad().
 
-You can see a small improvement on CPU.  Notice that the fastpath profile shows most of the execution time
+You can see a small improvement when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
 in the native TransformerEncoderLayer implementation aten::_transformer_encoder_layer_fwd
 
 .. code-block:: python
@@ -208,13 +207,11 @@ We enable sparsity support:
     model.encoder.transformer.layers.enable_nested_tensor = True
 
 We run the model on DEVICE, and collect profile information for native MHA and sparsity support execution on DEVICE:  
+
 * The first run uses traditional ("slow path") execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using model.eval()
-  and disables gradient collection with torch.no_grad().
+* The second run enables BT fastpath execution by putting the model in inference mode using model.eval() and disables gradient collection with torch.no_grad().
 
 When executing on a GPU, you should see a significant speedup, in particular for the large input batch setting which includes sparsity:
-
-.. code-block:: python
 
 .. code-block:: python
 
@@ -237,6 +234,7 @@ When executing on a GPU, you should see a significant speedup, in particular for
         for i in range(ITERATIONS):
           output = model(model_input)
     print(prof)
+
 
 Summary
 -------
