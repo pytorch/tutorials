@@ -128,7 +128,7 @@ We run the model on CPU, and collect profile information:
 * The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()` and disables gradient collection with `torch.no_grad()`.
 
 You can see a small improvement when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
-in the native TransformerEncoderLayer implementation `aten::_transformer_encoder_layer_fwd`.
+in the native `TransformerEncoderLayer` implementation `aten::_transformer_encoder_layer_fwd`.
 
 .. code-block:: python
 
