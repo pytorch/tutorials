@@ -48,7 +48,7 @@ The executable example may be found on Google Colab `Torchtext with Better Trans
 <https://colab.research.google.com/drive/1LTCo7HqnmTuDMJhDCPgYfRHff1RBzPtI?usp=sharing>`__.
 
 
-*Setup*
+1. Setup
 
 1.1 Load pre-trained models
 
@@ -121,7 +121,7 @@ Finally, we set the benchmark iteration count:
 
     ITERATIONS=10
 
-*Execution*
+2. Execution
 
 2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)
 
