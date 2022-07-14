@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>(beta) Building a Convolution/Batch Norm fuser in FX — PyTorch Tutorials 1.12.0+cu102 documentation</title>
+<title>Fast Transformer Inference with Better Transformer — PyTorch Tutorials 1.12.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,8 +16,8 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
-<link href="fx_profiling_tutorial.html" rel="next" title="(beta) Building a Simple CPU Performance Profiler with FX"/>
-<link href="realtime_rpi.html" rel="prev" title="Real Time Inference on Raspberry Pi 4 (30 fps!)"/>
+<link href="flask_rest_api_tutorial.html" rel="next" title="Deploying PyTorch in Python via a REST API with Flask"/>
+<link href="mario_rl_tutorial.html" rel="prev" title="Train a Mario-playing RL Agent"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -242,8 +242,8 @@
 <li class="toctree-l1"><a class="reference internal" href="mario_rl_tutorial.html">Train a Mario-playing RL Agent</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Deploying PyTorch Models in Production</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Fast Transformer Inference with Better Transformer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flask_rest_api_tutorial.html">Deploying PyTorch in Python via a REST API with Flask</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../beginner/Intro_to_TorchScript_tutorial.html">Introduction to TorchScript</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../advanced/cpp_export.html">Loading a TorchScript Model in C++</a></li>
@@ -251,8 +251,8 @@
 <li class="toctree-l1"><a class="reference internal" href="realtime_rpi.html">Real Time Inference on Raspberry Pi 4 (30 fps!)</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Code Transforms with FX</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fx_conv_bn_fuser.html">(beta) Building a Convolution/Batch Norm fuser in FX</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fx_profiling_tutorial.html">(beta) Building a Simple CPU Performance Profiler with FX</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Frontend APIs</span></p>
@@ -330,9 +330,9 @@
           
         </a> &gt;
       </li>
-<li>(beta) Building a Convolution/Batch Norm fuser in FX</li>
+<li>Fast Transformer Inference with Better Transformer</li>
 <li class="pytorch-breadcrumbs-aside">
-<a href="../_sources/intermediate/fx_conv_bn_fuser.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+<a href="../_sources/intermediate/bettertransformer_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
 </ul>
 </div>
@@ -344,12 +344,12 @@
 <section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
 <div class="pytorch-content-left">
 <div class="pytorch-call-to-action-links">
-<div id="tutorial-type">intermediate/fx_conv_bn_fuser</div>
+<div id="tutorial-type">intermediate/bettertransformer_tutorial</div>
 <div id="google-colab-link">
-<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg"/>
+<img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
 <div class="call-to-action-mobile-view">Colab</div>
-</div>
+</img></div>
 <div id="download-notebook-link">
 <img class="call-to-action-notebook-img" src="../_static/images/pytorch-download.svg"/>
 <div class="call-to-action-desktop-view">Download Notebook</div>
@@ -364,273 +364,222 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="sphx-glr-download-link-note admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Click <a class="reference internal" href="#sphx-glr-download-intermediate-fx-conv-bn-fuser-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+<div class="section" id="fast-transformer-inference-with-better-transformer">
+<h1>Fast Transformer Inference with Better Transformer<a class="headerlink" href="#fast-transformer-inference-with-better-transformer" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/mikekgfb">Michael Gschwind</a></p>
+<p>This tutorial introduces Better Transformer (BT) as part of the PyTorch 1.12 release.
+In this tutorial, we show how to use Better Transformer for production
+inference with torchtext.  Better Transformer is a production ready fastpath to
+accelerate deployment of Transformer models with high performance on CPU and GPU.
+The fastpath feature works transparently for models based either directly on
+PyTorch core nn.module or with torchtext.</p>
+<p>Models which can be accelerated by Better Transformer fastpath execution are those
+using the following PyTorch core <cite>torch.nn.module</cite> classes <cite>TransformerEncoder</cite>,
+<cite>TransformerEncoderLayer</cite>, and <cite>MultiHeadAttention</cite>.  In addition, torchtext has
+been updated to use the core library modules to benefit from fastpath acceleration.
+(Additional modules may be enabled with fastpath execution in the future.)</p>
+<p>Better Transformer offers two types of acceleration:</p>
+<ul class="simple">
+<li>Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.</li>
+<li>Exploiting sparsity in NLP inference.  Because of variable input lengths, input
+tokens may contain a large number of padding tokens for which processing may be
+skipped, delivering significant speedups.</li>
+</ul>
+<p>Fastpath execution is subject to some criteria. Most importantly, the model
+must be executed in inference mode and operate on input tensors that do not collect
+gradient tape information (e.g., running with torch.no_grad).</p>
+<p>To follow this example in Google Colab, <a class="reference external" href="https://colab.research.google.com/drive/1LTCo7HqnmTuDMJhDCPgYfRHff1RBzPtI?usp=sharing">click here</a>.</p>
+<div class="section" id="better-transformer-features-in-this-tutorial">
+<h2>Better Transformer Features in This Tutorial<a class="headerlink" href="#better-transformer-features-in-this-tutorial" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Load pre-trained models (pre-1.12 created without Better Transformer)</li>
+<li>Run and benchmark inference on CPU with and without BT fastpath (native MHA only)</li>
+<li>Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA only)</li>
+<li>Enable sparsity support</li>
+<li>Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA + sparsity)</li>
+</ul>
 </div>
-<div class="sphx-glr-example-title section" id="beta-building-a-convolution-batch-norm-fuser-in-fx">
-<span id="sphx-glr-intermediate-fx-conv-bn-fuser-py"></span><h1>(beta) Building a Convolution/Batch Norm fuser in FX<a class="headerlink" href="#beta-building-a-convolution-batch-norm-fuser-in-fx" title="Permalink to this headline">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/chillee">Horace He</a></p>
-<p>In this tutorial, we are going to use FX, a toolkit for composable function
-transformations of PyTorch, to do the following:</p>
+<div class="section" id="additional-information">
+<h2>Additional Information<a class="headerlink" href="#additional-information" title="Permalink to this headline">¶</a></h2>
+<p>Additional information about Better Transformer may be found in the PyTorch.Org blog
+<a class="reference external" href="https://pytorch.org/blog/a-better-transformer-for-fast-transformer-encoder-inference//">A Better Transformer for Fast Transformer Inference</a>.</p>
 <ol class="arabic simple">
-<li>Find patterns of conv/batch norm in the data dependencies.</li>
-<li>For the patterns found in 1), fold the batch norm statistics into the convolution weights.</li>
+<li>Setup</li>
 </ol>
-<p>Note that this optimization only works for models in inference mode (i.e. <cite>mode.eval()</cite>)</p>
-<p>We will be building the fuser that exists here:
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/fx/experimental/fuser.py</a>
-First, let’s get some imports out of the way (we will be using all
-of these later in the code).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">torch.fx</span> <span class="k">as</span> <span class="nn">fx</span>
-<span class="kn">import</span> <span class="nn">torch</span>
+<p>1.1 Load pre-trained models</p>
+<p>We download the XLM-R model from the pre-defined torchtext models by following the instructions in
+<a class="reference external" href="https://pytorch.org/text/main/models.html">torchtext.models</a>.  We also set the DEVICE to execute
+on-accelerator tests.  (Enable GPU execution for your environment as appropriate.)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"torch version: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"torch cuda available: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">torch</span><span class="o">,</span> <span class="nn">torchtext</span>
+<span class="kn">from</span> <span class="nn">torchtext.models</span> <span class="kn">import</span> <span class="n">RobertaClassificationHead</span>
+<span class="kn">from</span> <span class="nn">torchtext.functional</span> <span class="kn">import</span> <span class="n">to_tensor</span>
+<span class="n">xlmr_large</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">XLMR_LARGE_ENCODER</span>
+<span class="n">classifier_head</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">RobertaClassificationHead</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">input_dim</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">xlmr_large</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="n">classifier_head</span><span class="p">)</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">xlmr_large</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>For this tutorial, we are going to create a model consisting of convolutions
-and batch norms. Note that this model has some tricky components - some of
-the conv/batch norm patterns are hidden within Sequentials and one of the
-BatchNorms is wrapped in another Module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">WrappedBatchNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">mod</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<p>1.2 Dataset Setup</p>
+<p>We set up two types of inputs: a small input batch and a big input batch with sparsity.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">small_input_batch</span> <span class="o">=</span> <span class="p">[</span>
+               <span class="s2">"Hello world"</span><span class="p">,</span>
+               <span class="s2">"How are you!"</span>
+<span class="p">]</span>
+<span class="n">big_input_batch</span> <span class="o">=</span> <span class="p">[</span>
+               <span class="s2">"Hello world"</span><span class="p">,</span>
+               <span class="s2">"How are you!"</span><span class="p">,</span>
+               <span class="sd">"""`Well, Prince, so Genoa and Lucca are now just family estates of the</span>
+<span class="sd">Buonapartes. But I warn you, if you don't tell me that this means war,</span>
+<span class="sd">if you still try to defend the infamies and horrors perpetrated by</span>
+<span class="sd">that Antichrist- I really believe he is Antichrist- I will have</span>
+<span class="sd">nothing more to do with you and you are no longer my friend, no longer</span>
+<span class="sd">my 'faithful slave,' as you call yourself! But how do you do? I see</span>
+<span class="sd">I have frightened you- sit down and tell me all the news.`</span>
 
-<span class="k">class</span> <span class="nc">M</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nested</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">WrappedBatchNorm</span><span class="p">()</span>
+<span class="sd">It was in July, 1805, and the speaker was the well-known Anna</span>
+<span class="sd">Pavlovna Scherer, maid of honor and favorite of the Empress Marya</span>
+<span class="sd">Fedorovna. With these words she greeted Prince Vasili Kuragin, a man</span>
+<span class="sd">of high rank and importance, who was the first to arrive at her</span>
+<span class="sd">reception. Anna Pavlovna had had a cough for some days. She was, as</span>
+<span class="sd">she said, suffering from la grippe; grippe being then a new word in</span>
+<span class="sd">St. Petersburg, used only by the elite."""</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Next, we select either the small or large input batch, preprocess the inputs and test the model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_batch</span><span class="o">=</span><span class="n">big_input_batch</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nested</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">x</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">M</span><span class="p">()</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">to_tensor</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">input_batch</span><span class="p">),</span> <span class="n">padding_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="n">output</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+<p>Finally, we set the benchmark iteration count:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ITERATIONS</span><span class="o">=</span><span class="mi">10</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Execution</li>
+</ol>
+<p>2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)</p>
+<p>We run the model on CPU, and collect profile information:
+* The first run uses traditional (“slow path”) execution.
+* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</p>
+<p>You can see a small improvement when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
+in the native <cite>TransformerEncoderLayer</cite> implementation <cite>aten::_transformer_encoder_layer_fwd</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="section" id="fusing-convolution-with-batch-norm">
-<h2>Fusing Convolution with Batch Norm<a class="headerlink" href="#fusing-convolution-with-batch-norm" title="Permalink to this headline">¶</a></h2>
-<p>One of the primary challenges with trying to automatically fuse convolution
-and batch norm in PyTorch is that PyTorch does not provide an easy way of
-accessing the computational graph. FX resolves this problem by symbolically
-tracing the actual operations called, so that we can track the computations
-through the <cite>forward</cite> call, nested within Sequential modules, or wrapped in
-an user-defined module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">traced_model</span><span class="o">.</span><span class="n">graph</span><span class="p">)</span>
+<p>2.2  Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA only)</p>
+<p>We check the BT sparsity setting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span>
 </pre></div>
 </div>
-<p>This gives us a graph representation of our model. Note that both the modules
-hidden within the sequential as well as the wrapped Module have been inlined
-into the graph. This is the default level of abstraction, but it can be
-configured by the pass writer. More information can be found at the FX
-overview <a class="reference external" href="https://pytorch.org/docs/master/fx.html#module-torch.fx">https://pytorch.org/docs/master/fx.html#module-torch.fx</a></p>
-</div>
-<div class="section" id="id1">
-<h2>Fusing Convolution with Batch Norm<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<p>Unlike some other fusions, fusion of convolution with batch norm does not
-require any new operators. Instead, as batch norm during inference
-consists of a pointwise add and multiply, these operations can be “baked”
-into the preceding convolution’s weights. This allows us to remove the batch
-norm entirely from our model! Read
-<a class="reference external" href="https://nenadmarkus.com/p/fusing-batchnorm-and-conv/">https://nenadmarkus.com/p/fusing-batchnorm-and-conv/</a> for further details. The
-code here is copied from
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/nn/utils/fusion.py">https://github.com/pytorch/pytorch/blob/orig/release/1.8/torch/nn/utils/fusion.py</a>
-clarity purposes.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fuse_conv_bn_eval</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bn</span><span class="p">):</span>
-    <span class="sd">"""</span>
-<span class="sd">    Given a conv Module `A` and an batch_norm module `B`, returns a conv</span>
-<span class="sd">    module `C` such that C(x) == B(A(x)) in inference mode.</span>
-<span class="sd">    """</span>
-    <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="n">bn</span><span class="o">.</span><span class="n">training</span><span class="p">)),</span> <span class="s2">"Fusion only for eval!"</span>
-    <span class="n">fused_conv</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">conv</span><span class="p">)</span>
-
-    <span class="n">fused_conv</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">fused_conv</span><span class="o">.</span><span class="n">bias</span> <span class="o">=</span> \
-        <span class="n">fuse_conv_bn_weights</span><span class="p">(</span><span class="n">fused_conv</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">fused_conv</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
-                             <span class="n">bn</span><span class="o">.</span><span class="n">running_mean</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">running_var</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">bias</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">fused_conv</span>
-
-<span class="k">def</span> <span class="nf">fuse_conv_bn_weights</span><span class="p">(</span><span class="n">conv_w</span><span class="p">,</span> <span class="n">conv_b</span><span class="p">,</span> <span class="n">bn_rm</span><span class="p">,</span> <span class="n">bn_rv</span><span class="p">,</span> <span class="n">bn_eps</span><span class="p">,</span> <span class="n">bn_w</span><span class="p">,</span> <span class="n">bn_b</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">conv_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">conv_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">bn_w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bn_w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">bn_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">bn_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">bn_rm</span><span class="p">)</span>
-    <span class="n">bn_var_rsqrt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rsqrt</span><span class="p">(</span><span class="n">bn_rv</span> <span class="o">+</span> <span class="n">bn_eps</span><span class="p">)</span>
-
-    <span class="n">conv_w</span> <span class="o">=</span> <span class="n">conv_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">bn_w</span> <span class="o">*</span> <span class="n">bn_var_rsqrt</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">conv_w</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">conv_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">conv_b</span> <span class="o">-</span> <span class="n">bn_rm</span><span class="p">)</span> <span class="o">*</span> <span class="n">bn_var_rsqrt</span> <span class="o">*</span> <span class="n">bn_w</span> <span class="o">+</span> <span class="n">bn_b</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">conv_w</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">conv_b</span><span class="p">)</span>
+<p>We disable the BT sparsity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span><span class="o">=</span><span class="kc">False</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="fx-fusion-pass">
-<h2>FX Fusion Pass<a class="headerlink" href="#fx-fusion-pass" title="Permalink to this headline">¶</a></h2>
-<p>Now that we have our computational graph as well as a method for fusing
-convolution and batch norm, all that remains is to iterate over the FX graph
-and apply the desired fusions.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_parent_name</span><span class="p">(</span><span class="n">target</span> <span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-    <span class="sd">"""</span>
-<span class="sd">    Splits a qualname into parent path and last atom.</span>
-<span class="sd">    For example, `foo.bar.baz` -&gt; (`foo.bar`, `baz`)</span>
-<span class="sd">    """</span>
-    <span class="o">*</span><span class="n">parent</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">parent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="s1">''</span><span class="p">,</span> <span class="n">name</span>
+<p>We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:
+* The first run uses traditional (“slow path”) execution.
+* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite></p>
+<blockquote>
+<div>and disables gradient collection with <cite>torch.no_grad()</cite>.</div></blockquote>
+<p>When executing on a GPU, you should see a significant speedup, in particular for the small input batch setting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">model_input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">Node</span><span class="p">,</span> <span class="n">modules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">new_module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">assert</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="nb">str</span><span class="p">))</span>
-    <span class="n">parent_name</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">_parent_name</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">parent_name</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">new_module</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
 
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="c1"># The first step of most FX passes is to symbolically trace our model to</span>
-    <span class="c1"># obtain a `GraphModule`. This is a representation of our original model</span>
-    <span class="c1"># that is functionally identical to our original model, except that we now</span>
-    <span class="c1"># also have a graph representation of our forward pass.</span>
-    <span class="n">fx_model</span><span class="p">:</span> <span class="n">fx</span><span class="o">.</span><span class="n">GraphModule</span> <span class="o">=</span> <span class="n">fx</span><span class="o">.</span><span class="n">symbolic_trace</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-    <span class="n">modules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">fx_model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">())</span>
-
-    <span class="c1"># The primary representation for working with FX are the `Graph` and the</span>
-    <span class="c1"># `Node`. Each `GraphModule` has a `Graph` associated with it - this</span>
-    <span class="c1"># `Graph` is also what generates `GraphModule.code`.</span>
-    <span class="c1"># The `Graph` itself is represented as a list of `Node` objects. Thus, to</span>
-    <span class="c1"># iterate through all of the operations in our graph, we iterate over each</span>
-    <span class="c1"># `Node` in our `Graph`.</span>
-    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
-        <span class="c1"># The FX IR contains several types of nodes, which generally represent</span>
-        <span class="c1"># call sites to modules, functions, or methods. The type of node is</span>
-        <span class="c1"># determined by `Node.op`.</span>
-        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">op</span> <span class="o">!=</span> <span class="s1">'call_module'</span><span class="p">:</span> <span class="c1"># If our current node isn't calling a Module then we can ignore it.</span>
-            <span class="k">continue</span>
-        <span class="c1"># For call sites, `Node.target` represents the module/function/method</span>
-        <span class="c1"># that's being called. Here, we check `Node.target` to see if it's a</span>
-        <span class="c1"># batch norm module, and then check `Node.args[0].target` to see if the</span>
-        <span class="c1"># input `Node` is a convolution.</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">])</span> <span class="ow">is</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">users</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># Output of conv is used by other nodes</span>
-                <span class="k">continue</span>
-            <span class="n">conv</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
-            <span class="n">bn</span> <span class="o">=</span> <span class="n">modules</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
-            <span class="n">fused_conv</span> <span class="o">=</span> <span class="n">fuse_conv_bn_eval</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
-            <span class="n">replace_node_module</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">modules</span><span class="p">,</span> <span class="n">fused_conv</span><span class="p">)</span>
-            <span class="c1"># As we've folded the batch nor into the conv, we need to replace all uses</span>
-            <span class="c1"># of the batch norm with the conv.</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">replace_all_uses_with</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="c1"># Now that all uses of the batch norm have been replaced, we can</span>
-            <span class="c1"># safely remove the batch norm.</span>
-            <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">erase_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-    <span class="n">fx_model</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">lint</span><span class="p">()</span>
-    <span class="c1"># After we've modified our graph, we need to recompile our graph in order</span>
-    <span class="c1"># to keep the generated code in sync.</span>
-    <span class="n">fx_model</span><span class="o">.</span><span class="n">recompile</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">fx_model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">We make some simplifications here for demonstration purposes, such as only
-matching 2D convolutions. View
-<a class="reference external" href="https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py">https://github.com/pytorch/pytorch/blob/master/torch/fx/experimental/fuser.py</a>
-for a more usable pass.</p>
+<p>2.3 Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA + sparsity)</p>
+<p>We enable sparsity support:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
 </div>
-</div>
-<div class="section" id="testing-out-our-fusion-pass">
-<h2>Testing out our Fusion Pass<a class="headerlink" href="#testing-out-our-fusion-pass" title="Permalink to this headline">¶</a></h2>
-<p>We can now run this fusion pass on our initial toy model and verify that our
-results are identical. In addition, we can print out the code for our fused
-model and verify that there are no more batch norms.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fused_model</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">fused_model</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">fused_model</span><span class="p">(</span><span class="n">inp</span><span class="p">),</span> <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">))</span>
+<p>We run the model on DEVICE, and collect profile information for native MHA and sparsity support execution on DEVICE:</p>
+<ul class="simple">
+<li>The first run uses traditional (“slow path”) execution.</li>
+<li>The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</li>
+</ul>
+<p>When executing on a GPU, you should see a significant speedup, in particular for the large input batch setting which includes sparsity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">model_input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="benchmarking-our-fusion-on-resnet18">
-<h2>Benchmarking our Fusion on ResNet18<a class="headerlink" href="#benchmarking-our-fusion-on-resnet18" title="Permalink to this headline">¶</a></h2>
-<p>We can test our fusion pass on a larger model like ResNet18 and see how much
-this pass improves inference performance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
-<span class="kn">import</span> <span class="nn">time</span>
-
-<span class="n">rn18</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">resnet18</span><span class="p">()</span>
-<span class="n">rn18</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
-<span class="n">output</span> <span class="o">=</span> <span class="n">rn18</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">benchmark</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="n">begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
-        <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="o">-</span><span class="n">begin</span><span class="p">)</span>
-
-<span class="n">fused_rn18</span> <span class="o">=</span> <span class="n">fuse</span><span class="p">(</span><span class="n">rn18</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Unfused time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">rn18</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Fused time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">fused_rn18</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>As we previously saw, the output of our FX transformation is
-(Torchscriptable) PyTorch code, we can easily <cite>jit.script</cite> the output to try
-and increase our performance even more. In this way, our FX model
-transformation composes with Torchscript with no issues.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jit_rn18</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">script</span><span class="p">(</span><span class="n">fused_rn18</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"jit time: "</span><span class="p">,</span> <span class="n">benchmark</span><span class="p">(</span><span class="n">jit_rn18</span><span class="p">))</span>
-
-
-<span class="c1">############</span>
-<span class="c1"># Conclusion</span>
-<span class="c1"># ----------</span>
-<span class="c1"># As we can see, using FX we can easily write static graph transformations on</span>
-<span class="c1"># PyTorch code.</span>
-<span class="c1">#</span>
-<span class="c1"># Since FX is still in beta, we would be happy to hear any</span>
-<span class="c1"># feedback you have about using it. Please feel free to use the</span>
-<span class="c1"># PyTorch Forums (https://discuss.pytorch.org/) and the issue tracker</span>
-<span class="c1"># (https://github.com/pytorch/pytorch/issues) to provide any feedback</span>
-<span class="c1"># you might have.</span>
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 0 minutes  0.000 seconds)</p>
-<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-intermediate-fx-conv-bn-fuser-py">
-<div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../_downloads/0380815d4ced0adf274e1e30579bfb11/fx_conv_bn_fuser.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">fx_conv_bn_fuser.py</span></code></a></div>
-<div class="sphx-glr-download docutils container">
-<a class="reference download internal" download="" href="../_downloads/26bc084b5a2320e92504b747a7835a9c/fx_conv_bn_fuser.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">fx_conv_bn_fuser.ipynb</span></code></a></div>
-</div>
-<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.readthedocs.io">Gallery generated by Sphinx-Gallery</a></p>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we have introduced fast transformer inference with
+Better Transformer fastpath execution in torchtext using PyTorch core
+Better Transformer support for Transformer Encoder models.  We have
+demonstrated the use of Better Transformer with models trained prior to
+the availability of BT fastpath execution.  We have demonstrated and
+benchmarked the use of both BT fastpath execution modes, native MHA execution
+and BT sparsity acceleration.</p>
 </div>
 </div>
 </article>
 </div>
 <footer>
 <div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
-<a accesskey="n" class="btn btn-neutral float-right" href="fx_profiling_tutorial.html" rel="next" title="(beta) Building a Simple CPU Performance Profiler with FX">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
-<a accesskey="p" class="btn btn-neutral" href="realtime_rpi.html" rel="prev" title="Real Time Inference on Raspberry Pi 4 (30 fps!)"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+<a accesskey="n" class="btn btn-neutral float-right" href="flask_rest_api_tutorial.html" rel="next" title="Deploying PyTorch in Python via a REST API with Flask">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="mario_rl_tutorial.html" rel="prev" title="Train a Mario-playing RL Agent"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
 </div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
@@ -643,7 +592,7 @@ transformation composes with Torchscript with no issues.</p>
 <i class="far fa-star" data-behavior="tutorial-rating" data-count="5" title="5 Stars"></i>
 </div>
 </div>
-<hr class="rating-hr hr-bottom"/>
+<hr class="rating-hr hr-bottom">
 <div role="contentinfo">
 <p>
         © Copyright 2022, PyTorch.
@@ -653,7 +602,7 @@ transformation composes with Torchscript with no issues.</p>
 <div>
         Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
-</footer>
+</hr></footer>
 </div>
 <script>
 if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.indexOf("/prototype/prototype_index")< 1))
@@ -667,12 +616,10 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">(beta) Building a Convolution/Batch Norm fuser in FX</a><ul>
-<li><a class="reference internal" href="#fusing-convolution-with-batch-norm">Fusing Convolution with Batch Norm</a></li>
-<li><a class="reference internal" href="#id1">Fusing Convolution with Batch Norm</a></li>
-<li><a class="reference internal" href="#fx-fusion-pass">FX Fusion Pass</a></li>
-<li><a class="reference internal" href="#testing-out-our-fusion-pass">Testing out our Fusion Pass</a></li>
-<li><a class="reference internal" href="#benchmarking-our-fusion-on-resnet18">Benchmarking our Fusion on ResNet18</a></li>
+<li><a class="reference internal" href="#">Fast Transformer Inference with Better Transformer</a><ul>
+<li><a class="reference internal" href="#better-transformer-features-in-this-tutorial">Better Transformer Features in This Tutorial</a></li>
+<li><a class="reference internal" href="#additional-information">Additional Information</a></li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
 </ul>
@@ -785,12 +732,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -855,8 +802,8 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 <div class="cookie-banner-wrapper">
 <div class="container">
 <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
-<img class="close-button" src="../_static/images/pytorch-x.svg">
-</img></div>
+<img class="close-button" src="../_static/images/pytorch-x.svg"/>
+</div>
 </div>
 <!-- End Footer -->
 <!-- Begin Mobile Menu -->
@@ -962,5 +909,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</body>
+</img></body>
 </html>
