@@ -27,6 +27,9 @@ Fastpath execution is subject to some criteria. Most importantly, the model
 must be executed in inference mode and operate on input tensors that do not collect 
 gradient tape information (e.g., running with torch.no_grad). 
 
+To follow this example in Google Colab, `click here 
+<https://colab.research.google.com/drive/1LTCo7HqnmTuDMJhDCPgYfRHff1RBzPtI?usp=sharing>`__.
+
 Better Transformer Features in This Tutorial
 --------------------------------------------
 * Load pre-trained models (pre-1.12 created without Better Transformer)
@@ -41,15 +44,13 @@ Additional information about Better Transformer may be found in the PyTorch.Org 
 `A Better Transformer for Fast Transformer Inference
 <https://pytorch.org/blog/a-better-transformer-for-fast-transformer-encoder-inference//>`__.
 
-The executable example may be found on Google Colab `Torchtext with Better Transformer 
-<https://colab.research.google.com/drive/1LTCo7HqnmTuDMJhDCPgYfRHff1RBzPtI?usp=sharing>`__.
 
 
 1. Setup
 
 1.1 Load pre-trained models
 
-We download the XLM-R model from the pre-defined torchtext models following the instructions in
+We download the XLM-R model from the pre-defined torchtext models by following the instructions in
 `torchtext.models <https://pytorch.org/text/main/models.html>`__.  We also set the DEVICE to execute 
 on-accelerator tests.  (Enable GPU execution for your environment as appropriate.)
 
@@ -124,10 +125,10 @@ Finally, we set the benchmark iteration count:
 
 We run the model on CPU, and collect profile information:  
 * The first run uses traditional ("slow path") execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using model.eval() and disables gradient collection with torch.no_grad().
+* The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()` and disables gradient collection with `torch.no_grad()`.
 
 You can see a small improvement when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
-in the native TransformerEncoderLayer implementation aten::_transformer_encoder_layer_fwd
+in the native TransformerEncoderLayer implementation `aten::_transformer_encoder_layer_fwd`.
 
 .. code-block:: python
 
@@ -167,8 +168,8 @@ We disable the BT sparsity:
  
 We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:  
 * The first run uses traditional ("slow path") execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using model.eval()
-  and disables gradient collection with torch.no_grad().
+* The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()`
+  and disables gradient collection with `torch.no_grad()`.
 
 When executing on a GPU, you should see a significant speedup, in particular for the small input batch setting:
 
@@ -206,7 +207,7 @@ We enable sparsity support:
 We run the model on DEVICE, and collect profile information for native MHA and sparsity support execution on DEVICE:  
 
 * The first run uses traditional ("slow path") execution.
-* The second run enables BT fastpath execution by putting the model in inference mode using model.eval() and disables gradient collection with torch.no_grad().
+* The second run enables BT fastpath execution by putting the model in inference mode using `model.eval()` and disables gradient collection with `torch.no_grad()`.
 
 When executing on a GPU, you should see a significant speedup, in particular for the large input batch setting which includes sparsity:
 
@@ -238,7 +239,7 @@ Summary
 
 In this tutorial, we have introduced fast transformer inference with 
 Better Transformer fastpath execution in torchtext using PyTorch core 
-Better Transformer support for Transformer Enncoder models.  We have 
+Better Transformer support for Transformer Encoder models.  We have 
 demonstrated the use of Better Transformer with models trained prior to 
 the availability of BT fastpath execution.  We have demonstrated and 
 benchmarked the use of both BT fastpath execution modes, native MHA execution

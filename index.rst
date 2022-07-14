@@ -281,7 +281,7 @@ What's new in PyTorch tutorials?
    :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
    :image: _static/img/thumbnails/cropped/Deploying-PyTorch-in-Python-via-a-REST-API-with-Flask.png
    :link: intermediate/bettertransformer_tutorial.html
-   :tags: Productio,Transformer,NLP,GPU-Inferencen
+   :tags: Production,Text
 
 
 .. customcarditem::
