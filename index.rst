@@ -3,7 +3,6 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
-intermediate/bettertransformer_tutorial.rst
 * `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/intermediate/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
