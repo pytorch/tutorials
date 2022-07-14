@@ -5,24 +5,21 @@ Fast Transformer Inference with Better Transformer
 
 This tutorial introduces Better Transformer (BT) as part of the PyTorch 1.12 release. 
 In this tutorial, we show how to use Better Transformer for production 
-inference with torchtext. 
-
-The example uses a Google Colab notebook to demonstrate Better Transformer setup
-and usage for simplicity. Better Transformer is a production ready fastpath to
+inference with torchtext.  Better Transformer is a production ready fastpath to
 accelerate deployment of Transformer models with high performance on CPU and GPU.
 The fastpath feature works transparently for models based either directly on 
 PyTorch core nn.module or with torchtext.  
 
 Models which can be accelerated by Better Transformer fastpath execution are those
-using the following PyTorch core torch.nn.module with the TransformerEncoder, 
-TransformerEncoderLayer, and MultiHeadAttention models.  In addition, torchtext has 
-been updated to use the core library modules to benefit from the acceleration.
+using the following PyTorch core `torch.nn.module` classes `TransformerEncoder`, 
+`TransformerEncoderLayer`, and `MultiHeadAttention`.  In addition, torchtext has 
+been updated to use the core library modules to benefit from fastpath acceleration.
 (Additional modules may be enabled with fastpath execution in the future.)
 
 Better Transformer offers two types of acceleration:
 
-* Native multihead attention implementation for CPU and GPU to improve overall execution efficiency.  
-* Exploiting sparsity in NLP inference.  Because of variabl input lengths, input
+* Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.  
+* Exploiting sparsity in NLP inference.  Because of variable input lengths, input
   tokens may contain a large number of padding tokens for which processing may be
   skipped, delivering significant speedups.
 
@@ -40,7 +37,7 @@ Better Transformer Features in This Tutorial
 
 Additional Information
 -----------------------
-Additional iinformation about Better Transformer may be found in the PyTorch.Org blog  
+Additional information about Better Transformer may be found in the PyTorch.Org blog  
 `A Better Transformer for Fast Transformer Inference
 <https://pytorch.org/blog/a-better-transformer-for-fast-transformer-encoder-inference//>`__.
 
