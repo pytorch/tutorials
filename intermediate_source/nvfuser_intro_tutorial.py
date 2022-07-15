@@ -262,7 +262,7 @@ profile_workload(
 # include the time that TorchScript and nvFuser take to compile the
 # program and GPU functions. For real end-to-end training the
 # compile time of TorchScript and nvFuser are negligible. For
-# example in this tutorial the combination of TorchScript and
+# example, in this tutorial the combination of TorchScript and
 # nvFuser took around 2.4s in total to compile these high speed
 # GPU functions.
 #
