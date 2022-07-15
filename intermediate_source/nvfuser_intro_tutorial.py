@@ -209,7 +209,7 @@ profile_workload(
 # iterations per second, plotted in the figure below.
 #
 # .. figure:: /_static/img/nvfuser_intro/nvfuser_tutorial_0.png
-# As we run different variations of this script with nvFuser we will
+# As we run different variations of this script with nvFuser, we will
 # continue to add the results to this figure for the same GPUs.
 #
 
