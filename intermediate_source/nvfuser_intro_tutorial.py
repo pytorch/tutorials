@@ -501,7 +501,7 @@ profile_workload(
 # accesses, but it requires building a connected forward and backward
 # graph which isn’t possible with TorchScript. The
 # `memory_efficient_fusion` pass in FuncTorch, however, is such an
-# optimization pass. To use this pass we have to redefine our
+# optimization pass. To use this pass, we have to redefine our
 # function to pull the constants inside (for now it’s easiest to make
 # non-tensor constants literals in the function definition):
 #
