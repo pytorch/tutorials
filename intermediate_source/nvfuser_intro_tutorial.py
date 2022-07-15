@@ -245,7 +245,7 @@ profile_workload(
 # Before we get to the results, it is important to mention here that
 # nvFuser does not generate the exact same sequence of random numbers,
 # as random number generation in PyTorch is dependent on the precise
-# parallelization scheme used for the GPU function. Therefore if you
+# parallelization scheme used for the GPU function. Therefore, if you
 # want to validate the output of nvFuser with the output without
 # nvFuser it would require disabling the random number generation
 # functions. In this example we would simply need to change
