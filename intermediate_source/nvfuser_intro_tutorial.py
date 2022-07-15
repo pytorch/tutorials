@@ -574,7 +574,7 @@ profile_workload(
 # settling for poor performance. For example, let's replace LayerNorm
 # in our example with RMSNorm. Even though RMSNorm is a bit simpler
 # than LayerNorm, it doesn’t have an existing compound operation in
-# PyTorch. See https://doi.org/10.48550/arXiv.1910.07467 for more information about RMSNorm.
+# PyTorch. See the `Root Mean Square Layer Normalization <https://doi.org/10.48550/arXiv.1910.07467>`__ paper for more information about RMSNorm.
 # As before, we’ll define our new transformer block with
 # primitive PyTorch operations.
 #
