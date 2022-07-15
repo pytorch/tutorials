@@ -39,7 +39,7 @@ with your local sysadmin or use your favorite coordination tool (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
 `clustershell <https://cea-hpc.github.io/clustershell/>`__, or
 `others <https://slurm.schedmd.com/>`__). For the purpose of this
-tutorial, we will use a single machine and fork multiple processes using
+tutorial, we will use a single machine and spawn multiple processes using
 the following template.
 
 .. code:: python
