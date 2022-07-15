@@ -663,7 +663,7 @@ profile_workload(func, grad_output, iteration_count=100, label="FuncTorch - RMS 
 # Since RMSNorm is simpler than LayerNorm the performance of our new
 # transformer block is a little higher than the primitive definition
 # without nvFuser (354 iterations per second compared with 260
-# iterations per second). With TorchScript the iterations per second
+# iterations per second). With TorchScript, the iterations per second
 # increases by 2.68x and 3.36x to 952 iterations per second and 1,191
 # iterations per second with TorchScript and FuncTorch’s memory
 # efficient optimization pass, respectively. The performance of this
