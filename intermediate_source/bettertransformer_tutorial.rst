@@ -28,7 +28,7 @@ must be executed in inference mode and operate on input tensors that do not coll
 gradient tape information (e.g., running with torch.no_grad). 
 
 To follow this example in Google Colab, `click here 
-<https://colab.research.google.com/drive/1LTCo7HqnmTuDMJhDCPgYfRHff1RBzPtI?usp=sharing>`__.
+<https://colab.research.google.com/drive/1KZnMJYhYkOMYtNIX5S3AGIYnjyG0AojN?usp=sharing>`__.
 
 Better Transformer Features in This Tutorial
 --------------------------------------------
