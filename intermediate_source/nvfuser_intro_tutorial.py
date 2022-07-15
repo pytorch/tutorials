@@ -464,7 +464,7 @@ profile_workload(
 # nvFuser with TorchScript can improve the performance of this
 # operation even though it’s defined with primitive PyTorch
 # operations. Simply by enabling TorchScript on the new function
-# (just like before) we can see much of the performance returns.
+# (just like before), we can see much of the performance returns.
 #
 
 # Profile scripted primitive definition
