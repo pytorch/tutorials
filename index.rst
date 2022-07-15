@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/intermediate/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
 * `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
@@ -274,6 +275,14 @@ What's new in PyTorch tutorials?
 
 
 .. Deploying PyTorch Models in Production
+
+.. customcarditem::
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/bettertransformer_tutorial.html
+   :tags: Production,Text
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -795,6 +804,7 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
+   intermediate/bettertransformer_tutorial
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
