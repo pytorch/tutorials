@@ -107,7 +107,7 @@ def composite_definition(
 ######################################################################
 # Setup and Performance Metrics
 # ---------------------
-# Next we initialize some inputs, parameters, and a simulated gradient
+# Next, we initialize some inputs, parameters, and a simulated gradient
 # output tensor for the backwards pass since we aren’t including a
 # loss function.
 #
