@@ -599,7 +599,7 @@ def with_rms_norm(
 
 
 ######################################################################
-# As before we’ll get a baseline by running PyTorch without nvFuser.
+# As before, we’ll get a baseline by running PyTorch without nvFuser.
 #
 
 # Profile rms_norm
