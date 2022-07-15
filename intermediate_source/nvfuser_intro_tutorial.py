@@ -527,7 +527,7 @@ def primitive_definition_for_memory_efficient_fusion(
 
 
 ######################################################################
-# Now, instead of passing our function to TorchScript we will pass it
+# Now, instead of passing our function to TorchScript, we will pass it
 # to FuncTorch’s optimization pass.
 #
 
