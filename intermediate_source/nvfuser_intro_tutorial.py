@@ -27,7 +27,7 @@ with nvFuser please review [this blog post, INSERT BLOG POST LINK].
 
 Importing Packages and Selecting a Device
 -----------------------------------------
-In order to run this tutorial and see the benefits of using nvfuser,
+In order to run this tutorial and see the benefits of using nvFuser,
 you would need to install the `1.12.0` PyTorch release as well as
 `functorch` `0.2` or newer version of them. `functorch` also needs
 `networkx` for its smart recomputation heuristics which you can
