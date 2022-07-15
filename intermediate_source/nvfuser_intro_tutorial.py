@@ -248,7 +248,7 @@ profile_workload(
 # parallelization scheme used for the GPU function. Therefore, if you
 # want to validate the output of nvFuser with the output without
 # nvFuser, it would require disabling the random number generation
-# functions. In this example we would simply need to change
+# functions. In this example, we would simply need to change
 # `dropout_out = F.dropout(bias1_out, dropout_prob, training=True)`
 # to
 # `dropout_out = F.dropout(bias1_out, dropout_prob, training=False)`
