@@ -137,7 +137,7 @@ parameters = [input1, input2, weight, bias1, bias2]
 # To produce a baseline performance we will measure the speed of our
 # forward and backward passes in PyTorch’s default eager mode. To get
 # accurate and comparable measurements, we perform a few warm up
-# iterations. Then we time many iterations of the forward and backward
+# iterations. Then, we time many iterations of the forward and backward
 # pass using performance counters combined with proper GPU
 # synchronization, then compute the average iterations per second.
 # It’s important to be very careful when measuring performance on the
