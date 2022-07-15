@@ -331,7 +331,7 @@ for _ in range(3):
     output.backward(dynamic_grad_output)
 
 ######################################################################
-# Now we can measure the performance metrics of nvFuser as we have
+# Now, we can measure the performance metrics of nvFuser as we have
 # previously.
 #
 
