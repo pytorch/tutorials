@@ -45,7 +45,7 @@ Hooks for autograd saved tensors
 
 
 ######################################################################
-# We start with a simple example: :math: `y = a \mapsto \cdot b` , for which
+# We start with a simple example: :math:`y = a \cdot b` , for which
 # we know the gradients of :math:`y` with respect to :math:`a` and
 # :math:`b`:
 #
@@ -108,7 +108,7 @@ y = f(f(f(x)))
 ######################################################################
 # In the example above, executing without grad would only have kept ``x``
 # and ``y`` in the scope, But the graph additionnally stores ``f(x)`` and
-# ``f(f(x)``. Hence, running a forward pass during training will be more
+# ``f(f(x))``. Hence, running a forward pass during training will be more
 # costly in memory usage than during evaluation (more precisely, when
 # autograd is not required).
 #
