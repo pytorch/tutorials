@@ -66,7 +66,7 @@ if int(major) == 0 and int(minor) < 2:
 # The Transformer Block
 # ---------------------
 # The network topology we’re going to focus on is the Transformer
-# Block for networks like BERT. As of writing this blog post nvFuser
+# Block for networks like BERT. As of writing this tutorial, nvFuser
 # provides acceleration of pointwise, reduction, and normalization
 # operations. These simple operations are the backbone of large
 # networks, so improving the speed of these operations can improve
