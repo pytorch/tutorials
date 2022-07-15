@@ -279,7 +279,7 @@ profile_workload(
 # critical to many applications like Natural Language Processing and
 # Graph Neural Networks.
 #
-# To use nvFuser on inputs that change shape from iteration we
+# To use nvFuser on inputs that change shape from iteration, we
 # generate new input and output gradient tensors and make a few
 # different sizes. Since the last dimension is shared with the
 # parameters and cannot be changed dynamically in LayerNorm, we
