@@ -3,8 +3,10 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/intermediate/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
+* `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
 * `Grokking PyTorch Intel CPU Performance from First Principles <https://pytorch.org/tutorials/intermediate/torchserve_with_ipex?utm_source=whats_new_tutorials&utm_medium=torchserve_ipex>`__
 * `Customize Process Group Backends Using Cpp Extensions <https://pytorch.org/tutorials/intermediate/process_group_cpp_extension_tutorial.html?utm_source=whats_new_tutorials&utm_medium=cpp_ext>`__
 * `Forward-mode Automatic Differentiation <https://pytorch.org/tutorials/intermediate/forward_ad_usage.html?utm_source=whats_new_tutorials&utm_medium=forward_ad>`__ (added functorch API capabilities)
@@ -273,6 +275,14 @@ What's new in PyTorch tutorials?
 
 
 .. Deploying PyTorch Models in Production
+
+.. customcarditem::
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: intermediate/bettertransformer_tutorial.html
+   :tags: Production,Text
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -586,8 +596,15 @@ What's new in PyTorch tutorials?
 .. customcarditem::
    :header: Getting Started with Fully Sharded Data Parallel(FSDP)
    :card_description: Learn how to train models with Fully Sharded Data Parallel package.
-   :image: _static/img/thumbnails/cropped/Getting Started with FSDP.png
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
    :link: intermediate/FSDP_tutorial.html
+   :tags: Parallel-and-Distributed-Training
+
+.. customcarditem::
+   :header: Advanced Model Training with Fully Sharded Data Parallel (FSDP)
+   :card_description: Explore advanced model training with Fully Sharded Data Parallel package.
+   :image: _static/img/thumbnails/cropped/Getting-Started-with-FSDP.png
+   :link: intermediate/FSDP_adavnced_tutorial.html
    :tags: Parallel-and-Distributed-Training
 
 .. Mobile
@@ -650,9 +667,9 @@ Additional Resources
 
 .. customcalloutitem::
    :header: Examples of PyTorch
-   :description: A set of examples around pytorch in Vision, Text, Reinforcement Learning, etc.
-   :button_link: https://github.com/pytorch/examples
-   :button_text: Checkout Examples
+   :description: A set of examples around PyTorch in Vision, Text, Reinforcement Learning that you can incorporate in your existing work.
+   :button_link: https://pytorch.org/examples?utm_source=examples&utm_medium=examples-landing
+   :button_text: Check Out Examples
 
 .. customcalloutitem::
    :header: PyTorch Cheat Sheet
@@ -794,6 +811,7 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
+   intermediate/bettertransformer_tutorial
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
@@ -865,6 +883,7 @@ Additional Resources
    intermediate/ddp_tutorial
    intermediate/dist_tuto
    intermediate/FSDP_tutorial
+   intermediate/FSDP_adavnced_tutorial
    intermediate/process_group_cpp_extension_tutorial
    intermediate/rpc_tutorial
    intermediate/rpc_param_server_tutorial
