@@ -215,18 +215,18 @@ What's new in PyTorch tutorials?
 .. Text
 
 .. customcarditem::
-   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
-   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
-   :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
-   :link: beginner/transformer_tutorial.html
-   :tags: Text
-
-.. customcarditem::
    :header: Fast Transformer Inference with Better Transformer
    :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
    :image: _static/img/thumbnails/cropped/pytorch-logo.png
    :link: beginner/bettertransformer_tutorial.html
    :tags: Production,Text
+
+.. customcarditem::
+   :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
+   :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
+   :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
+   :link: beginner/transformer_tutorial.html
+   :tags: Text
 
 .. customcarditem::
    :header: NLP from Scratch: Classifying Names with a Character-level RNN
@@ -282,13 +282,6 @@ What's new in PyTorch tutorials?
 
 
 .. Deploying PyTorch Models in Production
-
-.. customcarditem::
-   :header: Fast Transformer Inference with Better Transformer
-   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
-   :image: _static/img/thumbnails/cropped/pytorch-logo.png
-   :link: beginner/bettertransformer_tutorial.html
-   :tags: Production,Text
 
 
 .. customcarditem::
