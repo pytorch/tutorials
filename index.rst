@@ -805,7 +805,6 @@ Additional Resources
    :hidden:
    :caption: Deploying PyTorch Models in Production
 
-   beginner/bettertransformer_tutorial
    intermediate/flask_rest_api_tutorial
    beginner/Intro_to_TorchScript_tutorial
    advanced/cpp_export
