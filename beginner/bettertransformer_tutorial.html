@@ -6,7 +6,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>PyTorch for Former Torch Users — PyTorch Tutorials 1.12.0+cu102 documentation</title>
+<title>Fast Transformer Inference with Better Transformer — PyTorch Tutorials 1.12.0+cu102 documentation</title>
 <link href="../_static/css/theme.css" rel="stylesheet" type="text/css"/>
 <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
 <link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
@@ -16,6 +16,8 @@
 <link href="../_static/katex-math.css" rel="stylesheet" type="text/css"/>
 <link href="../genindex.html" rel="index" title="Index"/>
 <link href="../search.html" rel="search" title="Search"/>
+<link href="../intermediate/char_rnn_classification_tutorial.html" rel="next" title="NLP From Scratch: Classifying Names with a Character-Level RNN"/>
+<link href="transformer_tutorial.html" rel="prev" title="Language Modeling with nn.Transformer and TorchText"/>
 <!-- Google Analytics -->
 <script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-117752657-2"></script>
 <script>
@@ -226,9 +228,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/forced_alignment_with_torchaudio_tutorial.html">Forced Alignment with Wav2Vec2</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Text</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="transformer_tutorial.html">Language Modeling with nn.Transformer and TorchText</a></li>
-<li class="toctree-l1"><a class="reference internal" href="bettertransformer_tutorial.html">Fast Transformer Inference with Better Transformer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Fast Transformer Inference with Better Transformer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_classification_tutorial.html">NLP From Scratch: Classifying Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/char_rnn_generation_tutorial.html">NLP From Scratch: Generating Names with a Character-Level RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../intermediate/seq2seq_translation_tutorial.html">NLP From Scratch: Translation with a Sequence to Sequence Network and Attention</a></li>
@@ -328,9 +330,9 @@
           
         </a> &gt;
       </li>
-<li>PyTorch for Former Torch Users</li>
+<li>Fast Transformer Inference with Better Transformer</li>
 <li class="pytorch-breadcrumbs-aside">
-<a href="../_sources/beginner/former_torchies_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
+<a href="../_sources/beginner/bettertransformer_tutorial.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"/></a>
 </li>
 </ul>
 </div>
@@ -342,7 +344,7 @@
 <section class="pytorch-content-wrap" data-toggle="wy-nav-shift" id="pytorch-content-wrap">
 <div class="pytorch-content-left">
 <div class="pytorch-call-to-action-links">
-<div id="tutorial-type">beginner/former_torchies_tutorial</div>
+<div id="tutorial-type">beginner/bettertransformer_tutorial</div>
 <div id="google-colab-link">
 <img class="call-to-action-img" src="../_static/images/pytorch-colab.svg">
 <div class="call-to-action-desktop-view">Run in Google Colab</div>
@@ -362,50 +364,223 @@
 <div class="rst-content">
 <div class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
 <article class="pytorch-article" id="pytorch-article" itemprop="articleBody">
-<div class="section" id="pytorch-for-former-torch-users">
-<h1>PyTorch for Former Torch Users<a class="headerlink" href="#pytorch-for-former-torch-users" title="Permalink to this headline">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="http://soumith.ch">Soumith Chintala</a></p>
-<p>In this tutorial, you will learn the following:</p>
-<ol class="arabic simple">
-<li>Using torch Tensors, and important difference against (Lua)Torch</li>
-<li>Using the autograd package</li>
-<li>Building neural networks</li>
-</ol>
-<blockquote>
-<div><ul class="simple">
-<li>Building a ConvNet</li>
-<li>Building a Recurrent Net</li>
+<div class="section" id="fast-transformer-inference-with-better-transformer">
+<h1>Fast Transformer Inference with Better Transformer<a class="headerlink" href="#fast-transformer-inference-with-better-transformer" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/mikekgfb">Michael Gschwind</a></p>
+<p>This tutorial introduces Better Transformer (BT) as part of the PyTorch 1.12 release.
+In this tutorial, we show how to use Better Transformer for production
+inference with torchtext.  Better Transformer is a production ready fastpath to
+accelerate deployment of Transformer models with high performance on CPU and GPU.
+The fastpath feature works transparently for models based either directly on
+PyTorch core nn.module or with torchtext.</p>
+<p>Models which can be accelerated by Better Transformer fastpath execution are those
+using the following PyTorch core <cite>torch.nn.module</cite> classes <cite>TransformerEncoder</cite>,
+<cite>TransformerEncoderLayer</cite>, and <cite>MultiHeadAttention</cite>.  In addition, torchtext has
+been updated to use the core library modules to benefit from fastpath acceleration.
+(Additional modules may be enabled with fastpath execution in the future.)</p>
+<p>Better Transformer offers two types of acceleration:</p>
+<ul class="simple">
+<li>Native multihead attention implementation for CPU and GPU to improvee overall execution efficiency.</li>
+<li>Exploiting sparsity in NLP inference.  Because of variable input lengths, input
+tokens may contain a large number of padding tokens for which processing may be
+skipped, delivering significant speedups.</li>
 </ul>
-</div></blockquote>
-<ol class="arabic simple" start="4">
-<li>Use multiple GPUs</li>
+<p>Fastpath execution is subject to some criteria. Most importantly, the model
+must be executed in inference mode and operate on input tensors that do not collect
+gradient tape information (e.g., running with torch.no_grad).</p>
+<p>To follow this example in Google Colab, <a class="reference external" href="https://colab.research.google.com/drive/1KZnMJYhYkOMYtNIX5S3AGIYnjyG0AojN?usp=sharing">click here</a>.</p>
+<div class="section" id="better-transformer-features-in-this-tutorial">
+<h2>Better Transformer Features in This Tutorial<a class="headerlink" href="#better-transformer-features-in-this-tutorial" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Load pre-trained models (pre-1.12 created without Better Transformer)</li>
+<li>Run and benchmark inference on CPU with and without BT fastpath (native MHA only)</li>
+<li>Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA only)</li>
+<li>Enable sparsity support</li>
+<li>Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA + sparsity)</li>
+</ul>
+</div>
+<div class="section" id="additional-information">
+<h2>Additional Information<a class="headerlink" href="#additional-information" title="Permalink to this headline">¶</a></h2>
+<p>Additional information about Better Transformer may be found in the PyTorch.Org blog
+<a class="reference external" href="https://pytorch.org/blog/a-better-transformer-for-fast-transformer-encoder-inference//">A Better Transformer for Fast Transformer Inference</a>.</p>
+<ol class="arabic simple">
+<li>Setup</li>
 </ol>
-<div class="toctree-wrapper compound">
+<p>1.1 Load pre-trained models</p>
+<p>We download the XLM-R model from the pre-defined torchtext models by following the instructions in
+<a class="reference external" href="https://pytorch.org/text/main/models.html">torchtext.models</a>.  We also set the DEVICE to execute
+on-accelerator tests.  (Enable GPU execution for your environment as appropriate.)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"torch version: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="n">DEVICE</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">)</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"torch cuda available: </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">torch</span><span class="o">,</span> <span class="nn">torchtext</span>
+<span class="kn">from</span> <span class="nn">torchtext.models</span> <span class="kn">import</span> <span class="n">RobertaClassificationHead</span>
+<span class="kn">from</span> <span class="nn">torchtext.functional</span> <span class="kn">import</span> <span class="n">to_tensor</span>
+<span class="n">xlmr_large</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">XLMR_LARGE_ENCODER</span>
+<span class="n">classifier_head</span> <span class="o">=</span> <span class="n">torchtext</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">RobertaClassificationHead</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">input_dim</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">xlmr_large</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">head</span><span class="o">=</span><span class="n">classifier_head</span><span class="p">)</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">xlmr_large</span><span class="o">.</span><span class="n">transform</span><span class="p">()</span>
+</pre></div>
 </div>
-<p><div class="sphx-glr-thumbcontainer" tooltip="Tensors behave almost exactly the same way in PyTorch as they do in Torch."><div class="figure" id="id1">
-<img alt="../_images/tensor_illustration_flat.png" src="../_images/tensor_illustration_flat.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="former_torchies/tensor_tutorial_old.html#sphx-glr-beginner-former-torchies-tensor-tutorial-old-py"><span class="std std-ref">Tensors</span></a></span></p>
+<p>1.2 Dataset Setup</p>
+<p>We set up two types of inputs: a small input batch and a big input batch with sparsity.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">small_input_batch</span> <span class="o">=</span> <span class="p">[</span>
+               <span class="s2">"Hello world"</span><span class="p">,</span>
+               <span class="s2">"How are you!"</span>
+<span class="p">]</span>
+<span class="n">big_input_batch</span> <span class="o">=</span> <span class="p">[</span>
+               <span class="s2">"Hello world"</span><span class="p">,</span>
+               <span class="s2">"How are you!"</span><span class="p">,</span>
+               <span class="sd">"""`Well, Prince, so Genoa and Lucca are now just family estates of the</span>
+<span class="sd">Buonapartes. But I warn you, if you don't tell me that this means war,</span>
+<span class="sd">if you still try to defend the infamies and horrors perpetrated by</span>
+<span class="sd">that Antichrist- I really believe he is Antichrist- I will have</span>
+<span class="sd">nothing more to do with you and you are no longer my friend, no longer</span>
+<span class="sd">my 'faithful slave,' as you call yourself! But how do you do? I see</span>
+<span class="sd">I have frightened you- sit down and tell me all the news.`</span>
+
+<span class="sd">It was in July, 1805, and the speaker was the well-known Anna</span>
+<span class="sd">Pavlovna Scherer, maid of honor and favorite of the Empress Marya</span>
+<span class="sd">Fedorovna. With these words she greeted Prince Vasili Kuragin, a man</span>
+<span class="sd">of high rank and importance, who was the first to arrive at her</span>
+<span class="sd">reception. Anna Pavlovna had had a cough for some days. She was, as</span>
+<span class="sd">she said, suffering from la grippe; grippe being then a new word in</span>
+<span class="sd">St. Petersburg, used only by the elite."""</span>
+<span class="p">]</span>
+</pre></div>
 </div>
-</div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="Autograd is now a core torch package for automatic differentiation. It uses a tape based system..."><div class="figure" id="id2">
-<img alt="../_images/sphx_glr_autograd_tutorial_old_thumb.png" src="../_images/sphx_glr_autograd_tutorial_old_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="former_torchies/autograd_tutorial_old.html#sphx-glr-beginner-former-torchies-autograd-tutorial-old-py"><span class="std std-ref">Autograd</span></a></span></p>
+<p>Next, we select either the small or large input batch, preprocess the inputs and test the model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_batch</span><span class="o">=</span><span class="n">big_input_batch</span>
+
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">to_tensor</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">input_batch</span><span class="p">),</span> <span class="n">padding_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="n">output</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
 </div>
-</div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="We’ve redesigned the nn package, so that it’s fully integrated with autograd. Let's review the ..."><div class="figure" id="id3">
-<img alt="../_images/torch-nn-vs-pytorch-nn1.png" src="../_images/torch-nn-vs-pytorch-nn1.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="former_torchies/nnft_tutorial.html#sphx-glr-beginner-former-torchies-nnft-tutorial-py"><span class="std std-ref">nn package</span></a></span></p>
+<p>Finally, we set the benchmark iteration count:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ITERATIONS</span><span class="o">=</span><span class="mi">10</span>
+</pre></div>
 </div>
-</div></p>
-<p><div class="sphx-glr-thumbcontainer" tooltip="Data Parallelism is when we split the mini-batch of samples into multiple smaller mini-batches ..."><div class="figure" id="id4">
-<img alt="../_images/sphx_glr_parallelism_tutorial_thumb.png" src="../_images/sphx_glr_parallelism_tutorial_thumb.png"/>
-<p class="caption"><span class="caption-text"><a class="reference internal" href="former_torchies/parallelism_tutorial.html#sphx-glr-beginner-former-torchies-parallelism-tutorial-py"><span class="std std-ref">Multi-GPU Examples</span></a></span></p>
+<ol class="arabic simple" start="2">
+<li>Execution</li>
+</ol>
+<p>2.1  Run and benchmark inference on CPU with and without BT fastpath (native MHA only)</p>
+<p>We run the model on CPU, and collect profile information:
+* The first run uses traditional (“slow path”) execution.
+* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</p>
+<p>You can see an improvement (whose magnitude will depend on the CPU model) when the model is executing on CPU.  Notice that the fastpath profile shows most of the execution time
+in the native <cite>TransformerEncoderLayer</cite> implementation <cite>aten::_transformer_encoder_layer_fwd</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+</pre></div>
 </div>
-</div></p>
-<div style="clear:both"></div></div>
+<p>2.2  Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA only)</p>
+<p>We check the BT sparsity setting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span>
+</pre></div>
+</div>
+<p>We disable the BT sparsity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span><span class="o">=</span><span class="kc">False</span>
+</pre></div>
+</div>
+<p>We run the model on DEVICE, and collect profile information for native MHA execution on DEVICE:
+* The first run uses traditional (“slow path”) execution.
+* The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite></p>
+<blockquote>
+<div>and disables gradient collection with <cite>torch.no_grad()</cite>.</div></blockquote>
+<p>When executing on a GPU, you should see a significant speedup, in particular for the small input batch setting:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">model_input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>2.3 Run and benchmark inference on (configurable) DEVICE with and without BT fastpath (native MHA + sparsity)</p>
+<p>We enable sparsity support:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">encoder</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">enable_nested_tensor</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+<p>We run the model on DEVICE, and collect profile information for native MHA and sparsity support execution on DEVICE:</p>
+<ul class="simple">
+<li>The first run uses traditional (“slow path”) execution.</li>
+<li>The second run enables BT fastpath execution by putting the model in inference mode using <cite>model.eval()</cite> and disables gradient collection with <cite>torch.no_grad()</cite>.</li>
+</ul>
+<p>When executing on a GPU, you should see a significant speedup, in particular for the large input batch setting which includes sparsity:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+<span class="n">model_input</span> <span class="o">=</span> <span class="n">model_input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">DEVICE</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"slow path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"fast path:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"=========="</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">use_cuda</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ITERATIONS</span><span class="p">):</span>
+      <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">model_input</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we have introduced fast transformer inference with
+Better Transformer fastpath execution in torchtext using PyTorch core
+Better Transformer support for Transformer Encoder models.  We have
+demonstrated the use of Better Transformer with models trained prior to
+the availability of BT fastpath execution.  We have demonstrated and
+benchmarked the use of both BT fastpath execution modes, native MHA execution
+and BT sparsity acceleration.</p>
+</div>
+</div>
 </article>
 </div>
 <footer>
+<div aria-label="footer navigation" class="rst-footer-buttons" role="navigation">
+<a accesskey="n" class="btn btn-neutral float-right" href="../intermediate/char_rnn_classification_tutorial.html" rel="next" title="NLP From Scratch: Classifying Names with a Character-Level RNN">Next <img class="next-page" src="../_static/images/chevron-right-orange.svg"/></a>
+<a accesskey="p" class="btn btn-neutral" href="transformer_tutorial.html" rel="prev" title="Language Modeling with nn.Transformer and TorchText"><img class="previous-page" src="../_static/images/chevron-right-orange.svg"/> Previous</a>
+</div>
 <hr class="rating-hr hr-top"/>
 <div class="rating-container">
 <div class="rating-prompt">Rate this Tutorial</div>
@@ -441,7 +616,12 @@ if((window.location.href.indexOf("/prototype/")!= -1) && (window.location.href.i
 <div class="pytorch-right-menu" id="pytorch-right-menu">
 <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
 <ul>
-<li><a class="reference internal" href="#">PyTorch for Former Torch Users</a></li>
+<li><a class="reference internal" href="#">Fast Transformer Inference with Better Transformer</a><ul>
+<li><a class="reference internal" href="#better-transformer-features-in-this-tutorial">Better Transformer Features in This Tutorial</a></li>
+<li><a class="reference internal" href="#additional-information">Additional Information</a></li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -552,12 +732,12 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
 </script>
 <noscript>
 <img height="1" src="https://www.facebook.com/tr?id=243028289693773&amp;ev=PageView
-  &amp;noscript=1" width="1"/>
-</noscript>
+  &amp;noscript=1" width="1">
+</img></noscript>
 <script type="text/javascript">
   var collapsedSections = ['PyTorch Recipes', 'Learning PyTorch', 'Image and Video', 'Audio', 'Text', 'Reinforcement Learning', 'Deploying PyTorch Models in Production', 'Code Transforms with FX', 'Frontend APIs', 'Extending PyTorch', 'Model Optimization', 'Parallel and Distributed Training', 'Mobile'];
 </script>
-<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1"/>
+<img alt="" height="1" src="https://www.googleadservices.com/pagead/conversion/795629140/?label=txkmCPmdtosBENSssfsC&amp;guid=ON&amp;script=0" style="border-style:none;" width="1">
 <!-- Begin Footer -->
 <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
 <div class="container">
@@ -729,5 +909,5 @@ if(window.location.href.indexOf("/beginner/basics/")!= -1)
       });
     })
   </script>
-</body>
+</img></body>
 </html>
