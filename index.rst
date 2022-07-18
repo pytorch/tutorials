@@ -3,6 +3,7 @@ Welcome to PyTorch Tutorials
 
 What's new in PyTorch tutorials?
 
+* `Fast Transformer Inference with Better Transformer <https://pytorch.org/tutorials/beginner/bettertransformer_tutorial.html?utm_source=whats_new_tutorials&utm_medium=bettertransformer>`__
 * `Introduction to TorchRec <https://pytorch.org/tutorials/intermediate/torchrec_tutorial.html?utm_source=whats_new_tutorials&utm_medium=torchrec>`__
 * `Getting Started with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP>`__
 * `Advanced model training with Fully Sharded Data Parallel (FSDP) <https://pytorch.org/tutorials/intermediate/FSDP_adavnced_tutorial.html?utm_source=whats_new_tutorials&utm_medium=FSDP_advanced>`__
@@ -214,6 +215,13 @@ What's new in PyTorch tutorials?
 .. Text
 
 .. customcarditem::
+   :header: Fast Transformer Inference with Better Transformer
+   :card_description: Deploy a PyTorch Transformer model using Better Transformer with high performance for inference
+   :image: _static/img/thumbnails/cropped/pytorch-logo.png
+   :link: beginner/bettertransformer_tutorial.html
+   :tags: Production,Text
+
+.. customcarditem::
    :header: Sequence-to-Sequence Modeling with nn.Transformer and torchtext
    :card_description: Learn how to train a sequence-to-sequence model that uses the nn.Transformer module.
    :image: _static/img/thumbnails/cropped/Sequence-to-Sequence-Modeling-with-nnTransformer-andTorchText.png
@@ -274,6 +282,7 @@ What's new in PyTorch tutorials?
 
 
 .. Deploying PyTorch Models in Production
+
 
 .. customcarditem::
    :header: Deploying PyTorch in Python via a REST API with Flask
@@ -773,6 +782,7 @@ Additional Resources
    :caption: Text
 
    beginner/transformer_tutorial
+   beginner/bettertransformer_tutorial
    intermediate/char_rnn_classification_tutorial
    intermediate/char_rnn_generation_tutorial
    intermediate/seq2seq_translation_tutorial
