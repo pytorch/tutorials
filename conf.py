@@ -46,6 +46,12 @@ except ImportError:
     warnings.warn('unable to load "torchvision" package')
 import pytorch_sphinx_theme
 
+rst_epilog ="""
+.. |edit| image:: /_static/pencil-16.png
+           :width: 16px
+           :height: 16px
+"""
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
