@@ -14,7 +14,7 @@ Follow along with the video below or on `youtube <https://www.youtube.com/watch?
      <iframe width="560" height="315" src="https://www.youtube.com/embed/cjgj41dvSeQ" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
    </div>
 
-Frequently, when building recommendation systems, we want to represent
+When building recommendation systems, we frequently want to represent
 entities like products or pages with embeddings. For example, see Meta
 AI’s `Deep learning recommendation
 model <https://arxiv.org/abs/1906.00091>`__, or DLRM. As the number of
@@ -31,7 +31,7 @@ Installation
 
 Requirements: python >= 3.7
 
-We highly recommend CUDA when using TorchRec. If using CUDA: cuda >= 11.0
+We highly recommend CUDA when using TorchRec (If using CUDA: cuda >= 11.0).
 
 
 .. code:: shell
