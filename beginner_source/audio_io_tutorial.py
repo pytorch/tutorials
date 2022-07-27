@@ -3,12 +3,9 @@
 Audio I/O
 =========
 
-``torchaudio`` integrates ``libsox`` and provides a rich set of audio I/O.
+This tutorial shows how to use TorchAudio's basic I/O API to load audio files
+into PyTorch's Tensor object, and save Tensor objects to audio files.
 """
-
-# When running this tutorial in Google Colab, install the required packages
-# with the following.
-# !pip install torchaudio boto3
 
 import torch
 import torchaudio
@@ -17,163 +14,47 @@ print(torch.__version__)
 print(torchaudio.__version__)
 
 ######################################################################
-# Preparing data and utility functions (skip this section)
-# --------------------------------------------------------
+# Preparation
+# -----------
 #
-
-#@title Prepare data and utility functions. {display-mode: "form"}
-#@markdown
-#@markdown You do not need to look into this cell.
-#@markdown Just execute once and you are good to go.
-#@markdown
-#@markdown In this tutorial, we will use a speech data from [VOiCES dataset](https://iqtlabs.github.io/voices/), which is licensed under Creative Commos BY 4.0.
-
+# First, we import the modules and download the audio assets we use in this tutorial.
+#
+# .. note::
+#    When running this tutorial in Google Colab, install the required packages
+#    with the following:
+#
+#    .. code::
+#
+#       !pip install boto3
 
 import io
 import os
-import requests
 import tarfile
+import tempfile
 
 import boto3
+import matplotlib.pyplot as plt
+import requests
 from botocore import UNSIGNED
 from botocore.config import Config
-import matplotlib.pyplot as plt
-from IPython.display import Audio, display
+from IPython.display import Audio
+from torchaudio.utils import download_asset
+
+SAMPLE_GSM = download_asset("tutorial-assets/steam-train-whistle-daniel_simon.gsm")
+SAMPLE_WAV = download_asset("tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav")
+SAMPLE_WAV_8000 = download_asset("tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042-8000hz.wav")
 
 
-_SAMPLE_DIR = "_sample_data"
-SAMPLE_WAV_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.wav"
-SAMPLE_WAV_PATH = os.path.join(_SAMPLE_DIR, "steam.wav")
-
-SAMPLE_MP3_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.mp3"
-SAMPLE_MP3_PATH = os.path.join(_SAMPLE_DIR, "steam.mp3")
-
-SAMPLE_GSM_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/steam-train-whistle-daniel_simon.gsm"
-SAMPLE_GSM_PATH = os.path.join(_SAMPLE_DIR, "steam.gsm")
-
-SAMPLE_WAV_SPEECH_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
-SAMPLE_WAV_SPEECH_PATH = os.path.join(_SAMPLE_DIR, "speech.wav")
-
-SAMPLE_TAR_URL = "https://pytorch-tutorial-assets.s3.amazonaws.com/VOiCES_devkit.tar.gz"
-SAMPLE_TAR_PATH = os.path.join(_SAMPLE_DIR, "sample.tar.gz")
-SAMPLE_TAR_ITEM = "VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
-
-S3_BUCKET = "pytorch-tutorial-assets"
-S3_KEY = "VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
-
-
-def _fetch_data():
-  os.makedirs(_SAMPLE_DIR, exist_ok=True)
-  uri = [
-    (SAMPLE_WAV_URL, SAMPLE_WAV_PATH),
-    (SAMPLE_MP3_URL, SAMPLE_MP3_PATH),
-    (SAMPLE_GSM_URL, SAMPLE_GSM_PATH),
-    (SAMPLE_WAV_SPEECH_URL, SAMPLE_WAV_SPEECH_PATH),
-    (SAMPLE_TAR_URL, SAMPLE_TAR_PATH),
-  ]
-  for url, path in uri:
-    with open(path, 'wb') as file_:
-      file_.write(requests.get(url).content)
-
-_fetch_data()
-
-def print_stats(waveform, sample_rate=None, src=None):
-  if src:
-    print("-" * 10)
-    print("Source:", src)
-    print("-" * 10)
-  if sample_rate:
-    print("Sample Rate:", sample_rate)
-  print("Shape:", tuple(waveform.shape))
-  print("Dtype:", waveform.dtype)
-  print(f" - Max:     {waveform.max().item():6.3f}")
-  print(f" - Min:     {waveform.min().item():6.3f}")
-  print(f" - Mean:    {waveform.mean().item():6.3f}")
-  print(f" - Std Dev: {waveform.std().item():6.3f}")
-  print()
-  print(waveform)
-  print()
-
-def plot_waveform(waveform, sample_rate, title="Waveform", xlim=None, ylim=None):
-  waveform = waveform.numpy()
-
-  num_channels, num_frames = waveform.shape
-  time_axis = torch.arange(0, num_frames) / sample_rate
-
-  figure, axes = plt.subplots(num_channels, 1)
-  if num_channels == 1:
-    axes = [axes]
-  for c in range(num_channels):
-    axes[c].plot(time_axis, waveform[c], linewidth=1)
-    axes[c].grid(True)
-    if num_channels > 1:
-      axes[c].set_ylabel(f'Channel {c+1}')
-    if xlim:
-      axes[c].set_xlim(xlim)
-    if ylim:
-      axes[c].set_ylim(ylim)
-  figure.suptitle(title)
-  plt.show(block=False)
-
-def plot_specgram(waveform, sample_rate, title="Spectrogram", xlim=None):
-  waveform = waveform.numpy()
-
-  num_channels, num_frames = waveform.shape
-  time_axis = torch.arange(0, num_frames) / sample_rate
-
-  figure, axes = plt.subplots(num_channels, 1)
-  if num_channels == 1:
-    axes = [axes]
-  for c in range(num_channels):
-    axes[c].specgram(waveform[c], Fs=sample_rate)
-    if num_channels > 1:
-      axes[c].set_ylabel(f'Channel {c+1}')
-    if xlim:
-      axes[c].set_xlim(xlim)
-  figure.suptitle(title)
-  plt.show(block=False)
-
-def play_audio(waveform, sample_rate):
-  waveform = waveform.numpy()
-
-  num_channels, num_frames = waveform.shape
-  if num_channels == 1:
-    display(Audio(waveform[0], rate=sample_rate))
-  elif num_channels == 2:
-    display(Audio((waveform[0], waveform[1]), rate=sample_rate))
-  else:
-    raise ValueError("Waveform with more than 2 channels are not supported.")
-
-def _get_sample(path, resample=None):
-  effects = [
-    ["remix", "1"]
-  ]
-  if resample:
-    effects.extend([
-      ["lowpass", f"{resample // 2}"],
-      ["rate", f'{resample}'],
-    ])
-  return torchaudio.sox_effects.apply_effects_file(path, effects=effects)
-
-def get_sample(*, resample=None):
-  return _get_sample(SAMPLE_WAV_PATH, resample=resample)
-
-def inspect_file(path):
-  print("-" * 10)
-  print("Source:", path)
-  print("-" * 10)
-  print(f" - File size: {os.path.getsize(path)} bytes")
-  print(f" - {torchaudio.info(path)}")
 
 ######################################################################
-# Quering audio metadata
-# ----------------------
+# Querying audio metadata
+# -----------------------
 #
-# Function ``torchaudio.info`` fetches audio metadata. You can provide
-# a path-like object or file-like object.
+# Function :py:func:`torchaudio.info` fetches audio metadata.
+# You can provide a path-like object or file-like object.
 #
 
-metadata = torchaudio.info(SAMPLE_WAV_PATH)
+metadata = torchaudio.info(SAMPLE_WAV)
 print(metadata)
 
 ######################################################################
@@ -205,6 +86,7 @@ print(metadata)
 # -  ``"OPUS"``: Opus [`opus-codec.org <https://opus-codec.org/>`__]
 # -  ``"GSM"``: GSM-FR
 #    [`wikipedia <https://en.wikipedia.org/wiki/Full_Rate>`__]
+# -  ``"HTK"``: Single channel 16-bit PCM
 # -  ``"UNKNOWN"`` None of above
 #
 
@@ -216,49 +98,37 @@ print(metadata)
 # -  ``num_frames`` can be ``0`` for GSM-FR format.
 #
 
-metadata = torchaudio.info(SAMPLE_MP3_PATH)
-print(metadata)
-
-metadata = torchaudio.info(SAMPLE_GSM_PATH)
+metadata = torchaudio.info(SAMPLE_GSM)
 print(metadata)
 
 
 ######################################################################
 # Querying file-like object
-# ~~~~~~~~~~~~~~~~~~~~~~~~~
+# -------------------------
 #
-# ``info`` works on file-like objects.
+# :py:func:`torchaudio.info` works on file-like objects.
 #
 
-print("Source:", SAMPLE_WAV_URL)
-with requests.get(SAMPLE_WAV_URL, stream=True) as response:
-  metadata = torchaudio.info(response.raw)
+url = "https://download.pytorch.org/torchaudio/tutorial-assets/steam-train-whistle-daniel_simon.wav"
+with requests.get(url, stream=True) as response:
+    metadata = torchaudio.info(response.raw)
 print(metadata)
 
 ######################################################################
-# **Note** When passing a file-like object, ``info`` does not read
-# all of the underlying data; rather, it reads only a portion
-# of the data from the beginning.
-# Therefore, for a given audio format, it may not be able to retrieve the
-# correct metadata, including the format itself.
-# The following example illustrates this.
+# .. note::
 #
-# -  Use argument ``format`` to specify the audio format of the input.
-# -  The returned metadata has ``num_frames = 0``
-#
-
-print("Source:", SAMPLE_MP3_URL)
-with requests.get(SAMPLE_MP3_URL, stream=True) as response:
-  metadata = torchaudio.info(response.raw, format="mp3")
-
-  print(f"Fetched {response.raw.tell()} bytes.")
-print(metadata)
+#    When passing a file-like object, ``info`` does not read
+#    all of the underlying data; rather, it reads only a portion
+#    of the data from the beginning.
+#    Therefore, for a given audio format, it may not be able to retrieve the
+#    correct metadata, including the format itself. In such case, you
+#    can pass ``format`` argument to specify the format of the audio.
 
 ######################################################################
-# Loading audio data into Tensor
-# ------------------------------
+# Loading audio data
+# ------------------
 #
-# To load audio data, you can use ``torchaudio.load``.
+# To load audio data, you can use :py:func:`torchaudio.load`.
 #
 # This function accepts a path-like object or file-like object as input.
 #
@@ -266,51 +136,112 @@ print(metadata)
 # (``int``).
 #
 # By default, the resulting tensor object has ``dtype=torch.float32`` and
-# its value range is normalized within ``[-1.0, 1.0]``.
+# its value range is ``[-1.0, 1.0]``.
 #
 # For the list of supported format, please refer to `the torchaudio
 # documentation <https://pytorch.org/audio>`__.
 #
 
-waveform, sample_rate = torchaudio.load(SAMPLE_WAV_SPEECH_PATH)
-
-print_stats(waveform, sample_rate=sample_rate)
-plot_waveform(waveform, sample_rate)
-plot_specgram(waveform, sample_rate)
-play_audio(waveform, sample_rate)
+waveform, sample_rate = torchaudio.load(SAMPLE_WAV)
 
 
 ######################################################################
-# Loading from file-like object
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# ``torchaudio``\ ’s I/O functions now support file-like objects. This
-# allows for fetching and decoding audio data from locations
+def plot_waveform(waveform, sample_rate):
+    waveform = waveform.numpy()
+
+    num_channels, num_frames = waveform.shape
+    time_axis = torch.arange(0, num_frames) / sample_rate
+
+    figure, axes = plt.subplots(num_channels, 1)
+    if num_channels == 1:
+        axes = [axes]
+    for c in range(num_channels):
+        axes[c].plot(time_axis, waveform[c], linewidth=1)
+        axes[c].grid(True)
+        if num_channels > 1:
+            axes[c].set_ylabel(f"Channel {c+1}")
+    figure.suptitle("waveform")
+    plt.show(block=False)
+
+
+######################################################################
+#
+plot_waveform(waveform, sample_rate)
+
+
+######################################################################
+#
+def plot_specgram(waveform, sample_rate, title="Spectrogram"):
+    waveform = waveform.numpy()
+
+    num_channels, num_frames = waveform.shape
+
+    figure, axes = plt.subplots(num_channels, 1)
+    if num_channels == 1:
+        axes = [axes]
+    for c in range(num_channels):
+        axes[c].specgram(waveform[c], Fs=sample_rate)
+        if num_channels > 1:
+            axes[c].set_ylabel(f"Channel {c+1}")
+    figure.suptitle(title)
+    plt.show(block=False)
+
+
+######################################################################
+#
+plot_specgram(waveform, sample_rate)
+
+
+######################################################################
+#
+Audio(waveform.numpy()[0], rate=sample_rate)
+
+######################################################################
+# Loading from file-like object
+# -----------------------------
+#
+# The I/O functions support file-like objects.
+# This allows for fetching and decoding audio data from locations
 # within and beyond the local file system.
 # The following examples illustrate this.
 #
 
+######################################################################
+#
+
 # Load audio data as HTTP request
-with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
-  waveform, sample_rate = torchaudio.load(response.raw)
+url = "https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+with requests.get(url, stream=True) as response:
+    waveform, sample_rate = torchaudio.load(response.raw)
 plot_specgram(waveform, sample_rate, title="HTTP datasource")
 
+######################################################################
+#
+
 # Load audio from tar file
-with tarfile.open(SAMPLE_TAR_PATH, mode='r') as tarfile_:
-  fileobj = tarfile_.extractfile(SAMPLE_TAR_ITEM)
-  waveform, sample_rate = torchaudio.load(fileobj)
+tar_path = download_asset("tutorial-assets/VOiCES_devkit.tar.gz")
+tar_item = "VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+with tarfile.open(tar_path, mode="r") as tarfile_:
+    fileobj = tarfile_.extractfile(tar_item)
+    waveform, sample_rate = torchaudio.load(fileobj)
 plot_specgram(waveform, sample_rate, title="TAR file")
 
+######################################################################
+#
+
 # Load audio from S3
-client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-response = client.get_object(Bucket=S3_BUCKET, Key=S3_KEY)
-waveform, sample_rate = torchaudio.load(response['Body'])
+bucket = "pytorch-tutorial-assets"
+key = "VOiCES_devkit/source-16k/train/sp0307/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
+client = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+response = client.get_object(Bucket=bucket, Key=key)
+waveform, sample_rate = torchaudio.load(response["Body"])
 plot_specgram(waveform, sample_rate, title="From S3")
 
 
 ######################################################################
 # Tips on slicing
-# ~~~~~~~~~~~~~~~
+# ---------------
 #
 # Providing ``num_frames`` and ``frame_offset`` arguments restricts
 # decoding to the corresponding segment of the input.
@@ -335,29 +266,28 @@ plot_specgram(waveform, sample_rate, title="From S3")
 
 frame_offset, num_frames = 16000, 16000  # Fetch and decode the 1 - 2 seconds
 
+url = "https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
 print("Fetching all the data...")
-with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
-  waveform1, sample_rate1 = torchaudio.load(response.raw)
-  waveform1 = waveform1[:, frame_offset:frame_offset+num_frames]
-  print(f" - Fetched {response.raw.tell()} bytes")
+with requests.get(url, stream=True) as response:
+    waveform1, sample_rate1 = torchaudio.load(response.raw)
+    waveform1 = waveform1[:, frame_offset : frame_offset + num_frames]
+    print(f" - Fetched {response.raw.tell()} bytes")
 
 print("Fetching until the requested frames are available...")
-with requests.get(SAMPLE_WAV_SPEECH_URL, stream=True) as response:
-  waveform2, sample_rate2 = torchaudio.load(
-      response.raw, frame_offset=frame_offset, num_frames=num_frames)
-  print(f" - Fetched {response.raw.tell()} bytes")
+with requests.get(url, stream=True) as response:
+    waveform2, sample_rate2 = torchaudio.load(response.raw, frame_offset=frame_offset, num_frames=num_frames)
+    print(f" - Fetched {response.raw.tell()} bytes")
 
 print("Checking the resulting waveform ... ", end="")
 assert (waveform1 == waveform2).all()
 print("matched!")
-
 
 ######################################################################
 # Saving audio to file
 # --------------------
 #
 # To save audio data in formats interpretable by common applications,
-# you can use ``torchaudio.save``.
+# you can use :py:func:`torchaudio.save`.
 #
 # This function accepts a path-like object or file-like object.
 #
@@ -372,55 +302,72 @@ print("matched!")
 # ``bits_per_sample`` to change this behavior. For example, to save data
 # in 16-bit signed integer PCM, you can do the following.
 #
-# **Note** Saving data in encodings with lower bit depth reduces the
+# .. note::
+#
+# Saving data in encodings with a lower bit depth reduces the
 # resulting file size but also precision.
 #
 
+waveform, sample_rate = torchaudio.load(SAMPLE_WAV)
 
-waveform, sample_rate = get_sample()
-print_stats(waveform, sample_rate=sample_rate)
 
+######################################################################
+#
+
+def inspect_file(path):
+    print("-" * 10)
+    print("Source:", path)
+    print("-" * 10)
+    print(f" - File size: {os.path.getsize(path)} bytes")
+    print(f" - {torchaudio.info(path)}")
+    print()
+
+######################################################################
+#
 # Save without any encoding option.
 # The function will pick up the encoding which
 # the provided data fit
-path = "save_example_default.wav"
-torchaudio.save(path, waveform, sample_rate)
-inspect_file(path)
+with tempfile.TemporaryDirectory() as tempdir:
+    path = f"{tempdir}/save_example_default.wav"
+    torchaudio.save(path, waveform, sample_rate)
+    inspect_file(path)
 
+######################################################################
+#
 # Save as 16-bit signed integer Linear PCM
 # The resulting file occupies half the storage but loses precision
-path = "save_example_PCM_S16.wav"
-torchaudio.save(
-    path, waveform, sample_rate,
-    encoding="PCM_S", bits_per_sample=16)
-inspect_file(path)
+with tempfile.TemporaryDirectory() as tempdir:
+    path = f"{tempdir}/save_example_PCM_S16.wav"
+    torchaudio.save(path, waveform, sample_rate, encoding="PCM_S", bits_per_sample=16)
+    inspect_file(path)
 
 
 ######################################################################
-# ``torchaudio.save`` can also handle other formats. To name a few:
+# :py:func:`torchaudio.save` can also handle other formats.
+# To name a few:
 #
 
-waveform, sample_rate = get_sample(resample=8000)
-
 formats = [
-  "mp3",
-  "flac",
-  "vorbis",
-  "sph",
-  "amb",
-  "amr-nb",
-  "gsm",
+    "flac",
+    "vorbis",
+    "sph",
+    "amb",
+    "amr-nb",
+    "gsm",
 ]
 
-for format in formats:
-  path = f"save_example.{format}"
-  torchaudio.save(path, waveform, sample_rate, format=format)
-  inspect_file(path)
-
+######################################################################
+#
+waveform, sample_rate = torchaudio.load(SAMPLE_WAV_8000)
+with tempfile.TemporaryDirectory() as tempdir:
+    for format in formats:
+        path = f"{tempdir}/save_example.{format}"
+        torchaudio.save(path, waveform, sample_rate, format=format)
+        inspect_file(path)
 
 ######################################################################
 # Saving to file-like object
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# --------------------------
 #
 # Similar to the other I/O functions, you can save audio to file-like
 # objects. When saving to a file-like object, argument ``format`` is
@@ -428,7 +375,7 @@ for format in formats:
 #
 
 
-waveform, sample_rate = get_sample()
+waveform, sample_rate = torchaudio.load(SAMPLE_WAV)
 
 # Saving to bytes buffer
 buffer_ = io.BytesIO()
@@ -436,4 +383,3 @@ torchaudio.save(buffer_, waveform, sample_rate, format="wav")
 
 buffer_.seek(0)
 print(buffer_.read(16))
-
