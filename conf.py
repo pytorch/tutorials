@@ -75,7 +75,7 @@ sphinx_gallery_conf = {
                       'advanced_source', 'recipes_source', 'prototype_source'],
     'gallery_dirs': ['beginner', 'intermediate', 'advanced', 'recipes', 'prototype'],
     'filename_pattern': 'tutorial.py',
-    'backreferences_dir': False
+    'backreferences_dir': None
 }
 
 if os.getenv('GALLERY_PATTERN'):
