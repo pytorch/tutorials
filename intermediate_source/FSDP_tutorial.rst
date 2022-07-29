@@ -3,6 +3,8 @@ Getting Started with Fully Sharded Data Parallel(FSDP)
 
 **Author**: `Hamid Shojanazeri <https://github.com/HamidShojanazeri>`__, `Yanli Zhao <https://github.com/zhaojuanmao>`__, `Shen Li <https://mrshenli.github.io/>`__
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/FSDP_tutorial.rst>`__.
 
 Training AI models at a large scale is a challenging task that requires a lot of compute power and resources. 
 It also comes with considerable engineering complexity to handle the training of these very large models.
@@ -33,13 +35,13 @@ At high level FDSP works as follow:
 
 *In forward path*
 
-* Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run forward computation
 * Discard parameter shards it has just collected
 
 *In backward path*
 
-* Run allgather to collect all shards from all ranks to recover the full parameter in this FSDP unit
+* Run all_gather to collect all shards from all ranks to recover the full parameter in this FSDP unit
 * Run backward computation
 * Run reduce_scatter to sync gradients
 * Discard parameters. 
@@ -153,7 +155,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
             ddp_loss[0] += loss.item()
             ddp_loss[1] += len(data)
 
-        dist.reduce(ddp_loss, 0, op=dist.ReduceOp.SUM)
+        dist.all_reduce(ddp_loss, op=dist.ReduceOp.SUM)
         if rank == 0:
             print('Train Epoch: {} \tLoss: {:.6f}'.format(epoch, ddp_loss[0] / ddp_loss[1]))
 
@@ -174,7 +176,7 @@ We add the following code snippets to a python script “FSDP_mnist.py”.
                 ddp_loss[1] += pred.eq(target.view_as(pred)).sum().item()
                 ddp_loss[2] += len(data)
 
-        dist.reduce(ddp_loss, 0, op=dist.ReduceOp.SUM)
+        dist.all_reduce(ddp_loss, op=dist.ReduceOp.SUM)
 
         if rank == 0:
             test_loss = ddp_loss[0] / ddp_loss[2]

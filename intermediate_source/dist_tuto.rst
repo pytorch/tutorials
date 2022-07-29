@@ -2,6 +2,9 @@ Writing Distributed Applications with PyTorch
 =============================================
 **Author**: `Séb Arnold <https://seba1511.com>`_
 
+.. note::
+   |edit| View and edit this tutorial in `github <https://github.com/pytorch/tutorials/blob/master/intermediate_source/dist_tuto.rst>`__.
+
 Prerequisites:
 
 -  `PyTorch Distributed Overview <../beginner/dist_overview.html>`__
@@ -36,7 +39,7 @@ with your local sysadmin or use your favorite coordination tool (e.g.,
 `pdsh <https://linux.die.net/man/1/pdsh>`__,
 `clustershell <https://cea-hpc.github.io/clustershell/>`__, or
 `others <https://slurm.schedmd.com/>`__). For the purpose of this
-tutorial, we will use a single machine and fork multiple processes using
+tutorial, we will use a single machine and spawn multiple processes using
 the following template.
 
 .. code:: python

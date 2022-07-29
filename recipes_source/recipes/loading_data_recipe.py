@@ -72,12 +72,10 @@ import torchaudio
 #
 # ``torchaudio.datasets.YESNO`` creates a dataset for YesNo.
 torchaudio.datasets.YESNO(
-     root,
+     root='./',
      url='http://www.openslr.org/resources/1/waves_yesno.tar.gz',
      folder_in_archive='waves_yesno',
-     download=False,
-     transform=None,
-     target_transform=None)
+     download=True)
 
 ###########################################################################
 # Each item in the dataset is a tuple of the form: (waveform, sample_rate,
@@ -89,8 +87,6 @@ torchaudio.datasets.YESNO(
 # useful info on the other parameters:
 
 # * ``download``: If true, downloads the dataset from the internet and puts it in root directory. If dataset is already downloaded, it is not downloaded again.
-# * ``transform``: Using transforms on your data allows you to take it from its source state and transform it into data that’s joined together, de-normalized, and ready for training. Each library in PyTorch supports a growing list of transformations.
-# * ``target_transform``: A function/transform that takes in the target and transforms it.
 #
 # Let’s access our Yesno data:
 #
