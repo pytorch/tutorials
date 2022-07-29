@@ -151,7 +151,7 @@ class CustomImageDataset(Dataset):
 # the directory containing the images, the annotations file, and both transforms (covered
 # in more detail in the next section).
 #
-# The labels.csv file looks like: ::
+# The ``annotations_file`` file looks like: ::
 #
 #     tshirt1.jpg, 0
 #     tshirt2.jpg, 0
